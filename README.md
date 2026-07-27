@@ -16,7 +16,20 @@
 
 ## Status
 
-**OpenCut is being rewritten from the ground up.** What's coming:
+This repository is now the canonical, unified OpenCut workspace. It contains:
+
+- `classic/` — the current full TypeScript/Next.js editor, including silence
+  cutting, timeline editing, AI workflows, local-drive persistence, and the
+  production web application.
+- `apps/` and `crates/` — the Rust/GPUI rewrite, Editor API, desktop shell, and
+  self-describing MCP control plane.
+
+The two implementations are kept in one Git history so a normal clone or pull
+cannot silently omit product work. They are not yet one runtime: the current
+MCP controls the rewrite runtime, and classic features must be migrated or
+bridged explicitly before the MCP can operate the production editor.
+
+The rewrite roadmap includes:
 
 - An Editor API
 - First-class third party plugins (made possible by a plugin-first architecture)
@@ -25,7 +38,8 @@
 - Headless mode (automation, batch rendering)
 - A scripting tab directly in the editor
 
-You can still find the previous version at [opencut-app/opencut-classic](https://github.com/opencut-app/opencut-classic), which is the one to reach for today. [opencut.app](https://opencut.app) still runs the classic version. The rewrite will live at [new.opencut.app](https://new.opencut.app) until it's ready to take over.
+See [UNIFIED_WORKSPACE.md](UNIFIED_WORKSPACE.md) for the source-of-truth,
+development, synchronization, and migration rules.
 
 ## Development
 
@@ -60,6 +74,16 @@ moon run web:dev       # localhost:5173
 moon run api:dev       # localhost:8787
 moon run desktop:dev   # see apps/desktop/README.md
 moon run mcp:dev       # MCP over stdio
+```
+
+To run the current full editor:
+
+```sh
+cd classic
+cargo install wasm-pack # one-time prerequisite
+bun run build:wasm
+bun install --frozen-lockfile
+bun run dev:web
 ```
 
 ## MCP / Editor API
