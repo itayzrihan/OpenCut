@@ -1,0 +1,176 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { EditorCore } from "@/core";
+import { useEditor, useEditorProject } from "@/editor/use-editor";
+import { useKeybindingsListener } from "@/actions/use-keybindings";
+import { useKeybindingsStore } from "@/actions/keybindings-store";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import { useEditorActions } from "@/actions/use-editor-actions";
+import { loadFontAtlas } from "@/fonts/google-fonts";
+import {
+	initializeGpuRenderer,
+	isGpuAvailable,
+} from "@/services/renderer/gpu-renderer";
+import { createReplacementProjectIfMissing } from "@/editor/project-loading";
+
+interface EditorProviderProps {
+	projectId: string;
+	children: React.ReactNode;
+}
+
+export function EditorProvider({ projectId, children }: EditorProviderProps) {
+	const activeProject = useEditorProject((e) => e.project.getActiveOrNull());
+	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const { setLoadingProject } = useKeybindingsStore();
+
+	useEffect(() => {
+		setLoadingProject(isLoading);
+	}, [isLoading, setLoadingProject]);
+
+	useEffect(() => {
+		let cancelled = false;
+		const editor = EditorCore.getInstance();
+
+		const loadProject = async () => {
+			try {
+				setIsLoading(true);
+				await initializeGpuRenderer();
+				editor.renderer.setDegraded(!isGpuAvailable());
+				const projectExists = await editor.project.loadProject({
+					id: projectId,
+				});
+
+				if (cancelled) return;
+
+				const replacementProjectId = await createReplacementProjectIfMissing({
+					projectExists,
+					createProject: () =>
+						editor.project.createNewProject({
+							name: "Untitled Project",
+						}),
+				});
+				if (replacementProjectId) {
+					if (!cancelled) {
+						router.replace(`/editor/${replacementProjectId}`);
+					}
+					return;
+				}
+
+				setIsLoading(false);
+				loadFontAtlas();
+			} catch (err) {
+				if (cancelled) return;
+
+				const wasmPanic = (window as Window & { __wasmPanic?: string })
+					.__wasmPanic;
+				if (wasmPanic) {
+					delete (window as Window & { __wasmPanic?: string }).__wasmPanic;
+					setError(wasmPanic);
+				} else {
+					setError(
+						err instanceof Error ? err.message : "Failed to load project",
+					);
+				}
+				setIsLoading(false);
+			}
+		};
+
+		loadProject();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [projectId, router]);
+
+	if (error) {
+		return (
+			<div className="bg-background flex h-screen w-screen items-center justify-center">
+				<div className="flex flex-col items-center gap-4">
+					<p className="text-destructive text-sm">{error}</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (isLoading) {
+		return (
+			<div className="bg-background flex h-screen w-screen items-center justify-center">
+				<div className="flex flex-col items-center gap-4">
+					<Loader2 className="text-muted-foreground size-8 animate-spin" />
+					<p className="text-muted-foreground text-sm">Loading project...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!activeProject) {
+		return (
+			<div className="bg-background flex h-screen w-screen items-center justify-center">
+				<div className="flex flex-col items-center gap-4">
+					<Loader2 className="text-muted-foreground size-8 animate-spin" />
+					<p className="text-muted-foreground text-sm">Exiting project...</p>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<>
+			<EditorRuntimeBindings />
+			{children}
+		</>
+	);
+}
+
+function EditorRuntimeBindings() {
+	const editor = useEditor();
+	const rippleEditingEnabled = useTimelineStore(
+		(state) => state.rippleEditingEnabled,
+	);
+
+	useEffect(() => {
+		editor.command.isRippleEnabled = rippleEditingEnabled;
+	}, [editor, rippleEditingEnabled]);
+
+	useEffect(() => {
+		const flushPendingSave = (reason: string) => {
+			if (!editor.save.getIsDirty()) return;
+			void editor.save.flush().catch((error) => {
+				console.error(`Failed to flush project during ${reason}:`, error);
+			});
+		};
+
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			if (!editor.save.getIsDirty()) return;
+			flushPendingSave("beforeunload");
+			event.preventDefault();
+			(event as unknown as { returnValue: string }).returnValue = "";
+		};
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === "hidden") {
+				flushPendingSave("visibility change");
+			}
+		};
+		const handlePageHide = () => {
+			flushPendingSave("pagehide");
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		window.addEventListener("pagehide", handlePageHide);
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			window.removeEventListener("pagehide", handlePageHide);
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+		};
+	}, [editor]);
+
+	useEditorActions();
+	useKeybindingsListener();
+	return null;
+}

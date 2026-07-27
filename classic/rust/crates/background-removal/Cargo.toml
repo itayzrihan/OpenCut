@@ -1,0 +1,11 @@
+[package]
+name = "background-removal"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "src/background_removal.rs"
+crate-type = ["rlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
