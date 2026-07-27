@@ -12,7 +12,7 @@ import type { BackgroundMaskFrame } from "@/services/background-removal";
 
 export interface VideoNodeParams extends VisualNodeParams {
 	url: string;
-	file: File;
+	file?: File;
 	mediaId: string;
 	backgroundRemoval?: BackgroundRemovalSettings;
 	isPreview: boolean;

@@ -138,14 +138,36 @@ function EditorRuntimeBindings() {
 	}, [editor, rippleEditingEnabled]);
 
 	useEffect(() => {
+		const flushPendingSave = (reason: string) => {
+			if (!editor.save.getIsDirty()) return;
+			void editor.save.flush().catch((error) => {
+				console.error(`Failed to flush project during ${reason}:`, error);
+			});
+		};
+
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (!editor.save.getIsDirty()) return;
+			flushPendingSave("beforeunload");
 			event.preventDefault();
 			(event as unknown as { returnValue: string }).returnValue = "";
 		};
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === "hidden") {
+				flushPendingSave("visibility change");
+			}
+		};
+		const handlePageHide = () => {
+			flushPendingSave("pagehide");
+		};
 
 		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+		window.addEventListener("pagehide", handlePageHide);
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			window.removeEventListener("pagehide", handlePageHide);
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+		};
 	}, [editor]);
 
 	useEditorActions();

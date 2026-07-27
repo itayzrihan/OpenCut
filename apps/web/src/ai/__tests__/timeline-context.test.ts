@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { SceneTracks } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 import {
@@ -10,8 +10,181 @@ import {
 	searchElements,
 	searchLayers,
 } from "@/ai/timeline-context";
-import { buildTimelineContextPrompt } from "@/ai/timeline-tools";
 import type { EditorCore } from "@/core";
+
+function canonicalizeTimelineSourceDocumentForTest({ json }: { json: string }) {
+	try {
+		const formattedJson = `${JSON.stringify(JSON.parse(json), null, 2)}\n`;
+		let hash = 2_166_136_261;
+		for (let index = 0; index < formattedJson.length; index += 1) {
+			hash = Math.imul(hash ^ formattedJson.charCodeAt(index), 16_777_619);
+		}
+		return {
+			valid: true,
+			formattedJson,
+			baseRevision: `mock-sha256:${(hash >>> 0).toString(16)}`,
+			diagnostics: [],
+		};
+	} catch {
+		return {
+			valid: false,
+			formattedJson: "",
+			baseRevision: "",
+			diagnostics: [
+				{ code: "invalid_json", path: "$", message: "Invalid JSON" },
+			],
+		};
+	}
+}
+
+function validateTimelineSourceV2MutationScopeForTest({
+	beforeJson,
+	afterJson,
+	selectedRange,
+}: {
+	beforeJson: string;
+	afterJson: string;
+	selectedRange?: { startTime: number; duration: number };
+}) {
+	if (!selectedRange) return { valid: true, diagnostics: [] };
+	type Element = { id: string; startTime: number; duration: number };
+	type Document = { scene: { tracks: Array<{ elements: Element[] }> } };
+	const collect = (document: Document) =>
+		new Map(
+			document.scene.tracks.flatMap((track) =>
+				track.elements.map((element) => [element.id, element] as const),
+			),
+		);
+	const before = collect(JSON.parse(beforeJson) as Document);
+	const after = collect(JSON.parse(afterJson) as Document);
+	const rangeEnd = selectedRange.startTime + selectedRange.duration;
+	const diagnostics: Array<{ code: string; path: string; message: string }> =
+		[];
+	for (const id of new Set([...before.keys(), ...after.keys()])) {
+		const oldElement = before.get(id);
+		const newElement = after.get(id);
+		if (JSON.stringify(oldElement) === JSON.stringify(newElement)) continue;
+		if (
+			[oldElement, newElement].some(
+				(element) =>
+					element &&
+					(element.startTime < selectedRange.startTime ||
+						element.startTime + element.duration > rangeEnd),
+			)
+		) {
+			diagnostics.push({
+				code: "range_element_out_of_scope",
+				path: "$.scene.tracks",
+				message: `Element "${id}" was changed outside the selected range`,
+			});
+		}
+	}
+	return { valid: diagnostics.length === 0, diagnostics };
+}
+
+mock.module("opencut-wasm", () => ({
+	initCompositor: () => undefined,
+	getCompositorCanvas: () => null,
+	getLastFrameProfile: () => null,
+	releaseTexture: () => undefined,
+	renderFrame: () => undefined,
+	resizeCompositor: () => undefined,
+	uploadTexture: () => undefined,
+	applyEffectPasses: ({ source }: { source: unknown }) => source,
+	applyMaskFeather: ({ mask }: { mask: unknown }) => mask,
+	initializeGpu: async () => undefined,
+	refineBackgroundAlpha: () => undefined,
+	mediaTimeToSeconds: ({ time }: { time: number }) => time / 120_000,
+	formatTimecode: () => "00:00:00:00",
+	TICKS_PER_SECOND: 120_000,
+	normalizeTextLayerWordIds: <T extends { wordRuns: Array<{ id: string }> }>(
+		options: T,
+	) =>
+		options.wordRuns.map((word, previousWordIndex) => ({
+			previousWordIndex,
+			id: word.id,
+		})),
+	reconcileCaptionWords: <T extends { words: unknown[] }>(options: T) =>
+		options.words,
+	reconcileTextContentWords: () => [],
+	fitTextLayerWordsToSpan: () => [],
+	textLayerDurationForWords: <
+		T extends {
+			duration: number;
+			wordRuns: Array<{ startTime?: number; endTime?: number }>;
+		},
+	>(
+		options: T,
+	) =>
+		Math.max(
+			options.duration,
+			...options.wordRuns.map((word) => word.endTime ?? word.startTime ?? 0),
+		),
+	defaultBackgroundRemovalSettings: () => ({
+		enabled: false,
+		mode: "remove",
+		quality: "balanced",
+		maskThreshold: 0.5,
+		edgeContrast: 1,
+		edgeFeather: 0,
+		temporalSmoothing: 0,
+		blurStrength: 0,
+	}),
+	removeCaptionWordTimeRanges: <T extends { words: unknown[] }>(options: T) =>
+		options.words,
+	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(
+		options: T,
+	) => ({ clips: options.clips, timelineDuration: 0 }),
+	planBackgroundRemovalDuplicate: () => ({
+		kind: "existingTrack",
+		trackId: "video",
+	}),
+	resolveBackgroundRemovalSettings: <T>(settings: T) => ({
+		...settings,
+		inputSize: 256,
+		previewFps: 15,
+		cacheEntries: 2,
+		blurSigma: 0,
+	}),
+	searchAgentTools: ({
+		tools,
+		limit,
+	}: {
+		tools: Array<{ name: string }>;
+		limit: number;
+	}) =>
+		tools.slice(0, limit).map((tool, index) => ({
+			name: tool.name,
+			score: 1 - index / Math.max(1, limit),
+		})),
+	planAgentRangePreviewFrames: ({
+		startTime,
+		endTime,
+		maxFrames = 4,
+	}: {
+		startTime: number;
+		endTime: number;
+		maxFrames?: number;
+	}) => ({
+		valid: true,
+		times: Array.from(
+			{ length: Math.max(2, Math.min(4, Math.floor(maxFrames))) },
+			(_, index, values) =>
+				Math.round(
+					startTime + ((endTime - startTime) * (index + 0.5)) / values.length,
+				),
+		),
+	}),
+	canonicalizeTimelineSourceDocument: canonicalizeTimelineSourceDocumentForTest,
+	validateTimelineSourceV2MutationScope:
+		validateTimelineSourceV2MutationScopeForTest,
+}));
+
+let buildTimelineContextPrompt: typeof import("@/ai/timeline-tools").buildTimelineContextPrompt;
+
+beforeAll(async () => {
+	({ buildTimelineContextPrompt } = await import("@/ai/timeline-tools"));
+});
 
 const t = (time: number) => {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test fixtures use integer ticks.

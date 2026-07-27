@@ -33,7 +33,12 @@ import { V30toV31Migration } from "./v30-to-v31";
 import { V31toV32Migration } from "./v31-to-v32";
 import { V32toV33Migration } from "./v32-to-v33";
 export { runStorageMigrations } from "./runner";
-export type { MigrationProgress } from "./runner";
+export type {
+	MigrationProgress,
+	StorageMigrationFailure,
+	StorageMigrationFailureStage,
+	StorageMigrationResult,
+} from "./runner";
 
 export const CURRENT_PROJECT_VERSION = 33;
 

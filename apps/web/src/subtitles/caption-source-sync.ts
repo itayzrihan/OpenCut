@@ -18,6 +18,7 @@ import type {
 } from "@/timeline";
 import type { TranscriptionWord } from "@/transcription/types";
 import { mediaTimeToSeconds } from "@/wasm";
+import { normalizeTextLayerWordIds, reconcileCaptionWords } from "opencut-wasm";
 
 interface UpdatedElementRef {
 	trackId: string;
@@ -34,11 +35,6 @@ interface TranscriptWordSnapshot {
 interface PresentationWordSnapshot {
 	wordId?: string;
 	text: string;
-}
-
-interface TextElementWithTrack {
-	track: TextTrack;
-	element: TextElement;
 }
 
 export function syncCaptionSourceWordsFromElements({
@@ -148,57 +144,114 @@ export function syncTextLayerWordsIntoCaptionSource({
 	const source = sourceTrack?.captionSource;
 	if (!source) return tracks;
 
+	const uniqueElements = dedupeElementRefs({ elements });
 	const sourceTracks = findCaptionSourceTracks({ tracks, source });
 	const sourceTrackIds = new Set(sourceTracks.map((track) => track.id));
-	const syncEntries = elements.flatMap((ref) => {
-		if (sourceTrackIds.has(ref.trackId)) return [];
-		const entry = findTextElementWithTrack({
-			tracks,
-			trackId: ref.trackId,
-			elementId: ref.elementId,
-		});
-		if (!entry) return [];
-		if (isPresentationOnlyWordRunElement({ element: entry.element })) return [];
-		return [{ ref, entry }];
-	});
-	const nextManualWords = syncEntries.flatMap(({ entry }) => {
-		return buildTextLayerTranscriptionWords(entry);
-	});
-	const replacedKeys = new Set(
-		syncEntries.map(({ ref }) => `${ref.trackId}:${ref.elementId}`),
-	);
-	const replacedElementIds = new Set(
-		syncEntries.map(({ ref }) => ref.elementId),
-	);
 	const generatedWordIndexesToReplace = previousTracks
 		? getGeneratedWordIndexesForPreviousCaptionElements({
 				source,
 				sourceWords: source.words,
 				previousTracks,
 				currentSourceTrackIds: sourceTrackIds,
-				elements,
+				elements: uniqueElements,
 			})
 		: new Set<number>();
-	const nextWords = sortTranscriptionWords([
-		...source.words.filter((word, index) => {
-			if (generatedWordIndexesToReplace.has(index)) return false;
-			if (word.source?.type !== "text-layer") return true;
-			return (
-				!replacedKeys.has(`${word.source.trackId}:${word.source.elementId}`) &&
-				!replacedElementIds.has(word.source.elementId)
-			);
-		}),
-		...nextManualWords,
-	]);
-	if (areTranscriptionWordsEqual({ left: source.words, right: nextWords })) {
+	let nextTracks = tracks;
+	if (generatedWordIndexesToReplace.size > 0) {
+		nextTracks = updateCaptionSourceWordsInTracks({
+			tracks,
+			source,
+			words: source.words.filter(
+				(_, index) => !generatedWordIndexesToReplace.has(index),
+			),
+		});
+	}
+
+	return reconcileTextLayerWordsInCaptionSource({ tracks: nextTracks });
+}
+
+/**
+ * Enforces the words-track ownership invariant from the layers that currently
+ * exist. Rust owns the reconciliation policy; this function only flattens the
+ * web timeline model into the shared input shape and writes the result back.
+ */
+export function reconcileTextLayerWordsInCaptionSource({
+	tracks,
+}: {
+	tracks: SceneTracks;
+}): SceneTracks {
+	const sourceTrack = findCaptionSourceTrack({ tracks });
+	const source = sourceTrack?.captionSource;
+	if (!source) return tracks;
+
+	const textLayers = tracks.overlay.flatMap((track) => {
+		if (track.type !== "text" || track.captionSource) return [];
+		return track.elements.map((element) => ({
+			trackId: track.id,
+			elementId: element.id,
+			startTime: element.startTime,
+			duration: element.duration,
+			content:
+				typeof element.params.content === "string"
+					? element.params.content
+					: "",
+			wordRuns: (element.wordRuns ?? []).map((run) => ({
+				id: run.id,
+				text: run.text,
+				lineIndex: run.lineIndex,
+				startTime: run.startTime,
+				endTime: run.endTime,
+			})),
+		}));
+	});
+	const words = reconcileCaptionWords({
+		words: source.words,
+		textLayers,
+	}) as TranscriptionWord[];
+	if (areTranscriptionWordsEqual({ left: source.words, right: words })) {
 		return tracks;
 	}
 
-	return updateCaptionSourceWordsInTracks({
-		tracks,
-		source,
-		words: nextWords,
+	return updateCaptionSourceWordsInTracks({ tracks, source, words });
+}
+
+/** Repairs duplicate word-run IDs inside each text layer before any word-track
+ * ownership or editing lookup is derived from them. */
+export function normalizeTextLayerWordRunIds({
+	tracks,
+}: {
+	tracks: SceneTracks;
+}): SceneTracks {
+	let didChange = false;
+	const overlay = tracks.overlay.map((track) => {
+		if (track.type !== "text") return track;
+		let didChangeTrack = false;
+		const elements = track.elements.map((element) => {
+			if (!element.wordRuns?.length) return element;
+			const normalized = normalizeTextLayerWordIds({
+				wordRuns: element.wordRuns,
+			});
+			if (
+				normalized.every(
+					(word) => element.wordRuns?.[word.previousWordIndex]?.id === word.id,
+				)
+			) {
+				return element;
+			}
+			didChange = true;
+			didChangeTrack = true;
+			return {
+				...element,
+				wordRuns: element.wordRuns.map((run, index) => ({
+					...run,
+					id: normalized[index]?.id ?? run.id,
+				})),
+			};
+		});
+		return didChangeTrack ? { ...track, elements } : track;
 	});
+
+	return didChange ? { ...tracks, overlay } : tracks;
 }
 
 function getGeneratedWordIndexesForPreviousCaptionElements({
@@ -263,14 +316,84 @@ export function removeTextLayerWordsFromCaptionSource({
 		if (word.source?.type !== "text-layer") return true;
 		return !removedKeys.has(`${word.source.trackId}:${word.source.elementId}`);
 	});
-	if (areTranscriptionWordsEqual({ left: source.words, right: nextWords })) {
-		return tracks;
+	const withoutRemoved = areTranscriptionWordsEqual({
+		left: source.words,
+		right: nextWords,
+	})
+		? tracks
+		: updateCaptionSourceWordsInTracks({ tracks, source, words: nextWords });
+
+	return reconcileTextLayerWordsInCaptionSource({ tracks: withoutRemoved });
+}
+
+/**
+ * Removes generated transcript words whose caption elements were explicitly
+ * deleted. Generated words intentionally survive the manual-layer reconciler,
+ * so destructive caption commands must identify them from the pre-edit layer.
+ */
+export function removeCaptionElementWordsFromSource({
+	tracks,
+	previousTracks,
+	elements,
+}: {
+	tracks: SceneTracks;
+	previousTracks: SceneTracks;
+	elements: UpdatedElementRef[];
+}): SceneTracks {
+	const sourceTrack = findCaptionSourceTrack({ tracks });
+	const source = sourceTrack?.captionSource;
+	if (!source) return tracks;
+
+	const previousSourceTracks = findCaptionSourceTracks({
+		tracks: previousTracks,
+		source,
+	});
+	const usedIndexes = new Set<number>();
+	const indexesToRemove = new Set<number>();
+
+	for (const ref of dedupeElementRefs({ elements })) {
+		const previousTrack = previousSourceTracks.find(
+			(track) => track.id === ref.trackId,
+		);
+		const previousElement = previousTrack?.elements.find(
+			(element) => element.id === ref.elementId,
+		);
+		if (!previousElement) continue;
+
+		const transcriptEntries = getElementTranscriptWordSnapshots({
+			element: previousElement,
+		});
+		for (const entry of transcriptEntries) {
+			const sourceIndex = findSourceWordIndexForTranscriptEntry({
+				sourceWords: source.words,
+				entry,
+				usedIndexes,
+			});
+			if (sourceIndex < 0) continue;
+			usedIndexes.add(sourceIndex);
+			indexesToRemove.add(sourceIndex);
+		}
+
+		if (transcriptEntries.length === 0) {
+			for (const sourceIndex of mapPresentationEntriesToSourceWords({
+				sourceWords: source.words,
+				entries: getElementPresentationWordSnapshots({
+					element: previousElement,
+				}),
+				element: previousElement,
+			}).values()) {
+				if (usedIndexes.has(sourceIndex)) continue;
+				usedIndexes.add(sourceIndex);
+				indexesToRemove.add(sourceIndex);
+			}
+		}
 	}
 
+	if (indexesToRemove.size === 0) return tracks;
 	return updateCaptionSourceWordsInTracks({
 		tracks,
 		source,
-		words: nextWords,
+		words: source.words.filter((_, index) => !indexesToRemove.has(index)),
 	});
 }
 
@@ -290,6 +413,16 @@ function syncElementWords({
 	const source = track.captionSource;
 	if (!source) return sourceWords;
 	if (previousElement) {
+		// Multiline merges deliberately strip timing from their word runs while
+		// keeping the generated transcript unchanged. Treat that representation
+		// change as presentation-only instead of deleting the previously timed
+		// source entries.
+		if (
+			!isPresentationOnlyWordRunElement({ element: previousElement }) &&
+			isPresentationOnlyWordRunElement({ element })
+		) {
+			return sourceWords;
+		}
 		const presentationOnlyWords = syncPresentationOnlyElementWords({
 			sourceWords,
 			source,
@@ -333,7 +466,8 @@ function syncElementWords({
 		if (sourceIndex < 0) return;
 		const current = nextWords[sourceIndex];
 		const run = element.wordRuns?.[wordOffset];
-		const renderedText = run?.text ?? contentWords[wordOffset] ?? expectedWord.text;
+		const renderedText =
+			run?.text ?? contentWords[wordOffset] ?? expectedWord.text;
 		const nextText =
 			source.settings.hidePunctuation &&
 			stripCaptionPunctuation({ text: current.text }) ===
@@ -459,7 +593,9 @@ function syncElementWordsByPreviousWordRuns({
 	const previousEntries = getElementTranscriptWordSnapshots({
 		element: previousElement,
 	});
-	const nextEntries = getElementTranscriptWordSnapshots({ element: nextElement });
+	const nextEntries = getElementTranscriptWordSnapshots({
+		element: nextElement,
+	});
 	if (previousEntries.length === 0) {
 		return sourceWords;
 	}
@@ -619,7 +755,8 @@ function findSourceWordIndexForTranscriptEntry({
 		if (normalizeTranscriptText({ text: word.text }) !== normalizedEntry) {
 			continue;
 		}
-		const score = Math.abs(word.start - entry.start) + Math.abs(word.end - entry.end);
+		const score =
+			Math.abs(word.start - entry.start) + Math.abs(word.end - entry.end);
 		if (score < bestScore) {
 			bestIndex = index;
 			bestScore = score;
@@ -714,72 +851,6 @@ function getContentWords({ element }: { element: TextElement }) {
 	return content.trim().split(/\s+/).filter(Boolean);
 }
 
-function findTextElementWithTrack({
-	tracks,
-	trackId,
-	elementId,
-}: {
-	tracks: SceneTracks;
-	trackId: string;
-	elementId: string;
-}): TextElementWithTrack | null {
-	const track = tracks.overlay.find(
-		(candidate): candidate is TextTrack =>
-			candidate.type === "text" && candidate.id === trackId,
-	);
-	const element = track?.elements.find(
-		(candidate) => candidate.id === elementId,
-	);
-	return track && element ? { track, element } : null;
-}
-
-function buildTextLayerTranscriptionWords({
-	track,
-	element,
-}: TextElementWithTrack): TranscriptionWord[] {
-	if (element.wordRuns?.length) {
-		const elementStart = mediaTimeToSeconds({ time: element.startTime });
-		return element.wordRuns.flatMap((run, wordIndex) => {
-			if (!isTimedWordRun(run)) return [];
-			const start = elementStart + mediaTimeToSeconds({ time: run.startTime });
-			const end = elementStart + mediaTimeToSeconds({ time: run.endTime });
-			return {
-				text: run.text,
-				start: roundSeconds(start),
-				end: roundSeconds(Math.max(start + 0.01, end)),
-				source: {
-					type: "text-layer" as const,
-					trackId: track.id,
-					elementId: element.id,
-					wordIndex,
-					wordId: run.id,
-				},
-			};
-		});
-	}
-
-	const contentWords = getContentWords({ element });
-	const elementStart = mediaTimeToSeconds({ time: element.startTime });
-	const duration = mediaTimeToSeconds({ time: element.duration });
-	const wordDuration = contentWords.length > 0 ? duration / contentWords.length : 0;
-	return contentWords.map((text, wordIndex) => {
-		const start = elementStart + wordIndex * wordDuration;
-		const end = elementStart + (wordIndex + 1) * wordDuration;
-		return {
-			text,
-			start: roundSeconds(start),
-			end: roundSeconds(Math.max(start + 0.01, end)),
-			source: {
-				type: "text-layer" as const,
-				trackId: track.id,
-				elementId: element.id,
-				wordIndex,
-				wordId: `word-${wordIndex}`,
-			},
-		};
-	});
-}
-
 function updateCaptionSourceWordsInTracks({
 	tracks,
 	source,
@@ -808,15 +879,6 @@ function updateCaptionSourceWordsInTracks({
 	};
 }
 
-function sortTranscriptionWords(words: TranscriptionWord[]) {
-	return [...words].sort(
-		(left, right) =>
-			left.start - right.start ||
-			left.end - right.end ||
-			left.text.localeCompare(right.text),
-	);
-}
-
 function areTranscriptionWordsEqual({
 	left,
 	right,
@@ -837,6 +899,20 @@ function areTranscriptionWordsEqual({
 			candidate.source?.wordIndex === word.source?.wordIndex &&
 			candidate.source?.wordId === word.source?.wordId
 		);
+	});
+}
+
+function dedupeElementRefs({
+	elements,
+}: {
+	elements: UpdatedElementRef[];
+}): UpdatedElementRef[] {
+	const seen = new Set<string>();
+	return elements.filter(({ trackId, elementId }) => {
+		const key = `${trackId}:${elementId}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
 	});
 }
 
@@ -909,7 +985,8 @@ function getElementTranscriptWordSnapshots({
 	const contentWords = getContentWords({ element });
 	const elementStart = mediaTimeToSeconds({ time: element.startTime });
 	const duration = mediaTimeToSeconds({ time: element.duration });
-	const wordDuration = contentWords.length > 0 ? duration / contentWords.length : 0;
+	const wordDuration =
+		contentWords.length > 0 ? duration / contentWords.length : 0;
 	return contentWords.map((text, index) => {
 		const start = elementStart + index * wordDuration;
 		const end = elementStart + (index + 1) * wordDuration;
@@ -977,7 +1054,9 @@ function roundSeconds(value: number) {
 function isTimedWordRun(
 	run: NonNullable<TextElement["wordRuns"]>[number],
 ): run is NonNullable<TextElement["wordRuns"]>[number] &
-	Required<Pick<NonNullable<TextElement["wordRuns"]>[number], "startTime" | "endTime">> {
+	Required<
+		Pick<NonNullable<TextElement["wordRuns"]>[number], "startTime" | "endTime">
+	> {
 	return run.startTime != null && run.endTime != null;
 }
 

@@ -2,44 +2,118 @@
 
 import { useEffect, useState } from "react";
 
-const DISMISSED_KEY = "opencut-storage-persist-dismissed";
+const DISMISSED_KEY = "opencut-storage-persist-warning-dismissed-v2";
+
+export type StoragePersistenceDialogReason = "request" | "denied" | "error";
+
+type PersistenceStorage = Pick<StorageManager, "persist" | "persisted">;
+
+export async function resolveInitialPersistenceReason({
+	storage,
+	browserIsFirefox,
+}: {
+	storage: Partial<PersistenceStorage> | undefined;
+	browserIsFirefox: boolean;
+}): Promise<StoragePersistenceDialogReason | null> {
+	if (!storage?.persist || !storage.persisted) return "error";
+
+	try {
+		if (await storage.persisted()) return null;
+	} catch {
+		return "error";
+	}
+
+	if (browserIsFirefox) return "request";
+
+	try {
+		return (await storage.persist()) ? null : "denied";
+	} catch {
+		return "error";
+	}
+}
+
+export async function requestStoragePersistence(
+	storage: Partial<PersistenceStorage> | undefined,
+): Promise<Exclude<StoragePersistenceDialogReason, "request"> | null> {
+	if (!storage?.persist) return "error";
+
+	try {
+		return (await storage.persist()) ? null : "denied";
+	} catch {
+		return "error";
+	}
+}
 
 function isFirefox(): boolean {
 	return navigator.userAgent.toLowerCase().includes("firefox");
 }
 
+function wasDismissed(): boolean {
+	try {
+		return localStorage.getItem(DISMISSED_KEY) === "true";
+	} catch {
+		return false;
+	}
+}
+
+function rememberDismissal(): void {
+	try {
+		localStorage.setItem(DISMISSED_KEY, "true");
+	} catch {
+		// Storage may be unavailable in private or restricted browsing modes.
+	}
+}
+
 export function useStoragePersistence() {
 	const [showDialog, setShowDialog] = useState(false);
+	const [reason, setReason] =
+		useState<StoragePersistenceDialogReason>("request");
+	const [isRequesting, setIsRequesting] = useState(false);
 
 	useEffect(() => {
-		if (!navigator.storage?.persist) return;
+		let isMounted = true;
 
 		const run = async () => {
-			const alreadyPersisted = await navigator.storage.persisted();
-			if (alreadyPersisted) return;
+			if (wasDismissed()) return;
 
-			const dismissed = localStorage.getItem(DISMISSED_KEY) === "true";
-			if (dismissed) return;
+			const promptReason = await resolveInitialPersistenceReason({
+				storage: navigator.storage,
+				browserIsFirefox: isFirefox(),
+			});
+			if (!isMounted || promptReason === null) return;
 
-			if (isFirefox()) {
-				setShowDialog(true);
-			} else {
-				await navigator.storage.persist();
-			}
+			setReason(promptReason);
+			setShowDialog(true);
 		};
 
-		run();
+		void run();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	const onConfirm = async () => {
-		setShowDialog(false);
-		await navigator.storage.persist();
+		setIsRequesting(true);
+		try {
+			const nextReason = await requestStoragePersistence(navigator.storage);
+			if (nextReason === null) {
+				setShowDialog(false);
+				return;
+			}
+
+			setReason(nextReason);
+			setShowDialog(true);
+		} finally {
+			setIsRequesting(false);
+		}
 	};
 
 	const onDismiss = () => {
+		if (isRequesting) return;
 		setShowDialog(false);
-		localStorage.setItem(DISMISSED_KEY, "true");
+		rememberDismissal();
 	};
 
-	return { showDialog, onConfirm, onDismiss };
+	return { showDialog, reason, isRequesting, onConfirm, onDismiss };
 }

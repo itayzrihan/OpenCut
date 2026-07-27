@@ -10,12 +10,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { extractTimelineAudio } from "@/media/mediabunny";
 import {
 	useEditor,
 	useEditorDiagnostics,
 	useEditorProject,
 	useEditorTimelineScenes,
+	useEditorTranscription,
 } from "@/editor/use-editor";
 import { sharedLibraryService } from "@/shared-library/service";
 import type { SharedCaptionPreset } from "@/shared-library/types";
@@ -24,12 +24,9 @@ import { TRANSCRIPTION_LANGUAGES } from "@/transcription/supported-languages";
 import type {
 	CaptionChunk,
 	TranscriptionLanguage,
-	TranscriptionResult,
 } from "@/transcription/types";
 import {
 	DEFAULT_CAPTION_LAYOUT,
-	buildCaptionChunksFromSegments,
-	buildCaptionChunksFromWords,
 	getCaptionGridCell,
 	getCaptionPlacementGrid,
 	normalizeCaptionLayoutSettings,
@@ -65,7 +62,6 @@ import {
 import type { DiagnosticSeverity } from "@/diagnostics/types";
 import { TracksSnapshotCommand } from "@/commands";
 import type { TextCaptionRevealMode, TextWordTransitionIn } from "@/timeline";
-import { z } from "zod";
 import {
 	CAPTION_ACCENT_COLORS,
 	CAPTION_WORD_ANIMATIONS,
@@ -99,8 +95,6 @@ const IDLE_STATE: ProcessingState = {
 const CAPTION_LAYER_COUNT = 2;
 const CAPTION_LAST_SETTINGS_STORAGE_KEY = "opencut.caption.lastSettings";
 const CAPTION_SAVED_PRESETS_STORAGE_KEY = "opencut.caption.savedPresets";
-const TRANSCRIPTION_FETCH_RETRY_COUNT = 1;
-const TRANSCRIPTION_FETCH_RETRY_DELAY_MS = 750;
 
 type SavedCaptionPreset = SharedCaptionPreset;
 const CAPTION_REVEAL_MODES: Array<{
@@ -133,82 +127,6 @@ const CAPTION_TRANSITION_IN_OPTIONS: Array<{
 
 function usesTransitionIn(revealMode: TextCaptionRevealMode): boolean {
 	return revealMode === "spoken-word" || revealMode === "spoken-word-keep";
-}
-
-const transcriptionResultSchema = z.object({
-	text: z.string(),
-	segments: z.array(
-		z.object({
-			text: z.string(),
-			start: z.number(),
-			end: z.number(),
-		}),
-	),
-	words: z
-		.array(
-			z.object({
-				text: z.string(),
-				start: z.number(),
-				end: z.number(),
-			}),
-		)
-		.optional(),
-	language: z.string(),
-});
-
-function isFetchNetworkError({ error }: { error: unknown }): boolean {
-	return (
-		error instanceof TypeError &&
-		/(failed to fetch|networkerror|load failed|fetch)/i.test(error.message)
-	);
-}
-
-function sleep({ delayMs }: { delayMs: number }): Promise<void> {
-	return new Promise((resolve) => {
-		setTimeout(resolve, delayMs);
-	});
-}
-
-async function postWhisperTranscription({
-	formData,
-}: {
-	formData: FormData;
-}): Promise<Response> {
-	let lastError: unknown = null;
-
-	for (
-		let attempt = 0;
-		attempt <= TRANSCRIPTION_FETCH_RETRY_COUNT;
-		attempt += 1
-	) {
-		try {
-			return await fetch("/api/transcription/whisper-cpp", {
-				method: "POST",
-				body: formData,
-			});
-		} catch (error) {
-			lastError = error;
-			if (
-				!isFetchNetworkError({ error }) ||
-				attempt >= TRANSCRIPTION_FETCH_RETRY_COUNT
-			) {
-				break;
-			}
-			await sleep({ delayMs: TRANSCRIPTION_FETCH_RETRY_DELAY_MS });
-		}
-	}
-
-	throw new Error(
-		"Could not reach the local transcription service. The dev server may have reloaded while transcription was running; try again.",
-		{ cause: lastError },
-	);
-}
-
-function getTranscriptionErrorMessage({ error }: { error: unknown }): string {
-	if (error instanceof Error) {
-		return error.message;
-	}
-	return "An unexpected error occurred";
 }
 
 /* eslint-disable opencut/prefer-object-params -- React reducers must accept (state, action). */
@@ -313,6 +231,21 @@ function getErrorMessage({
 	return error instanceof Error ? error.message : fallback;
 }
 
+function getTranscriptionStep({ phase }: { phase?: string }): string {
+	switch (phase) {
+		case "extracting_audio":
+			return "Extracting audio...";
+		case "transcribing":
+			return "Transcribing locally...";
+		case "generating_captions":
+			return "Generating captions...";
+		case "cancelling":
+			return "Cancelling...";
+		default:
+			return "Processing transcript...";
+	}
+}
+
 export function Captions() {
 	const [selectedLanguage, setSelectedLanguage] =
 		useState<TranscriptionLanguage>("he");
@@ -328,7 +261,14 @@ export function Captions() {
 		(e) => e.project.getActive().settings.canvasSize,
 	);
 
-	const isProcessing = processing.status === "processing";
+	const transcriptionState = useEditorTranscription((e) =>
+		e.transcription.getState(),
+	);
+	const isLocalProcessing = processing.status === "processing";
+	const isTranscriptionProcessing =
+		transcriptionState.task.status === "running" ||
+		transcriptionState.task.status === "cancelling";
+	const isProcessing = isLocalProcessing || isTranscriptionProcessing;
 	const placementGrid = getCaptionPlacementGrid({ canvasSize });
 	const selectedGridCell = getCaptionGridCell({
 		settings: captionSettings,
@@ -581,65 +521,11 @@ export function Captions() {
 	};
 
 	const handleGenerateTranscript = async () => {
-		dispatch({ type: "start", step: "Extracting audio..." });
-		try {
-			const audioBlob = await extractTimelineAudio({
-				tracks: editor.scenes.getActiveScene().tracks,
-				mediaAssets: editor.media.getAssets(),
-				totalDuration: editor.timeline.getTotalDuration(),
-			});
-
-			dispatch({ type: "update_step", step: "Transcribing locally..." });
-			const formData = new FormData();
-			formData.append("audio", audioBlob, "timeline.webm");
-			formData.append(
-				"language",
-				selectedLanguage === "auto" ? "he" : selectedLanguage,
-			);
-
-			const response = await postWhisperTranscription({ formData });
-			if (!response.ok) {
-				const error = await response.json().catch(() => null);
-				throw new Error(
-					error?.error || `Transcription failed: ${response.status}`,
-				);
-			}
-			const result: TranscriptionResult = transcriptionResultSchema.parse(
-				await response.json(),
-			);
-
-			dispatch({ type: "update_step", step: "Generating captions..." });
-			const captionChunks = result.words?.length
-				? buildCaptionChunksFromWords({
-						words: result.words,
-						settings: captionSettings,
-					})
-				: buildCaptionChunksFromSegments({
-						segments: result.segments,
-						settings: captionSettings,
-					});
-
-			if (
-				!insertCaptions({
-					captions: captionChunks,
-					captionSource: result.words?.length
-						? { words: result.words, settings: captionSettings }
-						: undefined,
-				})
-			) {
-				dispatch({ type: "fail", error: "No captions were generated" });
-				return;
-			}
-
-			dispatch({ type: "succeed", warnings: [] });
-		} catch (error) {
-			const errorMessage = getTranscriptionErrorMessage({ error });
-			console.warn("Transcription failed:", errorMessage);
-			dispatch({
-				type: "fail",
-				error: errorMessage,
-			});
-		}
+		dispatch({ type: "succeed", warnings: [] });
+		await editor.transcription.start({
+			language: selectedLanguage,
+			settings: captionSettings,
+		});
 	};
 
 	const handleImportClick = () => {
@@ -717,7 +603,12 @@ export function Captions() {
 		setSelectedLanguage(matchedLanguage.code);
 	};
 
-	const error = processing.status === "idle" ? processing.error : null;
+	const error =
+		transcriptionState.task.status === "failed"
+			? transcriptionState.task.error
+			: processing.status === "idle"
+				? processing.error
+				: null;
 	const warnings = processing.status === "idle" ? processing.warnings : [];
 
 	return (
@@ -1132,11 +1023,27 @@ export function Captions() {
 					<Button
 						type="button"
 						className="mt-auto w-full"
-						onClick={handleGenerateTranscript}
-						disabled={isProcessing || activeDiagnostics.length > 0}
+						onClick={() => {
+							if (isTranscriptionProcessing) {
+								editor.transcription.cancel();
+								return;
+							}
+							void handleGenerateTranscript();
+						}}
+						disabled={
+							isLocalProcessing ||
+							transcriptionState.task.status === "cancelling" ||
+							(!isTranscriptionProcessing && activeDiagnostics.length > 0)
+						}
 					>
 						{isProcessing && <Spinner className="mr-1" />}
-						{isProcessing ? processing.step : "Generate transcript"}
+						{isTranscriptionProcessing
+							? transcriptionState.task.status === "cancelling"
+								? "Cancelling..."
+								: `Cancel · ${getTranscriptionStep({ phase: transcriptionState.task.phase })}`
+							: isLocalProcessing
+								? processing.step
+								: "Generate transcript"}
 					</Button>
 					{error && (
 						<div className="bg-destructive/10 border-destructive/20 rounded-md border p-3">

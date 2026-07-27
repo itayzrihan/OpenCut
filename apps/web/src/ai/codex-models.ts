@@ -12,10 +12,11 @@ export interface ChatGptCodexModel {
 	maxOutputTokens?: number;
 }
 
-export const DEFAULT_CHATGPT_CODEX_MODEL = "gpt-5.5";
+export const DEFAULT_CHATGPT_CODEX_MODEL = "gpt-5.6-sol";
 
 export const CHATGPT_CODEX_MODEL_FALLBACKS = [
 	DEFAULT_CHATGPT_CODEX_MODEL,
+	"gpt-5.5",
 	"gpt-5.4",
 	"gpt-5.4-mini",
 ] as const;
@@ -23,9 +24,14 @@ export const CHATGPT_CODEX_MODEL_FALLBACKS = [
 export const CHATGPT_CODEX_MODELS: ChatGptCodexModel[] = [
 	{
 		id: DEFAULT_CHATGPT_CODEX_MODEL,
-		label: "GPT-5.5",
+		label: "GPT-5.6 Sol",
 		description: "Recommended Codex model for ChatGPT sign-in.",
 		recommended: true,
+	},
+	{
+		id: "gpt-5.5",
+		label: "GPT-5.5",
+		description: "Previous frontier model for complex reasoning and coding.",
 	},
 	{
 		id: "gpt-5.4",
@@ -59,6 +65,7 @@ const LEGACY_MODEL_ALIASES: Record<string, string> = {
 	"gpt-5.4-codex": "gpt-5.4",
 	"gpt-5.4-codex-max": "gpt-5.4",
 	"gpt-5.4-codex-mini": "gpt-5.4-mini",
+	"gpt-5.6": DEFAULT_CHATGPT_CODEX_MODEL,
 };
 
 export function normalizeCodexModelId(value?: string | null): string {

@@ -12,9 +12,9 @@
  * Times are seconds; ids are shortened but stable within one document.
  */
 
-import type { SceneTracks, TimelineElement, TrackType } from "@/timeline";
+import type { SceneTracks, TimelineElement, TrackType } from "@/timeline/types";
+import { getDisplayTracks } from "@/timeline/track-order";
 import type { MediaAsset } from "@/media/types";
-import { getDisplayTracks } from "@/timeline";
 import { getBuiltInElementParams } from "@/params/registry";
 import { buildDefaultParamValues } from "@/params/registry";
 import { getGraphicDefinition } from "@/graphics";

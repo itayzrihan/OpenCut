@@ -21,6 +21,12 @@ const defaultSettings: BackgroundRemovalSettings = {
 };
 
 mock.module("opencut-wasm", () => ({
+	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(
+		options: T,
+	) => ({
+		clips: options.clips,
+		timelineDuration: 0,
+	}),
 	defaultBackgroundRemovalSettings: () => defaultSettings,
 	resolveBackgroundRemovalSettings: (settings: BackgroundRemovalSettings) => ({
 		...settings,

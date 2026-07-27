@@ -9,7 +9,13 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Check, ListCheck, Trash2 } from "lucide-react";
+import { Check, FileOutput, ListCheck, Trash2 } from "lucide-react";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { cn } from "@/utils/ui";
 import { useState } from "react";
 import {
@@ -24,6 +30,7 @@ import {
 import { canDeleteScene, getMainScene } from "@/timeline/scenes";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
+import { exportSceneToPremiereXml } from "@/export/premiere-xml";
 
 export function ScenesView({ children }: { children: React.ReactNode }) {
 	const editor = useEditor();
@@ -85,6 +92,28 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 		setIsSelectMode(false);
 	};
 
+	const handlePremiereExport = ({ sceneId }: { sceneId: string }) => {
+		const scene = scenes.find((candidate) => candidate.id === sceneId);
+		const project = editor.project.getActive();
+		if (!scene || !project) {
+			toast.error("Sequence is not available");
+			return;
+		}
+		try {
+			exportSceneToPremiereXml({
+				scene,
+				mediaAssets: editor.media.getAssets(),
+				fps: project.settings.fps,
+				canvasSize: project.settings.canvasSize,
+			});
+			toast.success(`Exported “${scene.name}” for Premiere Pro`);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Premiere XML export failed",
+			);
+		}
+	};
+
 	const isMainSceneSelected = (() => {
 		const mainScene = getMainScene({ scenes });
 		return Boolean(mainScene?.id && selectedScenes.has(mainScene.id));
@@ -141,28 +170,39 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 					) : (
 						<div className="space-y-2">
 							{scenes.map((scene) => (
-								<Button
-									key={scene.id}
-									variant="outline"
-									className={cn(
-										"w-full justify-between font-normal",
-										currentScene?.id === scene.id &&
-											!isSelectMode &&
-											"border-primary !text-primary",
-										isSelectMode &&
-											selectedScenes.has(scene.id) &&
-											"bg-accent border-foreground/30",
-									)}
-									onClick={() => handleSceneSwitch(scene.id)}
-								>
-									<span>{scene.name}</span>
-									<div className="flex items-center gap-2">
-										{((isSelectMode && selectedScenes.has(scene.id)) ||
-											(!isSelectMode && currentScene?.id === scene.id)) && (
-											<Check className="size-4" />
-										)}
-									</div>
-								</Button>
+								<ContextMenu key={scene.id}>
+									<ContextMenuTrigger asChild>
+										<Button
+											variant="outline"
+											className={cn(
+												"w-full justify-between font-normal",
+												currentScene?.id === scene.id &&
+													!isSelectMode &&
+													"border-primary !text-primary",
+												isSelectMode &&
+													selectedScenes.has(scene.id) &&
+													"bg-accent border-foreground/30",
+											)}
+											onClick={() => handleSceneSwitch(scene.id)}
+										>
+											<span>{scene.name}</span>
+											<div className="flex items-center gap-2">
+												{((isSelectMode && selectedScenes.has(scene.id)) ||
+													(!isSelectMode && currentScene?.id === scene.id)) && (
+													<Check className="size-4" />
+												)}
+											</div>
+										</Button>
+									</ContextMenuTrigger>
+									<ContextMenuContent className="w-56">
+										<ContextMenuItem
+											onClick={() => handlePremiereExport({ sceneId: scene.id })}
+										>
+											<FileOutput className="size-4" />
+											Export Premiere Pro XML
+										</ContextMenuItem>
+									</ContextMenuContent>
+								</ContextMenu>
 							))}
 						</div>
 					)}

@@ -9,9 +9,11 @@ import type {
 	TimelineElement,
 	RetimeConfig,
 } from "@/timeline";
+import * as wasm from "opencut-wasm";
 import { calculateTotalDuration } from "@/timeline";
 import { TimelineDragSource } from "@/timeline/drag-source";
 import { mergeElementOverlay } from "@/timeline/element-overlay";
+import { applyElementUpdate } from "@/timeline/update-pipeline";
 import { findTrackInSceneTracks } from "@/timeline/track-element-update";
 import {
 	lastFrameMediaTime,
@@ -23,11 +25,21 @@ import {
 } from "@/wasm";
 import { decodeAudioToFloat32 } from "@/media/audio";
 import {
+	DEEP_AUDIO_FRAME_SECONDS,
+	extractCompactAudioFeatures,
+	FAST_AUDIO_FRAME_SECONDS,
+} from "@/timeline/audio-silence-analysis";
+import {
 	canElementBeHidden,
 	canElementHaveAudio,
 } from "@/timeline/element-utils";
 import { isElementMuted } from "@/timeline/audio-state";
+import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
+import { getEffectiveRateAt, getSourceTimeAtClipTime } from "@/retime";
+import { findCaptionSourceTrack } from "@/subtitles/caption-tracks";
 import {
+	normalizeTextLayerWordRunIds,
+	reconcileTextLayerWordsInCaptionSource,
 	syncCaptionSourceWordsFromElements,
 	syncTextLayerWordsIntoCaptionSource,
 } from "@/subtitles/caption-source-sync";
@@ -82,7 +94,21 @@ import type {
 	PlannedTrackCreation,
 } from "@/timeline/group-move";
 import { withNormalizedTrackOrder } from "@/timeline";
+import { removeSilenceRangesFromTracks } from "@/timeline/cut-silence";
 import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
+
+const DEEP_SILENCE_ANALYSIS_SETTINGS = {
+	minSilenceSeconds: 0.32,
+	minSpeechSeconds: 0.08,
+	speechPaddingSeconds: 0.1,
+	bridgeGapSeconds: 0.14,
+	noisePercentile: 0.2,
+	minThreshold: 0.0045,
+	maxThreshold: 0.08,
+	hysteresisRatio: 0.72,
+	maxWordSnapSeconds: 0.28,
+	minWordDurationSeconds: 0.07,
+} as const;
 
 export class TimelineManager {
 	private listeners = new Set<() => void>();
@@ -326,73 +352,184 @@ export class TimelineManager {
 		});
 	}
 
-	async removeAllSilence(): Promise<void> {
-		const before = this.editor.scenes.getActiveScene().tracks;
+	async removeAllSilence({
+		mode = "fast",
+	}: {
+		mode?: "fast" | "deep";
+	} = {}): Promise<void> {
+		const scene = this.editor.scenes.getActiveScene();
+		const before = scene.tracks;
+		const project = this.editor.project.getActive();
+		const mediaAssets = this.editor.media.getAssets();
+		const mediaById = new Map(mediaAssets.map((asset) => [asset.id, asset]));
 		const selectedVideos = this.getElementsWithTracks({
 			elements: this.editor.selection.getSelectedElements(),
-		}).filter(({ element }) => element.type === "video");
+		})
+			.filter(({ element }) => element.type === "video")
+			.sort((left, right) => left.element.startTime - right.element.startTime);
 		if (selectedVideos.length === 0) return;
 
 		const ranges: Array<{ startTime: MediaTime; endTime: MediaTime }> = [];
-		for (const { element } of selectedVideos) {
+		const captionSourceTrack = findCaptionSourceTrack({ tracks: before });
+		const captionSource = captionSourceTrack?.captionSource;
+		const refinedCaptionWords =
+			mode === "deep" && captionSource
+				? captionSource.words.map((word) => ({ ...word }))
+				: undefined;
+		const assignedCaptionWordIndexes = new Set<number>();
+		const decodedByMediaId = new Map<
+			string,
+			Promise<Awaited<ReturnType<typeof decodeAudioToFloat32>> | null>
+		>();
+		let analyzedClipCount = 0;
+
+		for (const { track, element } of selectedVideos) {
 			if (element.type !== "video") continue;
-			const asset = this.editor.media
-				.getAssets()
-				.find((item) => item.id === element.mediaId);
-			if (!asset?.file) continue;
-			const { samples, sampleRate } = await decodeAudioToFloat32({
-				audioBlob: asset.file,
-			});
-			const windowSize = Math.max(1, Math.round(sampleRate * 0.05));
+			const asset = mediaById.get(element.mediaId);
+			if (
+				(!asset?.file && !asset?.url) ||
+				track.type !== "video" ||
+				track.muted ||
+				isElementMuted({ element }) ||
+				!doesElementHaveEnabledAudio({ element, mediaAsset: asset })
+			) {
+				continue;
+			}
+
+			let decodedPromise = decodedByMediaId.get(asset.id);
+			if (!decodedPromise) {
+				decodedPromise = decodeAudioToFloat32({
+					audioBlob: asset.file,
+					url: asset.url,
+				}).catch((error) => {
+					console.warn(`Failed to decode audio for ${asset.name}:`, error);
+					return null;
+				});
+				decodedByMediaId.set(asset.id, decodedPromise);
+			}
+			const decoded = await decodedPromise;
+			if (!decoded) continue;
+
+			const clipDuration = mediaTimeToSeconds({ time: element.duration });
+			const playbackRate = getEffectiveRateAt({ retime: element.retime });
 			const sourceStart = mediaTimeToSeconds({ time: element.trimStart });
 			const sourceEnd =
-				sourceStart + mediaTimeToSeconds({ time: element.duration });
-			let silenceStart: number | null = null;
-			for (
-				let index = Math.floor(sourceStart * sampleRate);
-				index < Math.min(samples.length, Math.ceil(sourceEnd * sampleRate));
-				index += windowSize
-			) {
-				let sum = 0;
-				const limit = Math.min(samples.length, index + windowSize);
-				for (let sample = index; sample < limit; sample += 1)
-					sum += samples[sample] * samples[sample];
-				const rms = Math.sqrt(sum / Math.max(1, limit - index));
-				const time = index / sampleRate;
-				if (rms < 0.012 && silenceStart === null) silenceStart = time;
-				if (
-					(rms >= 0.012 || limit >= sourceEnd * sampleRate) &&
-					silenceStart !== null
-				) {
-					const silenceEnd = time;
-					if (silenceEnd - silenceStart >= 0.45) {
-						const padding = 0.08;
-						ranges.push({
-							startTime: mediaTime({
-								ticks:
-									element.startTime +
-									mediaTimeFromSeconds({
-										seconds: silenceStart - sourceStart + padding,
-									}),
-							}),
-							endTime: mediaTime({
-								ticks:
-									element.startTime +
-									mediaTimeFromSeconds({
-										seconds: silenceEnd - sourceStart - padding,
-									}),
-							}),
+				sourceStart +
+				getSourceTimeAtClipTime({
+					clipTime: clipDuration,
+					retime: element.retime,
+				});
+			const frames = await extractCompactAudioFeatures({
+				samples: decoded.samples,
+				sampleRate: decoded.sampleRate,
+				sourceStartSeconds: sourceStart,
+				sourceEndSeconds: sourceEnd,
+				playbackRate,
+				frameDurationSeconds:
+					mode === "deep" ? DEEP_AUDIO_FRAME_SECONDS : FAST_AUDIO_FRAME_SECONDS,
+			});
+			if (frames.length === 0) continue;
+			analyzedClipCount += 1;
+
+			const localRanges =
+				mode === "deep"
+					? (() => {
+							const clipStart = mediaTimeToSeconds({ time: element.startTime });
+							const transcriptWords = (refinedCaptionWords ?? []).flatMap(
+								(word, wordIndex) => {
+									if (
+										word.source?.type === "text-layer" ||
+										assignedCaptionWordIndexes.has(wordIndex)
+									) {
+										return [];
+									}
+									const midpoint = (word.start + word.end) / 2;
+									if (
+										midpoint < clipStart ||
+										midpoint >= clipStart + clipDuration
+									) {
+										return [];
+									}
+									return [
+										{
+											wordIndex,
+											start: Math.max(0, word.start - clipStart),
+											end: Math.min(clipDuration, word.end - clipStart),
+										},
+									];
+								},
+							);
+							const result = wasm.analyzeAudioSilence({
+								frames,
+								durationSeconds: clipDuration,
+								transcriptWords,
+								settings: DEEP_SILENCE_ANALYSIS_SETTINGS,
+							});
+							for (const refinedWord of result.refinedWords) {
+								const word = refinedCaptionWords?.[refinedWord.wordIndex];
+								if (!word || word.source?.type === "text-layer") continue;
+								word.start = clipStart + refinedWord.start;
+								word.end = clipStart + refinedWord.end;
+								assignedCaptionWordIndexes.add(refinedWord.wordIndex);
+							}
+							return result.cutRanges;
+						})()
+					: wasm.detectFastAudioSilence({
+							frames,
+							durationSeconds: clipDuration,
 						});
-					}
-					silenceStart = null;
-				}
+
+			for (const range of localRanges) {
+				const start = Math.max(0, Math.min(clipDuration, range.start));
+				const end = Math.max(start, Math.min(clipDuration, range.end));
+				if (end <= start) continue;
+				ranges.push({
+					startTime: mediaTime({
+						ticks: element.startTime + mediaTimeFromSeconds({ seconds: start }),
+					}),
+					endTime: mediaTime({
+						ticks: element.startTime + mediaTimeFromSeconds({ seconds: end }),
+					}),
+				});
 			}
 		}
-		let after = before;
-		for (const range of ranges.sort((a, b) => b.startTime - a.startTime)) {
-			after = removeTimeRangeFromTracks({ tracks: after, ...range });
+
+		if (analyzedClipCount === 0) {
+			throw new Error(
+				"The selected video clips do not have enabled, decodable audio to analyze.",
+			);
 		}
-		if (after === before || ranges.length === 0) return;
+		const activeScene = this.editor.scenes.getActiveSceneOrNull();
+		if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
+			throw new Error(
+				"The timeline changed while audio was being analyzed. No silence cuts were applied.",
+			);
+		}
+
+		const captionWordsChanged =
+			refinedCaptionWords !== undefined &&
+			captionSource !== undefined &&
+			refinedCaptionWords.some((word, index) => {
+				const original = captionSource.words[index];
+				return (
+					original !== undefined &&
+					(word.start !== original.start || word.end !== original.end)
+				);
+			});
+		if (ranges.length === 0 && !captionWordsChanged) return;
+		const after = removeSilenceRangesFromTracks({
+			tracks: before,
+			ranges,
+			cutElementIds: selectedVideos.map(({ element }) => element.id),
+			captionCanvasSize: project.settings.canvasSize,
+			captionWordsOverride: captionWordsChanged
+				? refinedCaptionWords
+				: undefined,
+			captionWordsOverrideSourceId: captionWordsChanged
+				? captionSource?.sourceId
+				: undefined,
+		});
+		if (after === before) return;
 		this.editor.command.execute({
 			command: new TracksSnapshotCommand({ before, after }),
 		});
@@ -957,7 +1094,11 @@ export class TimelineManager {
 			const nextElements = track.elements.map((element) => {
 				const overlay = this.previewOverlay.get(element.id);
 				return overlay
-					? mergeElementOverlay({ base: element, overlay })
+					? applyElementUpdate({
+							element,
+							patch: overlay,
+							context: { tracks, trackId: track.id },
+						})
 					: element;
 			});
 
@@ -1129,8 +1270,27 @@ export class TimelineManager {
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
 		this.previewTracks = null;
+		const previousTracks = this.editor.scenes.getActiveSceneOrNull()?.tracks;
+		const normalizedTracks = normalizeTextLayerWordRunIds({
+			tracks: newTracks,
+		});
+		const sourceElementRefs = normalizedTracks.overlay.flatMap((track) => {
+			if (track.type !== "text" || !track.captionSource) return [];
+			return track.elements.map((element) => ({
+				trackId: track.id,
+				elementId: element.id,
+			}));
+		});
+		const sourceSyncedTracks = syncCaptionSourceWordsFromElements({
+			tracks: normalizedTracks,
+			previousTracks,
+			updates: sourceElementRefs,
+		});
+		const reconciledTracks = reconcileTextLayerWordsInCaptionSource({
+			tracks: sourceSyncedTracks,
+		});
 		this.editor.scenes.updateSceneTracks({
-			tracks: withNormalizedTrackOrder({ tracks: newTracks }),
+			tracks: withNormalizedTrackOrder({ tracks: reconciledTracks }),
 		});
 		this.notify();
 	}

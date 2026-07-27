@@ -12,12 +12,14 @@ import {
 	Settings01Icon,
 	SlidersHorizontalIcon,
 	AiChat02Icon,
+	SourceCodeIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 export const TAB_KEYS = [
 	"media",
 	"ai",
+	"timeline-code",
 	"sounds",
 	"text",
 	"stickers",
@@ -51,6 +53,10 @@ export const tabs = {
 	ai: {
 		icon: createHugeiconsIcon({ icon: AiChat02Icon }),
 		label: "AI",
+	},
+	"timeline-code": {
+		icon: createHugeiconsIcon({ icon: SourceCodeIcon }),
+		label: "Timeline code",
 	},
 	sounds: {
 		icon: createHugeiconsIcon({ icon: HeadphonesIcon }),

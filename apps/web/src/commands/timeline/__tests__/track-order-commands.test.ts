@@ -31,6 +31,23 @@ mock.module("@/core", () => ({
 	},
 }));
 
+mock.module("opencut-wasm", () => ({
+	normalizeTextLayerWordIds: <T extends { wordRuns: Array<{ id: string }> }>(
+		options: T,
+	) =>
+		options.wordRuns.map((word, previousWordIndex) => ({
+			previousWordIndex,
+			id: word.id,
+		})),
+	reconcileCaptionWords: <T extends { words: unknown[] }>(options: T) =>
+		options.words,
+	removeCaptionWordTimeRanges: <T extends { words: unknown[] }>(options: T) =>
+		options.words,
+	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(
+		options: T,
+	) => ({ clips: options.clips, timelineDuration: 0 }),
+}));
+
 let commands: {
 	DeleteElementsCommand: typeof import("@/commands/timeline/element/delete-elements").DeleteElementsCommand;
 	PasteCommand: typeof import("@/commands/timeline/clipboard/paste").PasteCommand;
@@ -38,13 +55,11 @@ let commands: {
 };
 
 beforeAll(async () => {
-	const deleteElements = await import(
-		"@/commands/timeline/element/delete-elements"
-	);
+	const deleteElements =
+		await import("@/commands/timeline/element/delete-elements");
 	const paste = await import("@/commands/timeline/clipboard/paste");
-	const splitElements = await import(
-		"@/commands/timeline/element/split-elements"
-	);
+	const splitElements =
+		await import("@/commands/timeline/element/split-elements");
 	commands = {
 		DeleteElementsCommand: deleteElements.DeleteElementsCommand,
 		PasteCommand: paste.PasteCommand,
@@ -194,6 +209,61 @@ describe("timeline commands preserve display track order", () => {
 
 		expect(editor.getTracks().order).toEqual(initialTracks.order);
 		expect(editor.getTracks().overlay[0].elements).toHaveLength(2);
+	});
+
+	test("retaining the right caption half removes the discarded source words", () => {
+		const caption = {
+			...textElement({ id: "caption", durationTicks: 100 }),
+			params: { content: "Left Right" },
+			wordRuns: [
+				{
+					id: "left",
+					text: "Left",
+					lineIndex: 0,
+					startTime: mediaTime({ ticks: 0 }),
+					endTime: mediaTime({ ticks: 40 }),
+				},
+				{
+					id: "right",
+					text: "Right",
+					lineIndex: 0,
+					startTime: mediaTime({ ticks: 40 }),
+					endTime: mediaTime({ ticks: 100 }),
+				},
+			],
+		};
+		const captionTrack = {
+			...textTrack({ id: "captions", elements: [caption] }),
+			captionSource: {
+				words: [
+					{ text: "Left", start: 0, end: 40 / 120_000 },
+					{ text: "Right", start: 40 / 120_000, end: 100 / 120_000 },
+				],
+				settings: {},
+				layerIndex: 0,
+				layerCount: 1,
+			},
+		} as TextTrack;
+		const initialTracks: SceneTracks = {
+			overlay: [captionTrack],
+			main: mainTrack(),
+			audio: [],
+		};
+		const editor = mockEditorWithTracks(initialTracks);
+
+		new commands.SplitElementsCommand({
+			elements: [{ trackId: "captions", elementId: "caption" }],
+			splitTime: mediaTime({ ticks: 40 }),
+			retainSide: "right",
+		}).execute();
+
+		const result = editor.getTracks().overlay[0] as TextTrack;
+		expect(result.elements).toHaveLength(1);
+		expect(result.elements[0]?.id).toBe("caption");
+		expect(result.elements[0]?.params.content).toBe("Right");
+		expect(result.captionSource?.words.map((word) => word.text)).toEqual([
+			"Right",
+		]);
 	});
 
 	test("paste resolves source row from visible display order", () => {

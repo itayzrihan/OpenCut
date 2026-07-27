@@ -12,6 +12,7 @@ import { getSourceSpanAtClipTime } from "@/retime";
 import { splitTextElementAtTime } from "@/text/text-layer-utils";
 import {
 	removeTextLayerWordsFromCaptionSource,
+	syncCaptionSourceWordsFromElements,
 	syncTextLayerWordsIntoCaptionSource,
 } from "@/subtitles/caption-source-sync";
 import {
@@ -142,7 +143,8 @@ export class SplitElementsCommand extends Command {
 				});
 
 				if (element.type === "text") {
-					const rightElementId = generateUUID();
+					const rightElementId =
+						this.retainSide === "right" ? element.id : generateUUID();
 					const textSplit = splitTextElementAtTime({
 						element,
 						relativeTime,
@@ -170,7 +172,7 @@ export class SplitElementsCommand extends Command {
 							elementId: rightElementId,
 						});
 						if (this.retainSide === "right") {
-							this.removedSplitElements.push(originalRef);
+							this.retainedSplitElements.push(originalRef);
 							return [rightElement];
 						}
 						this.retainedSplitElements.push(originalRef);
@@ -256,6 +258,11 @@ export class SplitElementsCommand extends Command {
 				elements: this.removedSplitElements,
 			});
 		}
+		updatedTracks = syncCaptionSourceWordsFromElements({
+			tracks: updatedTracks,
+			previousTracks: this.savedState,
+			updates: this.retainedSplitElements,
+		});
 		updatedTracks = syncTextLayerWordsIntoCaptionSource({
 			tracks: updatedTracks,
 			elements: [...this.retainedSplitElements, ...this.rightSideElements],

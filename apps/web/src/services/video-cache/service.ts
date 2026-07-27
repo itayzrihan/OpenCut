@@ -1,11 +1,6 @@
-import {
-	Input,
-	ALL_FORMATS,
-	BlobSource,
-	CanvasSink,
-	type WrappedCanvas,
-} from "mediabunny";
+import { Input, ALL_FORMATS, CanvasSink, type WrappedCanvas } from "mediabunny";
 import { incrementCounter, recordSpan } from "@/diagnostics/render-perf";
+import { createMediaSource } from "@/media/source";
 
 const FRAME_CACHE_LIMIT = 48;
 const FRAME_TIME_PRECISION = 1000;
@@ -35,10 +30,12 @@ export class VideoCache {
 	async getFrameAt({
 		mediaId,
 		file,
+		url,
 		time,
 	}: {
 		mediaId: string;
-		file: File;
+		file?: File;
+		url?: string;
 		time: number;
 	}): Promise<WrappedCanvas | null> {
 		const cachedFrame = this.getCachedFrame({ mediaId, time });
@@ -55,7 +52,7 @@ export class VideoCache {
 		}
 
 		const start = performance.now();
-		const request = this.loadFrameAt({ mediaId, file, time })
+		const request = this.loadFrameAt({ mediaId, file, url, time })
 			.then((frame) => {
 				if (
 					frame &&
@@ -80,13 +77,15 @@ export class VideoCache {
 	private async loadFrameAt({
 		mediaId,
 		file,
+		url,
 		time,
 	}: {
 		mediaId: string;
-		file: File;
+		file?: File;
+		url?: string;
 		time: number;
 	}): Promise<WrappedCanvas | null> {
-		await this.ensureSink({ mediaId, file });
+		await this.ensureSink({ mediaId, file, url });
 
 		const sinkData = this.sinks.get(mediaId);
 		if (!sinkData) return null;
@@ -339,9 +338,11 @@ export class VideoCache {
 	private async ensureSink({
 		mediaId,
 		file,
+		url,
 	}: {
 		mediaId: string;
-		file: File;
+		file?: File;
+		url?: string;
 	}): Promise<void> {
 		if (this.sinks.has(mediaId)) return;
 
@@ -350,7 +351,7 @@ export class VideoCache {
 			return;
 		}
 
-		const initPromise = this.initializeSink({ mediaId, file });
+		const initPromise = this.initializeSink({ mediaId, file, url });
 		this.initPromises.set(mediaId, initPromise);
 
 		try {
@@ -362,12 +363,14 @@ export class VideoCache {
 	private async initializeSink({
 		mediaId,
 		file,
+		url,
 	}: {
 		mediaId: string;
-		file: File;
+		file?: File;
+		url?: string;
 	}): Promise<void> {
 		const input = new Input({
-			source: new BlobSource(file),
+			source: createMediaSource({ file, url }),
 			formats: ALL_FORMATS,
 		});
 

@@ -11,6 +11,7 @@ path = "src/wasm.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+agent = { version = "0.1.0", path = "../crates/agent", features = ["wasm"] }
 background-removal = { version = "0.1.0", path = "../crates/background-removal" }
 bridge = { version = "0.1.0", path = "../crates/bridge" }
 compositor = { version = "0.1.0", path = "../crates/compositor" }
@@ -19,10 +20,14 @@ effects = { version = "0.1.0", path = "../crates/effects" }
 gpu = { version = "0.1.0", path = "../crates/gpu", features = ["wasm"] }
 js-sys = "0.3.93"
 masks = { version = "0.1.0", path = "../crates/masks" }
+podcast = { version = "0.1.0", path = "../crates/podcast", features = ["wasm"] }
+premiere = { version = "0.1.0", path = "../crates/premiere", features = ["wasm"] }
+storage = { version = "0.1.0", path = "../crates/storage", features = ["wasm"] }
 num-traits = "0.2.19"
 serde = { version = "1.0.228", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 time = { version = "0.1.0", path = "../crates/time", features = ["wasm"] }
+timeline = { version = "0.1.0", path = "../crates/timeline", features = ["wasm"] }
 wasm-bindgen = "0.2.116"
 wasm-bindgen-futures = "0.4.66"
 web-sys = { version = "0.3.93", features = ["OffscreenCanvas", "HtmlCanvasElement", "CanvasRenderingContext2d", "Document", "Window", "Performance"] }
@@ -30,3 +35,6 @@ web-sys = { version = "0.3.93", features = ["OffscreenCanvas", "HtmlCanvasElemen
 [features]
 default = ["wasm"]
 wasm = []
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.66"

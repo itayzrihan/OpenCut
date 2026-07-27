@@ -19,10 +19,11 @@ import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
 import { canTrackHaveAudio, getDisplayTracks } from "@/timeline";
 import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
-import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
+import { Input, ALL_FORMATS, AudioBufferSink } from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { computeRmsBuckets, type SampleBucket } from "@/media/waveform-summary";
 import { sharedLibraryService } from "@/shared-library";
+import { createMediaSource } from "@/media/source";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;
@@ -59,29 +60,46 @@ export interface DecodedAudio {
 
 export async function decodeAudioToFloat32({
 	audioBlob,
-	sampleRate,
+	url,
 }: {
-	audioBlob: Blob;
+	audioBlob?: Blob;
+	url?: string;
 	sampleRate?: number;
 }): Promise<DecodedAudio> {
-	const audioContext = createAudioContext({ sampleRate });
-	const arrayBuffer = await audioBlob.arrayBuffer();
-	const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-	// mix down to mono
-	const numChannels = audioBuffer.numberOfChannels;
-	const length = audioBuffer.length;
-	const samples = new Float32Array(length);
-
-	for (let i = 0; i < length; i++) {
-		let sum = 0;
-		for (let channel = 0; channel < numChannels; channel++) {
-			sum += audioBuffer.getChannelData(channel)[i];
+	const input = new Input({
+		source: createMediaSource({ file: audioBlob, url }),
+		formats: ALL_FORMATS,
+	});
+	try {
+		const track = await input.getPrimaryAudioTrack();
+		if (!track) throw new Error("Media does not contain an audio track");
+		const sink = new AudioBufferSink(track);
+		const chunks: Float32Array[] = [];
+		let totalLength = 0;
+		let nativeSampleRate = 0;
+		for await (const { buffer } of sink.buffers(0)) {
+			nativeSampleRate = buffer.sampleRate;
+			const mono = new Float32Array(buffer.length);
+			for (let i = 0; i < buffer.length; i++) {
+				let sum = 0;
+				for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+					sum += buffer.getChannelData(channel)[i];
+				}
+				mono[i] = sum / Math.max(1, buffer.numberOfChannels);
+			}
+			chunks.push(mono);
+			totalLength += mono.length;
 		}
-		samples[i] = sum / numChannels;
+		const samples = new Float32Array(totalLength);
+		let offset = 0;
+		for (const chunk of chunks) {
+			samples.set(chunk, offset);
+			offset += chunk.length;
+		}
+		return { samples, sampleRate: nativeSampleRate };
+	} finally {
+		input.dispose();
 	}
-
-	return { samples, sampleRate: audioBuffer.sampleRate };
 }
 
 export interface AudibleElementCandidate {
@@ -247,18 +265,8 @@ async function resolveAudioBufferForAsset({
 	asset: MediaAsset;
 	audioContext: AudioContext;
 }): Promise<AudioBuffer | null> {
-	if (asset.type === "audio") {
-		try {
-			const arrayBuffer = await asset.file.arrayBuffer();
-			return await audioContext.decodeAudioData(arrayBuffer.slice(0));
-		} catch (error) {
-			console.warn("Failed to decode audio asset:", error);
-			return null;
-		}
-	}
-
 	const input = new Input({
-		source: new BlobSource(asset.file),
+		source: createMediaSource(asset),
 		formats: ALL_FORMATS,
 	});
 
@@ -335,7 +343,8 @@ async function resolveAudioBufferForAsset({
 
 interface AudioMixSource {
 	timelineElement: AudioCapableElement;
-	file: File;
+	file?: File;
+	url?: string;
 	startTime: number;
 	duration: number;
 	trimStart: number;
@@ -382,7 +391,8 @@ export interface AudioClipSource {
 	timelineElement: AudioCapableElement;
 	id: string;
 	sourceKey: string;
-	file: File;
+	file?: File;
+	url?: string;
 	startTime: number;
 	duration: number;
 	trimStart: number;
@@ -463,6 +473,7 @@ function collectMediaAudioSource({
 	return {
 		timelineElement: element,
 		file: mediaAsset.file,
+		url: mediaAsset.url,
 		startTime: element.startTime / TICKS_PER_SECOND,
 		duration: element.duration / TICKS_PER_SECOND,
 		trimStart: element.trimStart / TICKS_PER_SECOND,
@@ -488,6 +499,7 @@ function collectMediaAudioClip({
 		id: element.id,
 		sourceKey: mediaAsset.id,
 		file: mediaAsset.file,
+		url: mediaAsset.url,
 		startTime: element.startTime / TICKS_PER_SECOND,
 		duration: element.duration / TICKS_PER_SECOND,
 		trimStart: element.trimStart / TICKS_PER_SECOND,

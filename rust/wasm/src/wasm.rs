@@ -12,6 +12,8 @@ mod masks;
 mod perf;
 
 #[cfg(target_arch = "wasm32")]
+pub use agent::*;
+#[cfg(target_arch = "wasm32")]
 pub use background_removal::*;
 #[cfg(target_arch = "wasm32")]
 pub use compositor::*;
@@ -23,4 +25,8 @@ pub use gpu::*;
 pub use masks::*;
 #[cfg(target_arch = "wasm32")]
 pub use perf::*;
+pub use podcast::*;
+pub use premiere::*;
+pub use storage::*;
 pub use time::*;
+pub use timeline::*;

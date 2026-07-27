@@ -4,9 +4,20 @@ import {
 	getSourceSpanAtClipTime,
 	getTimelineDurationForSourceSpan,
 } from "@/retime";
-import type { RetimeConfig, SceneTracks, TimelineElement } from "@/timeline";
+import type {
+	RetimeConfig,
+	SceneTracks,
+	TextElement,
+	TextWordRun,
+	TimelineElement,
+} from "@/timeline";
 import { isRetimableElement } from "@/timeline";
-import { ZERO_MEDIA_TIME, roundMediaTime } from "@/wasm";
+import { mediaTime, ZERO_MEDIA_TIME, roundMediaTime } from "@/wasm";
+import {
+	fitTextLayerWordsToSpan,
+	reconcileTextContentWords,
+	textLayerDurationForWords,
+} from "opencut-wasm";
 
 type ElementUpdateField = keyof TimelineElement | string;
 
@@ -149,9 +160,111 @@ export function applyElementUpdate({
 			...(patch.params ?? {}),
 		},
 	} as TimelineElement;
-	const changedFields = new Set(
-		Object.keys(patch) as ElementUpdateField[],
-	);
+	const textPatch = patch as Partial<TextElement>;
+	let didExtendTextLayerForWords = false;
+	if (
+		element.type === "text" &&
+		nextElement.type === "text" &&
+		textPatch.wordRuns !== undefined &&
+		!Object.prototype.hasOwnProperty.call(patch, "duration")
+	) {
+		const duration = mediaTime({
+			ticks: textLayerDurationForWords({
+				duration: nextElement.duration,
+				wordRuns: textPatch.wordRuns,
+			}),
+		});
+		if (duration !== nextElement.duration) {
+			nextElement = { ...nextElement, duration };
+			didExtendTextLayerForWords = true;
+		}
+	}
+	if (
+		element.type === "text" &&
+		nextElement.type === "text" &&
+		textPatch.wordRuns === undefined &&
+		Object.prototype.hasOwnProperty.call(patch.params ?? {}, "content") &&
+		(element.wordRuns?.length ?? 0) > 0
+	) {
+		const content =
+			typeof nextElement.params.content === "string"
+				? nextElement.params.content
+				: "";
+		const reconciledWords = reconcileTextContentWords({
+			content,
+			duration: nextElement.duration,
+			previousWords: element.wordRuns ?? [],
+		});
+		nextElement = {
+			...nextElement,
+			wordRuns: reconciledWords.map<TextWordRun>((word) => {
+				const previous =
+					word.previousWordIndex == null
+						? undefined
+						: element.wordRuns?.[word.previousWordIndex];
+				return {
+					...previous,
+					id: word.id,
+					text: word.text,
+					lineIndex: word.lineIndex,
+					startTime:
+						word.startTime == null
+							? undefined
+							: mediaTime({ ticks: word.startTime }),
+					endTime:
+						word.endTime == null
+							? undefined
+							: mediaTime({ ticks: word.endTime }),
+				};
+			}),
+		};
+	}
+	if (
+		element.type === "text" &&
+		nextElement.type === "text" &&
+		textPatch.wordRuns === undefined &&
+		!Object.prototype.hasOwnProperty.call(patch.params ?? {}, "content") &&
+		(element.wordRuns?.length ?? 0) > 0 &&
+		(Object.prototype.hasOwnProperty.call(patch, "trimStart") ||
+			Object.prototype.hasOwnProperty.call(patch, "trimEnd")) &&
+		(element.startTime !== nextElement.startTime ||
+			element.duration !== nextElement.duration)
+	) {
+		const fittedWords = fitTextLayerWordsToSpan({
+			previousStartTime: element.startTime,
+			nextStartTime: nextElement.startTime,
+			nextDuration: nextElement.duration,
+			wordRuns: element.wordRuns ?? [],
+		});
+		const wordRuns = fittedWords.flatMap<TextWordRun>((word) => {
+			const previous = element.wordRuns?.[word.previousWordIndex];
+			if (!previous) return [];
+			return [
+				{
+					...previous,
+					lineIndex: word.lineIndex,
+					startTime:
+						word.startTime == null
+							? undefined
+							: mediaTime({ ticks: word.startTime }),
+					endTime:
+						word.endTime == null
+							? undefined
+							: mediaTime({ ticks: word.endTime }),
+				},
+			];
+		});
+		nextElement = {
+			...nextElement,
+			params: {
+				...nextElement.params,
+				content: textContentFromWordRuns({ wordRuns }),
+			},
+			wordRuns,
+		};
+	}
+	const changedFields = new Set(Object.keys(patch) as ElementUpdateField[]);
+	if (didExtendTextLayerForWords) changedFields.add("duration");
 
 	for (const rule of deriveRules) {
 		if (!shouldApplyRule({ rule, changedFields })) {
@@ -184,6 +297,24 @@ export function applyElementUpdate({
 	}
 
 	return nextElement;
+}
+
+function textContentFromWordRuns({
+	wordRuns,
+}: {
+	wordRuns: NonNullable<Extract<TimelineElement, { type: "text" }>["wordRuns"]>;
+}) {
+	const lines = new Map<number, string[]>();
+	for (const word of wordRuns) {
+		lines.set(word.lineIndex, [
+			...(lines.get(word.lineIndex) ?? []),
+			word.text,
+		]);
+	}
+	return [...lines.entries()]
+		.sort(([left], [right]) => left - right)
+		.map(([, words]) => words.join(" "))
+		.join("\n");
 }
 
 function shouldApplyRule({

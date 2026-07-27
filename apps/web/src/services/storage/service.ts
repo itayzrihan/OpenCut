@@ -1,31 +1,36 @@
-import type { TProject, TProjectMetadata } from "@/project/types";
-import { getProjectDurationFromScenes } from "@/timeline/scenes";
-import type { MediaAsset } from "@/media/types";
 import type { ProjectFontAsset } from "@/fonts/types";
+import type { MediaAsset } from "@/media/types";
+import type { TProject, TProjectMetadata } from "@/project/types";
+import type { SavedSound, SavedSoundsData, SoundEffect } from "@/sounds/types";
+import type { Bookmark, SceneTracks, TScene } from "@/timeline";
+import { getProjectDurationFromScenes } from "@/timeline/scenes";
+import { roundMediaTime } from "@/wasm";
+import {
+	loadLocalFontFile,
+	localDriveRequest,
+	localFontUrl,
+	localMediaUrl,
+	uploadLocalFont,
+	uploadLocalMedia,
+} from "@/services/local-drive/client";
+import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
 import { IndexedDBAdapter } from "./indexeddb-adapter";
 import { OPFSAdapter } from "./opfs-adapter";
-import {
-	type StorageCapacityCheckResult,
-	StorageQuotaExceededError,
-	evaluateStorageCapacity,
-	isStorageQuotaExceededError,
-	readStorageQuotaStatus,
-} from "./quota";
+import type { StorageCapacityCheckResult } from "./quota";
+import { isStorageQuotaExceededError } from "./quota";
 import type {
-	SerializedCommandHistory,
 	MediaAssetData,
 	ProjectFontData,
-	StorageConfig,
+	SerializedCommandHistory,
 	SerializedProject,
 	SerializedScene,
+	StorageConfig,
 } from "./types";
-import type { SavedSoundsData, SavedSound, SoundEffect } from "@/sounds/types";
-import {
-	migrations,
-	runStorageMigrations,
-} from "@/services/storage/migrations";
-import type { Bookmark, SceneTracks, TScene } from "@/timeline";
-import { roundMediaTime } from "@/wasm";
+import type { StorageMigrationRunnerDependencies } from "./migrations/runner";
+import type { ProjectRecord } from "./migrations/transformers/types";
+import { persistProjectMigrationBackup } from "./migrations/migration-backups";
+
+const BROWSER_MIGRATION_KEY = "pocut-local-drive-migration-v1";
 
 function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 	if (!Array.isArray(raw)) return [];
@@ -51,15 +56,114 @@ function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 				}),
 			};
 		})
-		.filter((b): b is Bookmark => b !== null);
+		.filter((bookmark): bookmark is Bookmark => bookmark !== null);
 }
 
-class StorageService {
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseStoredDate(value: unknown): Date | null {
+	if (value instanceof Date) {
+		return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
+	}
+	if (typeof value !== "string" && typeof value !== "number") return null;
+	const date = new Date(value);
+	return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function readStoredProjectId(entry: unknown): string | undefined {
+	if (!isRecord(entry)) return undefined;
+	if (typeof entry.id === "string") return entry.id;
+	if (isRecord(entry.metadata) && typeof entry.metadata.id === "string") {
+		return entry.metadata.id;
+	}
+	return undefined;
+}
+
+function readProjectMetadata(entry: unknown): TProjectMetadata | null {
+	if (!isRecord(entry) || !isRecord(entry.metadata)) return null;
+	const metadata = entry.metadata;
+	const id =
+		typeof metadata.id === "string"
+			? metadata.id
+			: typeof entry.id === "string"
+				? entry.id
+				: null;
+	const name = typeof metadata.name === "string" ? metadata.name : null;
+	const createdAt = parseStoredDate(metadata.createdAt);
+	const updatedAt = parseStoredDate(metadata.updatedAt);
+	if (!id || name === null || !createdAt || !updatedAt) return null;
+
+	let duration = 0;
+	if (
+		typeof metadata.duration === "number" &&
+		Number.isFinite(metadata.duration)
+	) {
+		duration = metadata.duration;
+	} else {
+		try {
+			duration = getProjectDurationFromScenes({
+				scenes: (Array.isArray(entry.scenes) ? entry.scenes : []) as TScene[],
+			});
+		} catch {
+			duration = 0;
+		}
+	}
+
+	return {
+		id,
+		name,
+		...(typeof metadata.thumbnail === "string" && {
+			thumbnail: metadata.thumbnail,
+		}),
+		duration: roundMediaTime({ time: duration }),
+		createdAt,
+		updatedAt,
+	};
+}
+
+function deserializeProject(serializedProject: SerializedProject): TProject {
+	const scenes =
+		serializedProject.scenes?.map((scene) => ({
+			id: scene.id,
+			name: scene.name,
+			isMain: scene.isMain,
+			tracks: scene.tracks,
+			bookmarks: normalizeBookmarks({ raw: scene.bookmarks }),
+			createdAt: new Date(scene.createdAt),
+			updatedAt: new Date(scene.updatedAt),
+		})) ?? [];
+
+	return {
+		metadata: {
+			id: serializedProject.metadata.id,
+			name: serializedProject.metadata.name,
+			thumbnail: serializedProject.metadata.thumbnail,
+			duration: roundMediaTime({
+				time:
+					serializedProject.metadata.duration ??
+					getProjectDurationFromScenes({ scenes }),
+			}),
+			createdAt: new Date(serializedProject.metadata.createdAt),
+			updatedAt: new Date(serializedProject.metadata.updatedAt),
+		},
+		scenes,
+		currentSceneId: serializedProject.currentSceneId || "",
+		settings: serializedProject.settings,
+		customFonts: serializedProject.customFonts,
+		aiEditHistory: serializedProject.aiEditHistory ?? [],
+		version: serializedProject.version,
+		timelineViewState: serializedProject.timelineViewState,
+	};
+}
+
+export class StorageService {
 	private projectsAdapter: IndexedDBAdapter<SerializedProject>;
 	private commandHistoryAdapter: IndexedDBAdapter<SerializedCommandHistory>;
 	private savedSoundsAdapter: IndexedDBAdapter<SavedSoundsData>;
 	private config: StorageConfig;
-	private migrationsPromise: Promise<void> | null = null;
+	private browserMigrationPromise: Promise<void> | null = null;
 
 	constructor() {
 		this.config = {
@@ -70,13 +174,11 @@ class StorageService {
 			savedSoundsDb: "video-editor-saved-sounds",
 			version: 1,
 		};
-
 		this.projectsAdapter = new IndexedDBAdapter<SerializedProject>({
 			dbName: this.config.projectsDb,
 			storeName: "projects",
 			version: this.config.version,
 		});
-
 		this.commandHistoryAdapter = new IndexedDBAdapter<SerializedCommandHistory>(
 			{
 				dbName: this.config.commandHistoryDb,
@@ -84,7 +186,6 @@ class StorageService {
 				version: this.config.version,
 			},
 		);
-
 		this.savedSoundsAdapter = new IndexedDBAdapter<SavedSoundsData>({
 			dbName: this.config.savedSoundsDb,
 			storeName: "saved-sounds",
@@ -92,52 +193,180 @@ class StorageService {
 		});
 	}
 
-	private async ensureMigrations(): Promise<void> {
-		if (this.migrationsPromise) {
-			await this.migrationsPromise;
-			return;
+	private getLegacyMediaAdapters(projectId: string) {
+		return {
+			metadata: new IndexedDBAdapter<MediaAssetData>({
+				dbName: `${this.config.mediaDb}-${projectId}`,
+				storeName: "media-metadata",
+				version: this.config.version,
+			}),
+			files: new OPFSAdapter(`media-files-${projectId}`),
+		};
+	}
+
+	private getLegacyFontAdapters(projectId: string) {
+		return {
+			metadata: new IndexedDBAdapter<ProjectFontData>({
+				dbName: `${this.config.fontsDb}-${projectId}`,
+				storeName: "font-metadata",
+				version: this.config.version,
+			}),
+			files: new OPFSAdapter(`font-files-${projectId}`),
+		};
+	}
+
+	async ensureBrowserDataMigrated(): Promise<void> {
+		if (this.browserMigrationPromise) return this.browserMigrationPromise;
+		this.browserMigrationPromise = this.migrateBrowserData().catch((error) => {
+			this.browserMigrationPromise = null;
+			throw error;
+		});
+		return this.browserMigrationPromise;
+	}
+
+	createDriveMigrationDependencies(): StorageMigrationRunnerDependencies {
+		return {
+			projectsStorage: {
+				getAll: () =>
+					localDriveRequest<ProjectRecord[]>({ operation: "project.list" }),
+				set: ({ key, value }) =>
+					localDriveRequest({
+						operation: "project.put",
+						payload: { projectId: key, project: value },
+					}),
+			},
+			persistBackup: persistProjectMigrationBackup,
+			cleanupLegacyMetaDatabase: async () => undefined,
+			now: Date.now,
+			wait: (milliseconds) =>
+				new Promise((resolve) => setTimeout(resolve, milliseconds)),
+			minimumDisplayMs: 0,
+		};
+	}
+
+	private async migrateBrowserData(): Promise<void> {
+		await localDriveRequest({ operation: "status" });
+		if (typeof indexedDB === "undefined") return;
+		try {
+			if (localStorage.getItem(BROWSER_MIGRATION_KEY) === "complete") return;
+		} catch {
+			// Continue without a marker when localStorage is restricted.
 		}
 
-		this.migrationsPromise = runStorageMigrations({ migrations }).then(
-			() => undefined,
-		);
-		await this.migrationsPromise;
-	}
+		const legacyProjects = await this.projectsAdapter.getAll();
+		for (const serializedProject of legacyProjects) {
+			const projectId = readStoredProjectId(serializedProject);
+			if (!projectId) continue;
+			const driveProject = await localDriveRequest<SerializedProject | null>({
+				operation: "project.get",
+				payload: { projectId },
+			});
+			if (!driveProject) {
+				await localDriveRequest({
+					operation: "project.put",
+					payload: { projectId, project: serializedProject },
+				});
+			}
 
-	private getProjectMediaAdapters({ projectId }: { projectId: string }) {
-		const mediaMetadataAdapter = new IndexedDBAdapter<MediaAssetData>({
-			dbName: `${this.config.mediaDb}-${projectId}`,
-			storeName: "media-metadata",
-			version: this.config.version,
+			const driveHistory =
+				await localDriveRequest<SerializedCommandHistory | null>({
+					operation: "history.get",
+					payload: { projectId },
+				});
+			if (!driveHistory) {
+				const history = await this.commandHistoryAdapter.get(projectId);
+				if (history) {
+					await localDriveRequest({
+						operation: "history.put",
+						payload: { projectId, history },
+					});
+				}
+			}
+
+			const driveMedia = await localDriveRequest<LocalDriveMediaRecord[]>({
+				operation: "media.list",
+				payload: { projectId },
+			});
+			const driveMediaIds = new Set(driveMedia.map((item) => item.id));
+			const legacyMedia = this.getLegacyMediaAdapters(projectId);
+			for (const metadata of await legacyMedia.metadata.getAll()) {
+				if (driveMediaIds.has(metadata.id)) continue;
+				const file = await legacyMedia.files.get(metadata.id);
+				if (!file) continue;
+				await uploadLocalMedia({
+					projectId,
+					id: metadata.id,
+					file,
+					migration: true,
+				});
+				await localDriveRequest({
+					operation: "media.put",
+					payload: {
+						projectId,
+						media: {
+							...metadata,
+							fileName: file.name || metadata.name,
+							mimeType: file.type || "application/octet-stream",
+							storageKind: "copied",
+							sourcePath: "",
+						},
+					},
+				});
+			}
+
+			const driveFonts = await localDriveRequest<ProjectFontData[]>({
+				operation: "font.list",
+				payload: { projectId },
+			});
+			const driveFontIds = new Set(driveFonts.map((item) => item.id));
+			const legacyFonts = this.getLegacyFontAdapters(projectId);
+			for (const metadata of await legacyFonts.metadata.getAll()) {
+				if (driveFontIds.has(metadata.id)) continue;
+				const file = await legacyFonts.files.get(metadata.id);
+				if (!file) continue;
+				const storedPath = await uploadLocalFont({
+					projectId,
+					id: metadata.id,
+					file,
+				});
+				await localDriveRequest({
+					operation: "font.put",
+					payload: { projectId, font: metadata, storedPath },
+				});
+			}
+		}
+
+		const driveSounds = await localDriveRequest<SavedSoundsData | null>({
+			operation: "sounds.get",
 		});
+		if (!driveSounds) {
+			const browserSounds = await this.savedSoundsAdapter.get("user-sounds");
+			if (browserSounds) {
+				await localDriveRequest({
+					operation: "sounds.put",
+					payload: { sounds: browserSounds },
+				});
+			}
+		}
 
-		const mediaAssetsAdapter = new OPFSAdapter(`media-files-${projectId}`);
-
-		return { mediaMetadataAdapter, mediaAssetsAdapter };
-	}
-
-	private getProjectFontAdapters({ projectId }: { projectId: string }) {
-		const fontMetadataAdapter = new IndexedDBAdapter<ProjectFontData>({
-			dbName: `${this.config.fontsDb}-${projectId}`,
-			storeName: "font-metadata",
-			version: this.config.version,
-		});
-
-		const fontFilesAdapter = new OPFSAdapter(`font-files-${projectId}`);
-
-		return { fontMetadataAdapter, fontFilesAdapter };
+		try {
+			localStorage.setItem(BROWSER_MIGRATION_KEY, "complete");
+		} catch {
+			// The next load will perform an inexpensive merge check again.
+		}
 	}
 
 	async canStoreFile({
-		size,
+		size: _size,
 	}: {
 		size: number;
 	}): Promise<StorageCapacityCheckResult> {
-		const quotaStatus = await readStorageQuotaStatus();
-		return evaluateStorageCapacity({
-			requiredBytes: size,
-			quotaStatus,
-		});
+		await localDriveRequest({ operation: "status" });
+		return {
+			canStore: true,
+			reason: "estimate-unavailable",
+			availableBytes: null,
+		};
 	}
 
 	isQuotaExceededError({ error }: { error: unknown }): boolean {
@@ -157,11 +386,11 @@ class StorageService {
 		};
 	}
 
-	async saveProject({ project }: { project: TProject }): Promise<void> {
+	private serializeProject(project: TProject): SerializedProject {
 		const duration =
 			project.metadata.duration ??
 			getProjectDurationFromScenes({ scenes: project.scenes });
-		const serializedScenes: SerializedScene[] = project.scenes.map((scene) => ({
+		const scenes: SerializedScene[] = project.scenes.map((scene) => ({
 			id: scene.id,
 			name: scene.name,
 			isMain: scene.isMain,
@@ -170,27 +399,30 @@ class StorageService {
 			createdAt: scene.createdAt.toISOString(),
 			updatedAt: scene.updatedAt.toISOString(),
 		}));
-
-		const serializedProject: SerializedProject = {
+		return {
 			metadata: {
-				id: project.metadata.id,
-				name: project.metadata.name,
-				thumbnail: project.metadata.thumbnail,
+				...project.metadata,
 				duration,
 				createdAt: project.metadata.createdAt.toISOString(),
 				updatedAt: project.metadata.updatedAt.toISOString(),
 			},
-			scenes: serializedScenes,
+			scenes,
 			currentSceneId: project.currentSceneId,
 			settings: project.settings,
 			customFonts: project.customFonts,
+			aiEditHistory: project.aiEditHistory ?? [],
 			version: project.version,
 			timelineViewState: project.timelineViewState,
 		};
+	}
 
-		await this.projectsAdapter.set({
-			key: project.metadata.id,
-			value: serializedProject,
+	async saveProject({ project }: { project: TProject }): Promise<void> {
+		await localDriveRequest({
+			operation: "project.put",
+			payload: {
+				projectId: project.metadata.id,
+				project: this.serializeProject(project),
+			},
 		});
 	}
 
@@ -199,120 +431,50 @@ class StorageService {
 	}: {
 		id: string;
 	}): Promise<{ project: TProject } | null> {
-		await this.ensureMigrations();
-		const serializedProject = await this.projectsAdapter.get(id);
-
-		if (!serializedProject) return null;
-
-		if (
-			typeof serializedProject !== "object" ||
-			serializedProject === null ||
-			typeof serializedProject.metadata !== "object" ||
-			serializedProject.metadata === null
-		) {
-			console.warn(
-				"[storage] Skipping malformed project entry (missing metadata):",
-				{ id, entry: serializedProject },
-			);
-			return null;
-		}
-
-		const scenes =
-			serializedProject.scenes?.map((scene) => ({
-				id: scene.id,
-				name: scene.name,
-				isMain: scene.isMain,
-				tracks: scene.tracks,
-				bookmarks: normalizeBookmarks({ raw: scene.bookmarks }),
-				createdAt: new Date(scene.createdAt),
-				updatedAt: new Date(scene.updatedAt),
-			})) ?? [];
-
-		const project: TProject = {
-			metadata: {
-				id: serializedProject.metadata.id,
-				name: serializedProject.metadata.name,
-				thumbnail: serializedProject.metadata.thumbnail,
-				duration: roundMediaTime({
-					time:
-						serializedProject.metadata.duration ??
-						getProjectDurationFromScenes({ scenes }),
-				}),
-				createdAt: new Date(serializedProject.metadata.createdAt),
-				updatedAt: new Date(serializedProject.metadata.updatedAt),
-			},
-			scenes,
-			currentSceneId: serializedProject.currentSceneId || "",
-			settings: serializedProject.settings,
-			customFonts: serializedProject.customFonts,
-			version: serializedProject.version,
-			timelineViewState: serializedProject.timelineViewState,
-		};
-
-		return { project };
+		await this.ensureBrowserDataMigrated();
+		const serialized = await localDriveRequest<SerializedProject | null>({
+			operation: "project.get",
+			payload: { projectId: id },
+		});
+		return serialized ? { project: deserializeProject(serialized) } : null;
 	}
 
 	async loadAllProjects(): Promise<TProject[]> {
-		const projectIds = await this.projectsAdapter.list();
-		const projects: TProject[] = [];
-
-		for (const id of projectIds) {
-			const result = await this.loadProject({ id });
-			if (result?.project) {
-				projects.push(result.project);
-			}
-		}
-
-		return projects.sort(
-			(a, b) => b.metadata.updatedAt.getTime() - a.metadata.updatedAt.getTime(),
-		);
+		await this.ensureBrowserDataMigrated();
+		const serialized = await localDriveRequest<SerializedProject[]>({
+			operation: "project.list",
+		});
+		return serialized
+			.map(deserializeProject)
+			.sort(
+				(a, b) =>
+					b.metadata.updatedAt.getTime() - a.metadata.updatedAt.getTime(),
+			);
 	}
 
 	async loadAllProjectsMetadata(): Promise<TProjectMetadata[]> {
-		await this.ensureMigrations();
-		const serializedProjects = await this.projectsAdapter.getAll();
-
-		const metadata: TProjectMetadata[] = [];
-		for (const serializedProject of serializedProjects) {
-			if (
-				typeof serializedProject !== "object" ||
-				serializedProject === null ||
-				typeof serializedProject.metadata !== "object" ||
-				serializedProject.metadata === null
-			) {
-				console.warn(
-					"[storage] Skipping malformed project entry (missing metadata):",
-					serializedProject,
-				);
-				continue;
-			}
-
-			metadata.push({
-				id: serializedProject.metadata.id,
-				name: serializedProject.metadata.name,
-				thumbnail: serializedProject.metadata.thumbnail,
-				duration: roundMediaTime({
-					time:
-						serializedProject.metadata.duration ??
-						getProjectDurationFromScenes({
-							scenes: (serializedProject.scenes ?? []) as unknown as TScene[],
-						}),
-				}),
-				createdAt: new Date(serializedProject.metadata.createdAt),
-				updatedAt: new Date(serializedProject.metadata.updatedAt),
-			});
+		await this.ensureBrowserDataMigrated();
+		const projects = await localDriveRequest<SerializedProject[]>({
+			operation: "project.list",
+		});
+		const metadata = projects
+			.map((project) => readProjectMetadata(project))
+			.filter((item): item is TProjectMetadata => item !== null);
+		if (projects.length > 0 && metadata.length === 0) {
+			throw new Error(
+				"Project files were found on the drive but could not be read.",
+			);
 		}
-
 		return metadata.sort(
 			(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
 		);
 	}
 
 	async deleteProject({ id }: { id: string }): Promise<void> {
-		await Promise.all([
-			this.projectsAdapter.remove(id),
-			this.commandHistoryAdapter.remove(id),
-		]);
+		await localDriveRequest({
+			operation: "project.delete",
+			payload: { projectId: id },
+		});
 	}
 
 	async saveCommandHistory({
@@ -320,18 +482,17 @@ class StorageService {
 	}: {
 		history: SerializedCommandHistory;
 	}): Promise<void> {
-		await this.commandHistoryAdapter.set({
-			key: history.projectId,
-			value: history,
+		await localDriveRequest({
+			operation: "history.put",
+			payload: { projectId: history.projectId, history },
 		});
 	}
 
-	async loadCommandHistory({
-		projectId,
-	}: {
-		projectId: string;
-	}): Promise<SerializedCommandHistory | null> {
-		return this.commandHistoryAdapter.get(projectId);
+	async loadCommandHistory({ projectId }: { projectId: string }) {
+		return localDriveRequest<SerializedCommandHistory | null>({
+			operation: "history.get",
+			payload: { projectId },
+		});
 	}
 
 	async deleteCommandHistory({
@@ -339,7 +500,10 @@ class StorageService {
 	}: {
 		projectId: string;
 	}): Promise<void> {
-		await this.commandHistoryAdapter.remove(projectId);
+		await localDriveRequest({
+			operation: "history.delete",
+			payload: { projectId },
+		});
 	}
 
 	async saveMediaAsset({
@@ -349,98 +513,82 @@ class StorageService {
 		projectId: string;
 		mediaAsset: MediaAsset;
 	}): Promise<void> {
-		const { mediaMetadataAdapter, mediaAssetsAdapter } =
-			this.getProjectMediaAdapters({ projectId });
-
-		const metadata: MediaAssetData = {
-			id: mediaAsset.id,
-			name: mediaAsset.name,
-			type: mediaAsset.type,
-			size: mediaAsset.file.size,
-			lastModified: mediaAsset.file.lastModified,
-			width: mediaAsset.width,
-			height: mediaAsset.height,
-			duration: mediaAsset.duration,
-			fps: mediaAsset.fps,
-			hasAudio: mediaAsset.hasAudio,
-			thumbnailUrl: mediaAsset.thumbnailUrl,
-			ephemeral: mediaAsset.ephemeral,
-		};
-
-		try {
-			await mediaAssetsAdapter.set({
-				key: mediaAsset.id,
-				value: mediaAsset.file,
+		const targetUrl = localMediaUrl({ projectId, id: mediaAsset.id });
+		if (mediaAsset.file) {
+			await uploadLocalMedia({
+				projectId,
+				id: mediaAsset.id,
+				file: mediaAsset.file,
 			});
-			await mediaMetadataAdapter.set({
-				key: mediaAsset.id,
-				value: metadata,
+		} else if (mediaAsset.sourcePath) {
+			const registered = await localDriveRequest<LocalDriveMediaRecord>({
+				operation: "media.registerPath",
+				payload: {
+					projectId,
+					media: {
+						...mediaAsset,
+						fileName: mediaAsset.fileName ?? mediaAsset.name,
+						mimeType: mediaAsset.mimeType ?? "application/octet-stream",
+					},
+					preserveLink: mediaAsset.storageKind === "linked",
+				},
 			});
-		} catch (error) {
-			try {
-				await mediaAssetsAdapter.remove(mediaAsset.id);
-			} catch {
-				// Ignore cleanup failures so the original storage error is preserved.
-			}
-
-			if (this.isQuotaExceededError({ error })) {
-				throw new StorageQuotaExceededError({
-					requiredBytes: mediaAsset.file.size,
-				});
-			}
-
-			throw error;
+			Object.assign(mediaAsset, registered);
 		}
+
+		const size = mediaAsset.file?.size ?? mediaAsset.size ?? 0;
+		const lastModified =
+			mediaAsset.file?.lastModified ?? mediaAsset.lastModified ?? Date.now();
+		await localDriveRequest({
+			operation: "media.put",
+			payload: {
+				projectId,
+				media: {
+					id: mediaAsset.id,
+					name: mediaAsset.name,
+					type: mediaAsset.type,
+					size,
+					lastModified,
+					fileName:
+						mediaAsset.file?.name ?? mediaAsset.fileName ?? mediaAsset.name,
+					mimeType:
+						mediaAsset.file?.type ??
+						mediaAsset.mimeType ??
+						"application/octet-stream",
+					storageKind: mediaAsset.storageKind ?? "copied",
+					sourcePath: mediaAsset.sourcePath ?? "",
+					width: mediaAsset.width,
+					height: mediaAsset.height,
+					duration: mediaAsset.duration,
+					fps: mediaAsset.fps,
+					hasAudio: mediaAsset.hasAudio,
+					thumbnailUrl: mediaAsset.thumbnailUrl,
+					ephemeral: mediaAsset.ephemeral,
+				},
+			},
+		});
+		mediaAsset.url = targetUrl;
+		mediaAsset.size = size;
+		mediaAsset.lastModified = lastModified;
 	}
 
-	async loadMediaAsset({
+	private hydrateMedia({
 		projectId,
-		id,
+		record,
 	}: {
 		projectId: string;
-		id: string;
-	}): Promise<MediaAsset | null> {
-		const { mediaMetadataAdapter, mediaAssetsAdapter } =
-			this.getProjectMediaAdapters({ projectId });
+		record: LocalDriveMediaRecord;
+	}): MediaAsset {
+		return { ...record, url: localMediaUrl({ projectId, id: record.id }) };
+	}
 
-		const [file, metadata] = await Promise.all([
-			mediaAssetsAdapter.get(id),
-			mediaMetadataAdapter.get(id),
-		]);
-
-		if (!file || !metadata) return null;
-
-		let url: string;
-		if (metadata.type === "image" && (!file.type || file.type === "")) {
-			try {
-				const text = await file.text();
-				if (text.trim().startsWith("<svg")) {
-					const svgBlob = new Blob([text], { type: "image/svg+xml" });
-					url = URL.createObjectURL(svgBlob);
-				} else {
-					url = URL.createObjectURL(file);
-				}
-			} catch {
-				url = URL.createObjectURL(file);
-			}
-		} else {
-			url = URL.createObjectURL(file);
-		}
-
-		return {
-			id: metadata.id,
-			name: metadata.name,
-			type: metadata.type,
-			file,
-			url,
-			width: metadata.width,
-			height: metadata.height,
-			duration: metadata.duration,
-			fps: metadata.fps,
-			hasAudio: metadata.hasAudio,
-			thumbnailUrl: metadata.thumbnailUrl,
-			ephemeral: metadata.ephemeral,
-		};
+	async loadMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
+			operation: "media.list",
+			payload: { projectId },
+		});
+		const record = records.find((item) => item.id === id);
+		return record ? this.hydrateMedia({ projectId, record }) : null;
 	}
 
 	async loadAllMediaAssets({
@@ -448,37 +596,25 @@ class StorageService {
 	}: {
 		projectId: string;
 	}): Promise<MediaAsset[]> {
-		const { mediaMetadataAdapter } = this.getProjectMediaAdapters({
-			projectId,
+		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
+			operation: "media.list",
+			payload: { projectId },
 		});
-
-		const mediaIds = await mediaMetadataAdapter.list();
-		const mediaItems: MediaAsset[] = [];
-
-		for (const id of mediaIds) {
-			const item = await this.loadMediaAsset({ projectId, id });
-			if (item) {
-				mediaItems.push(item);
-			}
-		}
-
-		return mediaItems;
+		return records.map((record) => this.hydrateMedia({ projectId, record }));
 	}
 
-	async deleteMediaAsset({
-		projectId,
-		id,
-	}: {
-		projectId: string;
-		id: string;
-	}): Promise<void> {
-		const { mediaMetadataAdapter, mediaAssetsAdapter } =
-			this.getProjectMediaAdapters({ projectId });
+	async deleteMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+		await localDriveRequest({
+			operation: "media.delete",
+			payload: { projectId, id },
+		});
+	}
 
-		await Promise.all([
-			mediaAssetsAdapter.remove(id),
-			mediaMetadataAdapter.remove(id),
-		]);
+	async deleteProjectMedia({ projectId }: { projectId: string }) {
+		await localDriveRequest({
+			operation: "media.clear",
+			payload: { projectId },
+		});
 	}
 
 	async saveProjectFont({
@@ -487,10 +623,12 @@ class StorageService {
 	}: {
 		projectId: string;
 		font: ProjectFontAsset;
-	}): Promise<void> {
-		const { fontMetadataAdapter, fontFilesAdapter } =
-			this.getProjectFontAdapters({ projectId });
-
+	}) {
+		const storedPath = await uploadLocalFont({
+			projectId,
+			id: font.id,
+			file: font.file,
+		});
 		const metadata: ProjectFontData = {
 			id: font.id,
 			family: font.family,
@@ -502,74 +640,37 @@ class StorageService {
 			sourceUrl: font.sourceUrl,
 			repositoryPath: font.repositoryPath,
 		};
-
-		try {
-			await fontFilesAdapter.set({
-				key: font.id,
-				value: font.file,
-			});
-			await fontMetadataAdapter.set({
-				key: font.id,
-				value: metadata,
-			});
-		} catch (error) {
-			try {
-				await fontFilesAdapter.remove(font.id);
-			} catch {
-				// Preserve the original storage error.
-			}
-
-			if (this.isQuotaExceededError({ error })) {
-				throw new StorageQuotaExceededError({
-					requiredBytes: font.file.size,
-				});
-			}
-
-			throw error;
-		}
+		await localDriveRequest({
+			operation: "font.put",
+			payload: { projectId, font: metadata, storedPath },
+		});
 	}
 
-	async loadProjectFont({
-		projectId,
-		id,
-	}: {
-		projectId: string;
-		id: string;
-	}): Promise<ProjectFontAsset | null> {
-		const { fontMetadataAdapter, fontFilesAdapter } =
-			this.getProjectFontAdapters({ projectId });
-
-		const [file, metadata] = await Promise.all([
-			fontFilesAdapter.get(id),
-			fontMetadataAdapter.get(id),
-		]);
-
-		if (!file || !metadata) return null;
-
-		return {
-			...metadata,
-			file,
-			url: URL.createObjectURL(file),
-		};
+	async loadProjectFont({ projectId, id }: { projectId: string; id: string }) {
+		const fonts = await localDriveRequest<ProjectFontData[]>({
+			operation: "font.list",
+			payload: { projectId },
+		});
+		const font = fonts.find((item) => item.id === id);
+		if (!font) return null;
+		const file = await loadLocalFontFile({ projectId, font });
+		return { ...font, file, url: localFontUrl({ projectId, id }) };
 	}
 
-	async loadAllProjectFonts({
-		projectId,
-	}: {
-		projectId: string;
-	}): Promise<ProjectFontAsset[]> {
-		const { fontMetadataAdapter } = this.getProjectFontAdapters({ projectId });
-		const fontIds = await fontMetadataAdapter.list();
-		const fonts: ProjectFontAsset[] = [];
-
-		for (const id of fontIds) {
-			const font = await this.loadProjectFont({ projectId, id });
-			if (font) {
-				fonts.push(font);
-			}
-		}
-
-		return fonts;
+	async loadAllProjectFonts({ projectId }: { projectId: string }) {
+		const fonts = await localDriveRequest<ProjectFontData[]>({
+			operation: "font.list",
+			payload: { projectId },
+		});
+		return Promise.all(
+			fonts.map(
+				async (font): Promise<ProjectFontAsset> => ({
+					...font,
+					file: await loadLocalFontFile({ projectId, font }),
+					url: localFontUrl({ projectId, id: font.id }),
+				}),
+			),
+		);
 	}
 
 	async deleteProjectFont({
@@ -578,90 +679,52 @@ class StorageService {
 	}: {
 		projectId: string;
 		id: string;
-	}): Promise<void> {
-		const { fontMetadataAdapter, fontFilesAdapter } =
-			this.getProjectFontAdapters({ projectId });
-
-		await Promise.all([
-			fontFilesAdapter.remove(id),
-			fontMetadataAdapter.remove(id),
-		]);
+	}) {
+		await localDriveRequest({
+			operation: "font.delete",
+			payload: { projectId, id },
+		});
 	}
 
-	async deleteProjectFonts({
-		projectId,
-	}: {
-		projectId: string;
-	}): Promise<void> {
-		const { fontMetadataAdapter, fontFilesAdapter } =
-			this.getProjectFontAdapters({ projectId });
-
-		await Promise.all([fontMetadataAdapter.clear(), fontFilesAdapter.clear()]);
-	}
-
-	async deleteProjectMedia({
-		projectId,
-	}: {
-		projectId: string;
-	}): Promise<void> {
-		const { mediaMetadataAdapter, mediaAssetsAdapter } =
-			this.getProjectMediaAdapters({ projectId });
-
-		await Promise.all([
-			mediaMetadataAdapter.clear(),
-			mediaAssetsAdapter.clear(),
-		]);
+	async deleteProjectFonts({ projectId }: { projectId: string }) {
+		await localDriveRequest({
+			operation: "font.clear",
+			payload: { projectId },
+		});
 	}
 
 	async clearAllData(): Promise<void> {
-		await Promise.all([
-			this.projectsAdapter.clear(),
-			this.commandHistoryAdapter.clear(),
-		]);
-		// project-specific media and timelines cleaned up when projects are deleted
+		await localDriveRequest({ operation: "all.clear" });
 	}
 
-	async getStorageInfo(): Promise<{
-		projects: number;
-		isOPFSSupported: boolean;
-		isIndexedDBSupported: boolean;
-	}> {
-		const projectIds = await this.projectsAdapter.list();
-
-		return {
-			projects: projectIds.length,
-			isOPFSSupported: this.isOPFSSupported(),
-			isIndexedDBSupported: this.isIndexedDBSupported(),
-		};
-	}
-
-	async getProjectStorageInfo({ projectId }: { projectId: string }): Promise<{
-		mediaItems: number;
-	}> {
-		const { mediaMetadataAdapter } = this.getProjectMediaAdapters({
-			projectId,
+	async getStorageInfo() {
+		const projects = await localDriveRequest<SerializedProject[]>({
+			operation: "project.list",
 		});
-
-		const mediaIds = await mediaMetadataAdapter.list();
-
 		return {
-			mediaItems: mediaIds.length,
+			projects: projects.length,
+			isOPFSSupported: false,
+			isIndexedDBSupported: typeof indexedDB !== "undefined",
 		};
+	}
+
+	async getProjectStorageInfo({ projectId }: { projectId: string }) {
+		const media = await localDriveRequest<LocalDriveMediaRecord[]>({
+			operation: "media.list",
+			payload: { projectId },
+		});
+		return { mediaItems: media.length };
 	}
 
 	async loadSavedSounds(): Promise<SavedSoundsData> {
-		try {
-			const savedSoundsData = await this.savedSoundsAdapter.get("user-sounds");
-			return (
-				savedSoundsData || {
-					sounds: [],
-					lastModified: new Date().toISOString(),
-				}
-			);
-		} catch (error) {
-			console.error("Failed to load saved sounds:", error);
-			return { sounds: [], lastModified: new Date().toISOString() };
-		}
+		return (
+			(await localDriveRequest<SavedSoundsData | null>({
+				operation: "sounds.get",
+			})) ?? {
+				sounds: [],
+				lastModified: new Date().toISOString(),
+			}
+		);
 	}
 
 	async saveSoundEffect({
@@ -669,90 +732,64 @@ class StorageService {
 	}: {
 		soundEffect: SoundEffect;
 	}): Promise<void> {
-		try {
-			const currentData = await this.loadSavedSounds();
-
-			if (currentData.sounds.some((sound) => sound.id === soundEffect.id)) {
-				return; // Already saved
-			}
-
-			const savedSound: SavedSound = {
-				id: soundEffect.id,
-				name: soundEffect.name,
-				username: soundEffect.username,
-				previewUrl: soundEffect.previewUrl,
-				downloadUrl: soundEffect.downloadUrl,
-				duration: soundEffect.duration,
-				tags: soundEffect.tags,
-				license: soundEffect.license,
-				savedAt: new Date().toISOString(),
-			};
-
-			const updatedData: SavedSoundsData = {
-				sounds: [...currentData.sounds, savedSound],
-				lastModified: new Date().toISOString(),
-			};
-
-			await this.savedSoundsAdapter.set({
-				key: "user-sounds",
-				value: updatedData,
-			});
-		} catch (error) {
-			console.error("Failed to save sound effect:", error);
-			throw error;
-		}
+		const currentData = await this.loadSavedSounds();
+		if (currentData.sounds.some((sound) => sound.id === soundEffect.id)) return;
+		const savedSound: SavedSound = {
+			id: soundEffect.id,
+			name: soundEffect.name,
+			username: soundEffect.username,
+			previewUrl: soundEffect.previewUrl,
+			downloadUrl: soundEffect.downloadUrl,
+			duration: soundEffect.duration,
+			tags: soundEffect.tags,
+			license: soundEffect.license,
+			savedAt: new Date().toISOString(),
+		};
+		await localDriveRequest({
+			operation: "sounds.put",
+			payload: {
+				sounds: {
+					sounds: [...currentData.sounds, savedSound],
+					lastModified: new Date().toISOString(),
+				},
+			},
+		});
 	}
 
-	async removeSavedSound({ soundId }: { soundId: number }): Promise<void> {
-		try {
-			const currentData = await this.loadSavedSounds();
-
-			const updatedData: SavedSoundsData = {
-				sounds: currentData.sounds.filter((sound) => sound.id !== soundId),
-				lastModified: new Date().toISOString(),
-			};
-
-			await this.savedSoundsAdapter.set({
-				key: "user-sounds",
-				value: updatedData,
-			});
-		} catch (error) {
-			console.error("Failed to remove saved sound:", error);
-			throw error;
-		}
+	async removeSavedSound({ soundId }: { soundId: number }) {
+		const currentData = await this.loadSavedSounds();
+		await localDriveRequest({
+			operation: "sounds.put",
+			payload: {
+				sounds: {
+					sounds: currentData.sounds.filter((sound) => sound.id !== soundId),
+					lastModified: new Date().toISOString(),
+				},
+			},
+		});
 	}
 
-	async isSoundSaved({ soundId }: { soundId: number }): Promise<boolean> {
-		try {
-			const currentData = await this.loadSavedSounds();
-			return currentData.sounds.some((sound) => sound.id === soundId);
-		} catch (error) {
-			console.error("Failed to check if sound is saved:", error);
-			return false;
-		}
+	async isSoundSaved({ soundId }: { soundId: number }) {
+		return (await this.loadSavedSounds()).sounds.some(
+			(sound) => sound.id === soundId,
+		);
 	}
 
-	async clearSavedSounds(): Promise<void> {
-		try {
-			await this.savedSoundsAdapter.remove("user-sounds");
-		} catch (error) {
-			console.error("Failed to clear saved sounds:", error);
-			throw error;
-		}
+	async clearSavedSounds() {
+		await localDriveRequest({ operation: "sounds.delete" });
 	}
 
 	isOPFSSupported(): boolean {
-		return OPFSAdapter.isSupported();
+		return false;
 	}
 
 	isIndexedDBSupported(): boolean {
-		return "indexedDB" in window;
+		return typeof indexedDB !== "undefined";
 	}
 
 	isFullySupported(): boolean {
-		return this.isIndexedDBSupported() && this.isOPFSSupported();
+		return true;
 	}
 }
 
 export const storageService = new StorageService();
-export { StorageService };

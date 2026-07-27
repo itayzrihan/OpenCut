@@ -112,7 +112,7 @@ function ExportPopover({
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
-
+	const hasReadyExport = Boolean(exportResult?.success && exportResult.buffer);
 	const handleExport = async () => {
 		if (!activeProject) return;
 
@@ -146,6 +146,18 @@ function ExportPopover({
 		editor.project.cancelExport();
 	};
 
+	const handleDownloadReadyExport = () => {
+		if (!exportResult?.success || !exportResult.buffer) return;
+		const readyFormat = exportState.options?.format ?? format;
+		downloadBuffer({
+			buffer: exportResult.buffer,
+			filename: `${activeProject.metadata.name}${getExportFileExtension({ format: readyFormat })}`,
+			mimeType: getExportMimeType({ format: readyFormat }),
+		});
+		editor.project.clearExportState();
+		onOpenChange(false);
+	};
+
 	return (
 		<PopoverContent className="bg-background mr-4 flex w-80 flex-col p-0">
 			{exportResult && !exportResult.success ? (
@@ -162,7 +174,7 @@ function ExportPopover({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						{!isExporting && (
+						{!isExporting && !hasReadyExport && (
 							<>
 								<div className="flex flex-col">
 									<Section
@@ -261,6 +273,24 @@ function ExportPopover({
 									</Button>
 								</div>
 							</>
+						)}
+
+						{!isExporting && hasReadyExport && (
+							<div className="space-y-3 p-3">
+								<div>
+									<p className="text-sm font-medium">Export ready</p>
+									<p className="text-muted-foreground mt-1 text-xs">
+										Your rendered file is ready for download.
+									</p>
+								</div>
+								<Button
+									onClick={handleDownloadReadyExport}
+									className="w-full gap-2"
+								>
+									<Download className="size-4" />
+									Download export
+								</Button>
+							</div>
 						)}
 
 						{isExporting && (

@@ -36,7 +36,7 @@ const webEnvSchema = z.object({
 	OPENAI_CODEX_RESPONSES_BASE_URL: z
 		.url()
 		.default("https://chatgpt.com/backend-api/codex"),
-	OPENAI_CODEX_MODEL: z.string().default("gpt-5.5"),
+	OPENAI_CODEX_MODEL: z.string().default("gpt-5.6-sol"),
 });
 
 export type WebEnv = z.infer<typeof webEnvSchema>;

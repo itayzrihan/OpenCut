@@ -33,7 +33,9 @@ interface ArchiveMediaAsset {
 	type: MediaAsset["type"];
 	fileName: string;
 	mimeType: string;
-	path: string;
+	path?: string;
+	storageKind?: "copied" | "linked";
+	sourcePath?: string;
 	size: number;
 	lastModified: number;
 	width?: number;
@@ -150,7 +152,11 @@ function getArchiveFilePath({
 	})}`;
 }
 
-function projectArchiveFileName({ projectName }: { projectName: string }): string {
+function projectArchiveFileName({
+	projectName,
+}: {
+	projectName: string;
+}): string {
 	return `${safeFileName({
 		name: projectName,
 		fallback: "OpenCut project",
@@ -182,11 +188,7 @@ function getSceneTracks({ project }: { project: TProject }): TimelineTrack[] {
 	]);
 }
 
-function getReferencedSharedAssetIds({
-	project,
-}: {
-	project: TProject;
-}): {
+function getReferencedSharedAssetIds({ project }: { project: TProject }): {
 	audioIds: string[];
 	stickerIds: string[];
 } {
@@ -207,9 +209,7 @@ function getReferencedSharedAssetIds({
 			if (element.type === "sticker") {
 				const separatorIndex = element.stickerId.indexOf(":");
 				const provider =
-					separatorIndex > 0
-						? element.stickerId.slice(0, separatorIndex)
-						: "";
+					separatorIndex > 0 ? element.stickerId.slice(0, separatorIndex) : "";
 				const providerValue =
 					separatorIndex > 0 ? element.stickerId.slice(separatorIndex + 1) : "";
 				if (provider === USER_STICKERS_PROVIDER_ID && providerValue) {
@@ -315,37 +315,56 @@ async function collectSharedStickersForArchive({
 	return result;
 }
 
-function appendMediaEntries({
+async function appendMediaEntries({
 	entries,
 	mediaAssets,
 }: {
 	entries: ZipEntryInput[];
 	mediaAssets: MediaAsset[];
-}): ArchiveMediaAsset[] {
-	return mediaAssets.map((asset) => {
+}): Promise<ArchiveMediaAsset[]> {
+	const manifest: ArchiveMediaAsset[] = [];
+	for (const asset of mediaAssets) {
 		const fileName = safeFileName({
-			name: asset.file.name || asset.name,
+			name: asset.file?.name || asset.fileName || asset.name,
 			fallback: `${asset.id}.media`,
 		});
-		const path = getArchiveFilePath({
-			kind: "media",
-			id: asset.id,
-			fileName,
-		});
-		entries.push({
-			path,
-			data: asset.file,
-			lastModified: new Date(asset.file.lastModified),
-		});
-		return {
+		let path: string | undefined;
+		if (asset.storageKind !== "linked") {
+			let file = asset.file;
+			if (!file && asset.url) {
+				const response = await fetch(asset.url);
+				if (!response.ok) {
+					throw new Error(
+						`Could not read ${asset.name} for the project archive`,
+					);
+				}
+				const blob = await response.blob();
+				file = new File([blob], fileName, {
+					type: asset.mimeType || blob.type,
+					lastModified: asset.lastModified ?? Date.now(),
+				});
+			}
+			if (!file) throw new Error(`Media source is missing for ${asset.name}`);
+			path = getArchiveFilePath({ kind: "media", id: asset.id, fileName });
+			entries.push({
+				path,
+				data: file,
+				lastModified: new Date(asset.lastModified ?? Date.now()),
+			});
+		}
+		manifest.push({
 			id: asset.id,
 			name: asset.name,
 			type: asset.type,
 			fileName,
-			mimeType: asset.file.type || "application/octet-stream",
+			mimeType:
+				asset.file?.type || asset.mimeType || "application/octet-stream",
 			path,
-			size: asset.file.size,
-			lastModified: asset.file.lastModified,
+			storageKind: asset.storageKind,
+			sourcePath: asset.storageKind === "linked" ? asset.sourcePath : undefined,
+			size: asset.file?.size ?? asset.size ?? 0,
+			lastModified:
+				asset.file?.lastModified ?? asset.lastModified ?? Date.now(),
 			width: asset.width,
 			height: asset.height,
 			duration: asset.duration,
@@ -353,8 +372,9 @@ function appendMediaEntries({
 			hasAudio: asset.hasAudio,
 			ephemeral: asset.ephemeral,
 			thumbnailUrl: asset.thumbnailUrl,
-		};
-	});
+		});
+	}
+	return manifest;
 }
 
 function appendProjectFontEntries({
@@ -407,7 +427,7 @@ export async function createProjectArchive({
 			lastModified: project.metadata.updatedAt,
 		},
 	];
-	const mediaManifest = appendMediaEntries({ entries, mediaAssets });
+	const mediaManifest = await appendMediaEntries({ entries, mediaAssets });
 	const fontManifest = appendProjectFontEntries({ entries, projectFonts });
 	const sharedRefs = getReferencedSharedAssetIds({ project });
 	const [sharedAudioAssets, sharedStickerAssets] = await Promise.all([
@@ -435,7 +455,9 @@ export async function createProjectArchive({
 		exportedAt: new Date().toISOString(),
 		projectId: project.metadata.id,
 		project: { path: PROJECT_PATH },
-		...(commandHistory ? { commandHistory: { path: COMMAND_HISTORY_PATH } } : {}),
+		...(commandHistory
+			? { commandHistory: { path: COMMAND_HISTORY_PATH } }
+			: {}),
 		mediaAssets: mediaManifest,
 		projectFonts: fontManifest,
 		sharedAudioAssets,
@@ -720,14 +742,17 @@ async function getRequiredImportBytes({
 }): Promise<number> {
 	let size = 0;
 	for (const asset of manifest.mediaAssets) {
-		size += entries.get(asset.path)?.uncompressedSize ?? asset.size;
+		if (asset.path)
+			size += entries.get(asset.path)?.uncompressedSize ?? asset.size;
 	}
 	for (const font of manifest.projectFonts) {
 		size += entries.get(font.path)?.uncompressedSize ?? font.size;
 	}
 	for (const sharedAudio of manifest.sharedAudioAssets) {
-		if (existingAudioIds.has(sharedAudio.asset.id) || !sharedAudio.path) continue;
-		size += entries.get(sharedAudio.path)?.uncompressedSize ?? sharedAudio.asset.size;
+		if (existingAudioIds.has(sharedAudio.asset.id) || !sharedAudio.path)
+			continue;
+		size +=
+			entries.get(sharedAudio.path)?.uncompressedSize ?? sharedAudio.asset.size;
 	}
 	for (const sharedSticker of manifest.sharedStickerAssets) {
 		if (existingStickerIds.has(sharedSticker.asset.id) || !sharedSticker.path) {
@@ -854,7 +879,9 @@ export async function importProjectArchive({
 	});
 	const capacity = await storageService.canStoreFile({ size: requiredBytes });
 	if (!capacity.canStore) {
-		throw new Error("Not enough browser storage to import this project archive");
+		throw new Error(
+			"Not enough browser storage to import this project archive",
+		);
 	}
 
 	const [sharedAudioResult, sharedStickerResult] = await Promise.all([
@@ -878,13 +905,20 @@ export async function importProjectArchive({
 		didSaveProject = true;
 
 		for (const asset of manifest.mediaAssets) {
-			const mediaFile = await readRequiredFile({
-				entries,
-				path: asset.path,
-				fileName: asset.fileName,
-				mimeType: asset.mimeType,
-				lastModified: asset.lastModified,
-			});
+			const mediaFile = asset.path
+				? await readRequiredFile({
+						entries,
+						path: asset.path,
+						fileName: asset.fileName,
+						mimeType: asset.mimeType,
+						lastModified: asset.lastModified,
+					})
+				: undefined;
+			if (!mediaFile && !asset.sourcePath) {
+				throw new Error(
+					`Archive media ${asset.name} has neither bytes nor a source path`,
+				);
+			}
 			await storageService.saveMediaAsset({
 				projectId,
 				mediaAsset: {
@@ -892,6 +926,12 @@ export async function importProjectArchive({
 					name: asset.name,
 					type: asset.type,
 					file: mediaFile,
+					size: mediaFile?.size ?? asset.size,
+					lastModified: mediaFile?.lastModified ?? asset.lastModified,
+					fileName: asset.fileName,
+					mimeType: asset.mimeType,
+					storageKind: asset.storageKind,
+					sourcePath: asset.sourcePath,
 					width: asset.width,
 					height: asset.height,
 					duration: asset.duration,

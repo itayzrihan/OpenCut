@@ -16,6 +16,7 @@ describe("Codex model helpers", () => {
 			DEFAULT_CHATGPT_CODEX_MODEL,
 		);
 		expect(normalizeCodexModelId("gpt-5.4-codex")).toBe("gpt-5.4");
+		expect(normalizeCodexModelId("gpt-5.6")).toBe(DEFAULT_CHATGPT_CODEX_MODEL);
 	});
 
 	test("keeps explicit unknown model ids first so experiments remain possible", () => {
@@ -25,6 +26,7 @@ describe("Codex model helpers", () => {
 	test("includes supported fallbacks after the requested model", () => {
 		expect(getCodexModelCandidates("gpt-5.1-codex")).toEqual([
 			DEFAULT_CHATGPT_CODEX_MODEL,
+			"gpt-5.5",
 			"gpt-5.4",
 			"gpt-5.4-mini",
 		]);
@@ -50,8 +52,8 @@ describe("Codex model helpers", () => {
 		const models = buildChatGptCodexModelsFromDiscovery({
 			models: [
 				{
-					slug: "gpt-5.6",
-					display_name: "GPT-5.6",
+					slug: "gpt-5.6-sol",
+					display_name: "GPT-5.6 Sol",
 					visibility: "list",
 					show_in_picker: true,
 					supported_reasoning_levels: [
@@ -81,9 +83,10 @@ describe("Codex model helpers", () => {
 			],
 		});
 
-		expect(models.map((model) => model.id)).toEqual(["gpt-5.6", "gpt-5.5"]);
+		expect(models.map((model) => model.id)).toEqual(["gpt-5.6-sol", "gpt-5.5"]);
 		expect(models[0]).toMatchObject({
-			label: "GPT-5.6",
+			label: "GPT-5.6 Sol",
+			recommended: true,
 			source: "live",
 			inputModalities: ["text", "image"],
 			reasoningEfforts: ["low", "xhigh"],
@@ -92,8 +95,7 @@ describe("Codex model helpers", () => {
 			maxOutputTokens: 128_000,
 		});
 		expect(models[1]).toMatchObject({
-			id: DEFAULT_CHATGPT_CODEX_MODEL,
-			recommended: true,
+			id: "gpt-5.5",
 			reasoningEfforts: ["low", "medium"],
 		});
 	});

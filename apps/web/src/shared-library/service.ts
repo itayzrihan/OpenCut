@@ -1,5 +1,9 @@
 import { IndexedDBAdapter } from "@/services/storage/indexeddb-adapter";
 import { OPFSAdapter } from "@/services/storage/opfs-adapter";
+import {
+	LocalDriveFileAdapter,
+	LocalDriveJsonAdapter,
+} from "@/services/local-drive/adapters";
 import { StorageQuotaExceededError } from "@/services/storage/quota";
 import { storageService } from "@/services/storage/service";
 import { normalizeCaptionLayoutSettings } from "@/subtitles/caption-layout";
@@ -83,7 +87,11 @@ async function readFileAsDataUrl({ file }: { file: File }): Promise<string> {
 	});
 }
 
-async function readAudioDuration({ file }: { file: File }): Promise<number | null> {
+async function readAudioDuration({
+	file,
+}: {
+	file: File;
+}): Promise<number | null> {
 	if (typeof Audio === "undefined" || typeof URL === "undefined") {
 		return null;
 	}
@@ -228,38 +236,62 @@ function readStickerAssetsFromApiResult({
 }
 
 export class SharedLibraryService {
-	private audioMetadata = new IndexedDBAdapter<SharedAudioAsset>({
-		dbName: "video-editor-shared-audio-assets",
-		storeName: "audio-assets",
-		version: SHARED_DB_VERSION,
+	private audioMetadata = new LocalDriveJsonAdapter<SharedAudioAsset>({
+		collection: "audio",
+		legacy: new IndexedDBAdapter<SharedAudioAsset>({
+			dbName: "video-editor-shared-audio-assets",
+			storeName: "audio-assets",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private stickerMetadata = new IndexedDBAdapter<SharedStickerAsset>({
-		dbName: "video-editor-shared-sticker-assets",
-		storeName: "sticker-assets",
-		version: SHARED_DB_VERSION,
+	private stickerMetadata = new LocalDriveJsonAdapter<SharedStickerAsset>({
+		collection: "stickers",
+		legacy: new IndexedDBAdapter<SharedStickerAsset>({
+			dbName: "video-editor-shared-sticker-assets",
+			storeName: "sticker-assets",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private categories = new IndexedDBAdapter<SharedAssetCategory>({
-		dbName: "video-editor-shared-asset-categories",
-		storeName: "categories",
-		version: SHARED_DB_VERSION,
+	private categories = new LocalDriveJsonAdapter<SharedAssetCategory>({
+		collection: "categories",
+		legacy: new IndexedDBAdapter<SharedAssetCategory>({
+			dbName: "video-editor-shared-asset-categories",
+			storeName: "categories",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private backgrounds = new IndexedDBAdapter<GeneratedBackgroundPreset>({
-		dbName: "video-editor-generated-backgrounds",
-		storeName: "backgrounds",
-		version: SHARED_DB_VERSION,
+	private backgrounds = new LocalDriveJsonAdapter<GeneratedBackgroundPreset>({
+		collection: "backgrounds",
+		legacy: new IndexedDBAdapter<GeneratedBackgroundPreset>({
+			dbName: "video-editor-generated-backgrounds",
+			storeName: "backgrounds",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private effects = new IndexedDBAdapter<GeneratedEffectPreset>({
-		dbName: "video-editor-generated-effects",
-		storeName: "effects",
-		version: SHARED_DB_VERSION,
+	private effects = new LocalDriveJsonAdapter<GeneratedEffectPreset>({
+		collection: "effects",
+		legacy: new IndexedDBAdapter<GeneratedEffectPreset>({
+			dbName: "video-editor-generated-effects",
+			storeName: "effects",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private captionPresets = new IndexedDBAdapter<SharedCaptionPreset>({
-		dbName: "video-editor-caption-presets",
-		storeName: "caption-presets",
-		version: SHARED_DB_VERSION,
+	private captionPresets = new LocalDriveJsonAdapter<SharedCaptionPreset>({
+		collection: "caption-presets",
+		legacy: new IndexedDBAdapter<SharedCaptionPreset>({
+			dbName: "video-editor-caption-presets",
+			storeName: "caption-presets",
+			version: SHARED_DB_VERSION,
+		}),
 	});
-	private audioFiles = new OPFSAdapter(AUDIO_FILES_DIR);
-	private stickerFiles = new OPFSAdapter(STICKER_FILES_DIR);
+	private audioFiles = new LocalDriveFileAdapter({
+		kind: "audio",
+		legacy: new OPFSAdapter(AUDIO_FILES_DIR),
+	});
+	private stickerFiles = new LocalDriveFileAdapter({
+		kind: "stickers",
+		legacy: new OPFSAdapter(STICKER_FILES_DIR),
+	});
 	private audioUrlCache = new Map<string, string>();
 	private stickerUrlCache = new Map<string, string>();
 	private stickerDataUrlCache = new Map<string, string>();
@@ -333,7 +365,11 @@ export class SharedLibraryService {
 	}: {
 		asset: SharedStickerAsset;
 		file: File;
-	}): Promise<{ asset: SharedStickerAsset; file: File; dataUrl: string } | null> {
+	}): Promise<{
+		asset: SharedStickerAsset;
+		file: File;
+		dataUrl: string;
+	} | null> {
 		try {
 			const repositoryFile = await cloneStoredFile({
 				file,
@@ -364,7 +400,9 @@ export class SharedLibraryService {
 			});
 			const data = await parseRepositoryResponse({ response });
 			const [imported] = readStickerAssetsFromApiResult({ value: data });
-			return imported ? { asset: imported, file: repositoryFile, dataUrl } : null;
+			return imported
+				? { asset: imported, file: repositoryFile, dataUrl }
+				: null;
 		} catch (error) {
 			console.warn("Could not import archive sticker into repository:", error);
 			return null;
@@ -554,11 +592,7 @@ export class SharedLibraryService {
 		return { status: "imported", assetId: normalized.id };
 	}
 
-	async getAudioAssetFile({
-		id,
-	}: {
-		id: string;
-	}): Promise<File | null> {
+	async getAudioAssetFile({ id }: { id: string }): Promise<File | null> {
 		const asset = await this.findAudioAsset({ id });
 		const file = await this.audioFiles.get(id);
 		if (file && asset) {
@@ -850,12 +884,13 @@ export class SharedLibraryService {
 		const manifest = await this.patchRepositoryManifest({
 			body: { action: "addAssetToCategory", categoryId, assetId },
 		});
-		const nextCategory =
-			manifest.categories.find((item) => item.id === categoryId) ?? {
-				...category,
-				assetIds: [...category.assetIds, assetId],
-				updatedAt: nowIso(),
-			};
+		const nextCategory = manifest.categories.find(
+			(item) => item.id === categoryId,
+		) ?? {
+			...category,
+			assetIds: [...category.assetIds, assetId],
+			updatedAt: nowIso(),
+		};
 		await this.categories.set({ key: categoryId, value: nextCategory });
 		return nextCategory;
 	}
@@ -874,12 +909,13 @@ export class SharedLibraryService {
 		const manifest = await this.patchRepositoryManifest({
 			body: { action: "removeAssetFromCategory", categoryId, assetId },
 		});
-		const nextCategory =
-			manifest.categories.find((item) => item.id === categoryId) ?? {
-				...category,
-				assetIds: category.assetIds.filter((id) => id !== assetId),
-				updatedAt: nowIso(),
-			};
+		const nextCategory = manifest.categories.find(
+			(item) => item.id === categoryId,
+		) ?? {
+			...category,
+			assetIds: category.assetIds.filter((id) => id !== assetId),
+			updatedAt: nowIso(),
+		};
 		await this.categories.set({ key: categoryId, value: nextCategory });
 		return nextCategory;
 	}
@@ -1019,8 +1055,9 @@ export class SharedLibraryService {
 		name: string;
 	}): Promise<SharedCaptionPreset | null> {
 		const current =
-			(await this.listCaptionPresets()).find((preset) => preset.id === presetId) ??
-			null;
+			(await this.listCaptionPresets()).find(
+				(preset) => preset.id === presetId,
+			) ?? null;
 		if (!current) return null;
 
 		const updated: SharedCaptionPreset = {
@@ -1032,7 +1069,8 @@ export class SharedLibraryService {
 			body: { action: "saveCaptionPreset", preset: updated },
 		});
 		const saved =
-			manifest.captionPresets.find((preset) => preset.id === presetId) ?? updated;
+			manifest.captionPresets.find((preset) => preset.id === presetId) ??
+			updated;
 		await this.captionPresets.set({ key: presetId, value: saved });
 		return saved;
 	}

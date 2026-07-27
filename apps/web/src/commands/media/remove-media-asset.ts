@@ -91,7 +91,9 @@ export class RemoveMediaAssetCommand extends Command {
 		if (this.savedAssets && this.removedAsset) {
 			const restoredAsset: MediaAsset = {
 				...this.removedAsset,
-				url: URL.createObjectURL(this.removedAsset.file),
+				url: this.removedAsset.file
+					? URL.createObjectURL(this.removedAsset.file)
+					: this.removedAsset.url,
 			};
 
 			editor.media.setAssets({

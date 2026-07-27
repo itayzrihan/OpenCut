@@ -27,6 +27,7 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
+import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
 import {
 	createPreviewOverlayControl,
 	isPreviewOverlayVisible,
@@ -58,6 +59,7 @@ export default function Editor() {
 					</div>
 					<Onboarding />
 					<MigrationDialog />
+					<StoragePersistenceDialog />
 					<ChangelogNotification />
 				</div>
 			</EditorProvider>

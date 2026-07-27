@@ -57,11 +57,13 @@ function createVideoSegment({
 	timelineStartSeconds,
 	sourceStartSeconds,
 	durationSeconds,
+	keepCameraMic,
 }: {
 	channel: PodcastSyncChannel;
 	timelineStartSeconds: number;
 	sourceStartSeconds: number;
 	durationSeconds: number;
+	keepCameraMic: boolean;
 }): VideoElement | null {
 	const sourceDurationSeconds = channel.video.duration ?? 0;
 	const safeDurationSeconds = Math.min(
@@ -88,7 +90,7 @@ function createVideoSegment({
 			durationSeconds: safeDurationSeconds,
 		}),
 		sourceDuration: secondsToMediaTime({ seconds: sourceDurationSeconds }),
-		isSourceAudioEnabled: false,
+		isSourceAudioEnabled: keepCameraMic,
 	};
 }
 
@@ -134,10 +136,12 @@ export function buildPodcastSyncScene({
 	name,
 	channels,
 	result,
+	keepCameraMics = false,
 }: {
 	name: string;
 	channels: PodcastSyncChannel[];
 	result: PodcastSyncResult;
+	keepCameraMics?: boolean;
 }): TScene {
 	const scene = buildDefaultScene({ name, isMain: false });
 	const routedTracks = channels.map((channel, index) =>
@@ -175,6 +179,7 @@ export function buildPodcastSyncScene({
 				sourceStartSeconds:
 					(result.videoOffsets[channel.id] ?? 0) + cut.timestamp,
 				durationSeconds: cut.duration,
+				keepCameraMic: keepCameraMics,
 			});
 			if (segment) targetTrack.elements.push(segment);
 		}

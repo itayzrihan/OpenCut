@@ -1,5 +1,7 @@
 import type { MediaAsset } from "@/media/types";
-import { ALL_FORMATS, AudioBufferSink, BlobSource, Input } from "mediabunny";
+import type { PodcastMulticamSettings } from "opencut-wasm";
+import { ALL_FORMATS, AudioBufferSink, Input } from "mediabunny";
+import { createMediaSource } from "@/media/source";
 import {
 	applyAntiBleedPipeline,
 	buildActivityTimeline,
@@ -13,6 +15,7 @@ import { routePodcastSync, type PodcastSyncCut } from "@/podcast-sync/router";
 
 const SYNC_WINDOW_SECONDS = 0.1;
 const DEFAULT_MAX_LAG_SECONDS = 1200;
+const PODCAST_SOURCE_CACHE_BYTES = 8 * 1024 * 1024;
 
 export interface PodcastSyncChannel {
 	id: string;
@@ -21,21 +24,21 @@ export interface PodcastSyncChannel {
 	audio: MediaAsset;
 }
 
-export interface PodcastSyncSettings {
-	sequenceName: string;
-	minCutDuration: number;
-	maxCutDuration: number;
-	preRoll: number;
-	maxLagSeconds: number;
-	antiBleed: boolean;
-}
+export type PodcastSyncSettings = PodcastMulticamSettings;
 
-export interface PodcastSyncResult {
-	cuts: PodcastSyncCut[];
+export interface PodcastSyncAlignment {
 	duration: number;
 	videoOffsets: Record<string, number>;
 	audioOffsets: Record<string, number>;
 	audioDelays: Record<string, number>;
+}
+
+export interface PodcastSyncResult {
+	cuts: PodcastSyncCut[];
+	duration: PodcastSyncAlignment["duration"];
+	videoOffsets: PodcastSyncAlignment["videoOffsets"];
+	audioOffsets: PodcastSyncAlignment["audioOffsets"];
+	audioDelays: PodcastSyncAlignment["audioDelays"];
 	summary: {
 		totalCuts: number;
 		perChannel: Record<string, number>;
@@ -69,7 +72,13 @@ async function readEnergyEnvelope({
 	durationSeconds?: number;
 }): Promise<Float32Array> {
 	const input = new Input({
-		source: new BlobSource(asset.file),
+		source: createMediaSource({
+			...asset,
+			urlOptions: {
+				maxCacheSize: PODCAST_SOURCE_CACHE_BYTES,
+				parallelism: 1,
+			},
+		}),
 		formats: ALL_FORMATS,
 	});
 
@@ -198,15 +207,11 @@ function buildSpeechMask({
 	return mask;
 }
 
-export async function runPodcastSync({
+function validatePodcastChannels({
 	channels,
-	settings,
-	onProgress,
 }: {
 	channels: PodcastSyncChannel[];
-	settings: PodcastSyncSettings;
-	onProgress?: ProgressCallback;
-}): Promise<PodcastSyncResult> {
+}) {
 	if (channels.length < 1) {
 		throw new Error("Add at least one podcast channel");
 	}
@@ -218,6 +223,18 @@ export async function runPodcastSync({
 			throw new Error(`${channel.name} is missing an audio source`);
 		}
 	}
+}
+
+export async function runPodcastAlignment({
+	channels,
+	settings,
+	onProgress,
+}: {
+	channels: PodcastSyncChannel[];
+	settings: PodcastSyncSettings;
+	onProgress?: ProgressCallback;
+}): Promise<PodcastSyncAlignment> {
+	validatePodcastChannels({ channels });
 
 	const maxLagWindows = Math.round(
 		(settings.maxLagSeconds || DEFAULT_MAX_LAG_SECONDS) / SYNC_WINDOW_SECONDS,
@@ -234,7 +251,7 @@ export async function runPodcastSync({
 		report({
 			onProgress,
 			step: "Syncing cameras",
-			progress: 0.05 + 0.25 * ((i + 1) / channels.length),
+			progress: 0.05 + 0.5 * ((i + 1) / channels.length),
 		});
 	}
 
@@ -264,7 +281,7 @@ export async function runPodcastSync({
 		);
 	}
 
-	report({ onProgress, step: "Aligning microphones", progress: 0.32 });
+	report({ onProgress, step: "Aligning microphones", progress: 0.58 });
 	const audioOffsets: Record<string, number> = {};
 	const audioDelays: Record<string, number> = {};
 	for (let i = 0; i < channels.length; i++) {
@@ -290,7 +307,7 @@ export async function runPodcastSync({
 		report({
 			onProgress,
 			step: "Aligning microphones",
-			progress: 0.32 + 0.13 * ((i + 1) / channels.length),
+			progress: 0.58 + 0.37 * ((i + 1) / channels.length),
 		});
 	}
 
@@ -307,6 +324,23 @@ export async function runPodcastSync({
 			"Channels do not overlap after sync. Check that these files belong to the same recording.",
 		);
 	}
+	report({ onProgress, step: "Synchronization complete", progress: 1 });
+	return { duration, videoOffsets, audioOffsets, audioDelays };
+}
+
+export async function runPodcastMulticam({
+	channels,
+	settings,
+	alignment,
+	onProgress,
+}: {
+	channels: PodcastSyncChannel[];
+	settings: PodcastSyncSettings;
+	alignment: PodcastSyncAlignment;
+	onProgress?: ProgressCallback;
+}): Promise<PodcastSyncResult> {
+	validatePodcastChannels({ channels });
+	const { duration, videoOffsets, audioOffsets, audioDelays } = alignment;
 
 	const numSteps = Math.max(
 		1,
@@ -315,7 +349,7 @@ export async function runPodcastSync({
 	const channelIds = channels.map((channel) => channel.id);
 	const channelEnergies: Record<string, Float32Array> = {};
 
-	report({ onProgress, step: "Analyzing speech", progress: 0.48 });
+	report({ onProgress, step: "Analyzing speech", progress: 0.05 });
 	for (let i = 0; i < channels.length; i++) {
 		const channel = channels[i]!;
 		const delay = audioDelays[channel.id] ?? 0;
@@ -349,11 +383,11 @@ export async function runPodcastSync({
 		report({
 			onProgress,
 			step: "Analyzing speech",
-			progress: 0.48 + 0.35 * ((i + 1) / channels.length),
+			progress: 0.05 + 0.72 * ((i + 1) / channels.length),
 		});
 	}
 
-	report({ onProgress, step: "Routing cameras", progress: 0.86 });
+	report({ onProgress, step: "Routing cameras", progress: 0.84 });
 	let timeline = buildActivityTimeline({
 		channelIds,
 		numSteps,
@@ -373,9 +407,7 @@ export async function runPodcastSync({
 		timeline,
 		channelIds,
 		duration,
-		minCutDuration: settings.minCutDuration,
-		preRoll: settings.preRoll,
-		maxCutDuration: settings.maxCutDuration,
+		settings,
 	});
 
 	const perChannel: Record<string, number> = {};
@@ -396,4 +428,28 @@ export async function runPodcastSync({
 			duration,
 		},
 	};
+}
+
+export async function runPodcastSync({
+	channels,
+	settings,
+	onProgress,
+}: {
+	channels: PodcastSyncChannel[];
+	settings: PodcastSyncSettings;
+	onProgress?: ProgressCallback;
+}): Promise<PodcastSyncResult> {
+	const alignment = await runPodcastAlignment({
+		channels,
+		settings,
+		onProgress: ({ step, progress }) =>
+			onProgress?.({ step, progress: progress * 0.45 }),
+	});
+	return runPodcastMulticam({
+		channels,
+		settings,
+		alignment,
+		onProgress: ({ step, progress }) =>
+			onProgress?.({ step, progress: 0.45 + progress * 0.55 }),
+	});
 }

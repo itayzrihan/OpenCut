@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Send } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -23,7 +23,11 @@ import {
 	getLayersInRange,
 } from "@/ai/timeline-context";
 import { runAiAgent } from "@/ai/client-agent";
-import { applyAiEditPlan, validateAiEditPlan } from "@/ai/edit-plan";
+import {
+	applyAiEditPlan,
+	extractAiEditPlanFromText,
+	validateAiEditPlan,
+} from "@/ai/edit-plan";
 import type { AiEditPlan } from "@/ai/types";
 import {
 	buildAiSystemPrompt,
@@ -32,6 +36,19 @@ import {
 } from "@/ai/timeline-tools";
 import { AiPlanReview } from "./ai-plan-review";
 import { useAiOAuthStatus } from "./use-ai-oauth-status";
+
+function readPlanHeading({ text }: { text: string }): {
+	title?: string;
+	summary?: string;
+} | null {
+	const value = extractAiEditPlanFromText(text);
+	if (typeof value !== "object" || value === null) return null;
+	const record = value as Record<string, unknown>;
+	return {
+		title: typeof record.title === "string" ? record.title : undefined,
+		summary: typeof record.summary === "string" ? record.summary : undefined,
+	};
+}
 
 export function AiRangeDialog() {
 	const editor = useEditor();
@@ -52,6 +69,11 @@ export function AiRangeDialog() {
 	const [pendingPlan, setPendingPlan] = useState<AiEditPlan | null>(null);
 	const [planErrors, setPlanErrors] = useState<string[]>([]);
 	const [isApplying, setIsApplying] = useState(false);
+	const abortControllerRef = useRef<AbortController | null>(null);
+
+	useEffect(() => {
+		return () => abortControllerRef.current?.abort();
+	}, []);
 
 	const layersInRange = useMemo(() => {
 		const scene = editor.scenes.getActiveSceneOrNull();
@@ -65,6 +87,7 @@ export function AiRangeDialog() {
 
 	const open = rangeSelection.isPromptOpen && !!range;
 	const close = () => {
+		abortControllerRef.current?.abort();
 		setRangePromptOpen(false);
 		setPendingPlan(null);
 		setPlanErrors([]);
@@ -95,10 +118,12 @@ export function AiRangeDialog() {
 		setIsRunning(true);
 		setPendingPlan(null);
 		setPlanErrors([]);
+		const controller = new AbortController();
+		abortControllerRef.current = controller;
 		try {
-			const toolRuntime = createTimelineToolRuntime({
+			const toolRuntime = await createTimelineToolRuntime({
 				editor,
-				options: { range },
+				options: { range, includePreviewImage: true, userRequest: prompt },
 			});
 			const context = buildTimelineContextPrompt({
 				editor,
@@ -110,7 +135,10 @@ export function AiRangeDialog() {
 			});
 			const result = await runAiAgent({
 				messages: [
-					{ role: "system", content: buildAiSystemPrompt() },
+					{
+						role: "system",
+						content: buildAiSystemPrompt({ userRequest: prompt }),
+					},
 					{
 						role: "user",
 						content: [
@@ -124,31 +152,90 @@ export function AiRangeDialog() {
 				],
 				tools: toolRuntime.tools,
 				executeTool: toolRuntime.executeTool,
+				signal: controller.signal,
+				preferDirectPlan: false,
 				onStep: setAgentStatus,
+				completionGuard: ({ editPlan }) => {
+					const errors = toolRuntime.getCompletionErrors(
+						toolRuntime.getSourceEditPlan() ?? editPlan,
+					);
+					return errors.length > 0 ? errors.join("\n") : null;
+				},
 			});
+			const sourcePlan = toolRuntime.getSourceEditPlan();
+			const heading = readPlanHeading({ text: result.text });
+			const planValue = sourcePlan
+				? {
+						...sourcePlan,
+						title: heading?.title ?? sourcePlan.title,
+						summary: heading?.summary ?? sourcePlan.summary,
+					}
+				: result.editPlan;
 			const validation = validateAiEditPlan({
-				value: result.editPlan,
+				value: planValue,
 				tracks: scene.tracks,
 				range,
+				mediaAssets: editor.media.getAssets(),
+				scenes: editor.scenes.getScenes(),
+				activeSceneId: scene.id,
+				projectSettings: editor.project.getActive().settings,
+				exportState: editor.project.getExportState(),
+				transcriptionState: editor.transcription.getState(),
 			});
 			setPendingPlan(validation.plan);
-			setPlanErrors(validation.errors);
+			setPlanErrors([
+				...validation.errors,
+				...toolRuntime.getCompletionErrors(validation.plan),
+			]);
 			if (!validation.plan) {
 				toast.error(result.error ?? "The AI did not return a valid edit plan");
 			}
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "AI request failed");
+			if (error instanceof DOMException && error.name === "AbortError") {
+				toast.info("AI request cancelled");
+			} else {
+				toast.error(
+					error instanceof Error ? error.message : "AI request failed",
+				);
+			}
 		} finally {
+			if (abortControllerRef.current === controller) {
+				abortControllerRef.current = null;
+			}
 			setIsRunning(false);
 			setAgentStatus("");
 		}
 	};
 
+	const handleCancel = () => abortControllerRef.current?.abort();
+
 	const handleApply = () => {
 		if (!pendingPlan || planErrors.length > 0) return;
+		const scene = editor.scenes.getActiveSceneOrNull();
+		if (!scene || !range) {
+			toast.error("The active timeline range is no longer available");
+			return;
+		}
+		const validation = validateAiEditPlan({
+			value: pendingPlan,
+			tracks: scene.tracks,
+			range,
+			mediaAssets: editor.media.getAssets(),
+			scenes: editor.scenes.getScenes(),
+			activeSceneId: scene.id,
+			projectSettings: editor.project.getActive().settings,
+			exportState: editor.project.getExportState(),
+			transcriptionState: editor.transcription.getState(),
+		});
+		setPendingPlan(validation.plan);
+		setPlanErrors(validation.errors);
+		if (!validation.plan || validation.errors.length > 0) {
+			toast.error("The timeline changed. Review the AI edit again.");
+			return;
+		}
 		setIsApplying(true);
 		try {
-			applyAiEditPlan({ editor, plan: pendingPlan });
+			applyAiEditPlan({ editor, plan: validation.plan, range });
 			toast.success("AI range edit applied");
 			cancelRangeSelection();
 			setPendingPlan(null);
@@ -255,9 +342,9 @@ export function AiRangeDialog() {
 					<Button variant="outline" onClick={close}>
 						Close
 					</Button>
-					<Button onClick={handleSubmit} disabled={isRunning}>
-						<Send className="size-4" />
-						{isRunning ? "Working" : "Send"}
+					<Button onClick={isRunning ? handleCancel : handleSubmit}>
+						{isRunning ? <X className="size-4" /> : <Send className="size-4" />}
+						{isRunning ? "Cancel" : "Send"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

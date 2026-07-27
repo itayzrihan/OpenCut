@@ -7,9 +7,92 @@ import type {
 	VideoTrack,
 } from "@/timeline";
 import { mediaTimeFromSeconds, ZERO_MEDIA_TIME } from "@/wasm";
+import type {
+	ReconcileCaptionWordsOptions,
+	TextLayerWordInput,
+} from "opencut-wasm";
 
 mock.module("@/commands/timeline/tracks-snapshot", () => ({
 	TracksSnapshotCommand: class TracksSnapshotCommand {},
+}));
+
+mock.module("opencut-wasm", () => ({
+	preserveAudioDuringTimeRemoval: (options: { clips: unknown[] }) => ({
+		clips: options.clips,
+		timelineDuration: 0,
+	}),
+	removeCaptionWordTimeRanges: (options: { words: unknown[] }) => options.words,
+	normalizeTextLayerWordIds: ({
+		wordRuns,
+	}: {
+		wordRuns: TextLayerWordInput[];
+	}) => {
+		const usedIds = new Set<string>();
+		return wordRuns.map((word, previousWordIndex) => {
+			let id = word.id;
+			if (!id.trim() || usedIds.has(id)) {
+				id = `word-${previousWordIndex}`;
+				let suffix = 1;
+				while (usedIds.has(id)) {
+					id = `word-${previousWordIndex}-${suffix}`;
+					suffix += 1;
+				}
+			}
+			usedIds.add(id);
+			return { previousWordIndex, id };
+		});
+	},
+	reconcileCaptionWords: ({
+		words,
+		textLayers,
+	}: ReconcileCaptionWordsOptions) => {
+		const generatedWords = words.filter(
+			(word) => word.source?.type !== "text-layer",
+		);
+		const ownedWords = textLayers.flatMap((layer) => {
+			const runs: TextLayerWordInput[] = layer.wordRuns?.length
+				? layer.wordRuns
+				: (layer.content ?? "")
+						.trim()
+						.split(/\s+/)
+						.filter(Boolean)
+						.map((text, index) => ({ id: `word-${index}`, text }));
+			const duration = layer.duration / 120_000;
+			const elementStart = layer.startTime / 120_000;
+			return runs.flatMap((run, wordIndex) => {
+				const fallbackStart = duration * (wordIndex / runs.length);
+				const fallbackEnd = duration * ((wordIndex + 1) / runs.length);
+				const rawStart =
+					run.startTime == null ? fallbackStart : run.startTime / 120_000;
+				const rawEnd =
+					run.endTime == null ? fallbackEnd : run.endTime / 120_000;
+				if (rawEnd <= 0 || rawStart >= duration) return [];
+				const start = Math.max(0, Math.min(duration, rawStart));
+				const end = Math.max(start, Math.min(duration, rawEnd));
+				if (end <= start) return [];
+				return [
+					{
+						text: run.text,
+						start: Math.round((elementStart + start) * 1000) / 1000,
+						end: Math.round((elementStart + end) * 1000) / 1000,
+						source: {
+							type: "text-layer",
+							trackId: layer.trackId,
+							elementId: layer.elementId,
+							wordIndex,
+							wordId: run.id,
+						},
+					},
+				];
+			});
+		});
+		return [...generatedWords, ...ownedWords].sort(
+			(left, right) =>
+				left.start - right.start ||
+				left.end - right.end ||
+				left.text.localeCompare(right.text),
+		);
+	},
 }));
 
 const originalDocument = globalThis.document;
@@ -23,6 +106,15 @@ let syncTextLayerWordsIntoCaptionSource: Awaited<
 let removeTextLayerWordsFromCaptionSource: Awaited<
 	typeof import("@/subtitles/caption-source-sync")
 >["removeTextLayerWordsFromCaptionSource"];
+let removeCaptionElementWordsFromSource: Awaited<
+	typeof import("@/subtitles/caption-source-sync")
+>["removeCaptionElementWordsFromSource"];
+let reconcileTextLayerWordsInCaptionSource: Awaited<
+	typeof import("@/subtitles/caption-source-sync")
+>["reconcileTextLayerWordsInCaptionSource"];
+let normalizeTextLayerWordRunIds: Awaited<
+	typeof import("@/subtitles/caption-source-sync")
+>["normalizeTextLayerWordRunIds"];
 let rebuildCaptionTracksWithSource: Awaited<
 	typeof import("@/subtitles/caption-tracks")
 >["rebuildCaptionTracksWithSource"];
@@ -41,6 +133,9 @@ beforeAll(async () => {
 		syncCaptionSourceWordsFromElements,
 		syncTextLayerWordsIntoCaptionSource,
 		removeTextLayerWordsFromCaptionSource,
+		removeCaptionElementWordsFromSource,
+		reconcileTextLayerWordsInCaptionSource,
+		normalizeTextLayerWordRunIds,
 	} = await import("@/subtitles/caption-source-sync"));
 	({ rebuildCaptionTracksWithSource } =
 		await import("@/subtitles/caption-tracks"));
@@ -157,6 +252,223 @@ function elementContent({ element }: { element: TextElement }) {
 		: "";
 }
 
+describe("caption word ownership", () => {
+	test("repairs duplicate word IDs inside a merged layer", () => {
+		const merged = textElement({
+			id: "merged",
+			text: "First Second",
+			start: 0,
+			end: 2,
+			wordRuns: [
+				{ id: "word-0", text: "First", lineIndex: 0 },
+				{ id: "word-0", text: "Second", lineIndex: 0 },
+			],
+		});
+		const tracks: SceneTracks = {
+			overlay: [manualTextTrack({ elements: [merged] })],
+			main: mainTrack(),
+			audio: [],
+		};
+
+		const result = normalizeTextLayerWordRunIds({ tracks });
+		const element = (result.overlay[0] as TextTrack).elements[0];
+
+		expect(element.wordRuns?.map((word) => word.id)).toEqual([
+			"word-0",
+			"word-1",
+		]);
+	});
+
+	test("deduplicates repeated element updates and discovers every manual text layer", () => {
+		const first = textElement({
+			id: "first",
+			text: "First",
+			start: 2,
+			end: 3,
+		});
+		const second = textElement({
+			id: "second",
+			text: "Second",
+			start: 4,
+			end: 5,
+		});
+		const tracks: SceneTracks = {
+			overlay: [
+				textTrack({
+					elements: [],
+					settings: DEFAULT_CAPTION_LAYOUT,
+					words: [{ text: "Generated", start: 0, end: 1 }],
+				}),
+				manualTextTrack({ elements: [first, second] }),
+			],
+			main: mainTrack(),
+			audio: [],
+		};
+
+		const result = syncTextLayerWordsIntoCaptionSource({
+			tracks,
+			elements: [
+				{ trackId: "manual-text", elementId: "first" },
+				{ trackId: "manual-text", elementId: "first" },
+			],
+		});
+		const words = (result.overlay[0] as TextTrack).captionSource?.words ?? [];
+
+		expect(words.map((word) => word.text)).toEqual([
+			"Generated",
+			"First",
+			"Second",
+		]);
+		expect(
+			words.filter((word) => word.source?.elementId === "first"),
+		).toHaveLength(1);
+	});
+
+	test("repairs stale and orphaned manual ownership from the layers that exist", () => {
+		const layer = textElement({
+			id: "title",
+			text: "Current",
+			start: 2,
+			end: 3,
+		});
+		const tracks: SceneTracks = {
+			overlay: [
+				textTrack({
+					elements: [],
+					settings: DEFAULT_CAPTION_LAYOUT,
+					words: [
+						{ text: "Generated", start: 0, end: 1 },
+						{
+							text: "Stale",
+							start: 8,
+							end: 9,
+							source: {
+								type: "text-layer",
+								trackId: "deleted-track",
+								elementId: "deleted-element",
+								wordIndex: 0,
+							},
+						},
+					],
+				}),
+				manualTextTrack({ id: "new-track", elements: [layer] }),
+			],
+			main: mainTrack(),
+			audio: [],
+		};
+
+		const result = reconcileTextLayerWordsInCaptionSource({ tracks });
+		const words = (result.overlay[0] as TextTrack).captionSource?.words ?? [];
+
+		expect(words.map((word) => word.text)).toEqual(["Generated", "Current"]);
+		expect(words[1]?.source).toMatchObject({
+			type: "text-layer",
+			trackId: "new-track",
+			elementId: "title",
+		});
+	});
+
+	test("keeps partially timed words and clamps them to the owning layer", () => {
+		const layer = textElement({
+			id: "partial",
+			text: "Clamped Fallback Outside",
+			start: 10,
+			end: 12,
+			wordRuns: [
+				{
+					id: "clamped",
+					text: "Clamped",
+					lineIndex: 0,
+					startTime: mediaTimeFromSeconds({ seconds: -1 }),
+					endTime: mediaTimeFromSeconds({ seconds: 0.5 }),
+				},
+				{ id: "fallback", text: "Fallback", lineIndex: 0 },
+				{
+					id: "outside",
+					text: "Outside",
+					lineIndex: 0,
+					startTime: mediaTimeFromSeconds({ seconds: 3 }),
+					endTime: mediaTimeFromSeconds({ seconds: 4 }),
+				},
+			],
+		});
+		const tracks: SceneTracks = {
+			overlay: [
+				textTrack({
+					elements: [],
+					settings: DEFAULT_CAPTION_LAYOUT,
+					words: [],
+				}),
+				manualTextTrack({ elements: [layer] }),
+			],
+			main: mainTrack(),
+			audio: [],
+		};
+
+		const result = reconcileTextLayerWordsInCaptionSource({ tracks });
+		const words = (result.overlay[0] as TextTrack).captionSource?.words ?? [];
+
+		expect(words.map((word) => word.text)).toEqual(["Clamped", "Fallback"]);
+		expect(words[0]).toMatchObject({ start: 10, end: 10.5 });
+		expect(words[1]?.start).toBeGreaterThanOrEqual(10);
+		expect(words[1]?.end).toBeLessThanOrEqual(12);
+	});
+
+	test("removes generated words owned by an explicitly deleted caption element", () => {
+		const deleted = textElement({
+			id: "deleted-caption",
+			text: "Delete",
+			start: 0,
+			end: 1,
+		});
+		const kept = textElement({
+			id: "kept-caption",
+			text: "Keep",
+			start: 2,
+			end: 3,
+		});
+		const previousTracks: SceneTracks = {
+			overlay: [
+				textTrack({
+					elements: [deleted, kept],
+					settings: DEFAULT_CAPTION_LAYOUT,
+					words: [
+						{ text: "Delete", start: 0, end: 1 },
+						{ text: "Keep", start: 2, end: 3 },
+					],
+				}),
+			],
+			main: mainTrack(),
+			audio: [],
+		};
+		const tracks: SceneTracks = {
+			...previousTracks,
+			overlay: [
+				textTrack({
+					elements: [kept],
+					settings: DEFAULT_CAPTION_LAYOUT,
+					words: [
+						{ text: "Delete", start: 0, end: 1 },
+						{ text: "Keep", start: 2, end: 3 },
+					],
+				}),
+			],
+		};
+
+		const result = removeCaptionElementWordsFromSource({
+			tracks,
+			previousTracks,
+			elements: [{ trackId: "captions", elementId: "deleted-caption" }],
+		});
+
+		expect(
+			(result.overlay[0] as TextTrack).captionSource?.words.map(
+				(word) => word.text,
+			),
+		).toEqual(["Keep"]);
+	});
+});
+
 describe("syncCaptionSourceWordsFromElements", () => {
 	test("removes a deleted rendered caption word from source words", () => {
 		const settings = {
@@ -198,10 +510,7 @@ describe("syncCaptionSourceWordsFromElements", () => {
 		const nextElement = {
 			...previousElement,
 			params: { ...previousElement.params, content: "one three" },
-			wordRuns: [
-				previousElement.wordRuns![0],
-				previousElement.wordRuns![2],
-			],
+			wordRuns: [previousElement.wordRuns![0], previousElement.wordRuns![2]],
 		};
 		const sourceWords = [
 			{ text: "one", start: 0, end: 1 },
@@ -241,10 +550,9 @@ describe("syncCaptionSourceWordsFromElements", () => {
 				track.type === "text" && !!track.captionSource,
 		);
 
-		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual([
-			"one",
-			"three",
-		]);
+		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual(
+			["one", "three"],
+		);
 	});
 
 	test("renders hidden punctuation without mutating source words", () => {
@@ -797,6 +1105,60 @@ describe("syncCaptionSourceWordsFromElements", () => {
 		expect(captionElements[0].wordRuns?.[0]?.revealMode).toBe("spoken-word");
 	});
 
+	test("keeps generated source words when a multiline merge removes run timing", () => {
+		const settings = {
+			...DEFAULT_CAPTION_LAYOUT,
+			wordsPerRow: 1,
+			rows: 1,
+			inPaddingPercent: 0,
+			outPaddingPercent: 0,
+		};
+		const first = textElement({
+			id: "first",
+			text: "First",
+			start: 0,
+			end: 1,
+		});
+		const second = textElement({
+			id: "second",
+			text: "Second",
+			start: 1,
+			end: 2,
+		});
+		const words = [
+			{ text: "First", start: 0, end: 1 },
+			{ text: "Second", start: 1, end: 2 },
+		];
+		const previousTracks: SceneTracks = {
+			overlay: [textTrack({ elements: [first, second], settings, words })],
+			main: mainTrack(),
+			audio: [],
+		};
+		const merged = {
+			...first,
+			duration: mediaTimeFromSeconds({ seconds: 2 }),
+			params: { ...first.params, content: "First\nSecond" },
+			wordRuns: [
+				{ id: "word-0", text: "First", lineIndex: 0 },
+				{ id: "word-1", text: "Second", lineIndex: 1 },
+			],
+		};
+		const tracks: SceneTracks = {
+			...previousTracks,
+			overlay: [textTrack({ elements: [merged], settings, words })],
+		};
+
+		const result = syncCaptionSourceWordsFromElements({
+			tracks,
+			previousTracks,
+			updates: [{ trackId: "captions", elementId: "first" }],
+		});
+
+		expect((result.overlay[0] as TextTrack).captionSource?.words).toEqual(
+			words,
+		);
+	});
+
 	test("syncs timing edits in manually split and merged caption layers without restoring the original chunks", () => {
 		const settings = {
 			...DEFAULT_CAPTION_LAYOUT,
@@ -970,10 +1332,9 @@ describe("syncCaptionSourceWordsFromElements", () => {
 		expect(
 			captionTrack?.elements.map((element) => elementContent({ element })),
 		).toEqual(["one\nthree"]);
-		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual([
-			"one",
-			"three",
-		]);
+		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual(
+			["one", "three"],
+		);
 	});
 
 	test("rebuild removes stale caption source tracks after a text edit", () => {
@@ -1183,7 +1544,7 @@ describe("syncCaptionSourceWordsFromElements", () => {
 		]);
 	});
 
-	test("does not replace caption source words for presentation-only multiline runs", () => {
+	test("adds every presentation-only multiline word exactly once", () => {
 		const settings = {
 			...DEFAULT_CAPTION_LAYOUT,
 			wordsPerRow: 1,
@@ -1242,10 +1603,9 @@ describe("syncCaptionSourceWordsFromElements", () => {
 				track.type === "text" && !!track.captionSource,
 		);
 
-		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual([
-			"Hello",
-			"Manual",
-		]);
+		expect(captionTrack?.captionSource?.words.map((word) => word.text)).toEqual(
+			["Hello", "Manual", "title"],
+		);
 		expect(captionTrack?.captionSource?.words[1].source).toMatchObject({
 			type: "text-layer",
 			trackId: "manual-text",

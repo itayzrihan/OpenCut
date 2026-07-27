@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
 import { storageService } from "@/services/storage/service";
+import { synchronizeDrivePreferences } from "@/services/local-drive/preferences";
 
 interface StorageContextType {
 	isInitialized: boolean;
@@ -45,6 +46,18 @@ export function StorageProvider({ children }: StorageProviderProps) {
 			setStatus((prev) => ({ ...prev, isLoading: true }));
 
 			try {
+				const preferencesChanged = await synchronizeDrivePreferences();
+				if (
+					preferencesChanged &&
+					sessionStorage.getItem("pocut-drive-preferences-reloaded") !== "true"
+				) {
+					sessionStorage.setItem("pocut-drive-preferences-reloaded", "true");
+					window.location.reload();
+					return;
+				}
+				if (!preferencesChanged) {
+					sessionStorage.removeItem("pocut-drive-preferences-reloaded");
+				}
 				const hasSupport = storageService.isFullySupported();
 
 				if (!hasSupport) {

@@ -8,9 +8,11 @@ describe("AI skills", () => {
 		const listed = listAiSkills();
 		expect(listed).toHaveLength(AI_SKILLS.length);
 		expect(listed.map((skill) => skill.name)).toEqual([
+			"creative-direction",
 			"hyperframe-authoring",
 			"motion-graphics",
 			"text-effects",
+			"opencut-workspace",
 			"video-workflows",
 		]);
 		for (const skill of listed) {
@@ -20,6 +22,26 @@ describe("AI skills", () => {
 	});
 
 	test("loads skills by name, tolerating slash prefixes and casing", () => {
+		const creativeDirection = loadAiSkill({ name: "creative-direction" });
+		expect(creativeDirection?.description).toContain("amazing");
+		expect(creativeDirection?.description).toContain("VFX");
+		expect(creativeDirection?.description).toContain("SFX");
+		expect(creativeDirection?.content).toContain(
+			"make defensible creative choices, and proceed to a reviewed plan",
+		);
+		expect(creativeDirection?.content).toContain("map its real beats");
+		expect(creativeDirection?.content).toContain(
+			"Explicit requested dimensions are hard requirements",
+		);
+		expect(creativeDirection?.content).toContain(
+			"the final plan must address sound",
+		);
+		expect(creativeDirection?.content).toContain(
+			"the final plan must include supported content-specific effect work",
+		);
+		expect(creativeDirection?.content).toContain(
+			"Do not add categories just to fill a quota",
+		);
 		expect(loadAiSkill({ name: "hyperframe-authoring" })?.content).toContain(
 			"--hf-delay",
 		);
@@ -52,8 +74,9 @@ describe("hyperframe graphic definition", () => {
 	test("buckets raster time at 30fps for cache stability", () => {
 		expect(getHyperframeRasterTimeBucket({ timeSeconds: 0 })).toBe(0);
 		expect(getHyperframeRasterTimeBucket({ timeSeconds: 0.5 })).toBe(0.5);
-		expect(
-			getHyperframeRasterTimeBucket({ timeSeconds: 1.001 }),
-		).toBeCloseTo(1, 5);
+		expect(getHyperframeRasterTimeBucket({ timeSeconds: 1.001 })).toBeCloseTo(
+			1,
+			5,
+		);
 	});
 });

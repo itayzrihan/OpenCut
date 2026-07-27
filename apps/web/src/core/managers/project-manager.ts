@@ -26,6 +26,8 @@ import {
 	migrations,
 	runStorageMigrations,
 	type MigrationProgress,
+	type StorageMigrationFailure,
+	type StorageMigrationResult,
 } from "@/services/storage/migrations";
 import { loadFonts } from "@/fonts/google-fonts";
 import {
@@ -105,8 +107,11 @@ export class ProjectManager {
 	private savedProjects: TProjectMetadata[] = [];
 	private isLoading = true;
 	private isInitialized = false;
+	private loadError: string | null = null;
+	private migrationFailures: StorageMigrationFailure[] = [];
 	private invalidProjectIds = new Set<string>();
-	private storageMigrationPromise: Promise<void> | null = null;
+	private storageMigrationPromise: Promise<StorageMigrationResult> | null =
+		null;
 	private listeners = new Set<() => void>();
 	private migrationState: MigrationState = {
 		isMigrating: false,
@@ -123,23 +128,42 @@ export class ProjectManager {
 
 	constructor(private editor: EditorCore) {}
 
-	private async ensureStorageMigrations(): Promise<void> {
-		if (this.storageMigrationPromise) {
-			await this.storageMigrationPromise;
-			return;
+	private async ensureStorageMigrations(): Promise<StorageMigrationResult> {
+		if (!this.storageMigrationPromise) {
+			const onProgress = (progress: MigrationProgress) => {
+				this.migrationState = progress;
+				this.notify();
+			};
+			this.storageMigrationPromise = (async () => {
+				const browserResult = await runStorageMigrations({
+					migrations,
+					onProgress,
+				});
+				await storageService.ensureBrowserDataMigrated();
+				const driveResult = await runStorageMigrations({
+					migrations,
+					onProgress,
+					dependencies: storageService.createDriveMigrationDependencies(),
+				});
+				return {
+					migratedCount:
+						browserResult.migratedCount + driveResult.migratedCount,
+					failures: [...browserResult.failures, ...driveResult.failures],
+				};
+			})();
 		}
 
-		this.storageMigrationPromise = (async () => {
-			await runStorageMigrations({
-				migrations,
-				onProgress: (progress: MigrationProgress) => {
-					this.migrationState = progress;
-					this.notify();
-				},
-			});
-		})();
-
-		await this.storageMigrationPromise;
+		const migrationPromise = this.storageMigrationPromise;
+		try {
+			return await migrationPromise;
+		} catch (error) {
+			// A failed promise must not poison future retries for the lifetime of the
+			// editor singleton. The projects page exposes an explicit retry action.
+			if (this.storageMigrationPromise === migrationPromise) {
+				this.storageMigrationPromise = null;
+			}
+			throw error;
+		}
 	}
 
 	async createNewProject({ name }: { name: string }): Promise<string> {
@@ -166,6 +190,7 @@ export class ProjectManager {
 				},
 			},
 			customFonts: [],
+			aiEditHistory: [],
 			version: CURRENT_PROJECT_VERSION,
 		};
 
@@ -193,17 +218,29 @@ export class ProjectManager {
 	}
 
 	async loadProject({ id }: { id: string }): Promise<void> {
-		if (!this.isInitialized) {
-			this.isLoading = true;
-			this.notify();
+		if (this.active && this.active.metadata.id !== id) {
+			// Route changes can switch projects without going through the explicit Exit
+			// action. Persist the current project before clearing any in-memory state.
+			await this.editor.save.flush();
 		}
 
-		this.editor.save.pause();
-		await this.ensureStorageMigrations();
-		this.editor.media.clearAllAssets();
-		this.editor.scenes.clearScenes();
+		this.isLoading = true;
+		this.notify();
 
+		this.editor.save.pause();
 		try {
+			const migrationResult = await this.ensureStorageMigrations();
+			const migrationFailure = migrationResult.failures.find(
+				(failure) => failure.projectId === id,
+			);
+			if (migrationFailure) {
+				throw new Error(
+					`This project could not be upgraded safely: ${migrationFailure.message}. Its original stored record was preserved in recovery storage.`,
+				);
+			}
+			this.editor.media.clearAllAssets();
+			this.editor.scenes.clearScenes();
+
 			const result = await storageService.loadProject({ id });
 			if (!result) {
 				throw new Error(`Project with id ${id} not found`);
@@ -267,44 +304,65 @@ export class ProjectManager {
 	async saveCurrentProject(): Promise<void> {
 		if (!this.active) return;
 
+		const projectAtSaveStart = this.active;
 		try {
 			const scenes = this.editor.scenes.getScenes();
 			const updatedProject = {
-				...this.active,
+				...projectAtSaveStart,
 				scenes,
 				metadata: {
-					...this.active.metadata,
+					...projectAtSaveStart.metadata,
 					duration: getProjectDurationFromScenes({ scenes }),
 					updatedAt: new Date(),
 				},
 			};
 
 			await storageService.saveProject({ project: updatedProject });
-			this.active = updatedProject;
+			// Do not replace newer settings or metadata that were applied while the
+			// IndexedDB write was in flight. SaveManager will persist those changes in
+			// the next queued write.
+			if (this.active === projectAtSaveStart) {
+				this.active = updatedProject;
+			}
 			this.updateMetadata(updatedProject);
 		} catch (error) {
 			console.error("Failed to save project:", error);
+			throw error;
 		}
 	}
 
 	async export({ options }: { options: ExportOptions }): Promise<ExportResult> {
 		this.exportCancelRequested = false;
-		this.exportState = { isExporting: true, progress: 0, result: null };
+		this.exportState = {
+			isExporting: true,
+			progress: 0,
+			result: null,
+			options,
+		};
 		this.notify();
 
-		const result = await this.editor.renderer.exportProject({
-			options,
-			onProgress: ({ progress }) => {
-				this.exportState = { ...this.exportState, progress };
-				this.notify();
-			},
-			onCancel: () => this.exportCancelRequested,
-		});
+		let result: ExportResult;
+		try {
+			result = await this.editor.renderer.exportProject({
+				options,
+				onProgress: ({ progress }) => {
+					this.exportState = { ...this.exportState, progress };
+					this.notify();
+				},
+				onCancel: () => this.exportCancelRequested,
+			});
+		} catch (error) {
+			result = {
+				success: false,
+				error: error instanceof Error ? error.message : "Project export failed",
+			};
+		}
 
 		this.exportState = {
 			isExporting: false,
 			progress: this.exportState.progress,
 			result,
+			options,
 		};
 		this.notify();
 
@@ -361,26 +419,31 @@ export class ProjectManager {
 	}
 
 	async loadAllProjects(): Promise<void> {
-		if (!this.isInitialized) {
-			this.isLoading = true;
-			this.notify();
+		const shouldRetryFailedMigrations = this.migrationFailures.length > 0;
+		this.isLoading = true;
+		this.loadError = null;
+		this.migrationFailures = [];
+		if (shouldRetryFailedMigrations) {
+			this.storageMigrationPromise = null;
 		}
+		this.notify();
 
 		try {
-			await this.ensureStorageMigrations();
-			try {
-				const metadata = await storageService.loadAllProjectsMetadata();
-				this.savedProjects = metadata;
-				this.notify();
-			} catch (error) {
-				console.error("Failed to load projects:", error);
-			} finally {
-				this.isLoading = false;
-				this.isInitialized = true;
-				this.notify();
-			}
+			const migrationResult = await this.ensureStorageMigrations();
+			this.migrationFailures = migrationResult.failures;
+			const metadata = await storageService.loadAllProjectsMetadata();
+			this.savedProjects = metadata;
 		} catch (error) {
-			console.error("Failed to run migrations:", error);
+			console.error("Failed to load project library:", error);
+			const message =
+				error instanceof Error
+					? error.message
+					: typeof error === "string"
+						? error
+						: "An unknown project storage error occurred";
+			this.loadError =
+				message.trim() || "An unknown project storage error occurred";
+		} finally {
 			this.isLoading = false;
 			this.isInitialized = true;
 			this.notify();
@@ -420,6 +483,7 @@ export class ProjectManager {
 			this.notify();
 		} catch (error) {
 			console.error("Failed to delete projects:", error);
+			throw error;
 		}
 	}
 
@@ -522,12 +586,17 @@ export class ProjectManager {
 	}
 
 	closeProject(): void {
+		if (this.editor.save.getIsDirty()) {
+			throw new Error("Cannot close a project while it has unsaved changes");
+		}
+
 		this.active = null;
 		this.notify();
 
 		this.editor.media.clearAllAssets();
 		this.editor.scenes.clearScenes();
 		this.editor.command.clearLoadedProject();
+		this.editor.save.discardPending();
 	}
 
 	async renameProject({
@@ -759,13 +828,28 @@ export class ProjectManager {
 		if (!this.active) return;
 
 		try {
-			const didUpdateThumbnail = await this.updateThumbnailFromTimeline();
-			if (didUpdateThumbnail) {
-				await this.editor.save.flush();
-			}
-			await this.editor.command.flushHistory();
+			await this.updateThumbnailFromTimeline();
 		} catch (error) {
 			console.error("Failed to generate project thumbnail on exit:", error);
+		}
+
+		// The project write and command-history write are independent. Start both so
+		// one failure cannot prevent the other from getting its final flush.
+		const results = await Promise.allSettled([
+			this.editor.save.flush(),
+			this.editor.command.flushHistory(),
+		]);
+		const failures = results.flatMap((result) =>
+			result.status === "rejected" ? [result.reason] : [],
+		);
+		if (failures.length === 1) {
+			throw failures[0];
+		}
+		if (failures.length > 1) {
+			throw new AggregateError(
+				failures,
+				"Failed to persist the project on exit",
+			);
 		}
 	}
 
@@ -837,6 +921,14 @@ export class ProjectManager {
 
 	getIsInitialized(): boolean {
 		return this.isInitialized;
+	}
+
+	getLoadError(): string | null {
+		return this.loadError;
+	}
+
+	getMigrationFailures(): StorageMigrationFailure[] {
+		return this.migrationFailures;
 	}
 
 	getMigrationState(): MigrationState {

@@ -317,9 +317,11 @@ export function clearOpenAICredentials({
 export async function forwardCodexResponsesRequest({
 	credentials,
 	body,
+	signal,
 }: {
 	credentials: OpenAICodexCredentials;
 	body: Record<string, unknown>;
+	signal?: AbortSignal;
 }): Promise<unknown> {
 	const modelCandidates = getCodexModelCandidates(
 		typeof body.model === "string" ? body.model : webEnv.OPENAI_CODEX_MODEL,
@@ -342,6 +344,7 @@ export async function forwardCodexResponsesRequest({
 					originator: CODEX_ORIGINATOR,
 				},
 				body: JSON.stringify(requestBody),
+				signal,
 			},
 		);
 
@@ -379,7 +382,9 @@ export async function forwardCodexResponsesRequest({
 
 	throw new Error(
 		`OpenAI Codex request failed because no ChatGPT Codex model was accepted.${
-			lastUnsupportedModelMessage ? ` Last error: ${lastUnsupportedModelMessage}` : ""
+			lastUnsupportedModelMessage
+				? ` Last error: ${lastUnsupportedModelMessage}`
+				: ""
 		}`,
 	);
 }
@@ -392,7 +397,10 @@ function buildCodexResponsesRequestBody({
 	model?: string;
 }): Record<string, unknown> {
 	const { instructions, input } = normalizeResponsesInput(body.input);
-	const tools = normalizeResponsesTools(body.tools);
+	const webSearch = body.webSearch === true;
+	const tools = webSearch
+		? [{ type: "web_search", search_context_size: "low" }]
+		: normalizeResponsesTools(body.tools);
 	const selectedModel = normalizeCodexModelId(
 		model ??
 			(typeof body.model === "string" && body.model.trim()
@@ -404,12 +412,13 @@ function buildCodexResponsesRequestBody({
 		model: selectedModel,
 		store: false,
 		stream: true,
-		reasoning: { effort: "low" },
+		reasoning: { effort: "medium" },
 		...(instructions ? { instructions } : {}),
 		input,
 		...(tools ? { tools } : {}),
+		...(webSearch ? { include: ["web_search_call.action.sources"] } : {}),
 		tool_choice: tools ? "auto" : undefined,
-		parallel_tool_calls: false,
+		parallel_tool_calls: true,
 	};
 }
 
@@ -471,10 +480,12 @@ async function readCodexErrorMessage({
 }
 
 function isEventStreamResponse(response: Response): boolean {
-	return response.headers
-		.get("content-type")
-		?.toLowerCase()
-		.includes("text/event-stream") === true;
+	return (
+		response.headers
+			.get("content-type")
+			?.toLowerCase()
+			.includes("text/event-stream") === true
+	);
 }
 
 async function parseCodexResponsesStream({
@@ -530,7 +541,18 @@ interface CodexStreamOutputItem {
 	type?: string;
 	name?: string;
 	arguments?: string;
-	content?: Array<{ type?: string; text?: string; output_text?: string }>;
+	action?: {
+		type?: string;
+		query?: string;
+		queries?: string[];
+		sources?: Array<{ url: string; title?: string }>;
+	};
+	content?: Array<{
+		type?: string;
+		text?: string;
+		output_text?: string;
+		annotations?: Array<{ type: "url_citation"; url: string; title?: string }>;
+	}>;
 }
 
 interface CodexStreamState {
@@ -801,7 +823,9 @@ function isCodexResponseShape(value: Record<string, unknown>): boolean {
 	);
 }
 
-function normalizeCodexOutputItem(value: unknown): CodexStreamOutputItem | null {
+function normalizeCodexOutputItem(
+	value: unknown,
+): CodexStreamOutputItem | null {
 	if (!isRecord(value)) return null;
 	const type = typeof value.type === "string" ? value.type : undefined;
 	if (type === "function_call") {
@@ -821,15 +845,22 @@ function normalizeCodexOutputItem(value: unknown): CodexStreamOutputItem | null 
 					.filter(
 						(
 							item,
-						): item is NonNullable<
-							CodexStreamOutputItem["content"]
-						>[number] => item !== null,
+						): item is NonNullable<CodexStreamOutputItem["content"]>[number] =>
+							item !== null,
 					)
 			: undefined;
 		return {
 			id: typeof value.id === "string" ? value.id : undefined,
 			type,
 			content,
+		};
+	}
+
+	if (type === "web_search_call") {
+		return {
+			id: typeof value.id === "string" ? value.id : undefined,
+			type,
+			action: normalizeCodexWebSearchAction(value.action),
 		};
 	}
 
@@ -849,9 +880,63 @@ function normalizeCodexContentPart(
 			: typeof value.output_text === "string"
 				? value.output_text
 				: undefined;
+	const annotations = Array.isArray(value.annotations)
+		? value.annotations
+				.flatMap((annotation) => {
+					if (
+						!isRecord(annotation) ||
+						annotation.type !== "url_citation" ||
+						typeof annotation.url !== "string"
+					) {
+						return [];
+					}
+					return [
+						{
+							type: "url_citation" as const,
+							url: annotation.url,
+							...(typeof annotation.title === "string"
+								? { title: annotation.title }
+								: {}),
+						},
+					];
+				})
+				.slice(0, 20)
+		: undefined;
 	return {
 		type: typeof value.type === "string" ? value.type : undefined,
 		...(text ? { text, output_text: text } : {}),
+		...(annotations?.length ? { annotations } : {}),
+	};
+}
+
+function normalizeCodexWebSearchAction(
+	value: unknown,
+): CodexStreamOutputItem["action"] {
+	if (!isRecord(value)) return undefined;
+	const sources = Array.isArray(value.sources)
+		? value.sources
+				.flatMap((source) => {
+					if (!isRecord(source) || typeof source.url !== "string") return [];
+					return [
+						{
+							url: source.url,
+							...(typeof source.title === "string"
+								? { title: source.title }
+								: {}),
+						},
+					];
+				})
+				.slice(0, 20)
+		: undefined;
+	return {
+		type: typeof value.type === "string" ? value.type : undefined,
+		query: typeof value.query === "string" ? value.query : undefined,
+		queries: Array.isArray(value.queries)
+			? value.queries.filter(
+					(query): query is string => typeof query === "string",
+				)
+			: undefined,
+		...(sources?.length ? { sources } : {}),
 	};
 }
 
@@ -867,12 +952,12 @@ function looksLikeCodexEventStream(text: string): boolean {
 	if (/(^|\n)\s*data:/.test(text)) {
 		return true;
 	}
-	return text
-		.split(/\r?\n/)
-		.some((line) => {
-			const event = parseJsonObject(line.trim());
-			return typeof event?.type === "string" && event.type.startsWith("response.");
-		});
+	return text.split(/\r?\n/).some((line) => {
+		const event = parseJsonObject(line.trim());
+		return (
+			typeof event?.type === "string" && event.type.startsWith("response.")
+		);
+	});
 }
 
 function looksLikeHtmlResponse({

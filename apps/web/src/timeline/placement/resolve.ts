@@ -1,5 +1,5 @@
-import type { SceneTracks, TrackType, TimelineTrack } from "@/timeline";
-import { getDisplayTracks } from "@/timeline";
+import { getDisplayTracks } from "@/timeline/track-order";
+import type { SceneTracks, TrackType, TimelineTrack } from "@/timeline/types";
 import {
 	getDefaultInsertIndexForTrack,
 	getHighestInsertIndexForTrack,

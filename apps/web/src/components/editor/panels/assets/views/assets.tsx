@@ -48,8 +48,9 @@ import {
 } from "@/editor/use-editor";
 import { useFileUpload } from "@/media/use-file-upload";
 import { invokeAction } from "@/actions";
-import { processMediaAssets } from "@/media/processing";
+import { processLocalDriveMedia, processMediaAssets } from "@/media/processing";
 import { showMediaUploadToast } from "@/media/upload-toast";
+import { pickLocalMedia } from "@/services/local-drive/client";
 import {
 	SelectableItem,
 	SelectableSurface,
@@ -59,6 +60,7 @@ import {
 import { buildElementFromMedia } from "@/timeline/element-utils";
 import { PodcastSyncDialog } from "@/podcast-sync/components/podcast-sync-dialog";
 import { unnestSceneTracks } from "@/podcast-sync/scene";
+import { exportSceneToPremiereXml } from "@/export/premiere-xml";
 import {
 	type MediaSortKey,
 	type MediaSortOrder,
@@ -89,7 +91,7 @@ import {
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { Layers2, SplitSquareHorizontal } from "lucide-react";
+import { FileOutput, Layers2, SplitSquareHorizontal } from "lucide-react";
 
 type MediaListEntry =
 	| { type: "media"; item: MediaAsset }
@@ -162,12 +164,51 @@ export function MediaView() {
 		}
 	};
 
-	const { isDragOver, dragProps, openFilePicker, fileInputProps } =
-		useFileUpload({
-			accept: "image/*,video/*,audio/*",
-			multiple: true,
-			onFilesSelected: (files) => processFiles({ files }),
-		});
+	const importFromDrive = async () => {
+		if (!activeProject || isProcessing) return;
+		setIsProcessing(true);
+		setProgress(0);
+		try {
+			const records = await pickLocalMedia({
+				projectId: activeProject.metadata.id,
+			});
+			if (records.length === 0) return;
+			await showMediaUploadToast({
+				filesCount: records.length,
+				promise: async () => {
+					const processedAssets = await processLocalDriveMedia({
+						projectId: activeProject.metadata.id,
+						records,
+						onProgress: ({ progress }) => setProgress(progress),
+					});
+					for (const asset of processedAssets) {
+						await editor.media.addMediaAsset({
+							projectId: activeProject.metadata.id,
+							asset,
+						});
+					}
+					return {
+						uploadedCount: processedAssets.length,
+						assetNames: processedAssets.map((asset) => asset.name),
+					};
+				},
+			});
+		} catch (error) {
+			console.error("Drive import failed:", error);
+			toast.error("Could not import from the drive", {
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsProcessing(false);
+			setProgress(0);
+		}
+	};
+
+	const { isDragOver, dragProps, fileInputProps } = useFileUpload({
+		accept: "image/*,video/*,audio/*",
+		multiple: true,
+		onFilesSelected: (files) => processFiles({ files }),
+	});
 
 	const handleRemove = useCallback(
 		({ event, ids }: { event: React.MouseEvent; ids: string[] }) => {
@@ -217,8 +258,8 @@ export function MediaView() {
 					valueB = b.duration || 0;
 					break;
 				case "size":
-					valueA = a.file.size;
-					valueB = b.file.size;
+					valueA = a.size ?? a.file?.size ?? 0;
+					valueB = b.size ?? b.file?.size ?? 0;
 					break;
 				default:
 					return 0;
@@ -241,15 +282,16 @@ export function MediaView() {
 
 	const handleCreatePodcastSync = useCallback(
 		({ ids }: { ids: string[] }) => {
-			const selectedIdSet = new Set(ids);
-			const selectedAssets = mediaFiles.filter((asset) =>
-				selectedIdSet.has(asset.id),
-			);
-			if (selectedAssets.length === 0) {
-				toast.error("Select media files first");
+			if (ids.length === 0) {
+				setPodcastSyncAssets(mediaFiles.filter((asset) => !asset.ephemeral));
 				return;
 			}
-			setPodcastSyncAssets(selectedAssets);
+			const selectedIdSet = new Set(ids);
+			setPodcastSyncAssets(
+				mediaFiles.filter(
+					(asset) => !asset.ephemeral && selectedIdSet.has(asset.id),
+				),
+			);
 		},
 		[mediaFiles],
 	);
@@ -283,6 +325,30 @@ export function MediaView() {
 		},
 		[activeScene, editor],
 	);
+	const handlePremiereExport = useCallback(
+		({ scene }: { scene: TScene }) => {
+			if (!activeProject) {
+				toast.error("Project is not available");
+				return;
+			}
+			try {
+				exportSceneToPremiereXml({
+					scene,
+					mediaAssets: mediaFiles,
+					fps: activeProject.settings.fps,
+					canvasSize: activeProject.settings.canvasSize,
+				});
+				toast.success(`Exported “${scene.name}” for Premiere Pro`);
+			} catch (error) {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Premiere XML export failed",
+				);
+			}
+		},
+		[activeProject, mediaFiles],
+	);
 	const handleSelectionChange = useCallback(
 		(selection: { selectedIds: string[] }) => {
 			setSelectedMediaIds(selection.selectedIds);
@@ -315,7 +381,7 @@ export function MediaView() {
 						sortBy={mediaSortBy}
 						sortOrder={mediaSortOrder}
 						onSort={handleSort}
-						onImport={openFilePicker}
+						onImport={() => void importFromDrive()}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
 					/>
@@ -332,7 +398,7 @@ export function MediaView() {
 						isVisible={true}
 						isProcessing={isProcessing}
 						progress={progress}
-						onClick={openFilePicker}
+						onClick={() => void importFromDrive()}
 					/>
 				) : (
 					<SelectableSurface
@@ -354,6 +420,7 @@ export function MediaView() {
 							onCreatePodcastSync={handleCreatePodcastSync}
 							onOpenSequence={handleOpenSequence}
 							onUnnestSequence={handleUnnestSequence}
+							onPremiereExport={handlePremiereExport}
 						/>
 					</SelectableSurface>
 				)}
@@ -483,6 +550,7 @@ function MediaItemList({
 	onCreatePodcastSync,
 	onOpenSequence,
 	onUnnestSequence,
+	onPremiereExport,
 }: {
 	items: MediaAsset[];
 	sequences: TScene[];
@@ -500,6 +568,7 @@ function MediaItemList({
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
+	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 }) {
 	const isGrid = mode === "grid";
 	const listRef = useRef<ListImperativeAPI | null>(null);
@@ -573,6 +642,7 @@ function MediaItemList({
 				onOpenSequence,
 				onRemove,
 				onUnnestSequence,
+				onPremiereExport,
 			}}
 			style={{ height: listHeight, width: "100%" }}
 		/>
@@ -593,6 +663,7 @@ type MediaListRowProps = {
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
+	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 };
 
 function MediaListRow({
@@ -605,6 +676,7 @@ function MediaListRow({
 	onCreatePodcastSync,
 	onOpenSequence,
 	onUnnestSequence,
+	onPremiereExport,
 }: RowComponentProps<MediaListRowProps>) {
 	const isGrid = mode === "grid";
 	const rowEntries = getMediaVirtualRowEntries({
@@ -628,6 +700,7 @@ function MediaListRow({
 					onCreatePodcastSync={onCreatePodcastSync}
 					onOpenSequence={onOpenSequence}
 					onUnnestSequence={onUnnestSequence}
+					onPremiereExport={onPremiereExport}
 				/>
 			))}
 		</div>
@@ -641,6 +714,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 	onCreatePodcastSync,
 	onOpenSequence,
 	onUnnestSequence,
+	onPremiereExport,
 }: {
 	entry: MediaListEntry;
 	variant: "grid" | "compact";
@@ -654,6 +728,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
+	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 }) {
 	const isGrid = variant === "grid";
 
@@ -664,6 +739,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 				variant={variant}
 				onOpenSequence={onOpenSequence}
 				onUnnestSequence={onUnnestSequence}
+				onPremiereExport={onPremiereExport}
 			/>
 		);
 	}
@@ -697,11 +773,13 @@ function SequenceItem({
 	variant,
 	onOpenSequence,
 	onUnnestSequence,
+	onPremiereExport,
 }: {
 	scene: TScene;
 	variant: "grid" | "compact";
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
+	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 }) {
 	const isGrid = variant === "grid";
 	const content = (
@@ -740,6 +818,10 @@ function SequenceItem({
 				<ContextMenuItem onClick={() => onUnnestSequence({ scene })}>
 					<SplitSquareHorizontal className="size-4" />
 					Unnest into timeline
+				</ContextMenuItem>
+				<ContextMenuItem onClick={() => onPremiereExport({ scene })}>
+					<FileOutput className="size-4" />
+					Export Premiere Pro XML
 				</ContextMenuItem>
 			</ContextMenuContent>
 		</ContextMenu>
@@ -971,18 +1053,21 @@ function MediaActions({
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			{selectedCount > 0 ? (
-				<Button
-					variant="outline"
-					onClick={onPodcastSync}
-					disabled={isProcessing}
-					size="sm"
-					className="items-center justify-center gap-1.5"
-				>
-					<SplitSquareHorizontal className="size-4" />
-					Sync
-				</Button>
-			) : null}
+			<Button
+				variant="outline"
+				onClick={onPodcastSync}
+				disabled={isProcessing}
+				size="sm"
+				className="items-center justify-center gap-1.5"
+				title={
+					selectedCount > 0
+						? `Build podcast multicam from ${selectedCount} selected files`
+						: "Build a podcast multicam sequence"
+				}
+			>
+				<SplitSquareHorizontal className="size-4" />
+				Podcast multicam
+			</Button>
 			<Button
 				variant="outline"
 				onClick={onImport}

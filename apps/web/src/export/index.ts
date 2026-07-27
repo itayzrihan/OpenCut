@@ -31,6 +31,7 @@ export interface ExportState {
 	isExporting: boolean;
 	progress: number;
 	result: ExportResult | null;
+	options?: ExportOptions;
 }
 
 export function getExportMimeType({

@@ -22,6 +22,11 @@ export interface MediaAssetData {
 	type: MediaType;
 	size: number;
 	lastModified: number;
+	fileName?: string;
+	mimeType?: string;
+	storageKind?: "copied" | "linked";
+	sourcePath?: string;
+	missing?: boolean;
 	width?: number;
 	height?: number;
 	duration?: number;

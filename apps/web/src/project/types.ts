@@ -42,12 +42,52 @@ export interface TTimelineViewState {
 	playheadTime: MediaTime;
 }
 
+export interface AiEditTargetRefs {
+	sceneId?: string;
+	trackId?: string;
+	elementId?: string;
+	effectId?: string;
+	transitionId?: string;
+	keyframeId?: string;
+	propertyPath?: string;
+}
+
+export type AiEditAnchor =
+	| { kind: "range"; startTime: MediaTime; duration: MediaTime }
+	| { kind: "point"; time: MediaTime }
+	| { kind: "project" };
+
+export interface AiEditLayerRecord {
+	id: string;
+	operationType: string;
+	label: string;
+	reason?: string;
+	anchor: AiEditAnchor;
+	refs: AiEditTargetRefs[];
+	operationIds: string[];
+	operationCount: number;
+	tombstone: boolean;
+}
+
+export interface AiEditPlanRecord {
+	schemaVersion: number;
+	id: string;
+	title: string;
+	summary: string;
+	appliedAt?: string;
+	sceneId?: string;
+	layers: AiEditLayerRecord[];
+	operationCount: number;
+	truncatedOperationCount: number;
+}
+
 export interface TProject {
 	metadata: TProjectMetadata;
 	scenes: TScene[];
 	currentSceneId: string;
 	settings: TProjectSettings;
 	customFonts?: ProjectFont[];
+	aiEditHistory?: AiEditPlanRecord[];
 	version: number;
 	timelineViewState?: TTimelineViewState;
 }

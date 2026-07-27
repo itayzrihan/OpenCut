@@ -34,6 +34,11 @@ import {
 } from "@/services/background-removal";
 import type { VideoElement } from "@/timeline";
 import { cn } from "@/utils/ui";
+import {
+	areBackgroundRemovalSettingsEqual,
+	createBackgroundRemovalDraft,
+	shouldResetBackgroundRemovalDraft,
+} from "../background-removal-draft";
 
 const MODES: Array<{
 	id: BackgroundRemovalMode;
@@ -55,16 +60,43 @@ export function BackgroundRemovalTab({
 	const editor = useEditor();
 	const modelStatus = useBackgroundRemovalStatus();
 	const persistedSettings = element.backgroundRemoval;
+	const [defaultSettings] = useState(() =>
+		getDefaultBackgroundRemovalSettings(),
+	);
 	const [duplicateOnEnable, setDuplicateOnEnable] = useState(false);
 	const [draft, setDraft] = useState<BackgroundRemovalSettings>(() =>
-		createDraftSettings({ persistedSettings }),
+		createBackgroundRemovalDraft({ persistedSettings, defaultSettings }),
 	);
-	const [persistedSnapshot, setPersistedSnapshot] = useState(persistedSettings);
+	const [draftSource, setDraftSource] = useState(() => ({
+		elementId: element.id,
+		persistedSettings,
+	}));
 
-	if (persistedSettings !== persistedSnapshot) {
-		setPersistedSnapshot(persistedSettings);
-		setDraft(createDraftSettings({ persistedSettings }));
+	if (
+		shouldResetBackgroundRemovalDraft({
+			previousElementId: draftSource.elementId,
+			nextElementId: element.id,
+			previousSettings: draftSource.persistedSettings,
+			nextSettings: persistedSettings,
+		})
+	) {
+		setDraftSource({ elementId: element.id, persistedSettings });
+		setDraft(
+			createBackgroundRemovalDraft({ persistedSettings, defaultSettings }),
+		);
+		if (element.id !== draftSource.elementId) {
+			setDuplicateOnEnable(false);
+		}
 	}
+
+	const persistedDraft = createBackgroundRemovalDraft({
+		persistedSettings,
+		defaultSettings,
+	});
+	const isDirty = !areBackgroundRemovalSettingsEqual({
+		left: draft,
+		right: persistedDraft,
+	});
 
 	useEffect(() => {
 		if (persistedSettings?.enabled) {
@@ -72,38 +104,43 @@ export function BackgroundRemovalTab({
 		}
 	}, [persistedSettings?.enabled]);
 
-	const commit = ({
-		next,
-		allowDuplicate = false,
-	}: {
-		next: BackgroundRemovalSettings;
-		allowDuplicate?: boolean;
-	}) => {
-		setDraft(next);
-		if (!persistedSettings && !next.enabled) return;
-		editor.timeline.setBackgroundRemoval({
+	const applyDraft = () => {
+		if (!isDirty) return;
+		const target = editor.timeline.setBackgroundRemoval({
 			trackId,
 			elementId: element.id,
-			settings: next,
-			duplicate: allowDuplicate && !persistedSettings && duplicateOnEnable,
+			settings: draft,
+			duplicate: !persistedSettings && draft.enabled && duplicateOnEnable,
 		});
-		if (next.enabled) {
+		if (target && draft.enabled) {
 			void backgroundRemovalService.preload().catch(() => undefined);
 		}
 	};
 
-	const commitPatch = ({
-		patch,
-		allowDuplicate,
-	}: {
-		patch: Partial<BackgroundRemovalSettings>;
-		allowDuplicate?: boolean;
-	}) => commit({ next: { ...draft, ...patch }, allowDuplicate });
+	const updateDraft = (patch: Partial<BackgroundRemovalSettings>) =>
+		setDraft((current) => ({ ...current, ...patch }));
+
+	const cancelDraft = () => {
+		setDraft(persistedDraft);
+	};
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="flex h-11 shrink-0 items-center border-b px-3.5">
+			<div className="sticky top-0 z-10 flex h-11 shrink-0 items-center gap-2 border-b bg-background/95 px-3.5 backdrop-blur">
 				<SectionTitle>Person background</SectionTitle>
+				<div className="ml-auto flex items-center gap-1.5">
+					<Button
+						variant="ghost"
+						size="sm"
+						disabled={!isDirty}
+						onClick={cancelDraft}
+					>
+						Cancel
+					</Button>
+					<Button size="sm" disabled={!isDirty} onClick={applyDraft}>
+						Apply
+					</Button>
+				</div>
 			</div>
 
 			<Section
@@ -113,10 +150,8 @@ export function BackgroundRemovalTab({
 				<SectionHeader
 					trailing={
 						<Switch
-							checked={persistedSettings?.enabled ?? false}
-							onCheckedChange={(enabled) =>
-								commitPatch({ patch: { enabled }, allowDuplicate: enabled })
-							}
+							checked={draft.enabled}
+							onCheckedChange={(enabled) => updateDraft({ enabled })}
 							aria-label="Enable person background processing"
 						/>
 					}
@@ -129,6 +164,10 @@ export function BackgroundRemovalTab({
 							Detects people on-device with MODNet. Frames stay local; the model
 							downloads once and is cached by the browser.
 						</p>
+						<p className="text-xs leading-relaxed text-muted-foreground">
+							Choose an effect and tuning, then Apply. The complete change is
+							stored as one undoable edit.
+						</p>
 
 						<div className="grid grid-cols-3 gap-1.5">
 							{MODES.map((mode) => (
@@ -140,12 +179,7 @@ export function BackgroundRemovalTab({
 										"h-auto min-w-0 flex-col items-start gap-0.5 px-2.5 py-2 text-left",
 										draft.mode === mode.id && "border-primary/40 bg-primary/10",
 									)}
-									onClick={() =>
-										commitPatch({
-											patch: { mode: mode.id, enabled: true },
-											allowDuplicate: true,
-										})
-									}
+									onClick={() => updateDraft({ mode: mode.id, enabled: true })}
 								>
 									<span className="text-xs font-medium">{mode.label}</span>
 									<span className="whitespace-normal text-[10px] leading-tight text-muted-foreground">
@@ -160,7 +194,7 @@ export function BackgroundRemovalTab({
 								value={draft.quality}
 								onValueChange={(quality) => {
 									if (isBackgroundRemovalQuality(quality)) {
-										commitPatch({ patch: { quality } });
+										updateDraft({ quality });
 									}
 								}}
 							>
@@ -191,9 +225,6 @@ export function BackgroundRemovalTab({
 							onDraft={(maskThreshold) =>
 								setDraft((value) => ({ ...value, maskThreshold }))
 							}
-							onCommit={(maskThreshold) =>
-								commitPatch({ patch: { maskThreshold } })
-							}
 						/>
 						<TuningSlider
 							label="Edge detail"
@@ -204,9 +235,6 @@ export function BackgroundRemovalTab({
 							format={(value) => `${Math.round(value * 100)}%`}
 							onDraft={(edgeContrast) =>
 								setDraft((value) => ({ ...value, edgeContrast }))
-							}
-							onCommit={(edgeContrast) =>
-								commitPatch({ patch: { edgeContrast } })
 							}
 						/>
 						<TuningSlider
@@ -219,9 +247,6 @@ export function BackgroundRemovalTab({
 							onDraft={(edgeFeather) =>
 								setDraft((value) => ({ ...value, edgeFeather }))
 							}
-							onCommit={(edgeFeather) =>
-								commitPatch({ patch: { edgeFeather } })
-							}
 						/>
 						<TuningSlider
 							label="Temporal stability"
@@ -232,9 +257,6 @@ export function BackgroundRemovalTab({
 							format={(value) => `${Math.round(value * 100)}%`}
 							onDraft={(temporalSmoothing) =>
 								setDraft((value) => ({ ...value, temporalSmoothing }))
-							}
-							onCommit={(temporalSmoothing) =>
-								commitPatch({ patch: { temporalSmoothing } })
 							}
 						/>
 
@@ -248,9 +270,6 @@ export function BackgroundRemovalTab({
 								format={(value) => `${Math.round(value * 100)}%`}
 								onDraft={(blurStrength) =>
 									setDraft((value) => ({ ...value, blurStrength }))
-								}
-								onCommit={(blurStrength) =>
-									commitPatch({ patch: { blurStrength } })
 								}
 							/>
 						)}
@@ -286,12 +305,9 @@ export function BackgroundRemovalTab({
 							variant="outline"
 							size="sm"
 							onClick={() =>
-								commit({
-									next: {
-										...getDefaultBackgroundRemovalSettings(),
-										enabled: persistedSettings?.enabled ?? false,
-									},
-									allowDuplicate: false,
+								setDraft({
+									...defaultSettings,
+									enabled: draft.enabled,
 								})
 							}
 						>
@@ -301,19 +317,6 @@ export function BackgroundRemovalTab({
 				</SectionContent>
 			</Section>
 		</div>
-	);
-}
-
-function createDraftSettings({
-	persistedSettings,
-}: {
-	persistedSettings: BackgroundRemovalSettings | undefined;
-}): BackgroundRemovalSettings {
-	return (
-		persistedSettings ?? {
-			...getDefaultBackgroundRemovalSettings(),
-			enabled: false,
-		}
 	);
 }
 
@@ -331,7 +334,6 @@ function TuningSlider({
 	step,
 	format,
 	onDraft,
-	onCommit,
 }: {
 	label: string;
 	value: number;
@@ -340,7 +342,6 @@ function TuningSlider({
 	step: number;
 	format: (value: number) => string;
 	onDraft: (value: number) => void;
-	onCommit: (value: number) => void;
 }) {
 	return (
 		<SectionField label={label}>
@@ -351,7 +352,6 @@ function TuningSlider({
 					max={max}
 					step={step}
 					onValueChange={([next]) => next !== undefined && onDraft(next)}
-					onValueCommit={([next]) => next !== undefined && onCommit(next)}
 				/>
 				<span className="w-14 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
 					{format(value)}

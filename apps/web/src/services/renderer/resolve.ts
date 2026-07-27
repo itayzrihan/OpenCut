@@ -9,10 +9,7 @@ import {
 	intensityToSigma,
 } from "@/effects/definitions/blur";
 import { getEffectDefinition, resolveEffectPasses } from "@/effects";
-import {
-	isOverlayMovementParams,
-	resolveOverlayMovementFrame,
-} from "@/effects/overlay-movement-presets";
+import { resolveOverlayMovementFrame } from "@/effects/overlay-movement-presets";
 import type { Effect, EffectPass } from "@/effects/types";
 import { getSourceTimeAtClipTime } from "@/retime";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects/custom-ai-effect";
@@ -38,7 +35,6 @@ import {
 } from "./nodes/blur-background-node";
 import {
 	EffectLayerNode,
-	type EffectLayerOverlay,
 	type ResolvedEffectLayerNodeState,
 } from "./nodes/effect-layer-node";
 import {
@@ -236,6 +232,7 @@ async function resolveVideoNode({
 	const frame = await videoCache.getFrameAt({
 		mediaId: node.params.mediaId,
 		file: node.params.file,
+		url: node.params.url,
 		time: mediaTimeToSeconds({
 			time: roundMediaTime({ time: sourceTimeTicks }),
 		}),
@@ -423,7 +420,7 @@ async function resolveTextNode({
 	const clipMedia = node.params.clipMediaAsset;
 	if (clipMedia?.url && clipMedia.type === "image") {
 		clipMediaSource = (await loadImageSource({ url: clipMedia.url })).source;
-	} else if (clipMedia?.file && clipMedia.type === "video") {
+	} else if (clipMedia?.url && clipMedia.type === "video") {
 		const mediaDuration = Math.max(
 			0.001,
 			clipMedia.duration ?? node.params.duration,
@@ -431,6 +428,7 @@ async function resolveTextNode({
 		const frame = await videoCache.getFrameAt({
 			mediaId: clipMedia.id,
 			file: clipMedia.file,
+			url: clipMedia.url,
 			time: localTime % mediaDuration,
 		});
 		clipMediaSource = frame?.canvas;
@@ -530,6 +528,7 @@ async function resolveBackdropSource({
 		const frame = await videoCache.getFrameAt({
 			mediaId: node.params.mediaId,
 			file: node.params.file,
+			url: node.params.url,
 			time: mediaTimeToSeconds({
 				time: roundMediaTime({ time: sourceTimeTicks }),
 			}),
@@ -607,66 +606,7 @@ function resolveEffectLayerNode({
 		};
 	}
 
-	const overlay = buildCustomAiEffectOverlay({
-		effectType: node.params.effectType,
-		effectParams: node.params.effectParams,
-		definitionType: definition.type,
-	});
-	if (!overlay) {
-		return null;
-	}
-
-	return {
-		passes: [],
-		visualOverlay: null,
-		movement: null,
-		overlay,
-	};
-}
-
-function buildCustomAiEffectOverlay({
-	effectType,
-	effectParams,
-	definitionType,
-}: {
-	effectType: string;
-	effectParams: Record<string, unknown>;
-	definitionType: string;
-}): EffectLayerOverlay | null {
-	if (definitionType !== CUSTOM_AI_EFFECT_TYPE) {
-		return null;
-	}
-	if (isOverlayMovementParams({ params: effectParams })) {
-		return null;
-	}
-
-	const label =
-		readStringParam({ params: effectParams, key: "label" }) ||
-		readStringParam({ params: effectParams, key: "requestedType" }) ||
-		effectType ||
-		"Custom AI edit";
-	const intent =
-		readStringParam({ params: effectParams, key: "intent" }) ||
-		readStringParam({ params: effectParams, key: "kind" }) ||
-		undefined;
-
-	return {
-		label,
-		intent,
-	};
-}
-
-function readStringParam({
-	params,
-	key,
-}: {
-	params: Record<string, unknown>;
-	key: string;
-}): string | null {
-	const value = params[key];
-	if (typeof value !== "string") {
-		return null;
-	}
-	const trimmed = value.trim();
-	return trimmed || null;
+	// Unknown custom specs are metadata, not pixels. Rendering a diagnostic
+	// card here would silently place editor internals into preview and export.
+	return null;
 }

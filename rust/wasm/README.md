@@ -25,17 +25,12 @@ Functions are implemented in Rust under [`rust/crates/`](../crates/). This packa
 
 ## Local development
 
-The web app depends on the published `opencut-wasm` package by default. If you are editing the WASM source in this repo and want `apps/web` to use your local build instead:
+The web app resolves `opencut-wasm` directly from this generated package so
+the JavaScript glue and `.wasm` binary cannot drift between copied dependency
+caches. Build it from the repository root before starting the web app:
 
 ```bash
-# From the repo root
 bun run build:wasm
-
-cd rust/wasm/pkg
-bun link
-
-cd ../../../apps/web
-bun link opencut-wasm
 ```
 
 While you work, rebuild on changes from the repo root:
@@ -43,3 +38,6 @@ While you work, rebuild on changes from the repo root:
 ```bash
 bun dev:wasm
 ```
+
+Restart `bun dev:web` after adding or removing a Rust export because a running
+browser cannot hot-swap an instantiated WebAssembly export table.

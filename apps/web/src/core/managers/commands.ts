@@ -29,13 +29,16 @@ export class CommandManager {
 	private reactors: Array<() => void> = [];
 	private activeProjectId: string | null = null;
 	private historySaveQueue: Promise<void> = Promise.resolve();
+	private transactionDepth = 0;
 
 	constructor(private editor: EditorCore) {}
 
 	execute({ command }: { command: Command }): Command {
-		const beforeSnapshot = command.canPersistHistory
-			? this.captureProjectSnapshot()
-			: null;
+		const shouldRecordHistory = this.transactionDepth === 0;
+		const beforeSnapshot =
+			shouldRecordHistory && command.canPersistHistory
+				? this.captureProjectSnapshot()
+				: null;
 		const beforeTracks = this.isRippleEnabled
 			? (this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null)
 			: null;
@@ -44,6 +47,9 @@ export class CommandManager {
 		this.applyRippleIfEnabled({ beforeTracks });
 		const selectionOverride = this.applySelectionOverride(result);
 		this.runReactors();
+		if (!shouldRecordHistory) {
+			return command;
+		}
 		const afterSnapshot = command.canPersistHistory
 			? this.captureProjectSnapshot()
 			: null;
@@ -57,6 +63,40 @@ export class CommandManager {
 		this.redoStack = [];
 		this.persistHistory();
 		return command;
+	}
+
+	/** Execute several editor commands as one atomic, persisted undo entry. */
+	executeTransaction<T>({ execute }: { execute: () => T }): T {
+		if (this.transactionDepth > 0) {
+			return execute();
+		}
+
+		const beforeSnapshot = this.captureProjectSnapshot();
+		const previousSelection = this.getSelectionSnapshot();
+		this.transactionDepth += 1;
+		try {
+			const result = execute();
+			const afterSnapshot = this.captureProjectSnapshot();
+			if (beforeSnapshot && afterSnapshot) {
+				this.history.push({
+					previousSelection,
+					selectionOverride: this.getSelectionSnapshot(),
+					beforeSnapshot,
+					afterSnapshot,
+				});
+				this.redoStack = [];
+				this.persistHistory();
+			}
+			return result;
+		} catch (error) {
+			if (beforeSnapshot) {
+				this.restoreProjectSnapshot({ snapshot: beforeSnapshot });
+			}
+			this.editor.selection.restoreSnapshot({ snapshot: previousSelection });
+			throw error;
+		} finally {
+			this.transactionDepth -= 1;
+		}
 	}
 
 	push({
@@ -258,6 +298,9 @@ export class CommandManager {
 			customFonts: project.customFonts
 				? this.cloneData(project.customFonts)
 				: undefined,
+			aiEditHistory: project.aiEditHistory
+				? this.cloneData(project.aiEditHistory)
+				: [],
 			version: project.version,
 			timelineViewState: project.timelineViewState
 				? this.cloneData(project.timelineViewState)
@@ -386,6 +429,9 @@ export class CommandManager {
 			customFonts: snapshot.customFonts
 				? this.cloneData(snapshot.customFonts)
 				: undefined,
+			aiEditHistory: snapshot.aiEditHistory
+				? this.cloneData(snapshot.aiEditHistory)
+				: [],
 			version: snapshot.version,
 			timelineViewState: snapshot.timelineViewState
 				? this.cloneData(snapshot.timelineViewState)

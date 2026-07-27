@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build:tools": "turbo run build --filter=@opencut/tools",
-    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg",
+    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
     "build:web": "bun run build:wasm && turbo run build --filter=@opencut/web",
     "deploy:web": "turbo run deploy --filter=@opencut/web",
     "dev:tools": "turbo run dev --filter=@opencut/tools",

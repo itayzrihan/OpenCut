@@ -1,5 +1,5 @@
 import type { MediaAsset } from "@/media/types";
-import { getDisplayTracks as getTimelineDisplayTracks } from "@/timeline";
+import { getDisplayTracks as getTimelineDisplayTracks } from "@/timeline/track-order";
 import type {
 	Bookmark,
 	ElementRef,
@@ -7,7 +7,7 @@ import type {
 	TimelineElement,
 	TimelineTrack,
 	TrackType,
-} from "@/timeline";
+} from "@/timeline/types";
 import type {
 	AiElementSummary,
 	AiLayerSummary,
@@ -98,6 +98,16 @@ export function buildTimelineContextIndex({
 							params: summarizeParams(effect.params),
 						}))
 					: [];
+			const masks =
+				"masks" in element && Array.isArray(element.masks)
+					? element.masks.map((mask) => ({
+							id: mask.id,
+							type: mask.type,
+							...("inverted" in mask && typeof mask.inverted === "boolean"
+								? { inverted: mask.inverted }
+								: {}),
+						}))
+					: [];
 			const keyframes = summarizeAnimations({
 				animations: "animations" in element ? element.animations : undefined,
 			});
@@ -123,6 +133,10 @@ export function buildTimelineContextIndex({
 					? { text: element.params.content }
 					: {}),
 				...(effects.length > 0 ? { effects } : {}),
+				...(masks.length > 0 ? { masks } : {}),
+				...(element.type === "video" && element.backgroundRemoval
+					? { backgroundRemoval: element.backgroundRemoval }
+					: {}),
 				...(keyframes.length > 0 ? { keyframes } : {}),
 				...("hidden" in element ? { hidden: element.hidden } : {}),
 				...(element.type === "audio" && element.params.muted === true

@@ -1,13 +1,14 @@
 import { toast } from "sonner";
 import { getMediaTypeFromFile } from "@/media/media-utils";
-import { formatStorageBytes } from "@/services/storage/quota";
-import { storageService } from "@/services/storage/service";
 import type { MediaAsset } from "@/media/types";
+import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
+import { localDriveRequest } from "@/services/local-drive/client";
+import { mediaStorageDisposition } from "opencut-wasm";
 import { readVideoFile } from "./mediabunny";
 import type { VideoFileData } from "./mediabunny";
 import { renderThumbnailDataUrl } from "./thumbnail";
 
-export interface ProcessedMediaAsset extends Omit<MediaAsset, "id"> {}
+export type ProcessedMediaAsset = Omit<MediaAsset, "id"> & { id?: string };
 
 const getUnsupportedVideoDescription = ({
 	codec,
@@ -21,32 +22,15 @@ const getUnsupportedVideoDescription = ({
 		: `${codecLabel} cannot be decoded in this browser, so this clip may not preview correctly. Convert it to H.264 MP4 and reimport it.`;
 };
 
-const getStorageLimitDescription = ({
-	fileSize,
-	availableBytes,
-}: {
-	fileSize: number;
-	availableBytes: number | null;
-}): string => {
-	const fileSizeLabel = formatStorageBytes({ bytes: fileSize });
-
-	if (availableBytes === null) {
-		return `File size is ${fileSizeLabel}.`;
-	}
-
-	return `File size is ${fileSizeLabel}, but only ${formatStorageBytes({
-		bytes: availableBytes,
-	})} is safely available in browser storage.`;
-};
-
 async function generateImageThumbnail({
-	imageFile,
+	url,
+	revokeUrl,
 }: {
-	imageFile: File;
+	url: string;
+	revokeUrl: boolean;
 }): Promise<{ thumbnailUrl: string; width: number; height: number }> {
 	return new Promise((resolve, reject) => {
 		const image = new window.Image();
-		const objectUrl = URL.createObjectURL(imageFile);
 
 		image.addEventListener("load", () => {
 			try {
@@ -67,18 +51,18 @@ async function generateImageThumbnail({
 					error instanceof Error ? error : new Error("Could not render image"),
 				);
 			} finally {
-				URL.revokeObjectURL(objectUrl);
+				if (revokeUrl) URL.revokeObjectURL(url);
 				image.remove();
 			}
 		});
 
 		image.addEventListener("error", () => {
-			URL.revokeObjectURL(objectUrl);
+			if (revokeUrl) URL.revokeObjectURL(url);
 			image.remove();
 			reject(new Error("Could not load image"));
 		});
 
-		image.src = objectUrl;
+		image.src = url;
 	});
 }
 
@@ -103,16 +87,16 @@ export async function processMediaAssets({
 			continue;
 		}
 
-		const storageCheck = await storageService.canStoreFile({
-			size: file.size,
-		});
-
-		if (!storageCheck.canStore) {
-			toast.error(`Not enough browser storage for ${file.name}`, {
-				description: getStorageLimitDescription({
-					fileSize: file.size,
-					availableBytes: storageCheck.availableBytes,
-				}),
+		if (
+			mediaStorageDisposition({
+				size: file.size,
+				hasSourcePath: false,
+				preserveLink: false,
+			}) === "sourcePathRequired"
+		) {
+			toast.error(`Use the drive picker for ${file.name}`, {
+				description:
+					"Files larger than 1 GB are linked to their original path. Use the Import button so PoCut can retain that path.",
 			});
 			continue;
 		}
@@ -127,7 +111,10 @@ export async function processMediaAssets({
 
 		try {
 			if (fileType === "image") {
-				const result = await generateImageThumbnail({ imageFile: file });
+				const result = await generateImageThumbnail({
+					url: URL.createObjectURL(file),
+					revokeUrl: true,
+				});
 				thumbnailUrl = result.thumbnailUrl;
 				width = result.width;
 				height = result.height;
@@ -152,9 +139,7 @@ export async function processMediaAssets({
 					}
 				} catch (error) {
 					const message =
-						error instanceof Error
-							? error.message
-							: "Could not process video";
+						error instanceof Error ? error.message : "Could not process video";
 
 					toast.error(`Couldn't process ${file.name}`, {
 						description: message,
@@ -169,6 +154,10 @@ export async function processMediaAssets({
 				type: fileType,
 				file,
 				url,
+				size: file.size,
+				lastModified: file.lastModified,
+				fileName: file.name,
+				mimeType: file.type,
 				thumbnailUrl,
 				duration,
 				width,
@@ -194,26 +183,109 @@ export async function processMediaAssets({
 	return processedAssets;
 }
 
-const getMediaDuration = ({ file }: { file: File }): Promise<number> => {
+export async function processLocalDriveMedia({
+	projectId,
+	records,
+	onProgress,
+}: {
+	projectId: string;
+	records: LocalDriveMediaRecord[];
+	onProgress?: ({ progress }: { progress: number }) => void;
+}): Promise<ProcessedMediaAsset[]> {
+	const processed: ProcessedMediaAsset[] = [];
+	let completed = 0;
+	for (const record of records) {
+		const url = `/api/local-drive/media?${new URLSearchParams({
+			projectId,
+			id: record.id,
+		})}`;
+		try {
+			let thumbnailUrl = record.thumbnailUrl;
+			let duration = record.duration;
+			let width = record.width;
+			let height = record.height;
+			let fps = record.fps;
+			let hasAudio = record.hasAudio;
+			if (record.type === "image") {
+				const image = await generateImageThumbnail({ url, revokeUrl: false });
+				thumbnailUrl = image.thumbnailUrl;
+				width = image.width;
+				height = image.height;
+			} else if (record.type === "video") {
+				const video = await readVideoFile({ url });
+				duration = video.duration;
+				width = video.width;
+				height = video.height;
+				fps = Number.isFinite(video.fps) ? Math.round(video.fps) : undefined;
+				hasAudio = video.hasAudio;
+				thumbnailUrl = video.thumbnailUrl ?? undefined;
+				if (!video.canDecode) {
+					toast.error(`Can't preview ${record.name}`, {
+						description: getUnsupportedVideoDescription({ codec: video.codec }),
+					});
+				}
+			} else {
+				duration = await getMediaDuration({ url, mimeType: record.mimeType });
+			}
+			processed.push({
+				...record,
+				url,
+				thumbnailUrl,
+				duration,
+				width,
+				height,
+				fps,
+				hasAudio,
+			});
+		} catch (error) {
+			console.error("Error processing drive media:", record.name, error);
+			toast.error(`Failed to process ${record.name}`);
+			await localDriveRequest({
+				operation: "media.delete",
+				payload: { projectId, id: record.id },
+			}).catch(() => undefined);
+		}
+		completed += 1;
+		onProgress?.({
+			progress: Math.round((completed / Math.max(1, records.length)) * 100),
+		});
+	}
+	return processed;
+}
+
+const getMediaDuration = ({
+	file,
+	url,
+	mimeType,
+}: {
+	file?: File;
+	url?: string;
+	mimeType?: string;
+}): Promise<number> => {
 	return new Promise((resolve, reject) => {
 		const element = document.createElement(
-			file.type.startsWith("video/") ? "video" : "audio",
+			(file?.type ?? mimeType ?? "").startsWith("video/") ? "video" : "audio",
 		) as HTMLVideoElement;
-		const objectUrl = URL.createObjectURL(file);
+		const objectUrl = file ? URL.createObjectURL(file) : null;
+		const sourceUrl = objectUrl ?? url;
+		if (!sourceUrl) {
+			reject(new Error("Media URL is missing"));
+			return;
+		}
 
 		element.addEventListener("loadedmetadata", () => {
 			resolve(element.duration);
-			URL.revokeObjectURL(objectUrl);
+			if (objectUrl) URL.revokeObjectURL(objectUrl);
 			element.remove();
 		});
 
 		element.addEventListener("error", () => {
 			reject(new Error("Could not load media"));
-			URL.revokeObjectURL(objectUrl);
+			if (objectUrl) URL.revokeObjectURL(objectUrl);
 			element.remove();
 		});
 
-		element.src = objectUrl;
+		element.src = sourceUrl;
 		element.load();
 	});
 };

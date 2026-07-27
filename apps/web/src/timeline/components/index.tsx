@@ -82,7 +82,11 @@ import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
 import { useInitialScrollBottom } from "@/timeline/hooks/use-initial-scroll-bottom";
 import { useTimelineResize } from "@/timeline/hooks/use-timeline-resize";
 import { useTimelineStore } from "@/timeline/timeline-store";
-import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
+import {
+	useEditor,
+	useEditorProject,
+	useEditorTimelineScenes,
+} from "@/editor/use-editor";
 import { useScrollPosition } from "@/timeline/hooks/use-scroll-position";
 import { useTimelinePlayhead } from "@/timeline/hooks/use-timeline-playhead";
 import { invokeAction } from "@/actions";
@@ -103,12 +107,18 @@ import {
 	getTrackIndexByElementId,
 	getTrackIndexesForElementIds,
 } from "./track-element-index";
+import { AiEditTrack, AI_EDIT_TRACK_HEIGHT_PX } from "./ai-edit-track";
+import {
+	getAiEditTimelineDuration,
+	getAiEditTimelineItems,
+} from "./ai-edit-track-model";
 
 const TRACKS_CONTAINER_MAX_HEIGHT = 800;
 const FALLBACK_CONTAINER_WIDTH = 1000;
 const TRACKS_CONTAINER_HEIGHT = { min: 0, max: TRACKS_CONTAINER_MAX_HEIGHT };
 const TRACK_VERTICAL_OVERSCAN_PX = 180;
 const EMPTY_SELECTED_ELEMENT_IDS: ReadonlySet<string> = new Set();
+const EMPTY_AI_EDIT_HISTORY = [] as const;
 
 type TrackLayout = {
 	track: TimelineTrack;
@@ -223,6 +233,20 @@ export function Timeline() {
 		() => (scene ? getDisplayTracks({ tracks: scene.tracks }) : []),
 		[scene],
 	);
+	const aiEditHistory = useEditorProject(
+		(currentEditor) =>
+			currentEditor.project.getActiveOrNull()?.aiEditHistory ??
+			EMPTY_AI_EDIT_HISTORY,
+	);
+	const aiEditItems = useMemo(
+		() =>
+			getAiEditTimelineItems({
+				history: aiEditHistory,
+				activeSceneId: scene?.id ?? null,
+			}),
+		[aiEditHistory, scene?.id],
+	);
+	const hasAiEditTrack = aiEditItems.length > 0;
 	const captionSourceTrack = useMemo(
 		() => (scene ? findCaptionSourceTrack({ tracks: scene.tracks }) : null),
 		[scene],
@@ -249,8 +273,11 @@ export function Timeline() {
 	const wordTimingTrackOffset = hasCaptionWordTimingTrack
 		? wordTimingTrackHeight + TIMELINE_TRACK_GAP_PX
 		: 0;
-	const tracksTopInsetPx =
-		TIMELINE_CONTENT_TOP_PADDING_PX + wordTimingTrackOffset;
+	const aiEditTrackOffset = hasAiEditTrack
+		? AI_EDIT_TRACK_HEIGHT_PX + TIMELINE_TRACK_GAP_PX
+		: 0;
+	const virtualTrackOffset = wordTimingTrackOffset + aiEditTrackOffset;
+	const tracksTopInsetPx = TIMELINE_CONTENT_TOP_PADDING_PX + virtualTrackOffset;
 	const mainTrackId = scene?.tracks.main.id ?? null;
 	const seek = (time: MediaTime) => editor.playback.seek({ time });
 
@@ -289,7 +316,8 @@ export function Timeline() {
 	}, []);
 
 	const timelineDuration = timeline.getTotalDuration() || 0;
-	const captionWordTimingDuration = captionSourceTrack?.captionSource?.words.length
+	const captionWordTimingDuration = captionSourceTrack?.captionSource?.words
+		.length
 		? mediaTimeFromSeconds({
 				seconds: captionSourceTrack.captionSource.words.reduce(
 					(maxEnd, word) => Math.max(maxEnd, word.end),
@@ -297,9 +325,13 @@ export function Timeline() {
 				),
 			})
 		: 0;
+	const aiEditTimelineDuration = getAiEditTimelineDuration({
+		items: aiEditItems,
+	});
 	const timelineDisplayDuration = Math.max(
 		timelineDuration,
 		captionWordTimingDuration,
+		aiEditTimelineDuration,
 	);
 	const containerWidth = tracksContainerWidth || FALLBACK_CONTAINER_WIDTH;
 	const minZoomLevel = getTimelineZoomMin({
@@ -447,7 +479,7 @@ export function Timeline() {
 		tracksScrollRef,
 		trackLabelsScrollRef,
 		onAfterScroll: () => saveScrollPositionRef.current(),
-		isReady: tracks.length > 0,
+		isReady: tracks.length > 0 || hasCaptionWordTimingTrack || hasAiEditTrack,
 	});
 
 	useEffect(() => {
@@ -648,7 +680,7 @@ export function Timeline() {
 				getTotalTracksHeight({
 					tracks,
 					getExtraHeight: getTrackExpansionHeight,
-				}) + wordTimingTrackOffset,
+				}) + virtualTrackOffset,
 			),
 		) + TIMELINE_CONTENT_TOP_PADDING_PX;
 
@@ -790,6 +822,8 @@ export function Timeline() {
 					hasHorizontalScrollbar={hasHorizontalScrollbar}
 					getTrackExpansionHeight={getTrackExpansionHeight}
 					wordTimingTrackHeight={wordTimingTrackHeight}
+					aiEditTrackHeight={hasAiEditTrack ? AI_EDIT_TRACK_HEIGHT_PX : 0}
+					aiEditItemCount={aiEditItems.length}
 					scrollTop={tracksScrollTop}
 					viewportHeight={tracksViewportHeight}
 				/>
@@ -920,11 +954,33 @@ export function Timeline() {
 										/>
 									</div>
 								)}
+								{hasAiEditTrack && (
+									<div
+										className="absolute right-0 left-0"
+										style={{
+											top: `${
+												TIMELINE_CONTENT_TOP_PADDING_PX + wordTimingTrackOffset
+											}px`,
+										}}
+									>
+										<AiEditTrack
+											items={aiEditItems}
+											zoomLevel={zoomLevel}
+											dynamicTimelineWidth={dynamicTimelineWidth}
+											scrollLeft={elementVisibilityScrollLeft}
+											viewportWidth={tracksViewportWidth}
+											interactionDisabled={isRangeSelectionLocked}
+											onSeek={seek}
+											onMouseDown={handleTimelineTrackMouseDown}
+											onMouseUp={handleTimelineTrackMouseUp}
+										/>
+									</div>
+								)}
 								{tracks.length > 0 && (
 									<TimelineTrackRows
 										mainTrackId={mainTrackId}
 										zoomLevel={zoomLevel}
-										topOffset={wordTimingTrackOffset}
+										topOffset={virtualTrackOffset}
 										scrollLeft={elementVisibilityScrollLeft}
 										scrollTop={tracksScrollTop}
 										viewportWidth={tracksViewportWidth}
@@ -1029,6 +1085,8 @@ function TrackLabelsPanel({
 	hasHorizontalScrollbar,
 	getTrackExpansionHeight,
 	wordTimingTrackHeight,
+	aiEditTrackHeight,
+	aiEditItemCount,
 	scrollTop,
 	viewportHeight,
 }: {
@@ -1038,6 +1096,8 @@ function TrackLabelsPanel({
 	hasHorizontalScrollbar: boolean;
 	getTrackExpansionHeight: (trackIndex: number) => number;
 	wordTimingTrackHeight: number;
+	aiEditTrackHeight: number;
+	aiEditItemCount: number;
 	scrollTop: number;
 	viewportHeight: number;
 }) {
@@ -1065,9 +1125,14 @@ function TrackLabelsPanel({
 			),
 		[tracks, expandedElementIds],
 	);
-	const labelTrackStartTop = hasCaptionWordTimingTrack
+	const wordTimingTrackOffset = hasCaptionWordTimingTrack
 		? wordTimingTrackHeight + TIMELINE_TRACK_GAP_PX
 		: 0;
+	const hasAiEditTrack = aiEditTrackHeight > 0 && aiEditItemCount > 0;
+	const aiEditTrackOffset = hasAiEditTrack
+		? aiEditTrackHeight + TIMELINE_TRACK_GAP_PX
+		: 0;
+	const labelTrackStartTop = wordTimingTrackOffset + aiEditTrackOffset;
 	const trackLayouts = useMemo(
 		() =>
 			getTrackLayouts({
@@ -1104,7 +1169,9 @@ function TrackLabelsPanel({
 			/>
 			<div ref={trackLabelsRef} className="flex-1 overflow-hidden">
 				<div ref={trackLabelsScrollRef} className="size-full overflow-hidden">
-					{tracks.length > 0 && (
+					{(tracks.length > 0 ||
+						hasCaptionWordTimingTrack ||
+						hasAiEditTrack) && (
 						<div
 							className="relative"
 							style={{ height: `${labelContentHeight}px` }}
@@ -1119,6 +1186,22 @@ function TrackLabelsPanel({
 								>
 									<span className="truncate text-xs font-medium text-red-200/80">
 										Words
+									</span>
+								</div>
+							)}
+							{hasAiEditTrack && (
+								<div
+									className="absolute right-0 left-0 flex items-center justify-end border-b border-violet-400/20 bg-violet-950/10 px-3"
+									style={{
+										top: `${wordTimingTrackOffset}px`,
+										height: `${aiEditTrackHeight}px`,
+									}}
+									title={`${aiEditItemCount} persisted AI edit ${
+										aiEditItemCount === 1 ? "layer" : "layers"
+									}`}
+								>
+									<span className="truncate text-xs font-medium text-violet-200/80">
+										AI edits
 									</span>
 								</div>
 							)}
@@ -1205,19 +1288,16 @@ function TimelineTrackRows({
 		[tracks],
 	);
 	const { selectedElements } = useElementSelection();
-	const selectedElementIdsByTrack = useMemo(
-		() => {
-			const idsByTrack = new Map<string, Set<string>>();
-			for (const selectedElement of selectedElements) {
-				const trackSelection =
-					idsByTrack.get(selectedElement.trackId) ?? new Set<string>();
-				trackSelection.add(selectedElement.elementId);
-				idsByTrack.set(selectedElement.trackId, trackSelection);
-			}
-			return idsByTrack;
-		},
-		[selectedElements],
-	);
+	const selectedElementIdsByTrack = useMemo(() => {
+		const idsByTrack = new Map<string, Set<string>>();
+		for (const selectedElement of selectedElements) {
+			const trackSelection =
+				idsByTrack.get(selectedElement.trackId) ?? new Set<string>();
+			trackSelection.add(selectedElement.elementId);
+			idsByTrack.set(selectedElement.trackId, trackSelection);
+		}
+		return idsByTrack;
+	}, [selectedElements]);
 	const hoveredTrackIndex =
 		dragView.kind === "dragging" && dragView.dropTarget?.isNewTrack === false
 			? dragView.dropTarget.trackIndex
@@ -1351,7 +1431,13 @@ type TimelineTrackRowProps = {
 	isHovered: boolean;
 	timeline: TrackLabelTimelineActions & {
 		removeTrack: ({ trackId }: { trackId: string }) => void;
-		closeGap: ({ startTime, endTime }: { startTime: MediaTime; endTime: MediaTime }) => void;
+		closeGap: ({
+			startTime,
+			endTime,
+		}: {
+			startTime: MediaTime;
+			endTime: MediaTime;
+		}) => void;
 	};
 	selectedElementIds: ReadonlySet<string>;
 	expandedElementIds: ReadonlySet<string>;
@@ -1382,13 +1468,21 @@ function TimelineTrackRowComponent({
 	const [contextTime, setContextTime] = useState<MediaTime | null>(null);
 	const clickedGap = useMemo(() => {
 		if (track.id !== mainTrackId || contextTime === null) return null;
-		const elements = [...track.elements].sort((a, b) => a.startTime - b.startTime);
-		const previous = elements.filter((element) => element.startTime + element.duration <= contextTime).at(-1);
+		const elements = [...track.elements].sort(
+			(a, b) => a.startTime - b.startTime,
+		);
+		const previous = elements
+			.filter((element) => element.startTime + element.duration <= contextTime)
+			.at(-1);
 		const next = elements.find((element) => element.startTime >= contextTime);
 		if (!previous || !next) return null;
-		const startTime = mediaTime({ ticks: previous.startTime + previous.duration });
+		const startTime = mediaTime({
+			ticks: previous.startTime + previous.duration,
+		});
 		const endTime = next.startTime;
-		return endTime > startTime && contextTime >= startTime && contextTime <= endTime
+		return endTime > startTime &&
+			contextTime >= startTime &&
+			contextTime <= endTime
 			? { startTime, endTime }
 			: null;
 	}, [contextTime, mainTrackId, track]);
@@ -1434,9 +1528,7 @@ function TimelineTrackRowComponent({
 			</ContextMenuTrigger>
 			<ContextMenuContent className="w-40">
 				{clickedGap && (
-					<ContextMenuItem
-						onClick={() => timeline.closeGap(clickedGap)}
-					>
+					<ContextMenuItem onClick={() => timeline.closeGap(clickedGap)}>
 						Close gap on all layers
 					</ContextMenuItem>
 				)}

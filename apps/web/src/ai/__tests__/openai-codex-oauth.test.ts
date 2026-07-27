@@ -81,9 +81,8 @@ describe("OpenAI Codex OAuth helpers", () => {
 
 	test("keeps large OAuth tokens server-side and survives runtime reset", async () => {
 		setRequiredEnv();
-		const { getOpenAIOAuthStatus, setCredentialsCookie, testing } = await import(
-			"@/ai/server/openai-codex-oauth"
-		);
+		const { getOpenAIOAuthStatus, setCredentialsCookie, testing } =
+			await import("@/ai/server/openai-codex-oauth");
 		const sessionBinding = createHash("sha256")
 			.update("sessionless")
 			.digest("base64url");
@@ -110,11 +109,14 @@ describe("OpenAI Codex OAuth helpers", () => {
 		).toBe("");
 
 		testing.resetOAuthRuntimeForTests();
-		const request = new NextRequest("http://localhost:3000/api/ai/oauth/status", {
-			headers: {
-				cookie: `opencut_openai_oauth_session=${sessionCookie}`,
+		const request = new NextRequest(
+			"http://localhost:3000/api/ai/oauth/status",
+			{
+				headers: {
+					cookie: `opencut_openai_oauth_session=${sessionCookie}`,
+				},
 			},
-		});
+		);
 		const result = await getOpenAIOAuthStatus({ request });
 
 		expect(result.status.authenticated).toBe(true);
@@ -143,15 +145,34 @@ describe("OpenAI Codex OAuth helpers", () => {
 			},
 		});
 
-		expect(body.model).toBe("gpt-5.5");
+		expect(body.model).toBe("gpt-5.6-sol");
 		expect(body.instructions).toBe("System instructions");
 		expect(body.input).toEqual([{ role: "user", content: "Hello" }]);
 		expect(body.store).toBe(false);
 		expect(body.stream).toBe(true);
-		expect(body.reasoning).toEqual({ effort: "low" });
+		expect(body.reasoning).toEqual({ effort: "medium" });
 		expect(body.tool_choice).toBe("auto");
+		expect(body.parallel_tool_calls).toBe(true);
 		expect((body.tools as Array<{ strict: unknown }>)[0].strict).toBe(null);
 		expect(body.previous_response_id).toBeUndefined();
+	});
+
+	test("builds an isolated low-context web search request", async () => {
+		setRequiredEnv();
+		const { testing } = await import("@/ai/server/openai-codex-oauth");
+		const body = testing.buildCodexResponsesRequestBody({
+			body: {
+				input: [{ role: "user", content: "Research this public topic" }],
+				tools: [],
+				webSearch: true,
+			},
+		});
+
+		expect(body.tools).toEqual([
+			{ type: "web_search", search_context_size: "low" },
+		]);
+		expect(body.include).toEqual(["web_search_call.action.sources"]);
+		expect(body.tool_choice).toBe("auto");
 	});
 
 	test("parses streamed Codex Responses events into agent response shape", async () => {
@@ -235,6 +256,80 @@ describe("OpenAI Codex OAuth helpers", () => {
 		expect(parsed.output_text).toBe(
 			'{"title":"Plan","summary":"Done","operations":[]}',
 		);
+	});
+
+	test("preserves web citations and bounded source metadata", async () => {
+		setRequiredEnv();
+		const { testing } = await import("@/ai/server/openai-codex-oauth");
+		const parsed = testing.parseCodexResponseText({
+			contentType: "application/json",
+			text: JSON.stringify({
+				id: "resp-web",
+				output: [
+					{
+						type: "web_search_call",
+						id: "web-1",
+						action: {
+							type: "search",
+							query: "public topic",
+							sources: [
+								{
+									url: "https://example.com/source",
+									title: "Source",
+								},
+							],
+						},
+					},
+					{
+						type: "message",
+						content: [
+							{
+								type: "output_text",
+								text: "Sourced answer",
+								annotations: [
+									{
+										type: "url_citation",
+										url: "https://example.com/source",
+										title: "Source",
+									},
+								],
+							},
+						],
+					},
+				],
+			}),
+		});
+
+		expect(parsed?.output).toEqual([
+			{
+				id: "web-1",
+				type: "web_search_call",
+				action: {
+					type: "search",
+					query: "public topic",
+					queries: undefined,
+					sources: [{ url: "https://example.com/source", title: "Source" }],
+				},
+			},
+			{
+				id: undefined,
+				type: "message",
+				content: [
+					{
+						type: "output_text",
+						text: "Sourced answer",
+						output_text: "Sourced answer",
+						annotations: [
+							{
+								type: "url_citation",
+								url: "https://example.com/source",
+								title: "Source",
+							},
+						],
+					},
+				],
+			},
+		]);
 	});
 
 	test("wraps plain successful Codex text as assistant output", async () => {

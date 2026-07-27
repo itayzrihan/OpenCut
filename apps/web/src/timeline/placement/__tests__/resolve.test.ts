@@ -12,7 +12,7 @@ import type {
 	VideoElement,
 	VideoTrack,
 } from "@/timeline";
-import { resolveTrackPlacement } from "@/timeline/placement";
+import { resolveTrackPlacement } from "@/timeline/placement/resolve";
 import { mediaTime, roundMediaTime, ZERO_MEDIA_TIME } from "@/wasm";
 
 type TestElement = AudioElement | GraphicElement | TextElement | VideoElement;
@@ -611,6 +611,22 @@ describe("resolveTrackPlacement", () => {
 			kind: "newTrack",
 			trackType: "audio",
 			insertIndex: 2,
+			insertPosition: null,
+		});
+	});
+
+	test("derives a graphic track instead of using the main video track", () => {
+		expect(
+			resolveTrackPlacement({
+				tracks: buildSceneTracks({}),
+				elementType: "graphic",
+				timeSpans: [buildTimeSpan({ startTime: 0, duration: 3 })],
+				strategy: { type: "firstAvailable" },
+			}),
+		).toEqual({
+			kind: "newTrack",
+			trackType: "graphic",
+			insertIndex: 0,
 			insertPosition: null,
 		});
 	});

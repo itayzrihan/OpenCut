@@ -47,6 +47,8 @@ const subscribeSelection: EditorSubscribe = ({ editor, onChange }) =>
 	editor.selection.subscribe(onChange);
 const subscribeDiagnostics: EditorSubscribe = ({ editor, onChange }) =>
 	editor.diagnostics.subscribe(onChange);
+const subscribeTranscription: EditorSubscribe = ({ editor, onChange }) =>
+	editor.transcription.subscribe(onChange);
 
 function useSubscribedEditor<T>({
 	selector,
@@ -102,6 +104,7 @@ export function useEditor<T>(
 				editor.selection.subscribe(onChange),
 				editor.clipboard.subscribe(onChange),
 				editor.diagnostics.subscribe(onChange),
+				editor.transcription.subscribe(onChange),
 			];
 			return () => {
 				unsubscribers.forEach((unsubscribe) => {
@@ -152,6 +155,7 @@ const MEDIA_STORES = [subscribeMedia];
 const RENDERER_STORES = [subscribeRenderer];
 const SELECTION_STORES = [subscribeSelection];
 const DIAGNOSTICS_STORES = [subscribeDiagnostics];
+const TRANSCRIPTION_STORES = [subscribeTranscription];
 
 export function useEditorPlayback<T>(selector: (editor: EditorCore) => T): T {
 	return useSubscribedEditor({ selector, stores: PLAYBACK_STORES });
@@ -212,4 +216,10 @@ export function useEditorDiagnostics<T>(
 	selector: (editor: EditorCore) => T,
 ): T {
 	return useSubscribedEditor({ selector, stores: DIAGNOSTICS_STORES });
+}
+
+export function useEditorTranscription<T>(
+	selector: (editor: EditorCore) => T,
+): T {
+	return useSubscribedEditor({ selector, stores: TRANSCRIPTION_STORES });
 }

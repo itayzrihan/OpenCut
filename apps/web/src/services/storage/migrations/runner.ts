@@ -3,11 +3,27 @@ import {
 	deleteDatabase,
 } from "@/services/storage/indexeddb-adapter";
 import type { StorageMigration } from "./base";
+import { persistProjectMigrationBackup } from "./migration-backups";
 import type { ProjectRecord } from "./transformers/types";
 import { getProjectId, isRecord } from "./transformers/utils";
 
 export interface StorageMigrationResult {
 	migratedCount: number;
+	failures: StorageMigrationFailure[];
+}
+
+export type StorageMigrationFailureStage = "backup" | "migration" | "persist";
+
+export interface StorageMigrationFailure {
+	projectId: string;
+	projectName: string | null;
+	sourceVersion: number;
+	currentVersion: number;
+	targetVersion: number;
+	stage: StorageMigrationFailureStage;
+	migration: { from: number; to: number } | null;
+	message: string;
+	error: unknown;
 }
 
 export interface MigrationProgress {
@@ -21,105 +37,262 @@ let hasCleanedUpMetaDb = false;
 
 const MIN_MIGRATION_DISPLAY_MS = 1000;
 
+interface ProjectsMigrationStorage {
+	getAll(): Promise<ProjectRecord[]>;
+	set({ key, value }: { key: string; value: ProjectRecord }): Promise<void>;
+}
+
+export interface StorageMigrationRunnerDependencies {
+	projectsStorage: ProjectsMigrationStorage;
+	persistBackup: typeof persistProjectMigrationBackup;
+	cleanupLegacyMetaDatabase: () => Promise<void>;
+	now: () => number;
+	wait: (milliseconds: number) => Promise<void>;
+	minimumDisplayMs: number;
+}
+
+async function cleanupLegacyMetaDatabase(): Promise<void> {
+	if (hasCleanedUpMetaDb) {
+		return;
+	}
+
+	try {
+		await deleteDatabase({ dbName: "video-editor-meta" });
+	} catch {
+		// Ignore errors - DB might not exist.
+	}
+	hasCleanedUpMetaDb = true;
+}
+
+function createDefaultDependencies(): StorageMigrationRunnerDependencies {
+	return {
+		projectsStorage: new IndexedDBAdapter<ProjectRecord>({
+			dbName: "video-editor-projects",
+			storeName: "projects",
+			version: 1,
+		}),
+		persistBackup: persistProjectMigrationBackup,
+		cleanupLegacyMetaDatabase,
+		now: Date.now,
+		wait: (milliseconds) =>
+			new Promise((resolve) => setTimeout(resolve, milliseconds)),
+		minimumDisplayMs: MIN_MIGRATION_DISPLAY_MS,
+	};
+}
+
 export async function runStorageMigrations({
 	migrations,
 	onProgress,
+	dependencies = createDefaultDependencies(),
 }: {
 	migrations: StorageMigration[];
 	onProgress?: (progress: MigrationProgress) => void;
+	/** @internal Dependency overrides are exported for focused runner tests. */
+	dependencies?: StorageMigrationRunnerDependencies;
 }): Promise<StorageMigrationResult> {
-	// One-time cleanup: delete the old global version database
-	if (!hasCleanedUpMetaDb) {
-		try {
-			await deleteDatabase({ dbName: "video-editor-meta" });
-		} catch {
-			// Ignore errors - DB might not exist
-		}
-		hasCleanedUpMetaDb = true;
-	}
-
-	const projectsAdapter = new IndexedDBAdapter<ProjectRecord>({
-		dbName: "video-editor-projects",
-		storeName: "projects",
-		version: 1,
-	});
-
-	const projects = await projectsAdapter.getAll();
-
-	const orderedMigrations = [...migrations].sort((a, b) => a.from - b.from);
 	let migratedCount = 0;
 	let migrationStartTime: number | null = null;
+	const failures: StorageMigrationFailure[] = [];
 
-	for (const project of projects) {
-		if (typeof project !== "object" || project === null) {
-			continue;
-		}
+	try {
+		await dependencies.cleanupLegacyMetaDatabase();
+		const projects = await dependencies.projectsStorage.getAll();
+		const orderedMigrations = [...migrations].sort((a, b) => a.from - b.from);
 
-		let projectRecord = project as ProjectRecord;
-		const projectId = getProjectId({ project: projectRecord });
-		if (!projectId) {
-			continue;
-		}
-
-		let currentVersion = getProjectVersion({ project: projectRecord });
-		const targetVersion = orderedMigrations.at(-1)?.to ?? currentVersion;
-
-		if (currentVersion >= targetVersion) {
-			continue;
-		}
-
-		// Track when we first showed the migration dialog
-		if (migrationStartTime === null) {
-			migrationStartTime = Date.now();
-		}
-
-		const projectName = getProjectName({ project: projectRecord });
-		onProgress?.({
-			isMigrating: true,
-			fromVersion: currentVersion,
-			toVersion: targetVersion,
-			projectName,
-		});
-
-		for (const migration of orderedMigrations) {
-			if (migration.from !== currentVersion) {
+		for (const project of projects) {
+			if (!isRecord(project)) {
 				continue;
 			}
 
-			const result = await migration.run({
-				projectId,
-				project: projectRecord,
-			});
-
-			if (result.skipped) {
-				break;
+			let projectRecord = project;
+			const projectId = getProjectId({ project: projectRecord });
+			if (!projectId) {
+				continue;
 			}
 
-			await projectsAdapter.set({ key: projectId, value: result.project });
-			migratedCount++;
-			currentVersion = migration.to;
-			projectRecord = result.project;
+			const sourceVersion = getProjectVersion({ project: projectRecord });
+			let currentVersion = sourceVersion;
+			const targetVersion = orderedMigrations.at(-1)?.to ?? currentVersion;
+
+			if (currentVersion >= targetVersion) {
+				continue;
+			}
+
+			if (migrationStartTime === null) {
+				migrationStartTime = dependencies.now();
+			}
+
+			const projectName = getProjectName({ project: projectRecord });
+			onProgress?.({
+				isMigrating: true,
+				fromVersion: currentVersion,
+				toVersion: targetVersion,
+				projectName,
+			});
+
+			try {
+				await dependencies.persistBackup({
+					projectId,
+					projectName,
+					sourceVersion,
+					targetVersion,
+					project: projectRecord,
+				});
+			} catch (error) {
+				failures.push(
+					createFailure({
+						projectId,
+						projectName,
+						sourceVersion,
+						currentVersion,
+						targetVersion,
+						stage: "backup",
+						migration: null,
+						error,
+					}),
+				);
+				continue;
+			}
+
+			let projectFailed = false;
+			for (const migration of orderedMigrations) {
+				if (migration.from !== currentVersion) {
+					continue;
+				}
+
+				let result;
+				try {
+					result = await migration.run({
+						projectId,
+						project: projectRecord,
+					});
+				} catch (error) {
+					failures.push(
+						createFailure({
+							projectId,
+							projectName,
+							sourceVersion,
+							currentVersion,
+							targetVersion,
+							stage: "migration",
+							migration,
+							error,
+						}),
+					);
+					projectFailed = true;
+					break;
+				}
+
+				if (result.skipped) {
+					const error = new Error(
+						result.reason ??
+							`Migration ${migration.from}→${migration.to} skipped the project`,
+					);
+					failures.push(
+						createFailure({
+							projectId,
+							projectName,
+							sourceVersion,
+							currentVersion,
+							targetVersion,
+							stage: "migration",
+							migration,
+							error,
+						}),
+					);
+					projectFailed = true;
+					break;
+				}
+
+				try {
+					await dependencies.projectsStorage.set({
+						key: projectId,
+						value: result.project,
+					});
+				} catch (error) {
+					failures.push(
+						createFailure({
+							projectId,
+							projectName,
+							sourceVersion,
+							currentVersion,
+							targetVersion,
+							stage: "persist",
+							migration,
+							error,
+						}),
+					);
+					projectFailed = true;
+					break;
+				}
+
+				migratedCount++;
+				currentVersion = migration.to;
+				projectRecord = result.project;
+			}
+
+			if (!projectFailed && currentVersion < targetVersion) {
+				const error = new Error(
+					`No storage migration is registered from project version ${currentVersion}`,
+				);
+				failures.push(
+					createFailure({
+						projectId,
+						projectName,
+						sourceVersion,
+						currentVersion,
+						targetVersion,
+						stage: "migration",
+						migration: null,
+						error,
+					}),
+				);
+			}
+		}
+
+		return { migratedCount, failures };
+	} finally {
+		try {
+			if (migrationStartTime !== null) {
+				const elapsed = dependencies.now() - migrationStartTime;
+				if (elapsed < dependencies.minimumDisplayMs) {
+					await dependencies.wait(dependencies.minimumDisplayMs - elapsed);
+				}
+			}
+		} finally {
+			onProgress?.({
+				isMigrating: false,
+				fromVersion: null,
+				toVersion: null,
+				projectName: null,
+			});
 		}
 	}
+}
 
-	// Ensure dialog is visible for minimum time so users can see it
-	if (migrationStartTime !== null) {
-		const elapsed = Date.now() - migrationStartTime;
-		if (elapsed < MIN_MIGRATION_DISPLAY_MS) {
-			await new Promise((resolve) =>
-				setTimeout(resolve, MIN_MIGRATION_DISPLAY_MS - elapsed),
-			);
-		}
-	}
-
-	onProgress?.({
-		isMigrating: false,
-		fromVersion: null,
-		toVersion: null,
-		projectName: null,
-	});
-
-	return { migratedCount };
+function createFailure({
+	projectId,
+	projectName,
+	sourceVersion,
+	currentVersion,
+	targetVersion,
+	stage,
+	migration,
+	error,
+}: Omit<StorageMigrationFailure, "message" | "migration"> & {
+	migration: Pick<StorageMigration, "from" | "to"> | null;
+}): StorageMigrationFailure {
+	return {
+		projectId,
+		projectName,
+		sourceVersion,
+		currentVersion,
+		targetVersion,
+		stage,
+		migration: migration ? { from: migration.from, to: migration.to } : null,
+		message: error instanceof Error ? error.message : String(error),
+		error,
+	};
 }
 
 function getProjectVersion({ project }: { project: ProjectRecord }): number {

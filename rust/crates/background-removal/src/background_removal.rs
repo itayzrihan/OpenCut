@@ -118,7 +118,11 @@ pub struct DuplicatePlacementInput {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum DuplicatePlacement {
     ExistingTrack { track_id: String },
     NewTrack { insert_index: usize },

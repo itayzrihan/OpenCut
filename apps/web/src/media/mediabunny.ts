@@ -1,7 +1,6 @@
 import {
 	Input,
 	ALL_FORMATS,
-	BlobSource,
 	VideoSampleSink,
 	type VideoCodec,
 } from "mediabunny";
@@ -10,6 +9,7 @@ import type { SceneTracks } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { renderThumbnailDataUrl } from "./thumbnail";
+import { createMediaSource, type BrowserMediaSource } from "./source";
 
 export type VideoFileData = {
 	duration: number;
@@ -24,11 +24,10 @@ export type VideoFileData = {
 
 export async function readVideoFile({
 	file,
-}: {
-	file: File;
-}): Promise<VideoFileData> {
+	url,
+}: BrowserMediaSource): Promise<VideoFileData> {
 	const input = new Input({
-		source: new BlobSource(file),
+		source: createMediaSource({ file, url }),
 		formats: ALL_FORMATS,
 	});
 

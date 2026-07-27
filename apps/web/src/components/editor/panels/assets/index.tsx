@@ -20,6 +20,7 @@ import { OverlayEffectsView } from "@/effects/components/overlay-assets-view";
 import { OverlayMovementView } from "@/effects/components/overlay-movement-assets-view";
 import { TransitionsView } from "@/transitions/components/assets-view";
 import { AiChatView } from "@/ai/components/ai-chat-view";
+import { TimelineCodeView } from "@/ai/components/timeline-code-view";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
@@ -27,6 +28,7 @@ export function AssetsPanel() {
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
 		ai: <AiChatView />,
+		"timeline-code": <TimelineCodeView />,
 		sounds: <SoundsView />,
 		text: <TextView />,
 		stickers: <StickersView />,

@@ -15,7 +15,7 @@ import {
 	buildTextElementWordDeletePatch,
 	buildTextElementWordUpdates,
 } from "@/timeline/components/caption-word-updates";
-import { getWordElementRefs } from "@/timeline/components/caption-word-timing-track";
+import { getWordElementRefs } from "@/timeline/components/caption-word-element-refs";
 import {
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
@@ -37,13 +37,7 @@ function transcriptionWord({
 	return { text, start, end };
 }
 
-function visibleWindow({
-	start,
-	end,
-}: {
-	start: number;
-	end: number;
-}) {
+function visibleWindow({ start, end }: { start: number; end: number }) {
 	return {
 		start: start * PIXELS_PER_SECOND,
 		end: end * PIXELS_PER_SECOND,
@@ -264,9 +258,10 @@ describe("caption word timing edits", () => {
 		const targetRef = refs.get(1)?.[0];
 		const patch = buildTextElementWordDeletePatch({
 			element: mergedWords,
-			wordIndex: mergedWords.wordRuns?.findIndex(
-				(run) => run.id === targetRef?.wordId,
-			) ?? -1,
+			wordIndex:
+				mergedWords.wordRuns?.findIndex(
+					(run) => run.id === targetRef?.wordId,
+				) ?? -1,
 		});
 
 		expect(targetRef).toEqual({

@@ -72,11 +72,16 @@ function ProjectDropdown() {
 		try {
 			await editor.project.prepareExit();
 			editor.project.closeProject();
+			router.push("/projects");
 		} catch (error) {
 			console.error("Failed to prepare project exit:", error);
-		} finally {
-			editor.project.closeProject();
-			router.push("/projects");
+			toast.error("Project could not be saved", {
+				description:
+					error instanceof Error
+						? error.message
+						: "Your changes are still open. Please try again.",
+			});
+			setIsExiting(false);
 		}
 	};
 

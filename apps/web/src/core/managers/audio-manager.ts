@@ -16,10 +16,10 @@ import {
 import {
 	ALL_FORMATS,
 	AudioBufferSink,
-	BlobSource,
 	Input,
 	type WrappedAudioBuffer,
 } from "mediabunny";
+import { createMediaSource } from "@/media/source";
 
 export class AudioManager {
 	private audioContext: AudioContext | null = null;
@@ -595,7 +595,7 @@ export class AudioManager {
 		}
 
 		const input = new Input({
-			source: new BlobSource(clip.file),
+			source: createMediaSource(clip),
 			formats: ALL_FORMATS,
 		});
 
@@ -679,7 +679,7 @@ export class AudioManager {
 
 		try {
 			const input = new Input({
-				source: new BlobSource(clip.file),
+				source: createMediaSource(clip),
 				formats: ALL_FORMATS,
 			});
 			const audioTrack = await input.getPrimaryAudioTrack();

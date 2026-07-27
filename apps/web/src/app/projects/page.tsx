@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { KeyboardEvent, MouseEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import type { ChangeEvent, KeyboardEvent, MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { EditorCore } from "@/core";
 import { MigrationDialog } from "@/project/components/migration-dialog";
@@ -45,6 +45,7 @@ import {
 	Edit03Icon,
 	ArrowDown02Icon,
 	InformationCircleIcon,
+	FileImportIcon,
 } from "@hugeicons/core-free-icons";
 import { OcVideoIcon } from "@/components/icons";
 import { Label } from "@/components/ui/label";
@@ -68,6 +69,8 @@ import { RenameProjectDialog } from "@/project/components/rename-project-dialog"
 import { cn } from "@/utils/ui";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
 import { filterAndSortProjectMetadata } from "@/core/managers/project-manager";
+import { PROJECT_ARCHIVE_ACCEPT } from "@/project/archive/project-archive";
+import type { StorageMigrationFailure } from "@/services/storage/migrations";
 const formatProjectDuration = ({
 	duration,
 }: {
@@ -92,10 +95,18 @@ export default function ProjectsPage() {
 	const editor = useEditor();
 	const sortOption: TProjectSortOption = `${sortKey}-${sortOrder}`;
 
-	const [isLoading, isInitialized, savedProjects] = useEditorProject((e) => [
+	const [
+		isLoading,
+		isInitialized,
+		savedProjects,
+		loadError,
+		migrationFailures,
+	] = useEditorProject((e) => [
 		e.project.getIsLoading(),
 		e.project.getIsInitialized(),
 		e.project.getSavedProjects(),
+		e.project.getLoadError(),
+		e.project.getMigrationFailures(),
 	]);
 
 	const projectsToDisplay = useMemo(
@@ -110,7 +121,7 @@ export default function ProjectsPage() {
 
 	useEffect(() => {
 		if (!editor.project.getIsInitialized()) {
-			editor.project.loadAllProjects();
+			void editor.project.loadAllProjects();
 		}
 	}, [editor.project]);
 
@@ -124,24 +135,34 @@ export default function ProjectsPage() {
 			<main className="mx-auto px-4 pt-2 pb-6 flex flex-col gap-4">
 				{isLoading || !isInitialized ? (
 					<ProjectsSkeleton />
-				) : projectsToDisplay.length === 0 ? (
-					<EmptyState />
 				) : (
-					<div
-						className={
-							viewMode === "grid"
-								? "xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4 px-4"
-								: "flex flex-col"
-						}
-					>
-						{projectsToDisplay.map((project) => (
-							<ProjectItem
-								key={project.id}
-								project={project}
-								allProjectIds={projectsToDisplay.map((p) => p.id)}
-							/>
-						))}
-					</div>
+					<>
+						{migrationFailures.length > 0 ? (
+							<ProjectsMigrationWarning failures={migrationFailures} />
+						) : null}
+						{loadError ? <ProjectsLoadError error={loadError} /> : null}
+						{loadError &&
+						savedProjects.length === 0 ? null : projectsToDisplay.length ===
+						  0 ? (
+							<EmptyState />
+						) : (
+							<div
+								className={
+									viewMode === "grid"
+										? "xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4 px-4"
+										: "flex flex-col"
+								}
+							>
+								{projectsToDisplay.map((project) => (
+									<ProjectItem
+										key={project.id}
+										project={project}
+										allProjectIds={projectsToDisplay.map((p) => p.id)}
+									/>
+								))}
+							</div>
+						)}
+					</>
 				)}
 			</main>
 		</div>
@@ -195,6 +216,7 @@ function ProjectsHeader() {
 
 				<div className="flex items-center gap-3 md:gap-4">
 					<SearchBar className="hidden md:block" />
+					<ImportProjectButton />
 					<NewProjectButton />
 				</div>
 			</div>
@@ -421,9 +443,16 @@ function ProjectActions() {
 	};
 
 	const handleDeleteConfirm = async () => {
-		await deleteProjects({ editor, ids: selectedProjectIds });
-		clearSelectedProjects();
-		setIsDeleteDialogOpen(false);
+		try {
+			await deleteProjects({ editor, ids: selectedProjectIds });
+			clearSelectedProjects();
+			setIsDeleteDialogOpen(false);
+		} catch (error) {
+			toast.error("Failed to delete projects", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		}
 	};
 
 	const actionHandlers: Record<string, () => void> = {
@@ -538,6 +567,74 @@ function NewProjectButton() {
 	);
 }
 
+function ImportProjectButton({ className }: { className?: string }) {
+	const editor = useEditor();
+	const router = useRouter();
+	const archiveInputRef = useRef<HTMLInputElement>(null);
+	const [isImporting, setIsImporting] = useState(false);
+
+	const handleImportProjectArchive = async (
+		event: ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.currentTarget.files?.[0];
+		event.currentTarget.value = "";
+		if (!file || isImporting) return;
+
+		setIsImporting(true);
+		try {
+			const result = await editor.project.importProjectArchive({ file });
+			const linkedSharedCount =
+				result.sharedAudioLinked + result.sharedStickersLinked;
+			const importedSharedCount =
+				result.sharedAudioImported + result.sharedStickersImported;
+			toast.success(`Imported "${result.projectName}"`, {
+				description: [
+					`${result.mediaImported} media`,
+					`${result.fontsImported} fonts`,
+					`${linkedSharedCount} shared linked`,
+					`${importedSharedCount} shared imported`,
+				].join(" | "),
+			});
+			router.push(`/editor/${result.projectId}`);
+		} catch (error) {
+			console.error("Failed to import project ZIP:", error);
+			toast.error("Failed to import project ZIP", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		} finally {
+			setIsImporting(false);
+		}
+	};
+
+	return (
+		<>
+			<input
+				ref={archiveInputRef}
+				type="file"
+				accept={PROJECT_ARCHIVE_ACCEPT}
+				className="hidden"
+				onChange={handleImportProjectArchive}
+			/>
+			<Button
+				variant="outline"
+				size="lg"
+				className={cn("gap-2", className)}
+				disabled={isImporting}
+				onClick={() => archiveInputRef.current?.click()}
+			>
+				<HugeiconsIcon icon={FileImportIcon} />
+				<span className="hidden sm:inline">
+					{isImporting ? "Importing..." : "Import ZIP"}
+				</span>
+				<span className="sm:hidden">
+					{isImporting ? "Importing..." : "Import"}
+				</span>
+			</Button>
+		</>
+	);
+}
+
 function ProjectItem({
 	project,
 	allProjectIds,
@@ -570,8 +667,15 @@ function ProjectItem({
 	const handleDeleteClick = () => setIsDeleteDialogOpen(true);
 	const handleInfoClick = () => setIsInfoDialogOpen(true);
 	const handleDeleteConfirm = async () => {
-		await deleteProjects({ editor, ids: [project.id] });
-		setIsDeleteDialogOpen(false);
+		try {
+			await deleteProjects({ editor, ids: [project.id] });
+			setIsDeleteDialogOpen(false);
+		} catch (error) {
+			toast.error("Failed to delete project", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		}
 	};
 
 	const handleCheckboxChange = ({
@@ -958,6 +1062,98 @@ function ProjectsSkeleton() {
 	);
 }
 
+function ProjectsLoadError({ error }: { error: string }) {
+	const editor = useEditor();
+
+	return (
+		<div
+			role="alert"
+			className="mx-4 flex flex-col gap-4 rounded-lg border border-destructive/35 bg-destructive/5 p-5 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<div className="flex min-w-0 gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						className="size-5 text-destructive"
+					/>
+				</div>
+				<div className="min-w-0">
+					<h3 className="font-medium">Projects could not be read</h3>
+					<p className="mt-1 text-sm text-muted-foreground">
+						Your stored project data has not been deleted. Retry the browser
+						storage read, or import a project ZIP backup.
+					</p>
+					<p className="mt-2 break-words font-mono text-xs text-muted-foreground">
+						{error}
+					</p>
+				</div>
+			</div>
+			<div className="flex shrink-0 flex-wrap gap-2">
+				<Button
+					variant="outline"
+					size="lg"
+					onClick={() => void editor.project.loadAllProjects()}
+				>
+					Retry
+				</Button>
+				<ImportProjectButton />
+			</div>
+		</div>
+	);
+}
+
+function ProjectsMigrationWarning({
+	failures,
+}: {
+	failures: StorageMigrationFailure[];
+}) {
+	const editor = useEditor();
+	const projectNames = failures.map(
+		(failure) => failure.projectName ?? failure.projectId,
+	);
+
+	return (
+		<div
+			role="alert"
+			className="mx-4 flex flex-col gap-4 rounded-lg border border-amber-500/35 bg-amber-500/5 p-5 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<div className="flex min-w-0 gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						className="size-5 text-amber-700 dark:text-amber-300"
+					/>
+				</div>
+				<div className="min-w-0">
+					<h3 className="font-medium">
+						{failures.length === 1
+							? "One project needs recovery"
+							: `${failures.length} projects need recovery`}
+					</h3>
+					<p className="mt-1 text-sm text-muted-foreground">
+						OpenCut stopped before another unsafe write. Recoverable data was
+						preserved: either the live record stayed untouched or a pre-upgrade
+						safety snapshot was saved. Other readable projects remain available.
+					</p>
+					<p className="mt-2 break-words text-xs text-muted-foreground">
+						{projectNames.join(", ")}
+					</p>
+				</div>
+			</div>
+			<div className="flex shrink-0 flex-wrap gap-2">
+				<Button
+					variant="outline"
+					size="lg"
+					onClick={() => void editor.project.loadAllProjects()}
+				>
+					Retry upgrade
+				</Button>
+				<ImportProjectButton />
+			</div>
+		</div>
+	);
+}
+
 function EmptyState() {
 	const { searchQuery, setSearchQuery } = useProjectsStore();
 	const router = useRouter();
@@ -1015,14 +1211,18 @@ function EmptyState() {
 				</div>
 				<h3 className="text-lg font-medium">No projects yet</h3>
 				<p className="text-muted-foreground max-w-md">
-					Start creating your first project. Import media, edit, and export your
-					videos. All privately.
+					Projects are stored locally in this browser profile for this exact
+					site address. If you edited in another browser or profile, import a
+					project ZIP here.
 				</p>
 			</div>
-			<Button size="lg" className="gap-2" onClick={handleCreateProject}>
-				<HugeiconsIcon icon={PlusSignIcon} />
-				Create your first project
-			</Button>
+			<div className="flex flex-wrap justify-center gap-3">
+				<Button size="lg" className="gap-2" onClick={handleCreateProject}>
+					<HugeiconsIcon icon={PlusSignIcon} />
+					Create your first project
+				</Button>
+				<ImportProjectButton />
+			</div>
 		</div>
 	);
 }

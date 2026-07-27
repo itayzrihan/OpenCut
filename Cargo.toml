@@ -2,11 +2,16 @@
 resolver = "2"
 members = [
     "apps/desktop",
+    "rust/crates/agent",
     "rust/crates/background-removal",
     "rust/crates/time",
     "rust/crates/bridge",
     "rust/crates/effects",
     "rust/crates/gpu",
     "rust/crates/masks",
+    "rust/crates/podcast",
+    "rust/crates/premiere",
+    "rust/crates/storage",
+    "rust/crates/timeline",
     "rust/wasm", "rust/crates/compositor",
 ]

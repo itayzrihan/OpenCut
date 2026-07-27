@@ -2,6 +2,10 @@ import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import type { SceneTracks } from "@/timeline";
 import { withRemovedTrackOrder } from "@/timeline";
+import {
+	removeCaptionElementWordsFromSource,
+	removeTextLayerWordsFromCaptionSource,
+} from "@/subtitles/caption-source-sync";
 
 export class RemoveTrackCommand extends Command {
 	private savedState: SceneTracks | null = null;
@@ -13,13 +17,37 @@ export class RemoveTrackCommand extends Command {
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
 		this.savedState = editor.scenes.getActiveScene().tracks;
-		const updatedTracks: SceneTracks = withRemovedTrackOrder({
+		const removedElements = [
+			...this.savedState.overlay,
+			...this.savedState.audio,
+		]
+			.filter((track) => track.id === this.trackId)
+			.flatMap((track) =>
+				track.elements.map((element) => ({
+					trackId: track.id,
+					elementId: element.id,
+				})),
+			);
+		let updatedTracks: SceneTracks = withRemovedTrackOrder({
 			trackId: this.trackId,
 			tracks: {
-			...this.savedState,
-			overlay: this.savedState.overlay.filter((track) => track.id !== this.trackId),
-			audio: this.savedState.audio.filter((track) => track.id !== this.trackId),
+				...this.savedState,
+				overlay: this.savedState.overlay.filter(
+					(track) => track.id !== this.trackId,
+				),
+				audio: this.savedState.audio.filter(
+					(track) => track.id !== this.trackId,
+				),
 			},
+		});
+		updatedTracks = removeCaptionElementWordsFromSource({
+			tracks: updatedTracks,
+			previousTracks: this.savedState,
+			elements: removedElements,
+		});
+		updatedTracks = removeTextLayerWordsFromCaptionSource({
+			tracks: updatedTracks,
+			elements: removedElements,
 		});
 		editor.timeline.updateTracks(updatedTracks);
 		return undefined;

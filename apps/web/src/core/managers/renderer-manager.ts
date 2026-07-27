@@ -7,6 +7,7 @@ import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/media/audio";
 import { formatTimecode } from "opencut-wasm";
 import { downloadBlob } from "@/utils/browser";
+import { mediaTime, type MediaTime } from "@/wasm";
 
 export type SnapshotResult =
 	| { success: true; blob: Blob; filename: string }
@@ -40,6 +41,23 @@ export class RendererManager {
 
 	async captureSnapshot(): Promise<SnapshotResult> {
 		return this.createSnapshot();
+	}
+
+	async capturePreviewFrameAt({
+		time,
+		maxDimension = 512,
+		maxBytes = 90_000,
+	}: {
+		time: MediaTime;
+		maxDimension?: number;
+		maxBytes?: number;
+	}): Promise<SnapshotResult> {
+		return this.createSnapshot({
+			time,
+			maxDimension: Math.max(128, Math.min(1_024, Math.floor(maxDimension))),
+			mimeType: "image/jpeg",
+			maxBytes: Math.max(16_000, Math.min(250_000, Math.floor(maxBytes))),
+		});
 	}
 
 	async saveSnapshot(): Promise<{ success: boolean; error?: string }> {
@@ -81,7 +99,17 @@ export class RendererManager {
 		}
 	}
 
-	private async createSnapshot(): Promise<SnapshotResult> {
+	private async createSnapshot({
+		time,
+		maxDimension,
+		mimeType = "image/png",
+		maxBytes,
+	}: {
+		time?: MediaTime;
+		maxDimension?: number;
+		mimeType?: "image/png" | "image/jpeg";
+		maxBytes?: number;
+	} = {}): Promise<SnapshotResult> {
 		try {
 			const renderTree = this.getRenderTree();
 			const activeProject = this.editor.project.getActive();
@@ -96,10 +124,15 @@ export class RendererManager {
 			}
 
 			const { canvasSize, fps } = activeProject.settings;
-			const renderTime = Math.min(
-				this.editor.playback.getCurrentTime(),
-				this.editor.timeline.getLastFrameTime(),
-			);
+			const renderTime = mediaTime({
+				ticks: Math.max(
+					0,
+					Math.min(
+						time ?? this.editor.playback.getCurrentTime(),
+						this.editor.timeline.getLastFrameTime(),
+					),
+				),
+			});
 
 			const renderer = new CanvasRenderer({
 				width: canvasSize.width,
@@ -108,8 +141,20 @@ export class RendererManager {
 			});
 
 			const tempCanvas = document.createElement("canvas");
-			tempCanvas.width = canvasSize.width;
-			tempCanvas.height = canvasSize.height;
+			const outputScale = maxDimension
+				? Math.min(
+						1,
+						maxDimension / Math.max(canvasSize.width, canvasSize.height),
+					)
+				: 1;
+			tempCanvas.width = Math.max(
+				1,
+				Math.round(canvasSize.width * outputScale),
+			);
+			tempCanvas.height = Math.max(
+				1,
+				Math.round(canvasSize.height * outputScale),
+			);
 
 			await renderer.renderToCanvas({
 				node: renderTree,
@@ -117,12 +162,19 @@ export class RendererManager {
 				targetCanvas: tempCanvas,
 			});
 
-			const blob = await new Promise<Blob | null>((resolve) => {
-				tempCanvas.toBlob((result) => resolve(result), "image/png");
+			const blob = await encodeCanvasBlob({
+				canvas: tempCanvas,
+				mimeType,
+				maxBytes,
 			});
 
 			if (!blob) {
-				return { success: false, error: "Failed to create image" };
+				return {
+					success: false,
+					error: maxBytes
+						? `Failed to create preview image within ${maxBytes} bytes`
+						: "Failed to create image",
+				};
 			}
 
 			const timecode = formatTimecode({ time: renderTime, rate: fps })!.replace(
@@ -132,7 +184,7 @@ export class RendererManager {
 			const safeName =
 				activeProject.metadata.name.replace(/[<>:"/\\|?*]/g, "-").trim() ||
 				"snapshot";
-			const filename = `${safeName}-${timecode}.png`;
+			const filename = `${safeName}-${timecode}.${mimeType === "image/jpeg" ? "jpg" : "png"}`;
 
 			return { success: true, blob, filename };
 		} catch (error) {
@@ -255,4 +307,26 @@ export class RendererManager {
 			fn();
 		});
 	}
+}
+
+async function encodeCanvasBlob({
+	canvas,
+	mimeType,
+	maxBytes,
+}: {
+	canvas: HTMLCanvasElement;
+	mimeType: "image/png" | "image/jpeg";
+	maxBytes?: number;
+}): Promise<Blob | null> {
+	const qualities: Array<number | undefined> =
+		mimeType === "image/jpeg" ? [0.72, 0.56, 0.42, 0.3, 0.2] : [undefined];
+	for (const quality of qualities) {
+		const blob = await new Promise<Blob | null>((resolve) => {
+			canvas.toBlob((result) => resolve(result), mimeType, quality);
+		});
+		if (blob && (maxBytes === undefined || blob.size <= maxBytes)) {
+			return blob;
+		}
+	}
+	return null;
 }

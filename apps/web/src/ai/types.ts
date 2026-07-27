@@ -38,6 +38,21 @@ export interface AiElementSummary extends ElementRef {
 		enabled: boolean;
 		params: Record<string, string | number | boolean>;
 	}>;
+	masks?: Array<{
+		id: string;
+		type: string;
+		inverted?: boolean;
+	}>;
+	backgroundRemoval?: {
+		enabled: boolean;
+		mode: "remove" | "blur" | "grayscale";
+		quality: "fast" | "balanced" | "precise";
+		maskThreshold: number;
+		edgeContrast: number;
+		edgeFeather: number;
+		temporalSmoothing: number;
+		blurStrength: number;
+	};
 	keyframes?: Array<{
 		propertyPath: string;
 		keyframeId: string;
@@ -73,6 +88,13 @@ export type AiCustomEditSpec =
 	| { [key: string]: AiCustomEditSpec };
 
 export type AiEditOperation =
+	| {
+			type: "apply_timeline_source_v2";
+			baseRevision: string;
+			document: string;
+			scope?: AiTimelineRange;
+			reason?: string;
+	  }
 	| {
 			type: "update_element";
 			trackId: string;
@@ -151,6 +173,44 @@ export type AiEditOperation =
 			reason?: string;
 	  }
 	| {
+			type: "remove_clip_effect";
+			trackId: string;
+			elementId: string;
+			effectId: string;
+			reason?: string;
+	  }
+	| {
+			type: "set_clip_effect_enabled";
+			trackId: string;
+			elementId: string;
+			effectId: string;
+			enabled: boolean;
+			reason?: string;
+	  }
+	| {
+			type: "reorder_clip_effect";
+			trackId: string;
+			elementId: string;
+			fromIndex: number;
+			toIndex: number;
+			reason?: string;
+	  }
+	| {
+			type: "set_background_removal";
+			trackId: string;
+			elementId: string;
+			enabled: boolean;
+			mode?: "remove" | "blur" | "grayscale";
+			quality?: "fast" | "balanced" | "precise";
+			maskThreshold?: number;
+			edgeContrast?: number;
+			edgeFeather?: number;
+			temporalSmoothing?: number;
+			blurStrength?: number;
+			duplicate?: boolean;
+			reason?: string;
+	  }
+	| {
 			type: "upsert_keyframe";
 			trackId: string;
 			elementId: string;
@@ -203,6 +263,15 @@ export type AiEditOperation =
 			reason?: string;
 	  }
 	| {
+			type: "insert_library_audio_element";
+			libraryAssetId: string;
+			name: string;
+			startTime: MediaTime;
+			duration: MediaTime;
+			trackId?: string;
+			reason?: string;
+	  }
+	| {
 			type: "insert_graphic_element";
 			definitionId: string;
 			startTime: MediaTime;
@@ -221,6 +290,28 @@ export type AiEditOperation =
 			name?: string;
 			sourceWidth?: number;
 			sourceHeight?: number;
+			params?: Record<string, string | number | boolean>;
+			reason?: string;
+	  }
+	| {
+			type: "insert_sticker_element";
+			stickerId: string;
+			startTime: MediaTime;
+			duration: MediaTime;
+			trackId?: string;
+			name?: string;
+			intrinsicWidth?: number;
+			intrinsicHeight?: number;
+			params?: Record<string, string | number | boolean>;
+			reason?: string;
+	  }
+	| {
+			type: "insert_effect_element";
+			effectType: string;
+			startTime: MediaTime;
+			duration: MediaTime;
+			trackId?: string;
+			name?: string;
 			params?: Record<string, string | number | boolean>;
 			reason?: string;
 	  }
@@ -254,6 +345,70 @@ export type AiEditOperation =
 			rate: number;
 			maintainPitch?: boolean;
 			reason?: string;
+	  }
+	| {
+			type: "create_scene";
+			name: string;
+			reason?: string;
+	  }
+	| {
+			type: "rename_scene";
+			sceneId: string;
+			name: string;
+			reason?: string;
+	  }
+	| {
+			type: "delete_scene";
+			sceneId: string;
+			reason?: string;
+	  }
+	| {
+			type: "set_project_settings";
+			fps?: { numerator: number; denominator: number };
+			canvasSize?: { width: number; height: number };
+			background?:
+				| { type: "color"; color: string }
+				| { type: "blur"; blurIntensity: number };
+			reason?: string;
+	  }
+	| {
+			type: "add_bookmark";
+			time: MediaTime;
+			note?: string;
+			color?: string;
+			duration?: MediaTime;
+			reason?: string;
+	  }
+	| {
+			type: "update_bookmark";
+			time: MediaTime;
+			note?: string;
+			color?: string;
+			duration?: MediaTime;
+			reason?: string;
+	  }
+	| {
+			type: "remove_bookmark";
+			time: MediaTime;
+			reason?: string;
+	  }
+	| {
+			type: "move_bookmark";
+			fromTime: MediaTime;
+			toTime: MediaTime;
+			reason?: string;
+	  }
+	| {
+			type: "start_export_task";
+			format: "mp4" | "webm";
+			quality: "low" | "medium" | "high" | "very_high";
+			includeAudio?: boolean;
+			reason?: string;
+	  }
+	| {
+			type: "start_transcription_task";
+			language?: string;
+			reason?: string;
 	  };
 
 export interface AiToolCall {
@@ -268,11 +423,35 @@ export interface AiToolDefinition {
 	description: string;
 	parameters: Record<string, unknown>;
 	strict?: boolean;
+	/** Keep only frequently used tools in the initial model context. */
+	deferLoading?: boolean;
+	/** Compact discovery metadata; never forwarded as part of the function schema. */
+	category?: string;
+	keywords?: string[];
+	/** Read-only calls may be executed concurrently when the provider returns a batch. */
+	readOnly?: boolean;
+	/** Only explicitly idempotent, closed-world reads may run concurrently. */
+	idempotent?: boolean;
+	/** Open-world calls may consume untrusted external data and never auto-chain to writes. */
+	openWorld?: boolean;
+	/** Host-enforced risk class; metadata is stripped before sending the schema. */
+	risk?: "read" | "control" | "edit" | "destructive" | "external";
+	/** Explicit user grants required before the host exposes this capability. */
+	requiredPermissions?: Array<
+		"layers" | "media" | "preview" | "app_control" | "network"
+	>;
+	/** Deterministic host policy returned by the Rust authorization broker. */
+	executionPolicy?: "immediate" | "review" | "confirm" | "denied";
 }
 
 export interface AiAgentMessage {
 	role: "system" | "user" | "assistant";
 	content: string;
+}
+
+export interface AiCitation {
+	url: string;
+	title?: string;
 }
 
 export interface AiAgentResult {
@@ -281,4 +460,5 @@ export interface AiAgentResult {
 	editPlan: AiEditPlan | null;
 	iterations: number;
 	error?: string;
+	citations?: AiCitation[];
 }

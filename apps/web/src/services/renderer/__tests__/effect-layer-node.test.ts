@@ -16,7 +16,7 @@ const renderer = {
 };
 
 describe("effect layer node resolution", () => {
-	test("resolves non-renderable custom AI effects to an overlay", async () => {
+	test("keeps non-renderable custom AI effect metadata out of rendered output", async () => {
 		const node = new EffectLayerNode({
 			effectType: CUSTOM_AI_EFFECT_TYPE,
 			effectParams: buildCustomAiEffectParams({
@@ -31,11 +31,7 @@ describe("effect layer node resolution", () => {
 
 		await resolveRenderTree({ node, renderer, time: 50 });
 
-		expect(node.resolved?.passes).toEqual([]);
-		expect(node.resolved?.overlay).toEqual({
-			label: "Explode letters",
-			intent: "Explode each letter outward.",
-		});
+		expect(node.resolved).toBeNull();
 	});
 
 	test("resolves blur-like custom AI effects to passes without an overlay", async () => {

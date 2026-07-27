@@ -13,6 +13,14 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Spinner } from "@/components/ui/spinner";
+import {
 	SplitButton,
 	SplitButtonLeft,
 	SplitButtonRight,
@@ -49,6 +57,9 @@ import {
 	Chart03Icon,
 	Unlink02Icon,
 	CursorRectangleSelection01Icon,
+	ArrowDown01Icon,
+	AiAudioIcon,
+	AudioWave01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { OcRippleIcon } from "@/components/icons";
@@ -56,6 +67,14 @@ import { GraphEditorPopover } from "./graph-editor/popover";
 import { PopoverTrigger } from "@/components/ui/popover";
 import { useGraphEditorController } from "./graph-editor/use-controller";
 import { getToolbarFrameTime } from "./toolbar-frame-time";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import {
+	CUT_SILENCE_ACTIONS,
+	DEFAULT_CUT_SILENCE_MODE,
+	executeCutSilenceAction,
+	type CutSilenceMode,
+} from "./cut-silence-toolbar-options";
 
 export function TimelineToolbar({
 	zoomLevel,
@@ -147,18 +166,9 @@ function ToolbarLeftSection() {
 					tooltip="Split element"
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
-				<ToolbarButton
-					icon={<HugeiconsIcon icon={SnowIcon} />}
-					tooltip={
-						hasSelectedVideo
-							? "Remove all silence from selected video clips"
-							: "Select one or more video clips to remove silence"
-					}
-					disabled={!hasSelectedVideo}
-					onClick={({ event }) => {
-						event.stopPropagation();
-						void timeline.removeAllSilence();
-					}}
+				<CutSilenceToolbarControl
+					hasSelectedVideo={hasSelectedVideo}
+					removeAllSilence={(options) => timeline.removeAllSilence(options)}
 				/>
 
 				<ToolbarButton
@@ -261,6 +271,113 @@ function ToolbarLeftSection() {
 					/>
 				</GraphEditorPopover>
 			</TooltipProvider>
+		</div>
+	);
+}
+
+function CutSilenceToolbarControl({
+	hasSelectedVideo,
+	removeAllSilence,
+}: {
+	hasSelectedVideo: boolean;
+	removeAllSilence: (options: { mode: CutSilenceMode }) => Promise<unknown>;
+}) {
+	const [activeMode, setActiveMode] = useState<CutSilenceMode | null>(null);
+	const activeRunRef = useRef(false);
+	const isAnalyzing = activeMode !== null;
+	const disabled = !hasSelectedVideo || isAnalyzing;
+
+	const runCutSilence = async ({ mode }: { mode: CutSilenceMode }) => {
+		if (!hasSelectedVideo || activeRunRef.current) return;
+		activeRunRef.current = true;
+		setActiveMode(mode);
+		try {
+			await executeCutSilenceAction({ mode, removeAllSilence });
+			if (mode === "deep") {
+				toast.success("Deep silence analysis complete", {
+					description:
+						"Speech boundaries and caption timing were refined where needed.",
+				});
+			}
+		} catch (error) {
+			console.error(`Failed to run ${mode} silence removal:`, error);
+			toast.error("Could not cut silences", {
+				description:
+					error instanceof Error ? error.message : "Please try again.",
+			});
+		} finally {
+			activeRunRef.current = false;
+			setActiveMode(null);
+		}
+	};
+
+	const mainTooltip = !hasSelectedVideo
+		? "Select one or more video clips to cut silences"
+		: activeMode === "deep"
+			? "Deeply analyzing speech, noise, and caption timing"
+			: activeMode === "fast"
+				? "Cutting clear silences"
+				: "Cut silences quickly (open the menu for Deep audio analysis)";
+
+	return (
+		<div
+			role="group"
+			aria-label="Cut silences"
+			aria-busy={isAnalyzing}
+			className="flex items-center"
+		>
+			<ToolbarButton
+				icon={
+					isAnalyzing ? (
+						<Spinner className="size-3.5" />
+					) : (
+						<HugeiconsIcon icon={AudioWave01Icon} />
+					)
+				}
+				tooltip={mainTooltip}
+				disabled={disabled}
+				className="rounded-r-none"
+				onClick={({ event }) => {
+					event.stopPropagation();
+					void runCutSilence({ mode: DEFAULT_CUT_SILENCE_MODE });
+				}}
+			/>
+
+			<DropdownMenu>
+				<ToolbarButton
+					icon={<HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />}
+					tooltip="Cut silence modes: Fast or Deep audio analysis"
+					disabled={disabled}
+					className="h-7 w-4 rounded-l-none px-0"
+					buttonWrapper={(button) => (
+						<DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
+					)}
+				/>
+				<DropdownMenuContent align="start" className="w-80">
+					<DropdownMenuLabel>Cut silences</DropdownMenuLabel>
+					{CUT_SILENCE_ACTIONS.map((action) => (
+						<DropdownMenuItem
+							key={action.mode}
+							onSelect={() => void runCutSilence({ mode: action.mode })}
+							icon={
+								<HugeiconsIcon
+									icon={action.mode === "deep" ? AiAudioIcon : SnowIcon}
+								/>
+							}
+							className="items-start py-2"
+						>
+							<span className="min-w-0">
+								<span className="block font-medium text-foreground">
+									{action.label}
+								</span>
+								<span className="text-muted-foreground block text-xs leading-snug whitespace-normal">
+									{action.description}
+								</span>
+							</span>
+						</DropdownMenuItem>
+					))}
+				</DropdownMenuContent>
+			</DropdownMenu>
 		</div>
 	);
 }
@@ -383,6 +500,7 @@ function ToolbarButton({
 	disabled,
 	isActive,
 	buttonWrapper,
+	className,
 }: {
 	icon: React.ReactNode;
 	tooltip: string;
@@ -390,16 +508,19 @@ function ToolbarButton({
 	disabled?: boolean;
 	isActive?: boolean;
 	buttonWrapper?: (button: React.ReactElement) => React.ReactElement;
+	className?: string;
 }) {
 	const button = (
 		<Button
 			variant={isActive ? "secondary" : "text"}
 			size="icon"
+			aria-label={tooltip}
 			disabled={disabled}
 			onClick={onClick ? (event) => onClick({ event }) : undefined}
 			className={cn(
 				"rounded-sm",
 				disabled ? "cursor-not-allowed opacity-50" : "",
+				className,
 			)}
 		>
 			{icon}

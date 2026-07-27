@@ -5,7 +5,7 @@ import { BaseNode } from "./base-node";
 export type BlurBackgroundNodeParams = {
 	mediaId: string;
 	url: string;
-	file: File;
+	file?: File;
 	mediaType: "video" | "image";
 	duration: number;
 	timeOffset: number;

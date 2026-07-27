@@ -2,7 +2,10 @@ import { Command, type CommandResult } from "@/commands/base-command";
 import type { SceneTracks } from "@/timeline";
 import { EditorCore } from "@/core";
 import type { TimelineTrack } from "@/timeline";
-import { removeTextLayerWordsFromCaptionSource } from "@/subtitles/caption-source-sync";
+import {
+	removeCaptionElementWordsFromSource,
+	removeTextLayerWordsFromCaptionSource,
+} from "@/subtitles/caption-source-sync";
 
 function removeTrackElements<TTrack extends TimelineTrack>({
 	track,
@@ -52,6 +55,11 @@ export class DeleteElementsCommand extends Command {
 				removeTrackElements({ track, elements: this.elements }),
 			),
 		};
+		updatedTracks = removeCaptionElementWordsFromSource({
+			tracks: updatedTracks,
+			previousTracks: this.savedState,
+			elements: this.elements,
+		});
 		updatedTracks = removeTextLayerWordsFromCaptionSource({
 			tracks: updatedTracks,
 			elements: this.elements,

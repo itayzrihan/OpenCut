@@ -77,7 +77,8 @@ If you want to get ready for `apps/desktop`, see [`apps/desktop/README.md`](apps
 
 ### Local WASM development
 
-Only needed if you're editing `rust/wasm` and want the web app to use your local build instead of the published package.
+Only needed if you're editing Rust code exported to the web app. The web app
+resolves the generated local WASM package directly.
 
 **Prerequisites** — install these once before anything else:
 
@@ -98,32 +99,14 @@ cargo install cargo-watch
    bun run build:wasm
    ```
 
-2. Register the generated package for linking:
-
-   ```bash
-   cd rust/wasm/pkg
-   bun link
-   ```
-
-3. Link `apps/web` to the local package:
-
-   ```bash
-   cd apps/web
-   bun link opencut-wasm
-   ```
-
-4. Rebuild on changes while you work:
+2. Rebuild on changes while you work:
 
    ```bash
    bun dev:wasm
    ```
 
-To switch `apps/web` back to the published package, run:
-
-```bash
-cd apps/web
-bun add opencut-wasm
-```
+Restart `bun dev:web` after adding or removing a Rust export because the
+browser cannot hot-swap a WebAssembly export table that is already running.
 
 ### Self-Hosting with Docker
 
@@ -159,4 +142,3 @@ See our [Contributing Guide](.github/CONTRIBUTING.md) for detailed setup instruc
 ---
 
 ![Star History Chart](https://api.star-history.com/svg?repos=opencut-app/opencut&type=Date)
-
