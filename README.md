@@ -25,26 +25,40 @@
 - Headless mode (automation, batch rendering)
 - A scripting tab directly in the editor
 
-You can still find the previous version at [opencut-app/opencut-classic](https://github.com/opencut-app/opencut-classic), which is the one to reach for today. [opencut.app](https://opencut.app) still runs the classic version; the rewrite will live at [new.opencut.app](https://new.opencut.app) until it's ready to take over.
+You can still find the previous version at [opencut-app/opencut-classic](https://github.com/opencut-app/opencut-classic), which is the one to reach for today. [opencut.app](https://opencut.app) still runs the classic version. The rewrite will live at [new.opencut.app](https://new.opencut.app) until it's ready to take over.
 
 ## Development
 
 Install [proto](https://moonrepo.dev/proto) if you haven't already:
 
+**Linux, macOS, WSL:**
+
 ```sh
 bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
+```
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://moonrepo.dev/install/proto.ps1 | iex
+```
+
+If shims fail to run, allow local scripts for your user:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
 From the repo root:
 
 ```sh
-proto use    # installs bun + moon at the versions pinned in .prototools
-bun install
+proto use    # installs the tools pinned in .prototools
 ```
 
 ```sh
-moon run web:dev   # localhost:5173
-moon run api:dev   # localhost:8787
+moon run web:dev       # localhost:5173
+moon run api:dev       # localhost:8787
+moon run desktop:dev   # see apps/desktop/README.md
 ```
 
 ## Contributing
