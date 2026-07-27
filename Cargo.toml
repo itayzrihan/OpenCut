@@ -2,7 +2,8 @@
 resolver = "3"
 members = [
   'apps/desktop',
-  # 'crates/*',
+  'apps/mcp',
+  'crates/*',
 ]
 
 [workspace.package]
@@ -11,4 +12,22 @@ edition = "2024"
 license = "MIT"
 
 [workspace.dependencies]
+async-trait = "0.1.91"
+axum = "0.8.9"
+base64 = "0.22.1"
 gpui = "0.2.2"
+jsonschema = { version = "0.49.1", default-features = false }
+json-patch = "4.2.0"
+rmcp = { version = "2.2.0", features = ["transport-io", "transport-streamable-http-server"] }
+schemars = "1.2.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+sha2 = "0.10.9"
+subtle = "2.6.1"
+tempfile = "3.27.0"
+thiserror = "2.0.17"
+tokio = { version = "1.49.0", features = ["macros", "net", "rt-multi-thread", "sync"] }
+tokio-util = "0.7.19"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter", "fmt"] }
+xcap = "0.9.7"

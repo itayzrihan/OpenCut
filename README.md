@@ -21,7 +21,7 @@
 - An Editor API
 - First-class third party plugins (made possible by a plugin-first architecture)
 - Desktop, mobile, and browser from one codebase (Rust core)
-- MCP server (for AI agents)
+- A self-describing MCP server (for AI agents)
 - Headless mode (automation, batch rendering)
 - A scripting tab directly in the editor
 
@@ -59,7 +59,27 @@ proto use    # installs the tools pinned in .prototools
 moon run web:dev       # localhost:5173
 moon run api:dev       # localhost:8787
 moon run desktop:dev   # see apps/desktop/README.md
+moon run mcp:dev       # MCP over stdio
 ```
+
+## MCP / Editor API
+
+The rewrite includes a transport-neutral Editor API and an MCP adapter. Editor
+features register one versioned capability with the shared Rust runtime; MCP
+then exposes it automatically as a typed tool, a discoverable operation, and a
+readable contract resource. This keeps new editor work available to agents
+without maintaining a separate hand-written MCP API.
+
+The runtime now models multiple open project tabs, exact media time, assets,
+tracks, layers, clips, text/captions, shapes, masks, effects, keyframes,
+transitions, markers, selection, playback, workspace state, history,
+persistence, media analysis, preview artifacts, jobs, and FFmpeg export.
+Desktop panels and MCP use the same in-memory runtime, so an authenticated
+agent can inspect the semantic UI, receive preview/window images directly, and
+edit the active project while the desktop is open.
+
+See [apps/mcp/README.md](apps/mcp/README.md) for architecture, client
+configuration, the feature-registration contract, and security controls.
 
 ## Contributing
 
