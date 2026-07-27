@@ -24,6 +24,7 @@ import { TRANSCRIPTION_LANGUAGES } from "@/transcription/supported-languages";
 import type {
 	CaptionChunk,
 	TranscriptionLanguage,
+	TranscriptionWord,
 } from "@/transcription/types";
 import {
 	DEFAULT_CAPTION_LAYOUT,
@@ -37,6 +38,13 @@ import {
 	findCaptionSourceTrack,
 	rebuildCaptionTracksWithSource,
 } from "@/subtitles/caption-tracks";
+import {
+	applyTranscriptCorrections,
+	buildMessageOptimizationRanges,
+	requestMessageOptimization,
+	requestTranscriptCorrection,
+	type IndexedTranscriptWord,
+} from "@/subtitles/caption-ai";
 import { parseSubtitleFile } from "@/subtitles/parse";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -67,6 +75,10 @@ import {
 	CAPTION_WORD_ANIMATIONS,
 } from "@/text/caption-presets";
 import { toast } from "sonner";
+import { SpellCheck2, WandSparkles } from "lucide-react";
+import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
+import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
+import { mediaTimeFromSeconds } from "@/wasm";
 
 const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	DiagnosticSeverity,
@@ -254,9 +266,14 @@ export function Captions() {
 	);
 	const [savedPresets, setSavedPresets] = useState<SavedCaptionPreset[]>([]);
 	const [processing, dispatch] = useReducer(processingReducer, IDLE_STATE);
+	const [aiAction, setAiAction] = useState<"correcting" | "optimizing" | null>(
+		null,
+	);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const aiAbortControllerRef = useRef<AbortController | null>(null);
 	const editor = useEditor();
+	const { status: aiStatus, login: loginToAi } = useAiOAuthStatus();
 	const canvasSize = useEditorProject(
 		(e) => e.project.getActive().settings.canvasSize,
 	);
@@ -268,7 +285,8 @@ export function Captions() {
 	const isTranscriptionProcessing =
 		transcriptionState.task.status === "running" ||
 		transcriptionState.task.status === "cancelling";
-	const isProcessing = isLocalProcessing || isTranscriptionProcessing;
+	const isProcessing =
+		isLocalProcessing || isTranscriptionProcessing || aiAction !== null;
 	const placementGrid = getCaptionPlacementGrid({ canvasSize });
 	const selectedGridCell = getCaptionGridCell({
 		settings: captionSettings,
@@ -290,6 +308,10 @@ export function Captions() {
 	useEffect(() => {
 		saveLastCaptionSettings({ settings: captionSettings });
 	}, [captionSettings]);
+
+	useEffect(() => {
+		return () => aiAbortControllerRef.current?.abort();
+	}, []);
 
 	useEffect(() => {
 		let isCancelled = false;
@@ -518,6 +540,181 @@ export function Captions() {
 			}),
 		});
 		setCaptionSettings(settings);
+	};
+
+	const getIndexedTranscriptWords = ({
+		words,
+	}: {
+		words: TranscriptionWord[];
+	}): IndexedTranscriptWord[] =>
+		words.flatMap((word, sourceIndex) =>
+			word.source?.type === "text-layer" ? [] : [{ ...word, sourceIndex }],
+		);
+
+	const requireCaptionAi = () => {
+		if (aiStatus.authenticated) return true;
+		loginToAi();
+		return false;
+	};
+
+	const handleCorrectTranscript = async () => {
+		if (isProcessing || !requireCaptionAi()) return;
+		const scene = editor.scenes.getActiveSceneOrNull();
+		const source = scene
+			? findCaptionSourceTrack({ tracks: scene.tracks })?.captionSource
+			: undefined;
+		if (!scene || !source) {
+			toast.error("Generate or import timed captions first");
+			return;
+		}
+		const indexedWords = getIndexedTranscriptWords({ words: source.words });
+		if (indexedWords.length === 0) {
+			toast.error("No generated transcript words were found");
+			return;
+		}
+
+		const before = scene.tracks;
+		const controller = new AbortController();
+		aiAbortControllerRef.current = controller;
+		setAiAction("correcting");
+		try {
+			const result = await requestTranscriptCorrection({
+				words: indexedWords,
+				signal: controller.signal,
+			});
+			const activeScene = editor.scenes.getActiveSceneOrNull();
+			if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
+				throw new Error(
+					"The timeline changed while Codex was proofreading. No edits were applied.",
+				);
+			}
+			const corrected = applyTranscriptCorrections({
+				words: source.words,
+				changes: result.changes,
+			});
+			if (corrected.changedCount === 0) {
+				toast.info("Codex found no transcript corrections");
+				return;
+			}
+			const after = rebuildCaptionTracksWithSource({
+				tracks: before,
+				words: corrected.words,
+				settings: source.settings,
+				canvasSize: editor.project.getActive().settings.canvasSize,
+				layerCount: source.layerCount,
+				preserveEditedElements: false,
+			});
+			if (!after) throw new Error("Could not rebuild corrected captions");
+			editor.command.execute({
+				command: new TracksSnapshotCommand({ before, after }),
+			});
+			toast.success(`Corrected ${corrected.changedCount} transcript words`, {
+				description: result.summary,
+			});
+		} catch (error) {
+			if (error instanceof DOMException && error.name === "AbortError") return;
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not correct the transcript",
+			);
+		} finally {
+			if (aiAbortControllerRef.current === controller) {
+				aiAbortControllerRef.current = null;
+			}
+			setAiAction(null);
+		}
+	};
+
+	const handleOptimizeMessage = async () => {
+		if (isProcessing || !requireCaptionAi()) return;
+		const scene = editor.scenes.getActiveSceneOrNull();
+		const source = scene
+			? findCaptionSourceTrack({ tracks: scene.tracks })?.captionSource
+			: undefined;
+		if (!scene || !source) {
+			toast.error("Generate or import timed captions first");
+			return;
+		}
+		const indexedWords = getIndexedTranscriptWords({ words: source.words });
+		if (indexedWords.length < 2) {
+			toast.info("The transcript is already too short to optimize");
+			return;
+		}
+
+		const before = scene.tracks;
+		const controller = new AbortController();
+		aiAbortControllerRef.current = controller;
+		setAiAction("optimizing");
+		try {
+			const result = await requestMessageOptimization({
+				words: indexedWords,
+				signal: controller.signal,
+			});
+			const ranges = buildMessageOptimizationRanges({
+				words: indexedWords,
+				removeRanges: result.removeRanges,
+			});
+			if (ranges.length === 0) {
+				toast.info("Codex found no safe message-shortening cuts");
+				return;
+			}
+			const removedWordIndexes = new Set<number>();
+			for (const range of ranges) {
+				for (const word of indexedWords) {
+					if (
+						word.sourceIndex >= range.startIndex &&
+						word.sourceIndex <= range.endIndex
+					) {
+						removedWordIndexes.add(word.sourceIndex);
+					}
+				}
+			}
+			if (removedWordIndexes.size >= indexedWords.length) {
+				throw new Error("Codex proposed removing the entire message");
+			}
+			const activeScene = editor.scenes.getActiveSceneOrNull();
+			if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
+				throw new Error(
+					"The timeline changed while Codex was optimizing. No edits were applied.",
+				);
+			}
+
+			let after = before;
+			for (const range of [...ranges].sort(
+				(left, right) => right.start - left.start,
+			)) {
+				after = removeTimeRangeFromTracks({
+					tracks: after,
+					startTime: mediaTimeFromSeconds({ seconds: range.start }),
+					endTime: mediaTimeFromSeconds({ seconds: range.end }),
+				});
+			}
+			if (after === before) return;
+			editor.command.execute({
+				command: new TracksSnapshotCommand({ before, after }),
+			});
+			const removedSeconds = ranges.reduce(
+				(total, range) => total + range.end - range.start,
+				0,
+			);
+			toast.success(
+				`Message optimized · removed ${removedSeconds.toFixed(1)}s`,
+				{ description: result.summary },
+			);
+		} catch (error) {
+			if (error instanceof DOMException && error.name === "AbortError") return;
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not optimize the message",
+			);
+		} finally {
+			if (aiAbortControllerRef.current === controller) {
+				aiAbortControllerRef.current = null;
+			}
+			setAiAction(null);
+		}
 	};
 
 	const handleGenerateTranscript = async () => {
@@ -1020,6 +1217,44 @@ export function Captions() {
 					>
 						Apply caption layout
 					</Button>
+					<div className="grid grid-cols-2 gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => void handleCorrectTranscript()}
+							disabled={isProcessing || !hasGeneratedCaptions}
+							className="min-w-0 gap-1.5"
+						>
+							{aiAction === "correcting" ? (
+								<Spinner className="size-4" />
+							) : (
+								<SpellCheck2 className="size-4" />
+							)}
+							<span className="truncate">
+								{aiAction === "correcting"
+									? "Correcting..."
+									: "Codex correct"}
+							</span>
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => void handleOptimizeMessage()}
+							disabled={isProcessing || !hasGeneratedCaptions}
+							className="min-w-0 gap-1.5"
+						>
+							{aiAction === "optimizing" ? (
+								<Spinner className="size-4" />
+							) : (
+								<WandSparkles className="size-4" />
+							)}
+							<span className="truncate">
+								{aiAction === "optimizing"
+									? "Optimizing..."
+									: "Tighten message"}
+							</span>
+						</Button>
+					</div>
 					<Button
 						type="button"
 						className="mt-auto w-full"

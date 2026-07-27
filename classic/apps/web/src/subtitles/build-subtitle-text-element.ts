@@ -21,6 +21,7 @@ import {
 	type CaptionLayoutSettings,
 } from "./caption-layout";
 import type { SubtitleCue, SubtitleStyleOverrides } from "./types";
+import { getReadableWordTimings } from "./caption-readable-timing";
 
 const SUBTITLE_MAX_WIDTH_RATIO = 0.8;
 const SUBTITLE_BOTTOM_MARGIN_RATIO = 0.05;
@@ -490,6 +491,11 @@ function buildWordRunsFromCaption({
 	if (!sourceWords.length) {
 		return undefined;
 	}
+	const readableTimings = getReadableWordTimings({
+		words: sourceWords,
+		captionStartTime: caption.startTime,
+		captionEndTime: caption.startTime + caption.duration,
+	});
 
 	const lineIndexes: number[] = [];
 	const lineWordCounts = content
@@ -501,15 +507,21 @@ function buildWordRunsFromCaption({
 		}
 	}
 
-	return sourceWords.map((word, index) => ({
-		id: `word-${index}`,
-		text: word.text,
-		lineIndex: lineIndexes[index] ?? 0,
-		startTime: mediaTimeFromSeconds({
-			seconds: Math.max(0, word.start - caption.startTime),
-		}),
-		endTime: mediaTimeFromSeconds({
-			seconds: Math.max(word.start + 0.001, word.end) - caption.startTime,
-		}),
-	}));
+	return sourceWords.map((word, index) => {
+		const timing = readableTimings[index] ?? {
+			start: word.start,
+			end: Math.max(word.start + 0.001, word.end),
+		};
+		return {
+			id: `word-${index}`,
+			text: word.text,
+			lineIndex: lineIndexes[index] ?? 0,
+			startTime: mediaTimeFromSeconds({
+				seconds: Math.max(0, timing.start - caption.startTime),
+			}),
+			endTime: mediaTimeFromSeconds({
+				seconds: Math.max(0.001, timing.end - caption.startTime),
+			}),
+		};
+	});
 }

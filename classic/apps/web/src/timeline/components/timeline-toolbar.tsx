@@ -293,7 +293,12 @@ function CutSilenceToolbarControl({
 		setActiveMode(mode);
 		try {
 			await executeCutSilenceAction({ mode, removeAllSilence });
-			if (mode === "deep") {
+			if (mode === "audio") {
+				toast.success("Audio-based silence cut complete", {
+					description:
+						"Pauses of 0.1 seconds or longer were removed and captions were synchronized.",
+				});
+			} else if (mode === "deep") {
 				toast.success("Deep silence analysis complete", {
 					description:
 						"Speech boundaries and caption timing were refined where needed.",
@@ -313,11 +318,13 @@ function CutSilenceToolbarControl({
 
 	const mainTooltip = !hasSelectedVideo
 		? "Select one or more video clips to cut silences"
-		: activeMode === "deep"
-			? "Deeply analyzing speech, noise, and caption timing"
-			: activeMode === "fast"
-				? "Cutting clear silences"
-				: "Cut silences quickly (open the menu for Deep audio analysis)";
+		: activeMode === "audio"
+			? "Removing audio pauses from 0.1 seconds and synchronizing captions"
+			: activeMode === "deep"
+				? "Deeply analyzing speech, noise, and caption timing"
+				: activeMode === "fast"
+					? "Cutting clear silences"
+					: "Cut audio pauses from 0.1 seconds and synchronize captions";
 
 	return (
 		<div
@@ -346,7 +353,7 @@ function CutSilenceToolbarControl({
 			<DropdownMenu>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />}
-					tooltip="Cut silence modes: Fast or Deep audio analysis"
+					tooltip="Cut silence modes: Audio-based, Fast, or Deep"
 					disabled={disabled}
 					className="h-7 w-4 rounded-l-none px-0"
 					buttonWrapper={(button) => (
@@ -361,7 +368,7 @@ function CutSilenceToolbarControl({
 							onSelect={() => void runCutSilence({ mode: action.mode })}
 							icon={
 								<HugeiconsIcon
-									icon={action.mode === "deep" ? AiAudioIcon : SnowIcon}
+									icon={action.mode === "fast" ? SnowIcon : AiAudioIcon}
 								/>
 							}
 							className="items-start py-2"

@@ -2,6 +2,20 @@ import type { AudioAnalysisFrame } from "opencut-wasm";
 
 export const DEEP_AUDIO_FRAME_SECONDS = 0.02;
 export const FAST_AUDIO_FRAME_SECONDS = 0.05;
+export const AUDIO_BASED_AUDIO_FRAME_SECONDS = 0.01;
+
+export const AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS = {
+	minSilenceSeconds: 0.1,
+	minSpeechSeconds: 0.04,
+	speechPaddingSeconds: 0,
+	bridgeGapSeconds: 0.04,
+	noisePercentile: 0.2,
+	minThreshold: 0.0045,
+	maxThreshold: 0.08,
+	hysteresisRatio: 0.72,
+	maxWordSnapSeconds: 0.22,
+	minWordDurationSeconds: 0.06,
+} as const;
 
 const DEFAULT_YIELD_EVERY_FRAMES = 400;
 

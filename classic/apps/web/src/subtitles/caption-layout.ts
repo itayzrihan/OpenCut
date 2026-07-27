@@ -9,6 +9,7 @@ import type {
 	TextWordDirection,
 	TextWordTransitionIn,
 } from "@/timeline";
+import { getReadableCaptionBounds } from "./caption-readable-timing";
 
 export type CaptionPlacementMode = "grid" | "manual";
 
@@ -296,9 +297,14 @@ export function buildCaptionChunksFromWords({
 			group[group.length - 1].end,
 			rawStartTime + 0.1,
 		);
-		const { startTime, endTime } = paddedCaptionTime({
+		const readableBounds = getReadableCaptionBounds({
+			words: group,
 			startTime: rawStartTime,
 			endTime: rawEndTime,
+		});
+		const { startTime, endTime } = paddedCaptionTime({
+			startTime: readableBounds.startTime,
+			endTime: readableBounds.endTime,
 			settings: normalized,
 		});
 		captions.push({

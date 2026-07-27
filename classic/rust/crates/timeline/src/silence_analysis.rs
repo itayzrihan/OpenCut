@@ -282,10 +282,27 @@ pub fn analyze_audio_silence(
     let cut_ranges = if speech_regions.is_empty() {
         Vec::new()
     } else {
-        complement_ranges(&speech_regions, duration)
+        // Decide whether a pause qualifies from the unpadded speech regions.
+        // Padding is applied only after that decision, otherwise a real 100ms
+        // pause with 20ms protection on each side would incorrectly look like
+        // a 60ms pause and survive the cut.
+        complement_ranges(&meaningful_regions, duration)
             .into_iter()
             .filter(|range| {
                 range.end - range.start + EPSILON_SECONDS >= settings.min_silence_seconds
+            })
+            .filter_map(|range| {
+                let start = if range.start > EPSILON_SECONDS {
+                    range.start + settings.speech_padding_seconds
+                } else {
+                    range.start
+                };
+                let end = if range.end < duration - EPSILON_SECONDS {
+                    range.end - settings.speech_padding_seconds
+                } else {
+                    range.end
+                };
+                (end > start + EPSILON_SECONDS).then_some(AudioAnalysisRange { start, end })
             })
             .collect::<Vec<_>>()
     };
@@ -763,6 +780,29 @@ mod tests {
         });
 
         assert!(result.cut_ranges.is_empty());
+    }
+
+    #[test]
+    fn audio_based_settings_cut_a_real_one_tenth_second_pause() {
+        let mut energies = vec![0.05; 45];
+        energies[20..25].fill(0.001);
+        let result = analyze_audio_silence(AnalyzeAudioSilenceOptions {
+            frames: frames(&energies, 0.02),
+            duration_seconds: 0.9,
+            transcript_words: vec![],
+            settings: AudioSilenceAnalysisSettings {
+                min_silence_seconds: 0.1,
+                min_speech_seconds: 0.04,
+                speech_padding_seconds: 0.02,
+                bridge_gap_seconds: 0.04,
+                ..AudioSilenceAnalysisSettings::default()
+            },
+        });
+
+        assert_eq!(result.cut_ranges.len(), 1);
+        assert!(result.cut_ranges[0].start >= 0.4);
+        assert!(result.cut_ranges[0].end <= 0.5);
+        assert!(result.cut_ranges[0].end > result.cut_ranges[0].start);
     }
 
     #[test]

@@ -6,12 +6,14 @@ import {
 } from "@/timeline/components/cut-silence-toolbar-options";
 
 describe("cut silence toolbar options", () => {
-	test("keeps the fast analysis as the one-click default", () => {
-		expect(DEFAULT_CUT_SILENCE_MODE).toBe("fast");
+	test("uses synchronized 0.1-second audio cutting as the one-click default", () => {
+		expect(DEFAULT_CUT_SILENCE_MODE).toBe("audio");
 		expect(CUT_SILENCE_ACTIONS[0]).toMatchObject({
-			mode: "fast",
-			label: "Fast cut (default)",
+			mode: "audio",
+			label: "Audio-based tight cut (default)",
 		});
+		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("0.1 seconds");
+		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("captions");
 	});
 
 	test("exposes a speech-aware deep analysis option", () => {
@@ -25,15 +27,15 @@ describe("cut silence toolbar options", () => {
 	});
 
 	test("wires the selected mode into the manager action", async () => {
-		const calls: Array<{ mode: "fast" | "deep" }> = [];
+		const calls: Array<{ mode: "audio" | "fast" | "deep" }> = [];
 
 		await executeCutSilenceAction({
-			mode: "deep",
+			mode: "audio",
 			removeAllSilence: async (options) => {
 				calls.push(options);
 			},
 		});
 
-		expect(calls).toEqual([{ mode: "deep" }]);
+		expect(calls).toEqual([{ mode: "audio" }]);
 	});
 });

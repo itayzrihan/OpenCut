@@ -25,6 +25,8 @@ import {
 } from "@/wasm";
 import { decodeAudioToFloat32 } from "@/media/audio";
 import {
+	AUDIO_BASED_AUDIO_FRAME_SECONDS,
+	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
 	DEEP_AUDIO_FRAME_SECONDS,
 	extractCompactAudioFeatures,
 	FAST_AUDIO_FRAME_SECONDS,
@@ -353,9 +355,9 @@ export class TimelineManager {
 	}
 
 	async removeAllSilence({
-		mode = "fast",
+		mode = "audio",
 	}: {
-		mode?: "fast" | "deep";
+		mode?: "audio" | "fast" | "deep";
 	} = {}): Promise<void> {
 		const scene = this.editor.scenes.getActiveScene();
 		const before = scene.tracks;
@@ -372,8 +374,9 @@ export class TimelineManager {
 		const ranges: Array<{ startTime: MediaTime; endTime: MediaTime }> = [];
 		const captionSourceTrack = findCaptionSourceTrack({ tracks: before });
 		const captionSource = captionSourceTrack?.captionSource;
+		const usesAdaptiveAudioAnalysis = mode === "audio" || mode === "deep";
 		const refinedCaptionWords =
-			mode === "deep" && captionSource
+			usesAdaptiveAudioAnalysis && captionSource
 				? captionSource.words.map((word) => ({ ...word }))
 				: undefined;
 		const assignedCaptionWordIndexes = new Set<number>();
@@ -426,58 +429,64 @@ export class TimelineManager {
 				sourceEndSeconds: sourceEnd,
 				playbackRate,
 				frameDurationSeconds:
-					mode === "deep" ? DEEP_AUDIO_FRAME_SECONDS : FAST_AUDIO_FRAME_SECONDS,
+					mode === "audio"
+						? AUDIO_BASED_AUDIO_FRAME_SECONDS
+						: mode === "deep"
+							? DEEP_AUDIO_FRAME_SECONDS
+							: FAST_AUDIO_FRAME_SECONDS,
 			});
 			if (frames.length === 0) continue;
 			analyzedClipCount += 1;
 
-			const localRanges =
-				mode === "deep"
-					? (() => {
-							const clipStart = mediaTimeToSeconds({ time: element.startTime });
-							const transcriptWords = (refinedCaptionWords ?? []).flatMap(
-								(word, wordIndex) => {
-									if (
-										word.source?.type === "text-layer" ||
-										assignedCaptionWordIndexes.has(wordIndex)
-									) {
-										return [];
-									}
-									const midpoint = (word.start + word.end) / 2;
-									if (
-										midpoint < clipStart ||
-										midpoint >= clipStart + clipDuration
-									) {
-										return [];
-									}
-									return [
-										{
-											wordIndex,
-											start: Math.max(0, word.start - clipStart),
-											end: Math.min(clipDuration, word.end - clipStart),
-										},
-									];
-								},
-							);
-							const result = wasm.analyzeAudioSilence({
-								frames,
-								durationSeconds: clipDuration,
-								transcriptWords,
-								settings: DEEP_SILENCE_ANALYSIS_SETTINGS,
-							});
-							for (const refinedWord of result.refinedWords) {
-								const word = refinedCaptionWords?.[refinedWord.wordIndex];
-								if (!word || word.source?.type === "text-layer") continue;
-								word.start = clipStart + refinedWord.start;
-								word.end = clipStart + refinedWord.end;
-								assignedCaptionWordIndexes.add(refinedWord.wordIndex);
-							}
-							return result.cutRanges;
-						})()
-					: wasm.detectFastAudioSilence({
+			const localRanges = usesAdaptiveAudioAnalysis
+				? (() => {
+						const clipStart = mediaTimeToSeconds({ time: element.startTime });
+						const transcriptWords = (refinedCaptionWords ?? []).flatMap(
+							(word, wordIndex) => {
+								if (
+									word.source?.type === "text-layer" ||
+									assignedCaptionWordIndexes.has(wordIndex)
+								) {
+									return [];
+								}
+								const midpoint = (word.start + word.end) / 2;
+								if (
+									midpoint < clipStart ||
+									midpoint >= clipStart + clipDuration
+								) {
+									return [];
+								}
+								return [
+									{
+										wordIndex,
+										start: Math.max(0, word.start - clipStart),
+										end: Math.min(clipDuration, word.end - clipStart),
+									},
+								];
+							},
+						);
+						const result = wasm.analyzeAudioSilence({
 							frames,
 							durationSeconds: clipDuration,
+							transcriptWords,
+							settings:
+								mode === "audio"
+									? AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS
+									: DEEP_SILENCE_ANALYSIS_SETTINGS,
 						});
+						for (const refinedWord of result.refinedWords) {
+							const word = refinedCaptionWords?.[refinedWord.wordIndex];
+							if (!word || word.source?.type === "text-layer") continue;
+							word.start = clipStart + refinedWord.start;
+							word.end = clipStart + refinedWord.end;
+							assignedCaptionWordIndexes.add(refinedWord.wordIndex);
+						}
+						return result.cutRanges;
+					})()
+				: wasm.detectFastAudioSilence({
+						frames,
+						durationSeconds: clipDuration,
+					});
 
 			for (const range of localRanges) {
 				const start = Math.max(0, Math.min(clipDuration, range.start));

@@ -1,11 +1,17 @@
-export type CutSilenceMode = "fast" | "deep";
+export type CutSilenceMode = "audio" | "fast" | "deep";
 
-export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "fast";
+export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "audio";
 
 export const CUT_SILENCE_ACTIONS = [
 	{
+		mode: "audio",
+		label: "Audio-based tight cut (default)",
+		description:
+			"Removes audio pauses from 0.1 seconds and keeps existing captions synchronized.",
+	},
+	{
 		mode: "fast",
-		label: "Fast cut (default)",
+		label: "Fast cut",
 		description: "Quickly removes clear, sustained silence.",
 	},
 	{

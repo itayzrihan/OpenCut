@@ -1,7 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { extractCompactAudioFeatures } from "@/timeline/audio-silence-analysis";
+import {
+	AUDIO_BASED_AUDIO_FRAME_SECONDS,
+	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
+	extractCompactAudioFeatures,
+} from "@/timeline/audio-silence-analysis";
 
 describe("compact audio silence features", () => {
+	test("keeps the one-click audio mode at a true 0.1-second no-padding cut", () => {
+		expect(AUDIO_BASED_AUDIO_FRAME_SECONDS).toBe(0.01);
+		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.minSilenceSeconds).toBe(0.1);
+		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.speechPaddingSeconds).toBe(0);
+	});
+
 	test("maps trimmed source frames into retimed clip-local time", async () => {
 		const sampleRate = 100;
 		const samples = new Float32Array(400);

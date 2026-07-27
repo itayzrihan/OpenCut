@@ -20,6 +20,7 @@ const requiredExports = [
 	"preserveAudioDuringTimeRemoval",
 	"realignCaptionWordsAfterTimeRemoval",
 	"searchAgentTools",
+	"textLayerDurationForWords",
 	"transitionAgentTask",
 	"validateTimelineSourceV2MutationScope",
 ];
