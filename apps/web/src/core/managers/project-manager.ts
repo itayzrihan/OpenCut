@@ -217,7 +217,7 @@ export class ProjectManager {
 		}
 	}
 
-	async loadProject({ id }: { id: string }): Promise<void> {
+	async loadProject({ id }: { id: string }): Promise<boolean> {
 		if (this.active && this.active.metadata.id !== id) {
 			// Route changes can switch projects without going through the explicit Exit
 			// action. Persist the current project before clearing any in-memory state.
@@ -243,7 +243,9 @@ export class ProjectManager {
 
 			const result = await storageService.loadProject({ id });
 			if (!result) {
-				throw new Error(`Project with id ${id} not found`);
+				this.active = null;
+				this.notify();
+				return false;
 			}
 
 			const project = result.project;
@@ -291,6 +293,7 @@ export class ProjectManager {
 					console.error("Failed to generate project thumbnail:", error);
 				}
 			}
+			return true;
 		} catch (error) {
 			console.error("Failed to load project:", error);
 			throw error;

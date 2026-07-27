@@ -14,6 +14,7 @@ import {
 	initializeGpuRenderer,
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
+import { createReplacementProjectIfMissing } from "@/editor/project-loading";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -40,43 +41,42 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 				setIsLoading(true);
 				await initializeGpuRenderer();
 				editor.renderer.setDegraded(!isGpuAvailable());
-				await editor.project.loadProject({ id: projectId });
+				const projectExists = await editor.project.loadProject({
+					id: projectId,
+				});
 
 				if (cancelled) return;
+
+				const replacementProjectId = await createReplacementProjectIfMissing({
+					projectExists,
+					createProject: () =>
+						editor.project.createNewProject({
+							name: "Untitled Project",
+						}),
+				});
+				if (replacementProjectId) {
+					if (!cancelled) {
+						router.replace(`/editor/${replacementProjectId}`);
+					}
+					return;
+				}
 
 				setIsLoading(false);
 				loadFontAtlas();
 			} catch (err) {
 				if (cancelled) return;
 
-				const isNotFound =
-					err instanceof Error &&
-					(err.message.includes("not found") ||
-						err.message.includes("does not exist"));
-
-				if (isNotFound) {
-					try {
-						const newProjectId = await editor.project.createNewProject({
-							name: "Untitled Project",
-						});
-						router.replace(`/editor/${newProjectId}`);
-					} catch (_createErr) {
-						setError("Failed to create project");
-						setIsLoading(false);
-					}
+				const wasmPanic = (window as Window & { __wasmPanic?: string })
+					.__wasmPanic;
+				if (wasmPanic) {
+					delete (window as Window & { __wasmPanic?: string }).__wasmPanic;
+					setError(wasmPanic);
 				} else {
-					const wasmPanic = (window as Window & { __wasmPanic?: string })
-						.__wasmPanic;
-					if (wasmPanic) {
-						delete (window as Window & { __wasmPanic?: string }).__wasmPanic;
-						setError(wasmPanic);
-					} else {
-						setError(
-							err instanceof Error ? err.message : "Failed to load project",
-						);
-					}
-					setIsLoading(false);
+					setError(
+						err instanceof Error ? err.message : "Failed to load project",
+					);
 				}
+				setIsLoading(false);
 			}
 		};
 
