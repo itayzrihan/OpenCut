@@ -1,0 +1,27 @@
+struct VertexOutput {
+    @builtin(position) position: vec4f,
+    @location(0) tex_coord: vec2f,
+}
+
+struct EffectUniforms {
+    resolution: vec2f,
+    direction: vec2f,
+    scalars: vec4f,
+    color: vec4f,
+}
+
+@group(0) @binding(0) var input_texture: texture_2d<f32>;
+@group(0) @binding(1) var input_sampler: sampler;
+@group(1) @binding(0) var<uniform> uniforms: EffectUniforms;
+
+@fragment
+fn fragment_main(input: VertexOutput) -> @location(0) vec4f {
+    let source = textureSample(input_texture, input_sampler, input.tex_coord);
+    let intensity = clamp(uniforms.scalars.x, 0.0, 1.0);
+    let aspect = uniforms.resolution.x / max(uniforms.resolution.y, 1.0);
+    let centered = (input.tex_coord - vec2f(0.5, 0.5)) * vec2f(aspect, 1.0);
+    let edge = smoothstep(0.34, 0.78, length(centered));
+    let shadow = mix(source.rgb, uniforms.color.rgb, 0.18);
+    let rgb = mix(source.rgb, shadow * (1.0 - edge * 0.72), edge * intensity);
+    return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), source.a);
+}

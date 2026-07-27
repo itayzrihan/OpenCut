@@ -1,0 +1,121 @@
+import { type JSX } from "react";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import { mediaTimeToSeconds } from "opencut-wasm";
+import { TICKS_PER_SECOND } from "@/wasm";
+import { TIMELINE_RULER_HEIGHT_PX } from "./layout";
+import { DEFAULT_FPS } from "@/fps/defaults";
+import { useEditorProject, useEditorTimeline } from "@/editor/use-editor";
+import { getRulerConfig, shouldShowLabel } from "@/timeline/ruler-utils";
+import { TimelineTick } from "./timeline-tick";
+import { getTimelineRulerVisibleTickRange } from "./timeline-ruler-visibility";
+
+interface TimelineRulerProps {
+	zoomLevel: number;
+	dynamicTimelineWidth: number;
+	scrollLeft: number;
+	viewportWidth: number;
+	rulerRef: React.Ref<HTMLDivElement>;
+	handleWheel: (e: React.WheelEvent) => void;
+	handleTimelineContentClick: (e: React.MouseEvent) => void;
+	handleRulerTrackingMouseDown: (e: React.MouseEvent) => void;
+	handleRulerMouseDown: (e: React.MouseEvent) => void;
+}
+
+export function TimelineRuler({
+	zoomLevel,
+	dynamicTimelineWidth,
+	scrollLeft,
+	viewportWidth,
+	rulerRef,
+	handleWheel,
+	handleTimelineContentClick,
+	handleRulerTrackingMouseDown,
+	handleRulerMouseDown,
+}: TimelineRulerProps) {
+	const durationTicks = useEditorTimeline((e) => e.timeline.getTotalDuration());
+	const durationSeconds = mediaTimeToSeconds({ time: durationTicks });
+	const pixelsPerSecond = BASE_TIMELINE_PIXELS_PER_SECOND * zoomLevel;
+	const visibleDurationSeconds = dynamicTimelineWidth / pixelsPerSecond;
+	const effectiveDurationSeconds = Math.max(
+		durationSeconds,
+		visibleDurationSeconds,
+	);
+	const fps =
+		useEditorProject((e) => e.project.getActiveOrNull()?.settings.fps) ??
+		DEFAULT_FPS;
+	const { labelIntervalSeconds, tickIntervalSeconds } = getRulerConfig({
+		zoomLevel,
+		fps,
+	});
+	const tickCount =
+		Math.ceil(effectiveDurationSeconds / tickIntervalSeconds) + 1;
+	const { startTickIndex, endTickIndex } = getTimelineRulerVisibleTickRange({
+		scrollLeft,
+		viewportWidth,
+		pixelsPerSecond,
+		tickIntervalSeconds,
+		tickCount,
+	});
+
+	const timelineTicks: Array<JSX.Element> = [];
+	for (
+		let tickIndex = startTickIndex;
+		tickIndex <= endTickIndex;
+		tickIndex += 1
+	) {
+		const timeSeconds = tickIndex * tickIntervalSeconds;
+		if (timeSeconds > effectiveDurationSeconds) break;
+
+		const timeTicks = Math.round(timeSeconds * TICKS_PER_SECOND);
+		const showLabel = shouldShowLabel({
+			time: timeSeconds,
+			labelIntervalSeconds,
+		});
+		timelineTicks.push(
+			<TimelineTick
+				key={tickIndex}
+				time={timeTicks}
+				timeInSeconds={timeSeconds}
+				zoomLevel={zoomLevel}
+				fps={fps}
+				showLabel={showLabel}
+			/>,
+		);
+	}
+
+	return (
+		<div
+			role="slider"
+			tabIndex={0}
+			aria-label="Timeline ruler"
+			aria-valuemin={0}
+			aria-valuemax={effectiveDurationSeconds}
+			aria-valuenow={0}
+			className="relative flex-1 overflow-x-visible"
+			style={{ height: TIMELINE_RULER_HEIGHT_PX }}
+			onWheel={handleWheel}
+			onClick={(event) => {
+				// Ruler seek already happens on mousedown via playhead scrubbing.
+				// Forwarding the follow-up click re-enters the selection-clearing path.
+				if (event.target === event.currentTarget) {
+					handleTimelineContentClick(event);
+				}
+			}}
+			onMouseDown={handleRulerTrackingMouseDown}
+			onKeyDown={() => {}}
+		>
+			<div
+				role="none"
+				ref={rulerRef}
+				className="relative cursor-default select-none"
+				style={{
+					height: TIMELINE_RULER_HEIGHT_PX,
+					width: `${dynamicTimelineWidth}px`,
+				}}
+				onMouseDown={handleRulerMouseDown}
+			>
+				{timelineTicks}
+			</div>
+		</div>
+	);
+}

@@ -1,0 +1,350 @@
+"use client";
+
+import { Button } from "../ui/button";
+import { useRef, useState } from "react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import Link from "next/link";
+import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
+import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
+import { useRouter } from "next/navigation";
+import { FaDiscord } from "react-icons/fa6";
+import { ExportButton } from "./export-button";
+import { FeedbackPopover } from "@/feedback/components/feedback-popover";
+import { ThemeToggle } from "../theme-toggle";
+import { DEFAULT_LOGO_URL } from "@/site/brand";
+import { SOCIAL_LINKS } from "@/site/social";
+import { toast } from "sonner";
+import { useEditor, useEditorProject } from "@/editor/use-editor";
+import {
+	CommandIcon,
+	FileImportIcon,
+	FileZipIcon,
+	Logout05Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
+import Image from "next/image";
+import { cn } from "@/utils/ui";
+import {
+	downloadProjectArchive,
+	PROJECT_ARCHIVE_ACCEPT,
+} from "@/project/archive/project-archive";
+
+export function EditorHeader() {
+	return (
+		<header className="bg-background flex h-[3.4rem] items-center justify-between px-3 pt-0.5">
+			<div className="flex items-center gap-1">
+				<ProjectDropdown />
+				<EditableProjectName />
+			</div>
+			<nav className="flex items-center gap-2">
+				<FeedbackPopover />
+				<ExportButton />
+				<ThemeToggle />
+			</nav>
+		</header>
+	);
+}
+
+function ProjectDropdown() {
+	const [openDialog, setOpenDialog] = useState<
+		"delete" | "rename" | "shortcuts" | null
+	>(null);
+	const [isExiting, setIsExiting] = useState(false);
+	const [isArchiveExporting, setIsArchiveExporting] = useState(false);
+	const [isArchiveImporting, setIsArchiveImporting] = useState(false);
+	const archiveInputRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
+	const editor = useEditor();
+	const activeProject = useEditorProject((e) => e.project.getActive());
+	const isArchiveBusy = isArchiveExporting || isArchiveImporting;
+
+	const handleExit = async () => {
+		if (isExiting) return;
+		setIsExiting(true);
+
+		try {
+			await editor.project.prepareExit();
+			editor.project.closeProject();
+			router.push("/projects");
+		} catch (error) {
+			console.error("Failed to prepare project exit:", error);
+			toast.error("Project could not be saved", {
+				description:
+					error instanceof Error
+						? error.message
+						: "Your changes are still open. Please try again.",
+			});
+			setIsExiting(false);
+		}
+	};
+
+	const handleSaveProjectName = async (newName: string) => {
+		if (
+			activeProject &&
+			newName.trim() &&
+			newName !== activeProject.metadata.name
+		) {
+			try {
+				await editor.project.renameProject({
+					id: activeProject.metadata.id,
+					name: newName.trim(),
+				});
+			} catch (error) {
+				toast.error("Failed to rename project", {
+					description:
+						error instanceof Error ? error.message : "Please try again",
+				});
+			} finally {
+				setOpenDialog(null);
+			}
+		}
+	};
+
+	const handleDeleteProject = async () => {
+		if (activeProject) {
+			try {
+				await editor.project.deleteProjects({
+					ids: [activeProject.metadata.id],
+				});
+				router.push("/projects");
+			} catch (error) {
+				toast.error("Failed to delete project", {
+					description:
+						error instanceof Error ? error.message : "Please try again",
+				});
+			} finally {
+				setOpenDialog(null);
+			}
+		}
+	};
+
+	const handleExportProjectArchive = async () => {
+		if (isArchiveBusy || !activeProject) return;
+		setIsArchiveExporting(true);
+		try {
+			const archive = await editor.project.exportProjectArchive();
+			downloadProjectArchive({
+				blob: archive,
+				projectName: activeProject.metadata.name,
+			});
+			toast.success("Project ZIP exported");
+		} catch (error) {
+			console.error("Failed to export project ZIP:", error);
+			toast.error("Failed to export project ZIP", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		} finally {
+			setIsArchiveExporting(false);
+		}
+	};
+
+	const handleImportProjectArchive = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.currentTarget.files?.[0];
+		event.currentTarget.value = "";
+		if (!file || isArchiveBusy) return;
+
+		setIsArchiveImporting(true);
+		try {
+			await editor.project.prepareExit();
+			const result = await editor.project.importProjectArchive({ file });
+			const linkedSharedCount =
+				result.sharedAudioLinked + result.sharedStickersLinked;
+			const importedSharedCount =
+				result.sharedAudioImported + result.sharedStickersImported;
+			toast.success(`Imported "${result.projectName}"`, {
+				description: [
+					`${result.mediaImported} media`,
+					`${result.fontsImported} fonts`,
+					`${linkedSharedCount} shared linked`,
+					`${importedSharedCount} shared imported`,
+				].join(" | "),
+			});
+			router.push(`/editor/${result.projectId}`);
+		} catch (error) {
+			console.error("Failed to import project ZIP:", error);
+			toast.error("Failed to import project ZIP", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		} finally {
+			setIsArchiveImporting(false);
+		}
+	};
+
+	return (
+		<>
+			<input
+				ref={archiveInputRef}
+				type="file"
+				accept={PROJECT_ARCHIVE_ACCEPT}
+				className="hidden"
+				onChange={handleImportProjectArchive}
+			/>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant="ghost" size="icon" className="p-1 rounded-sm size-8">
+						<Image
+							src={DEFAULT_LOGO_URL}
+							alt="Project thumbnail"
+							width={32}
+							height={32}
+							className="invert dark:invert-0 size-5"
+						/>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="start" className="z-100 w-44">
+					<DropdownMenuItem
+						onClick={handleExit}
+						disabled={isExiting}
+						icon={<HugeiconsIcon icon={Logout05Icon} />}
+					>
+						Exit project
+					</DropdownMenuItem>
+
+					<DropdownMenuItem
+						onClick={() => setOpenDialog("shortcuts")}
+						icon={<HugeiconsIcon icon={CommandIcon} />}
+					>
+						Shortcuts
+					</DropdownMenuItem>
+
+					<DropdownMenuSeparator />
+
+					<DropdownMenuItem
+						onClick={handleExportProjectArchive}
+						disabled={isArchiveBusy}
+						icon={<HugeiconsIcon icon={FileZipIcon} />}
+					>
+						{isArchiveExporting
+							? "Exporting project ZIP..."
+							: "Export project ZIP"}
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onClick={() => archiveInputRef.current?.click()}
+						disabled={isArchiveBusy}
+						icon={<HugeiconsIcon icon={FileImportIcon} />}
+					>
+						{isArchiveImporting
+							? "Importing project ZIP..."
+							: "Import project ZIP"}
+					</DropdownMenuItem>
+
+					<DropdownMenuSeparator />
+
+					<DropdownMenuItem asChild icon={<FaDiscord className="size-4!" />}>
+						<Link
+							href={SOCIAL_LINKS.discord}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Discord
+						</Link>
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			<RenameProjectDialog
+				isOpen={openDialog === "rename"}
+				onOpenChange={(isOpen) => setOpenDialog(isOpen ? "rename" : null)}
+				onConfirm={(newName) => handleSaveProjectName(newName)}
+				projectName={activeProject?.metadata.name || ""}
+			/>
+			<DeleteProjectDialog
+				isOpen={openDialog === "delete"}
+				onOpenChange={(isOpen) => setOpenDialog(isOpen ? "delete" : null)}
+				onConfirm={handleDeleteProject}
+				projectNames={[activeProject?.metadata.name || ""]}
+			/>
+			<ShortcutsDialog
+				isOpen={openDialog === "shortcuts"}
+				onOpenChange={(isOpen) => setOpenDialog(isOpen ? "shortcuts" : null)}
+			/>
+		</>
+	);
+}
+
+function EditableProjectName() {
+	const editor = useEditor();
+	const activeProject = useEditorProject((e) => e.project.getActive());
+	const [isEditing, setIsEditing] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const originalNameRef = useRef("");
+
+	const projectName = activeProject?.metadata.name || "";
+
+	const startEditing = () => {
+		if (isEditing) return;
+		originalNameRef.current = projectName;
+		setIsEditing(true);
+
+		requestAnimationFrame(() => {
+			inputRef.current?.select();
+		});
+	};
+
+	const saveEdit = async () => {
+		if (!inputRef.current || !activeProject) return;
+		const newName = inputRef.current.value.trim();
+		setIsEditing(false);
+
+		if (!newName) {
+			inputRef.current.value = originalNameRef.current;
+			return;
+		}
+
+		if (newName !== originalNameRef.current) {
+			try {
+				await editor.project.renameProject({
+					id: activeProject.metadata.id,
+					name: newName,
+				});
+			} catch (error) {
+				toast.error("Failed to rename project", {
+					description:
+						error instanceof Error ? error.message : "Please try again",
+				});
+			}
+		}
+	};
+
+	const handleKeyDown = (event: React.KeyboardEvent) => {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			inputRef.current?.blur();
+		} else if (event.key === "Escape") {
+			event.preventDefault();
+			if (inputRef.current) {
+				inputRef.current.value = originalNameRef.current;
+				inputRef.current.setSelectionRange(0, 0);
+			}
+			setIsEditing(false);
+			inputRef.current?.blur();
+		}
+	};
+
+	return (
+		<input
+			ref={inputRef}
+			type="text"
+			defaultValue={projectName}
+			readOnly={!isEditing}
+			onClick={startEditing}
+			onBlur={saveEdit}
+			onKeyDown={handleKeyDown}
+			style={{ fieldSizing: "content" }}
+			className={cn(
+				"text-[0.9rem] h-8 px-2 py-1 rounded-sm bg-transparent outline-none cursor-pointer hover:bg-accent hover:text-accent-foreground",
+				isEditing && "ring-1 ring-ring cursor-text hover:bg-transparent",
+			)}
+		/>
+	);
+}
