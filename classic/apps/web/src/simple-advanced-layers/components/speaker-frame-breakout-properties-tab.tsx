@@ -28,6 +28,7 @@ import {
 	useBackgroundRemovalStatus,
 } from "@/services/background-removal";
 import { useSharedLibraryStore } from "@/shared-library";
+import { getDisplayTracks } from "@/timeline";
 import type { EffectElement } from "@/timeline/types";
 import {
 	buildSpeakerFrameBackgroundSnapshot,
@@ -138,7 +139,7 @@ export function SpeakerFrameBreakoutPropertiesTab({
 		bindings: persistedBindings,
 		mediaAssets: editor.media.getAssets(),
 		settings: persistedSettings,
-		maxTrackIndexShift: scene?.tracks.length ?? 0,
+		maxTrackIndexShift: scene ? getDisplayTracks({ tracks: scene.tracks }).length : 0,
 	});
 	const isAppliedAndCurrent = isSpeakerFrameBreakoutAppliedAndCurrent({
 		layer: element,

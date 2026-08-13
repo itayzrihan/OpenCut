@@ -2,7 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import runtime from "../app/runtime.cjs";
 
-const { getAppUrl, getPackagedServer, waitForHttp } = runtime;
+const {
+	DEFAULT_DISK_CACHE_SIZE_BYTES,
+	getAppUrl,
+	getElectronUserAgent,
+	getPackagedServer,
+	getPerformanceProfile,
+	waitForHttp,
+} = runtime;
 
 describe("Electron runtime", () => {
 	test("uses the loopback interface", () => {
@@ -16,6 +23,38 @@ describe("Electron runtime", () => {
 			root: join(resources, "app-server"),
 			entry: join(resources, "app-server", "apps", "web", "server.js"),
 		});
+	});
+
+	test("uses the high-throughput Electron profile by default", () => {
+		expect(getPerformanceProfile({})).toEqual({
+			commandLineSwitches: [
+				["disk-cache-size", `${DEFAULT_DISK_CACHE_SIZE_BYTES}`],
+				["force_high_performance_gpu"],
+			],
+			webPreferences: {
+				backgroundThrottling: false,
+				spellcheck: false,
+				enableWebSQL: false,
+				v8CacheOptions: "bypassHeatCheck",
+			},
+		});
+	});
+
+	test("allows a balanced GPU profile and a custom cache budget", () => {
+		expect(
+			getPerformanceProfile({
+				OPENCUT_ELECTRON_GPU: "balanced",
+				OPENCUT_ELECTRON_DISK_CACHE_BYTES: "1048576",
+			}),
+		).toMatchObject({
+			commandLineSwitches: [["disk-cache-size", "1048576"]],
+		});
+	});
+
+	test("adds one stable Electron runtime token to the user agent", () => {
+		const userAgent = getElectronUserAgent("Chrome/140", "0.1.0");
+		expect(userAgent).toBe("Chrome/140 OpenCutElectron/0.1.0");
+		expect(getElectronUserAgent(userAgent, "0.1.0")).toBe(userAgent);
 	});
 
 	test("accepts a redirect from the local Next server", async () => {

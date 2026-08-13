@@ -4,6 +4,7 @@ import type {
 	BackgroundRemovalWorkerMessage,
 	BackgroundRemovalWorkerResponse,
 } from "./protocol";
+import { getWasmThreadCount } from "@/platform/runtime-profile";
 
 const MODEL_ID = "Xenova/modnet";
 const LOCAL_MODEL_ROOT = new URL("/models/", self.location.origin).href;
@@ -96,9 +97,10 @@ async function ensureInitialized({
 		const { env, pipeline, RawImage } = transformers;
 		if (env.backends.onnx.wasm) {
 			env.backends.onnx.wasm.proxy = false;
-			env.backends.onnx.wasm.numThreads = self.crossOriginIsolated
-				? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 1))
-				: 1;
+			env.backends.onnx.wasm.numThreads = getWasmThreadCount({
+				crossOriginIsolated: self.crossOriginIsolated,
+				hardwareConcurrency: navigator.hardwareConcurrency || 1,
+			});
 			env.backends.onnx.wasm.wasmPaths = LOCAL_ONNX_RUNTIME_ROOT;
 		}
 		// Keep the first preview frame deterministic and available offline.

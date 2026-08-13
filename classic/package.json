@@ -9,6 +9,7 @@
     "build:tools": "turbo run build --filter=@opencut/tools",
     "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
     "build:web": "turbo run build --filter=@opencut/web",
+    "build:browser": "turbo run build --filter=@opencut/web",
     "dev:electron": "bun run --cwd apps/electron dev",
     "pack:electron": "bun run --cwd apps/electron pack",
     "dist:electron": "bun run --cwd apps/electron dist",

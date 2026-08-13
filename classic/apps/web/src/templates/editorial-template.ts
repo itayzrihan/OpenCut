@@ -8,6 +8,7 @@ import type { SceneTracks, VideoElement } from "@/timeline";
 import { buildUiElementBundleTimelineItems } from "@/ui-elements/bundle";
 import { UI_ELEMENT_PRESETS } from "@/ui-elements/catalog";
 import {
+	addMediaTime,
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
 	ZERO_MEDIA_TIME,
@@ -155,7 +156,7 @@ export function buildTemplateAiContext({
 						endSeconds: Number(
 							((element.startTime + element.duration) / 120_000).toFixed(3),
 						),
-						text: element.text ?? String(element.params.content ?? ""),
+						text: String(element.params.content ?? ""),
 					}))
 			: [],
 	);
@@ -188,7 +189,7 @@ function findChecklistStartSeconds({ tracks }: { tracks: SceneTracks }): number 
 	const spokenWords = getDisplayTracks({ tracks }).flatMap((track) => {
 		if (track.type !== "text") return [];
 		return track.elements.map((element) => ({
-			text: (element.text ?? String(element.params.content ?? "")).trim(),
+			text: String(element.params.content ?? "").trim(),
 			startSeconds: mediaTimeToSeconds({ time: element.startTime }),
 		}));
 	});
@@ -208,7 +209,7 @@ export async function chooseTemplateAiPlan({
 }: {
 	context: ReturnType<typeof buildTemplateAiContext>;
 	signal?: AbortSignal;
-}): Promise<BreakoutPlacement[]> {
+}): Promise<TemplateAiPlan> {
 	const response = await fetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -385,7 +386,7 @@ export function applyTemplateAiCompletion({
 			if (element.type !== "text" || !element.name.startsWith("Caption")) return [];
 			const startSeconds = mediaTimeToSeconds({ time: element.startTime });
 			const endSeconds = mediaTimeToSeconds({
-				time: element.startTime + element.duration,
+				time: addMediaTime({ a: element.startTime, b: element.duration }),
 			});
 			const onProofStage =
 				proofStart !== null &&
@@ -408,7 +409,8 @@ export function applyTemplateAiCompletion({
 			}];
 		});
 	});
-	const checklistUpdates = plan.checklist
+	const checklist = plan.checklist;
+	const checklistUpdates = checklist
 		? getDisplayTracks({ tracks: scene.tracks }).flatMap((track) => {
 				if (track.type !== "graphic") return [];
 				return track.elements.flatMap((element) => {
@@ -423,8 +425,8 @@ export function applyTemplateAiCompletion({
 						patch: {
 							params: {
 								...element.params,
-								eventAt: percent(plan.checklist.eventSeconds),
-								animationOutStart: percent(plan.checklist.endSeconds),
+								eventAt: percent(checklist.eventSeconds),
+								animationOutStart: percent(checklist.endSeconds),
 							},
 						},
 					}];

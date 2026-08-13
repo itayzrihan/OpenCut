@@ -1,5 +1,6 @@
 "use strict";
 
+const { spawn } = require("node:child_process");
 const { existsSync } = require("node:fs");
 const {
 	app,
@@ -7,12 +8,13 @@ const {
 	dialog,
 	Menu,
 	shell,
-	utilityProcess,
 } = require("electron");
 const {
 	DEFAULT_PORT,
 	getAppUrl,
+	getElectronUserAgent,
 	getPackagedServer,
+	getPerformanceProfile,
 	waitForHttp,
 } = require("./runtime.cjs");
 
@@ -20,6 +22,15 @@ let mainWindow = null;
 let webServer = null;
 let isQuitting = false;
 const serverOutput = [];
+const performanceProfile = getPerformanceProfile();
+
+for (const [name, value] of performanceProfile.commandLineSwitches) {
+	if (value === undefined) {
+		app.commandLine.appendSwitch(name);
+	} else {
+		app.commandLine.appendSwitch(name, value);
+	}
+}
 
 // There is no native application menu in this shell. Avoid constructing
 // Electron's default menu during startup.
@@ -46,18 +57,19 @@ function startPackagedServer() {
 	);
 	const url = getAppUrl(port);
 
-	webServer = utilityProcess.fork(server.entry, [], {
+	webServer = spawn(process.execPath, [server.entry], {
 		cwd: server.root,
 		env: {
 			...process.env,
+			ELECTRON_RUN_AS_NODE: "1",
 			HOSTNAME: "127.0.0.1",
 			PORT: `${port}`,
 			NODE_ENV: "production",
 			NEXT_TELEMETRY_DISABLED: "1",
 			NEXT_PUBLIC_SITE_URL: url,
 		},
-		serviceName: "OpenCut web runtime",
-		stdio: "pipe",
+		stdio: ["ignore", "pipe", "pipe"],
+		windowsHide: true,
 	});
 
 	webServer.stdout?.on("data", rememberServerOutput);
@@ -95,10 +107,11 @@ function createWindow(appUrl) {
 		height: 900,
 		minWidth: 1024,
 		minHeight: 700,
-		show: false,
+		show: true,
 		autoHideMenuBar: true,
 		backgroundColor: "#09090b",
 		webPreferences: {
+			...performanceProfile.webPreferences,
 			contextIsolation: true,
 			nodeIntegration: false,
 			sandbox: true,
@@ -106,7 +119,9 @@ function createWindow(appUrl) {
 		},
 	});
 
-	window.once("ready-to-show", () => window.show());
+	window.webContents.setUserAgent(
+		getElectronUserAgent(window.webContents.getUserAgent(), app.getVersion()),
+	);
 	window.on("closed", () => {
 		if (mainWindow === window) mainWindow = null;
 	});

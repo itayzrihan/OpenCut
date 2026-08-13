@@ -50,7 +50,7 @@ function LoopItem({ preset }: { preset: LoopPreset }) {
 				})[0];
 				if (
 					!entry ||
-					!isLoopTargetElementType({ elementType: entry.element.type })
+					!isLoopTargetElementType(entry.element.type)
 				) {
 					return [];
 				}

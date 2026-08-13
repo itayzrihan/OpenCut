@@ -5,7 +5,7 @@
     "dev": "concurrently --kill-others --success first \"bun run dev:web\" \"bun run dev:shell\"",
     "dev:web": "bun run --cwd ../web dev",
     "dev:shell": "wait-on http-get://127.0.0.1:3000 && cross-env OPENCUT_ELECTRON_URL=http://127.0.0.1:3000 electron app",
-    "build:web": "bun run --cwd ../.. build:wasm && bun run --cwd ../web assets:verify && bun run --cwd ../web next build",
+    "build:web": "bun run --cwd ../.. build:wasm && bun run --cwd ../web assets:verify && bun run --cwd ../web build:electron",
     "pack": "bun run build:web && node scripts/package.cjs --dir",
     "dist": "bun run build:web && node scripts/package.cjs",
     "test": "bun test test/runtime.test.js"
