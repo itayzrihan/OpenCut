@@ -11,6 +11,7 @@ import { generateUUID } from "@/utils/id";
 import type {
 	GeneratedBackgroundPreset,
 	GeneratedEffectPreset,
+	GeneratedUiElementPreset,
 	SharedAssetCategory,
 	SharedAudioAsset,
 	SharedAudioFolder,
@@ -33,6 +34,7 @@ function emptyManifest(): SharedLibraryManifest {
 		categories: [],
 		generatedBackgrounds: [],
 		generatedEffects: [],
+		generatedUiElements: [],
 		captionPresets: [],
 		updatedAt: nowIso(),
 	};
@@ -273,6 +275,14 @@ export class SharedLibraryService {
 		legacy: new IndexedDBAdapter<GeneratedEffectPreset>({
 			dbName: "video-editor-generated-effects",
 			storeName: "effects",
+			version: SHARED_DB_VERSION,
+		}),
+	});
+	private uiElements = new LocalDriveJsonAdapter<GeneratedUiElementPreset>({
+		collection: "ui-elements",
+		legacy: new IndexedDBAdapter<GeneratedUiElementPreset>({
+			dbName: "video-editor-generated-ui-elements",
+			storeName: "ui-elements",
 			version: SHARED_DB_VERSION,
 		}),
 	});
@@ -993,6 +1003,53 @@ export class SharedLibraryService {
 			body: { action: "saveGeneratedEffect", preset },
 		});
 		await this.effects.set({ key: id, value: preset });
+		return preset;
+	}
+
+	async listGeneratedUiElements(): Promise<GeneratedUiElementPreset[]> {
+		const [repositoryManifest, localPresets] = await Promise.all([
+			this.loadRepositoryManifest(),
+			this.uiElements.getAll(),
+		]);
+		const presets = mergeById({
+			repositoryItems: repositoryManifest.generatedUiElements,
+			localItems: localPresets,
+		});
+		return presets.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+	}
+
+	async saveGeneratedUiElement({
+		name,
+		description,
+		category,
+		keywords,
+		whenToUse,
+		defaultDurationSeconds,
+		sourcePrompt,
+		params,
+	}: Omit<
+		GeneratedUiElementPreset,
+		"id" | "createdAt" | "updatedAt"
+	>): Promise<GeneratedUiElementPreset> {
+		const id = generateUUID();
+		const timestamp = nowIso();
+		const preset: GeneratedUiElementPreset = {
+			id,
+			name,
+			description,
+			category,
+			keywords,
+			whenToUse,
+			defaultDurationSeconds,
+			...(sourcePrompt ? { sourcePrompt } : {}),
+			params,
+			createdAt: timestamp,
+			updatedAt: timestamp,
+		};
+		await this.patchRepositoryManifest({
+			body: { action: "saveGeneratedUiElement", preset },
+		});
+		await this.uiElements.set({ key: id, value: preset });
 		return preset;
 	}
 

@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	productionBrowserSourceMaps: true,
 	output: "standalone",
+	// Runtime transcription caches are local, mutable user data. They must not
+	// be copied into a production standalone bundle (the Whisper cache alone
+	// can be several gigabytes and may exhaust the build disk).
+	outputFileTracingExcludes: {
+		"**/*": [".opencut-data/**/*"],
+	},
 	// Bun stores `file:` dependencies as copied packages. A WASM rebuild can
 	// otherwise update the JS glue without replacing the installed binary,
 	// leaving a bundler with an impossible wrapper/export-table combination.

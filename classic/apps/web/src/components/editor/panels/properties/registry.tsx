@@ -41,12 +41,32 @@ import { TextWordsTab } from "./components/text-words-tab";
 import { TextPlacementTab } from "./components/text-placement-tab";
 import type { TextOverrideScope } from "./text-scope";
 import { BackgroundRemovalTab } from "./components/background-removal-tab";
+import { TEXT_PARAM_KEYS } from "./text-param-keys";
+import { SpeakerFrameBreakoutPropertiesTab } from "@/simple-advanced-layers/components/speaker-frame-breakout-properties-tab";
+import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import {
+	isParallaxCameraGuideElement,
+	isParallaxStoryElement,
+} from "@/parallax-story-teller/model";
+import {
+	ParallaxCameraPropertiesTab,
+	ParallaxMotionLoopsPropertiesTab,
+	ParallaxStoryPropertiesTab,
+} from "@/parallax-story-teller/properties-tab";
+import { Camera, Repeat2 } from "lucide-react";
 
 const TRANSFORM_PARAM_KEYS = [
 	"transform.positionX",
 	"transform.positionY",
 	"transform.scaleX",
 	"transform.scaleY",
+	"transform.rotate",
+	"transform.perspectiveX",
+	"transform.perspectiveY",
+] as const;
+const DIMENSION_BACKGROUND_TRANSFORM_PARAM_KEYS = [
+	"transform.positionX",
+	"transform.positionY",
 	"transform.rotate",
 	"transform.perspectiveX",
 	"transform.perspectiveY",
@@ -59,38 +79,6 @@ const AUDIO_PARAM_KEYS = [
 	"fadeInDuration",
 	"fadeOutDuration",
 ] as const;
-const TEXT_PARAM_KEYS = [
-	"content",
-	"fontFamily",
-	"fontSize",
-	"color",
-	"textFillMode",
-	"gradientStartColor",
-	"gradientEndColor",
-	"gradientAngle",
-	"textAlign",
-	"fontWeight",
-	"fontStyle",
-	"textDecoration",
-	"letterSpacing",
-	"lineHeight",
-	"stroke.enabled",
-	"stroke.color",
-	"stroke.width",
-	"shadow.enabled",
-	"shadow.color",
-	"shadow.blur",
-	"shadow.offsetX",
-	"shadow.offsetY",
-	"background.enabled",
-	"background.color",
-	"background.cornerRadius",
-	"background.paddingX",
-	"background.paddingY",
-	"background.offsetX",
-	"background.offsetY",
-] as const;
-
 export type TabContentProps = {
 	trackId: string;
 	elementsWithTracks?: ElementWithTrackForParams[];
@@ -123,7 +111,12 @@ function buildTransformTab({
 				element={element}
 				trackId={trackId}
 				elementsWithTracks={elementsWithTracks}
-				paramKeys={TRANSFORM_PARAM_KEYS}
+				paramKeys={
+					element.type === "graphic" &&
+					element.definitionId === "preset-background"
+						? DIMENSION_BACKGROUND_TRANSFORM_PARAM_KEYS
+						: TRANSFORM_PARAM_KEYS
+				}
 				sectionKey="transform"
 				textScope={textScope}
 			/>
@@ -342,6 +335,73 @@ function buildStandaloneEffectTab({
 	};
 }
 
+function buildParallaxStoryTab({
+	element,
+}: {
+	element: EffectElement;
+}): PropertiesTabDef {
+	return {
+		id: "parallax-story",
+		label: "Parallax Story",
+		icon: <Camera size={16} />,
+		content: ({ trackId }) => (
+			<ParallaxStoryPropertiesTab element={element} trackId={trackId} />
+		),
+	};
+}
+
+function buildParallaxCameraTab({
+	element,
+}: {
+	element: EffectElement;
+}): PropertiesTabDef {
+	return {
+		id: "parallax-camera",
+		label: "Camera",
+		icon: <Camera size={16} />,
+		content: ({ trackId }) => (
+			<ParallaxCameraPropertiesTab element={element} trackId={trackId} />
+		),
+	};
+}
+
+function buildParallaxMotionLoopsTab({
+	element,
+}: {
+	element: EffectElement;
+}): PropertiesTabDef {
+	return {
+		id: "parallax-motion-loops",
+		label: "Loops",
+		icon: <Repeat2 size={16} />,
+		content: ({ trackId }) => (
+			<ParallaxMotionLoopsPropertiesTab
+				element={element}
+				trackId={trackId}
+			/>
+		),
+	};
+}
+
+function buildSpeakerFrameBreakoutTab({
+	element,
+}: {
+	element: EffectElement;
+}): PropertiesTabDef {
+	return {
+		id: "speaker-frame-breakout",
+		label: "Breakout",
+		icon: <HugeiconsIcon icon={MagicWand05Icon} size={16} />,
+		content: ({ trackId }) => (
+			<SpeakerFrameBreakoutPropertiesTab
+				key={`${trackId}:${element.id}`}
+				element={element}
+				trackId={trackId}
+			/>
+		),
+	};
+}
+
 function getTextConfig({
 	element,
 }: {
@@ -446,6 +506,27 @@ function getEffectConfig({
 }: {
 	element: EffectElement;
 }): ElementPropertiesConfig {
+	if (isParallaxStoryElement(element)) {
+		return {
+			defaultTab: "parallax-story",
+			tabs: [
+				buildParallaxStoryTab({ element }),
+				buildParallaxMotionLoopsTab({ element }),
+			],
+		};
+	}
+	if (isParallaxCameraGuideElement(element)) {
+		return {
+			defaultTab: "parallax-camera",
+			tabs: [buildParallaxCameraTab({ element })],
+		};
+	}
+	if (element.effectType === SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE) {
+		return {
+			defaultTab: "speaker-frame-breakout",
+			tabs: [buildSpeakerFrameBreakoutTab({ element })],
+		};
+	}
 	return {
 		defaultTab: "effects",
 		tabs: [buildStandaloneEffectTab({ element })],

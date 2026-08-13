@@ -23,6 +23,7 @@ import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
+import { backgroundRemovalService } from "@/services/background-removal";
 import { PreviewOverlayLayer } from "./overlay-layer";
 import { PreviewInteractionOverlay } from "./preview-interaction-overlay";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
@@ -42,15 +43,25 @@ import {
 	recordFrameInterval,
 	recordSpan,
 } from "@/diagnostics/render-perf";
+import {
+	recordCameraManSample,
+	useCameraManStore,
+} from "@/parallax-story-teller/camera-man-store";
+import { getPreviewRenderSize } from "../render-size";
 
 function usePreviewSize() {
 	const canvasSize = useEditorProject(
 		(e) => e.project.getActive()?.settings.canvasSize,
 	);
+	const activeScene = useEditorTimelineScenes((e) =>
+		e.scenes.getActiveSceneOrNull(),
+	);
+	const worldWidthFrames = activeScene?.parallax?.worldWidthFrames ?? 1;
+	const worldHeightFrames = activeScene?.parallax?.worldHeightFrames ?? 1;
 
 	return {
-		width: canvasSize?.width,
-		height: canvasSize?.height,
+		width: canvasSize ? canvasSize.width * worldWidthFrames : 1,
+		height: canvasSize ? canvasSize.height * worldHeightFrames : 1,
 	};
 }
 
@@ -113,9 +124,11 @@ export function PreviewPanel({
 
 function RenderTreeController() {
 	const editor = useEditor();
-	const tracks = useEditorTimelineScenes(
-		(e) => e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
-	);
+	const [tracks, scenes, activeScene] = useEditorTimelineScenes((e) => [
+		e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
+		e.scenes.getScenes(),
+		e.scenes.getActiveScene(),
+	]);
 	const mediaAssets = useEditorMedia((e) => e.media.getAssets());
 	const activeProject = useEditorProject((e) => e.project.getActive());
 
@@ -130,12 +143,23 @@ function RenderTreeController() {
 			mediaAssets,
 			duration,
 			canvasSize: { width, height },
+			cameraCanvasSize: activeProject.settings.canvasSize,
 			background: activeProject.settings.background,
 			isPreview: true,
+			scenes,
+			activeSceneId: activeScene.id,
 		});
 
 		editor.renderer.setRenderTree({ renderTree });
-	}, [tracks, mediaAssets, activeProject?.settings.background, width, height]);
+	}, [
+		tracks,
+		mediaAssets,
+		activeProject?.settings.background,
+		width,
+		height,
+		scenes,
+		activeScene.id,
+	]);
 
 	return null;
 }
@@ -163,12 +187,15 @@ function PreviewCanvas({
 	const renderingRef = useRef(false);
 	const pendingRenderRef = useRef(false);
 	const scheduledRenderRef = useRef<number | null>(null);
+	const isExportingRef = useRef(false);
 	const runRenderRef = useRef<() => void>(() => {});
 	const { width: nativeWidth, height: nativeHeight } = usePreviewSize();
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActive());
 	const renderTree = useEditorRenderer((e) => e.renderer.getRenderTree());
+	const isExporting = useEditorRenderer((e) => e.renderer.isExporting);
+	isExportingRef.current = isExporting;
 	const viewport = usePreviewViewportState({
 		canvasHeight: nativeHeight,
 		canvasWidth: nativeWidth,
@@ -177,6 +204,18 @@ function PreviewCanvas({
 		viewportWidth: viewportSize.width,
 	});
 	const { canPan, panByScreenDelta, scaleZoom } = viewport;
+	const previewRenderSize = useMemo(
+		() =>
+			getPreviewRenderSize({
+				logicalWidth: nativeWidth,
+				logicalHeight: nativeHeight,
+				viewportWidth: viewportSize.width,
+				viewportHeight: viewportSize.height,
+				devicePixelRatio:
+					typeof window === "undefined" ? 1 : window.devicePixelRatio,
+			}),
+		[nativeHeight, nativeWidth, viewportSize.height, viewportSize.width],
+	);
 
 	const handleProfilerRender = useCallback<ProfilerOnRenderCallback>(
 		(...args) => {
@@ -197,31 +236,54 @@ function PreviewCanvas({
 
 	const renderer = useMemo(() => {
 		return new CanvasRenderer({
-			width: nativeWidth,
-			height: nativeHeight,
+			width: previewRenderSize.width,
+			height: previewRenderSize.height,
+			logicalWidth: nativeWidth,
+			logicalHeight: nativeHeight,
 			fps: activeProject.settings.fps,
 		});
-	}, [nativeWidth, nativeHeight, activeProject.settings.fps]);
+	}, [
+		nativeWidth,
+		nativeHeight,
+		previewRenderSize.width,
+		previewRenderSize.height,
+		activeProject.settings.fps,
+	]);
 
-	// Mount the compositor's output canvas directly into the preview. wgpu
-	// renders straight into this element, so there is no intermediate copy —
-	// the container div owns positioning/styling, the canvas itself fills it.
 	useEffect(() => {
 		const mount = canvasMountRef.current;
 		if (!mount) return;
-		const outputCanvas = renderer.getOutputCanvas();
-		outputCanvas.style.display = "block";
-		outputCanvas.style.width = "100%";
-		outputCanvas.style.height = "100%";
-		mount.appendChild(outputCanvas);
+
+		let disposed = false;
+		let outputCanvas: HTMLCanvasElement | null = null;
+		void renderer
+			.getOutputCanvas()
+			.then((canvas) => {
+				if (disposed) return;
+				outputCanvas = canvas;
+				canvas.style.display = "block";
+				canvas.style.width = "100%";
+				canvas.style.height = "100%";
+				mount.appendChild(canvas);
+			})
+			.catch((error: unknown) => {
+				console.error("Failed to mount preview canvas:", error);
+			});
+
 		return () => {
-			if (outputCanvas.parentElement === mount) {
+			disposed = true;
+			if (outputCanvas?.parentElement === mount) {
 				mount.removeChild(outputCanvas);
 			}
 		};
 	}, [renderer]);
 
 	const scheduleRender = useCallback((reason: string) => {
+		if (isExportingRef.current || editor.renderer.isExporting) {
+			incrementCounter({ name: "preview.renderSkipped.export" });
+			return;
+		}
+
 		incrementCounter({ name: "preview.renderRequest" });
 		incrementCounter({ name: `preview.renderRequest.${reason}` });
 
@@ -241,10 +303,12 @@ function PreviewCanvas({
 			scheduledRenderRef.current = null;
 			runRenderRef.current();
 		});
-	}, []);
+	}, [editor.renderer]);
 
 	const render = useCallback(() => {
-		if (!renderTree) return;
+		if (!renderTree || isExportingRef.current || editor.renderer.isExporting) {
+			return;
+		}
 		if (renderingRef.current) {
 			pendingRenderRef.current = true;
 			incrementCounter({ name: "preview.renderCoalesced" });
@@ -291,12 +355,23 @@ function PreviewCanvas({
 				}
 
 				renderingRef.current = false;
-				if (hasQueuedRender) {
+				if (
+					hasQueuedRender &&
+					!isExportingRef.current &&
+					!editor.renderer.isExporting
+				) {
 					pendingRenderRef.current = false;
 					scheduleRender("queued");
 				}
 			});
-	}, [renderer, renderTree, editor.playback, editor.timeline, scheduleRender]);
+	}, [
+		renderer,
+		renderTree,
+		editor.playback,
+		editor.renderer,
+		editor.timeline,
+		scheduleRender,
+	]);
 
 	useEffect(() => {
 		runRenderRef.current = render;
@@ -307,6 +382,19 @@ function PreviewCanvas({
 		lastSceneRef.current = null;
 		scheduleRender("renderTree");
 	}, [renderer, renderTree, scheduleRender]);
+
+	useEffect(() => {
+		if (isExporting) {
+			pendingRenderRef.current = false;
+			if (scheduledRenderRef.current !== null) {
+				cancelAnimationFrame(scheduledRenderRef.current);
+				scheduledRenderRef.current = null;
+			}
+			return;
+		}
+		lastFrameRef.current = -1;
+		scheduleRender("exportComplete");
+	}, [isExporting, scheduleRender]);
 
 	useEffect(() => {
 		const unsubscribeUpdate = editor.playback.onUpdate(() => {
@@ -325,6 +413,17 @@ function PreviewCanvas({
 			unsubscribeState();
 		};
 	}, [editor.playback, scheduleRender]);
+
+	useEffect(
+		() =>
+			backgroundRemovalService.subscribeMaskInvalidation(
+				({ kind }) => {
+					lastFrameRef.current = -1;
+					scheduleRender(`mask.${kind}`);
+				},
+			),
+		[scheduleRender],
+	);
 
 	useEffect(() => {
 		return () => {
@@ -356,6 +455,27 @@ function PreviewCanvas({
 				deltaMode: event.deltaMode,
 				pageSize: container.clientHeight,
 			});
+			const cameraMan = useCameraManStore.getState();
+			const activeScene = editor.scenes.getActiveSceneOrNull();
+			if (
+				cameraMan.phase === "recording" &&
+				cameraMan.sceneId === activeScene?.id &&
+				cameraMan.current
+			) {
+				event.preventDefault();
+				event.stopPropagation();
+				const nextScale = Math.max(
+					0.05,
+					Math.min(20, cameraMan.current.scale * Math.exp(-normalizedDeltaY / 300)),
+				);
+				recordCameraManSample({
+					time: editor.playback.getCurrentTime(),
+					x: cameraMan.current.x,
+					y: cameraMan.current.y,
+					scale: nextScale,
+				});
+				return;
+			}
 			const isZoomGesture = event.ctrlKey || event.metaKey;
 			if (isZoomGesture) {
 				event.preventDefault();
@@ -402,15 +522,65 @@ function PreviewCanvas({
 			}
 		};
 
+		let cameraPointerId: number | null = null;
+		let lastCameraPointer = { x: 0, y: 0 };
+		const onCameraPointerDown = (event: PointerEvent) => {
+			const cameraMan = useCameraManStore.getState();
+			const activeScene = editor.scenes.getActiveSceneOrNull();
+			if (
+				cameraMan.phase !== "recording" ||
+				cameraMan.sceneId !== activeScene?.id
+			) {
+				return;
+			}
+			event.preventDefault();
+			event.stopPropagation();
+			cameraPointerId = event.pointerId;
+			lastCameraPointer = { x: event.clientX, y: event.clientY };
+			container.setPointerCapture?.(event.pointerId);
+		};
+		const onCameraPointerMove = (event: PointerEvent) => {
+			if (cameraPointerId !== event.pointerId) return;
+			const cameraMan = useCameraManStore.getState();
+			if (!cameraMan.current) return;
+			event.preventDefault();
+			event.stopPropagation();
+			const deltaX = event.clientX - lastCameraPointer.x;
+			const deltaY = event.clientY - lastCameraPointer.y;
+			lastCameraPointer = { x: event.clientX, y: event.clientY };
+			const cameraWidth = Math.max(1, activeProject.settings.canvasSize.width);
+			const cameraHeight = Math.max(1, activeProject.settings.canvasSize.height);
+			const scale = Math.max(0.0001, viewport.getDisplayScale().x);
+			recordCameraManSample({
+				time: editor.playback.getCurrentTime(),
+				x: cameraMan.current.x + deltaX / (scale * cameraWidth),
+				y: cameraMan.current.y + deltaY / (scale * cameraHeight),
+				scale: cameraMan.current.scale,
+			});
+		};
+		const onCameraPointerUp = (event: PointerEvent) => {
+			if (cameraPointerId !== event.pointerId) return;
+			cameraPointerId = null;
+			container.releasePointerCapture?.(event.pointerId);
+		};
+
 		container.addEventListener("wheel", onWheel, {
 			capture: true,
 			passive: false,
 		});
+		container.addEventListener("pointerdown", onCameraPointerDown, true);
+		container.addEventListener("pointermove", onCameraPointerMove, true);
+		container.addEventListener("pointerup", onCameraPointerUp, true);
+		container.addEventListener("pointercancel", onCameraPointerUp, true);
 
 		return () => {
 			container.removeEventListener("wheel", onWheel, {
 				capture: true,
 			});
+			container.removeEventListener("pointerdown", onCameraPointerDown, true);
+			container.removeEventListener("pointermove", onCameraPointerMove, true);
+			container.removeEventListener("pointerup", onCameraPointerUp, true);
+			container.removeEventListener("pointercancel", onCameraPointerUp, true);
 			if (zoomRafId !== null) {
 				cancelAnimationFrame(zoomRafId);
 			}
@@ -418,7 +588,16 @@ function PreviewCanvas({
 				cancelAnimationFrame(panRafId);
 			}
 		};
-	}, [canPan, panByScreenDelta, scaleZoom]);
+	}, [
+		activeProject.settings.canvasSize.height,
+		activeProject.settings.canvasSize.width,
+		canPan,
+		editor.playback,
+		editor.scenes,
+		panByScreenDelta,
+		scaleZoom,
+		viewport,
+	]);
 
 	return (
 		<Profiler id="PreviewCanvas" onRender={handleProfilerRender}>
@@ -443,8 +622,22 @@ function PreviewCanvas({
 												activeProject.settings.background.type === "blur"
 													? "transparent"
 													: activeProject?.settings.background.color,
+											visibility: isExporting ? "hidden" : "visible",
 										}}
 									/>
+									{isExporting && (
+										<div
+											className="absolute flex items-center justify-center border bg-background/85 text-xs text-muted-foreground backdrop-blur-sm"
+											style={{
+												left: viewport.sceneLeft,
+												top: viewport.sceneTop,
+												width: viewport.sceneWidth,
+												height: viewport.sceneHeight,
+											}}
+										>
+											Exporting · preview paused
+										</div>
+									)}
 									<PreviewOverlayLayer
 										instances={overlayInstances}
 										plane="under-interaction"

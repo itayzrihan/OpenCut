@@ -276,7 +276,7 @@ export function MediaView() {
 		return filteredMediaItems.map((item) => item.id);
 	}, [filteredMediaItems]);
 	const sequenceScenes = useMemo(
-		() => scenes.filter((scene) => !scene.isMain),
+		() => scenes.filter((scene) => !scene.isMain && !scene.parallax),
 		[scenes],
 	);
 

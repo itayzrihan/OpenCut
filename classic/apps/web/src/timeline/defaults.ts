@@ -19,6 +19,8 @@ const defaultAudioFadeDuration = 0;
 
 const defaultTextLetterSpacing = 0;
 const defaultTextLineHeight = 1.2;
+const defaultTextBottomFadeOut = 0;
+const defaultTextBottomFadeOutEndOpacity = 0;
 const defaultNewElementDuration = mediaTime({ ticks: 5 * TICKS_PER_SECOND });
 
 const defaultTextBackground = {
@@ -39,6 +41,7 @@ const defaultTextStroke = {
 
 const defaultTextShadow = {
 	enabled: false,
+	window: false,
 	color: "#000000",
 	blur: 10,
 	offsetX: 0,
@@ -67,10 +70,13 @@ const defaultTextElement: Omit<TextElement, "id"> = {
 		textDecoration: "none",
 		letterSpacing: defaultTextLetterSpacing,
 		lineHeight: defaultTextLineHeight,
+		bottomFadeOut: defaultTextBottomFadeOut,
+		bottomFadeOutEndOpacity: defaultTextBottomFadeOutEndOpacity,
 		"stroke.enabled": defaultTextStroke.enabled,
 		"stroke.color": defaultTextStroke.color,
 		"stroke.width": defaultTextStroke.width,
 		"shadow.enabled": defaultTextShadow.enabled,
+		"shadow.window": defaultTextShadow.window,
 		"shadow.color": defaultTextShadow.color,
 		"shadow.blur": defaultTextShadow.blur,
 		"shadow.offsetX": defaultTextShadow.offsetX,
@@ -111,6 +117,8 @@ export const DEFAULTS = {
 	text: {
 		letterSpacing: defaultTextLetterSpacing,
 		lineHeight: defaultTextLineHeight,
+		bottomFadeOut: defaultTextBottomFadeOut,
+		bottomFadeOutEndOpacity: defaultTextBottomFadeOutEndOpacity,
 		background: defaultTextBackground,
 		stroke: defaultTextStroke,
 		shadow: defaultTextShadow,

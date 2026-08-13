@@ -218,6 +218,7 @@ export function AnimatedGraphicParamField({
 			param,
 			trackId,
 			elementId: element.id,
+			elementStartTime: element.startTime,
 			animations: element.animations,
 			localTime,
 			isPlayheadWithinElementRange,
@@ -243,6 +244,12 @@ export function AnimatedGraphicParamField({
 				isActive: animatedParam.isKeyframedAtTime,
 				isDisabled: !isPlayheadWithinElementRange,
 				onToggle: animatedParam.toggleKeyframe,
+				navigation: {
+					hasPrevious: animatedParam.hasPreviousKeyframe,
+					hasNext: animatedParam.hasNextKeyframe,
+					onPrevious: animatedParam.goToPreviousKeyframe,
+					onNext: animatedParam.goToNextKeyframe,
+				},
 			}}
 		/>
 	);

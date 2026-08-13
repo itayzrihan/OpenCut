@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import {
+	applyCaptionRowRearrangement,
 	applyTranscriptCorrections,
 	buildMessageOptimizationRanges,
+	removeCaptionLayerDuplicateWords,
+	validateCaptionRowEndPositions,
 	type IndexedTranscriptWord,
 } from "@/subtitles/caption-ai";
 
@@ -13,6 +16,33 @@ const words: IndexedTranscriptWord[] = [
 ];
 
 describe("caption AI edits", () => {
+	test("validates rearranged rows without changing word order", () => {
+		expect(
+			applyCaptionRowRearrangement({
+				words,
+				rowEndPositions: [3, 4],
+				wordsPerRow: 3,
+			}),
+		).toEqual([3, 4]);
+	});
+
+	test("rejects row plans that skip words or exceed the configured maximum", () => {
+		expect(() =>
+			validateCaptionRowEndPositions({
+				words,
+				rowEndPositions: [3],
+				wordsPerRow: 3,
+			}),
+		).toThrow("did not assign every transcript word");
+		expect(() =>
+			validateCaptionRowEndPositions({
+				words,
+				rowEndPositions: [4],
+				wordsPerRow: 4,
+			}),
+		).not.toThrow();
+	});
+
 	test("changes transcript text without touching timing or source metadata", () => {
 		const result = applyTranscriptCorrections({
 			words: [
@@ -70,5 +100,39 @@ describe("caption AI edits", () => {
 				removeRanges: [{ startIndex: 99, endIndex: 100, reason: "invalid" }],
 			}),
 		).toEqual([]);
+	});
+
+	test("removes stale caption-layer ownership words without deleting manual text", () => {
+		const result = removeCaptionLayerDuplicateWords({
+			words: [
+				{ text: "hello", start: 0, end: 0.2 },
+				{
+					text: "hello",
+					start: 0,
+					end: 0.2,
+					source: {
+						type: "text-layer",
+						trackId: "captions-a",
+						elementId: "caption-1",
+						wordIndex: 0,
+					},
+				},
+				{
+					text: "title",
+					start: 1,
+					end: 2,
+					source: {
+						type: "text-layer",
+						trackId: "manual-title",
+						elementId: "title-1",
+						wordIndex: 0,
+					},
+				},
+			],
+			captionTrackIds: new Set(["captions-a", "captions-b"]),
+		});
+
+		expect(result.map((word) => word.text)).toEqual(["hello", "title"]);
+		expect(result[1]?.source).toMatchObject({ trackId: "manual-title" });
 	});
 });

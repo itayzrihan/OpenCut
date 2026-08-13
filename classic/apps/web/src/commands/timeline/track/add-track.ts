@@ -30,6 +30,9 @@ export class AddTrackCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
+		if (this.type === "parallax" && !editor.scenes.getActiveScene().parallax) {
+			throw new Error("Parallax tracks can only be added inside a canvas scene");
+		}
 		this.savedState = editor.scenes.getActiveScene().tracks;
 
 		const insertIndex =

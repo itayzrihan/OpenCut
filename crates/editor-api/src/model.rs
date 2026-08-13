@@ -5,7 +5,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use thiserror::Error;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 2;
+use crate::artifact::{ARTIFACT_URI_PREFIX, ArtifactRef};
+
+pub const CURRENT_SCHEMA_VERSION: u32 = 3;
+pub const SMART_LAYER_MASK_ARTIFACT_MIME_TYPE: &str =
+    "application/vnd.opencut.background-mask-cache";
 
 /// Exact rational value used for media time bases and frame rates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -200,6 +204,7 @@ impl EditorDocument {
     /// compatibility seconds fields from exact media ticks.
     pub fn migrate_to_current(&mut self) -> Result<bool, ModelError> {
         let migrated = self.schema_version < CURRENT_SCHEMA_VERSION;
+        let legacy_seconds_are_source = self.schema_version < 2;
         if self.schema_version > CURRENT_SCHEMA_VERSION {
             return Err(ModelError::Invalid(format!(
                 "schemaVersion {} is newer than supported version {}",
@@ -207,7 +212,7 @@ impl EditorDocument {
             )));
         }
         if let Some(project) = &mut self.project {
-            if migrated {
+            if legacy_seconds_are_source {
                 project.settings.frame_rate_rational =
                     Rational::from_decimal(project.settings.frame_rate);
             } else {
@@ -215,8 +220,11 @@ impl EditorDocument {
                     / project.settings.frame_rate_rational.denominator as f64;
             }
             let time_base = project.settings.time_base;
-            project.timeline.sync_exact(time_base, migrated);
-            self.playback.sync_exact(time_base, migrated);
+            project
+                .timeline
+                .sync_exact(time_base, legacy_seconds_are_source);
+            self.playback
+                .sync_exact(time_base, legacy_seconds_are_source);
         }
         self.schema_version = CURRENT_SCHEMA_VERSION;
         Ok(migrated)
@@ -638,6 +646,14 @@ impl Track {
                     id: item.id.clone(),
                 });
             }
+            if matches!(item.kind, TimelineItemKind::SmartLayer)
+                && !matches!(self.kind, TrackKind::Adjustment | TrackKind::Overlay)
+            {
+                return Err(ModelError::Invalid(format!(
+                    "smart layer item `{}` must be on an adjustment or overlay track",
+                    item.id
+                )));
+            }
             item.validate(asset_ids, effect_ids)?;
         }
         Ok(())
@@ -697,6 +713,8 @@ pub struct TimelineItem {
     pub audio: AudioProperties,
     pub text: Option<TextProperties>,
     pub shape: Option<ShapeProperties>,
+    #[serde(default)]
+    pub smart_layer: Option<SmartLayer>,
     #[serde(default)]
     pub masks: Vec<Mask>,
     #[serde(default)]
@@ -772,6 +790,18 @@ impl TimelineItem {
                 self.id
             )));
         }
+        if matches!(self.kind, TimelineItemKind::SmartLayer) && self.smart_layer.is_none() {
+            return Err(ModelError::Invalid(format!(
+                "smart layer item `{}` requires smartLayer properties",
+                self.id
+            )));
+        }
+        if !matches!(self.kind, TimelineItemKind::SmartLayer) && self.smart_layer.is_some() {
+            return Err(ModelError::Invalid(format!(
+                "non-smart timeline item `{}` must not contain smartLayer properties",
+                self.id
+            )));
+        }
         self.transform.validate()?;
         validate_unit_interval(self.opacity, "item opacity")?;
         self.audio.validate()?;
@@ -780,6 +810,9 @@ impl TimelineItem {
         }
         if let Some(shape) = &self.shape {
             shape.validate()?;
+        }
+        if let Some(smart_layer) = &self.smart_layer {
+            smart_layer.validate(self.duration_seconds)?;
         }
         ensure_unique(
             self.effects.iter().map(|effect| effect.id.as_str()),
@@ -858,6 +891,423 @@ pub enum TimelineItemKind {
     Shape,
     Adjustment,
     Compound,
+    SmartLayer,
+}
+
+/// One timeline-visible layer whose renderer may derive multiple composited
+/// visuals without exposing those implementation layers in the timeline.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayer {
+    pub layer_type: SmartLayerType,
+    #[serde(default)]
+    pub source: SmartLayerSource,
+    pub speaker_frame_breakout: SpeakerFrameBreakoutSettings,
+    #[serde(default)]
+    pub application: SmartLayerApplication,
+}
+
+impl SmartLayer {
+    pub fn speaker_frame_breakout(settings: SpeakerFrameBreakoutSettings) -> Self {
+        Self {
+            layer_type: SmartLayerType::SpeakerFrameBreakout,
+            source: SmartLayerSource::default(),
+            speaker_frame_breakout: settings,
+            application: SmartLayerApplication::default(),
+        }
+    }
+
+    pub fn mark_configuration_changed(&mut self) {
+        self.application.configuration_revision =
+            self.application.configuration_revision.saturating_add(1);
+    }
+
+    pub fn set_applied_snapshot(&mut self, snapshot: SmartLayerAppliedSnapshot) {
+        self.application.applied_snapshot = Some(snapshot);
+    }
+
+    fn validate(&self, duration_seconds: f64) -> Result<(), ModelError> {
+        if !matches!(self.layer_type, SmartLayerType::SpeakerFrameBreakout) {
+            return Err(ModelError::Invalid("unsupported smart layer type".into()));
+        }
+        self.source.validate()?;
+        self.speaker_frame_breakout.validate(duration_seconds)?;
+        self.application.validate(duration_seconds)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum SmartLayerType {
+    SpeakerFrameBreakout,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerSource {
+    pub mode: SmartLayerSourceMode,
+}
+
+impl Default for SmartLayerSource {
+    fn default() -> Self {
+        Self {
+            mode: SmartLayerSourceMode::NearestVideoBelow,
+        }
+    }
+}
+
+impl SmartLayerSource {
+    fn validate(&self) -> Result<(), ModelError> {
+        if !matches!(self.mode, SmartLayerSourceMode::NearestVideoBelow) {
+            return Err(ModelError::Invalid(
+                "unsupported smart layer source mode".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum SmartLayerSourceMode {
+    NearestVideoBelow,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeakerFrameBreakoutSettings {
+    #[serde(default)]
+    pub background: SmartLayerBackground,
+    #[serde(default)]
+    pub layout: SpeakerFrameLayout,
+    #[serde(default)]
+    pub fade: SmartLayerFade,
+    #[serde(default)]
+    pub background_removal: SmartLayerBackgroundRemoval,
+}
+
+impl SpeakerFrameBreakoutSettings {
+    fn validate(&self, duration_seconds: f64) -> Result<(), ModelError> {
+        self.background.validate()?;
+        self.layout.validate()?;
+        self.fade.validate(duration_seconds)?;
+        self.background_removal.validate()
+    }
+}
+
+/// A serialized reference to any entry from the Backgrounds catalog. The
+/// definition and parameters are copied into the document so generated and
+/// built-in backgrounds render consistently after reopening a project.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerBackground {
+    pub background_id: String,
+    pub definition_id: String,
+    #[serde(default)]
+    pub parameters: Map<String, Value>,
+}
+
+impl Default for SmartLayerBackground {
+    fn default() -> Self {
+        let mut parameters = Map::new();
+        parameters.insert("preset".into(), Value::String("grid".into()));
+        parameters.insert("colorA".into(), Value::String("#F8F8F5".into()));
+        parameters.insert("colorB".into(), Value::String("#D8DAD5".into()));
+        parameters.insert("colorC".into(), Value::String("#FFFFFF".into()));
+        parameters.insert("density".into(), Value::from(48));
+        parameters.insert("intensity".into(), Value::from(12));
+        parameters.insert("scale".into(), Value::from(52));
+        parameters.insert("seed".into(), Value::from(7));
+        Self {
+            background_id: "paper-grid".into(),
+            definition_id: "preset-background".into(),
+            parameters,
+        }
+    }
+}
+
+impl SmartLayerBackground {
+    fn validate(&self) -> Result<(), ModelError> {
+        if self.background_id.trim().is_empty() || self.definition_id.trim().is_empty() {
+            return Err(ModelError::Invalid(
+                "smart layer backgroundId and definitionId must not be empty".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeakerFrameLayout {
+    pub speaker_scale: f64,
+    pub position_x: f64,
+    pub position_y: f64,
+    pub crop_top: f64,
+    pub corner_radius: f64,
+}
+
+impl Default for SpeakerFrameLayout {
+    fn default() -> Self {
+        Self {
+            speaker_scale: 0.7,
+            position_x: 0.5,
+            position_y: 0.68,
+            crop_top: 0.22,
+            corner_radius: 0.08,
+        }
+    }
+}
+
+impl SpeakerFrameLayout {
+    fn validate(&self) -> Result<(), ModelError> {
+        validate_positive(self.speaker_scale, "speaker frame speakerScale")?;
+        validate_unit_interval(self.position_x, "speaker frame positionX")?;
+        validate_unit_interval(self.position_y, "speaker frame positionY")?;
+        validate_unit_interval(self.crop_top, "speaker frame cropTop")?;
+        validate_unit_interval(self.corner_radius, "speaker frame cornerRadius")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerFade {
+    pub in_seconds: f64,
+    pub out_seconds: f64,
+}
+
+impl Default for SmartLayerFade {
+    fn default() -> Self {
+        Self {
+            in_seconds: 0.35,
+            out_seconds: 0.35,
+        }
+    }
+}
+
+impl SmartLayerFade {
+    fn validate(&self, duration_seconds: f64) -> Result<(), ModelError> {
+        validate_non_negative(self.in_seconds, "smart layer fade inSeconds")?;
+        validate_non_negative(self.out_seconds, "smart layer fade outSeconds")?;
+        if self.in_seconds + self.out_seconds > duration_seconds {
+            return Err(ModelError::Invalid(
+                "smart layer fade durations must fit inside the layer duration".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerBackgroundRemoval {
+    pub quality: BackgroundRemovalQuality,
+    pub mask_threshold: f64,
+    pub edge_feather: f64,
+    pub refine_edges: bool,
+}
+
+impl Default for SmartLayerBackgroundRemoval {
+    fn default() -> Self {
+        Self {
+            quality: BackgroundRemovalQuality::Precise,
+            mask_threshold: 0.55,
+            edge_feather: 0.08,
+            refine_edges: true,
+        }
+    }
+}
+
+impl SmartLayerBackgroundRemoval {
+    fn validate(&self) -> Result<(), ModelError> {
+        validate_unit_interval(
+            self.mask_threshold,
+            "smart layer background removal maskThreshold",
+        )?;
+        validate_unit_interval(
+            self.edge_feather,
+            "smart layer background removal edgeFeather",
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum BackgroundRemovalQuality {
+    Fast,
+    Balanced,
+    Precise,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerApplication {
+    pub configuration_revision: u64,
+    pub applied_snapshot: Option<SmartLayerAppliedSnapshot>,
+}
+
+impl Default for SmartLayerApplication {
+    fn default() -> Self {
+        Self {
+            configuration_revision: 1,
+            applied_snapshot: None,
+        }
+    }
+}
+
+impl SmartLayerApplication {
+    fn validate(&self, duration_seconds: f64) -> Result<(), ModelError> {
+        if self.configuration_revision == 0 {
+            return Err(ModelError::Invalid(
+                "smart layer configurationRevision must be greater than zero".into(),
+            ));
+        }
+        if let Some(snapshot) = &self.applied_snapshot {
+            snapshot.validate(duration_seconds)?;
+            if snapshot.configuration_revision > self.configuration_revision {
+                return Err(ModelError::Invalid(
+                    "smart layer applied snapshot cannot target a future configuration revision"
+                        .into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerAppliedSnapshot {
+    pub configuration_revision: u64,
+    pub settings_signature: String,
+    pub source_signature: String,
+    pub source_items: Vec<SmartLayerSourceItemSnapshot>,
+    pub artifacts: Vec<ArtifactRef>,
+    pub processing_backend: String,
+    pub frame_rate: Rational,
+    pub frame_count: u64,
+    pub applied_at_ms: u64,
+}
+
+impl SmartLayerAppliedSnapshot {
+    fn validate(&self, duration_seconds: f64) -> Result<(), ModelError> {
+        if self.configuration_revision == 0 {
+            return Err(ModelError::Invalid(
+                "smart layer snapshot configurationRevision must be greater than zero".into(),
+            ));
+        }
+        if self.settings_signature.trim().is_empty()
+            || self.source_signature.trim().is_empty()
+            || self.processing_backend.trim().is_empty()
+        {
+            return Err(ModelError::Invalid(
+                "smart layer snapshot signatures and processingBackend must not be empty".into(),
+            ));
+        }
+        if self.source_items.is_empty() {
+            return Err(ModelError::Invalid(
+                "smart layer snapshot must contain at least one source item".into(),
+            ));
+        }
+        ensure_unique(
+            self.source_items
+                .iter()
+                .map(|source| source.item_id.as_str()),
+            "smart layer source item",
+        )?;
+        for source in &self.source_items {
+            source.validate()?;
+        }
+        if self.artifacts.is_empty() {
+            return Err(ModelError::Invalid(
+                "smart layer snapshot must contain at least one bounded artifact reference".into(),
+            ));
+        }
+        ensure_unique(
+            self.artifacts.iter().map(|artifact| artifact.id.as_str()),
+            "smart layer artifact",
+        )?;
+        let mut covered_duration_ms = 0_u64;
+        for artifact in &self.artifacts {
+            if artifact.id.trim().is_empty()
+                || artifact.uri != format!("{ARTIFACT_URI_PREFIX}{}", artifact.id)
+                || artifact.mime_type != SMART_LAYER_MASK_ARTIFACT_MIME_TYPE
+                || artifact.sha256.len() != 64
+                || !artifact
+                    .sha256
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+                || artifact.byte_size == 0
+                || artifact.expires_at_ms <= artifact.created_at_ms
+                || artifact.duration_ms.is_none_or(|duration| duration == 0)
+            {
+                return Err(ModelError::Invalid(
+                    "smart layer artifact reference must be a canonical, checksummed mask cache from the ArtifactStore with positive duration coverage".into(),
+                ));
+            }
+            covered_duration_ms = covered_duration_ms.saturating_add(
+                artifact
+                    .duration_ms
+                    .expect("validated smart layer artifact duration"),
+            );
+        }
+        self.frame_rate.validate("smart layer snapshot frameRate")?;
+        if self.frame_count == 0 {
+            return Err(ModelError::Invalid(
+                "smart layer snapshot frameCount must be greater than zero".into(),
+            ));
+        }
+        let frames_per_second =
+            self.frame_rate.numerator as f64 / self.frame_rate.denominator as f64;
+        let expected_frame_count = (duration_seconds * frames_per_second).ceil() as u64;
+        if self.frame_count != expected_frame_count {
+            return Err(ModelError::Invalid(format!(
+                "smart layer snapshot frameCount {} does not cover the expected {expected_frame_count} frames",
+                self.frame_count
+            )));
+        }
+        let required_duration_ms = (duration_seconds * 1_000.0).ceil() as u64;
+        if covered_duration_ms < required_duration_ms {
+            return Err(ModelError::Invalid(format!(
+                "smart layer artifacts cover {covered_duration_ms}ms, less than the required {required_duration_ms}ms"
+            )));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartLayerSourceItemSnapshot {
+    pub track_id: String,
+    pub item_id: String,
+    pub asset_id: String,
+    pub start_seconds: f64,
+    pub duration_seconds: f64,
+    pub source_in_seconds: f64,
+    pub source_out_seconds: Option<f64>,
+    pub speed: f64,
+}
+
+impl SmartLayerSourceItemSnapshot {
+    fn validate(&self) -> Result<(), ModelError> {
+        if self.track_id.trim().is_empty()
+            || self.item_id.trim().is_empty()
+            || self.asset_id.trim().is_empty()
+        {
+            return Err(ModelError::Invalid(
+                "smart layer source trackId, itemId, and assetId must not be empty".into(),
+            ));
+        }
+        validate_non_negative(self.start_seconds, "smart layer source startSeconds")?;
+        validate_positive(self.duration_seconds, "smart layer source durationSeconds")?;
+        validate_non_negative(self.source_in_seconds, "smart layer source sourceInSeconds")?;
+        validate_optional_non_negative(
+            self.source_out_seconds,
+            "smart layer source sourceOutSeconds",
+        )?;
+        validate_positive(self.speed, "smart layer source speed")
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]

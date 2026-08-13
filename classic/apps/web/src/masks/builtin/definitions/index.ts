@@ -8,6 +8,7 @@ import { diamondMaskDefinition } from "./diamond";
 import { ellipseMaskDefinition } from "./ellipse";
 import { heartMaskDefinition } from "./heart";
 import { rectangleMaskDefinition } from "./rectangle";
+import { roundedRectangleMaskDefinition } from "./rounded-rectangle";
 import { splitMaskDefinition } from "./split";
 import { starMaskDefinition } from "./star";
 import { textMaskDefinition } from "./text";
@@ -49,6 +50,10 @@ export function registerDefaultMasks(): void {
 	});
 	registerDefaultMask({
 		definition: rectangleMaskDefinition,
+		icon: { icon: SquareIcon },
+	});
+	registerDefaultMask({
+		definition: roundedRectangleMaskDefinition,
 		icon: { icon: SquareIcon },
 	});
 	registerDefaultMask({

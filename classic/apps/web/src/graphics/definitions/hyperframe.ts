@@ -1,4 +1,5 @@
 import type { ParamDefinition } from "@/params";
+import { TICKS_PER_SECOND } from "@/wasm";
 import {
 	getHyperframeRaster,
 	prepareHyperframeRaster,
@@ -41,7 +42,13 @@ const HYPERFRAME_PARAMS: ParamDefinition[] = [
 	},
 ];
 
-function readHyperframeSize(value: unknown, fallback: number): number {
+function readHyperframeSize({
+	value,
+	fallback,
+}: {
+	value: unknown;
+	fallback: number;
+}): number {
 	const parsed = typeof value === "number" ? value : Number(value);
 	if (!Number.isFinite(parsed)) {
 		return fallback;
@@ -52,6 +59,14 @@ function readHyperframeSize(value: unknown, fallback: number): number {
 	);
 }
 
+export function getHyperframeTimeSeconds({
+	mediaTicks,
+}: {
+	mediaTicks: number | undefined;
+}): number {
+	return Math.max(0, mediaTicks ?? 0) / TICKS_PER_SECOND;
+}
+
 export const hyperframeGraphicDefinition: GraphicDefinition = {
 	id: HYPERFRAME_DEFINITION_ID,
 	name: "HTML Frame",
@@ -59,11 +74,14 @@ export const hyperframeGraphicDefinition: GraphicDefinition = {
 	params: HYPERFRAME_PARAMS,
 	sourceSize({ params }) {
 		return {
-			width: readHyperframeSize(params.sourceWidth, DEFAULT_HYPERFRAME_WIDTH),
-			height: readHyperframeSize(
-				params.sourceHeight,
-				DEFAULT_HYPERFRAME_HEIGHT,
-			),
+			width: readHyperframeSize({
+				value: params.sourceWidth,
+				fallback: DEFAULT_HYPERFRAME_WIDTH,
+			}),
+			height: readHyperframeSize({
+				value: params.sourceHeight,
+				fallback: DEFAULT_HYPERFRAME_HEIGHT,
+			}),
 		};
 	},
 	async prepare({ params, width, height, localTime, duration }) {
@@ -75,8 +93,8 @@ export const hyperframeGraphicDefinition: GraphicDefinition = {
 			html,
 			width,
 			height,
-			timeSeconds: localTime ?? 0,
-			durationSeconds: duration ?? 0,
+			timeSeconds: getHyperframeTimeSeconds({ mediaTicks: localTime }),
+			durationSeconds: getHyperframeTimeSeconds({ mediaTicks: duration }),
 		});
 	},
 	render({ ctx, params, width, height, localTime, duration }) {
@@ -89,8 +107,8 @@ export const hyperframeGraphicDefinition: GraphicDefinition = {
 			html,
 			width,
 			height,
-			timeSeconds: localTime ?? 0,
-			durationSeconds: duration ?? 0,
+			timeSeconds: getHyperframeTimeSeconds({ mediaTicks: localTime }),
+			durationSeconds: getHyperframeTimeSeconds({ mediaTicks: duration }),
 		});
 		if (!raster) {
 			return;

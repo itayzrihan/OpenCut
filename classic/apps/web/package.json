@@ -4,7 +4,9 @@
   "private": true,
   "packageManager": "bun@1.2.18",
   "scripts": {
+    "predev": "bun run assets:verify && bun run --cwd ../.. build:wasm",
     "dev": "next dev --turbopack",
+    "prebuild": "bun run assets:verify && bun run --cwd ../.. build:wasm",
     "build": "next build",
     "start": "next start",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
@@ -12,10 +14,13 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier src --write",
+    "assets:verify": "node scripts/verify-background-removal-assets.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push:local": "cross-env NODE_ENV=development drizzle-kit push",
-    "db:push:prod": "cross-env NODE_ENV=production drizzle-kit push"
+    "db:push:prod": "cross-env NODE_ENV=production drizzle-kit push",
+    "skills:generate": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs",
+    "skills:check": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs --check"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

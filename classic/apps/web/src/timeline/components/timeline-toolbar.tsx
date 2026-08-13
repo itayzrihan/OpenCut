@@ -73,8 +73,16 @@ import {
 	CUT_SILENCE_ACTIONS,
 	DEFAULT_CUT_SILENCE_MODE,
 	executeCutSilenceAction,
+	type CutSilenceOptions,
 	type CutSilenceMode,
 } from "./cut-silence-toolbar-options";
+import {
+	clampAudioMinSilenceSeconds,
+	DEFAULT_AUDIO_MIN_SILENCE_SECONDS,
+	MAX_AUDIO_MIN_SILENCE_SECONDS,
+	MIN_AUDIO_MIN_SILENCE_SECONDS,
+} from "@/timeline/audio-silence-analysis";
+import { Input } from "@/components/ui/input";
 
 export function TimelineToolbar({
 	zoomLevel,
@@ -280,23 +288,35 @@ function CutSilenceToolbarControl({
 	removeAllSilence,
 }: {
 	hasSelectedVideo: boolean;
-	removeAllSilence: (options: { mode: CutSilenceMode }) => Promise<unknown>;
+	removeAllSilence: (options: CutSilenceOptions) => Promise<unknown>;
 }) {
 	const [activeMode, setActiveMode] = useState<CutSilenceMode | null>(null);
+	const [audioMinSilenceSeconds, setAudioMinSilenceSeconds] = useState(
+		String(DEFAULT_AUDIO_MIN_SILENCE_SECONDS),
+	);
 	const activeRunRef = useRef(false);
 	const isAnalyzing = activeMode !== null;
 	const disabled = !hasSelectedVideo || isAnalyzing;
+	const resolvedAudioMinSilenceSeconds = clampAudioMinSilenceSeconds(
+		Number(audioMinSilenceSeconds),
+	);
+	const formattedAudioMinSilenceSeconds =
+		resolvedAudioMinSilenceSeconds.toString();
 
 	const runCutSilence = async ({ mode }: { mode: CutSilenceMode }) => {
 		if (!hasSelectedVideo || activeRunRef.current) return;
 		activeRunRef.current = true;
 		setActiveMode(mode);
 		try {
-			await executeCutSilenceAction({ mode, removeAllSilence });
+			await executeCutSilenceAction({
+				mode,
+				minSilenceSeconds:
+					mode === "audio" ? resolvedAudioMinSilenceSeconds : undefined,
+				removeAllSilence,
+			});
 			if (mode === "audio") {
 				toast.success("Audio-based silence cut complete", {
-					description:
-						"Pauses of 0.1 seconds or longer were removed and captions were synchronized.",
+					description: `Pauses of ${formattedAudioMinSilenceSeconds} seconds or longer were removed and captions were synchronized.`,
 				});
 			} else if (mode === "deep") {
 				toast.success("Deep silence analysis complete", {
@@ -319,7 +339,7 @@ function CutSilenceToolbarControl({
 	const mainTooltip = !hasSelectedVideo
 		? "Select one or more video clips to cut silences"
 		: activeMode === "audio"
-			? "Removing audio pauses from 0.1 seconds and synchronizing captions"
+			? `Removing audio pauses from ${formattedAudioMinSilenceSeconds} seconds and synchronizing captions`
 			: activeMode === "deep"
 				? "Deeply analyzing speech, noise, and caption timing"
 				: activeMode === "fast"
@@ -365,7 +385,16 @@ function CutSilenceToolbarControl({
 					{CUT_SILENCE_ACTIONS.map((action) => (
 						<DropdownMenuItem
 							key={action.mode}
-							onSelect={() => void runCutSilence({ mode: action.mode })}
+							onSelect={(event) => {
+								if (
+									action.mode === "audio" &&
+									event.target instanceof HTMLInputElement
+								) {
+									event.preventDefault();
+									return;
+								}
+								void runCutSilence({ mode: action.mode });
+							}}
 							icon={
 								<HugeiconsIcon
 									icon={action.mode === "fast" ? SnowIcon : AiAudioIcon}
@@ -378,8 +407,46 @@ function CutSilenceToolbarControl({
 									{action.label}
 								</span>
 								<span className="text-muted-foreground block text-xs leading-snug whitespace-normal">
-									{action.description}
+									{action.mode === "audio"
+										? action.description.replace(
+												"0.1",
+												formattedAudioMinSilenceSeconds,
+											)
+										: action.description}
 								</span>
+								{action.mode === "audio" && (
+									<span
+										className="mt-2 flex items-center gap-2"
+										onPointerDown={(event) => event.stopPropagation()}
+									>
+										<label
+											className="text-muted-foreground text-xs"
+											htmlFor="cut-silence-min-seconds"
+										>
+											Minimum pause (seconds)
+										</label>
+										<Input
+											id="cut-silence-min-seconds"
+											type="number"
+											value={audioMinSilenceSeconds}
+											min={MIN_AUDIO_MIN_SILENCE_SECONDS}
+											max={MAX_AUDIO_MIN_SILENCE_SECONDS}
+											step="0.01"
+											className="h-7 w-20 px-2 text-xs"
+											aria-label="Minimum pause duration in seconds"
+											onChange={(event) =>
+												setAudioMinSilenceSeconds(event.target.value)
+											}
+											onBlur={() =>
+												setAudioMinSilenceSeconds(
+													formattedAudioMinSilenceSeconds,
+												)
+											}
+											onKeyDown={(event) => event.stopPropagation()}
+											onClick={(event) => event.stopPropagation()}
+										/>
+									</span>
+								)}
 							</span>
 						</DropdownMenuItem>
 					))}

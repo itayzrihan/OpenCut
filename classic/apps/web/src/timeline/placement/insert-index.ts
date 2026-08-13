@@ -8,7 +8,7 @@ export function getDefaultInsertIndexForTrack({
 	tracks: SceneTracks;
 	trackType: TrackType;
 }): number {
-	if (trackType === "effect") {
+	if (trackType === "effect" || trackType === "parallax") {
 		return 0;
 	}
 

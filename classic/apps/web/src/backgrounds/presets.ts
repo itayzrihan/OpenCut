@@ -55,6 +55,37 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
 		},
 	}),
 	backgroundPreset({
+		id: "textured-grid",
+		name: "Textured Grid",
+		description: "Irregular layered grid clusters with a woven editorial feel",
+		params: {
+			preset: "textured-grid",
+			colorA: "#111827",
+			colorB: "#94a3b8",
+			colorC: "#e2e8f0",
+			density: 44,
+			intensity: 38,
+			scale: 58,
+			seed: 13,
+		},
+	}),
+	backgroundPreset({
+		id: "paper-grid",
+		name: "Paper Grid",
+		description:
+			"Soft white editorial grid for proof stages and speaker frames",
+		params: {
+			preset: "grid",
+			colorA: "#F8F8F5",
+			colorB: "#D8DAD5",
+			colorC: "#FFFFFF",
+			density: 48,
+			intensity: 12,
+			scale: 52,
+			seed: 7,
+		},
+	}),
+	backgroundPreset({
 		id: "grid-waves",
 		name: "Grid Waves",
 		description: "Grid with flowing wave lines",

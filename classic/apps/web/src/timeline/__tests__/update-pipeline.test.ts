@@ -264,4 +264,68 @@ describe("applyElementUpdate", () => {
 		expect(updated.duration).toBe(mediaTime({ ticks: 12 }));
 		expect(updated.wordRuns?.[2]?.endTime).toBe(mediaTime({ ticks: 12 }));
 	});
+
+	test("keeps an out transition anchored when a layer is extended", () => {
+		const element = buildVideoElement({
+			duration: mediaTime({ ticks: 100 }),
+			transitions: {
+				out: {
+					id: "transition-out",
+					presetId: "fade",
+					placement: "out",
+					duration: mediaTime({ ticks: 20 }),
+					startTime: mediaTime({ ticks: 80 }),
+					createdAt: "2026-01-01T00:00:00.000Z",
+				},
+			},
+		});
+
+		const updated = applyElementUpdate({
+			element,
+			patch: { duration: mediaTime({ ticks: 160 }) },
+			context: { tracks: buildTracks(element), trackId: "main-track" },
+		});
+
+		expect(updated.transitions?.out?.duration).toBe(mediaTime({ ticks: 20 }));
+		expect(updated.transitions?.out?.startTime).toBe(mediaTime({ ticks: 140 }));
+	});
+
+	test("fits edge transitions inside a layer when it is shortened", () => {
+		const element = buildVideoElement({
+			duration: mediaTime({ ticks: 100 }),
+			transitions: {
+				in: {
+					id: "transition-in",
+					presetId: "fade",
+					placement: "in",
+					duration: mediaTime({ ticks: 20 }),
+					startTime: ZERO_MEDIA_TIME,
+					createdAt: "2026-01-01T00:00:00.000Z",
+				},
+				out: {
+					id: "transition-out",
+					presetId: "fade",
+					placement: "out",
+					duration: mediaTime({ ticks: 20 }),
+					startTime: mediaTime({ ticks: 80 }),
+					createdAt: "2026-01-01T00:00:00.000Z",
+				},
+			},
+		});
+
+		const updated = applyElementUpdate({
+			element,
+			patch: { duration: mediaTime({ ticks: 15 }) },
+			context: { tracks: buildTracks(element), trackId: "main-track" },
+		});
+
+		expect(updated.transitions?.in).toMatchObject({
+			duration: mediaTime({ ticks: 15 }),
+			startTime: ZERO_MEDIA_TIME,
+		});
+		expect(updated.transitions?.out).toMatchObject({
+			duration: mediaTime({ ticks: 15 }),
+			startTime: ZERO_MEDIA_TIME,
+		});
+	});
 });

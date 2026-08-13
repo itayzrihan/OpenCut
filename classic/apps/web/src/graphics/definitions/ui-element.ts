@@ -28,6 +28,9 @@ interface UiElementParams {
 	animationOutStart: number;
 	animationStrength: number;
 	eventAt: number;
+	eventTransitionDuration: number;
+	eventBackgroundEnabled: boolean;
+	eventBackground: string;
 	itemStartPoints: string;
 	itemEndPoints: string;
 	listRevealMode: string;
@@ -188,6 +191,31 @@ const UI_ELEMENT_PARAMS: ParamDefinition<keyof UiElementParams & string>[] = [
 		max: 100,
 		step: 1,
 		unit: "percent",
+		keyframable: false,
+	},
+	{
+		key: "eventTransitionDuration",
+		label: "Event Transition",
+		type: "number",
+		default: 0,
+		min: 0,
+		max: 50,
+		step: 1,
+		unit: "percent",
+		keyframable: false,
+	},
+	{
+		key: "eventBackgroundEnabled",
+		label: "Event Background",
+		type: "boolean",
+		default: false,
+		keyframable: false,
+	},
+	{
+		key: "eventBackground",
+		label: "Event Background Color",
+		type: "color",
+		default: "#D92D20",
 		keyframable: false,
 	},
 	{
@@ -394,7 +422,7 @@ const UI_ELEMENT_PARAMS: ParamDefinition<keyof UiElementParams & string>[] = [
 		type: "number",
 		default: 3,
 		min: 0,
-		max: 9999,
+		max: 1_000_000,
 		step: 1,
 	},
 	{
@@ -456,7 +484,9 @@ function parsePercentPoints({
 }): number[] {
 	const parsed = value
 		.split(",")
-		.map((entry) => Number(entry.trim()))
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0)
+		.map((entry) => Number(entry))
 		.filter((entry) => Number.isFinite(entry));
 	return Array.from({ length: count }, (_, index) =>
 		clampValue({
@@ -520,6 +550,38 @@ function withAlpha({ color, alpha }: { color: string; alpha: number }) {
 	return color;
 }
 
+function mixHexColors({
+	from,
+	to,
+	progress,
+}: {
+	from: string;
+	to: string;
+	progress: number;
+}) {
+	const normalize = (color: string) =>
+		color.length === 4
+			? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
+			: color;
+	const fromColor = normalize(from);
+	const toColor = normalize(to);
+	if (
+		!/^#[\dA-Fa-f]{6}$/.test(fromColor) ||
+		!/^#[\dA-Fa-f]{6}$/.test(toColor)
+	) {
+		return progress < 0.5 ? from : to;
+	}
+	const t = clampValue({ value: progress, min: 0, max: 1 });
+	const channel = (offset: number) =>
+		Math.round(
+			Number.parseInt(fromColor.slice(offset, offset + 2), 16) * (1 - t) +
+				Number.parseInt(toColor.slice(offset, offset + 2), 16) * t,
+		)
+			.toString(16)
+			.padStart(2, "0");
+	return `#${channel(1)}${channel(3)}${channel(5)}`;
+}
+
 function roundRect({
 	x,
 	y,
@@ -563,7 +625,12 @@ function setCanvasFont({
 	size: number;
 	fontFamily: string;
 }) {
-	ctx.font = `${weight} ${size}px ${fontStack({ family: fontFamily })}`;
+	// Some headless Canvas implementations corrupt glyph rasters for
+	// non-standard numeric weights such as 550/650/750. Quantizing keeps
+	// browser preview and deterministic render/export on the same safe stack.
+	const safeWeight =
+		Math.round(clampValue({ value: weight, min: 100, max: 900 }) / 100) * 100;
+	ctx.font = `${safeWeight} ${size}px ${fontStack({ family: fontFamily })}`;
 }
 
 function easeOutCubic(value: number): number {
@@ -688,7 +755,10 @@ function drawTextLine({
 			? 1
 			: 0.08 + progress * 0.92;
 	if (motion?.transitionIn === "blur" || motion?.transitionIn === "blur-zoom") {
-		ctx.filter = `blur(${(1 - progress) * 8}px)`;
+		const blurRadius = (1 - progress) * 8;
+		if (blurRadius >= 0.05) {
+			ctx.filter = `blur(${blurRadius}px)`;
+		}
 	}
 	if (motion?.transitionIn === "glow-dissolve") {
 		ctx.shadowColor = color;
@@ -784,6 +854,7 @@ function resolveUiMotionTiming({
 	animationInEnd,
 	animationOutStart,
 	eventAt,
+	eventTransitionDuration,
 	textRevealMode,
 	textTransitionIn,
 	textDirection,
@@ -793,6 +864,7 @@ function resolveUiMotionTiming({
 	animationInEnd: number;
 	animationOutStart: number;
 	eventAt: number;
+	eventTransitionDuration: number;
 	textRevealMode: TextCaptionRevealMode;
 	textTransitionIn: TextWordTransitionIn;
 	textDirection: "auto" | "ltr" | "rtl";
@@ -833,6 +905,14 @@ function resolveUiMotionTiming({
 		min: 0,
 		max: 0.99,
 	});
+	const eventDuration =
+		eventTransitionDuration > 0
+			? clampValue({
+					value: eventTransitionDuration / 100,
+					min: 0.001,
+					max: Math.max(0.001, 1 - eventStart),
+				})
+			: Math.max(0.001, 1 - eventStart);
 	const inProgress = easeOutCubic(
 		clampValue({ value: timelineProgress / inEnd, min: 0, max: 1 }),
 	);
@@ -845,7 +925,7 @@ function resolveUiMotionTiming({
 	);
 	const eventProgress = easeOutCubic(
 		clampValue({
-			value: (timelineProgress - eventStart) / Math.max(0.001, 1 - eventStart),
+			value: (timelineProgress - eventStart) / eventDuration,
 			min: 0,
 			max: 1,
 		}),
@@ -971,6 +1051,13 @@ function buildOutTransform({
 	if (animation === "auto") {
 		t.scaleX = 1 - p * 0.08;
 		t.scaleY = 1 - p * 0.08;
+		return t;
+	}
+
+	if (animation === "list-blur-zoom-fade") {
+		t.scaleX = 1 + p * 0.1;
+		t.scaleY = 1 + p * 0.1;
+		t.blur = p * 14;
 		return t;
 	}
 
@@ -1375,6 +1462,7 @@ function drawList({
 	checkbox,
 	textMotion,
 	animationIn,
+	animationOut,
 	inProgress,
 	outProgress,
 	eventProgress,
@@ -1407,6 +1495,7 @@ function drawList({
 	checkbox: boolean;
 	textMotion: TextMotion;
 	animationIn: string;
+	animationOut: string;
 	inProgress: number;
 	outProgress: number;
 	eventProgress: number;
@@ -1451,6 +1540,7 @@ function drawList({
 	const ghostRows = listRevealMode === "ghost-stagger";
 	const checkedProgress = checkbox ? eventProgress : 1;
 	const timelinePercent = timelineProgress * 100;
+	const unifiedBlurZoomExit = animationOut === "list-blur-zoom-fade";
 	visibleItems.forEach((item, index) => {
 		const delay = instantRows ? 0 : index * 0.11;
 		const staggerEnter = clampValue({
@@ -1483,11 +1573,13 @@ function drawList({
 			: clampValue({ value: easeOutBack(presetStaggerEnter), min: 0, max: 1 });
 		const rowTextProgress = instantRows ? inProgress : rowEnter;
 		const exitDelay = outProgress <= 0 ? 0 : index * 0.04;
-		const outExit = clampValue({
-			value: (outProgress - exitDelay) / Math.max(0.001, 1 - exitDelay),
-			min: 0,
-			max: 1,
-		});
+		const outExit = unifiedBlurZoomExit
+			? 0
+			: clampValue({
+					value: (outProgress - exitDelay) / Math.max(0.001, 1 - exitDelay),
+					min: 0,
+					max: 1,
+				});
 		const rowExit =
 			listItemOutDuration <= 0
 				? timelinePercent >= rowEnd
@@ -1517,7 +1609,7 @@ function drawList({
 			ctx.shadowColor = accent;
 			ctx.shadowBlur = 18 * (1 - Math.abs(enter - 0.85));
 		}
-		if (outProgress > 0) {
+		if (outProgress > 0 && !unifiedBlurZoomExit) {
 			ctx.translate(exit * width * 0.16, exit * rowHeight * 0.4);
 			ctx.scale(1 - exit * 0.12, 1 - exit * 0.12);
 		}
@@ -2005,6 +2097,589 @@ function drawSimpleCard({
 		weight: 600,
 		motion: textMotion,
 	});
+}
+
+function formatMetricCount({ value }: { value: number }): string {
+	const rounded = Math.max(0, Math.round(value));
+	return rounded.toLocaleString("en-US");
+}
+
+function drawMinimalProductUi({
+	ctx,
+	width,
+	height,
+	template,
+	label,
+	secondary,
+	items,
+	labelFontFamily,
+	secondaryFontFamily,
+	itemsFontFamily,
+	accent,
+	background,
+	foreground,
+	progress,
+	count,
+	textMotion,
+	motionProgress,
+	eventProgress,
+	outProgress,
+}: {
+	ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+	width: number;
+	height: number;
+	template: string;
+	label: string;
+	secondary: string;
+	items: string[];
+	labelFontFamily: string;
+	secondaryFontFamily: string;
+	itemsFontFamily: string;
+	accent: string;
+	background: string;
+	foreground: string;
+	progress: number;
+	count: number;
+	textMotion: TextMotion;
+	motionProgress: number;
+	eventProgress: number;
+	outProgress: number;
+}) {
+	const centerX = width / 2;
+	const centerY = height / 2;
+	const visibleProgress = clampValue({
+		value: motionProgress * (1 - outProgress),
+		min: 0,
+		max: 1,
+	});
+	const drawSurface = ({
+		x,
+		y,
+		surfaceWidth,
+		surfaceHeight,
+		radius,
+	}: {
+		x: number;
+		y: number;
+		surfaceWidth: number;
+		surfaceHeight: number;
+		radius: number;
+	}) => {
+		const path = roundRect({
+			x,
+			y,
+			width: surfaceWidth,
+			height: surfaceHeight,
+			radius,
+		});
+		ctx.save();
+		ctx.shadowColor = "rgba(0,0,0,0.24)";
+		ctx.shadowBlur = 18;
+		ctx.fillStyle = background;
+		ctx.fill(path);
+		ctx.restore();
+		ctx.save();
+		ctx.strokeStyle = withAlpha({ color: foreground, alpha: 0.1 });
+		ctx.lineWidth = 1.2;
+		ctx.stroke(path);
+		ctx.restore();
+	};
+
+	if (template === "goal-slider") {
+		const cardWidth = width * 0.62;
+		const cardHeight = height * 0.28;
+		const x = centerX - cardWidth / 2;
+		const y = centerY - cardHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: cardWidth,
+			surfaceHeight: cardHeight,
+			radius: cardHeight * 0.24,
+		});
+		const lineX = x + cardWidth * 0.16;
+		const lineWidth = cardWidth * 0.68;
+		const lineY = y + cardHeight * 0.58;
+		const target = clampValue({ value: progress / 100, min: 0, max: 1 });
+		const current = target * visibleProgress;
+		ctx.save();
+		ctx.lineCap = "round";
+		ctx.lineWidth = Math.max(4, height * 0.008);
+		ctx.strokeStyle = withAlpha({ color: foreground, alpha: 0.58 });
+		ctx.beginPath();
+		ctx.moveTo(lineX, lineY);
+		ctx.lineTo(lineX + lineWidth, lineY);
+		ctx.stroke();
+		ctx.strokeStyle = accent;
+		ctx.shadowColor = withAlpha({ color: accent, alpha: 0.46 });
+		ctx.shadowBlur = 12;
+		ctx.beginPath();
+		ctx.moveTo(lineX, lineY);
+		ctx.lineTo(lineX + lineWidth * current, lineY);
+		ctx.stroke();
+		const knobX = lineX + lineWidth * current;
+		ctx.fillStyle = accent;
+		ctx.beginPath();
+		ctx.arc(knobX, lineY, cardHeight * 0.075, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.restore();
+		drawCenteredText({
+			ctx,
+			text: label,
+			x: centerX,
+			y: y + cardHeight * 0.3,
+			maxWidth: cardWidth * 0.72,
+			size: Math.max(24, cardHeight * 0.18),
+			color: accent,
+			fontFamily: labelFontFamily,
+			weight: 800,
+			motion: { ...textMotion, order: 0, total: 2 },
+		});
+		drawTextLine({
+			ctx,
+			text: secondary,
+			x: Math.min(x + cardWidth * 0.82, lineX + lineWidth * current),
+			y: y + cardHeight * 0.79,
+			maxWidth: cardWidth * 0.34,
+			size: Math.max(15, cardHeight * 0.11),
+			color: withAlpha({ color: foreground, alpha: 0.52 }),
+			fontFamily: secondaryFontFamily,
+			weight: 700,
+			align: "center",
+			motion: { ...textMotion, order: 1, total: 2 },
+		});
+		return;
+	}
+
+	if (template === "search-bar") {
+		const pillWidth = width * 0.66;
+		const pillHeight = height * 0.14;
+		const x = centerX - pillWidth / 2;
+		const y = centerY - pillHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: pillWidth,
+			surfaceHeight: pillHeight,
+			radius: pillHeight / 2,
+		});
+		const iconX = x + pillWidth * 0.91;
+		const iconY = centerY;
+		ctx.save();
+		ctx.strokeStyle = accent;
+		ctx.lineWidth = Math.max(2, height * 0.005);
+		ctx.beginPath();
+		ctx.arc(
+			iconX,
+			iconY - pillHeight * 0.04,
+			pillHeight * 0.14,
+			0,
+			Math.PI * 2,
+		);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(iconX + pillHeight * 0.1, iconY + pillHeight * 0.07);
+		ctx.lineTo(iconX + pillHeight * 0.2, iconY + pillHeight * 0.18);
+		ctx.stroke();
+		ctx.restore();
+		drawTextLine({
+			ctx,
+			text: label,
+			x: x + pillWidth * 0.08,
+			y: centerY,
+			maxWidth: pillWidth * 0.72,
+			size: Math.max(20, pillHeight * 0.24),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 650,
+			align: "left",
+			motion: textMotion,
+		});
+		return;
+	}
+
+	if (template === "metric-pill") {
+		const pillWidth = width * 0.52;
+		const pillHeight = height * 0.18;
+		const x = centerX - pillWidth / 2;
+		const y = centerY - pillHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: pillWidth,
+			surfaceHeight: pillHeight,
+			radius: pillHeight * 0.28,
+		});
+		ctx.save();
+		ctx.fillStyle = accent;
+		ctx.shadowColor = withAlpha({ color: accent, alpha: 0.5 });
+		ctx.shadowBlur = 10;
+		ctx.beginPath();
+		ctx.arc(x + pillWidth * 0.09, centerY, pillHeight * 0.055, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.restore();
+		drawTextLine({
+			ctx,
+			text: secondary,
+			x: x + pillWidth * 0.14,
+			y: y + pillHeight * 0.32,
+			maxWidth: pillWidth * 0.38,
+			size: Math.max(13, pillHeight * 0.11),
+			color: withAlpha({ color: foreground, alpha: 0.55 }),
+			fontFamily: secondaryFontFamily,
+			weight: 650,
+			align: "left",
+			motion: { ...textMotion, order: 0, total: 2 },
+		});
+		drawTextLine({
+			ctx,
+			text: `${label}${formatMetricCount({
+				value: count * visibleProgress,
+			})}`,
+			x: x + pillWidth * 0.9,
+			y: centerY + pillHeight * 0.04,
+			maxWidth: pillWidth * 0.58,
+			size: Math.max(24, pillHeight * 0.22),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 800,
+			align: "right",
+			motion: { ...textMotion, order: 1, total: 2 },
+		});
+		return;
+	}
+
+	if (
+		template === "avatar-message-left" ||
+		template === "avatar-message-right"
+	) {
+		const isLeft = template.endsWith("left");
+		const bubbleWidth = width * 0.56;
+		const bubbleHeight = height * 0.25;
+		const x =
+			centerX - bubbleWidth / 2 + (isLeft ? width * 0.025 : -width * 0.025);
+		const y = centerY - bubbleHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: bubbleWidth,
+			surfaceHeight: bubbleHeight,
+			radius: bubbleHeight * 0.16,
+		});
+		const avatarX = isLeft
+			? x - bubbleHeight * 0.16
+			: x + bubbleWidth + bubbleHeight * 0.16;
+		ctx.save();
+		ctx.fillStyle = foreground;
+		ctx.beginPath();
+		ctx.arc(avatarX, centerY, bubbleHeight * 0.12, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.fillStyle = background;
+		ctx.beginPath();
+		ctx.arc(
+			avatarX,
+			centerY - bubbleHeight * 0.035,
+			bubbleHeight * 0.037,
+			0,
+			Math.PI * 2,
+		);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(
+			avatarX,
+			centerY + bubbleHeight * 0.055,
+			bubbleHeight * 0.065,
+			Math.PI,
+			0,
+		);
+		ctx.fill();
+		ctx.restore();
+		drawTextLine({
+			ctx,
+			text: label,
+			x: x + bubbleWidth * 0.08,
+			y: y + bubbleHeight * 0.38,
+			maxWidth: bubbleWidth * 0.84,
+			size: Math.max(20, bubbleHeight * 0.17),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 750,
+			align: "left",
+			motion: { ...textMotion, order: 0, total: 2 },
+		});
+		drawTextLine({
+			ctx,
+			text: secondary,
+			x: x + bubbleWidth * 0.08,
+			y: y + bubbleHeight * 0.68,
+			maxWidth: bubbleWidth * 0.84,
+			size: Math.max(15, bubbleHeight * 0.12),
+			color: withAlpha({ color: foreground, alpha: 0.58 }),
+			fontFamily: secondaryFontFamily,
+			weight: 550,
+			align: "left",
+			motion: { ...textMotion, order: 1, total: 2 },
+		});
+		return;
+	}
+
+	if (template === "minimal-note") {
+		const cardWidth = width * 0.54;
+		const cardHeight = height * 0.46;
+		const x = centerX - cardWidth / 2;
+		const y = centerY - cardHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: cardWidth,
+			surfaceHeight: cardHeight,
+			radius: cardHeight * 0.08,
+		});
+		drawTextLine({
+			ctx,
+			text: label,
+			x: x + cardWidth * 0.1,
+			y: y + cardHeight * 0.18,
+			maxWidth: cardWidth * 0.78,
+			size: Math.max(22, cardHeight * 0.12),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 800,
+			align: "left",
+			motion: { ...textMotion, order: 0, total: items.length + 1 },
+		});
+		items.slice(0, 4).forEach((item, index) => {
+			const rowProgress = clampValue({
+				value: visibleProgress * (items.length + 1) - index - 1,
+				min: 0,
+				max: 1,
+			});
+			const rowY = y + cardHeight * (0.38 + index * 0.14);
+			ctx.save();
+			ctx.globalAlpha *= rowProgress;
+			ctx.strokeStyle = withAlpha({ color: foreground, alpha: 0.3 });
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.arc(x + cardWidth * 0.12, rowY, cardHeight * 0.018, 0, Math.PI * 2);
+			ctx.stroke();
+			ctx.restore();
+			drawTextLine({
+				ctx,
+				text: item,
+				x: x + cardWidth * 0.18,
+				y: rowY,
+				maxWidth: cardWidth * 0.7,
+				size: Math.max(15, cardHeight * 0.075),
+				color: withAlpha({ color: foreground, alpha: 0.76 }),
+				fontFamily: itemsFontFamily,
+				weight: 550,
+				align: "left",
+				motion: {
+					...textMotion,
+					order: index + 1,
+					total: items.length + 1,
+				},
+			});
+		});
+		return;
+	}
+
+	if (template === "folder-pill") {
+		const pillWidth = width * 0.5;
+		const pillHeight = height * 0.18;
+		const x = centerX - pillWidth / 2;
+		const y = centerY - pillHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: pillWidth,
+			surfaceHeight: pillHeight,
+			radius: pillHeight * 0.28,
+		});
+		const iconX = x + pillWidth * 0.09;
+		const iconY = y + pillHeight * 0.28;
+		ctx.save();
+		ctx.fillStyle = accent;
+		ctx.shadowColor = withAlpha({ color: accent, alpha: 0.42 });
+		ctx.shadowBlur = 10;
+		ctx.fill(
+			roundRect({
+				x: iconX,
+				y: iconY,
+				width: pillWidth * 0.14,
+				height: pillHeight * 0.44,
+				radius: pillHeight * 0.06,
+			}),
+		);
+		ctx.fillRect(
+			iconX + pillWidth * 0.018,
+			iconY - pillHeight * 0.08,
+			pillWidth * 0.065,
+			pillHeight * 0.12,
+		);
+		ctx.restore();
+		drawTextLine({
+			ctx,
+			text: label,
+			x: x + pillWidth * 0.29,
+			y: centerY - pillHeight * 0.06,
+			maxWidth: pillWidth * 0.62,
+			size: Math.max(19, pillHeight * 0.18),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 750,
+			align: "left",
+			motion: { ...textMotion, order: 0, total: 2 },
+		});
+		drawTextLine({
+			ctx,
+			text: secondary,
+			x: x + pillWidth * 0.29,
+			y: centerY + pillHeight * 0.17,
+			maxWidth: pillWidth * 0.62,
+			size: Math.max(13, pillHeight * 0.11),
+			color: withAlpha({ color: foreground, alpha: 0.48 }),
+			fontFamily: secondaryFontFamily,
+			weight: 550,
+			align: "left",
+			motion: { ...textMotion, order: 1, total: 2 },
+		});
+		return;
+	}
+
+	if (template === "profile-stack") {
+		const visibleCount = Math.max(2, Math.min(5, Math.round(count)));
+		const radius = Math.min(width, height) * 0.075;
+		const spacing = radius * 1.25;
+		const startX = centerX - (spacing * (visibleCount - 1)) / 2;
+		for (let index = 0; index < visibleCount; index++) {
+			const itemProgress = clampValue({
+				value: visibleProgress * visibleCount - index,
+				min: 0,
+				max: 1,
+			});
+			ctx.save();
+			ctx.globalAlpha *= itemProgress;
+			ctx.translate(
+				startX + spacing * index,
+				centerY - (1 - itemProgress) * radius,
+			);
+			ctx.fillStyle = index % 2 === 0 ? foreground : accent;
+			ctx.strokeStyle = background;
+			ctx.lineWidth = radius * 0.14;
+			ctx.beginPath();
+			ctx.arc(0, 0, radius, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.stroke();
+			ctx.fillStyle = background;
+			ctx.beginPath();
+			ctx.arc(0, -radius * 0.18, radius * 0.24, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(0, radius * 0.38, radius * 0.44, Math.PI, 0);
+			ctx.fill();
+			ctx.restore();
+		}
+		drawCenteredText({
+			ctx,
+			text: label,
+			x: centerX,
+			y: centerY + radius * 1.7,
+			maxWidth: width * 0.5,
+			size: Math.max(18, radius * 0.42),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 700,
+			motion: textMotion,
+		});
+		return;
+	}
+
+	if (template === "app-notification") {
+		const pillWidth = width * 0.62;
+		const pillHeight = height * 0.18;
+		const x = centerX - pillWidth / 2;
+		const y = centerY - pillHeight / 2;
+		drawSurface({
+			x,
+			y,
+			surfaceWidth: pillWidth,
+			surfaceHeight: pillHeight,
+			radius: pillHeight * 0.24,
+		});
+		const iconSize = pillHeight * 0.55;
+		const iconX = x + pillWidth * 0.05;
+		const iconY = centerY - iconSize / 2;
+		ctx.save();
+		ctx.fillStyle = accent;
+		ctx.fill(
+			roundRect({
+				x: iconX,
+				y: iconY,
+				width: iconSize,
+				height: iconSize,
+				radius: iconSize * 0.24,
+			}),
+		);
+		ctx.fillStyle = foreground;
+		setCanvasFont({
+			ctx,
+			weight: 850,
+			size: iconSize * 0.45,
+			fontFamily: labelFontFamily,
+		});
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillText(
+			label.slice(0, 1).toUpperCase(),
+			iconX + iconSize / 2,
+			centerY,
+		);
+		ctx.restore();
+		drawTextLine({
+			ctx,
+			text: label,
+			x: x + pillWidth * 0.23,
+			y: y + pillHeight * 0.36,
+			maxWidth: pillWidth * 0.68,
+			size: Math.max(17, pillHeight * 0.15),
+			color: foreground,
+			fontFamily: labelFontFamily,
+			weight: 750,
+			align: "left",
+			motion: { ...textMotion, order: 0, total: 2 },
+		});
+		drawTextLine({
+			ctx,
+			text: secondary,
+			x: x + pillWidth * 0.23,
+			y: y + pillHeight * 0.68,
+			maxWidth: pillWidth * 0.68,
+			size: Math.max(13, pillHeight * 0.11),
+			color: withAlpha({ color: foreground, alpha: 0.56 }),
+			fontFamily: secondaryFontFamily,
+			weight: 550,
+			align: "left",
+			motion: { ...textMotion, order: 1, total: 2 },
+		});
+		if (eventProgress > 0) {
+			ctx.save();
+			ctx.globalAlpha *= 1 - eventProgress * 0.35;
+			ctx.fillStyle = accent;
+			ctx.shadowColor = accent;
+			ctx.shadowBlur = 14;
+			ctx.beginPath();
+			ctx.arc(
+				x + pillWidth * 0.94,
+				y + pillHeight * 0.22,
+				pillHeight * (0.035 + eventProgress * 0.02),
+				0,
+				Math.PI * 2,
+			);
+			ctx.fill();
+			ctx.restore();
+		}
+	}
 }
 
 function drawBatteryDrain({
@@ -4163,6 +4838,13 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 				max: 200,
 			}) / 100;
 		const eventAt = Number(params.eventAt ?? 55);
+		const eventTransitionDuration = clampValue({
+			value: Number(params.eventTransitionDuration ?? 0),
+			min: 0,
+			max: 50,
+		});
+		const eventBackgroundEnabled = params.eventBackgroundEnabled === true;
+		const eventBackground = String(params.eventBackground ?? "#D92D20");
 		const itemStartPointValue = String(params.itemStartPoints ?? "");
 		const itemEndPointValue = String(params.itemEndPoints ?? "");
 		const listRevealMode = String(params.listRevealMode ?? "sequential");
@@ -4225,7 +4907,7 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 			max: 72,
 		});
 		const accent = String(params.accent ?? "#00e5ff");
-		const background = String(params.background ?? "#111827");
+		let background = String(params.background ?? "#111827");
 		const foreground = String(params.foreground ?? "#ffffff");
 		const progress = clampValue({
 			value: Number(params.progress ?? 64),
@@ -4245,7 +4927,11 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 			clampValue({ value: Number(params.checked ?? 2), min: 0, max: 10 }),
 		);
 		const count = Math.round(
-			clampValue({ value: Number(params.count ?? 3), min: 0, max: 9999 }),
+			clampValue({
+				value: Number(params.count ?? 3),
+				min: 0,
+				max: 1_000_000,
+			}),
 		);
 		const intensity =
 			clampValue({ value: Number(params.intensity ?? 60), min: 0, max: 100 }) /
@@ -4256,10 +4942,18 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 			animationInEnd,
 			animationOutStart,
 			eventAt,
+			eventTransitionDuration,
 			textRevealMode,
 			textTransitionIn,
 			textDirection,
 		});
+		if (eventBackgroundEnabled) {
+			background = mixHexColors({
+				from: background,
+				to: eventBackground,
+				progress: timing.eventProgress,
+			});
+		}
 		const visibleItemCount = Math.min(items.length, 6);
 		const itemStartPoints = parsePercentPoints({
 			value: itemStartPointValue,
@@ -4289,6 +4983,37 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 			accent,
 			render: () => {
 				switch (template) {
+					case "minimal-note":
+					case "search-bar":
+					case "goal-slider":
+					case "metric-pill":
+					case "avatar-message-left":
+					case "avatar-message-right":
+					case "folder-pill":
+					case "profile-stack":
+					case "app-notification":
+						drawMinimalProductUi({
+							ctx,
+							width,
+							height,
+							template,
+							label,
+							secondary,
+							items,
+							labelFontFamily,
+							secondaryFontFamily,
+							itemsFontFamily,
+							accent,
+							background,
+							foreground,
+							progress,
+							count,
+							textMotion: timing.textMotion,
+							motionProgress: timing.contentProgress,
+							eventProgress: timing.eventProgress,
+							outProgress: timing.outProgress,
+						});
+						break;
 					case "click-button":
 					case "subscribe-button":
 						drawButton({
@@ -4410,6 +5135,7 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 							checkbox: false,
 							textMotion: timing.textMotion,
 							animationIn,
+							animationOut,
 							inProgress: timing.inProgress,
 							outProgress: timing.outProgress,
 							eventProgress: timing.eventProgress,
@@ -4445,6 +5171,7 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 							checkbox: true,
 							textMotion: timing.textMotion,
 							animationIn,
+							animationOut,
 							inProgress: timing.inProgress,
 							outProgress: timing.outProgress,
 							eventProgress: timing.eventProgress,
@@ -4480,6 +5207,7 @@ export const uiElementGraphicDefinition: GraphicDefinition = {
 							checkbox: false,
 							textMotion: timing.textMotion,
 							animationIn,
+							animationOut,
 							inProgress: timing.inProgress,
 							outProgress: timing.outProgress,
 							eventProgress: timing.eventProgress,

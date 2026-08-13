@@ -19,6 +19,8 @@ function withMaskId({ mask, id }: { mask: MaskWithoutId; id: string }): Mask {
 			return { ...mask, id };
 		case "rectangle":
 			return { ...mask, id };
+		case "rounded-rectangle":
+			return { ...mask, id };
 		case "ellipse":
 			return { ...mask, id };
 		case "heart":

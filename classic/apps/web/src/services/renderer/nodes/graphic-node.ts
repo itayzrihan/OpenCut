@@ -1,6 +1,7 @@
 import { createCanvasSurface } from "../canvas-utils";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
+	getGraphicLayoutSize,
 	getGraphicDefinition,
 	registerDefaultGraphics,
 } from "@/graphics";
@@ -43,15 +44,43 @@ export class GraphicNode extends VisualNode<
 		const definition = getGraphicDefinition({
 			definitionId: this.params.definitionId,
 		});
+		const params = resolvedParams ?? this.params.params;
 		if (!definition.sourceSize) {
 			return {
 				width: DEFAULT_GRAPHIC_SOURCE_SIZE,
 				height: DEFAULT_GRAPHIC_SOURCE_SIZE,
 			};
 		}
-		return definition.sourceSize({
-			params: resolvedParams ?? this.params.params,
-		});
+		const sourceSize = definition.sourceSize({ params });
+		if (
+			definition.resizeBehavior !== "dimensions" ||
+			getGraphicLayoutSize({
+				definitionId: this.params.definitionId,
+				params,
+			})
+		) {
+			return sourceSize;
+		}
+
+		// Legacy procedural backgrounds stored their visual size as transform
+		// scale. Render a denser source immediately so old projects stop looking
+		// blurry before the first handle resize bakes that scale into dimensions.
+		return {
+			width: Math.max(
+				1,
+				Math.round(
+					sourceSize.width *
+						Math.max(1, Math.abs(this.params.transform.scaleX)),
+				),
+			),
+			height: Math.max(
+				1,
+				Math.round(
+					sourceSize.height *
+						Math.max(1, Math.abs(this.params.transform.scaleY)),
+				),
+			),
+		};
 	}
 
 	getSource({

@@ -5,13 +5,19 @@
  * instructions on demand through the skills.list / skills.load tools.
  */
 
+import {
+	PREMIUM_VIDEO_EDITOR_RUNTIME_RESOURCES,
+	PREMIUM_VIDEO_EDITOR_RUNTIME_SKILL,
+} from "./paper-grid-editorial/runtime.generated";
+
 export interface AiSkill {
 	name: string;
 	description: string;
 	content: string;
+	resourceNames?: readonly string[];
 }
 
-export const AI_SKILLS: AiSkill[] = [
+export const AI_SKILLS: readonly AiSkill[] = [
 	{
 		name: "creative-direction",
 		description:
@@ -228,6 +234,7 @@ export const AI_SKILLS: AiSkill[] = [
 			"- Reserve the last 10-15% of the piece for the CTA/outro.",
 		].join("\n"),
 	},
+	PREMIUM_VIDEO_EDITOR_RUNTIME_SKILL,
 ];
 
 export function listAiSkills(): Array<Pick<AiSkill, "name" | "description">> {
@@ -237,4 +244,40 @@ export function listAiSkills(): Array<Pick<AiSkill, "name" | "description">> {
 export function loadAiSkill({ name }: { name: string }): AiSkill | null {
 	const normalized = name.trim().toLowerCase().replace(/^\//, "");
 	return AI_SKILLS.find((skill) => skill.name === normalized) ?? null;
+}
+
+export function loadAiSkillResource({
+	name,
+	resource,
+}: {
+	name: string;
+	resource: string;
+}): { name: string; resource: string; content: string } | null {
+	const skill = loadAiSkill({ name });
+	if (!skill?.resourceNames) {
+		return null;
+	}
+
+	const normalizedResource = resource
+		.trim()
+		.replaceAll("\\", "/")
+		.replace(/^\/+/, "");
+	if (
+		normalizedResource.includes("../") ||
+		normalizedResource === ".." ||
+		!skill.resourceNames.includes(normalizedResource)
+	) {
+		return null;
+	}
+
+	const content = PREMIUM_VIDEO_EDITOR_RUNTIME_RESOURCES[normalizedResource];
+	if (!content) {
+		return null;
+	}
+
+	return {
+		name: skill.name,
+		resource: normalizedResource,
+		content,
+	};
 }

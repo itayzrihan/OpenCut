@@ -51,11 +51,17 @@ async function serve(request: Request, includeBody: boolean) {
 	}
 	const start = range?.start ?? 0;
 	const end = range?.end ?? file.stat.size - 1;
+	const entityTag = `"${file.stat.size}-${Math.trunc(file.stat.mtimeMs)}"`;
 	const headers = new Headers({
 		"Accept-Ranges": "bytes",
-		"Cache-Control": "private, no-cache",
+		// Media records are addressed by project + media id and are immutable
+		// during normal editing. Let the browser reuse overlapping byte ranges
+		// across video, audio and waveform decoders instead of routing every read
+		// back through the Next server.
+		"Cache-Control": "private, max-age=3600",
 		"Content-Length": String(Math.max(0, end - start + 1)),
 		"Content-Type": file.record.mimeType || "application/octet-stream",
+		ETag: entityTag,
 		"Last-Modified": new Date(file.stat.mtimeMs).toUTCString(),
 	});
 	if (range)

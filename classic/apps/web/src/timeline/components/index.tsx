@@ -6,6 +6,7 @@ import {
 	ArrowDownIcon,
 	ArrowUpIcon,
 	MagicWand05Icon,
+	Layers01Icon,
 	MusicNote03Icon,
 	TaskAdd02Icon,
 	TextIcon,
@@ -33,7 +34,7 @@ import {
 	type ReactNode,
 } from "react";
 import { useContainerSize } from "@/hooks/use-container-size";
-import { mediaTime, mediaTimeFromSeconds, type MediaTime } from "@/wasm";
+import { mediaTimeFromSeconds, type MediaTime } from "@/wasm";
 import type { ElementDragView, DropTarget } from "@/timeline";
 import { TimelineTrackContent } from "./timeline-track";
 import { TimelinePlayhead } from "./timeline-playhead";
@@ -41,7 +42,11 @@ import { SelectionBox } from "@/selection/selection-box";
 import { useBoxSelect } from "@/selection/hooks/use-box-select";
 import { SnapIndicator } from "./snap-indicator";
 import type { SnapPoint } from "@/timeline/snapping";
-import type { TimelineTrack } from "@/timeline";
+import type {
+	ParallaxTrackDirection,
+	SceneTracks,
+	TimelineTrack,
+} from "@/timeline";
 import {
 	TIMELINE_SCROLLBAR_SIZE_PX,
 	TIMELINE_CONTENT_TOP_PADDING_PX,
@@ -53,6 +58,7 @@ import { useElementInteraction } from "@/timeline/hooks/element/use-element-inte
 import {
 	canTrackHaveAudio,
 	canTrackBeHidden,
+	findGlobalTimelineGapAtTime,
 	getTimelineZoomMin,
 	getTimelinePaddingPx,
 	getDisplayTracks,
@@ -139,6 +145,15 @@ type TrackLabelTimelineActions = {
 		trackId: string;
 		toIndex: number;
 	}) => void;
+	updateParallaxTrack: ({
+		trackId,
+		direction,
+		speedPercent,
+	}: {
+		trackId: string;
+		direction?: ParallaxTrackDirection;
+		speedPercent?: number;
+	}) => void;
 };
 
 function getTrackLayouts({
@@ -206,6 +221,12 @@ const TRACK_ICONS: Record<TimelineTrack["type"], ReactNode> = {
 		<HugeiconsIcon
 			icon={MagicWand05Icon}
 			className="text-muted-foreground size-4 shrink-0"
+		/>
+	),
+	parallax: (
+		<HugeiconsIcon
+			icon={Layers01Icon}
+			className="size-4 shrink-0 text-cyan-300"
 		/>
 	),
 };
@@ -1272,12 +1293,16 @@ function TimelineTrackRows({
 	isDragOver: boolean;
 	dropTarget: DropTarget | null;
 }) {
-	const [timeline, renderSceneTracks] = useEditorTimelineScenes((e) => [
-		e.timeline,
-		e.timeline.getPreviewTracks() ??
-			e.scenes.getActiveSceneOrNull()?.tracks ??
-			null,
-	]);
+	const [timeline, sceneTracks, renderSceneTracks] = useEditorTimelineScenes(
+		(e) => {
+			const activeTracks = e.scenes.getActiveSceneOrNull()?.tracks ?? null;
+			return [
+				e.timeline,
+				activeTracks,
+				e.timeline.getPreviewTracks() ?? activeTracks,
+			];
+		},
+	);
 	const tracks = useMemo<TimelineTrack[]>(
 		() =>
 			renderSceneTracks ? getDisplayTracks({ tracks: renderSceneTracks }) : [],
@@ -1380,6 +1405,7 @@ function TimelineTrackRows({
 						key={track.id}
 						layout={layout}
 						mainTrackId={mainTrackId}
+						sceneTracks={sceneTracks}
 						zoomLevel={zoomLevel}
 						scrollLeft={scrollLeft}
 						viewportWidth={viewportWidth}
@@ -1411,6 +1437,7 @@ function TimelineTrackRows({
 type TimelineTrackRowProps = {
 	layout: TrackLayout;
 	mainTrackId: string | null;
+	sceneTracks: SceneTracks | null;
 	zoomLevel: number;
 	scrollLeft: number;
 	viewportWidth: number;
@@ -1447,6 +1474,7 @@ type TimelineTrackRowProps = {
 function TimelineTrackRowComponent({
 	layout,
 	mainTrackId,
+	sceneTracks,
 	zoomLevel,
 	scrollLeft,
 	viewportWidth,
@@ -1467,25 +1495,12 @@ function TimelineTrackRowComponent({
 	const { track } = layout;
 	const [contextTime, setContextTime] = useState<MediaTime | null>(null);
 	const clickedGap = useMemo(() => {
-		if (track.id !== mainTrackId || contextTime === null) return null;
-		const elements = [...track.elements].sort(
-			(a, b) => a.startTime - b.startTime,
-		);
-		const previous = elements
-			.filter((element) => element.startTime + element.duration <= contextTime)
-			.at(-1);
-		const next = elements.find((element) => element.startTime >= contextTime);
-		if (!previous || !next) return null;
-		const startTime = mediaTime({
-			ticks: previous.startTime + previous.duration,
+		if (!sceneTracks || contextTime === null) return null;
+		return findGlobalTimelineGapAtTime({
+			tracks: sceneTracks,
+			time: contextTime,
 		});
-		const endTime = next.startTime;
-		return endTime > startTime &&
-			contextTime >= startTime &&
-			contextTime <= endTime
-			? { startTime, endTime }
-			: null;
-	}, [contextTime, mainTrackId, track]);
+	}, [contextTime, sceneTracks]);
 
 	return (
 		<ContextMenu>
@@ -1500,6 +1515,8 @@ function TimelineTrackRowComponent({
 					}}
 					className={cn(
 						"absolute right-0 left-0 transition-colors",
+						track.type === "parallax" &&
+							"border-y border-cyan-400/25 bg-cyan-400/8",
 						isSelected && SELECTED_TRACK_ROW_CLASS,
 						isHovered && "bg-primary/10 ring-1 ring-primary/35",
 					)}
@@ -1528,8 +1545,11 @@ function TimelineTrackRowComponent({
 			</ContextMenuTrigger>
 			<ContextMenuContent className="w-40">
 				{clickedGap && (
-					<ContextMenuItem onClick={() => timeline.closeGap(clickedGap)}>
-						Close gap on all layers
+					<ContextMenuItem
+						icon={<HugeiconsIcon icon={Delete02Icon} />}
+						onClick={() => timeline.closeGap(clickedGap)}
+					>
+						Delete gap
 					</ContextMenuItem>
 				)}
 				<ContextMenuItem
@@ -1590,6 +1610,7 @@ function areTimelineTrackRowPropsEqual({
 	return (
 		previous.layout === next.layout &&
 		previous.mainTrackId === next.mainTrackId &&
+		previous.sceneTracks === next.sceneTracks &&
 		previous.zoomLevel === next.zoomLevel &&
 		previous.scrollLeft === next.scrollLeft &&
 		previous.viewportWidth === next.viewportWidth &&
@@ -1664,6 +1685,9 @@ const TrackLabelRow = memo(function TrackLabelRow({
 				className="flex shrink-0 items-center justify-end gap-2 px-3"
 				style={{ height: `${layout.baseHeight}px` }}
 			>
+				{track.type === "parallax" && (
+					<ParallaxTrackControls track={track} timeline={timeline} />
+				)}
 				{canTrackHaveAudio(track) && (
 					<TrackToggleIcon
 						isOff={track.muted}
@@ -1731,6 +1755,50 @@ const TrackLabelRow = memo(function TrackLabelRow({
 	);
 });
 TrackLabelRow.displayName = "TrackLabelRow";
+
+function ParallaxTrackControls({
+	track,
+	timeline,
+}: {
+	track: Extract<TimelineTrack, { type: "parallax" }>;
+	timeline: TrackLabelTimelineActions;
+}) {
+	return (
+		<div className="mr-auto flex min-w-0 items-center gap-0.5" title="W = with camera, A = against camera. Tracks below inherit this speed percentage.">
+			<button
+				type="button"
+				className="size-6 rounded border border-cyan-400/25 text-[9px] text-cyan-200"
+				onClick={(event) => {
+					event.stopPropagation();
+					timeline.updateParallaxTrack({
+						trackId: track.id,
+						direction:
+							track.direction === "with-camera"
+								? "against-camera"
+								: "with-camera",
+					});
+				}}
+			>
+				{track.direction === "with-camera" ? "W" : "A"}
+			</button>
+			<input
+				type="number"
+				min="0"
+				max="400"
+				step="5"
+				className="h-6 w-8 rounded border bg-background px-0.5 text-[9px] tabular-nums"
+				value={track.speedPercent}
+				onClick={(event) => event.stopPropagation()}
+				onChange={(event) =>
+					timeline.updateParallaxTrack({
+						trackId: track.id,
+						speedPercent: Number(event.target.value),
+					})
+				}
+			/>
+		</div>
+	);
+}
 
 function TrackToggleIcon({
 	isOff,

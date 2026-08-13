@@ -3,18 +3,23 @@
 import {
 	createContext,
 	memo,
+	useCallback,
 	useContext,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
+	useRef,
 	useState,
 	type ComponentProps,
 	type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
 	useEditor,
 	useEditorMediaAsset,
 	useEditorSelection,
 	useEditorMedia,
+	useEditorTimelineScenes,
 } from "@/editor/use-editor";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 import { AudioWaveform, WAVEFORM_GAIN_SAMPLE_COUNT } from "./audio-waveform";
@@ -116,6 +121,17 @@ import type { MediaAsset } from "@/media/types";
 import { UI_ELEMENT_GRAPHIC_ID } from "@/graphics/definitions/ui-element";
 import { UiElementTimelineMarkers } from "@/ui-elements/components/timeline-markers";
 import { useTimelineStore } from "@/timeline/timeline-store";
+import { CopyPlus, Import, Repeat2, X } from "lucide-react";
+import { isParallaxStoryElement } from "@/parallax-story-teller/model";
+import { InsertSelectionIntoCanvasCommand } from "@/commands/parallax/insert-selection-into-canvas";
+import type { InsertSelectionMode } from "@/parallax-story-teller/insert-selection";
+import { toast } from "sonner";
+import {
+	getAnimationsWithoutAppliedLoop,
+	getAppliedLoopKeyframes,
+	getLoopPreset,
+	groupLoopKeyframesByProperty,
+} from "@/loops";
 
 const KEYFRAME_INDICATOR_MIN_WIDTH_PX = 40;
 const ELEMENT_RING_WIDTH_PX = 1.5;
@@ -295,9 +311,14 @@ function TimelineElementComponent({
 	const expandedRows = useMemo(
 		() =>
 			isExpanded
-				? getExpandedRows({ animations: element.animations })
+				? getExpandedRows({
+						animations: getAnimationsWithoutAppliedLoop({
+							animations: element.animations,
+							loop: element.loop,
+						}),
+					})
 				: EMPTY_EXPANDED_ROWS,
-		[isExpanded, element.animations],
+		[isExpanded, element.animations, element.loop],
 	);
 	const hasExpandedRows = expandedRows.length > 0;
 	const expansionHeight = getExpansionHeight({ rows: expandedRows });
@@ -310,6 +331,8 @@ function TimelineElementComponent({
 				<ContextMenuTrigger asChild>
 					<div
 						className="absolute top-0 select-none"
+						data-timeline-element-root="true"
+						data-timeline-element-id={element.id}
 						style={{
 							left: `${elementLeft}px`,
 							width: `${elementWidth}px`,
@@ -429,8 +452,14 @@ function TimelineElementKeyframeSurface({
 		getVisualOffsetPx,
 	} = useKeyframeDrag({ zoomLevel, element, displayedStartTime });
 	const elementKeyframes = useMemo(
-		() => getElementKeyframes({ animations: element.animations }),
-		[element.animations],
+		() =>
+			getElementKeyframes({
+				animations: getAnimationsWithoutAppliedLoop({
+					animations: element.animations,
+					loop: element.loop,
+				}),
+			}),
+		[element.animations, element.loop],
 	);
 	const keyframeIndicators = useMemo(
 		() =>
@@ -607,6 +636,9 @@ function TimelineElementMenuContent({
 	const selectedElements = useEditorSelection((e) =>
 		e.selection.getSelectedElements(),
 	);
+	const activeScene = useEditorTimelineScenes((e) =>
+		e.scenes.getActiveSceneOrNull(),
+	);
 	const requestRevealMedia = useAssetsPanelStore((s) => s.requestRevealMedia);
 	const toggleElementExpanded = useTimelineStore(
 		(s) => s.toggleElementExpanded,
@@ -631,6 +663,45 @@ function TimelineElementMenuContent({
 			)
 		);
 	}, [editor, selectedElements]);
+	const parallaxCanvasTarget = useMemo(() => {
+		if (!activeScene || activeScene.parallax || selectedElements.length < 2) {
+			return null;
+		}
+		const selectedTimelineElements = editor.timeline.getElementsWithTracks({
+			elements: selectedElements,
+		});
+		const parallaxEntries = selectedTimelineElements.filter(
+			(entry) =>
+				entry.element.type === "effect" &&
+				isParallaxStoryElement(entry.element),
+		);
+		if (
+			parallaxEntries.length !== 1 ||
+			selectedTimelineElements.length !== selectedElements.length
+		) {
+			return null;
+		}
+		return parallaxEntries[0] ?? null;
+	}, [activeScene, editor, selectedElements]);
+	const handleInsertIntoCanvas = (mode: InsertSelectionMode) => {
+		if (!activeScene || !parallaxCanvasTarget) return;
+		editor.command.execute({
+			command: new InsertSelectionIntoCanvasCommand({
+				parentSceneId: activeScene.id,
+				parallaxElementId: parallaxCanvasTarget.element.id,
+				selectedElements,
+				mode,
+			}),
+		});
+		toast.success(
+			mode === "move"
+				? "Selection moved into Parallax Canvas"
+				: "Selection duplicated into Parallax Canvas",
+			{
+				description: "The canvas duration was expanded when needed.",
+			},
+		);
+	};
 	const hasAudio = mediaSupportsAudio({ media: mediaAsset });
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
 	const canToggleCurrentSourceAudio =
@@ -642,8 +713,14 @@ function TimelineElementMenuContent({
 			? getSourceAudioActionLabel({ element })
 			: "Extract audio";
 	const hasKeyframes = useMemo(
-		() => getElementKeyframes({ animations: element.animations }).length > 0,
-		[element.animations],
+		() =>
+			getElementKeyframes({
+				animations: getAnimationsWithoutAppliedLoop({
+					animations: element.animations,
+					loop: element.loop,
+				}),
+			}).length > 0,
+		[element.animations, element.loop],
 	);
 
 	return (
@@ -678,6 +755,25 @@ function TimelineElementMenuContent({
 						Connect as multiline
 					</ActionMenuItem>
 				</>
+			)}
+			{parallaxCanvasTarget && isCurrentElementSelected && (
+				<ContextMenuSub>
+					<ContextMenuSubTrigger>Insert to Canvas</ContextMenuSubTrigger>
+					<ContextMenuSubContent className="w-56">
+						<ContextMenuItem
+							icon={<Import className="size-4" />}
+							onClick={() => handleInsertIntoCanvas("move")}
+						>
+							Move into Canvas
+						</ContextMenuItem>
+						<ContextMenuItem
+							icon={<CopyPlus className="size-4" />}
+							onClick={() => handleInsertIntoCanvas("duplicate")}
+						>
+							Duplicate into Canvas
+						</ContextMenuItem>
+					</ContextMenuSubContent>
+				</ContextMenuSub>
 			)}
 			{canElementHaveAudio(element) && hasAudio && (
 				<MuteMenuItem
@@ -891,6 +987,12 @@ function ElementInner({
 										isSelected={isSelected}
 									/>
 								)}
+							{element.loop && (
+								<LoopTimelineBadge
+									element={element}
+									elementWidth={elementWidth}
+								/>
+							)}
 						</div>
 						{expandedContent}
 					</div>
@@ -915,6 +1017,222 @@ function ElementInner({
 			)}
 		</div>
 	);
+}
+
+type LoopOverlayPosition = {
+	top: number;
+	left: number;
+	width: number;
+};
+
+function LoopTimelineBadge({
+	element,
+	elementWidth,
+}: {
+	element: TimelineElementType;
+	elementWidth: number;
+}) {
+	const editor = useEditor();
+	const buttonRef = useRef<HTMLButtonElement>(null);
+	const panelRef = useRef<HTMLDivElement>(null);
+	const [isOpen, setIsOpen] = useState(false);
+	const [position, setPosition] = useState<LoopOverlayPosition | null>(null);
+	const loop = element.loop;
+	const preset = loop ? getLoopPreset({ id: loop.presetId }) : null;
+	const loopKeyframes = useMemo(
+		() =>
+			getAppliedLoopKeyframes({
+				animations: element.animations,
+				loop,
+			}),
+		[element.animations, loop],
+	);
+	const lanes = useMemo(
+		() => groupLoopKeyframesByProperty({ keyframes: loopKeyframes }),
+		[loopKeyframes],
+	);
+	const updatePosition = useCallback(() => {
+		const anchor = buttonRef.current?.closest<HTMLElement>(
+			'[data-timeline-element-root="true"]',
+		);
+		if (!anchor) return;
+		const rect = anchor.getBoundingClientRect();
+		setPosition((current) => {
+			const next = {
+				top: rect.top - 6,
+				left: rect.left,
+				width: rect.width,
+			};
+			return current &&
+				Math.abs(current.top - next.top) < 0.1 &&
+				Math.abs(current.left - next.left) < 0.1 &&
+				Math.abs(current.width - next.width) < 0.1
+				? current
+				: next;
+		});
+	}, []);
+
+	useLayoutEffect(() => {
+		if (!isOpen) return;
+		const anchor = buttonRef.current?.closest<HTMLElement>(
+			'[data-timeline-element-root="true"]',
+		);
+		if (!anchor) return;
+		let animationFrame = 0;
+		const trackAnchor = () => {
+			updatePosition();
+			animationFrame = requestAnimationFrame(trackAnchor);
+		};
+		trackAnchor();
+		return () => {
+			cancelAnimationFrame(animationFrame);
+		};
+	}, [isOpen, updatePosition]);
+
+	useEffect(() => {
+		if (!isOpen) return;
+		const handlePointerDown = (event: PointerEvent) => {
+			const target = event.target;
+			if (!(target instanceof Node)) return;
+			if (
+				buttonRef.current?.contains(target) ||
+				panelRef.current?.contains(target)
+			) {
+				return;
+			}
+			setIsOpen(false);
+		};
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") setIsOpen(false);
+		};
+		document.addEventListener("pointerdown", handlePointerDown, true);
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown, true);
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isOpen]);
+
+	if (!loop || !preset) return null;
+
+	return (
+		<>
+			<button
+				ref={buttonRef}
+				type="button"
+				className={cn(
+					"pointer-events-auto absolute right-1 top-1 z-30 flex h-5 max-w-[calc(100%-8px)] items-center gap-1 overflow-hidden rounded border border-violet-200/40 bg-violet-950/85 px-1.5 text-[9px] font-semibold leading-none text-violet-100 shadow-sm backdrop-blur-sm",
+					isOpen && "border-violet-200/80 bg-violet-800/95",
+				)}
+				onMouseDown={(event) => event.stopPropagation()}
+				onClick={(event) => {
+					event.stopPropagation();
+					setIsOpen((current) => !current);
+				}}
+				aria-label={`${isOpen ? "Close" : "Open"} ${preset.label} loop keyframes`}
+				aria-expanded={isOpen}
+			>
+				<Repeat2 className="size-2.5 shrink-0" />
+				{elementWidth >= 70 && <span className="truncate">Loop</span>}
+			</button>
+			{isOpen &&
+				position &&
+				createPortal(
+					<div
+						ref={panelRef}
+						className="fixed z-[120] overflow-hidden rounded-md border border-violet-300/30 bg-popover/95 text-popover-foreground shadow-2xl backdrop-blur-md"
+						style={{
+							top: position.top,
+							left: position.left,
+							width: position.width,
+							transform: "translateY(-100%)",
+						}}
+						role="dialog"
+						aria-label={`${preset.label} loop keyframes`}
+					>
+						<div className="flex h-7 min-w-0 items-center gap-1.5 border-b border-violet-300/15 bg-violet-500/10 px-2">
+							<Repeat2 className="size-3 shrink-0 text-violet-300" />
+							<span className="min-w-0 flex-1 truncate text-[10px] font-semibold">
+								{preset.label}
+							</span>
+							<span className="shrink-0 text-[9px] tabular-nums text-muted-foreground">
+								{loopKeyframes.length}
+							</span>
+							<button
+								type="button"
+								className="grid size-4 shrink-0 place-items-center rounded hover:bg-muted"
+								onClick={() => setIsOpen(false)}
+								aria-label="Close loop keyframes"
+							>
+								<X className="size-2.5" />
+							</button>
+						</div>
+						<div className="max-h-44 overflow-y-auto py-1">
+							{lanes.map((lane) => (
+								<div
+									key={lane.propertyPath}
+									className="relative h-6 overflow-hidden border-b border-border/35 last:border-b-0"
+								>
+									<span className="pointer-events-none absolute left-1 top-0.5 z-10 max-w-[45%] truncate rounded bg-background/75 px-1 text-[8px] text-muted-foreground">
+										{formatLoopPropertyLabel(lane.propertyPath)}
+									</span>
+									<div className="absolute inset-x-1 bottom-1 top-1 rounded bg-muted/35">
+										{lane.keyframes.map((keyframe) => {
+											const percent = Math.max(
+												0,
+												Math.min(100, (keyframe.time / element.duration) * 100),
+											);
+											return (
+												<button
+													key={keyframe.id}
+													type="button"
+													className="absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-violet-100 bg-violet-400 hover:z-20 hover:scale-150"
+													style={{ left: `${percent}%` }}
+													title={`${formatLoopPropertyLabel(lane.propertyPath)}: ${String(keyframe.value)}`}
+													onClick={() =>
+														editor.playback.seek({
+															time: addMediaTime({
+																a: element.startTime,
+																b: keyframe.time,
+															}),
+														})
+													}
+												/>
+											);
+										})}
+									</div>
+								</div>
+							))}
+							{lanes.length === 0 && (
+								<p className="px-2 py-3 text-center text-[10px] text-muted-foreground">
+									No generated keyframes
+								</p>
+							)}
+						</div>
+					</div>,
+					document.body,
+				)}
+		</>
+	);
+}
+
+function formatLoopPropertyLabel(propertyPath: string) {
+	switch (propertyPath) {
+		case "transform.positionX":
+			return "Position X";
+		case "transform.positionY":
+			return "Position Y";
+		case "transform.scaleX":
+			return "Scale X";
+		case "transform.scaleY":
+			return "Scale Y";
+		case "transform.rotate":
+			return "Rotation";
+		case "opacity":
+			return "Opacity";
+		default:
+			return propertyPath;
+	}
 }
 
 function TransitionSegments({

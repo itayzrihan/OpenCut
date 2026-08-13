@@ -15,6 +15,7 @@ import {
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
 import { createReplacementProjectIfMissing } from "@/editor/project-loading";
+import { ClassicMcpBridge } from "@/mcp/classic-mcp-bridge";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -172,5 +173,5 @@ function EditorRuntimeBindings() {
 
 	useEditorActions();
 	useKeybindingsListener();
-	return null;
+	return <ClassicMcpBridge editor={editor} />;
 }

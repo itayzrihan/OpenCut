@@ -24,6 +24,7 @@ export function HandleButton({
 	cursor,
 	hitAreaSize,
 	className,
+	title,
 	onPointerDown,
 	onPointerMove,
 	onPointerUp,
@@ -33,6 +34,7 @@ export function HandleButton({
 	cursor?: string;
 	hitAreaSize: number;
 	className?: string;
+	title?: string;
 	onPointerDown: (event: React.PointerEvent) => void;
 	onPointerMove: (event: React.PointerEvent) => void;
 	onPointerUp: (event: React.PointerEvent) => void;
@@ -41,6 +43,7 @@ export function HandleButton({
 	return (
 		<button
 			type="button"
+			title={title}
 			className={cn(
 				"absolute flex items-center justify-center outline-none",
 				className,
@@ -175,12 +178,14 @@ export function EdgeHandle({
 export function IconHandle({
 	icon,
 	screen,
+	title,
 	onPointerDown,
 	onPointerMove,
 	onPointerUp,
 }: {
 	icon: IconSvgElement;
 	screen: { x: number; y: number };
+	title?: string;
 	onPointerDown: (event: React.PointerEvent) => void;
 	onPointerMove: (event: React.PointerEvent) => void;
 	onPointerUp: (event: React.PointerEvent) => void;
@@ -188,6 +193,7 @@ export function IconHandle({
 	return (
 		<HandleButton
 			screen={screen}
+			title={title}
 			hitAreaSize={ICON_HANDLE_RADIUS * 2}
 			className="rounded-full bg-white text-black shadow-sm"
 			onPointerDown={onPointerDown}

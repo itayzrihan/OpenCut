@@ -220,6 +220,20 @@ function resolveTextEffectParamsAtTime({
 }): TextLayoutParams {
 	return {
 		...text,
+		bottomFadeOut: resolveNumberAtTime({
+			baseValue: text.bottomFadeOut ?? DEFAULTS.text.bottomFadeOut,
+			animations: element.animations,
+			propertyPath: "bottomFadeOut",
+			localTime,
+		}),
+		bottomFadeOutEndOpacity: resolveNumberAtTime({
+			baseValue:
+				text.bottomFadeOutEndOpacity ??
+				DEFAULTS.text.bottomFadeOutEndOpacity,
+			animations: element.animations,
+			propertyPath: "bottomFadeOutEndOpacity",
+			localTime,
+		}),
 		strokeWidth: resolveNumberAtTime({
 			baseValue: text.strokeWidth ?? 0,
 			animations: element.animations,
@@ -532,11 +546,17 @@ function measureWordRunsLayout({
 				shadowColor: word.style.shadowColor ?? word.style.color ?? "#ffffff",
 				shadowOffsetX: word.style.shadowOffsetX ?? 0,
 				shadowOffsetY: word.style.shadowOffsetY ?? 0,
+				windowShadow: word.style.windowShadow ?? false,
 				strokeWidth: word.style.strokeWidth ?? 0,
 				strokeColor: word.style.strokeColor ?? "#000000",
 				offsetX: word.style.offsetX ?? 0,
 				offsetY: word.style.offsetY ?? 0,
 				blendMode: word.style.blendMode ?? "normal",
+				bottomFadeOut: word.style.bottomFadeOut ?? DEFAULTS.text.bottomFadeOut,
+				bottomFadeOutEndOpacity:
+					word.style.bottomFadeOutEndOpacity ??
+					text.bottomFadeOutEndOpacity ??
+					DEFAULTS.text.bottomFadeOutEndOpacity,
 				background: {
 					enabled: word.style.backgroundEnabled ?? false,
 					color: word.style.backgroundColor ?? "#000000",
@@ -563,23 +583,7 @@ function measureWordRunsLayout({
 				glitchyProgress: word.glitchyProgress,
 				lightningActive: word.lightningActive,
 				glitchyActive: word.glitchyActive,
-				gradient:
-					element.params.textFillMode === "gradient"
-						? {
-								startColor:
-									typeof element.params.gradientStartColor === "string"
-										? element.params.gradientStartColor
-										: "#ffffff",
-								endColor:
-									typeof element.params.gradientEndColor === "string"
-										? element.params.gradientEndColor
-										: "#7c3aed",
-								angle:
-									typeof element.params.gradientAngle === "number"
-										? element.params.gradientAngle
-										: 0,
-							}
-						: undefined,
+				gradient: text.gradient,
 			};
 		});
 		wordLines.push({ y, width, words });
@@ -1097,6 +1101,23 @@ export function buildTextLayoutParamsFromElement({
 			value: element.params.textAlign,
 			fallback: "center",
 		}),
+		gradient:
+			element.params.textFillMode === "gradient"
+				? {
+						startColor:
+							typeof element.params.gradientStartColor === "string"
+								? element.params.gradientStartColor
+								: "#ffffff",
+						endColor:
+							typeof element.params.gradientEndColor === "string"
+								? element.params.gradientEndColor
+								: "#7c3aed",
+						angle:
+							typeof element.params.gradientAngle === "number"
+								? element.params.gradientAngle
+								: 0,
+					}
+				: undefined,
 		textDecoration: readTextDecoration({
 			value: element.params.textDecoration,
 			fallback: "none",
@@ -1110,6 +1131,16 @@ export function buildTextLayoutParamsFromElement({
 			params: element.params,
 			key: "lineHeight",
 			fallback: DEFAULTS.text.lineHeight,
+		}),
+		bottomFadeOut: readNumberParam({
+			params: element.params,
+			key: "bottomFadeOut",
+			fallback: DEFAULTS.text.bottomFadeOut,
+		}),
+		bottomFadeOutEndOpacity: readNumberParam({
+			params: element.params,
+			key: "bottomFadeOutEndOpacity",
+			fallback: DEFAULTS.text.bottomFadeOutEndOpacity,
 		}),
 		strokeWidth: readBooleanParam({
 			params: element.params,
@@ -1165,6 +1196,11 @@ export function buildTextLayoutParamsFromElement({
 					fallback: DEFAULTS.text.shadow.offsetY,
 				})
 			: 0,
+		windowShadow: readBooleanParam({
+			params: element.params,
+			key: "shadow.window",
+			fallback: DEFAULTS.text.shadow.window,
+		}),
 	};
 }
 

@@ -4,6 +4,7 @@ import {
 	OVERLAY_MOVEMENT_PRESETS,
 	resolveOverlayMovementFrame,
 } from "@/effects/overlay-movement-presets";
+import { PARALLAX_CAMERA_KEYFRAME_PATHS } from "@/parallax-story-teller/camera-keyframes";
 
 describe("overlay movement presets", () => {
 	test("resolve curve zoom progress from layer duration", () => {
@@ -97,5 +98,81 @@ describe("overlay movement presets", () => {
 		expect(darkenFrame?.vignetteAlpha).toBeGreaterThan(0.3);
 		expect(vintageFrame?.overlayBlendMode).toBe("soft-light");
 		expect(vintageFrame?.overlayAlpha).toBeGreaterThan(0.1);
+	});
+
+	test("resolves seek-safe virtual camera routes with parallax metadata", () => {
+		const preset = OVERLAY_MOVEMENT_PRESETS.find(
+			(item) => item.id === "camera-canvas-pan-right",
+		);
+		if (!preset) throw new Error("Missing virtual camera preset");
+
+		const start = resolveOverlayMovementFrame({
+			effectParams: preset.params,
+			localTime: 0,
+			duration: 100,
+			width: 1000,
+			height: 500,
+		});
+		const middle = resolveOverlayMovementFrame({
+			effectParams: preset.params,
+			localTime: 50,
+			duration: 100,
+			width: 1000,
+			height: 500,
+		});
+		const end = resolveOverlayMovementFrame({
+			effectParams: preset.params,
+			localTime: 100,
+			duration: 100,
+			width: 1000,
+			height: 500,
+		});
+
+		expect(start?.translateX).toBeCloseTo(0);
+		expect(end?.translateX).toBeCloseTo(-1000);
+		expect(middle?.translateX).toBeLessThan(-490);
+		expect(middle?.translateX).toBeGreaterThan(-510);
+		expect(end?.translateY).toBeCloseTo(0);
+		expect(end?.rotate).toBeCloseTo(0);
+		expect(middle?.parallaxStrength).toBeCloseTo(0.18);
+	});
+
+	test("overrides the virtual camera route with serialized camera keyframes", () => {
+		const preset = OVERLAY_MOVEMENT_PRESETS.find(
+			(item) => item.id === "camera-canvas-pan-right",
+		);
+		if (!preset) throw new Error("Missing virtual camera preset");
+
+		const animations = {
+			[PARALLAX_CAMERA_KEYFRAME_PATHS.x]: {
+				keys: [
+					{
+						id: "start",
+						time: 0,
+						value: 0,
+						segmentToNext: "linear" as const,
+						tangentMode: "auto" as const,
+					},
+					{
+						id: "end",
+						time: 100,
+						value: 0.25,
+						segmentToNext: "linear" as const,
+						tangentMode: "auto" as const,
+					},
+				],
+			},
+		};
+
+		const middle = resolveOverlayMovementFrame({
+			effectParams: preset.params,
+			animations,
+			localTime: 50,
+			duration: 100,
+			width: 1000,
+			height: 500,
+		});
+
+		expect(middle?.translateX).toBeCloseTo(-125);
 	});
 });

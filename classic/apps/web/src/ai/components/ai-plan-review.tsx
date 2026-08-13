@@ -226,6 +226,10 @@ function getOperationTitle({
 			return `Insert ${operation.effectType} effect layer`;
 		case "duplicate_element":
 			return "Duplicate element";
+		case "create_speaker_tile":
+			return `Create ${operation.presentation ?? "rounded-rectangle"} speaker tile`;
+		case "create_speaker_frame_breakout":
+			return "Create smart Speaker Frame Breakout layer";
 		case "apply_transition":
 			return `Apply ${operation.presetId} transition (${operation.side})`;
 		case "set_element_state":

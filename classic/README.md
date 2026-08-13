@@ -25,6 +25,7 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
 ## Project Structure
 
 - `apps/web/`: Next.js web application
+- `apps/electron/`: Electron distribution of the exact `apps/web` interface
 - `apps/desktop/`: Native desktop app built with GPUI (in progress)
 - `rust/`: Platform-agnostic core: GPU compositor, effects, masks, and WASM bindings. We're actively migrating business logic here from TypeScript.
 - `docs/`: Architecture and subsystem documentation
@@ -74,6 +75,11 @@ The `.env.example` has sensible defaults that match the Docker Compose config â€
 Desktop is opt-in. If you're only working on the web app, skip this entirely.
 
 If you want to get ready for `apps/desktop`, see [`apps/desktop/README.md`](apps/desktop/README.md). It's a two-step setup: Rust toolchain first, then desktop native dependencies.
+
+For the complete web product packaged in Electron, see
+[`apps/electron/README.md`](apps/electron/README.md). Run `bun run dev:electron`
+for development, `bun run pack:electron` for an unpacked app, or
+`bun run dist:electron` for a platform installer.
 
 ### Local WASM development
 

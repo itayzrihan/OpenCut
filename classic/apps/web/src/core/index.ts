@@ -14,6 +14,7 @@ import { TranscriptionManager } from "./managers/transcription-manager";
 import { registerDefaultEffects } from "@/effects";
 import { registerDefaultMasks } from "@/masks";
 import { registerTranscriptionDiagnostics } from "@/transcription/diagnostics";
+import { pruneEmptyElementTracks } from "@/timeline/prune-empty-tracks";
 
 export class EditorCore {
 	private static instance: EditorCore | null = null;
@@ -56,11 +57,7 @@ export class EditorCore {
 			}
 
 			const tracks = activeScene.tracks;
-			const prunedTracks = {
-				...tracks,
-				overlay: tracks.overlay.filter((track) => track.elements.length > 0),
-				audio: tracks.audio.filter((track) => track.elements.length > 0),
-			};
+			const prunedTracks = pruneEmptyElementTracks({ tracks });
 			if (
 				prunedTracks.overlay.length !== tracks.overlay.length ||
 				prunedTracks.audio.length !== tracks.audio.length

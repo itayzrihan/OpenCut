@@ -14,6 +14,12 @@ import type {
 import type { BlendMode } from "@/rendering";
 import type { BackgroundRemovalSettings } from "@/background-removal/types";
 
+export interface ElementLoop {
+	presetId: string;
+	cycleSeconds: number;
+	properties: string[];
+}
+
 export type ElementRef = {
 	trackId: string;
 	elementId: string;
@@ -30,13 +36,31 @@ export interface TScene {
 	id: string;
 	name: string;
 	isMain: boolean;
+	parallax?: ParallaxSceneMetadata;
 	tracks: SceneTracks;
 	bookmarks: Bookmark[];
 	createdAt: Date;
 	updatedAt: Date;
 }
 
-export type TrackType = "video" | "text" | "audio" | "graphic" | "effect";
+export interface ParallaxSceneMetadata {
+	version: 1;
+	kind: "canvas-pan";
+	parentSceneId: string;
+	parentElementId: string;
+	direction: "left" | "right";
+	worldWidthFrames: number;
+	worldHeightFrames?: number;
+	templateId?: string;
+}
+
+export type TrackType =
+	| "video"
+	| "text"
+	| "audio"
+	| "graphic"
+	| "effect"
+	| "parallax";
 
 interface BaseTrack {
 	id: string;
@@ -81,14 +105,34 @@ export interface EffectTrack extends BaseTrack {
 	hidden: boolean;
 }
 
+export type ParallaxTrackDirection = "with-camera" | "against-camera";
+
+/**
+ * A canvas-scene-only hierarchy marker. It owns no elements; every visual
+ * track below it, until the next parallax marker, inherits its camera-relative
+ * movement factor.
+ */
+export interface ParallaxTrack extends BaseTrack {
+	type: "parallax";
+	elements: [];
+	direction: ParallaxTrackDirection;
+	speedPercent: number;
+}
+
 export type TimelineTrack =
 	| VideoTrack
 	| TextTrack
 	| AudioTrack
 	| GraphicTrack
-	| EffectTrack;
+	| EffectTrack
+	| ParallaxTrack;
 
-export type OverlayTrack = VideoTrack | TextTrack | GraphicTrack | EffectTrack;
+export type OverlayTrack =
+	| VideoTrack
+	| TextTrack
+	| GraphicTrack
+	| EffectTrack
+	| ParallaxTrack;
 
 export interface SceneTracks {
 	overlay: OverlayTrack[];
@@ -131,6 +175,7 @@ interface BaseTimelineElement {
 	trimEnd: MediaTime;
 	sourceDuration?: MediaTime;
 	animations?: ElementAnimations;
+	loop?: ElementLoop;
 	transitions?: ElementTransitions;
 	params: ParamValues;
 }
@@ -219,6 +264,8 @@ export interface TextWordStyle {
 	textDecoration?: TextDecoration;
 	letterSpacing?: number;
 	lineHeight?: number;
+	bottomFadeOut?: number;
+	bottomFadeOutEndOpacity?: number;
 	opacity?: number;
 	scale?: number;
 	scaleX?: number;
@@ -229,6 +276,7 @@ export interface TextWordStyle {
 	shadowColor?: string;
 	shadowOffsetX?: number;
 	shadowOffsetY?: number;
+	windowShadow?: boolean;
 	strokeWidth?: number;
 	strokeColor?: string;
 	characterReveal?: boolean;

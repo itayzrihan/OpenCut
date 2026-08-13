@@ -13,6 +13,7 @@ export * from "./zoom-utils";
 export * from "./ruler-utils";
 export * from "./pixel-utils";
 export * from "./track-order";
+export * from "./global-gap";
 
 export function calculateTotalDuration({
 	tracks,

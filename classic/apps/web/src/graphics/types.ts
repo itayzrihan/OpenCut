@@ -1,6 +1,9 @@
 import type { ParamDefinition, ParamValues } from "@/params";
 
 export const DEFAULT_GRAPHIC_SOURCE_SIZE = 512;
+export const GRAPHIC_LAYOUT_WIDTH_PARAM = "layout.width";
+export const GRAPHIC_LAYOUT_HEIGHT_PARAM = "layout.height";
+export const GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM = "layout.pixelScale";
 
 export interface GraphicRenderContext {
 	ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
@@ -29,6 +32,8 @@ export interface GraphicDefinition {
 	name: string;
 	keywords: string[];
 	params: ParamDefinition[];
+	/** Dimension-resizable graphics redraw their source instead of enlarging a cached raster. */
+	resizeBehavior?: "scale" | "dimensions";
 	/** Intrinsic raster size; defaults to DEFAULT_GRAPHIC_SOURCE_SIZE square. */
 	sourceSize?(context: { params: ParamValues }): GraphicSourceSize;
 	/** Awaited during renderer resolve so async sources are ready before render(). */

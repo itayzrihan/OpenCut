@@ -7,6 +7,7 @@ import {
 	Folder03Icon,
 	Happy01Icon,
 	HeadphonesIcon,
+	Layers01Icon,
 	MagicWand05Icon,
 	TextIcon,
 	Settings01Icon,
@@ -24,10 +25,14 @@ export const TAB_KEYS = [
 	"text",
 	"stickers",
 	"ui-elements",
+	"templates",
+	"simple-advanced-layers",
 	"backgrounds",
 	"effects",
 	"overlays",
 	"overlay-movement",
+	"parallax-story-teller",
+	"loops",
 	"transitions",
 	"captions",
 	"see-captions",
@@ -74,6 +79,14 @@ export const tabs = {
 		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
 		label: "UI Elements",
 	},
+	templates: {
+		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
+		label: "Templates",
+	},
+	"simple-advanced-layers": {
+		icon: createHugeiconsIcon({ icon: Layers01Icon }),
+		label: "simple advanced layers",
+	},
 	backgrounds: {
 		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
 		label: "Backgrounds",
@@ -89,6 +102,14 @@ export const tabs = {
 	"overlay-movement": {
 		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
 		label: "Overlay Movement",
+	},
+	"parallax-story-teller": {
+		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
+		label: "Parallax Story Teller",
+	},
+	loops: {
+		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
+		label: "Loops",
 	},
 	transitions: {
 		icon: createHugeiconsIcon({ icon: ArrowRightDoubleIcon }),

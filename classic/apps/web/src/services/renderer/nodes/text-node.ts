@@ -14,6 +14,12 @@ export type TextNodeParams = TextElement & {
 	canvasHeight: number;
 	textBaseline?: CanvasTextBaseline;
 	clipMediaAsset?: MediaAsset;
+	cameraDepth?: number;
+	cameraLocked?: boolean;
+	cameraMotionFactor?: number;
+	cameraCanvasWidth?: number;
+	cameraCanvasHeight?: number;
+	worldPinned?: boolean;
 };
 
 export interface ResolvedTextNodeState {
@@ -31,17 +37,23 @@ export class TextNode extends BaseNode<TextNodeParams, ResolvedTextNodeState> {}
 export function renderTextToContext({
 	node,
 	ctx,
+	omitWorldPosition = false,
 }: {
 	node: TextNode;
 	ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+	omitWorldPosition?: boolean;
 }): void {
 	const resolved = node.resolved;
 	if (!resolved) {
 		return;
 	}
 
-	const x = resolved.transform.position.x + node.params.canvasCenter.x;
-	const y = resolved.transform.position.y + node.params.canvasCenter.y;
+	const x =
+		(omitWorldPosition ? 0 : resolved.transform.position.x) +
+		node.params.canvasCenter.x;
+	const y =
+		(omitWorldPosition ? 0 : resolved.transform.position.y) +
+		node.params.canvasCenter.y;
 	const baseline = node.params.textBaseline ?? "middle";
 
 	ctx.save();
@@ -87,7 +99,13 @@ export function renderTextToContext({
 		);
 		const width = dimensions.width * scale;
 		const height = dimensions.height * scale;
-		ctx.drawImage(source, (ctx.canvas.width - width) / 2, (ctx.canvas.height - height) / 2, width, height);
+		ctx.drawImage(
+			source,
+			(ctx.canvas.width - width) / 2,
+			(ctx.canvas.height - height) / 2,
+			width,
+			height,
+		);
 		ctx.restore();
 	}
 }

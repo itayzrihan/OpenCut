@@ -1,9 +1,15 @@
 export type BackgroundRemovalBackend = "webgpu" | "wasm";
 
 export type BackgroundRemovalWorkerMessage =
-	| { type: "init" }
+	| {
+			type: "init";
+			generation: number;
+			backend?: "auto" | BackgroundRemovalBackend;
+	  }
+	| { type: "cancel"; generation: number; requestId: number }
 	| {
 			type: "segment";
+			generation: number;
 			requestId: number;
 			bitmap: ImageBitmap;
 			mediaId: string;
@@ -16,14 +22,24 @@ export type BackgroundRemovalWorkerMessage =
 	  };
 
 export type BackgroundRemovalWorkerResponse =
-	| { type: "model-progress"; progress: number }
-	| { type: "model-ready"; backend: BackgroundRemovalBackend }
-	| { type: "model-error"; error: string }
+	| { type: "model-progress"; generation: number; progress: number }
+	| {
+			type: "model-ready";
+			generation: number;
+			backend: BackgroundRemovalBackend;
+	  }
+	| { type: "model-error"; generation: number; error: string }
 	| {
 			type: "segment-complete";
+			generation: number;
 			requestId: number;
 			width: number;
 			height: number;
-			rgba: Uint8ClampedArray;
+			alpha: Uint8Array;
 	  }
-	| { type: "segment-error"; requestId: number; error: string };
+	| {
+			type: "segment-error";
+			generation: number;
+			requestId: number;
+			error: string;
+	  };

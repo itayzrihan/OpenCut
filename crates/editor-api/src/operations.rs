@@ -8,17 +8,21 @@ use std::{
 use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::{Map, Value};
+use sha2::{Digest, Sha256};
 use tokio::sync::broadcast;
 
 use crate::{
-    AccessLevel, ArtifactRef, ArtifactStore, AudioProperties, BlendMode, CapabilityDescriptor,
-    CapabilityError, CapabilityRegistry, CapabilityResult, EditorDocument, Effect, ExportPreset,
-    FnCapability, InvocationContext, JobManager, JobRecord, JobStatus, Keyframe,
-    KeyframeInterpolation, Marker, MediaAsset, MediaType, ModelError, PlaybackState, Project,
-    ProjectSettings, RegistryError, SelectionState, ShapeProperties, TextProperties, Timeline,
-    TimelineItem, TimelineItemKind, Track, TrackKind, Transform, Transition,
+    ARTIFACT_URI_PREFIX, AccessLevel, ArtifactRef, ArtifactStore, AudioProperties, BlendMode,
+    CapabilityDescriptor, CapabilityError, CapabilityRegistry, CapabilityResult, EditorDocument,
+    Effect, ExportPreset, FnCapability, InvocationContext, JobManager, JobRecord, JobStatus,
+    Keyframe, KeyframeInterpolation, Marker, MediaAsset, MediaType, ModelError, PlaybackState,
+    Project, ProjectSettings, Rational, RegistryError, SMART_LAYER_MASK_ARTIFACT_MIME_TYPE,
+    SelectionState, ShapeProperties, SmartLayer, SmartLayerAppliedSnapshot, SmartLayerBackground,
+    SmartLayerBackgroundRemoval, SmartLayerFade, SmartLayerSourceItemSnapshot,
+    SpeakerFrameBreakoutSettings, SpeakerFrameLayout, TextProperties, Timeline, TimelineItem,
+    TimelineItemKind, Track, TrackKind, Transform, Transition,
     render::{RenderTarget, render},
-    runtime::{EditorStore, HistoryEntry},
+    runtime::{EditorStore, HistoryEntry, now_ms},
 };
 
 const STATE_RESOURCE: &str = "opencut://state";
@@ -48,6 +52,12 @@ pub(crate) fn register_all(
     )?;
     register_track_operations(registry, state.clone(), events.clone())?;
     register_item_operations(registry, state.clone(), events.clone())?;
+    register_speaker_frame_breakout_operations(
+        registry,
+        state.clone(),
+        events.clone(),
+        artifacts.clone(),
+    )?;
     register_advanced_edit_operations(registry, state.clone(), events.clone())?;
     register_effect_operations(registry, state.clone(), events.clone())?;
     register_keyframe_operations(registry, state.clone(), events.clone())?;
@@ -141,6 +151,7 @@ where
         || id.starts_with("media.thumbnail.")
         || id.starts_with("media.waveform.")
         || id.starts_with("caption.transcribe");
+    descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);
     registry.register(Arc::new(FnCapability::new(
@@ -2234,6 +2245,7 @@ fn register_item_operations(
                                 input.text
                             },
                             shape: input.shape,
+                            smart_layer: None,
                             masks: Vec::new(),
                             effects: Vec::new(),
                             keyframes: Vec::new(),
@@ -2578,6 +2590,814 @@ fn register_item_operations(
             }
         },
     )
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SpeakerFrameBreakoutCreateInput {
+    project_id: String,
+    source_item_id: String,
+    name: Option<String>,
+    start_seconds: Option<f64>,
+    duration_seconds: Option<f64>,
+    settings: Option<SpeakerFrameBreakoutSettings>,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Default, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SpeakerFrameBreakoutUpdatePatch {
+    name: Option<String>,
+    start_seconds: Option<f64>,
+    duration_seconds: Option<f64>,
+    background: Option<SmartLayerBackground>,
+    layout: Option<SpeakerFrameLayout>,
+    fade: Option<SmartLayerFade>,
+    background_removal: Option<SmartLayerBackgroundRemoval>,
+}
+
+impl SpeakerFrameBreakoutUpdatePatch {
+    fn is_empty(&self) -> bool {
+        self.name.is_none()
+            && self.start_seconds.is_none()
+            && self.duration_seconds.is_none()
+            && self.background.is_none()
+            && self.layout.is_none()
+            && self.fade.is_none()
+            && self.background_removal.is_none()
+    }
+
+    fn changes_configuration(&self) -> bool {
+        self.start_seconds.is_some()
+            || self.duration_seconds.is_some()
+            || self.background.is_some()
+            || self.layout.is_some()
+            || self.fade.is_some()
+            || self.background_removal.is_some()
+    }
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SpeakerFrameBreakoutUpdateInput {
+    project_id: String,
+    item_id: String,
+    patch: SpeakerFrameBreakoutUpdatePatch,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SpeakerFrameBreakoutInspectInput {
+    project_id: String,
+    item_id: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+enum SmartLayerApplicationStatus {
+    Draft,
+    Applied,
+    Stale,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct SpeakerFrameBreakoutInspectOutput {
+    project_id: String,
+    item_id: String,
+    configuration_revision: u64,
+    application_status: SmartLayerApplicationStatus,
+    settings_signature: String,
+    source_signature: String,
+    source_items: Vec<SmartLayerSourceItemSnapshot>,
+    applied_snapshot: Option<SmartLayerAppliedSnapshot>,
+    artifacts_available: bool,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SpeakerFrameBreakoutApplyInput {
+    project_id: String,
+    item_id: String,
+    configuration_revision: u64,
+    settings_signature: String,
+    source_signature: String,
+    prepared_artifact_uris: Vec<String>,
+    processing_backend: String,
+    frame_rate: Rational,
+    frame_count: u64,
+    expected_revision: Option<u64>,
+}
+
+fn register_speaker_frame_breakout_operations(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+    events: broadcast::Sender<u64>,
+    artifacts: ArtifactStore,
+) -> Result<(), RegistryError> {
+    let create_state = state.clone();
+    let create_events = events.clone();
+    register::<SpeakerFrameBreakoutCreateInput, MutationOutput, _, _>(
+        registry,
+        "timeline.smart_layer.speaker_frame_breakout.create",
+        "Create Speaker Frame Breakout smart layer",
+        "Creates one timeline-visible Speaker Frame Breakout layer directly above a source video. Its rendered base, cutout, background, and fades remain derived state rather than separate timeline items.",
+        "simple advanced layers",
+        AccessLevel::Write,
+        false,
+        false,
+        &[
+            "smart-layer",
+            "speaker",
+            "frame",
+            "breakout",
+            "background-removal",
+        ],
+        move |context, input| {
+            let state = create_state.clone();
+            let events = create_events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Create Speaker Frame Breakout smart layer",
+                    input.expected_revision,
+                    |document| {
+                        ensure_project_target(document, &input.project_id)?;
+                        let project = document.project.as_ref().ok_or_else(|| {
+                            CapabilityError::Unavailable("no project is open".into())
+                        })?;
+                        let (source_track_index, source_track, source_item) = project
+                            .timeline
+                            .tracks
+                            .iter()
+                            .enumerate()
+                            .find_map(|(track_index, track)| {
+                                track
+                                    .items
+                                    .iter()
+                                    .find(|item| item.id == input.source_item_id)
+                                    .map(|item| (track_index, track, item))
+                            })
+                            .ok_or_else(|| {
+                                unknown("source timeline item", &input.source_item_id)
+                            })?;
+                        if !matches!(source_item.kind, TimelineItemKind::Video)
+                            || source_item.asset_id.is_none()
+                        {
+                            return Err(CapabilityError::InvalidInput(format!(
+                                "source timeline item `{}` must be video content",
+                                input.source_item_id
+                            )));
+                        }
+                        if !source_track.enabled || source_track.hidden || !source_item.enabled {
+                            return Err(CapabilityError::InvalidInput(format!(
+                                "source timeline item `{}` must be on a visible enabled video track",
+                                input.source_item_id
+                            )));
+                        }
+                        let source_start = source_item.start_seconds;
+                        let source_end = source_item.end_seconds();
+                        let target_index = source_track_index + 1;
+                        let reusable_track_id = project
+                            .timeline
+                            .tracks
+                            .get(target_index)
+                            .filter(|track| {
+                                matches!(track.kind, TrackKind::Adjustment)
+                                    && track.enabled
+                                    && !track.hidden
+                                    && !track.locked
+                            })
+                            .map(|track| track.id.clone());
+                        let start_seconds = input.start_seconds.unwrap_or(source_start);
+                        let duration_seconds =
+                            input.duration_seconds.unwrap_or(source_end - start_seconds);
+
+                        let new_track_id = reusable_track_id
+                            .is_none()
+                            .then(|| document.allocate_id("track"));
+                        let item_id = document.allocate_id("item");
+                        let project = project_mut(document)?;
+                        let track_id = if let Some(track_id) = reusable_track_id {
+                            track_id
+                        } else {
+                            let track_id = new_track_id
+                                .clone()
+                                .expect("new adjustment track id was allocated");
+                            project.timeline.tracks.insert(
+                                target_index,
+                                new_track(
+                                    track_id.clone(),
+                                    "Simple Advanced Layers",
+                                    TrackKind::Adjustment,
+                                ),
+                            );
+                            track_id
+                        };
+                        let track = project
+                            .timeline
+                            .tracks
+                            .iter_mut()
+                            .find(|track| track.id == track_id)
+                            .expect("target adjustment track exists");
+                        track.items.push(TimelineItem {
+                            id: item_id.clone(),
+                            name: input
+                                .name
+                                .unwrap_or_else(|| "Speaker Frame Breakout".into()),
+                            kind: TimelineItemKind::SmartLayer,
+                            start_seconds,
+                            duration_seconds,
+                            start: None,
+                            duration: None,
+                            source_in_seconds: 0.0,
+                            source_out_seconds: None,
+                            source_in: None,
+                            source_out: None,
+                            speed: 1.0,
+                            enabled: true,
+                            locked: false,
+                            group_id: None,
+                            linked_item_ids: Default::default(),
+                            asset_id: None,
+                            transform: Transform::default(),
+                            opacity: 1.0,
+                            blend_mode: BlendMode::default(),
+                            audio: AudioProperties::default(),
+                            text: None,
+                            shape: None,
+                            smart_layer: Some(SmartLayer::speaker_frame_breakout(
+                                input.settings.unwrap_or_default(),
+                            )),
+                            masks: Vec::new(),
+                            effects: Vec::new(),
+                            keyframes: Vec::new(),
+                            metadata: Default::default(),
+                            extensions: Map::new(),
+                        });
+                        resolve_speaker_frame_sources(document, &item_id)?;
+                        let mut changed_ids = Vec::new();
+                        if let Some(track_id) = new_track_id {
+                            changed_ids.push(track_id);
+                        }
+                        changed_ids.push(item_id);
+                        Ok(changed_ids)
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Created Speaker Frame Breakout smart layer")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
+    let update_state = state.clone();
+    let update_events = events.clone();
+    register::<SpeakerFrameBreakoutUpdateInput, MutationOutput, _, _>(
+        registry,
+        "timeline.smart_layer.speaker_frame_breakout.update",
+        "Update Speaker Frame Breakout smart layer",
+        "Updates timing, catalog background, layout, fades, or background-removal settings in one validated undoable operation. Processing is not started; an explicit Apply remains required.",
+        "simple advanced layers",
+        AccessLevel::Write,
+        false,
+        false,
+        &[
+            "smart-layer",
+            "speaker",
+            "settings",
+            "background",
+            "manual-apply",
+        ],
+        move |context, input| {
+            let state = update_state.clone();
+            let events = update_events.clone();
+            async move {
+                if input.patch.is_empty() {
+                    return Err(CapabilityError::InvalidInput(
+                        "smart layer update patch must change at least one field".into(),
+                    ));
+                }
+                let item_id = input.item_id;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Update Speaker Frame Breakout smart layer",
+                    input.expected_revision,
+                    |document| {
+                        ensure_project_target(document, &input.project_id)?;
+                        {
+                            let item = find_editable_item_mut(document, &item_id)?;
+                            let changes_configuration = input.patch.changes_configuration();
+                            if let Some(name) = input.patch.name {
+                                item.name = name;
+                            }
+                            if let Some(start_seconds) = input.patch.start_seconds {
+                                item.start_seconds = start_seconds;
+                            }
+                            if let Some(duration_seconds) = input.patch.duration_seconds {
+                                item.duration_seconds = duration_seconds;
+                            }
+                            let smart_layer = speaker_frame_breakout_layer_mut(item, &item_id)?;
+                            if let Some(background) = input.patch.background {
+                                smart_layer.speaker_frame_breakout.background = background;
+                            }
+                            if let Some(layout) = input.patch.layout {
+                                smart_layer.speaker_frame_breakout.layout = layout;
+                            }
+                            if let Some(fade) = input.patch.fade {
+                                smart_layer.speaker_frame_breakout.fade = fade;
+                            }
+                            if let Some(background_removal) = input.patch.background_removal {
+                                smart_layer.speaker_frame_breakout.background_removal =
+                                    background_removal;
+                            }
+                            if changes_configuration {
+                                smart_layer.mark_configuration_changed();
+                            }
+                        }
+                        resolve_speaker_frame_sources(document, &item_id)?;
+                        Ok(vec![item_id.clone()])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Updated Speaker Frame Breakout smart layer")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
+    let inspect_state = state.clone();
+    let inspect_artifacts = artifacts.clone();
+    register::<SpeakerFrameBreakoutInspectInput, SpeakerFrameBreakoutInspectOutput, _, _>(
+        registry,
+        "timeline.smart_layer.speaker_frame_breakout.inspect",
+        "Inspect Speaker Frame Breakout smart layer",
+        "Resolves the nearest active video track below the smart layer and returns stable settings and source signatures for a manual background-removal Apply.",
+        "simple advanced layers",
+        AccessLevel::Read,
+        true,
+        false,
+        &["smart-layer", "speaker", "inspect", "source", "signature"],
+        move |_, input| {
+            let state = inspect_state.clone();
+            let artifacts = inspect_artifacts.clone();
+            async move {
+                let store = state.read().map_err(|_| {
+                    CapabilityError::Failed("editor state lock was poisoned".into())
+                })?;
+                let document = store.document_for(Some(&input.project_id)).ok_or_else(|| {
+                    CapabilityError::Unavailable(format!(
+                        "project `{}` is not open",
+                        input.project_id
+                    ))
+                })?;
+                Ok(OperationSuccess::new(inspect_speaker_frame_breakout(
+                    document,
+                    &input.item_id,
+                    Some(&artifacts),
+                )?))
+            }
+        },
+    )?;
+
+    let apply_events = events;
+    register::<SpeakerFrameBreakoutApplyInput, MutationOutput, _, _>(
+        registry,
+        "timeline.smart_layer.speaker_frame_breakout.apply",
+        "Apply Speaker Frame Breakout processing",
+        "Atomically attaches a prepared background-removal snapshot from the bounded ArtifactStore after verifying the current layer configuration and automatically resolved source signatures.",
+        "simple advanced layers",
+        AccessLevel::Write,
+        false,
+        false,
+        &[
+            "smart-layer",
+            "speaker",
+            "apply",
+            "background-removal",
+            "artifact",
+        ],
+        move |context, input| {
+            let state = state.clone();
+            let events = apply_events.clone();
+            let artifacts = artifacts.clone();
+            async move {
+                if input.prepared_artifact_uris.is_empty() {
+                    return Err(CapabilityError::InvalidInput(
+                        "preparedArtifactUris must contain at least one ArtifactStore URI".into(),
+                    ));
+                }
+                if input.processing_backend.trim().is_empty() {
+                    return Err(CapabilityError::InvalidInput(
+                        "processingBackend must not be empty".into(),
+                    ));
+                }
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                let item_id = input.item_id;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Apply Speaker Frame Breakout processing",
+                    input.expected_revision,
+                    |document| {
+                        ensure_project_target(document, &input.project_id)?;
+                        let inspected =
+                            inspect_speaker_frame_breakout(document, &item_id, Some(&artifacts))?;
+                        if inspected.configuration_revision != input.configuration_revision {
+                            return Err(CapabilityError::Conflict(format!(
+                                "smart layer configuration changed: prepared revision {}, current revision is {}",
+                                input.configuration_revision, inspected.configuration_revision
+                            )));
+                        }
+                        if inspected.settings_signature != input.settings_signature {
+                            return Err(CapabilityError::Conflict(
+                                "smart layer settings changed after processing began".into(),
+                            ));
+                        }
+                        if inspected.source_signature != input.source_signature {
+                            return Err(CapabilityError::Conflict(
+                                "smart layer source videos changed after processing began".into(),
+                            ));
+                        }
+                        validate_speaker_frame_source_coverage(
+                            document,
+                            &item_id,
+                            &inspected.source_items,
+                            input.frame_rate,
+                            input.frame_count,
+                        )?;
+                        let prepared_artifacts = validate_speaker_frame_artifacts(
+                            &artifacts,
+                            &input.prepared_artifact_uris,
+                        )?;
+                        let snapshot = SmartLayerAppliedSnapshot {
+                            configuration_revision: input.configuration_revision,
+                            settings_signature: inspected.settings_signature,
+                            source_signature: inspected.source_signature,
+                            source_items: inspected.source_items,
+                            artifacts: prepared_artifacts,
+                            processing_backend: input.processing_backend,
+                            frame_rate: input.frame_rate,
+                            frame_count: input.frame_count,
+                            applied_at_ms: now_ms(),
+                        };
+                        let item = find_editable_item_mut(document, &item_id)?;
+                        speaker_frame_breakout_layer_mut(item, &item_id)?
+                            .set_applied_snapshot(snapshot);
+                        Ok(vec![item_id.clone()])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Applied Speaker Frame Breakout processing")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )
+}
+
+fn ensure_project_target(
+    document: &EditorDocument,
+    project_id: &str,
+) -> Result<(), CapabilityError> {
+    let active = document.project.as_ref().map(|project| project.id.as_str());
+    if active != Some(project_id) {
+        return Err(CapabilityError::Conflict(format!(
+            "project target conflict: requested `{project_id}`, active project is `{}`",
+            active.unwrap_or("<none>")
+        )));
+    }
+    Ok(())
+}
+
+fn speaker_frame_breakout_layer_mut<'a>(
+    item: &'a mut TimelineItem,
+    item_id: &str,
+) -> Result<&'a mut SmartLayer, CapabilityError> {
+    if !matches!(item.kind, TimelineItemKind::SmartLayer) {
+        return Err(CapabilityError::InvalidInput(format!(
+            "timeline item `{item_id}` is not a smart layer"
+        )));
+    }
+    item.smart_layer.as_mut().ok_or_else(|| {
+        CapabilityError::InvalidInput(format!(
+            "timeline item `{item_id}` has no smart layer settings"
+        ))
+    })
+}
+
+fn speaker_frame_breakout_item<'a>(
+    document: &'a EditorDocument,
+    item_id: &str,
+) -> Result<&'a TimelineItem, CapabilityError> {
+    speaker_frame_breakout_location(document, item_id).map(|(_, _, item)| item)
+}
+
+fn speaker_frame_breakout_location<'a>(
+    document: &'a EditorDocument,
+    item_id: &str,
+) -> Result<(usize, &'a Track, &'a TimelineItem), CapabilityError> {
+    let project = document
+        .project
+        .as_ref()
+        .ok_or_else(|| CapabilityError::Unavailable("no project is open".into()))?;
+    let (track_index, track, item) = project
+        .timeline
+        .tracks
+        .iter()
+        .enumerate()
+        .find_map(|(track_index, track)| {
+            track
+                .items
+                .iter()
+                .find(|item| item.id == item_id)
+                .map(|item| (track_index, track, item))
+        })
+        .ok_or_else(|| unknown("smart layer item", item_id))?;
+    if !matches!(item.kind, TimelineItemKind::SmartLayer)
+        || item.smart_layer.as_ref().is_none_or(|layer| {
+            !matches!(
+                layer.layer_type,
+                crate::SmartLayerType::SpeakerFrameBreakout
+            )
+        })
+    {
+        return Err(CapabilityError::InvalidInput(format!(
+            "timeline item `{item_id}` is not a Speaker Frame Breakout smart layer"
+        )));
+    }
+    if !track.enabled || track.hidden {
+        return Err(CapabilityError::Unavailable(format!(
+            "Speaker Frame Breakout smart layer `{item_id}` is on a hidden or disabled track"
+        )));
+    }
+    if !item.enabled {
+        return Err(CapabilityError::Unavailable(format!(
+            "Speaker Frame Breakout smart layer `{item_id}` is disabled"
+        )));
+    }
+    Ok((track_index, track, item))
+}
+
+fn resolve_speaker_frame_sources(
+    document: &EditorDocument,
+    item_id: &str,
+) -> Result<Vec<SmartLayerSourceItemSnapshot>, CapabilityError> {
+    let project = document
+        .project
+        .as_ref()
+        .ok_or_else(|| CapabilityError::Unavailable("no project is open".into()))?;
+    let (smart_track_index, _, smart_item) = speaker_frame_breakout_location(document, item_id)?;
+    let smart_start = smart_item.start_seconds;
+    let smart_end = smart_item.end_seconds();
+    let mut sources = Vec::new();
+    for track in project.timeline.tracks[..smart_track_index].iter().rev() {
+        if !track.enabled || track.hidden || !matches!(track.kind, TrackKind::Video) {
+            continue;
+        }
+        let mut track_sources = track
+            .items
+            .iter()
+            .filter(|item| {
+                item.enabled
+                    && matches!(item.kind, TimelineItemKind::Video)
+                    && item.start_seconds < smart_end
+                    && item.end_seconds() > smart_start
+            })
+            .map(|item| SmartLayerSourceItemSnapshot {
+                track_id: track.id.clone(),
+                item_id: item.id.clone(),
+                asset_id: item
+                    .asset_id
+                    .clone()
+                    .expect("validated video items have an asset id"),
+                start_seconds: item.start_seconds,
+                duration_seconds: item.duration_seconds,
+                source_in_seconds: item.source_in_seconds,
+                source_out_seconds: item.source_out_seconds,
+                speed: item.speed,
+            })
+            .collect::<Vec<_>>();
+        track_sources.sort_by(|left, right| {
+            left.start_seconds
+                .total_cmp(&right.start_seconds)
+                .then_with(|| left.item_id.cmp(&right.item_id))
+        });
+        sources.extend(track_sources);
+    }
+    if !sources.is_empty() {
+        return Ok(sources);
+    }
+    Err(CapabilityError::Unavailable(format!(
+        "smart layer `{item_id}` has no overlapping video on a lower track"
+    )))
+}
+
+fn validate_speaker_frame_source_coverage(
+    document: &EditorDocument,
+    item_id: &str,
+    sources: &[SmartLayerSourceItemSnapshot],
+    frame_rate: Rational,
+    frame_count: u64,
+) -> Result<(), CapabilityError> {
+    frame_rate
+        .validate("frameRate")
+        .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
+    let project = document
+        .project
+        .as_ref()
+        .ok_or_else(|| CapabilityError::Unavailable("no project is open".into()))?;
+    if !rational_values_equal(frame_rate, project.settings.frame_rate_rational) {
+        return Err(CapabilityError::InvalidInput(format!(
+            "frameRate must match the project frame rate {}/{}",
+            project.settings.frame_rate_rational.numerator,
+            project.settings.frame_rate_rational.denominator
+        )));
+    }
+    let item = speaker_frame_breakout_item(document, item_id)?;
+    let frames_per_second = frame_rate.numerator as f64 / frame_rate.denominator as f64;
+    let expected_frame_count = (item.duration_seconds * frames_per_second).ceil() as u64;
+    if frame_count != expected_frame_count {
+        return Err(CapabilityError::InvalidInput(format!(
+            "frameCount {frame_count} does not match the expected {expected_frame_count} frames for this smart layer"
+        )));
+    }
+
+    let frame_duration = frame_rate.denominator as f64 / frame_rate.numerator as f64;
+    let last_time = item.start_seconds + item.duration_seconds * (1.0 - f64::EPSILON);
+    for frame_index in 0..frame_count {
+        let time = (item.start_seconds + frame_index as f64 * frame_duration).min(last_time);
+        if speaker_frame_source_at_time(sources, time).is_none() {
+            return Err(CapabilityError::InvalidInput(format!(
+                "smart layer source coverage is missing at frame {frame_index} ({time:.6}s)"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn speaker_frame_source_at_time(
+    sources: &[SmartLayerSourceItemSnapshot],
+    time_seconds: f64,
+) -> Option<&SmartLayerSourceItemSnapshot> {
+    sources.iter().find(|source| {
+        time_seconds >= source.start_seconds
+            && time_seconds < source.start_seconds + source.duration_seconds
+    })
+}
+
+fn rational_values_equal(left: Rational, right: Rational) -> bool {
+    left.numerator as i128 * right.denominator as i128
+        == right.numerator as i128 * left.denominator as i128
+}
+
+fn validate_speaker_frame_artifacts(
+    artifacts: &ArtifactStore,
+    uris: &[String],
+) -> Result<Vec<ArtifactRef>, CapabilityError> {
+    let mut seen = std::collections::BTreeSet::new();
+    uris.iter()
+        .map(|uri| {
+            if !uri.starts_with(ARTIFACT_URI_PREFIX) || uri == ARTIFACT_URI_PREFIX {
+                return Err(CapabilityError::InvalidInput(format!(
+                    "prepared artifact `{uri}` must use a canonical ArtifactStore URI"
+                )));
+            }
+            if !seen.insert(uri.as_str()) {
+                return Err(CapabilityError::InvalidInput(format!(
+                    "prepared artifact URI `{uri}` is duplicated"
+                )));
+            }
+            let stored = artifacts
+                .get(uri)
+                .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
+            validate_speaker_frame_artifact_contents(&stored, uri)
+                .map_err(CapabilityError::InvalidInput)?;
+            Ok(stored.metadata)
+        })
+        .collect()
+}
+
+fn validate_speaker_frame_artifact_contents(
+    stored: &crate::StoredArtifact,
+    requested_uri: &str,
+) -> Result<(), String> {
+    let metadata = &stored.metadata;
+    if metadata.uri != requested_uri
+        || metadata.uri != format!("{ARTIFACT_URI_PREFIX}{}", metadata.id)
+    {
+        return Err(format!(
+            "prepared artifact `{requested_uri}` is not a canonical ArtifactStore URI"
+        ));
+    }
+    if metadata.mime_type != SMART_LAYER_MASK_ARTIFACT_MIME_TYPE {
+        return Err(format!(
+            "prepared artifact `{requested_uri}` has MIME type `{}`, expected `{SMART_LAYER_MASK_ARTIFACT_MIME_TYPE}`",
+            metadata.mime_type
+        ));
+    }
+    if metadata.duration_ms.is_none_or(|duration| duration == 0) {
+        return Err(format!(
+            "prepared artifact `{requested_uri}` has no positive duration coverage"
+        ));
+    }
+    if metadata.byte_size != stored.bytes.len() as u64 {
+        return Err(format!(
+            "prepared artifact `{requested_uri}` byte-size metadata does not match its content"
+        ));
+    }
+    let checksum = format!("{:x}", Sha256::digest(stored.bytes.as_ref()));
+    if metadata.sha256 != checksum {
+        return Err(format!(
+            "prepared artifact `{requested_uri}` checksum does not match its content"
+        ));
+    }
+    Ok(())
+}
+
+fn speaker_frame_artifact_is_available(artifacts: &ArtifactStore, expected: &ArtifactRef) -> bool {
+    artifacts.get(&expected.uri).is_ok_and(|stored| {
+        stored.metadata == *expected
+            && validate_speaker_frame_artifact_contents(&stored, &expected.uri).is_ok()
+    })
+}
+
+fn inspect_speaker_frame_breakout(
+    document: &EditorDocument,
+    item_id: &str,
+    artifacts: Option<&ArtifactStore>,
+) -> Result<SpeakerFrameBreakoutInspectOutput, CapabilityError> {
+    let project = document
+        .project
+        .as_ref()
+        .ok_or_else(|| CapabilityError::Unavailable("no project is open".into()))?;
+    let item = speaker_frame_breakout_item(document, item_id)?;
+    let smart_layer = item
+        .smart_layer
+        .as_ref()
+        .expect("speaker frame helper validated smart layer settings");
+    let source_items = resolve_speaker_frame_sources(document, item_id)?;
+    let source_assets = source_items
+        .iter()
+        .map(|source| {
+            project
+                .assets
+                .iter()
+                .find(|asset| asset.id == source.asset_id)
+                .ok_or_else(|| unknown("source media asset", &source.asset_id))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let settings_signature = stable_signature(&(
+        item.start_seconds,
+        item.duration_seconds,
+        &smart_layer.speaker_frame_breakout,
+    ))?;
+    let source_signature = stable_signature(&(&source_items, source_assets))?;
+    let applied_snapshot = smart_layer.application.applied_snapshot.clone();
+    let artifacts_available = applied_snapshot.as_ref().is_some_and(|snapshot| {
+        snapshot.artifacts.iter().all(|artifact| {
+            artifacts
+                .map(|store| speaker_frame_artifact_is_available(store, artifact))
+                .unwrap_or(true)
+        })
+    });
+    let application_status = match &applied_snapshot {
+        None => SmartLayerApplicationStatus::Draft,
+        Some(snapshot)
+            if snapshot.configuration_revision
+                == smart_layer.application.configuration_revision
+                && snapshot.settings_signature == settings_signature
+                && snapshot.source_signature == source_signature
+                && artifacts_available =>
+        {
+            SmartLayerApplicationStatus::Applied
+        }
+        Some(_) => SmartLayerApplicationStatus::Stale,
+    };
+    Ok(SpeakerFrameBreakoutInspectOutput {
+        project_id: project.id.clone(),
+        item_id: item_id.into(),
+        configuration_revision: smart_layer.application.configuration_revision,
+        application_status,
+        settings_signature,
+        source_signature,
+        source_items,
+        applied_snapshot,
+        artifacts_available,
+    })
+}
+
+fn stable_signature<T: Serialize>(value: &T) -> Result<String, CapabilityError> {
+    let bytes =
+        serde_json::to_vec(value).map_err(|error| CapabilityError::Failed(error.to_string()))?;
+    Ok(format!("{:x}", Sha256::digest(bytes)))
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -3606,6 +4426,7 @@ fn insert_caption_cues(
             audio: AudioProperties::default(),
             text: Some(text),
             shape: None,
+            smart_layer: None,
             masks: Vec::new(),
             effects: Vec::new(),
             keyframes: Vec::new(),
@@ -5034,8 +5855,8 @@ mod tests {
     use serde_json::{Map, Value, json};
 
     use crate::{
-        EditorDocument, InvocationContext, OpenCutRuntime, Project, ProjectSettings, Timeline,
-        TrackKind,
+        AccessLevel, CapabilityError, EditorDocument, InvocationContext, OpenCutRuntime, Project,
+        ProjectSettings, RegistryError, Timeline, TrackKind,
     };
 
     async fn invoke(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {
@@ -5053,6 +5874,138 @@ mod tests {
             .unwrap_or_else(|error| panic!("{id} failed: {error}"))
             .result
             .data
+    }
+
+    async fn invoke_error(runtime: &OpenCutRuntime, id: &str, input: Value) -> CapabilityError {
+        let error = runtime
+            .registry()
+            .invoke(
+                id,
+                InvocationContext {
+                    source: "test".into(),
+                    ..InvocationContext::default()
+                },
+                input,
+            )
+            .await
+            .expect_err("capability should reject the input");
+        match error {
+            RegistryError::Capability(error) => error,
+            other => panic!("unexpected registry error: {other}"),
+        }
+    }
+
+    struct SpeakerFrameFixture {
+        runtime: OpenCutRuntime,
+        project_id: String,
+        asset_id: String,
+        source_item_id: String,
+        smart_item_id: String,
+    }
+
+    async fn speaker_frame_fixture(
+        source_duration_seconds: f64,
+        layer_duration_seconds: f64,
+    ) -> SpeakerFrameFixture {
+        let runtime = OpenCutRuntime::default();
+        invoke(
+            &runtime,
+            "project.create",
+            json!({"name": "Speaker Frame Breakout fixture"}),
+        )
+        .await;
+        let initial = runtime.snapshot().expect("initial snapshot");
+        let project = initial.project.as_ref().expect("project");
+        let project_id = project.id.clone();
+        let video_track_id = project
+            .timeline
+            .tracks
+            .iter()
+            .find(|track| track.kind == TrackKind::Video)
+            .expect("video track")
+            .id
+            .clone();
+        let imported = invoke(
+            &runtime,
+            "media.import",
+            json!({
+                "name": "Speaker",
+                "source": "C:/media/speaker.mp4",
+                "mediaType": "video",
+                "durationSeconds": 10.0,
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30.0
+            }),
+        )
+        .await;
+        let asset_id = imported["changedIds"][0]
+            .as_str()
+            .expect("asset id")
+            .to_owned();
+        let added_video = invoke(
+            &runtime,
+            "timeline.item.add",
+            json!({
+                "trackId": video_track_id,
+                "name": "Speaker",
+                "kind": "video",
+                "startSeconds": 0.0,
+                "durationSeconds": source_duration_seconds,
+                "assetId": asset_id
+            }),
+        )
+        .await;
+        let source_item_id = added_video["changedIds"][0]
+            .as_str()
+            .expect("source item id")
+            .to_owned();
+        let created = invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.create",
+            json!({
+                "projectId": project_id,
+                "sourceItemId": source_item_id,
+                "startSeconds": 0.0,
+                "durationSeconds": layer_duration_seconds,
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
+        let smart_item_id = created["changedIds"]
+            .as_array()
+            .expect("changed ids")
+            .last()
+            .and_then(Value::as_str)
+            .expect("smart item id")
+            .to_owned();
+        SpeakerFrameFixture {
+            runtime,
+            project_id,
+            asset_id,
+            source_item_id,
+            smart_item_id,
+        }
+    }
+
+    fn speaker_frame_apply_payload(
+        fixture: &SpeakerFrameFixture,
+        inspected: &Value,
+        artifact_uri: &str,
+        expected_revision: u64,
+    ) -> Value {
+        json!({
+            "projectId": fixture.project_id,
+            "itemId": fixture.smart_item_id,
+            "configurationRevision": inspected["configurationRevision"],
+            "settingsSignature": inspected["settingsSignature"],
+            "sourceSignature": inspected["sourceSignature"],
+            "preparedArtifactUris": [artifact_uri],
+            "processingBackend": "webgpu-modnet",
+            "frameRate": {"numerator": 30, "denominator": 1},
+            "frameCount": 90,
+            "expectedRevision": expected_revision
+        })
     }
 
     #[tokio::test]
@@ -5105,6 +6058,50 @@ mod tests {
             .unwrap();
         assert_eq!(first, second);
         assert_eq!(runtime.sessions().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn schema_v2_exact_time_is_preserved_when_smart_layers_bump_the_schema() {
+        let time_base = crate::Rational::new(1, 1_000);
+        let exact_position = crate::MediaTime::from_seconds(1.001, time_base);
+        let exact_frame_rate = crate::Rational::new(30_000, 1_001);
+        let mut document = EditorDocument {
+            schema_version: 2,
+            project: Some(Project {
+                id: "project-1".into(),
+                name: "Exact timing".into(),
+                file_path: None,
+                settings: ProjectSettings {
+                    frame_rate: 29.97,
+                    frame_rate_rational: exact_frame_rate,
+                    time_base,
+                    ..Default::default()
+                },
+                assets: Vec::new(),
+                timeline: Timeline::default(),
+                metadata: Default::default(),
+                export_presets: Vec::new(),
+                extensions: Map::new(),
+            }),
+            ..Default::default()
+        };
+        document.playback.position_seconds = 99.0;
+        document.playback.position = Some(exact_position);
+        assert!(document.migrate_to_current().unwrap());
+        assert_eq!(document.schema_version, crate::CURRENT_SCHEMA_VERSION);
+        assert_eq!(
+            document
+                .project
+                .as_ref()
+                .expect("project")
+                .settings
+                .frame_rate_rational,
+            exact_frame_rate
+        );
+        assert_eq!(
+            document.playback.position_seconds,
+            exact_position.as_seconds()
+        );
     }
 
     #[test]
@@ -5314,6 +6311,601 @@ mod tests {
                 .item_ids
                 .contains(&text_item_id)
         );
+    }
+
+    #[tokio::test]
+    async fn speaker_frame_breakout_is_typed_visible_manual_and_undoable() {
+        let runtime = OpenCutRuntime::default();
+        invoke(
+            &runtime,
+            "project.create",
+            json!({"name": "Smart layer contract"}),
+        )
+        .await;
+        let initial = runtime.snapshot().expect("initial snapshot");
+        let project = initial.project.as_ref().expect("project");
+        let project_id = project.id.clone();
+        let video_track_id = project
+            .timeline
+            .tracks
+            .iter()
+            .find(|track| track.kind == TrackKind::Video)
+            .expect("video track")
+            .id
+            .clone();
+        let imported = invoke(
+            &runtime,
+            "media.import",
+            json!({
+                "name": "Speaker",
+                "source": "C:/media/speaker.mp4",
+                "mediaType": "video",
+                "durationSeconds": 8.0,
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30.0
+            }),
+        )
+        .await;
+        let asset_id = imported["changedIds"][0]
+            .as_str()
+            .expect("asset id")
+            .to_owned();
+        let added_video = invoke(
+            &runtime,
+            "timeline.item.add",
+            json!({
+                "trackId": video_track_id,
+                "name": "Speaker",
+                "kind": "video",
+                "startSeconds": 0.0,
+                "durationSeconds": 8.0,
+                "assetId": asset_id
+            }),
+        )
+        .await;
+        let source_item_id = added_video["changedIds"][0]
+            .as_str()
+            .expect("video item id")
+            .to_owned();
+
+        let create_revision = runtime.snapshot().expect("snapshot").revision;
+        let created = invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.create",
+            json!({
+                "projectId": project_id,
+                "sourceItemId": source_item_id,
+                "startSeconds": 1.0,
+                "durationSeconds": 3.0,
+                "expectedRevision": create_revision
+            }),
+        )
+        .await;
+        let smart_item_id = created["changedIds"]
+            .as_array()
+            .expect("changed ids")
+            .last()
+            .and_then(Value::as_str)
+            .expect("smart item id")
+            .to_owned();
+
+        let read_after_create = invoke(
+            &runtime,
+            "app.state.read",
+            json!({"projectId": project_id, "pointer": ""}),
+        )
+        .await;
+        let created_item = read_after_create["value"]["project"]["timeline"]["tracks"]
+            .as_array()
+            .expect("tracks")
+            .iter()
+            .flat_map(|track| track["items"].as_array().expect("track items").iter())
+            .find(|item| item["id"] == smart_item_id)
+            .expect("smart layer visible through app.state.read");
+        assert_eq!(created_item["kind"], "smartLayer");
+        assert_eq!(
+            created_item["smartLayer"]["layerType"],
+            "speakerFrameBreakout"
+        );
+        assert_eq!(
+            created_item["smartLayer"]["speakerFrameBreakout"]["background"]["backgroundId"],
+            "paper-grid"
+        );
+        assert_eq!(
+            created_item["smartLayer"]["application"]["configurationRevision"],
+            1
+        );
+        assert!(
+            created_item["smartLayer"]["application"]["appliedSnapshot"].is_null(),
+            "dropping the smart layer must not start or fake background removal"
+        );
+
+        let update_descriptor = runtime
+            .registry()
+            .descriptor("timeline.smart_layer.speaker_frame_breakout.update")
+            .expect("registry")
+            .expect("update descriptor");
+        assert_eq!(update_descriptor.access, AccessLevel::Write);
+        assert!(update_descriptor.transactional);
+        assert!(update_descriptor.supports_dry_run);
+        let apply_descriptor = runtime
+            .registry()
+            .descriptor("timeline.smart_layer.speaker_frame_breakout.apply")
+            .expect("registry")
+            .expect("apply descriptor");
+        assert!(apply_descriptor.cancellable);
+
+        let revision_before_dry_run = runtime.snapshot().expect("snapshot").revision;
+        let dry_run = runtime
+            .registry()
+            .invoke(
+                "timeline.smart_layer.speaker_frame_breakout.update",
+                InvocationContext {
+                    source: "test".into(),
+                    dry_run: true,
+                    ..InvocationContext::default()
+                },
+                json!({
+                    "projectId": project_id,
+                    "itemId": smart_item_id,
+                    "patch": {
+                        "background": {
+                            "backgroundId": "dry-run-only",
+                            "definitionId": "preset-background",
+                            "parameters": {}
+                        }
+                    },
+                    "expectedRevision": revision_before_dry_run
+                }),
+            )
+            .await
+            .expect("dry-run update");
+        assert_eq!(dry_run.result.data["committed"], false);
+        assert_eq!(
+            runtime.snapshot().expect("snapshot").revision,
+            revision_before_dry_run
+        );
+
+        let updated = invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.update",
+            json!({
+                "projectId": project_id,
+                "itemId": smart_item_id,
+                "patch": {
+                    "background": {
+                        "backgroundId": "soft-waves",
+                        "definitionId": "preset-background",
+                        "parameters": {
+                            "preset": "waves",
+                            "colorA": "#ffffff",
+                            "colorB": "#e5e7eb"
+                        }
+                    },
+                    "layout": {
+                        "speakerScale": 0.72,
+                        "positionX": 0.5,
+                        "positionY": 0.7,
+                        "cropTop": 0.2,
+                        "cornerRadius": 0.1
+                    },
+                    "fade": {
+                        "inSeconds": 0.4,
+                        "outSeconds": 0.4
+                    },
+                    "backgroundRemoval": {
+                        "quality": "precise",
+                        "maskThreshold": 0.58,
+                        "edgeFeather": 0.1,
+                        "refineEdges": true
+                    }
+                },
+                "expectedRevision": revision_before_dry_run
+            }),
+        )
+        .await;
+        assert_eq!(updated["committed"], true);
+
+        let inspected = invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.inspect",
+            json!({"projectId": project_id, "itemId": smart_item_id}),
+        )
+        .await;
+        assert_eq!(inspected["applicationStatus"], "draft");
+        assert_eq!(inspected["configurationRevision"], 2);
+        assert_eq!(inspected["sourceItems"][0]["itemId"], source_item_id);
+        let artifact = runtime
+            .artifacts()
+            .put(
+                vec![1, 3, 3, 7],
+                "application/vnd.opencut.background-mask-cache",
+                None,
+                None,
+                Some(3_000),
+            )
+            .expect("bounded mask artifact");
+        let apply_revision = runtime.snapshot().expect("snapshot").revision;
+        invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            json!({
+                "projectId": project_id,
+                "itemId": smart_item_id,
+                "configurationRevision": inspected["configurationRevision"],
+                "settingsSignature": inspected["settingsSignature"],
+                "sourceSignature": inspected["sourceSignature"],
+                "preparedArtifactUris": [artifact.uri],
+                "processingBackend": "webgpu-modnet",
+                "frameRate": {"numerator": 30, "denominator": 1},
+                "frameCount": 90,
+                "expectedRevision": apply_revision
+            }),
+        )
+        .await;
+
+        let read_after_apply = invoke(
+            &runtime,
+            "app.state.read",
+            json!({"projectId": project_id, "pointer": ""}),
+        )
+        .await;
+        let applied_item = read_after_apply["value"]["project"]["timeline"]["tracks"]
+            .as_array()
+            .expect("tracks")
+            .iter()
+            .flat_map(|track| track["items"].as_array().expect("track items").iter())
+            .find(|item| item["id"] == smart_item_id)
+            .expect("applied smart layer");
+        let applied = &applied_item["smartLayer"]["application"]["appliedSnapshot"];
+        assert_eq!(applied["configurationRevision"], 2);
+        assert_eq!(applied["processingBackend"], "webgpu-modnet");
+        assert_eq!(applied["frameCount"], 90);
+        assert_eq!(applied["artifacts"][0]["uri"], artifact.uri);
+
+        invoke(&runtime, "history.undo", json!({})).await;
+        let after_undo = invoke(
+            &runtime,
+            "timeline.smart_layer.speaker_frame_breakout.inspect",
+            json!({"projectId": project_id, "itemId": smart_item_id}),
+        )
+        .await;
+        assert_eq!(after_undo["applicationStatus"], "draft");
+        assert!(after_undo["appliedSnapshot"].is_null());
+    }
+
+    #[tokio::test]
+    async fn speaker_frame_sources_follow_nearest_visible_track_per_frame_across_cuts() {
+        let fixture = speaker_frame_fixture(3.0, 3.0).await;
+        let added_track = invoke(
+            &fixture.runtime,
+            "timeline.track.add",
+            json!({"name": "Near cut track", "kind": "video", "index": 1}),
+        )
+        .await;
+        let near_track_id = added_track["changedIds"][0]
+            .as_str()
+            .expect("near track id")
+            .to_owned();
+        let added_near = invoke(
+            &fixture.runtime,
+            "timeline.item.add",
+            json!({
+                "trackId": near_track_id,
+                "name": "Near cut",
+                "kind": "video",
+                "startSeconds": 0.0,
+                "durationSeconds": 1.0,
+                "assetId": fixture.asset_id
+            }),
+        )
+        .await;
+        let near_item_id = added_near["changedIds"][0]
+            .as_str()
+            .expect("near item id")
+            .to_owned();
+
+        let snapshot = fixture.runtime.snapshot().expect("snapshot");
+        let sources = super::resolve_speaker_frame_sources(&snapshot, &fixture.smart_item_id)
+            .expect("sources");
+        assert_eq!(
+            sources
+                .iter()
+                .map(|source| source.item_id.as_str())
+                .collect::<Vec<_>>(),
+            vec![near_item_id.as_str(), fixture.source_item_id.as_str()]
+        );
+        assert_eq!(
+            super::speaker_frame_source_at_time(&sources, 0.5)
+                .expect("nearest source")
+                .item_id,
+            near_item_id
+        );
+        assert_eq!(
+            super::speaker_frame_source_at_time(&sources, 1.5)
+                .expect("fallthrough source")
+                .item_id,
+            fixture.source_item_id
+        );
+
+        let mut hidden_source_snapshot = snapshot.clone();
+        hidden_source_snapshot
+            .project
+            .as_mut()
+            .expect("project")
+            .timeline
+            .tracks
+            .iter_mut()
+            .find(|track| track.id == near_track_id)
+            .expect("near track")
+            .hidden = true;
+        let visible_sources =
+            super::resolve_speaker_frame_sources(&hidden_source_snapshot, &fixture.smart_item_id)
+                .expect("visible sources");
+        assert_eq!(visible_sources.len(), 1);
+        assert_eq!(visible_sources[0].item_id, fixture.source_item_id);
+
+        for disable_track in [false, true] {
+            let mut inactive_smart_snapshot = snapshot.clone();
+            let smart_track = inactive_smart_snapshot
+                .project
+                .as_mut()
+                .expect("project")
+                .timeline
+                .tracks
+                .iter_mut()
+                .find(|track| {
+                    track
+                        .items
+                        .iter()
+                        .any(|item| item.id == fixture.smart_item_id)
+                })
+                .expect("smart track");
+            if disable_track {
+                smart_track.enabled = false;
+            } else {
+                smart_track.hidden = true;
+            }
+            let error = super::speaker_frame_breakout_item(
+                &inactive_smart_snapshot,
+                &fixture.smart_item_id,
+            )
+            .expect_err("inactive smart track must be rejected");
+            assert!(
+                matches!(error, CapabilityError::Unavailable(message) if message.contains("hidden or disabled"))
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn speaker_frame_apply_rejects_stale_state_and_untrusted_artifacts() {
+        let fixture = speaker_frame_fixture(3.0, 3.0).await;
+        let inspected = invoke(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.inspect",
+            json!({
+                "projectId": fixture.project_id,
+                "itemId": fixture.smart_item_id
+            }),
+        )
+        .await;
+        let artifact = fixture
+            .runtime
+            .artifacts()
+            .put(
+                vec![1, 2, 3, 4],
+                crate::SMART_LAYER_MASK_ARTIFACT_MIME_TYPE,
+                None,
+                None,
+                Some(3_000),
+            )
+            .expect("valid mask artifact");
+        let revision = fixture.runtime.snapshot().expect("snapshot").revision;
+
+        let stale_document_revision = speaker_frame_apply_payload(
+            &fixture,
+            &inspected,
+            &artifact.uri,
+            revision.saturating_sub(1),
+        );
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            stale_document_revision,
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::Conflict(message) if message.contains("revision conflict"))
+        );
+
+        let mut stale_configuration =
+            speaker_frame_apply_payload(&fixture, &inspected, &artifact.uri, revision);
+        stale_configuration["configurationRevision"] = json!(999);
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            stale_configuration,
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::Conflict(message) if message.contains("configuration changed"))
+        );
+
+        for signature_field in ["settingsSignature", "sourceSignature"] {
+            let mut stale_signature =
+                speaker_frame_apply_payload(&fixture, &inspected, &artifact.uri, revision);
+            stale_signature[signature_field] = json!("stale-signature");
+            let error = invoke_error(
+                &fixture.runtime,
+                "timeline.smart_layer.speaker_frame_breakout.apply",
+                stale_signature,
+            )
+            .await;
+            assert!(
+                matches!(error, CapabilityError::Conflict(message) if message.contains("changed after processing began"))
+            );
+        }
+
+        let missing_artifact_uri = format!(
+            "{}/missing",
+            crate::ARTIFACT_URI_PREFIX.trim_end_matches('/')
+        );
+        let missing_artifact =
+            speaker_frame_apply_payload(&fixture, &inspected, &missing_artifact_uri, revision);
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            missing_artifact,
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("not found"))
+        );
+
+        let noncanonical_uri =
+            speaker_frame_apply_payload(&fixture, &inspected, &artifact.id, revision);
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            noncanonical_uri,
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("canonical"))
+        );
+
+        let wrong_mime = fixture
+            .runtime
+            .artifacts()
+            .put(vec![5, 6], "image/png", None, None, Some(3_000))
+            .expect("wrong MIME artifact");
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            speaker_frame_apply_payload(&fixture, &inspected, &wrong_mime.uri, revision),
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("MIME type"))
+        );
+
+        let short_artifact = fixture
+            .runtime
+            .artifacts()
+            .put(
+                vec![7, 8],
+                crate::SMART_LAYER_MASK_ARTIFACT_MIME_TYPE,
+                None,
+                None,
+                Some(2_999),
+            )
+            .expect("short mask artifact");
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            speaker_frame_apply_payload(&fixture, &inspected, &short_artifact.uri, revision),
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("cover"))
+        );
+
+        let mut wrong_frame_count =
+            speaker_frame_apply_payload(&fixture, &inspected, &artifact.uri, revision);
+        wrong_frame_count["frameCount"] = json!(89);
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            wrong_frame_count,
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("frameCount"))
+        );
+
+        invoke(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            speaker_frame_apply_payload(&fixture, &inspected, &artifact.uri, revision),
+        )
+        .await;
+        assert!(
+            fixture
+                .runtime
+                .artifacts()
+                .remove(&artifact.uri)
+                .expect("remove artifact")
+        );
+        let missing_after_apply = invoke(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.inspect",
+            json!({
+                "projectId": fixture.project_id,
+                "itemId": fixture.smart_item_id
+            }),
+        )
+        .await;
+        assert_eq!(missing_after_apply["artifactsAvailable"], false);
+        assert_eq!(missing_after_apply["applicationStatus"], "stale");
+    }
+
+    #[tokio::test]
+    async fn speaker_frame_apply_requires_video_source_coverage_for_every_frame() {
+        let fixture = speaker_frame_fixture(1.0, 3.0).await;
+        let inspected = invoke(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.inspect",
+            json!({
+                "projectId": fixture.project_id,
+                "itemId": fixture.smart_item_id
+            }),
+        )
+        .await;
+        let artifact = fixture
+            .runtime
+            .artifacts()
+            .put(
+                vec![1, 2, 3],
+                crate::SMART_LAYER_MASK_ARTIFACT_MIME_TYPE,
+                None,
+                None,
+                Some(3_000),
+            )
+            .expect("mask artifact");
+        let revision = fixture.runtime.snapshot().expect("snapshot").revision;
+        let error = invoke_error(
+            &fixture.runtime,
+            "timeline.smart_layer.speaker_frame_breakout.apply",
+            speaker_frame_apply_payload(&fixture, &inspected, &artifact.uri, revision),
+        )
+        .await;
+        assert!(
+            matches!(error, CapabilityError::InvalidInput(message) if message.contains("coverage is missing at frame 30"))
+        );
+    }
+
+    #[test]
+    fn speaker_frame_artifact_checksum_is_recomputed_from_stored_bytes() {
+        let bytes = std::sync::Arc::<[u8]>::from(vec![1, 2, 3]);
+        let stored = crate::StoredArtifact {
+            metadata: crate::ArtifactRef {
+                id: "artifact-test".into(),
+                uri: format!("{}artifact-test", crate::ARTIFACT_URI_PREFIX),
+                mime_type: crate::SMART_LAYER_MASK_ARTIFACT_MIME_TYPE.into(),
+                byte_size: bytes.len() as u64,
+                sha256: "0".repeat(64),
+                created_at_ms: 1,
+                expires_at_ms: 2,
+                width: None,
+                height: None,
+                duration_ms: Some(1_000),
+            },
+            bytes,
+        };
+        let error = super::validate_speaker_frame_artifact_contents(&stored, &stored.metadata.uri)
+            .expect_err("forged checksum must be rejected");
+        assert!(error.contains("checksum"));
     }
 
     #[tokio::test]

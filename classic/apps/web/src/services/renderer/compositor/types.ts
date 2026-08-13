@@ -10,16 +10,23 @@ export type FrameDescriptor = {
 	items: FrameItemDescriptor[];
 };
 
+export type LayerDescriptor = {
+	textureId: string;
+	transform: QuadTransformDescriptor;
+	opacity: number;
+	blendMode: BlendMode;
+	effectPassGroups: EffectPass[][];
+	sourceMask?: SourceMaskDescriptor | null;
+	mask: LayerMaskDescriptor | null;
+};
+
 export type FrameItemDescriptor =
+	| ({ type: "layer" } & LayerDescriptor)
 	| {
-			type: "layer";
-			textureId: string;
-			transform: QuadTransformDescriptor;
+			type: "group";
+			items: FrameItemDescriptor[];
 			opacity: number;
 			blendMode: BlendMode;
-			effectPassGroups: EffectPass[][];
-			sourceMask?: SourceMaskDescriptor | null;
-			mask: LayerMaskDescriptor | null;
 	  }
 	| {
 			type: "sceneEffect";
@@ -64,6 +71,12 @@ export type ExternalTextureDescriptor = {
 	source: CanvasImageSource;
 	width: number;
 	height: number;
+	/**
+	 * Procedural graphics are already authored in logical scene pixels. Preview
+	 * rasterization must therefore use the frame scale, even when the graphic is
+	 * wider than the visible camera (for example, a parallax world background).
+	 */
+	previewScaleMode?: "frame";
 };
 
 /**

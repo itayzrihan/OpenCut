@@ -32,7 +32,16 @@ import type { TimelineDragData } from "@/timeline/drag";
 import type { MediaAsset } from "@/media/types";
 import type { ProcessedMediaAsset } from "@/media/processing";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects";
-import { roundFrameTime, type MediaTime } from "@/wasm";
+import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import {
+	addMediaTime,
+	roundFrameTime,
+	type MediaTime,
+} from "@/wasm";
+import {
+	buildSpeakerFrameBreakoutLayerElement,
+	normalizeDropTargetForDrag,
+} from "@/timeline/smart-layer-drop";
 
 // --- Config ---
 
@@ -69,6 +78,13 @@ export interface DragDropConfig {
 			presetId: string;
 			side: "in" | "out";
 			percent?: number;
+		}>;
+	}) => void;
+	applyLoops: (args: {
+		applications: Array<{
+			trackId: string;
+			elementId: string;
+			loopId: string;
 		}>;
 	}) => void;
 }
@@ -110,8 +126,12 @@ function elementTypeFromDrag({
 			return "effect";
 		case "transition":
 			return "effect";
+		case "loop":
+			return "effect";
 		case "media":
 			return dragData.mediaType;
+		case "element-bundle":
+			return dragData.anchorElementType;
 	}
 }
 
@@ -122,6 +142,7 @@ function getTargetElementTypesForDrag({
 }): string[] | undefined {
 	if (dragData.type === "effect") return dragData.targetElementTypes;
 	if (dragData.type === "transition") return dragData.targetElementTypes;
+	if (dragData.type === "loop") return dragData.targetElementTypes;
 	if (dragData.type === "media") return dragData.targetElementTypes;
 	return undefined;
 }
@@ -301,7 +322,7 @@ export class DragDropController {
 		const targetElementTypes = getTargetElementTypesForDrag({ dragData });
 
 		const sceneTracks = this.config.getSceneTracks();
-		const target = computeDropTarget({
+		let target: DropTarget | null = computeDropTarget({
 			elementType,
 			mouseX: coords.mouseX,
 			mouseY: coords.mouseY,
@@ -313,6 +334,12 @@ export class DragDropController {
 			zoomLevel: this.config.zoomLevel,
 			targetElementTypes,
 		});
+		target = normalizeDropTargetForDrag({ target, dragData });
+		if (!target) {
+			this.setOver({ dropTarget: null, elementType });
+			event.dataTransfer.dropEffect = "none";
+			return;
+		}
 
 		const fps = this.config.getActiveProjectFps();
 		target.xPosition = fps
@@ -469,8 +496,14 @@ export class DragDropController {
 			case "transition":
 				this.executeTransitionDrop({ target, dragData });
 				return;
+			case "loop":
+				this.executeLoopDrop({ target, dragData });
+				return;
 			case "media":
 				this.executeMediaDrop({ target, dragData });
+				return;
+			case "element-bundle":
+				this.executeElementBundleDrop({ target, dragData });
 				return;
 		}
 	}
@@ -485,7 +518,10 @@ export class DragDropController {
 		const element = buildTextElement({
 			raw: {
 				name: dragData.name ?? "",
-				params: { content: dragData.content ?? "" },
+				params: {
+					...(dragData.params ?? {}),
+					content: dragData.content ?? "",
+				},
 			},
 			startTime: target.xPosition,
 		});
@@ -518,9 +554,34 @@ export class DragDropController {
 			definitionId: dragData.definitionId,
 			name: dragData.name,
 			startTime: target.xPosition,
+			duration: dragData.duration,
 			params: dragData.params,
 		});
 		this.insertAtTarget({ element, target, trackType: "graphic" });
+	}
+
+	private executeElementBundleDrop({
+		target,
+		dragData,
+	}: {
+		target: DropTarget;
+		dragData: Extract<TimelineDragData, { type: "element-bundle" }>;
+	}): void {
+		const commands = dragData.items.map(
+			({ element, trackType }) =>
+				new InsertElementCommand({
+					element: {
+						...element,
+						startTime: addMediaTime({
+							a: target.xPosition,
+							b: element.startTime,
+						}),
+					},
+					placement: { mode: "auto", trackType },
+				}),
+		);
+		if (commands.length === 0) return;
+		this.config.executeCommand(new BatchCommand(commands));
 	}
 
 	private executeMediaDrop({
@@ -559,7 +620,17 @@ export class DragDropController {
 		target: DropTarget;
 		dragData: Extract<TimelineDragData, { type: "effect" }>;
 	}): void {
-		if (target.targetElement && dragData.placement !== "layer") {
+		if (
+			dragData.placement === "layer-above-target" &&
+			!target.targetElement
+		) {
+			return;
+		}
+		if (
+			target.targetElement &&
+			dragData.placement !== "layer" &&
+			dragData.placement !== "layer-above-target"
+		) {
 			this.config.addClipEffect({
 				trackId: target.targetElement.trackId,
 				elementId: target.targetElement.elementId,
@@ -568,13 +639,21 @@ export class DragDropController {
 			return;
 		}
 
-		const element = buildEffectElement({
-			effectType: dragData.effectType,
-			startTime: target.xPosition,
-			duration: dragData.duration,
-			name: dragData.name,
-			params: dragData.params,
-		});
+		const element =
+			dragData.effectType === SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE
+				? buildSpeakerFrameBreakoutLayerElement({
+						startTime: target.xPosition,
+						duration: dragData.duration,
+						name: dragData.name,
+						params: dragData.params,
+					})
+				: buildEffectElement({
+						effectType: dragData.effectType,
+						startTime: target.xPosition,
+						duration: dragData.duration,
+						name: dragData.name,
+						params: dragData.params,
+					});
 
 		this.insertAtTarget({ element, target, trackType: "effect" });
 	}
@@ -607,6 +686,25 @@ export class DragDropController {
 			},
 		});
 		this.insertAtTarget({ element, target, trackType: "effect" });
+	}
+
+	private executeLoopDrop({
+		target,
+		dragData,
+	}: {
+		target: DropTarget;
+		dragData: Extract<TimelineDragData, { type: "loop" }>;
+	}): void {
+		if (!target.targetElement) return;
+		this.config.applyLoops({
+			applications: [
+				{
+					trackId: target.targetElement.trackId,
+					elementId: target.targetElement.elementId,
+					loopId: dragData.loopId,
+				},
+			],
+		});
 	}
 
 	private resolveTransitionApplications({

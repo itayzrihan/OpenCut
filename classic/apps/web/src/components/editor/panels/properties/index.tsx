@@ -28,9 +28,13 @@ import { cn } from "@/utils/ui";
 import { EmptyView } from "./empty-view";
 import type { TextElement, TimelineElement } from "@/timeline";
 import { getTextRows, getWordRuns, type TextOverrideScope } from "./text-scope";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import type { SelectedTextWordRef } from "@/selection/editor-selection";
 import type { ElementWithTrackForParams } from "./components/element-params-tab";
+import {
+	canBulkEditPropertiesSelection,
+	isBulkEditablePropertiesTab,
+} from "./bulk-selection";
 
 export function PropertiesPanel() {
 	const editor = useEditor();
@@ -63,13 +67,10 @@ export function PropertiesPanel() {
 
 	if (selectedElements.length > 1) {
 		const firstElement = elementsWithTracks[0]?.element;
-		const canBulkEdit =
-			firstElement &&
-			firstElement.type === "text" &&
-			elementsWithTracks.length === selectedElements.length &&
-			elementsWithTracks.every(
-				(entry) => entry.element.type === firstElement.type,
-			);
+		const canBulkEdit = canBulkEditPropertiesSelection({
+			entries: elementsWithTracks,
+			selectedCount: selectedElements.length,
+		});
 
 		if (!canBulkEdit || !firstElement) {
 			return (
@@ -82,7 +83,12 @@ export function PropertiesPanel() {
 		}
 
 		const config = getPropertiesConfig({ element: firstElement, mediaAssets });
-		const visibleTabs = config.tabs;
+		const visibleTabs = config.tabs.filter((tab) =>
+			isBulkEditablePropertiesTab({
+				elementType: firstElement.type,
+				tabId: tab.id,
+			}),
+		);
 		const storedTabId = activeTabPerType[firstElement.type];
 		const isStoredTabVisible = visibleTabs.some((t) => t.id === storedTabId);
 		const activeTabId = isStoredTabVisible ? storedTabId : config.defaultTab;
@@ -211,11 +217,13 @@ export function PropertiesPanel() {
 						selectedTextWordCount={selectedTextWordCount}
 					/>
 				)}
-				{activeTab.content({
-					trackId: track.id,
-					elementsWithTracks,
-					textScope,
-				})}
+				<Fragment key={`${track.id}:${element.id}:${activeTab.id}`}>
+					{activeTab.content({
+						trackId: track.id,
+						elementsWithTracks,
+						textScope,
+					})}
+				</Fragment>
 			</ScrollArea>
 		</div>
 	);

@@ -211,6 +211,41 @@ export type AiEditOperation =
 			reason?: string;
 	  }
 	| {
+			type: "create_speaker_tile";
+			trackId: string;
+			elementId: string;
+			positionX: number;
+			positionY: number;
+			scaleX?: number;
+			scaleY?: number;
+			cameraDepth?: number;
+			presentation?: "rounded-rectangle" | "ellipse" | "rectangle" | "cutout";
+			removeBackground?: boolean;
+			cornerRadius?: number;
+			borderColor?: string;
+			borderWidth?: number;
+			startTime?: MediaTime;
+			duration?: MediaTime;
+			name?: string;
+			reason?: string;
+	  }
+	| {
+			type: "create_speaker_frame_breakout";
+			trackId: string;
+			elementId: string;
+			positionX?: number;
+			positionY?: number;
+			scaleX?: number;
+			scaleY?: number;
+			cropTop?: number;
+			cornerRadius?: number;
+			backgroundPresetId?: string;
+			startTime?: MediaTime;
+			duration?: MediaTime;
+			name?: string;
+			reason?: string;
+	  }
+	| {
 			type: "upsert_keyframe";
 			trackId: string;
 			elementId: string;
@@ -279,6 +314,13 @@ export type AiEditOperation =
 			trackId?: string;
 			name?: string;
 			params?: Record<string, string | number | boolean>;
+			saveAsUiElement?: {
+				description: string;
+				category: string;
+				keywords: string[];
+				whenToUse: string;
+				sourcePrompt?: string;
+			};
 			reason?: string;
 	  }
 	| {

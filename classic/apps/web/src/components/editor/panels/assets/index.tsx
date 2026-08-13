@@ -13,14 +13,18 @@ import { SettingsView } from "./views/settings";
 import { SoundsView } from "@/sounds/components/assets-view";
 import { StickersView } from "@/stickers/components/assets-view";
 import { UiElementsView } from "@/ui-elements/components/assets-view";
+import { SimpleAdvancedLayersView } from "@/simple-advanced-layers/components/assets-view";
 import { TextView } from "@/text/components/assets-view";
 import { EffectsView } from "@/effects/components/assets-view";
 import { BackgroundsView } from "@/backgrounds/components/assets-view";
 import { OverlayEffectsView } from "@/effects/components/overlay-assets-view";
 import { OverlayMovementView } from "@/effects/components/overlay-movement-assets-view";
+import { ParallaxStoryTellerView } from "@/effects/components/parallax-story-teller-assets-view";
 import { TransitionsView } from "@/transitions/components/assets-view";
+import { LoopsView } from "@/loops/components/assets-view";
 import { AiChatView } from "@/ai/components/ai-chat-view";
 import { TimelineCodeView } from "@/ai/components/timeline-code-view";
+import { TemplatesView } from "@/templates/components/assets-view";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
@@ -33,10 +37,14 @@ export function AssetsPanel() {
 		text: <TextView />,
 		stickers: <StickersView />,
 		"ui-elements": <UiElementsView />,
+		templates: <TemplatesView />,
+		"simple-advanced-layers": <SimpleAdvancedLayersView />,
 		backgrounds: <BackgroundsView />,
 		effects: <EffectsView />,
 		overlays: <OverlayEffectsView />,
 		"overlay-movement": <OverlayMovementView />,
+		"parallax-story-teller": <ParallaxStoryTellerView />,
+		loops: <LoopsView />,
 		transitions: <TransitionsView />,
 		captions: <Captions />,
 		"see-captions": <CaptionReviewView />,

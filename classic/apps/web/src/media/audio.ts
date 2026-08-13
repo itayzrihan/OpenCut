@@ -19,11 +19,18 @@ import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
 import { canTrackHaveAudio, getDisplayTracks } from "@/timeline";
 import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
-import { Input, ALL_FORMATS, AudioBufferSink } from "mediabunny";
+import {
+	Input,
+	ALL_FORMATS,
+	AudioBufferSink,
+	type WrappedAudioBuffer,
+} from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { computeRmsBuckets, type SampleBucket } from "@/media/waveform-summary";
 import { sharedLibraryService } from "@/shared-library";
 import { createMediaSource } from "@/media/source";
+import { createCachedAssetResolver } from "@/media/cached-asset-resolver";
+import { layoutTimedAudioChunks } from "@/media/audio-chunk-layout";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;
@@ -153,25 +160,46 @@ export async function collectAudioElements({
 	tracks,
 	mediaAssets,
 	audioContext,
+	resolveAssetAudio = resolveAudioBufferForAsset,
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
 	audioContext: AudioContext;
+	resolveAssetAudio?: (options: {
+		asset: MediaAsset;
+		audioContext: AudioContext;
+	}) => Promise<AudioBuffer | null>;
 }): Promise<CollectedAudioElement[]> {
 	const candidates = collectAudibleCandidates({ tracks, mediaAssets });
 	const mediaMap = new Map<string, MediaAsset>(
 		mediaAssets.map((media) => [media.id, media]),
 	);
+	// Split-heavy edits may reference the same full source dozens of times.
+	// Decode each source once so later cuts cannot disappear under decoder load.
+	const resolveCachedAssetAudio = createCachedAssetResolver({
+		resolve: ({ asset }: { asset: MediaAsset }) =>
+			resolveAssetAudio({ asset, audioContext }),
+	});
 	const pendingElements: Array<Promise<CollectedAudioElement | null>> = [];
 
 	for (const { element, mediaAsset } of candidates) {
 		if (element.type === "audio") {
+			const uploadedAsset =
+				element.sourceType === "upload"
+					? mediaMap.get(element.mediaId)
+					: undefined;
+			const audioBufferPromise =
+				uploadedAsset
+					? resolveCachedAssetAudio({ asset: uploadedAsset })
+					: element.sourceType === "upload"
+						? Promise.resolve(null)
+					: resolveAudioBufferForElement({
+							element,
+							mediaMap,
+							audioContext,
+						});
 			pendingElements.push(
-				resolveAudioBufferForElement({
-					element,
-					mediaMap,
-					audioContext,
-				}).then((audioBuffer) => {
+				audioBufferPromise.then((audioBuffer) => {
 					if (!audioBuffer) return null;
 					return {
 						timelineElement: element,
@@ -197,10 +225,7 @@ export async function collectAudioElements({
 			if (!mediaAsset || !mediaSupportsAudio({ media: mediaAsset })) continue;
 
 			pendingElements.push(
-				resolveAudioBufferForAsset({
-					asset: mediaAsset,
-					audioContext,
-				}).then((audioBuffer) => {
+				resolveCachedAssetAudio({ asset: mediaAsset }).then((audioBuffer) => {
 					if (!audioBuffer) return null;
 					return {
 						timelineElement: element,
@@ -277,35 +302,49 @@ async function resolveAudioBufferForAsset({
 		const sink = new AudioBufferSink(audioTrack);
 		const targetSampleRate = audioContext.sampleRate;
 
-		const chunks: AudioBuffer[] = [];
-		let totalSamples = 0;
+		const chunks: WrappedAudioBuffer[] = [];
 
-		for await (const { buffer } of sink.buffers(0)) {
-			chunks.push(buffer);
-			totalSamples += buffer.length;
+		for await (const chunk of sink.buffers(0)) {
+			chunks.push(chunk);
 		}
 
 		if (chunks.length === 0) return null;
 
-		const nativeSampleRate = chunks[0].sampleRate;
+		const nativeSampleRate = chunks[0].buffer.sampleRate;
 		const numChannels = Math.min(
 			MAX_AUDIO_CHANNELS,
-			chunks[0].numberOfChannels,
+			chunks[0].buffer.numberOfChannels,
+		);
+		const { totalSamples, placements } = layoutTimedAudioChunks({
+			chunks: chunks.map((chunk) => ({
+				timestampSeconds: chunk.timestamp,
+				durationSeconds: chunk.duration,
+				sampleLength: chunk.buffer.length,
+			})),
+			sampleRate: nativeSampleRate,
+			minimumDurationSeconds: asset.duration,
+		});
+		const nativeBuffer = audioContext.createBuffer(
+			numChannels,
+			totalSamples,
+			nativeSampleRate,
 		);
 
-		const nativeChannels = Array.from(
-			{ length: numChannels },
-			() => new Float32Array(totalSamples),
-		);
-		let offset = 0;
-		for (const chunk of chunks) {
+		for (const placement of placements) {
+			const chunk = chunks[placement.chunkIndex].buffer;
 			for (let channel = 0; channel < numChannels; channel++) {
 				const sourceData = chunk.getChannelData(
 					Math.min(channel, chunk.numberOfChannels - 1),
 				);
-				nativeChannels[channel].set(sourceData, offset);
+				nativeBuffer.copyToChannel(
+					sourceData.subarray(
+						placement.sourceStartSample,
+						placement.sourceStartSample + placement.sampleCount,
+					),
+					channel,
+					placement.outputStartSample,
+				);
 			}
-			offset += chunk.length;
 		}
 
 		// use OfflineAudioContext for high-quality resampling to target rate
@@ -317,15 +356,6 @@ async function resolveAudioBufferForAsset({
 			outputSamples,
 			targetSampleRate,
 		);
-
-		const nativeBuffer = audioContext.createBuffer(
-			numChannels,
-			totalSamples,
-			nativeSampleRate,
-		);
-		for (let ch = 0; ch < numChannels; ch++) {
-			nativeBuffer.copyToChannel(nativeChannels[ch], ch);
-		}
 
 		const sourceNode = offlineContext.createBufferSource();
 		sourceNode.buffer = nativeBuffer;
@@ -576,9 +606,15 @@ export async function collectAudioMixSources({
 export async function collectAudioClips({
 	tracks,
 	mediaAssets,
+	onClips,
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
+	/**
+	 * Playback can start media-backed clips immediately while library audio is
+	 * still being fetched. The final callback includes both sets of clips.
+	 */
+	onClips?: (clips: AudioClipSource[]) => void;
 }): Promise<AudioClipSource[]> {
 	const orderedTracks = getDisplayTracks({ tracks });
 	const clips: AudioClipSource[] = [];
@@ -641,10 +677,14 @@ export async function collectAudioClips({
 		}
 	}
 
+	// Do not make video audio wait for unrelated library-audio fetches.
+	onClips?.([...clips]);
+
 	const resolvedLibraryClips = await Promise.all(pendingLibraryClips);
 	for (const clip of resolvedLibraryClips) {
 		if (clip) clips.push(clip);
 	}
+	onClips?.([...clips]);
 
 	return clips;
 }

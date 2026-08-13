@@ -1637,6 +1637,180 @@ describe("AI edit plan validation", () => {
 		expect(backgroundResult.errors[0]).toContain("not a video element");
 	});
 
+	test("validates native speaker-tile composition against a video source", () => {
+		const videoTracks: SceneTracks = {
+			...tracks,
+			main: {
+				...tracks.main,
+				elements: [
+					{
+						id: "speaker",
+						type: "video",
+						name: "Speaker",
+						mediaId: "media-speaker",
+						startTime: t(100),
+						duration: t(200),
+						trimStart: t(0),
+						trimEnd: t(0),
+						params: {},
+						isSourceAudioEnabled: true,
+					},
+				],
+			},
+		};
+		const result = validateAiEditPlan({
+			value: {
+				title: "Place speaker on the world canvas",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_tile",
+						trackId: "main",
+						elementId: "speaker",
+						positionX: 720,
+						positionY: -160,
+						scaleX: 0.4,
+						cameraDepth: 1.2,
+						presentation: "rounded-rectangle",
+						cornerRadius: 0.16,
+					},
+				],
+			},
+			tracks: videoTracks,
+		});
+
+		expect(result.success).toBe(true);
+		expect(result.plan?.operations[0]).toMatchObject({
+			type: "create_speaker_tile",
+			cameraDepth: 1.2,
+			presentation: "rounded-rectangle",
+		});
+
+		const breakoutResult = validateAiEditPlan({
+			value: {
+				title: "Build a speaker frame breakout",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_frame_breakout",
+						trackId: "main",
+						elementId: "speaker",
+						cropTop: 0.24,
+						backgroundPresetId: "paper-grid",
+						startTime: t(140),
+						duration: t(80),
+					},
+				],
+			},
+			tracks: videoTracks,
+		});
+		expect(breakoutResult.success).toBe(true);
+		expect(breakoutResult.plan?.operations[0]).toMatchObject({
+			type: "create_speaker_frame_breakout",
+			cropTop: 0.24,
+			backgroundPresetId: "paper-grid",
+			startTime: t(140),
+			duration: t(80),
+		});
+
+		const crossCutTracks: SceneTracks = {
+			...videoTracks,
+			main: {
+				...videoTracks.main,
+				elements: [
+					...videoTracks.main.elements,
+					{
+						id: "speaker-next",
+						type: "video",
+						name: "Speaker next cut",
+						mediaId: "media-speaker-next",
+						startTime: t(300),
+						duration: t(200),
+						trimStart: t(0),
+						trimEnd: t(0),
+						params: {},
+						isSourceAudioEnabled: true,
+					},
+				],
+			},
+		};
+		const crossCutResult = validateAiEditPlan({
+			value: {
+				title: "Build one smart layer across a source cut",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_frame_breakout",
+						trackId: "main",
+						elementId: "speaker",
+						startTime: t(140),
+						duration: t(260),
+					},
+				],
+			},
+			tracks: crossCutTracks,
+		});
+		expect(crossCutResult.success).toBe(true);
+
+		const unsupportedLegacyFieldsResult = validateAiEditPlan({
+			value: {
+				title: "Build a speaker stage with unsupported legacy controls",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_frame_breakout",
+						trackId: "main",
+						elementId: "speaker",
+						backgroundScaleX: 1.12,
+					},
+				],
+			},
+			tracks: videoTracks,
+		});
+		expect(unsupportedLegacyFieldsResult.success).toBe(false);
+
+		const outsideRangeResult = validateAiEditPlan({
+			value: {
+				title: "Build an out-of-range speaker stage",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_frame_breakout",
+						trackId: "main",
+						elementId: "speaker",
+						startTime: t(310),
+						duration: t(100),
+					},
+				],
+			},
+			tracks: videoTracks,
+		});
+		expect(outsideRangeResult.success).toBe(false);
+		expect(outsideRangeResult.errors[0]).toContain(
+			"must start inside Speaker and stay within the timeline",
+		);
+
+		const missingBackgroundResult = validateAiEditPlan({
+			value: {
+				title: "Build a broken speaker stage",
+				summary: "",
+				operations: [
+					{
+						type: "create_speaker_frame_breakout",
+						trackId: "main",
+						elementId: "speaker",
+						backgroundPresetId: "missing-grid",
+					},
+				],
+			},
+			tracks: videoTracks,
+		});
+		expect(missingBackgroundResult.success).toBe(false);
+		expect(missingBackgroundResult.errors[0]).toContain(
+			"missing background preset",
+		);
+	});
+
 	test("builds custom effect params for custom edit operations", () => {
 		const params = buildCustomEditEffectParams({
 			operation: {
@@ -2559,6 +2733,89 @@ describe("AI expanded operations", () => {
 			definitionId: "rectangle",
 		});
 		expect(inserted[0]?.placement).toEqual({ mode: "auto" });
+	});
+
+	test("persists a novel UI-element preset with its complete reuse metadata", async () => {
+		const { useSharedLibraryStore } = await import("@/shared-library");
+		const originalSave =
+			useSharedLibraryStore.getState().saveGeneratedUiElement;
+		let saved:
+			| {
+					name: string;
+					description: string;
+					category: string;
+					keywords: string[];
+					whenToUse: string;
+					defaultDurationSeconds: number;
+					sourcePrompt?: string;
+					params: Record<string, string | number | boolean>;
+			  }
+			| undefined;
+		useSharedLibraryStore.setState({
+			saveGeneratedUiElement: async (preset) => {
+				saved = preset;
+				return null;
+			},
+		});
+
+		try {
+			applyAiEditPlan({
+				editor: {
+					scenes: {
+						getActiveSceneOrNull: () => ({ tracks }),
+					},
+					timeline: {
+						insertElement: () => undefined,
+					},
+				} as unknown as EditorCore,
+				plan: {
+					title: "Create reusable goal",
+					summary: "",
+					operations: [
+						{
+							type: "insert_graphic_element",
+							definitionId: "ui-element",
+							name: "Revenue Goal",
+							startTime: t(0),
+							duration: t(240_000),
+							params: {
+								template: "goal-slider",
+								label: "$25,000",
+								animationIn: "progress-meter-sweep",
+								animationOut: "progress-complete-flash",
+							},
+							saveAsUiElement: {
+								description: "Reusable revenue goal slider",
+								category: "metrics",
+								keywords: ["revenue", "goal", "slider"],
+								whenToUse: "Use for a revenue target.",
+								sourcePrompt: "Blue revenue goal",
+							},
+						},
+					],
+				},
+			});
+			await Promise.resolve();
+
+			expect(saved).toMatchObject({
+				name: "Revenue Goal",
+				description: "Reusable revenue goal slider",
+				category: "metrics",
+				keywords: ["revenue", "goal", "slider"],
+				whenToUse: "Use for a revenue target.",
+				defaultDurationSeconds: 2,
+				sourcePrompt: "Blue revenue goal",
+				params: {
+					template: "goal-slider",
+					animationIn: "progress-meter-sweep",
+					animationOut: "progress-complete-flash",
+				},
+			});
+		} finally {
+			useSharedLibraryStore.setState({
+				saveGeneratedUiElement: originalSave,
+			});
+		}
 	});
 
 	test("applies insert_html_element as a hyperframe graphic", () => {

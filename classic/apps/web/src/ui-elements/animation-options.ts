@@ -62,6 +62,15 @@ export const UI_ELEMENT_TEMPLATE_OPTIONS: UiElementAnimationOption[] = [
 	{ value: "leaderboard", label: "Leaderboard" },
 	{ value: "tooltip", label: "Tooltip" },
 	{ value: "carousel-dots", label: "Carousel Dots" },
+	{ value: "minimal-note", label: "Minimal Note" },
+	{ value: "search-bar", label: "Search Bar" },
+	{ value: "goal-slider", label: "Goal Slider" },
+	{ value: "metric-pill", label: "Metric Pill" },
+	{ value: "avatar-message-left", label: "Avatar Message Left" },
+	{ value: "avatar-message-right", label: "Avatar Message Right" },
+	{ value: "folder-pill", label: "Folder Pill" },
+	{ value: "profile-stack", label: "Profile Stack" },
+	{ value: "app-notification", label: "App Notification" },
 ];
 
 const TEMPLATE_GROUPS: Record<string, UiElementAnimationGroup> = {
@@ -104,6 +113,15 @@ const TEMPLATE_GROUPS: Record<string, UiElementAnimationGroup> = {
 	"social-card": "card",
 	"toggle-switch": "card",
 	"carousel-dots": "card",
+	"minimal-note": "card",
+	"search-bar": "card",
+	"goal-slider": "progress",
+	"metric-pill": "counter",
+	"avatar-message-left": "chat",
+	"avatar-message-right": "chat",
+	"folder-pill": "card",
+	"profile-stack": "card",
+	"app-notification": "chat",
 	"wasted-overlay": "overlay",
 	"direction-cross-arrows": "direction",
 };
@@ -296,6 +314,10 @@ const OUT_ANIMATION_GROUPS: Record<
 		{ value: "list-row-collapse", label: "Row collapse" },
 		{ value: "list-stack-fly", label: "Stack fly" },
 		{ value: "list-fade-stagger", label: "Fade stagger" },
+		{
+			value: "list-blur-zoom-fade",
+			label: "Blur + zoom fade (stationary)",
+		},
 		{ value: "list-shred-away", label: "Shred away" },
 		{ value: "list-sweep-clear", label: "Sweep clear" },
 		{ value: "list-glow-off", label: "Glow off" },

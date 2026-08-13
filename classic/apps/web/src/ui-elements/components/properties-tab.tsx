@@ -40,6 +40,7 @@ const BUILT_IN_MOTION_PARAM_KEYS = [
 	"animationOut",
 	"animationOutStart",
 	"eventAt",
+	"eventTransitionDuration",
 	"animationStrength",
 ] as const;
 const NEO_HUD_INTENSITY_TEMPLATES = new Set([
@@ -261,6 +262,9 @@ function getContentParamKeys({
 	if (NO_TEXT_TEMPLATES.has(template)) {
 		return ["template"];
 	}
+	if (template === "minimal-note") {
+		return ["template", "label", "items", "itemCount"];
+	}
 	if (group === "list") {
 		return ["template", "items", "itemCount"];
 	}
@@ -295,12 +299,13 @@ function getStyleParamKeys({
 		keys.push("screenMode");
 	}
 	if (template === "checkbox-list") {
-		keys.push("checked");
+		keys.push("checked", "eventBackgroundEnabled", "eventBackground");
 	}
 	if (
 		group === "counter" ||
 		template === "rating-stars" ||
-		template === "timeline-stepper"
+		template === "timeline-stepper" ||
+		template === "profile-stack"
 	) {
 		keys.push("count");
 	}
@@ -319,6 +324,9 @@ function getFontParamKeys({
 }): string[] {
 	if (NO_TEXT_TEMPLATES.has(template)) {
 		return [];
+	}
+	if (template === "minimal-note") {
+		return ["labelFontFamily", "itemsFontFamily"];
 	}
 	if (group === "list") {
 		return ["itemsFontFamily"];

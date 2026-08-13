@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
 	AUDIO_BASED_AUDIO_FRAME_SECONDS,
 	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
+	clampAudioMinSilenceSeconds,
 	extractCompactAudioFeatures,
 } from "@/timeline/audio-silence-analysis";
 
@@ -10,6 +11,13 @@ describe("compact audio silence features", () => {
 		expect(AUDIO_BASED_AUDIO_FRAME_SECONDS).toBe(0.01);
 		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.minSilenceSeconds).toBe(0.1);
 		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.speechPaddingSeconds).toBe(0);
+	});
+
+	test("clamps the configurable minimum silence duration to safe bounds", () => {
+		expect(clampAudioMinSilenceSeconds(Number.NaN)).toBe(0.1);
+		expect(clampAudioMinSilenceSeconds(0)).toBe(0.01);
+		expect(clampAudioMinSilenceSeconds(90)).toBe(60);
+		expect(clampAudioMinSilenceSeconds(0.25)).toBe(0.25);
 	});
 
 	test("maps trimmed source frames into retimed clip-local time", async () => {

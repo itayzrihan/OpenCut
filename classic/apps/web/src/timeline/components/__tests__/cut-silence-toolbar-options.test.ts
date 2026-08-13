@@ -27,15 +27,19 @@ describe("cut silence toolbar options", () => {
 	});
 
 	test("wires the selected mode into the manager action", async () => {
-		const calls: Array<{ mode: "audio" | "fast" | "deep" }> = [];
+		const calls: Array<{
+			mode: "audio" | "fast" | "deep";
+			minSilenceSeconds?: number;
+		}> = [];
 
 		await executeCutSilenceAction({
 			mode: "audio",
+			minSilenceSeconds: 0.25,
 			removeAllSilence: async (options) => {
 				calls.push(options);
 			},
 		});
 
-		expect(calls).toEqual([{ mode: "audio" }]);
+		expect(calls).toEqual([{ mode: "audio", minSilenceSeconds: 0.25 }]);
 	});
 });

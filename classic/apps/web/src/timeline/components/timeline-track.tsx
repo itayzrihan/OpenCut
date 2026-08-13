@@ -116,7 +116,11 @@ function TimelineTrackContentComponent({
 					onTrackMouseDown?.(event);
 				}}
 			>
-				{track.elements.length === 0 ? (
+				{track.type === "parallax" ? (
+					<div className="pointer-events-none flex size-full items-center rounded-sm border border-cyan-400/25 bg-cyan-400/10 px-3 text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-200/80">
+						Parallax · {track.direction === "with-camera" ? "with" : "against"} camera · {track.speedPercent}%
+					</div>
+				) : track.elements.length === 0 ? (
 					<div className="text-muted-foreground border-muted/30 pointer-events-none flex size-full items-center justify-center rounded-sm border-2 border-dashed text-xs" />
 				) : (
 					visibleElements.map((element) => {

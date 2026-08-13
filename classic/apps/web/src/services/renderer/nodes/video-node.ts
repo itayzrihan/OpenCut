@@ -11,9 +11,10 @@ import type { EffectPass } from "@/effects/types";
 import type { BackgroundMaskFrame } from "@/services/background-removal";
 
 export interface VideoNodeParams extends VisualNodeParams {
-	url: string;
+	url?: string;
 	file?: File;
 	mediaId: string;
+	maxSourceSize?: number;
 	backgroundRemoval?: BackgroundRemovalSettings;
 	isPreview: boolean;
 }

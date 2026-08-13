@@ -131,7 +131,7 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 			target: new BufferTarget(),
 		});
 
-		const videoSource = new CanvasSource(this.renderer.getOutputCanvas(), {
+		const videoSource = new CanvasSource(await this.renderer.getOutputCanvas(), {
 			codec: this.format === "webm" ? "vp9" : "avc",
 			bitrate: qualityMap[this.quality],
 		});
@@ -191,12 +191,17 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 			const timeTicks = i * ticksPerFrame;
 			const timeSeconds = mediaTimeToSeconds({ time: timeTicks });
 			await measureSpanAsync({
-				name: "export.renderFrame",
-				fn: () => this.renderer.render({ node: rootNode, time: timeTicks }),
-			});
-			await measureSpanAsync({
-				name: "export.encodeFrame",
-				fn: () => videoSource.add(timeSeconds, 1 / fpsFloat),
+				name: "export.renderAndEncodeFrame",
+				fn: () =>
+					this.renderer.renderAndConsume({
+						node: rootNode,
+						time: timeTicks,
+						consume: () =>
+							measureSpanAsync({
+								name: "export.encodeFrame",
+								fn: () => videoSource.add(timeSeconds, 1 / fpsFloat),
+							}),
+					}),
 			});
 			incrementCounter({ name: "export.frames" });
 

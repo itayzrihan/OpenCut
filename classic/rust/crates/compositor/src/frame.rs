@@ -23,6 +23,12 @@ pub struct CanvasClearDescriptor {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum FrameItemDescriptor {
     Layer(LayerDescriptor),
+    Group {
+        items: Vec<FrameItemDescriptor>,
+        opacity: f32,
+        #[serde(rename = "blendMode")]
+        blend_mode: BlendMode,
+    },
     SceneEffect {
         effect_pass_groups: Vec<Vec<EffectPassDescriptor>>,
     },
@@ -94,4 +100,35 @@ pub struct CanvasTextureDescriptor {
     pub id: String,
     pub width: u32,
     pub height: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CanvasClearDescriptor, FrameDescriptor, FrameItemDescriptor};
+
+    #[test]
+    fn groups_can_nest_frame_items() {
+        let frame = FrameDescriptor {
+            width: 1920,
+            height: 1080,
+            clear: CanvasClearDescriptor {
+                color: [0.0, 0.0, 0.0, 1.0],
+            },
+            items: vec![FrameItemDescriptor::Group {
+                items: vec![FrameItemDescriptor::Group {
+                    items: vec![],
+                    opacity: 0.75,
+                    blend_mode: crate::BlendMode::Screen,
+                }],
+                opacity: 0.5,
+                blend_mode: crate::BlendMode::Normal,
+            }],
+        };
+
+        assert!(matches!(
+            frame.items.as_slice(),
+            [FrameItemDescriptor::Group { items, .. }]
+                if matches!(items.as_slice(), [FrameItemDescriptor::Group { .. }])
+        ));
+    }
 }

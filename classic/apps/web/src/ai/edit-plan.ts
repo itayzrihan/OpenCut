@@ -16,6 +16,7 @@ import { isAnimationPath } from "@/animation/path";
 import {
 	mediaTime,
 	mediaTimeFromSeconds,
+	TICKS_PER_SECOND,
 	ZERO_MEDIA_TIME,
 	type MediaTime,
 } from "@/wasm";
@@ -76,6 +77,10 @@ import {
 	buildAiEditPlanProvenanceRecord,
 } from "./edit-provenance";
 import { getCreativePlanQualityNotes } from "./creative-plan-quality";
+import { UI_ELEMENT_DEFINITION_ID } from "@/ui-elements/catalog";
+import { useSharedLibraryStore } from "@/shared-library";
+import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
+import { calculateTotalDuration } from "@/timeline";
 
 const mediaTimeSchema = z.custom<MediaTime>(
 	(value) => typeof value === "number" && Number.isInteger(value) && value >= 0,
@@ -294,6 +299,45 @@ const operationSchema = z.discriminatedUnion("type", [
 		reason: z.string().optional(),
 	}),
 	z.object({
+		type: z.literal("create_speaker_tile"),
+		trackId: z.string().min(1),
+		elementId: z.string().min(1),
+		positionX: z.number().min(-100_000),
+		positionY: z.number().min(-100_000),
+		scaleX: z.number().min(0.05).max(4).optional(),
+		scaleY: z.number().min(0.05).max(4).optional(),
+		cameraDepth: z.number().min(0.1).max(4).optional(),
+		presentation: z
+			.enum(["rounded-rectangle", "ellipse", "rectangle", "cutout"])
+			.optional(),
+		removeBackground: z.boolean().optional(),
+		cornerRadius: z.number().min(0).max(0.5).optional(),
+		borderColor: z.string().min(1).optional(),
+		borderWidth: z.number().min(0).max(64).optional(),
+		startTime: mediaTimeSchema.optional(),
+		duration: positiveMediaTimeSchema.optional(),
+		name: z.string().min(1).optional(),
+		reason: z.string().optional(),
+	}),
+	z
+		.object({
+			type: z.literal("create_speaker_frame_breakout"),
+			trackId: z.string().min(1),
+			elementId: z.string().min(1),
+			positionX: z.number().min(-100_000).optional(),
+			positionY: z.number().min(-100_000).optional(),
+			scaleX: z.number().min(0.05).max(4).optional(),
+			scaleY: z.number().min(0.05).max(4).optional(),
+			cropTop: z.number().min(0).max(0.65).optional(),
+			cornerRadius: z.number().min(0).max(0.5).optional(),
+			backgroundPresetId: z.string().min(1).optional(),
+			startTime: mediaTimeSchema.optional(),
+			duration: positiveMediaTimeSchema.optional(),
+			name: z.string().min(1).optional(),
+			reason: z.string().optional(),
+		})
+		.strict(),
+	z.object({
 		type: z.literal("upsert_keyframe"),
 		trackId: z.string().min(1),
 		elementId: z.string().min(1),
@@ -314,7 +358,7 @@ const operationSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("add_track"),
-		trackType: z.enum(["video", "text", "audio", "graphic", "effect"]),
+		trackType: z.enum(["video", "text", "audio", "graphic", "effect", "parallax"]),
 		index: z.number().int().min(0).optional(),
 		reason: z.string().optional(),
 	}),
@@ -464,6 +508,15 @@ const operationSchema = z.discriminatedUnion("type", [
 		trackId: z.string().min(1).optional(),
 		name: z.string().min(1).optional(),
 		params: paramsSchema.optional(),
+		saveAsUiElement: z
+			.object({
+				description: z.string().trim().min(1).max(120),
+				category: z.string().trim().min(1).max(40),
+				keywords: z.array(z.string().trim().min(1).max(30)).min(3).max(10),
+				whenToUse: z.string().trim().min(1).max(160),
+				sourcePrompt: z.string().trim().min(1).max(500).optional(),
+			})
+			.optional(),
 		reason: z.string().optional(),
 	}),
 	z.object({
@@ -1279,6 +1332,64 @@ function getRangeGuardErrors({
 				);
 			}
 			if (
+				operation.type === "create_speaker_tile" &&
+				element.type !== "video"
+			) {
+				errors.push(
+					`create_speaker_tile target ${element.name} is not a video element`,
+				);
+			}
+			if (
+				operation.type === "create_speaker_frame_breakout" &&
+				element.type !== "video"
+			) {
+				errors.push(
+					`create_speaker_frame_breakout target ${element.name} is not a video element`,
+				);
+			}
+			if (operation.type === "create_speaker_tile") {
+				const visualStart = operation.startTime ?? element.startTime;
+				const visualDuration =
+					operation.duration ?? element.endTime - visualStart;
+				if (
+					visualStart < element.startTime ||
+					visualStart >= element.endTime ||
+					visualDuration <= 0 ||
+					visualStart + visualDuration > element.endTime
+				) {
+					errors.push(
+						`${operation.type} visual range must stay inside ${element.name}`,
+					);
+				}
+			}
+			if (operation.type === "create_speaker_frame_breakout") {
+				const visualStart = operation.startTime ?? element.startTime;
+				const visualDuration =
+					operation.duration ?? element.endTime - visualStart;
+				if (
+					visualStart < element.startTime ||
+					visualStart >= element.endTime ||
+					visualDuration <= 0 ||
+					visualStart + visualDuration >
+						calculateTotalDuration({ tracks })
+				) {
+					errors.push(
+						`${operation.type} must start inside ${element.name} and stay within the timeline`,
+					);
+				}
+			}
+			if (
+				operation.type === "create_speaker_frame_breakout" &&
+				operation.backgroundPresetId &&
+				!BACKGROUND_PRESETS.some(
+					(preset) => preset.id === operation.backgroundPresetId,
+				)
+			) {
+				errors.push(
+					`create_speaker_frame_breakout references missing background preset ${operation.backgroundPresetId}`,
+				);
+			}
+			if (
 				operation.type === "upsert_keyframe" ||
 				operation.type === "remove_keyframe"
 			) {
@@ -1586,6 +1697,14 @@ function getInsertOperationErrors({
 		if (!graphicsRegistry.has(operation.definitionId)) {
 			errors.push(
 				`insert_graphic_element references an unknown graphic definition ${operation.definitionId}`,
+			);
+		}
+		if (
+			operation.saveAsUiElement &&
+			operation.definitionId !== UI_ELEMENT_DEFINITION_ID
+		) {
+			errors.push(
+				"saveAsUiElement is only valid for the OpenCut UI-element graphic definition",
 			);
 		}
 	}
@@ -2006,6 +2125,52 @@ function applyOperation({
 				});
 			}
 			return;
+		case "create_speaker_tile":
+			editor.timeline.createSpeakerTile({
+				trackId: operation.trackId,
+				elementId: operation.elementId,
+				options: {
+					positionX: operation.positionX,
+					positionY: operation.positionY,
+					scaleX: operation.scaleX ?? 0.42,
+					scaleY: operation.scaleY ?? operation.scaleX ?? 0.42,
+					cameraDepth: operation.cameraDepth ?? 1,
+					presentation: operation.presentation ?? "rounded-rectangle",
+					removeBackground: operation.removeBackground ?? false,
+					cornerRadius: operation.cornerRadius ?? 0.12,
+					borderColor: operation.borderColor ?? "#ffffff",
+					borderWidth: operation.borderWidth ?? 0,
+					startTime: operation.startTime,
+					duration: operation.duration,
+					name: operation.name,
+				},
+			});
+			return;
+		case "create_speaker_frame_breakout":
+			if (
+				!editor.timeline.createSpeakerFrameBreakout({
+					trackId: operation.trackId,
+					elementId: operation.elementId,
+					options: {
+						positionX: operation.positionX ?? 0,
+						positionY: operation.positionY ?? 410,
+						scaleX: operation.scaleX ?? 0.7,
+						scaleY: operation.scaleY ?? operation.scaleX ?? 0.7,
+						cropTop: operation.cropTop ?? 0.22,
+						cornerRadius: operation.cornerRadius ?? 0.08,
+						backgroundPresetId:
+							operation.backgroundPresetId ?? "paper-grid",
+						startTime: operation.startTime,
+						duration: operation.duration,
+						name: operation.name,
+					},
+				})
+			) {
+				throw new Error(
+					"Speaker Frame Breakout could not be placed at the requested timeline range",
+				);
+			}
+			return;
 		case "upsert_keyframe":
 			editor.timeline.upsertKeyframes({
 				keyframes: [
@@ -2276,6 +2441,25 @@ function applyOperation({
 						? { mode: "explicit", trackId: operation.trackId }
 						: { mode: "auto" },
 				});
+				if (
+					operation.type === "insert_graphic_element" &&
+					operation.definitionId === UI_ELEMENT_DEFINITION_ID &&
+					operation.saveAsUiElement
+				) {
+					const metadata = operation.saveAsUiElement;
+					void useSharedLibraryStore.getState().saveGeneratedUiElement({
+						name: operation.name ?? "Reusable UI element",
+						description: metadata.description,
+						category: metadata.category,
+						keywords: metadata.keywords,
+						whenToUse: metadata.whenToUse,
+						defaultDurationSeconds: operation.duration / TICKS_PER_SECOND,
+						...(metadata.sourcePrompt
+							? { sourcePrompt: metadata.sourcePrompt }
+							: {}),
+						params: operation.params ?? {},
+					});
+				}
 			}
 			return;
 		case "insert_sticker_element":

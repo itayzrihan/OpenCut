@@ -46,6 +46,7 @@ const SHARED_COLLECTIONS = new Set([
 	"categories",
 	"backgrounds",
 	"effects",
+	"ui-elements",
 	"caption-presets",
 	"recovery-snapshots",
 ]);

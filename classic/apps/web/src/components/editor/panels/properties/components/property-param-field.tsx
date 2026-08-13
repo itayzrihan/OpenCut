@@ -25,6 +25,7 @@ import { usePropertyDraft } from "../hooks/use-property-draft";
 import { KeyframeToggle } from "./keyframe-toggle";
 import { Textarea } from "@/components/ui/textarea";
 import { FontPicker } from "@/components/ui/font-picker";
+import { Button } from "@/components/ui/button";
 
 export function PropertyParamField({
 	param,
@@ -33,6 +34,7 @@ export function PropertyParamField({
 	onPreview,
 	onCommit,
 	keyframe,
+	action,
 }: {
 	param: ParamDefinition;
 	value: ParamValue;
@@ -43,8 +45,29 @@ export function PropertyParamField({
 		isActive: boolean;
 		isDisabled: boolean;
 		onToggle: () => void;
+		navigation?: {
+			hasPrevious: boolean;
+			hasNext: boolean;
+			onPrevious: () => void;
+			onNext: () => void;
+		};
+	};
+	action?: {
+		label: string;
+		title: string;
+		onClick: () => void;
 	};
 }) {
+	const input = (
+		<ParamInput
+			param={param}
+			value={value}
+			onPreview={onPreview}
+			onCommit={onCommit}
+			isMixed={isMixed}
+		/>
+	);
+
 	return (
 		<SectionField
 			label={isMixed ? `${param.label} (mixed)` : param.label}
@@ -55,17 +78,29 @@ export function PropertyParamField({
 						isDisabled={keyframe.isDisabled}
 						title={`Toggle ${param.label.toLowerCase()} keyframe`}
 						onToggle={keyframe.onToggle}
+						navigation={keyframe.navigation}
 					/>
 				) : undefined
 			}
 		>
-			<ParamInput
-				param={param}
-				value={value}
-				onPreview={onPreview}
-				onCommit={onCommit}
-				isMixed={isMixed}
-			/>
+			{action ? (
+				<div className="flex flex-col gap-2">
+					{input}
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className="w-full"
+						title={action.title}
+						aria-label={action.title}
+						onClick={action.onClick}
+					>
+						{action.label}
+					</Button>
+				</div>
+			) : (
+				input
+			)}
 		</SectionField>
 	);
 }
@@ -148,11 +183,11 @@ function ParamInput({
 
 	if (param.type === "text") {
 		return (
-			<Textarea
-				value={isMixed ? "" : String(value)}
-				placeholder={isMixed ? "Mixed values" : undefined}
-				onChange={(event) => onPreview(event.currentTarget.value)}
-				onBlur={onCommit}
+			<TextParamField
+				value={value}
+				isMixed={isMixed}
+				onPreview={onPreview}
+				onCommit={onCommit}
 			/>
 		);
 	}
@@ -170,6 +205,36 @@ function ParamInput({
 	}
 
 	return null;
+}
+
+function TextParamField({
+	value,
+	isMixed,
+	onPreview,
+	onCommit,
+}: {
+	value: ParamValue;
+	isMixed: boolean;
+	onPreview: (value: string) => void;
+	onCommit: () => void;
+}) {
+	const draft = usePropertyDraft({
+		displayValue: isMixed ? "" : String(value),
+		parse: (input) => input,
+		onPreview,
+		onCommit,
+		supportsExpressions: false,
+	});
+
+	return (
+		<Textarea
+			value={isMixed ? "" : draft.displayValue}
+			placeholder={isMixed ? "Mixed values" : undefined}
+			onFocus={draft.onFocus}
+			onChange={draft.onChange}
+			onBlur={draft.onBlur}
+		/>
+	);
 }
 
 function getSelectFieldValue({

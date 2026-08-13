@@ -30,6 +30,7 @@ export class CommandManager {
 	private activeProjectId: string | null = null;
 	private historySaveQueue: Promise<void> = Promise.resolve();
 	private transactionDepth = 0;
+	private stateRevision = 0;
 
 	constructor(private editor: EditorCore) {}
 
@@ -44,6 +45,7 @@ export class CommandManager {
 			: null;
 		const previousSelection = this.getSelectionSnapshot();
 		const result = command.execute();
+		this.stateRevision += 1;
 		this.applyRippleIfEnabled({ beforeTracks });
 		const selectionOverride = this.applySelectionOverride(result);
 		this.runReactors();
@@ -85,6 +87,7 @@ export class CommandManager {
 					afterSnapshot,
 				});
 				this.redoStack = [];
+				this.stateRevision += 1;
 				this.persistHistory();
 			}
 			return result;
@@ -117,6 +120,7 @@ export class CommandManager {
 				: undefined,
 		});
 		this.redoStack = [];
+		this.stateRevision += 1;
 		this.persistHistory();
 	}
 
@@ -139,6 +143,7 @@ export class CommandManager {
 			) {
 				this.history = [];
 				this.redoStack = [];
+				this.stateRevision += 1;
 				return;
 			}
 
@@ -148,10 +153,12 @@ export class CommandManager {
 			this.redoStack = persisted.redoStack.map((entry) =>
 				this.fromSerializedEntry(entry),
 			);
+			this.stateRevision += 1;
 		} catch (error) {
 			console.error("Failed to load command history:", error);
 			this.history = [];
 			this.redoStack = [];
+			this.stateRevision += 1;
 		}
 	}
 
@@ -163,6 +170,7 @@ export class CommandManager {
 		this.activeProjectId = projectId;
 		this.history = [];
 		this.redoStack = [];
+		this.stateRevision += 1;
 		try {
 			await storageService.saveCommandHistory({
 				history: this.serializeHistory({ projectId }),
@@ -196,6 +204,7 @@ export class CommandManager {
 			});
 		}
 		this.redoStack.push(entry);
+		this.stateRevision += 1;
 		this.persistHistory();
 	}
 
@@ -237,6 +246,7 @@ export class CommandManager {
 			beforeSnapshot: entry.beforeSnapshot,
 			afterSnapshot,
 		});
+		this.stateRevision += 1;
 		this.persistHistory();
 	}
 
@@ -248,9 +258,14 @@ export class CommandManager {
 		return this.redoStack.length > 0;
 	}
 
+	getStateRevision(): number {
+		return this.stateRevision;
+	}
+
 	clear({ persist = true }: { persist?: boolean } = {}): void {
 		this.history = [];
 		this.redoStack = [];
+		this.stateRevision += 1;
 		if (persist) {
 			this.persistHistory();
 		}
