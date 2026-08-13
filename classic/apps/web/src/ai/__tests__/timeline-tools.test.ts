@@ -210,6 +210,11 @@ mock.module("opencut-wasm", () => ({
 }));
 
 mock.module("@/shared-library", () => ({
+	useSharedLibraryStore: {
+		getState: () => ({
+			saveGeneratedUiElement: async () => null,
+		}),
+	},
 	sharedLibraryService: {
 		listAudioAssets: async () => [
 			{
@@ -246,6 +251,24 @@ mock.module("@/shared-library", () => ({
 		listCaptionPresets: async () => [],
 		listGeneratedBackgrounds: async () => [],
 		listGeneratedEffects: async () => [],
+		listGeneratedUiElements: async () => [
+			{
+				id: "saved-ui-goal",
+				name: "Saved Revenue Goal",
+				description: "A reusable revenue slider",
+				category: "metrics",
+				keywords: ["revenue", "target", "saved"],
+				whenToUse: "Use for a revenue target.",
+				defaultDurationSeconds: 3,
+				sourcePrompt: "Revenue goal with a blue slider",
+				params: {
+					template: "goal-slider",
+					label: "$25,000",
+					animationIn: "progress-meter-sweep",
+					animationOut: "progress-complete-flash",
+				},
+			},
+		],
 	},
 }));
 
@@ -322,10 +345,24 @@ describe("AI creative direction capabilities", () => {
 		);
 	});
 
+	test("auto-loads the premium editor workflow for complex video-editing intent", () => {
+		for (const request of [
+			"make this a premium talking-head edit",
+			"animate the captions per word",
+			"עריכה מקצועית עם כתוביות ואנימציה לכל מילה",
+		]) {
+			const prompt = buildAiSystemPrompt({ userRequest: request });
+			expect(prompt).toContain("AUTO-LOADED PREMIUM VIDEO EDITOR SKILL:");
+			expect(prompt).toContain("# OpenCut premium video editor");
+			expect(prompt).toContain("skills.load_resource");
+		}
+	});
+
 	test("keeps the default prompt broad without embedding transition ids or premium bias", () => {
 		const prompt = buildAiSystemPrompt();
 
 		expect(prompt).not.toContain("AUTO-LOADED CREATIVE DIRECTION SKILL:");
+		expect(prompt).not.toContain("AUTO-LOADED PREMIUM VIDEO EDITOR SKILL:");
 		expect(prompt).not.toContain("Transition presets:");
 		expect(prompt).not.toContain("premium cinematic presets");
 		expect(prompt).not.toContain("cinematic-glide");
@@ -367,6 +404,7 @@ describe("AI creative direction capabilities", () => {
 								"transitions",
 								"ui_elements",
 								"backgrounds",
+								"text_styles",
 								"overlay_effects",
 								"overlay_movement",
 								"actions",
@@ -448,6 +486,7 @@ describe("AI timeline tool access", () => {
 		expect(names).toContain("catalog.get");
 		expect(names).toContain("skills.list");
 		expect(names).toContain("skills.load");
+		expect(names).toContain("skills.load_resource");
 		expect(names).toContain("timeline.propose_edit_plan");
 		expect(names).toContain("export.get_status");
 		expect(names).toContain("transcription.get_status");
@@ -572,6 +611,84 @@ describe("AI timeline tool access", () => {
 		expect(editor.playback.getCurrentTime()).toBe(777_000);
 	});
 
+	test("captures a bounded current preview frame instead of a full-resolution snapshot", async () => {
+		const scene = {
+			id: "scene-1",
+			name: "Main scene",
+			isMain: true,
+			bookmarks: [],
+			tracks: {
+				overlay: [],
+				main: {
+					id: "main",
+					name: "Main",
+					type: "video",
+					elements: [],
+					muted: false,
+					hidden: false,
+				},
+				audio: [],
+				order: ["main"],
+			},
+		};
+		const editor = {
+			scenes: { getActiveSceneOrNull: () => scene },
+			media: { getAssets: () => [] },
+			project: {
+				getActiveOrNull: () => ({
+					settings: { canvasSize: { width: 3840, height: 2160 } },
+				}),
+			},
+			playback: { getCurrentTime: () => 1_684_800 },
+			renderer: {
+				captureSnapshot: () => {
+					throw new Error("full-resolution capture must not be used");
+				},
+				capturePreviewFrameAt: async ({
+					time,
+					maxDimension,
+					maxBytes,
+				}: {
+					time: number;
+					maxDimension: number;
+					maxBytes: number;
+				}) => {
+					expect(time).toBe(1_684_800);
+					expect(maxDimension).toBe(1024);
+					expect(maxBytes).toBe(250_000);
+					return {
+						success: true as const,
+						filename: "current-frame.jpg",
+						blob: new Blob(["current-frame"], { type: "image/jpeg" }),
+					};
+				},
+			},
+		} as unknown as EditorCore;
+		const runtime = await createTimelineToolRuntime({
+			editor,
+			options: { includePreviewImage: true },
+			authorizeCapabilities: authorizeForTest,
+		});
+
+		const result = (await runtime.executeTool({
+			id: "current-preview",
+			name: "preview.capture_frame",
+			arguments: {},
+		})) as {
+			success: boolean;
+			filename: string;
+			mimeType: string;
+			dataUrl: string;
+		};
+
+		expect(result).toMatchObject({
+			success: true,
+			filename: "current-frame.jpg",
+			mimeType: "image/jpeg",
+		});
+		expect(result.dataUrl).toStartWith("data:image/jpeg;base64,");
+	});
+
 	test("searches only the requested creative catalog domains", async () => {
 		const scene = {
 			id: "scene-1",
@@ -621,6 +738,91 @@ describe("AI timeline tool access", () => {
 				["backgrounds", "overlay_effects"].includes(item.domain),
 			),
 		).toBe(true);
+
+		const featherEffect = await runtime.executeTool({
+			id: "edge-feather-get",
+			name: "catalog.get",
+			arguments: {
+				domain: "overlay_effects",
+				id: "editorial-edge-feather",
+			},
+		});
+		expect(featherEffect).toMatchObject({
+			details: { effectType: "editorial-edge-feather" },
+			parameters: { height: 20, softness: 78 },
+		});
+
+		const featheredText = await runtime.executeTool({
+			id: "feathered-text-get",
+			name: "catalog.get",
+			arguments: {
+				domain: "text_styles",
+				id: "editorial-feather-white",
+			},
+		});
+		expect(featheredText).toMatchObject({
+			details: { elementType: "text" },
+			parameters: {
+				color: "#ffffff",
+				"shadow.enabled": true,
+				"shadow.blur": 18,
+			},
+		});
+	});
+
+	test("exposes saved UI elements with their reusable motion settings", async () => {
+		const scene = {
+			id: "scene-1",
+			name: "Main scene",
+			isMain: true,
+			bookmarks: [],
+			tracks: {
+				overlay: [],
+				main: {
+					id: "main",
+					name: "Main",
+					type: "video",
+					elements: [],
+					muted: false,
+					hidden: false,
+				},
+				audio: [],
+				order: ["main"],
+			},
+		};
+		const runtime = await createTimelineToolRuntime({
+			editor: {
+				scenes: { getActiveSceneOrNull: () => scene },
+				media: { getAssets: () => [] },
+			} as unknown as EditorCore,
+			authorizeCapabilities: authorizeForTest,
+		});
+
+		const listed = (await runtime.executeTool({
+			id: "saved-ui-list",
+			name: "catalog.list",
+			arguments: { domain: "ui_elements", cursor: 0, limit: 5 },
+		})) as { items: Array<{ id: string }> };
+		expect(listed.items[0]?.id).toBe("saved-ui-goal");
+
+		const entry = await runtime.executeTool({
+			id: "saved-ui-get",
+			name: "catalog.get",
+			arguments: { domain: "ui_elements", id: "saved-ui-goal" },
+		});
+		expect(entry).toMatchObject({
+			id: "saved-ui-goal",
+			category: "metrics",
+			parameters: {
+				template: "goal-slider",
+				animationIn: "progress-meter-sweep",
+				animationOut: "progress-complete-flash",
+			},
+			details: {
+				saved: true,
+				defaultDurationSeconds: 3,
+			},
+		});
 	});
 
 	test("merges source edits and typed operations into one staged plan", async () => {
@@ -1490,6 +1692,62 @@ describe("AI timeline tool access", () => {
 					duration: 150_000,
 				},
 			],
+		});
+	});
+
+	test("keeps searched shared-audio provenance across MCP command runtimes", async () => {
+		const { createTimelineToolSessionState } =
+			await import("../timeline-tools");
+		const sessionState = createTimelineToolSessionState();
+		const fixture = createFullSourceEditorFixture();
+		const searchRuntime = await createTimelineToolRuntime({
+			editor: fixture.editor,
+			sessionState,
+			authorizeCapabilities: authorizeForTest,
+		});
+		const stageRuntime = await createTimelineToolRuntime({
+			editor: fixture.editor,
+			sessionState,
+			authorizeCapabilities: authorizeForTest,
+		});
+
+		const searched = (await searchRuntime.executeTool({
+			id: "library-audio-mcp-search",
+			name: "library.search",
+			arguments: { domain: "audio", query: "whoosh", limit: 5 },
+		})) as {
+			items: Array<{
+				id: string;
+				name: string;
+				durationTicks: number;
+			}>;
+		};
+		const audio = searched.items[0];
+		if (!audio) throw new Error("Expected shared audio fixture");
+
+		await expect(
+			stageRuntime.executeTool({
+				id: "library-audio-mcp-stage",
+				name: "timeline.stage_operations",
+				arguments: {
+					plan: {
+						title: "Add searched whoosh",
+						summary: "Use provenance retained by the MCP browser session",
+						operations: [
+							{
+								type: "insert_library_audio_element",
+								libraryAssetId: audio.id,
+								name: audio.name,
+								startTime: 0,
+								duration: audio.durationTicks,
+							},
+						],
+					},
+				},
+			}),
+		).resolves.toMatchObject({
+			success: true,
+			pendingOperations: 1,
 		});
 	});
 

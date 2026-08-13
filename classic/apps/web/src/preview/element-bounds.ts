@@ -7,7 +7,7 @@ import type {
 import { getDisplayTracks } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import { STICKER_INTRINSIC_SIZE_FALLBACK } from "@/stickers/intrinsic-size";
-import { getGraphicSourceSize } from "@/graphics";
+import { getGraphicLayoutSize, getGraphicSourceSize } from "@/graphics";
 import {
 	getTextMeasurementContext,
 	measureTextElement,
@@ -81,6 +81,7 @@ function getVisualElementBounds({
 	sourceWidth,
 	sourceHeight,
 	transform,
+	layoutSize,
 }: {
 	canvasWidth: number;
 	canvasHeight: number;
@@ -92,13 +93,15 @@ function getVisualElementBounds({
 		position: { x: number; y: number };
 		rotate: number;
 	};
+	layoutSize?: { width: number; height: number } | null;
 }): ElementBounds {
-	const containScale = Math.min(
-		canvasWidth / sourceWidth,
-		canvasHeight / sourceHeight,
-	);
-	const scaledWidth = sourceWidth * containScale * transform.scaleX;
-	const scaledHeight = sourceHeight * containScale * transform.scaleY;
+	const containScale = layoutSize
+		? 1
+		: Math.min(canvasWidth / sourceWidth, canvasHeight / sourceHeight);
+	const scaledWidth =
+		(layoutSize?.width ?? sourceWidth) * containScale * transform.scaleX;
+	const scaledHeight =
+		(layoutSize?.height ?? sourceHeight) * containScale * transform.scaleY;
 	const cx = canvasWidth / 2 + transform.position.x;
 	const cy = canvasHeight / 2 + transform.position.y;
 
@@ -215,12 +218,17 @@ function getElementBounds({
 			definitionId: element.definitionId,
 			params: element.params,
 		});
+		const layoutSize = getGraphicLayoutSize({
+			definitionId: element.definitionId,
+			params: element.params,
+		});
 		return getVisualElementBounds({
 			canvasWidth,
 			canvasHeight,
 			sourceWidth: sourceSize.width,
 			sourceHeight: sourceSize.height,
 			transform,
+			layoutSize,
 		});
 	}
 

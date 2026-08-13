@@ -211,5 +211,12 @@ export function canCreateTrackTypeAtDisplayIndex({
 }: {
 	trackType: TrackType;
 }): boolean {
-	return trackType === "audio" || trackType === "video" || trackType === "text" || trackType === "graphic" || trackType === "effect";
+	return (
+		trackType === "audio" ||
+		trackType === "video" ||
+		trackType === "text" ||
+		trackType === "graphic" ||
+		trackType === "effect" ||
+		trackType === "parallax"
+	);
 }

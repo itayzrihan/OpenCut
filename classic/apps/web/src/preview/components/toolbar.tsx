@@ -31,6 +31,7 @@ import { usePreviewViewport } from "./preview-viewport";
 import { safeAreaPreviewOverlay } from "@/preview/safe-area-overlay";
 import type { PreviewOverlayControl } from "@/preview/overlays";
 import type { MediaTime } from "@/wasm";
+import { Loader2 } from "lucide-react";
 
 export function PreviewToolbar({
 	onToggleFullscreen,
@@ -188,15 +189,23 @@ function ZoomSelect() {
 }
 
 function PlayPauseButton() {
-	const isPlaying = useEditorPlayback((e) => e.playback.getIsPlaying());
+	const [isPlaying, isBuffering] = useEditorPlayback((e) => [
+		e.playback.getIsPlaying(),
+		e.playback.getIsBuffering(),
+	]);
 
 	return (
 		<Button
 			variant="text"
 			size="icon"
 			onClick={() => invokeAction("toggle-play")}
+			title={isBuffering ? "Buffering playback…" : undefined}
 		>
-			<HugeiconsIcon icon={isPlaying ? PauseIcon : PlayIcon} />
+			{isBuffering ? (
+				<Loader2 className="size-4 animate-spin" />
+			) : (
+				<HugeiconsIcon icon={isPlaying ? PauseIcon : PlayIcon} />
+			)}
 		</Button>
 	);
 }

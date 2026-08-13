@@ -186,6 +186,8 @@ export function removeSilenceRangesFromTracks({
 				return { ...track, elements: elements.filter(isGraphicTrackElement) };
 			case "effect":
 				return { ...track, elements: elements.filter(isEffectTrackElement) };
+			case "parallax":
+				return track;
 		}
 	}
 	const updatedTracks: SceneTracks = {

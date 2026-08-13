@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createCanvas } from "@napi-rs/canvas";
+import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
 import { presetBackgroundGraphicDefinition } from "@/graphics/definitions/preset-background";
 
 describe("preset background graphic", () => {
@@ -27,5 +28,38 @@ describe("preset background graphic", () => {
 		});
 
 		expect(ctx.getImageData(8, 8, 1, 1).data[3]).toBe(255);
+	});
+
+	test("uses explicit layout dimensions as its redraw raster size", () => {
+		expect(
+			presetBackgroundGraphicDefinition.sourceSize?.({
+				params: {
+					"layout.width": 2048,
+					"layout.height": 1152,
+				},
+			}),
+		).toEqual({ width: 2048, height: 1152 });
+		expect(presetBackgroundGraphicDefinition.resizeBehavior).toBe("dimensions");
+	});
+
+	test("keeps the pattern pixel scale stable as layout dimensions grow", () => {
+		expect(
+			presetBackgroundGraphicDefinition.sourceSize?.({
+				params: {
+					"layout.width": 2160,
+					"layout.height": 3840,
+					"layout.pixelScale": 2,
+				},
+			}),
+		).toEqual({ width: 1080, height: 1920 });
+	});
+
+	test("exposes the irregular line texture as an intentional background preset", () => {
+		const preset = BACKGROUND_PRESETS.find(
+			(candidate) => candidate.id === "textured-grid",
+		);
+
+		expect(preset).toBeDefined();
+		expect(preset?.params.preset).toBe("textured-grid");
 	});
 });

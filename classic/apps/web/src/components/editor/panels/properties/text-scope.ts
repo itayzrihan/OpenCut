@@ -201,6 +201,33 @@ export function buildScopedTextPatch({
 	};
 }
 
+export function buildTextAccentOverridePatch({
+	element,
+	scope,
+	color,
+}: {
+	element: TextElement;
+	scope: TextOverrideScope;
+	color: string;
+}): Partial<TextElement> {
+	return buildScopedTextPatch({
+		element,
+		scope,
+		patch: { accentColor: color },
+	});
+}
+
+export function supportsTextAccentOverride({
+	element,
+}: {
+	element: TextElement;
+}): boolean {
+	return (
+		element.captionAccentColor !== undefined ||
+		element.captionRevealMode !== undefined
+	);
+}
+
 export function clearScopedTextOverride({
 	element,
 	scope,
@@ -350,9 +377,9 @@ export function hasScopedTextOverride({
 			word?.accentColor ||
 			word?.wordDirection ||
 			word?.glowerEnabled !== undefined ||
-			word?.glowerDirection
-			|| word?.lightningStormEnabled !== undefined
-			|| word?.glitchyEnabled !== undefined
+			word?.glowerDirection ||
+			word?.lightningStormEnabled !== undefined ||
+			word?.glitchyEnabled !== undefined
 		);
 	}
 	if (scope.type === "words") {
@@ -368,9 +395,9 @@ export function hasScopedTextOverride({
 					word.accentColor ||
 					word.wordDirection ||
 					word.glowerEnabled !== undefined ||
-					word.glowerDirection
-					|| word.lightningStormEnabled !== undefined
-					|| word.glitchyEnabled !== undefined
+					word.glowerDirection ||
+					word.lightningStormEnabled !== undefined ||
+					word.glitchyEnabled !== undefined
 				),
 		);
 	}
@@ -456,6 +483,8 @@ export function textParamToScopedPatch({
 					shadowOffsetY: value ? DEFAULTS.text.shadow.offsetY : 0,
 				},
 			};
+		case "shadow.window":
+			return { style: { windowShadow: Boolean(value) } };
 		case "shadow.color":
 			return {
 				style: {
@@ -500,6 +529,22 @@ export function textParamToScopedPatch({
 			return { style: { blendMode: toBlendMode(value) } };
 		case "background.enabled":
 			return { style: { backgroundEnabled: Boolean(value) } };
+		case "bottomFadeOut":
+			return {
+				style: {
+					bottomFadeOut:
+						typeof value === "number" ? value : DEFAULTS.text.bottomFadeOut,
+				},
+			};
+		case "bottomFadeOutEndOpacity":
+			return {
+				style: {
+					bottomFadeOutEndOpacity:
+						typeof value === "number"
+							? value
+							: DEFAULTS.text.bottomFadeOutEndOpacity,
+				},
+			};
 		case "background.color":
 			return {
 				style: {
@@ -579,6 +624,10 @@ export function readScopedTextParamValue({
 				(style.shadowOffsetX ?? inheritedStyle.shadowOffsetX ?? 0) !== 0 ||
 				(style.shadowOffsetY ?? inheritedStyle.shadowOffsetY ?? 0) !== 0
 			);
+		case "shadow.window":
+			return (
+				style.windowShadow ?? inheritedStyle.windowShadow ?? false
+			);
 		case "shadow.color":
 			return (
 				style.shadowColor ??
@@ -632,6 +681,18 @@ export function readScopedTextParamValue({
 		case "background.enabled":
 			return (
 				style.backgroundEnabled ?? inheritedStyle.backgroundEnabled ?? false
+			);
+		case "bottomFadeOut":
+			return (
+				style.bottomFadeOut ??
+				inheritedStyle.bottomFadeOut ??
+				DEFAULTS.text.bottomFadeOut
+			);
+		case "bottomFadeOutEndOpacity":
+			return (
+				style.bottomFadeOutEndOpacity ??
+				inheritedStyle.bottomFadeOutEndOpacity ??
+				DEFAULTS.text.bottomFadeOutEndOpacity
 			);
 		case "background.color":
 			return (

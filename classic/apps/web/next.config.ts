@@ -10,14 +10,37 @@ const localWasmEntry = resolve(
 	workspaceRootDirectory,
 	"rust/wasm/pkg/opencut_wasm.js",
 );
+const runtimeTarget =
+	process.env.OPENCUT_RUNTIME_TARGET === "electron" ? "electron" : "browser";
 
 const nextConfig: NextConfig = {
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
+	compress: runtimeTarget === "browser",
+	poweredByHeader: false,
 	reactStrictMode: true,
-	productionBrowserSourceMaps: true,
+	productionBrowserSourceMaps:
+		process.env.OPENCUT_BROWSER_SOURCE_MAPS?.toLowerCase() === "true",
+	env: {
+		NEXT_PUBLIC_OPENCUT_RUNTIME_TARGET: runtimeTarget,
+	},
+	experimental: {
+		optimizePackageImports: [
+			"@hugeicons/react",
+			"@radix-ui/react-icons",
+			"motion",
+			"react-icons",
+			"radix-ui",
+		],
+	},
 	output: "standalone",
+	// Runtime transcription caches are local, mutable user data. They must not
+	// be copied into a production standalone bundle (the Whisper cache alone
+	// can be several gigabytes and may exhaust the build disk).
+	outputFileTracingExcludes: {
+		"**/*": [".opencut-data/**/*"],
+	},
 	// Bun stores `file:` dependencies as copied packages. A WASM rebuild can
 	// otherwise update the JS glue without replacing the installed binary,
 	// leaving a bundler with an impossible wrapper/export-table combination.

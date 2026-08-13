@@ -720,6 +720,18 @@ function decodeTrack(
 		readBoolean(value.hidden, `${path}.hidden`, diagnostics);
 	} else if (type === "audio") {
 		readBoolean(value.muted, `${path}.muted`, diagnostics);
+	} else if (type === "parallax") {
+		if (
+			value.direction !== "with-camera" &&
+			value.direction !== "against-camera"
+		) {
+			pushInvalidType(
+				diagnostics,
+				`${path}.direction`,
+				"parallax track direction must be with-camera or against-camera",
+			);
+		}
+		readFiniteNumber(value.speedPercent, `${path}.speedPercent`, diagnostics);
 	} else if (type) {
 		readBoolean(value.hidden, `${path}.hidden`, diagnostics);
 	}
@@ -808,6 +820,7 @@ const ELEMENT_TYPES_BY_TRACK = {
 	audio: new Set(["audio"]),
 	graphic: new Set(["graphic", "sticker"]),
 	effect: new Set(["effect"]),
+	parallax: new Set(),
 } satisfies Record<TimelineTrack["type"], Set<string>>;
 
 function decodeElement(
@@ -910,14 +923,15 @@ function readTrackType(
 		value === "text" ||
 		value === "audio" ||
 		value === "graphic" ||
-		value === "effect"
+		value === "effect" ||
+		value === "parallax"
 	) {
 		return value;
 	}
 	pushInvalidType(
 		diagnostics,
 		path,
-		"track.type must be video, text, audio, graphic, or effect",
+		"track.type must be video, text, audio, graphic, effect, or parallax",
 	);
 	return null;
 }

@@ -18,6 +18,10 @@ import {
 	TransformHandleController,
 	type TransformHandleDeps,
 } from "@/preview/controllers/transform-handle-controller";
+import { findParallaxCameraGuideElement } from "@/parallax-story-teller/model";
+import { resolveOverlayMovementCameraState } from "@/effects/overlay-movement-presets";
+import { useCameraManStore } from "@/parallax-story-teller/camera-man-store";
+import { getParallaxCameraWorldCenter } from "@/parallax-story-teller/camera-geometry";
 
 export function useTransformHandles({
 	onSnapLinesChange,
@@ -30,9 +34,10 @@ export function useTransformHandles({
 	const selectedElements = useEditorSelection((e) =>
 		e.selection.getSelectedElements(),
 	);
-	const tracks = useEditorTimelineScenes(
-		(e) => e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
-	);
+	const [tracks, activeScene] = useEditorTimelineScenes((e) => [
+		e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
+		e.scenes.getActiveScene(),
+	]);
 	const selectedVisualElement = useMemo(() => {
 		if (selectedElements.length !== 1) {
 			return null;
@@ -100,6 +105,32 @@ export function useTransformHandles({
 
 	const selectedWithBounds = controller.selectedWithBounds;
 	const hasVisualSelection = selectedWithBounds !== null;
+	const centerToCamera = () => {
+		let center = { x: canvasSize.width / 2, y: canvasSize.height / 2 };
+		if (activeScene.parallax) {
+			const guide = findParallaxCameraGuideElement({ scene: activeScene });
+			const cameraMan = useCameraManStore.getState();
+			const camera =
+				cameraMan.sceneId === activeScene.id && cameraMan.current
+					? cameraMan.current
+					: guide
+						? resolveOverlayMovementCameraState({
+								effectParams: guide.params,
+								animations: guide.animations,
+								localTime: currentTime,
+								duration: editor.timeline.getTotalDuration(),
+							})
+						: { x: 0, y: 0, scale: 1 };
+			center = getParallaxCameraWorldCenter({
+				cameraWidth: canvasSize.width,
+				cameraHeight: canvasSize.height,
+				worldWidthFrames: activeScene.parallax.worldWidthFrames,
+				worldHeightFrames: activeScene.parallax.worldHeightFrames ?? 1,
+				camera,
+			});
+		}
+		controller.centerSelectedAt({ center });
+	};
 
 	return {
 		selectedWithBounds,
@@ -108,6 +139,7 @@ export function useTransformHandles({
 		handleCornerPointerDown: controller.onCornerPointerDown,
 		handleEdgePointerDown: controller.onEdgePointerDown,
 		handleRotationPointerDown: controller.onRotationPointerDown,
+		centerToCamera,
 		handlePointerMove: controller.onPointerMove,
 		handlePointerUp: controller.onPointerUp,
 	};

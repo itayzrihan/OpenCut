@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { createCanvas } from "@napi-rs/canvas";
 import type { TextElement, TextWordRun } from "@/timeline";
 import { DEFAULTS } from "@/timeline/defaults";
 import {
@@ -10,6 +11,7 @@ import {
 	measureTextElement,
 	resolveAutoTextDirection,
 } from "@/text/measure-element";
+import { drawMeasuredTextLayout } from "@/text/primitives";
 import { mediaTime, TICKS_PER_SECOND, ZERO_MEDIA_TIME } from "@/wasm";
 
 const ONE_SECOND = mediaTime({ ticks: TICKS_PER_SECOND });
@@ -75,6 +77,82 @@ function measureWord({
 }
 
 describe("text word direction", () => {
+	test("resolves gradient fill for plain text layouts", () => {
+		const measured = measureTextElement({
+			element: createTextElement({
+				params: {
+					content: "Plain gradient",
+					textFillMode: "gradient",
+					gradientStartColor: "#ff0000",
+					gradientEndColor: "#0000ff",
+					gradientAngle: 0,
+				},
+			}),
+			canvasHeight: 1080,
+			localTime: HALF_SECOND,
+			ctx: getTextMeasurementContext(),
+		});
+
+		expect(measured.wordLines).toBeUndefined();
+		expect(measured.gradient).toEqual({
+			startColor: "#ff0000",
+			endColor: "#0000ff",
+			angle: 0,
+		});
+	});
+
+	test("renders both ends of a gradient for plain text", () => {
+		const canvas = createCanvas(480, 180);
+		const ctx = canvas.getContext("2d");
+		const measured = measureTextElement({
+			element: createTextElement({
+				params: {
+					content: "MMMM",
+					fontSize: 80,
+					textFillMode: "gradient",
+					gradientStartColor: "#ff0000",
+					gradientEndColor: "#0000ff",
+					gradientAngle: 0,
+				},
+			}),
+			canvasHeight: canvas.height,
+			localTime: 0,
+			// @napi-rs/canvas exposes a compatible 2D context with a narrower type.
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+			ctx: ctx as unknown as CanvasRenderingContext2D,
+		});
+
+		ctx.translate(canvas.width / 2, canvas.height / 2);
+		drawMeasuredTextLayout({
+			// @napi-rs/canvas exposes a compatible 2D context with a narrower type.
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+			ctx: ctx as unknown as CanvasRenderingContext2D,
+			layout: measured,
+			textColor: "#ffffff",
+			background: null,
+		});
+
+		const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+		const coloredPixels = ({ fromX, toX }: { fromX: number; toX: number }) => {
+			let red = 0;
+			let blue = 0;
+			for (let y = 0; y < canvas.height; y += 1) {
+				for (let x = fromX; x < toX; x += 1) {
+					const offset = (y * canvas.width + x) * 4;
+					if ((pixels[offset + 3] ?? 0) < 80) continue;
+					red += pixels[offset] ?? 0;
+					blue += pixels[offset + 2] ?? 0;
+				}
+			}
+			return { red, blue };
+		};
+
+		const left = coloredPixels({ fromX: 130, toX: 220 });
+		const right = coloredPixels({ fromX: 260, toX: 350 });
+		expect(left.red).toBeGreaterThan(left.blue * 1.1);
+		expect(right.blue).toBeGreaterThan(right.red * 1.1);
+	});
+
 	test("detects the first strong character for auto direction", () => {
 		expect(resolveAutoTextDirection("   שלום")).toBe("rtl");
 		expect(resolveAutoTextDirection("   Hello שלום")).toBe("ltr");

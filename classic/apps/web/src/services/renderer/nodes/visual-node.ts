@@ -16,6 +16,13 @@ export interface VisualNodeParams {
 	blendMode?: BlendMode;
 	effects?: Effect[];
 	masks?: Mask[];
+	cameraDepth?: number;
+	cameraLocked?: boolean;
+	/** Explicit camera-relative movement inherited from a Parallax Track. */
+	cameraMotionFactor?: number;
+	/** The camera frame used to size and position world content. */
+	cameraCanvasWidth?: number;
+	cameraCanvasHeight?: number;
 }
 
 export interface ResolvedVisualNodeState {

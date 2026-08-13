@@ -29,7 +29,9 @@ import type { MediaTime } from "@/wasm";
 import { useEffect, useMemo, useState } from "react";
 import {
 	buildScopedTextPatch,
+	buildTextAccentOverridePatch,
 	readScopedTextParamValue,
+	supportsTextAccentOverride,
 	textParamToScopedPatch,
 	type TextOverrideScope,
 } from "../text-scope";
@@ -340,6 +342,7 @@ function ElementParamField({
 		param,
 		trackId,
 		elementId: element.id,
+		elementStartTime: element.startTime,
 		animations: element.animations,
 		propertyPath: param.key,
 		localTime,
@@ -401,6 +404,51 @@ function ElementParamField({
 	};
 
 	const onCommit = () => editor.timeline.commitPreview();
+	const canOverrideAccent =
+		element.type === "text" &&
+		param.key === "color" &&
+		supportsTextAccentOverride({ element });
+
+	const overrideAccentWithTextColor = () => {
+		if (!canOverrideAccent || element.type !== "text") return;
+		const targetEntries = elementsWithTracks ?? [
+			{ track: { id: trackId }, element },
+		];
+
+		editor.timeline.updateElements({
+			updates: targetEntries.flatMap((entry) => {
+				if (entry.element.type !== "text") return [];
+				const entryScope = textScope
+					? resolveTextScopeForEntry({ textScope, entry })
+					: ({ type: "layer" } as const);
+				if (!entryScope) return [];
+
+				const baseColor =
+					typeof entry.element.params.color === "string"
+						? entry.element.params.color
+						: "#ffffff";
+				const scopedColor = readScopedTextParamValue({
+					element: entry.element,
+					scope: entryScope,
+					key: "color",
+					fallbackValue: baseColor,
+				});
+				const color = typeof scopedColor === "string" ? scopedColor : baseColor;
+
+				return [
+					{
+						trackId: entry.track.id,
+						elementId: entry.element.id,
+						patch: buildTextAccentOverridePatch({
+							element: entry.element,
+							scope: entryScope,
+							color,
+						}),
+					},
+				];
+			}),
+		});
+	};
 
 	return (
 		<PropertyParamField
@@ -409,6 +457,15 @@ function ElementParamField({
 			isMixed={isMixed}
 			onPreview={onPreview}
 			onCommit={isBulk || isScopedText ? onCommit : animatedParam.onCommit}
+			action={
+				canOverrideAccent
+					? {
+							label: "Override accent",
+							title: "Override the caption accent with this text color",
+							onClick: overrideAccentWithTextColor,
+						}
+					: undefined
+			}
 			keyframe={
 				!keyframesEnabled
 					? undefined
@@ -416,6 +473,12 @@ function ElementParamField({
 							isActive: animatedParam.isKeyframedAtTime,
 							isDisabled: !isPlayheadWithinElementRange,
 							onToggle: animatedParam.toggleKeyframe,
+							navigation: {
+								hasPrevious: animatedParam.hasPreviousKeyframe,
+								hasNext: animatedParam.hasNextKeyframe,
+								onPrevious: animatedParam.goToPreviousKeyframe,
+								onNext: animatedParam.goToNextKeyframe,
+							},
 						}
 			}
 		/>

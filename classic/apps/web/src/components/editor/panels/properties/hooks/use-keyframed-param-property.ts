@@ -3,6 +3,7 @@
 import { useEditor } from "@/editor/use-editor";
 import {
 	buildGraphicParamPath,
+	getElementKeyframes,
 	getKeyframeAtTime,
 	hasKeyframesForPath,
 	upsertPathKeyframe,
@@ -17,12 +18,17 @@ import {
 	type ParamDefinition,
 } from "@/params";
 import type { TimelineElement } from "@/timeline";
-import type { MediaTime } from "@/wasm";
+import { addMediaTime, type MediaTime } from "@/wasm";
+import { findAdjacentKeyframeTimes } from "./keyframe-navigation";
 
 export interface KeyframedParamPropertyResult {
 	hasAnimatedKeyframes: boolean;
 	isKeyframedAtTime: boolean;
 	keyframeIdAtTime: string | null;
+	hasPreviousKeyframe: boolean;
+	hasNextKeyframe: boolean;
+	goToPreviousKeyframe: () => void;
+	goToNextKeyframe: () => void;
 	onPreview: (value: number | string | boolean) => void;
 	onCommit: () => void;
 	toggleKeyframe: () => void;
@@ -32,6 +38,7 @@ export function useKeyframedParamProperty({
 	param,
 	trackId,
 	elementId,
+	elementStartTime,
 	animations,
 	propertyPath,
 	localTime,
@@ -43,6 +50,7 @@ export function useKeyframedParamProperty({
 	param: ParamDefinition;
 	trackId: string;
 	elementId: string;
+	elementStartTime: MediaTime;
 	animations: ElementAnimations | undefined;
 	propertyPath?: AnimationPath;
 	localTime: MediaTime;
@@ -73,6 +81,17 @@ export function useKeyframedParamProperty({
 		: null;
 	const keyframeIdAtTime = keyframeAtTime?.id ?? null;
 	const isKeyframedAtTime = keyframeAtTime !== null;
+	const keyframeTimes = getElementKeyframes({ animations })
+		.filter((keyframe) => keyframe.propertyPath === resolvedPropertyPath)
+		.map((keyframe) => keyframe.time);
+	const { previous: previousKeyframeTime, next: nextKeyframeTime } =
+		findAdjacentKeyframeTimes({ keyframeTimes, currentTime: localTime });
+	const seekToKeyframe = ({ time }: { time: MediaTime | null }) => {
+		if (time === null) return;
+		editor.playback.seek({
+			time: addMediaTime({ a: elementStartTime, b: time }),
+		});
+	};
 	const shouldUseAnimatedChannel =
 		enabled && hasAnimatedKeyframes && isPlayheadWithinElementRange;
 
@@ -150,6 +169,10 @@ export function useKeyframedParamProperty({
 		hasAnimatedKeyframes,
 		isKeyframedAtTime,
 		keyframeIdAtTime,
+		hasPreviousKeyframe: previousKeyframeTime !== null,
+		hasNextKeyframe: nextKeyframeTime !== null,
+		goToPreviousKeyframe: () => seekToKeyframe({ time: previousKeyframeTime }),
+		goToNextKeyframe: () => seekToKeyframe({ time: nextKeyframeTime }),
 		onPreview: previewValue,
 		onCommit: () => editor.timeline.commitPreview(),
 		toggleKeyframe,

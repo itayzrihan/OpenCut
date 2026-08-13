@@ -8,6 +8,7 @@ license.workspace = true
 [dependencies]
 axum = { workspace = true }
 base64 = { workspace = true }
+getrandom = { workspace = true }
 opencut-editor-api = { path = "../editor-api" }
 rmcp = { workspace = true }
 serde = { workspace = true }

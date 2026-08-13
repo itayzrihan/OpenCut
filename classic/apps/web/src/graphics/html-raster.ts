@@ -11,6 +11,7 @@
 
 const RASTER_CACHE_LIMIT = 180;
 const RASTER_TIME_FPS = 30;
+const RASTER_CACHE_VERSION = 2;
 
 interface HyperframeRasterRequest {
 	html: string;
@@ -44,6 +45,7 @@ function buildRasterCacheKey({
 	durationSeconds,
 }: HyperframeRasterRequest): string {
 	return [
+		RASTER_CACHE_VERSION,
 		hashString(html),
 		Math.round(width),
 		Math.round(height),
@@ -167,6 +169,10 @@ export function buildSeekedHyperframeSvg({
 	const duration = Math.max(0.001, durationSeconds);
 	const progress = Math.min(1, Math.max(0, time / duration));
 	const body = sanitizeHyperframeHtml({ html });
+	const seekedBody = applyHyperframeInlineSeekDelays({
+		body,
+		timeSeconds: time,
+	});
 	const seekStyle = [
 		"*, *::before, *::after {",
 		"animation-play-state: paused !important;",
@@ -182,11 +188,41 @@ export function buildSeekedHyperframeSvg({
 		`<foreignObject width="${safeWidth}" height="${safeHeight}">`,
 		`<div xmlns="http://www.w3.org/1999/xhtml" style="width:${safeWidth}px;height:${safeHeight}px;overflow:hidden;position:relative;--hf-t:${time};--hf-progress:${progress};--hf-duration:${duration}">`,
 		`<style>${escapeStyleContent({ css: seekStyle })}</style>`,
-		body,
+		seekedBody,
 		"</div>",
 		"</foreignObject>",
 		"</svg>",
 	].join("");
+}
+
+export function applyHyperframeInlineSeekDelays({
+	body,
+	timeSeconds,
+}: {
+	body: string;
+	timeSeconds: number;
+}): string {
+	const time = Math.max(0, timeSeconds);
+	return body.replace(
+		/style="([^"]*?--hf-delay\s*:\s*([^;"]+)[^"]*)"/gi,
+		(_match, style: string, delay: string) => {
+			const normalizedDelay = delay.trim();
+			const cueSeconds = parseCssTimeSeconds(normalizedDelay);
+			const beforeCue =
+				cueSeconds !== null && time + Number.EPSILON < cueSeconds;
+			return `style="${style};animation-delay:calc(${normalizedDelay} - ${time}s)!important${
+				beforeCue ? ";visibility:hidden!important" : ""
+			}"`;
+		},
+	);
+}
+
+function parseCssTimeSeconds(value: string): number | null {
+	const match = /^(-?(?:\d+(?:\.\d*)?|\.\d+))(ms|s)$/i.exec(value);
+	if (!match) return null;
+	const amount = Number(match[1]);
+	if (!Number.isFinite(amount)) return null;
+	return match[2]?.toLowerCase() === "ms" ? amount / 1_000 : amount;
 }
 
 /**

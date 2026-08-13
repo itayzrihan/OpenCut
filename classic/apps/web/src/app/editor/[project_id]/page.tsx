@@ -17,9 +17,10 @@ import { MigrationDialog } from "@/project/components/migration-dialog";
 import { usePanelStore } from "@/editor/panel-store";
 import { usePasteMedia } from "@/media/use-paste-media";
 import { MobileGate } from "@/components/editor/mobile-gate";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	useEditorPlayback,
+	useEditorProject,
 	useEditorRenderer,
 	useEditorTimelineScenes,
 } from "@/editor/use-editor";
@@ -43,6 +44,11 @@ import {
 	bookmarkNotesPreviewOverlay,
 	getBookmarkPreviewOverlaySource,
 } from "@/timeline/bookmarks/index";
+import { getParallaxCanvasPreviewOverlaySource } from "@/parallax-story-teller/preview-overlay";
+import { useCameraManStore } from "@/parallax-story-teller/camera-man-store";
+import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
+import { ZERO_MEDIA_TIME } from "@/wasm";
+import type { EditorCore } from "@/core";
 
 export default function Editor() {
 	const params = useParams();
@@ -88,15 +94,15 @@ function DegradedRendererBanner() {
 	);
 }
 
-function EditorLayout() {
-	usePasteMedia();
-	const { panels, setPanel } = usePanelStore();
-	const activeScene = useEditorTimelineScenes((editor) =>
+function PreviewPanelWithOverlays() {
+	const [activeScene, sceneDuration] = useEditorTimelineScenes((editor) => [
 		editor.scenes.getActiveSceneOrNull(),
-	);
-	const currentTime = useEditorPlayback((editor) =>
-		editor.playback.getCurrentTime(),
-	);
+		editor.timeline.getTotalDuration(),
+	]);
+	const project = useEditorProject((editor) => editor.project.getActive());
+	const cameraManPhase = useCameraManStore((state) => state.phase);
+	const cameraManSceneId = useCameraManStore((state) => state.sceneId);
+	const cameraManCurrent = useCameraManStore((state) => state.current);
 	const activeGuide = usePreviewStore((state) => state.activeGuide);
 	const overlays = usePreviewStore((state) => state.overlays);
 	const setOverlayVisibility = usePreviewStore(
@@ -110,11 +116,30 @@ function EditorLayout() {
 		overlay: safeAreaPreviewOverlay,
 		overlays,
 	});
+	const shouldTrackOverlayTime = Boolean(activeScene?.parallax) || showBookmarkNotes;
+	const selectOverlayTime = useCallback(
+		(editor: EditorCore) =>
+			shouldTrackOverlayTime
+				? editor.playback.getCurrentTime()
+				: ZERO_MEDIA_TIME,
+		[shouldTrackOverlayTime],
+	);
+	const currentTime = useEditorPlayback(selectOverlayTime);
 
 	const overlaySource = useMemo(
 		() =>
 			mergePreviewOverlaySources({
 				sources: [
+					getParallaxCanvasPreviewOverlaySource({
+						scene: activeScene,
+						canvasSize: project?.settings.canvasSize,
+						currentTime,
+						duration: sceneDuration,
+						cameraOverride:
+							cameraManPhase !== "idle" && cameraManSceneId === activeScene?.id
+								? cameraManCurrent
+								: null,
+					}),
 					getSafeAreaPreviewOverlaySource({
 						isVisible: showSafeArea,
 					}),
@@ -133,7 +158,18 @@ function EditorLayout() {
 							},
 				],
 			}),
-		[activeGuide, activeScene, currentTime, showBookmarkNotes, showSafeArea],
+		[
+			activeGuide,
+			activeScene,
+			cameraManCurrent,
+			cameraManPhase,
+			cameraManSceneId,
+			currentTime,
+			project?.settings.canvasSize,
+			sceneDuration,
+			showBookmarkNotes,
+			showSafeArea,
+		],
 	);
 
 	const overlayControls = useMemo(
@@ -145,6 +181,21 @@ function EditorLayout() {
 	);
 
 	return (
+		<PreviewPanel
+			overlayControls={overlayControls}
+			overlayInstances={overlaySource.instances}
+			onOverlayVisibilityChange={setOverlayVisibility}
+		/>
+	);
+}
+
+function EditorLayout() {
+	usePasteMedia();
+	const { panels, setPanel } = usePanelStore();
+
+	return (
+		<div className="flex size-full min-h-0 flex-col">
+			<ParallaxCanvasEditorBanner />
 		<ResizablePanelGroup
 			direction="vertical"
 			className="size-full gap-[0.18rem]"
@@ -193,11 +244,7 @@ function EditorLayout() {
 						minSize={30}
 						className="min-h-0 min-w-0 flex-1"
 					>
-						<PreviewPanel
-							overlayControls={overlayControls}
-							overlayInstances={overlaySource.instances}
-							onOverlayVisibilityChange={setOverlayVisibility}
-						/>
+						<PreviewPanelWithOverlays />
 					</ResizablePanel>
 
 					<ResizableHandle withHandle />
@@ -224,5 +271,6 @@ function EditorLayout() {
 				<Timeline />
 			</ResizablePanel>
 		</ResizablePanelGroup>
+		</div>
 	);
 }

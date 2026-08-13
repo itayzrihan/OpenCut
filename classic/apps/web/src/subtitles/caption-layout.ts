@@ -18,6 +18,7 @@ export const DEFAULT_CAPTION_LAYOUT = {
 	rows: 2,
 	inPaddingPercent: 0,
 	outPaddingPercent: 0,
+	bottomFadeOutPercent: 30,
 	revealMode: "determined-by-preset" as TextCaptionRevealMode,
 	transitionIn: "none" as TextWordTransitionIn,
 	wordAnimationId: "none",
@@ -34,8 +35,19 @@ export const DEFAULT_CAPTION_LAYOUT = {
 export interface CaptionLayoutSettings {
 	wordsPerRow: number;
 	rows: number;
+	/**
+	 * Optional end-exclusive word positions for semantic caption rows.
+	 * When present, rows are still capped by wordsPerRow and grouped into
+	 * captions according to the configured rows value.
+	 */
+	rowBreaks?: number[];
 	inPaddingPercent: number;
 	outPaddingPercent: number;
+	/**
+	 * Percentage of the caption height feathered to transparent at the bottom.
+	 * Optional so caption sources saved before this setting remain unchanged.
+	 */
+	bottomFadeOutPercent?: number;
 	revealMode: TextCaptionRevealMode;
 	transitionIn: TextWordTransitionIn;
 	wordAnimationId: string;
@@ -81,6 +93,17 @@ function clampNumber({
 
 function isPlacementMode(value: unknown): value is CaptionPlacementMode {
 	return value === "grid" || value === "manual";
+}
+
+function normalizeCaptionRowBreaks(value: unknown): number[] | undefined {
+	if (!Array.isArray(value)) return undefined;
+	const breaks = value.filter(
+		(item): item is number =>
+			typeof item === "number" && Number.isInteger(item) && item > 0,
+	);
+	if (breaks.length === 0) return undefined;
+	const unique = [...new Set(breaks)].sort((left, right) => left - right);
+	return unique.length > 0 ? unique : undefined;
 }
 
 export function stripCaptionPunctuation({ text }: { text: string }): string {
@@ -175,17 +198,19 @@ export function normalizeCaptionLayoutSettings({
 	const placementMode = isPlacementMode(settings?.placementMode)
 		? settings.placementMode
 		: DEFAULT_CAPTION_LAYOUT.placementMode;
+	const wordsPerRow = clampInteger({
+		value: settings?.wordsPerRow ?? DEFAULT_CAPTION_LAYOUT.wordsPerRow,
+		min: 1,
+		max: 12,
+	});
 	return {
-		wordsPerRow: clampInteger({
-			value: settings?.wordsPerRow ?? DEFAULT_CAPTION_LAYOUT.wordsPerRow,
-			min: 1,
-			max: 12,
-		}),
+		wordsPerRow,
 		rows: clampInteger({
 			value: settings?.rows ?? DEFAULT_CAPTION_LAYOUT.rows,
 			min: 1,
 			max: 4,
 		}),
+		rowBreaks: normalizeCaptionRowBreaks(settings?.rowBreaks),
 		inPaddingPercent: clampNumber({
 			value:
 				settings?.inPaddingPercent ?? DEFAULT_CAPTION_LAYOUT.inPaddingPercent,
@@ -195,6 +220,13 @@ export function normalizeCaptionLayoutSettings({
 		outPaddingPercent: clampNumber({
 			value:
 				settings?.outPaddingPercent ?? DEFAULT_CAPTION_LAYOUT.outPaddingPercent,
+			min: 0,
+			max: 100,
+		}),
+		bottomFadeOutPercent: clampNumber({
+			value:
+				settings?.bottomFadeOutPercent ??
+				DEFAULT_CAPTION_LAYOUT.bottomFadeOutPercent,
 			min: 0,
 			max: 100,
 		}),
@@ -242,6 +274,21 @@ export function normalizeCaptionLayoutSettings({
 	};
 }
 
+export function resolveCaptionBottomFadeOut({
+	settings,
+}: {
+	settings: CaptionLayoutSettings | undefined;
+}): number {
+	if (typeof settings?.bottomFadeOutPercent !== "number") return 0;
+	return (
+		clampNumber({
+			value: settings.bottomFadeOutPercent,
+			min: 0,
+			max: 100,
+		}) / 100
+	);
+}
+
 function paddedCaptionTime({
 	startTime,
 	endTime,
@@ -271,51 +318,128 @@ export function buildCaptionChunksFromWords({
 	settings: CaptionLayoutSettings;
 }): CaptionChunk[] {
 	const normalized = normalizeCaptionLayoutSettings({ settings });
-	const wordsPerCaption = normalized.wordsPerRow * normalized.rows;
-	const captions: CaptionChunk[] = [];
+	const rowGroups = buildCaptionRowGroups({
+		words,
+		wordsPerRow: normalized.wordsPerRow,
+		rowBreaks: normalized.rowBreaks,
+	});
+	const captionGroups: Array<{
+		text: string;
+		startTime: number;
+		endTime: number;
+		words: TranscriptionWord[];
+	}> = [];
 
-	for (let i = 0; i < words.length; i += wordsPerCaption) {
-		const group = words.slice(i, i + wordsPerCaption);
+	for (let rowStart = 0; rowStart < rowGroups.length; rowStart += normalized.rows) {
+		const rows = rowGroups.slice(rowStart, rowStart + normalized.rows);
+		const group = rows.flat();
 		if (group.length === 0) continue;
 
-		const lines: string[] = [];
-		for (
-			let lineStart = 0;
-			lineStart < group.length;
-			lineStart += normalized.wordsPerRow
-		) {
-			lines.push(
-				group
-					.slice(lineStart, lineStart + normalized.wordsPerRow)
-					.map((word) => word.text)
-					.join(" "),
-			);
-		}
+		const lines = rows.map((row) => row.map((word) => word.text).join(" "));
 
 		const rawStartTime = group[0].start;
 		const rawEndTime = Math.max(
 			group[group.length - 1].end,
 			rawStartTime + 0.1,
 		);
-		const readableBounds = getReadableCaptionBounds({
-			words: group,
+		captionGroups.push({
+			text: lines.join("\n"),
 			startTime: rawStartTime,
 			endTime: rawEndTime,
-		});
-		const { startTime, endTime } = paddedCaptionTime({
-			startTime: readableBounds.startTime,
-			endTime: readableBounds.endTime,
-			settings: normalized,
-		});
-		captions.push({
-			text: lines.join("\n"),
-			startTime,
-			duration: endTime - startTime,
 			words: group,
 		});
 	}
 
-	return captions;
+	const getSharedBoundary = ({
+		left,
+		right,
+	}: {
+		left: (typeof captionGroups)[number];
+		right: (typeof captionGroups)[number];
+	}): number => {
+		if (left.words.length === 1 && right.words.length === 1) {
+			return left.endTime + (right.startTime - left.endTime) / 2;
+		}
+		return left.words.length === 1 ? right.startTime : left.endTime;
+	};
+
+	return captionGroups.map((group, index) => {
+		const previousCaption = captionGroups[index - 1];
+		const nextCaption = captionGroups[index + 1];
+		const previousBoundary = previousCaption
+			? group.startTime < previousCaption.endTime
+				? group.startTime
+				: getSharedBoundary({ left: previousCaption, right: group })
+			: undefined;
+		const nextBoundary = nextCaption
+			? nextCaption.startTime < group.endTime
+				? group.endTime
+				: getSharedBoundary({ left: group, right: nextCaption })
+			: undefined;
+		const readableBounds = getReadableCaptionBounds({
+			words: group.words,
+			startTime: group.startTime,
+			endTime: group.endTime,
+			previousCaptionEndTime: previousBoundary,
+			nextCaptionStartTime: nextBoundary,
+		});
+		const paddedBounds = paddedCaptionTime({
+			startTime: readableBounds.startTime,
+			endTime: readableBounds.endTime,
+			settings: normalized,
+		});
+		const startTime =
+			group.words.length === 1 && previousBoundary !== undefined
+				? Math.max(paddedBounds.startTime, previousBoundary)
+				: paddedBounds.startTime;
+		const endTime =
+			group.words.length === 1 && nextBoundary !== undefined
+				? Math.min(paddedBounds.endTime, nextBoundary)
+				: paddedBounds.endTime;
+
+		return {
+			text: group.text,
+			startTime,
+			duration: Math.max(0.001, endTime - startTime),
+			words: group.words,
+		};
+	});
+}
+
+function buildCaptionRowGroups({
+	words,
+	wordsPerRow,
+	rowBreaks,
+}: {
+	words: TranscriptionWord[];
+	wordsPerRow: number;
+	rowBreaks?: number[];
+}): TranscriptionWord[][] {
+	if (words.length === 0) return [];
+
+	const breaks = rowBreaks ?? [];
+	const validSemanticBreaks =
+		breaks.length > 0 &&
+		breaks[breaks.length - 1] === words.length &&
+		breaks.every((end, index) => {
+			const start = index === 0 ? 0 : (breaks[index - 1] ?? 0);
+			return end > start && end <= words.length && end - start <= wordsPerRow;
+		});
+
+	if (validSemanticBreaks) {
+		let start = 0;
+		return breaks.flatMap((end) => {
+			const row = words.slice(start, end);
+			start = end;
+			return row.length > 0 ? [row] : [];
+		});
+	}
+
+	const rows: TranscriptionWord[][] = [];
+	for (let start = 0; start < words.length; start += wordsPerRow) {
+		rows.push(words.slice(start, start + wordsPerRow));
+	}
+	return rows;
 }
 
 export function buildCaptionChunksFromSegments({

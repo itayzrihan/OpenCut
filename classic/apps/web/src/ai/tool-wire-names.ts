@@ -21,6 +21,7 @@ export const ALLOWED_AI_TOOL_WIRE_NAMES: ReadonlySet<string> = new Set([
 	"scene_activate",
 	"skills_list",
 	"skills_load",
+	"skills_load_resource",
 	"timeline_edit_source",
 	"timeline_edit_full_source",
 	"timeline_get_element",

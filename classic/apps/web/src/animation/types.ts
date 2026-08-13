@@ -19,6 +19,8 @@ export const ANIMATION_PROPERTY_PATHS = [
 	"shadow.blur",
 	"shadow.offsetX",
 	"shadow.offsetY",
+	"bottomFadeOut",
+	"bottomFadeOutEndOpacity",
 	"background.color",
 	"background.paddingX",
 	"background.paddingY",

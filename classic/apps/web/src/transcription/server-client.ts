@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { TranscriptionLanguage, TranscriptionResult } from "./types";
+import { recoverEarlyStoppedTranscription } from "./early-stop-recovery";
 
 const TRANSCRIPTION_FETCH_RETRY_COUNT = 1;
 const TRANSCRIPTION_FETCH_RETRY_DELAY_MS = 750;
@@ -47,8 +48,34 @@ export async function transcribeTimelineAudioBlob({
 	language: TranscriptionLanguage;
 	signal?: AbortSignal;
 }): Promise<TranscriptionResult> {
+	const initialResult = await transcribeAudioBlobOnce({
+		audioBlob,
+		language,
+		signal,
+	});
+	return recoverEarlyStoppedTranscription({
+		audioBlob,
+		initialResult,
+		transcribe: ({ audioBlob: recoveryBlob }) =>
+			transcribeAudioBlobOnce({
+				audioBlob: recoveryBlob,
+				language,
+				signal,
+			}),
+	});
+}
+
+async function transcribeAudioBlobOnce({
+	audioBlob,
+	language,
+	signal,
+}: {
+	audioBlob: Blob;
+	language: TranscriptionLanguage;
+	signal?: AbortSignal;
+}): Promise<TranscriptionResult> {
 	const formData = new FormData();
-	formData.append("audio", audioBlob, "timeline.webm");
+	formData.append("audio", audioBlob, "timeline.wav");
 	formData.append("language", language === "auto" ? "he" : language);
 
 	let lastError: unknown = null;

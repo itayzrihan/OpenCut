@@ -4,6 +4,7 @@ import { sharedLibraryService } from "./service";
 import type {
 	GeneratedBackgroundPreset,
 	GeneratedEffectPreset,
+	GeneratedUiElementPreset,
 	SharedAssetCategory,
 	SharedAudioAsset,
 	SharedAudioFolder,
@@ -17,6 +18,7 @@ interface SharedLibraryStore {
 	categories: SharedAssetCategory[];
 	generatedBackgrounds: GeneratedBackgroundPreset[];
 	generatedEffects: GeneratedEffectPreset[];
+	generatedUiElements: GeneratedUiElementPreset[];
 	isLoading: boolean;
 	error: string | null;
 
@@ -25,7 +27,9 @@ interface SharedLibraryStore {
 		files: File[];
 		folder: SharedAudioFolder;
 	}) => Promise<SharedAudioAsset[]>;
-	importStickerFiles: (args: { files: File[] }) => Promise<SharedStickerAsset[]>;
+	importStickerFiles: (args: {
+		files: File[];
+	}) => Promise<SharedStickerAsset[]>;
 	createCategory: (args: {
 		scope: SharedCategoryScope;
 		name: string;
@@ -40,6 +44,9 @@ interface SharedLibraryStore {
 	saveGeneratedEffect: (
 		args: Omit<GeneratedEffectPreset, "id" | "createdAt" | "updatedAt">,
 	) => Promise<GeneratedEffectPreset | null>;
+	saveGeneratedUiElement: (
+		args: Omit<GeneratedUiElementPreset, "id" | "createdAt" | "updatedAt">,
+	) => Promise<GeneratedUiElementPreset | null>;
 }
 
 function messageFromError({
@@ -58,6 +65,7 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 	categories: [],
 	generatedBackgrounds: [],
 	generatedEffects: [],
+	generatedUiElements: [],
 	isLoading: false,
 	error: null,
 
@@ -70,12 +78,14 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 				categories,
 				generatedBackgrounds,
 				generatedEffects,
+				generatedUiElements,
 			] = await Promise.all([
 				sharedLibraryService.listAudioAssets(),
 				sharedLibraryService.listStickerAssets(),
 				sharedLibraryService.listCategories(),
 				sharedLibraryService.listGeneratedBackgrounds(),
 				sharedLibraryService.listGeneratedEffects(),
+				sharedLibraryService.listGeneratedUiElements(),
 			]);
 			await sharedLibraryService.warmStickerCache();
 			set({
@@ -84,6 +94,7 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 				categories,
 				generatedBackgrounds,
 				generatedEffects,
+				generatedUiElements,
 				isLoading: false,
 			});
 		} catch (error) {
@@ -218,6 +229,24 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 			});
 			toast.error(message);
 			console.error("Failed to save generated effect:", error);
+			return null;
+		}
+	},
+
+	saveGeneratedUiElement: async (args) => {
+		try {
+			const preset = await sharedLibraryService.saveGeneratedUiElement(args);
+			set((state) => ({
+				generatedUiElements: [preset, ...state.generatedUiElements],
+			}));
+			return preset;
+		} catch (error) {
+			const message = messageFromError({
+				error,
+				fallback: "Failed to save UI element",
+			});
+			toast.error(message);
+			console.error("Failed to save generated UI element:", error);
 			return null;
 		}
 	},

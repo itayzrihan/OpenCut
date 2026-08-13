@@ -72,6 +72,32 @@ afterEach(() => {
 });
 
 describe("playback manager", () => {
+	test("does not advance the timeline until registered prebuffer work completes", async () => {
+		installMockClock();
+		const playback = createPlaybackManager();
+		let releaseBuffer: () => void = () => {};
+		playback.registerPlaybackPreparer({
+			id: "test-buffer",
+			prepare: () =>
+				new Promise<void>((resolve) => {
+					releaseBuffer = resolve;
+				}),
+		});
+
+		playback.play();
+		expect(playback.getIsBuffering()).toBe(true);
+		expect(playback.getIsPlaying()).toBe(false);
+		expect(pendingFrame).toBeNull();
+
+		releaseBuffer();
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(playback.getIsBuffering()).toBe(false);
+		expect(playback.getIsPlaying()).toBe(true);
+		expect(pendingFrame).not.toBeNull();
+	});
+
 	test("does not notify update listeners until rounded frame time advances", () => {
 		installMockClock();
 		const playback = createPlaybackManager();
@@ -89,5 +115,49 @@ describe("playback manager", () => {
 
 		runPendingFrame({ atMs: 25 });
 		expect(updates).toEqual([mediaTime({ ticks: 4_000 })]);
+	});
+
+	test("exposes the live playback clock before the next animation frame", () => {
+		installMockClock();
+		const playback = createPlaybackManager();
+
+		playback.play();
+		now = 750;
+
+		expect(playback.getCurrentTime()).toBe(mediaTime({ ticks: 0 }));
+		expect(playback.getClockTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 0.75 }),
+		);
+	});
+
+	test("suspension cancels RAF, blocks play, and restores prior playback", () => {
+		installMockClock();
+		const playback = createPlaybackManager();
+		playback.play();
+		expect(playback.getIsPlaying()).toBe(true);
+		expect(pendingFrame).not.toBeNull();
+
+		const release = playback.suspend();
+		expect(playback.getIsPlaying()).toBe(false);
+		expect(pendingFrame).toBeNull();
+
+		playback.play();
+		expect(playback.getIsPlaying()).toBe(false);
+		expect(pendingFrame).toBeNull();
+
+		release();
+		expect(playback.getIsPlaying()).toBe(true);
+		expect(pendingFrame).not.toBeNull();
+	});
+
+	test("suspension leaves previously paused playback paused", () => {
+		installMockClock();
+		const playback = createPlaybackManager();
+
+		const release = playback.suspend();
+		release();
+
+		expect(playback.getIsPlaying()).toBe(false);
+		expect(pendingFrame).toBeNull();
 	});
 });

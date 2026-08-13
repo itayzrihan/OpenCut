@@ -44,12 +44,9 @@ function tracks(): SceneTracks {
 
 describe("track order", () => {
 	test("uses explicit display order across track buckets", () => {
-		expect(getDisplayTracks({ tracks: tracks() }).map((item) => item.id)).toEqual([
-			"text-1",
-			"main",
-			"audio-1",
-			"effect-1",
-		]);
+		expect(
+			getDisplayTracks({ tracks: tracks() }).map((item) => item.id),
+		).toEqual(["text-1", "main", "audio-1", "effect-1"]);
 	});
 
 	test("reorders any track type", () => {
@@ -58,12 +55,9 @@ describe("track order", () => {
 			trackId: "audio-1",
 			toIndex: 0,
 		});
-		expect(getDisplayTracks({ tracks: reordered }).map((item) => item.id)).toEqual([
-			"audio-1",
-			"text-1",
-			"main",
-			"effect-1",
-		]);
+		expect(
+			getDisplayTracks({ tracks: reordered }).map((item) => item.id),
+		).toEqual(["audio-1", "text-1", "main", "effect-1"]);
 	});
 
 	test("inserts new tracks at display index while keeping typed buckets", () => {
@@ -72,13 +66,25 @@ describe("track order", () => {
 			track: track({ id: "video-2", type: "video" }),
 			insertIndex: 2,
 		});
-		expect(getDisplayTracks({ tracks: inserted }).map((item) => item.id)).toEqual([
-			"text-1",
-			"main",
-			"video-2",
-			"audio-1",
-			"effect-1",
-		]);
+		expect(
+			getDisplayTracks({ tracks: inserted }).map((item) => item.id),
+		).toEqual(["text-1", "main", "video-2", "audio-1", "effect-1"]);
 		expect(inserted.overlay.map((item) => item.id)).toContain("video-2");
+	});
+
+	test("inserts a parallax marker after fixed camera and main tracks", () => {
+		const sceneTracks = tracks();
+		const inserted = splitTrackByType({
+			tracks: sceneTracks,
+			track: track({ id: "parallax-1", type: "parallax" }),
+			insertIndex: 2,
+		});
+
+		expect(
+			getDisplayTracks({ tracks: inserted }).map((item) => item.id),
+		).toEqual(["text-1", "main", "parallax-1", "audio-1", "effect-1"]);
+		expect(
+			inserted.overlay.find((item) => item.id === "parallax-1")?.type,
+		).toBe("parallax");
 	});
 });

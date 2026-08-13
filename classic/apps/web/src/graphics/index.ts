@@ -14,6 +14,9 @@ import {
 } from "./definitions";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
+	GRAPHIC_LAYOUT_HEIGHT_PARAM,
+	GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM,
+	GRAPHIC_LAYOUT_WIDTH_PARAM,
 	type GraphicInstance,
 	type GraphicDefinition,
 } from "./types";
@@ -119,6 +122,41 @@ export function getGraphicSourceSize({
 	});
 }
 
+export function getGraphicLayoutSize({
+	definitionId,
+	params,
+}: {
+	definitionId: string;
+	params?: ParamValues;
+}): { width: number; height: number } | null {
+	const definition = getGraphicDefinition({ definitionId });
+	if (definition.resizeBehavior !== "dimensions") return null;
+	const width = params?.[GRAPHIC_LAYOUT_WIDTH_PARAM];
+	const height = params?.[GRAPHIC_LAYOUT_HEIGHT_PARAM];
+	if (
+		typeof width !== "number" ||
+		!Number.isFinite(width) ||
+		width <= 0 ||
+		typeof height !== "number" ||
+		!Number.isFinite(height) ||
+		height <= 0
+	) {
+		return null;
+	}
+	return {
+		width: Math.max(1, Math.round(width)),
+		height: Math.max(1, Math.round(height)),
+	};
+}
+
+export function usesDimensionResize({
+	definitionId,
+}: {
+	definitionId: string;
+}): boolean {
+	return getGraphicDefinition({ definitionId }).resizeBehavior === "dimensions";
+}
+
 export function buildGraphicPreviewUrl({
 	definitionId,
 	params,
@@ -162,6 +200,9 @@ export function buildGraphicPreviewUrl({
 
 export {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
+	GRAPHIC_LAYOUT_HEIGHT_PARAM,
+	GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM,
+	GRAPHIC_LAYOUT_WIDTH_PARAM,
 	ellipseGraphicDefinition,
 	graphicsRegistry,
 	hyperframeGraphicDefinition,

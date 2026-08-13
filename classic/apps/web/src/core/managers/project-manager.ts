@@ -1072,6 +1072,8 @@ export class ProjectManager {
 			duration: duration || 1,
 			canvasSize,
 			background,
+			scenes: this.editor.scenes.getScenes(),
+			activeSceneId: this.editor.scenes.getActiveScene().id,
 		});
 
 		const renderer = new CanvasRenderer({

@@ -18,7 +18,7 @@ import {
 	IconHandle,
 	getResizeCursor,
 } from "./handle-primitives";
-import { Rotate01Icon } from "@hugeicons/core-free-icons";
+import { CenterFocusIcon, Rotate01Icon } from "@hugeicons/core-free-icons";
 
 const CORNERS: Corner[] = [
 	"top-left",
@@ -40,6 +40,7 @@ export function TransformHandles({
 		handleCornerPointerDown,
 		handleEdgePointerDown,
 		handleRotationPointerDown,
+		centerToCamera,
 		handlePointerMove,
 		handlePointerUp,
 	} = useTransformHandles({ onSnapLinesChange });
@@ -76,6 +77,10 @@ export function TransformHandles({
 	const rotationHandleScreen = {
 		x: topCenterScreen.x + Math.sin(rotationAngleRad) * ROTATION_HANDLE_OFFSET,
 		y: topCenterScreen.y - Math.cos(rotationAngleRad) * ROTATION_HANDLE_OFFSET,
+	};
+	const centerHandleScreen = {
+		x: rotationHandleScreen.x + 28,
+		y: rotationHandleScreen.y,
 	};
 
 	const onPointerMove = (event: React.PointerEvent) =>
@@ -136,9 +141,21 @@ export function TransformHandles({
 			<IconHandle
 				icon={Rotate01Icon}
 				screen={rotationHandleScreen}
+				title="Rotate"
 				onPointerDown={(event) => handleRotationPointerDown({ event })}
 				onPointerMove={onPointerMove}
 				onPointerUp={onPointerUp}
+			/>
+			<IconHandle
+				icon={CenterFocusIcon}
+				screen={centerHandleScreen}
+				title="Center to camera"
+				onPointerDown={(event) => {
+					event.stopPropagation();
+					centerToCamera();
+				}}
+				onPointerMove={() => undefined}
+				onPointerUp={() => undefined}
 			/>
 		</div>
 	);

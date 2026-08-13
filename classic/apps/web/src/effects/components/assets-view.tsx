@@ -25,9 +25,12 @@ import { useSharedLibraryStore, type GeneratedEffectPreset } from "@/shared-libr
 import { generateEffectPreset } from "@/ai/preset-generation";
 import type { ParamValues } from "@/params";
 import { Sparkles } from "lucide-react";
+import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
 
 export function EffectsView() {
-	const effects = effectsRegistry.getAll();
+	const effects = effectsRegistry
+		.getAll()
+		.filter((effect) => effect.type !== SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE);
 	const { generatedEffects, loadLibrary } = useSharedLibraryStore();
 
 	useEffect(() => {

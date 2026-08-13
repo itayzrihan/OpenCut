@@ -68,7 +68,18 @@ struct LayerUniformBuffer {
 #[derive(Clone, Copy, Pod, Zeroable)]
 struct BlendUniformBuffer {
     blend_mode: u32,
-    _padding: [u32; 3],
+    opacity: f32,
+    layer_is_premultiplied: u32,
+    _padding: u32,
+}
+
+#[derive(Clone, Copy)]
+struct BlendTextureOptions {
+    blend_mode: BlendMode,
+    opacity: f32,
+    layer_is_premultiplied: bool,
+    width: u32,
+    height: u32,
 }
 
 #[repr(C)]
@@ -315,32 +326,7 @@ impl Compositor {
             frame.clear.color,
         );
 
-        for item in &frame.items {
-            match item {
-                FrameItemDescriptor::Layer(layer) => {
-                    let layer_texture = self.render_layer(context, &mut encoder, frame, layer)?;
-                    scene = self.blend_texture(
-                        context,
-                        &mut encoder,
-                        &scene,
-                        &layer_texture,
-                        layer.blend_mode,
-                        frame.width,
-                        frame.height,
-                    )?;
-                }
-                FrameItemDescriptor::SceneEffect { effect_pass_groups } => {
-                    scene = self.apply_effect_groups(
-                        context,
-                        &mut encoder,
-                        &scene,
-                        frame.width,
-                        frame.height,
-                        effect_pass_groups,
-                    )?;
-                }
-            }
-        }
+        scene = self.composite_items(context, &mut encoder, frame, scene, &frame.items)?;
 
         context.queue().submit([encoder.finish()]);
         Ok(scene)
@@ -371,32 +357,7 @@ impl Compositor {
             frame.clear.color,
         );
 
-        for item in &frame.items {
-            match item {
-                FrameItemDescriptor::Layer(layer) => {
-                    let layer_texture = self.render_layer(context, &mut encoder, frame, layer)?;
-                    scene = self.blend_texture(
-                        context,
-                        &mut encoder,
-                        &scene,
-                        &layer_texture,
-                        layer.blend_mode,
-                        frame.width,
-                        frame.height,
-                    )?;
-                }
-                FrameItemDescriptor::SceneEffect { effect_pass_groups } => {
-                    scene = self.apply_effect_groups(
-                        context,
-                        &mut encoder,
-                        &scene,
-                        frame.width,
-                        frame.height,
-                        effect_pass_groups,
-                    )?;
-                }
-            }
-        }
+        scene = self.composite_items(context, &mut encoder, frame, scene, &frame.items)?;
 
         context.encode_texture_blit_to_view(
             &mut encoder,
@@ -485,6 +446,81 @@ impl Compositor {
         }
 
         Ok(current)
+    }
+
+    fn composite_items(
+        &mut self,
+        context: &GpuContext,
+        encoder: &mut wgpu::CommandEncoder,
+        frame: &FrameDescriptor,
+        mut scene: wgpu::Texture,
+        items: &[FrameItemDescriptor],
+    ) -> Result<wgpu::Texture, CompositorError> {
+        for item in items {
+            match item {
+                FrameItemDescriptor::Layer(layer) => {
+                    let layer_texture = self.render_layer(context, encoder, frame, layer)?;
+                    scene = self.blend_texture(
+                        context,
+                        encoder,
+                        &scene,
+                        &layer_texture,
+                        BlendTextureOptions {
+                            blend_mode: layer.blend_mode,
+                            opacity: 1.0,
+                            layer_is_premultiplied: false,
+                            width: frame.width,
+                            height: frame.height,
+                        },
+                    )?;
+                }
+                FrameItemDescriptor::Group {
+                    items,
+                    opacity,
+                    blend_mode,
+                } => {
+                    let group_texture = self.render_group(context, encoder, frame, items)?;
+                    scene = self.blend_texture(
+                        context,
+                        encoder,
+                        &scene,
+                        &group_texture,
+                        BlendTextureOptions {
+                            blend_mode: *blend_mode,
+                            opacity: *opacity,
+                            layer_is_premultiplied: true,
+                            width: frame.width,
+                            height: frame.height,
+                        },
+                    )?;
+                }
+                FrameItemDescriptor::SceneEffect { effect_pass_groups } => {
+                    scene = self.apply_effect_groups(
+                        context,
+                        encoder,
+                        &scene,
+                        frame.width,
+                        frame.height,
+                        effect_pass_groups,
+                    )?;
+                }
+            }
+        }
+
+        Ok(scene)
+    }
+
+    fn render_group(
+        &mut self,
+        context: &GpuContext,
+        encoder: &mut wgpu::CommandEncoder,
+        frame: &FrameDescriptor,
+        items: &[FrameItemDescriptor],
+    ) -> Result<wgpu::Texture, CompositorError> {
+        let group =
+            self.create_cleared_texture(context, encoder, frame.width, frame.height, [0.0; 4]);
+
+        self.composite_items(context, encoder, frame, group, items)
     }
 
     fn apply_effect_groups(
@@ -798,13 +834,14 @@ impl Compositor {
         encoder: &mut wgpu::CommandEncoder,
         base: &wgpu::Texture,
         layer: &wgpu::Texture,
-        blend_mode: BlendMode,
-        width: u32,
-        height: u32,
+        options: BlendTextureOptions,
     ) -> Result<wgpu::Texture, CompositorError> {
-        let target =
-            self.texture_pool
-                .acquire(context, width, height, "compositor-blended-texture");
+        let target = self.texture_pool.acquire(
+            context,
+            options.width,
+            options.height,
+            "compositor-blended-texture",
+        );
         let base_view = base.create_view(&wgpu::TextureViewDescriptor::default());
         let layer_view = layer.create_view(&wgpu::TextureViewDescriptor::default());
         let target_view = target.create_view(&wgpu::TextureViewDescriptor::default());
@@ -846,8 +883,10 @@ impl Compositor {
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: Some("compositor-blend-uniform-buffer"),
                     contents: bytemuck::bytes_of(&BlendUniformBuffer {
-                        blend_mode: blend_mode.shader_code(),
-                        _padding: [0; 3],
+                        blend_mode: options.blend_mode.shader_code(),
+                        opacity: options.opacity,
+                        layer_is_premultiplied: u32::from(options.layer_is_premultiplied),
+                        _padding: 0,
                     }),
                     usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
                 });
@@ -919,4 +958,53 @@ fn map_effect_passes(passes: &[EffectPassDescriptor]) -> Vec<EffectPass> {
                 .collect(),
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::BlendUniformBuffer;
+
+    fn blend_normal_pixel(
+        base: [f32; 4],
+        layer: [f32; 4],
+        opacity: f32,
+        layer_is_premultiplied: bool,
+    ) -> [f32; 4] {
+        let layer_rgb = if layer_is_premultiplied && layer[3] > 0.0001 {
+            [
+                layer[0] / layer[3],
+                layer[1] / layer[3],
+                layer[2] / layer[3],
+            ]
+        } else {
+            [layer[0], layer[1], layer[2]]
+        };
+        let layer_alpha = (layer[3] * opacity).clamp(0.0, 1.0);
+        let out_alpha = layer_alpha + base[3] * (1.0 - layer_alpha);
+        let mut out = [0.0; 4];
+        for channel in 0..3 {
+            out[channel] = (1.0 - layer_alpha) * base[channel]
+                + layer_alpha
+                    * ((1.0 - base[3]) * layer_rgb[channel] + base[3] * layer_rgb[channel]);
+        }
+        out[3] = out_alpha;
+        out
+    }
+
+    #[test]
+    fn blend_uniform_matches_wgsl_alignment() {
+        assert_eq!(std::mem::size_of::<BlendUniformBuffer>(), 16);
+        assert_eq!(std::mem::align_of::<BlendUniformBuffer>(), 4);
+    }
+
+    #[test]
+    fn group_opacity_fades_premultiplied_pixels_once() {
+        let opaque_group =
+            blend_normal_pixel([0.0, 0.0, 0.0, 1.0], [0.8, 0.6, 0.4, 1.0], 0.5, true);
+        assert_eq!(opaque_group, [0.4, 0.3, 0.2, 1.0]);
+
+        let antialiased_group =
+            blend_normal_pixel([0.0, 0.0, 0.0, 1.0], [0.4, 0.2, 0.1, 0.5], 0.5, true);
+        assert_eq!(antialiased_group, [0.2, 0.1, 0.05, 1.0]);
+    }
 }

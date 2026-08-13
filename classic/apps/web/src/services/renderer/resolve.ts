@@ -46,18 +46,47 @@ import { StickerNode, loadStickerSource } from "./nodes/sticker-node";
 import { TextNode, type ResolvedTextNodeState } from "./nodes/text-node";
 import { VideoNode } from "./nodes/video-node";
 import type { ResolvedVideoNodeState } from "./nodes/video-node";
+import {
+	SpeakerFrameBreakoutNode,
+	type ResolvedSpeakerFrameBreakoutNodeState,
+} from "./nodes/speaker-frame-breakout-node";
+import {
+	ParallaxSceneNode,
+	type ResolvedParallaxSceneNodeState,
+} from "./nodes/parallax-scene-node";
 import { resolveBackgroundRemovalSettings } from "@/background-removal";
 import { backgroundRemovalService } from "@/services/background-removal";
+import { speakerFrameLayoutScale } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { incrementCounter } from "@/diagnostics/render-perf";
+import {
+	isStaticRenderNode,
+	isStaticRenderNodeActiveAtTime,
+} from "./static-node-cache";
 import type {
 	ResolvedVisualNodeState,
 	ResolvedVisualSourceNodeState,
 	VisualNodeParams,
 } from "./nodes/visual-node";
+import { mapParallaxParentTimeToSourceTime } from "@/parallax-story-teller/camera-geometry";
+import { resolveParallaxMotionLoopFrame } from "@/parallax-story-teller/motion-loop";
 
 type ResolveContext = {
 	renderer: Pick<CanvasRenderer, "width" | "height">;
 	time: number;
 };
+
+type StaticResolutionCacheEntry = {
+	width: number;
+	height: number;
+	active: boolean;
+	params: object | undefined;
+	resolved: unknown;
+};
+
+const staticResolutionCache = new WeakMap<
+	AnyBaseNode,
+	StaticResolutionCacheEntry
+>();
 
 export async function resolveRenderTree({
 	node,
@@ -84,7 +113,30 @@ async function resolveNode({
 	node: AnyBaseNode;
 	context: ResolveContext;
 }): Promise<void> {
-	if (node instanceof VideoNode) {
+	const isStatic = isStaticRenderNode(node);
+	const active = isStatic
+		? isStaticRenderNodeActiveAtTime({ node, time: context.time })
+		: false;
+	const cached = isStatic ? staticResolutionCache.get(node) : undefined;
+	const params = isStatic ? node.params : undefined;
+	const canReuse =
+		isStatic &&
+		cached &&
+		cached.width === context.renderer.width &&
+		cached.height === context.renderer.height &&
+		cached.active === active &&
+		cached.params === params;
+
+	if (canReuse) {
+		incrementCounter({ name: "resolveCache.staticNodeHit" });
+		node.resolved = cached.resolved;
+		// Static render nodes do not own time-varying children. Avoid descending
+		// into the subtree once their resolved state is known to be reusable.
+		return;
+	} else if (isStatic && !active) {
+		// Avoid loading/rasterizing static media before its clip enters view.
+		node.resolved = null;
+	} else if (node instanceof VideoNode) {
 		node.resolved = await resolveVideoNode({ node, context });
 	} else if (node instanceof ImageNode) {
 		node.resolved = await resolveImageNode({ node, context });
@@ -96,13 +148,273 @@ async function resolveNode({
 		node.resolved = await resolveTextNode({ node, context });
 	} else if (node instanceof BlurBackgroundNode) {
 		node.resolved = await resolveBlurBackgroundNode({ node, context });
+	} else if (node instanceof SpeakerFrameBreakoutNode) {
+		node.resolved = await resolveSpeakerFrameBreakoutNode({ node, context });
 	} else if (node instanceof EffectLayerNode) {
 		node.resolved = resolveEffectLayerNode({ node, context });
+	} else if (node instanceof ParallaxSceneNode) {
+		node.resolved = resolveParallaxSceneNode({ node, context });
 	}
 
+	if (isStatic) {
+		staticResolutionCache.set(node, {
+			width: context.renderer.width,
+			height: context.renderer.height,
+			active,
+			params,
+			resolved: node.resolved,
+		});
+	}
+
+	const childContext =
+		node instanceof ParallaxSceneNode
+			? {
+					...context,
+					time: mapParallaxParentTimeToSourceTime({
+						time: context.time,
+						timeOffset: node.params.timeOffset,
+						duration: node.params.duration,
+						sourceDuration: node.params.sourceDuration,
+					}),
+				}
+			: context;
 	await Promise.all(
-		node.children.map((child) => resolveNode({ node: child, context })),
+		node.children.map((child) =>
+			resolveNode({ node: child, context: childContext }),
+		),
 	);
+}
+
+function resolveParallaxSceneNode({
+	node,
+	context,
+}: {
+	node: ParallaxSceneNode;
+	context: ResolveContext;
+}): ResolvedParallaxSceneNodeState | null {
+	const localTime = context.time - node.params.timeOffset;
+	if (localTime < 0 || localTime >= node.params.duration) return null;
+	const sourceTime = mapParallaxParentTimeToSourceTime({
+		time: context.time,
+		timeOffset: node.params.timeOffset,
+		duration: node.params.duration,
+		sourceDuration: node.params.sourceDuration,
+	});
+	const cameraTime = node.params.cameraUsesSourceTime
+		? sourceTime - node.params.cameraTimeOffset
+		: localTime;
+	const movement = resolveOverlayMovementFrame({
+		effectParams: node.params.effectParams,
+		animations: node.params.effectAnimations,
+		localTime: cameraTime,
+		duration: node.params.cameraDuration,
+		width: node.params.cameraWidth ?? context.renderer.width,
+		height: node.params.cameraHeight ?? context.renderer.height,
+	});
+	return movement
+		? {
+				movement: {
+					...movement,
+					// Camera coordinates describe the center of the viewport in world
+					// units. Translation therefore belongs inside the zoom transform.
+					translateX: movement.translateX * movement.scale,
+					translateY: movement.translateY * movement.scale,
+				},
+				motionLoop: resolveParallaxMotionLoopFrame({
+					params: node.params.storyParams,
+					localTime,
+					duration: node.params.duration,
+					width: node.params.cameraWidth ?? context.renderer.width,
+					height: node.params.cameraHeight ?? context.renderer.height,
+				}),
+			}
+		: null;
+}
+
+async function resolveSpeakerFrameBreakoutNode({
+	node,
+	context,
+}: {
+	node: SpeakerFrameBreakoutNode;
+	context: ResolveContext;
+}): Promise<ResolvedSpeakerFrameBreakoutNodeState | null> {
+	const clipTime = context.time - node.params.timeOffset;
+	if (clipTime < 0 || clipTime >= node.params.duration) {
+		return null;
+	}
+	if (!node.params.isAppliedAndCurrent) {
+		if (!node.params.isPreview) {
+			throw new Error(
+				"Speaker Frame Breakout source changed after Apply. Reapply the layer before export.",
+			);
+		}
+		return null;
+	}
+	const source = node.params.sources.find(
+		(candidate) =>
+			context.time >= candidate.timeOffset &&
+			context.time < candidate.timeOffset + candidate.duration,
+	);
+	if (!source) return null;
+
+	const sourceClipTime = context.time - source.timeOffset;
+	const sourceTimeTicks =
+		source.trimStart +
+		getSourceTimeAtClipTime({
+			clipTime: sourceClipTime,
+			retime: source.retime,
+		});
+	const sourceTime = mediaTimeToSeconds({
+		time: roundMediaTime({ time: sourceTimeTicks }),
+	});
+	const frame = await videoCache.getFrameAt({
+		mediaId: source.mediaId,
+		file: source.file,
+		url: source.url,
+		time: sourceTime,
+	});
+	if (!frame) {
+		const previous = node.resolved;
+		if (
+			node.params.isPreview &&
+			previous?.sourceElementId === source.elementId &&
+			Math.abs(previous.sourceTime - sourceTime) <= 0.15
+		) {
+			return previous;
+		}
+		return null;
+	}
+
+	const visualState = resolveVisualState({
+		params: {
+			duration: source.duration,
+			timeOffset: source.timeOffset,
+			trimStart: source.trimStart,
+			trimEnd: source.trimEnd,
+			retime: source.retime,
+			transform: {
+				...source.transform,
+				position: {
+					x: node.params.settings.positionX,
+					y: node.params.settings.positionY,
+				},
+				scaleX: speakerFrameLayoutScale({
+					layoutScale: node.params.settings.scaleX,
+					sourceScale: source.transform.scaleX,
+				}),
+				scaleY: speakerFrameLayoutScale({
+					layoutScale: node.params.settings.scaleY,
+					sourceScale: source.transform.scaleY,
+				}),
+			},
+			animations: source.animations,
+			opacity: source.opacity,
+			blendMode: source.blendMode,
+			effects: source.effects,
+			cameraDepth: source.cameraDepth,
+			cameraLocked: source.cameraLocked,
+		},
+		context,
+		sourceWidth: frame.canvas.width,
+		sourceHeight: frame.canvas.height,
+	});
+	if (!visualState) return null;
+
+	const settings = resolveBackgroundRemovalSettings({
+		settings: node.params.settings.matte,
+	});
+	let mask = backgroundRemovalService.getPreparedMaskFrame({
+		groupKey: node.params.settings.matteCacheKey,
+		mediaId: source.mediaId,
+		sourceTime,
+		settings,
+	});
+	if (!mask) {
+		if (node.params.isPreview) {
+			mask = backgroundRemovalService.getPreviewMaskOrSchedule({
+				source: frame.canvas,
+				mediaId: source.mediaId,
+				sourceTime,
+				settings,
+			});
+			if (!mask) {
+				const previous = node.resolved;
+				const maxMaskHoldSeconds = Math.max(0.15, 2 / settings.previewFps);
+				if (
+					previous?.sourceElementId === source.elementId &&
+					previous.mask &&
+					Math.abs(previous.sourceTime - sourceTime) <= maxMaskHoldSeconds
+				) {
+					mask = previous.mask;
+				}
+			}
+		} else {
+			await backgroundRemovalService.hydratePreparedGroup({
+				groupKey: node.params.settings.matteCacheKey,
+			});
+			mask = backgroundRemovalService.getPreparedMaskFrame({
+				groupKey: node.params.settings.matteCacheKey,
+				mediaId: source.mediaId,
+				sourceTime,
+				settings,
+			});
+			if (!mask) {
+				// A browser cleanup, reload, or older project can lose the
+				// prepared cache while the applied source snapshot remains valid.
+				// Rebuild the quantized matte on demand so export stays complete.
+				mask = await backgroundRemovalService.segmentFrame({
+					source: frame.canvas,
+					mediaId: source.mediaId,
+					sourceTime,
+					settings,
+					isPreview: true,
+					temporalSequenceKey: node.params.settings.matteCacheKey,
+				});
+			}
+		}
+	}
+
+	const localSeconds = mediaTimeToSeconds({
+		time: roundMediaTime({ time: clipTime }),
+	});
+	const durationSeconds = mediaTimeToSeconds({
+		time: roundMediaTime({ time: node.params.duration }),
+	});
+	const fadeIn =
+		node.params.settings.fadeInDuration <= 0
+			? 1
+			: smoothstep01(localSeconds / node.params.settings.fadeInDuration);
+	const secondsRemaining = Math.max(0, durationSeconds - localSeconds);
+	const fadeOut =
+		node.params.settings.fadeOutDuration <= 0
+			? 1
+			: smoothstep01(secondsRemaining / node.params.settings.fadeOutDuration);
+
+	return {
+		source: frame.canvas,
+		sourceWidth: frame.canvas.width,
+		sourceHeight: frame.canvas.height,
+		sourceElementId: source.elementId,
+		sourceMediaId: source.mediaId,
+		sourceTime,
+		backgroundParams: node.params.settings.backgroundParams,
+		mask,
+		transform: visualState.transform,
+		cropTop: node.params.settings.cropTop,
+		cornerRadius: node.params.settings.cornerRadius,
+		opacity: Math.min(fadeIn, fadeOut),
+		sourceOpacity: visualState.opacity,
+		blendMode: source.blendMode,
+		effectPassGroups: visualState.effectPasses,
+		cameraDepth: source.cameraDepth,
+		cameraLocked: source.cameraLocked,
+		localTime: localSeconds,
+	};
+}
+
+function smoothstep01(value: number): number {
+	const clamped = Math.max(0, Math.min(1, value));
+	return clamped * clamped * (3 - 2 * clamped);
 }
 
 function resolveEffectPassGroups({
@@ -170,9 +482,11 @@ function resolveVisualState({
 		animations: params.animations,
 		localTime,
 	});
+	const cameraWidth = params.cameraCanvasWidth ?? context.renderer.width;
+	const cameraHeight = params.cameraCanvasHeight ?? context.renderer.height;
 	const containScale = Math.min(
-		context.renderer.width / sourceWidth,
-		context.renderer.height / sourceHeight,
+		cameraWidth / sourceWidth,
+		cameraHeight / sourceHeight,
 	);
 	const effectWidth = Math.round(
 		Math.abs(sourceWidth * containScale * transform.scaleX),
@@ -233,6 +547,7 @@ async function resolveVideoNode({
 		mediaId: node.params.mediaId,
 		file: node.params.file,
 		url: node.params.url,
+		maxSourceSize: node.params.maxSourceSize,
 		time: mediaTimeToSeconds({
 			time: roundMediaTime({ time: sourceTimeTicks }),
 		}),
@@ -260,13 +575,28 @@ async function resolveVideoNode({
 			const sourceTime = mediaTimeToSeconds({
 				time: roundMediaTime({ time: sourceTimeTicks }),
 			});
-			const mask = await backgroundRemovalService.segmentFrame({
-				source: frame.canvas,
-				mediaId: node.params.mediaId,
-				sourceTime,
-				settings,
-				isPreview: node.params.isPreview,
-			});
+			const mask = node.params.isPreview
+				? backgroundRemovalService.getPreviewMaskOrSchedule({
+						source: frame.canvas,
+						mediaId: node.params.mediaId,
+						sourceTime,
+						settings,
+					})
+				: await backgroundRemovalService.segmentFrame({
+						source: frame.canvas,
+						mediaId: node.params.mediaId,
+						sourceTime,
+						settings,
+						isPreview: false,
+					});
+			if (!mask) {
+				return {
+					...visualState,
+					source: frame.canvas,
+					sourceWidth: frame.canvas.width,
+					sourceHeight: frame.canvas.height,
+				};
+			}
 			const resolutionScale = Math.max(
 				0.5,
 				Math.min(context.renderer.width / 1920, context.renderer.height / 1080),
@@ -416,6 +746,9 @@ async function resolveTextNode({
 		elementDuration: node.params.duration,
 	});
 	const background = buildTextBackgroundFromElement({ element: node.params });
+	const cameraWidth = node.params.cameraCanvasWidth ?? context.renderer.width;
+	const cameraHeight =
+		node.params.cameraCanvasHeight ?? context.renderer.height;
 	let clipMediaSource: CanvasImageSource | undefined;
 	const clipMedia = node.params.clipMediaAsset;
 	if (clipMedia?.url && clipMedia.type === "image") {
@@ -464,12 +797,12 @@ async function resolveTextNode({
 			effects: node.params.effects,
 			animations: node.params.animations,
 			localTime,
-			width: context.renderer.width,
-			height: context.renderer.height,
+			width: cameraWidth,
+			height: cameraHeight,
 		}),
 		measuredText: measureTextElement({
 			element: node.params,
-			canvasHeight: node.params.canvasHeight,
+			canvasHeight: cameraHeight,
 			localTime,
 			ctx: getTextMeasurementContext(),
 		}),
@@ -573,10 +906,11 @@ function resolveEffectLayerNode({
 		definition.type === CUSTOM_AI_EFFECT_TYPE
 			? resolveOverlayMovementFrame({
 					effectParams: node.params.effectParams,
+					animations: node.params.effectAnimations,
 					localTime,
 					duration: node.params.duration,
-					width: context.renderer.width,
-					height: context.renderer.height,
+					width: node.params.cameraWidth ?? context.renderer.width,
+					height: node.params.cameraHeight ?? context.renderer.height,
 				})
 			: null;
 	const passes = movement

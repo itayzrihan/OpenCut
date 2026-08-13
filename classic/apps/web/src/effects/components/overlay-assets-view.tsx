@@ -5,7 +5,6 @@ import { DraggableItem } from "@/components/editor/panels/assets/draggable-item"
 import { useEditor } from "@/editor/use-editor";
 import {
 	OVERLAY_EFFECT_PRESETS,
-	OVERLAY_EFFECT_TYPE,
 	type OverlayEffectPreset,
 } from "@/effects/overlay-presets";
 import { EFFECT_TARGET_ELEMENT_TYPES } from "@/effects";
@@ -31,7 +30,7 @@ function OverlayEffectItem({ preset }: { preset: OverlayEffectPreset }) {
 
 	const handleAddToTimeline = () => {
 		const element = buildEffectElement({
-			effectType: OVERLAY_EFFECT_TYPE,
+			effectType: preset.effectType,
 			name: preset.name,
 			startTime: editor.playback.getCurrentTime(),
 			params: preset.params,
@@ -50,7 +49,7 @@ function OverlayEffectItem({ preset }: { preset: OverlayEffectPreset }) {
 				id: preset.id,
 				name: preset.name,
 				type: "effect",
-				effectType: OVERLAY_EFFECT_TYPE,
+				effectType: preset.effectType,
 				params: preset.params,
 				targetElementTypes: EFFECT_TARGET_ELEMENT_TYPES,
 			}}

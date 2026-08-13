@@ -19,6 +19,7 @@ import {
 	type Server,
 	type ServerResponse,
 } from "node:http";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { NextResponse, type NextRequest } from "next/server";
 import {
@@ -34,6 +35,7 @@ const SCOPE = "openid profile email offline_access";
 const CODEX_ORIGINATOR = "pi";
 const LEGACY_OAUTH_TOKEN_COOKIE = "opencut_openai_oauth_token";
 const OAUTH_SESSION_COOKIE = "opencut_openai_oauth_session";
+const OAUTH_BINDING_COOKIE = "opencut_openai_oauth_binding";
 const CALLBACK_PORT = 1455;
 const CALLBACK_PATH = "/auth/callback";
 const OAUTH_FLOW_MAX_AGE_MS = 10 * 60 * 1000;
@@ -117,7 +119,9 @@ export async function createOpenAIAuthorizationResponse({
 		value: request.nextUrl.searchParams.get("returnTo"),
 		origin: request.nextUrl.origin,
 	});
-	const sessionBinding = getSessionBinding({ request });
+	const bindingCookieValue =
+		request.cookies.get(OAUTH_BINDING_COOKIE)?.value ?? randomUUID();
+	const sessionBinding = hashSessionBinding(bindingCookieValue);
 	const statePayload: OAuthState = {
 		state,
 		codeVerifier: verifier,
@@ -145,7 +149,7 @@ export async function createOpenAIAuthorizationResponse({
 		);
 	}
 
-	return NextResponse.redirect(
+	const response = NextResponse.redirect(
 		createAuthorizationUrl({
 			challenge,
 			redirectUri,
@@ -153,6 +157,8 @@ export async function createOpenAIAuthorizationResponse({
 		}).toString(),
 		302,
 	);
+	setOAuthBindingCookie({ response, value: bindingCookieValue });
+	return response;
 }
 
 export async function completeOpenAIAuthorization({
@@ -296,6 +302,22 @@ export function setCredentialsCookie({
 	clearCookie({ response, name: LEGACY_OAUTH_TOKEN_COOKIE });
 }
 
+function setOAuthBindingCookie({
+	response,
+	value,
+}: {
+	response: NextResponse;
+	value: string;
+}): void {
+	response.cookies.set(OAUTH_BINDING_COOKIE, value, {
+		httpOnly: true,
+		sameSite: "lax",
+		secure: webEnv.NEXT_PUBLIC_SITE_URL.startsWith("https://"),
+		path: "/",
+		maxAge: TOKEN_MAX_AGE_SECONDS,
+	});
+}
+
 export function clearOpenAICredentials({
 	response,
 	request,
@@ -311,6 +333,7 @@ export function clearOpenAICredentials({
 		}
 	}
 	clearCookie({ response, name: OAUTH_SESSION_COOKIE });
+	clearCookie({ response, name: OAUTH_BINDING_COOKIE });
 	clearCookie({ response, name: LEGACY_OAUTH_TOKEN_COOKIE });
 }
 
@@ -1277,22 +1300,26 @@ function persistCredentialSession({
 function readPersistedCredentialSession(
 	sessionId: string,
 ): OAuthCredentialSession | null {
-	try {
-		const value = unsealJson(
-			readFileSync(getPersistedCredentialSessionPath(sessionId), "utf8"),
-		);
-		if (!isOAuthCredentialSession(value)) {
-			deletePersistedCredentialSession(sessionId);
-			return null;
+	const currentPath = getPersistedCredentialSessionPath(sessionId);
+	const paths = [currentPath, getLegacyPersistedCredentialSessionPath(sessionId)];
+	for (const path of paths) {
+		try {
+			const value = unsealJson(readFileSync(path, "utf8"));
+			if (!isOAuthCredentialSession(value)) {
+				rmSync(path, { force: true });
+				continue;
+			}
+			if (Date.now() - value.updatedAt > TOKEN_MAX_AGE_SECONDS * 1000) {
+				rmSync(path, { force: true });
+				continue;
+			}
+			if (path !== currentPath) persistCredentialSession({ sessionId, session: value });
+			return value;
+		} catch {
+			// Try the legacy location before reporting an expired session.
 		}
-		if (Date.now() - value.updatedAt > TOKEN_MAX_AGE_SECONDS * 1000) {
-			deletePersistedCredentialSession(sessionId);
-			return null;
-		}
-		return value;
-	} catch {
-		return null;
 	}
+	return null;
 }
 
 function deletePersistedCredentialSession(sessionId: string): void {
@@ -1331,7 +1358,9 @@ function cleanupPersistedCredentialSessions({ now }: { now: number }): void {
 function getPersistedCredentialSessionDir(): string {
 	return (
 		process.env.OPENCUT_OPENAI_OAUTH_SESSION_DIR ??
-		join(process.cwd(), ".next", "cache", "openai-oauth-sessions")
+		(process.env.LOCALAPPDATA
+			? join(process.env.LOCALAPPDATA, "OpenCut", "openai-oauth-sessions")
+			: join(homedir(), ".opencut", "openai-oauth-sessions"))
 	);
 }
 
@@ -1340,6 +1369,19 @@ function getPersistedCredentialSessionPath(sessionId: string): string {
 		throw new Error("Invalid OpenAI OAuth session id.");
 	}
 	return join(getPersistedCredentialSessionDir(), `${sessionId}.json`);
+}
+
+function getLegacyPersistedCredentialSessionPath(sessionId: string): string {
+	if (!isCredentialSessionId(sessionId)) {
+		throw new Error("Invalid OpenAI credential session id.");
+	}
+	return join(
+		process.cwd(),
+		".next",
+		"cache",
+		"openai-oauth-sessions",
+		`${sessionId}.json`,
+	);
 }
 
 function createHandoffUrl({
@@ -1631,12 +1673,18 @@ function getCookieKey(): Buffer {
 }
 
 function getSessionBinding({ request }: { request: NextRequest }): string {
+	const oauthBinding = request.cookies.get(OAUTH_BINDING_COOKIE)?.value;
+	if (oauthBinding) return hashSessionBinding(oauthBinding);
 	const sessionCookie =
 		request.cookies.get("better-auth.session_token")?.value ??
 		request.cookies.get("__Secure-better-auth.session_token")?.value ??
 		request.cookies.get("better-auth.session-token")?.value ??
 		"sessionless";
-	return createHash("sha256").update(sessionCookie).digest("base64url");
+	return hashSessionBinding(sessionCookie);
+}
+
+function hashSessionBinding(value: string): string {
+	return createHash("sha256").update(value).digest("base64url");
 }
 
 function normalizeReturnTo({

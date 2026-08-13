@@ -4,6 +4,12 @@
 //! capability to OpenCut therefore adds a typed MCP tool without editing this
 //! crate.
 
+mod classic_bridge;
+
+pub use classic_bridge::{
+    ClassicBridgeServer, default_classic_bridge_config_path, spawn_classic_bridge,
+};
+
 use std::{
     borrow::Cow,
     collections::HashSet,
@@ -265,6 +271,7 @@ impl OpenCutMcp {
         context: &InvocationContext,
     ) -> Result<(), RegistryError> {
         if descriptor.access == AccessLevel::Read
+            || descriptor.id.starts_with("classic.")
             || matches!(
                 descriptor.id.as_str(),
                 "project.create" | "project.open" | "project.activate" | "project.close"
@@ -1393,6 +1400,30 @@ mod tests {
                 .iter()
                 .any(|tool| tool.name == "opencut.timeline.clip.inspect")
         );
+    }
+
+    #[tokio::test]
+    async fn classic_mutations_are_not_routed_through_rewrite_project_sessions() {
+        let runtime = OpenCutRuntime::default();
+        let server = OpenCutMcp::from_runtime(&runtime);
+        let mut descriptor = CapabilityDescriptor::read(
+            "classic.timeline.edit_source",
+            "Classic edit",
+            "Routes an edit to the connected Classic browser.",
+            "classic",
+            json!({"type": "object"}),
+            json!({"type": "object"}),
+        );
+        descriptor.access = AccessLevel::Write;
+        let arguments = json!({"projectId": "classic-browser-project"})
+            .as_object()
+            .expect("arguments")
+            .clone();
+
+        server
+            .activate_target_if_needed(&descriptor, &arguments, &InvocationContext::default())
+            .await
+            .expect("Classic project targeting is validated by the browser bridge");
     }
 
     #[tokio::test]

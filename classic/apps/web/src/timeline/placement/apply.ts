@@ -108,5 +108,7 @@ function buildPlacedOverlayTrack({
 				...buildEmptyTrack({ id, type: "effect" }),
 				elements: elements as EffectTrack["elements"],
 			};
+		case "parallax":
+			return buildEmptyTrack({ id, type: "parallax" });
 	}
 }

@@ -14,6 +14,8 @@ import {
 export { effectsRegistry } from "./registry";
 export { registerDefaultEffects } from "./definitions";
 export { CUSTOM_AI_EFFECT_TYPE, normalizeEffectType } from "./custom-ai-effect";
+export { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "./definitions/editorial-edge-feather";
+export { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "./definitions/speaker-frame-breakout";
 
 export function getEffectDefinition(effectType: string): EffectDefinition {
 	registerDefaultEffects();

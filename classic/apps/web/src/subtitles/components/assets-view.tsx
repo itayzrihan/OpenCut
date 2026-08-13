@@ -40,7 +40,10 @@ import {
 } from "@/subtitles/caption-tracks";
 import {
 	applyTranscriptCorrections,
+	applyCaptionRowRearrangement,
 	buildMessageOptimizationRanges,
+	removeCaptionLayerDuplicateWords,
+	requestCaptionRowRearrangement,
 	requestMessageOptimization,
 	requestTranscriptCorrection,
 	type IndexedTranscriptWord,
@@ -167,7 +170,9 @@ function loadLastCaptionSettings(): CaptionLayoutSettings {
 	try {
 		const raw = window.localStorage.getItem(CAPTION_LAST_SETTINGS_STORAGE_KEY);
 		if (!raw) return { ...DEFAULT_CAPTION_LAYOUT };
-		return normalizeCaptionLayoutSettings({ settings: JSON.parse(raw) });
+		return normalizeCaptionLayoutSettings({
+			settings: { ...JSON.parse(raw), rowBreaks: undefined },
+		});
 	} catch {
 		return { ...DEFAULT_CAPTION_LAYOUT };
 	}
@@ -179,9 +184,10 @@ function saveLastCaptionSettings({
 	settings: CaptionLayoutSettings;
 }) {
 	if (typeof window === "undefined") return;
+	const { rowBreaks: _rowBreaks, ...persistedSettings } = settings;
 	window.localStorage.setItem(
 		CAPTION_LAST_SETTINGS_STORAGE_KEY,
-		JSON.stringify(settings),
+		JSON.stringify(persistedSettings),
 	);
 }
 
@@ -266,9 +272,9 @@ export function Captions() {
 	);
 	const [savedPresets, setSavedPresets] = useState<SavedCaptionPreset[]>([]);
 	const [processing, dispatch] = useReducer(processingReducer, IDLE_STATE);
-	const [aiAction, setAiAction] = useState<"correcting" | "optimizing" | null>(
-		null,
-	);
+	const [aiAction, setAiAction] = useState<
+		"correcting" | "optimizing" | "rearranging" | null
+	>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const aiAbortControllerRef = useRef<AbortController | null>(null);
@@ -412,22 +418,24 @@ export function Captions() {
 		key: keyof CaptionLayoutSettings;
 		value: string;
 	}) => {
-		setCaptionSettings((current) =>
-			normalizeCaptionLayoutSettings({
-				settings: {
-					...current,
-					[key]:
-						key === "revealMode" ||
-						key === "transitionIn" ||
-						key === "wordAnimationId" ||
-						key === "accentColor" ||
-						key === "wordDirection" ||
-						key === "placementMode"
-							? value
-							: Number(value),
-				},
-			}),
-		);
+		setCaptionSettings((current) => {
+			const next = {
+				...current,
+				[key]:
+					key === "revealMode" ||
+					key === "transitionIn" ||
+					key === "wordAnimationId" ||
+					key === "accentColor" ||
+					key === "wordDirection" ||
+					key === "placementMode"
+						? value
+						: Number(value),
+			};
+			if (key === "wordsPerRow" || key === "rows") {
+				next.rowBreaks = undefined;
+			}
+			return normalizeCaptionLayoutSettings({ settings: next });
+		});
 	};
 
 	const updateCaptionGridCell = ({
@@ -455,9 +463,11 @@ export function Captions() {
 		const trimmedName = name?.trim();
 		if (!trimmedName) return;
 		try {
+			const { rowBreaks: _rowBreaks, ...presetSettings } =
+				normalizeCaptionLayoutSettings({ settings: captionSettings });
 			const nextPreset = await sharedLibraryService.saveCaptionPreset({
 				name: trimmedName,
-				settings: normalizeCaptionLayoutSettings({ settings: captionSettings }),
+				settings: presetSettings,
 			});
 			setSavedPresets((current) =>
 				mergeCaptionPresets({
@@ -522,7 +532,10 @@ export function Captions() {
 		})?.captionSource;
 		if (!source) return;
 		const settings = normalizeCaptionLayoutSettings({
-			settings: captionSettings,
+			settings: {
+				...captionSettings,
+				rowBreaks: captionSettings.rowBreaks ?? source.settings.rowBreaks,
+			},
 		});
 		const after = rebuildCaptionTracksWithSource({
 			tracks: activeScene.tracks,
@@ -690,6 +703,30 @@ export function Captions() {
 					endTime: mediaTimeFromSeconds({ seconds: range.end }),
 				});
 			}
+			const cutSourceTrack = findCaptionSourceTrack({ tracks: after });
+			const cutSource = cutSourceTrack?.captionSource;
+			if (cutSourceTrack && cutSource) {
+				const captionTrackIds = new Set(
+					after.overlay.flatMap((track) =>
+						track.type === "text" && track.captionSource ? [track.id] : [],
+					),
+				);
+				const canonicalWords = removeCaptionLayerDuplicateWords({
+					words: cutSource.words,
+					captionTrackIds,
+				});
+				const rebuilt = rebuildCaptionTracksWithSource({
+					tracks: after,
+					words: canonicalWords,
+					settings: cutSource.settings,
+					canvasSize: editor.project.getActive().settings.canvasSize,
+					layerCount: cutSource.layerCount,
+					preserveEditedElements: false,
+				});
+				if (rebuilt) {
+					after = rebuilt;
+				}
+			}
 			if (after === before) return;
 			editor.command.execute({
 				command: new TracksSnapshotCommand({ before, after }),
@@ -708,6 +745,88 @@ export function Captions() {
 				error instanceof Error
 					? error.message
 					: "Could not optimize the message",
+			);
+		} finally {
+			if (aiAbortControllerRef.current === controller) {
+				aiAbortControllerRef.current = null;
+			}
+			setAiAction(null);
+		}
+	};
+
+	const handleRearrangeRows = async () => {
+		if (isProcessing || !requireCaptionAi()) return;
+		const scene = editor.scenes.getActiveSceneOrNull();
+		const source = scene
+			? findCaptionSourceTrack({ tracks: scene.tracks })?.captionSource
+			: undefined;
+		if (!scene || !source) {
+			toast.error("Generate or import timed captions first");
+			return;
+		}
+		const indexedWords = getIndexedTranscriptWords({ words: source.words });
+		if (indexedWords.length < 2) {
+			toast.info("The transcript is too short to rearrange");
+			return;
+		}
+		const sourceSettings = normalizeCaptionLayoutSettings({
+			settings: source.settings,
+		});
+		if (sourceSettings.wordsPerRow <= 1 && sourceSettings.rows <= 1) {
+			toast.info("Increase words per row or rows before rearranging");
+			return;
+		}
+
+		const before = scene.tracks;
+		const controller = new AbortController();
+		aiAbortControllerRef.current = controller;
+		setAiAction("rearranging");
+		try {
+			const result = await requestCaptionRowRearrangement({
+				words: indexedWords,
+				wordsPerRow: sourceSettings.wordsPerRow,
+				rows: sourceSettings.rows,
+				signal: controller.signal,
+			});
+			const rowBreaks = applyCaptionRowRearrangement({
+				words: indexedWords,
+				rowEndPositions: result.rowEndPositions,
+				wordsPerRow: sourceSettings.wordsPerRow,
+			});
+			const activeScene = editor.scenes.getActiveSceneOrNull();
+			if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
+				throw new Error(
+					"The timeline changed while Codex was rearranging. No edits were applied.",
+				);
+			}
+			const nextSettings = normalizeCaptionLayoutSettings({
+				settings: {
+					...sourceSettings,
+					rowBreaks,
+				},
+			});
+			const after = rebuildCaptionTracksWithSource({
+				tracks: before,
+				words: source.words,
+				settings: nextSettings,
+				canvasSize: editor.project.getActive().settings.canvasSize,
+				layerCount: source.layerCount,
+				preserveEditedElements: false,
+			});
+			if (!after) throw new Error("Could not rebuild rearranged captions");
+			editor.command.execute({
+				command: new TracksSnapshotCommand({ before, after }),
+			});
+			setCaptionSettings(nextSettings);
+			toast.success(`Codex rearranged ${rowBreaks.length} caption rows`, {
+				description: result.summary,
+			});
+		} catch (error) {
+			if (error instanceof DOMException && error.name === "AbortError") return;
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not rearrange caption rows",
 			);
 		} finally {
 			if (aiAbortControllerRef.current === controller) {
@@ -935,6 +1054,26 @@ export function Captions() {
 								onChange={(event) =>
 									updateCaptionSetting({
 										key: "outPaddingPercent",
+										value: event.target.value,
+									})
+								}
+							/>
+						</SectionField>
+						<SectionField label="Bottom fade out %">
+							<Input
+								type="number"
+								min={0}
+								max={100}
+								step={1}
+								size="sm"
+								value={
+									captionSettings.bottomFadeOutPercent ??
+									DEFAULT_CAPTION_LAYOUT.bottomFadeOutPercent
+								}
+								aria-label="Caption bottom fade out percentage"
+								onChange={(event) =>
+									updateCaptionSetting({
+										key: "bottomFadeOutPercent",
 										value: event.target.value,
 									})
 								}
@@ -1231,9 +1370,7 @@ export function Captions() {
 								<SpellCheck2 className="size-4" />
 							)}
 							<span className="truncate">
-								{aiAction === "correcting"
-									? "Correcting..."
-									: "Codex correct"}
+								{aiAction === "correcting" ? "Correcting..." : "Codex correct"}
 							</span>
 						</Button>
 						<Button
@@ -1255,6 +1392,18 @@ export function Captions() {
 							</span>
 						</Button>
 					</div>
+					<Button
+						type="button"
+						variant="outline"
+						className="w-full"
+						onClick={() => void handleRearrangeRows()}
+						disabled={isProcessing || !hasGeneratedCaptions}
+					>
+						{aiAction === "rearranging" && <Spinner className="mr-1" />}
+						{aiAction === "rearranging"
+							? "Rearranging rows..."
+							: "Codex Rearrange Rows"}
+					</Button>
 					<Button
 						type="button"
 						className="mt-auto w-full"

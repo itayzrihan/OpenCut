@@ -6,6 +6,7 @@ import type {
 import type { TimelineElement } from "@/timeline";
 import { generateUUID } from "@/utils/id";
 import {
+	mediaTime,
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
 	type MediaTime,
@@ -444,4 +445,66 @@ export function buildTransitionAnimationsFromElement({
 		inStartTime: element.transitions?.in?.startTime,
 		outStartTime: element.transitions?.out?.startTime,
 	});
+}
+
+/**
+ * Keep semantic In/Out transitions attached to the same clip edge when the
+ * clip duration changes. The transition duration is preserved whenever the
+ * resized clip can contain it; on very short clips it is reduced to fit.
+ *
+ * Explicit gaps are preserved too: an In transition keeps its distance from
+ * the start, while an Out transition keeps its distance from the end.
+ */
+export function retimeElementTransitionsForDuration({
+	element,
+	previousDuration,
+}: {
+	element: TimelineElement;
+	previousDuration: MediaTime;
+}): TimelineElement {
+	const transitions = element.transitions;
+	if (!transitions || element.duration === previousDuration) return element;
+
+	const nextDuration = mediaTime({ ticks: Math.max(0, element.duration) });
+	const retimeTransition = (side: "in" | "out") => {
+		const transition = transitions[side];
+		if (!transition) return undefined;
+
+		const transitionDuration = mediaTime({
+			ticks: Math.max(0, Math.min(nextDuration, transition.duration)),
+		});
+		const previousStart = mediaTime({
+			ticks: Math.max(
+				0,
+				transition.startTime ??
+					(side === "out" ? previousDuration - transition.duration : 0),
+			),
+		});
+		const maxStart = Math.max(0, nextDuration - transitionDuration);
+		const previousEndGap = Math.max(
+			0,
+			previousDuration - (previousStart + transition.duration),
+		);
+		const desiredStart =
+			side === "in"
+				? previousStart
+				: nextDuration - previousEndGap - transitionDuration;
+		const startTime = mediaTime({
+			ticks: Math.min(maxStart, Math.max(0, desiredStart)),
+		});
+
+		return {
+			...transition,
+			duration: transitionDuration,
+			startTime,
+		};
+	};
+
+	return {
+		...element,
+		transitions: {
+			...(transitions.in ? { in: retimeTransition("in") } : {}),
+			...(transitions.out ? { out: retimeTransition("out") } : {}),
+		},
+	};
 }

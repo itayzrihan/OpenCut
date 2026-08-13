@@ -1,5 +1,8 @@
 import type { EditorCore } from "@/core";
-import type { BackgroundRemovalSettings } from "@/background-removal";
+import {
+	resolveBackgroundRemovalSettings,
+	type BackgroundRemovalSettings,
+} from "@/background-removal";
 import type { ElementBounds } from "@/preview/element-bounds";
 import type { ParamValues } from "@/params";
 import type {
@@ -8,9 +11,13 @@ import type {
 	TimelineTrack,
 	TimelineElement,
 	RetimeConfig,
+	ElementRef,
+	VideoElement,
+	ParallaxTrackDirection,
 } from "@/timeline";
+import { clampParallaxSpeed } from "@/parallax-story-teller/parallax-tracks";
 import * as wasm from "opencut-wasm";
-import { calculateTotalDuration } from "@/timeline";
+import { calculateTotalDuration, isExactGlobalTimelineGap } from "@/timeline";
 import { TimelineDragSource } from "@/timeline/drag-source";
 import { mergeElementOverlay } from "@/timeline/element-overlay";
 import { applyElementUpdate } from "@/timeline/update-pipeline";
@@ -20,6 +27,7 @@ import {
 	mediaTime,
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
+	roundMediaTime,
 	type MediaTime,
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
@@ -27,6 +35,7 @@ import { decodeAudioToFloat32 } from "@/media/audio";
 import {
 	AUDIO_BASED_AUDIO_FRAME_SECONDS,
 	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
+	clampAudioMinSilenceSeconds,
 	DEEP_AUDIO_FRAME_SECONDS,
 	extractCompactAudioFeatures,
 	FAST_AUDIO_FRAME_SECONDS,
@@ -98,6 +107,35 @@ import type {
 import { withNormalizedTrackOrder } from "@/timeline";
 import { removeSilenceRangesFromTracks } from "@/timeline/cut-silence";
 import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
+import {
+	buildSpeakerFrameBreakoutEdit,
+	buildSpeakerTileEdit,
+	type SpeakerFrameBreakoutOptions,
+	type SpeakerTileOptions,
+} from "@/timeline/speaker-tile";
+import { buildLoopPatch } from "@/loops";
+import {
+	buildSpeakerFrameBackgroundSnapshot,
+	buildSpeakerFrameMatteSampleTimes,
+	buildSpeakerFrameMatteCacheKey,
+	buildSpeakerFrameSourceSignature,
+	getSpeakerFrameSourceCoverageGap,
+	getSpeakerFrameSourceBindings,
+	hasUnsupportedSpeakerFramePerspective,
+	isSpeakerFrameBreakoutElement,
+	readSpeakerFrameBreakoutSettings,
+	resolveSpeakerFrameSourceAtTime,
+	SPEAKER_FRAME_BREAKOUT_DEFAULT_PARAMS,
+	clampSpeakerFrameBreakoutFade,
+} from "@/simple-advanced-layers/speaker-frame-breakout";
+import { backgroundRemovalService } from "@/services/background-removal";
+import { VideoCache } from "@/services/video-cache/service";
+import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
+import { getDisplayTracks } from "@/timeline/track-order";
+import {
+	buildSpeakerFrameBreakoutFadeTransitions,
+	buildSpeakerFrameBreakoutLayerElement,
+} from "@/timeline/smart-layer-drop";
 
 const DEEP_SILENCE_ANALYSIS_SETTINGS = {
 	minSilenceSeconds: 0.32,
@@ -125,9 +163,48 @@ export class TimelineManager {
 	constructor(private editor: EditorCore) {}
 
 	addTrack({ type, index }: { type: TrackType; index?: number }): string {
+		if (
+			type === "parallax" &&
+			!this.editor.scenes.getActiveSceneOrNull()?.parallax
+		) {
+			throw new Error(
+				"Parallax tracks are only available inside canvas scenes",
+			);
+		}
 		const command = new AddTrackCommand({ type, index });
 		this.editor.command.execute({ command });
 		return command.getTrackId();
+	}
+
+	updateParallaxTrack({
+		trackId,
+		direction,
+		speedPercent,
+	}: {
+		trackId: string;
+		direction?: ParallaxTrackDirection;
+		speedPercent?: number;
+	}): void {
+		const scene = this.editor.scenes.getActiveSceneOrNull();
+		if (!scene?.parallax) return;
+		const before = scene.tracks;
+		let changed = false;
+		const overlay = before.overlay.map((track) => {
+			if (track.id !== trackId || track.type !== "parallax") return track;
+			changed = true;
+			return {
+				...track,
+				...(direction ? { direction } : {}),
+				...(speedPercent !== undefined
+					? { speedPercent: clampParallaxSpeed(speedPercent) }
+					: {}),
+			};
+		});
+		if (!changed) return;
+		const after = { ...before, overlay };
+		this.editor.command.execute({
+			command: new TracksSnapshotCommand({ before, after }),
+		});
 	}
 
 	removeTrack({ trackId }: { trackId: string }): void {
@@ -146,9 +223,10 @@ export class TimelineManager {
 		this.editor.command.execute({ command });
 	}
 
-	insertElement({ element, placement }: InsertElementParams): void {
+	insertElement({ element, placement }: InsertElementParams): string {
 		const command = new InsertElementCommand({ element, placement });
 		this.editor.command.execute({ command });
+		return command.getElementId();
 	}
 
 	updateElementTrim({
@@ -336,6 +414,476 @@ export class TimelineManager {
 		this.editor.command.execute({ command });
 	}
 
+	createSpeakerTile({
+		trackId,
+		elementId,
+		options,
+	}: {
+		trackId: string;
+		elementId: string;
+		options: SpeakerTileOptions;
+	}): ElementRef | null {
+		const before = this.editor.scenes.getActiveScene().tracks;
+		const result = buildSpeakerTileEdit({
+			tracks: before,
+			trackId,
+			elementId,
+			options,
+		});
+		if (!result) return null;
+		this.editor.command.execute({
+			command: new TracksSnapshotCommand({
+				before,
+				after: result.tracks,
+			}),
+		});
+		return result.target;
+	}
+
+	createSpeakerFrameBreakout({
+		trackId,
+		elementId,
+		options,
+	}: {
+		trackId: string;
+		elementId: string;
+		options: Pick<
+			SpeakerFrameBreakoutOptions,
+			| "positionX"
+			| "positionY"
+			| "scaleX"
+			| "scaleY"
+			| "cropTop"
+			| "cornerRadius"
+			| "backgroundPresetId"
+			| "startTime"
+			| "duration"
+			| "name"
+		>;
+	}): ElementRef | null {
+		const tracks = this.editor.scenes.getActiveScene().tracks;
+		const targetTrack = findTrackInSceneTracks({ tracks, trackId });
+		const source = targetTrack?.elements.find(
+			(element) => element.id === elementId,
+		);
+		if (!targetTrack || !source || source.type !== "video") return null;
+
+		const startTime = options.startTime ?? source.startTime;
+		const duration =
+			options.duration ??
+			roundMediaTime({
+				time: source.startTime + source.duration - startTime,
+			});
+		if (
+			startTime < source.startTime ||
+			startTime >= source.startTime + source.duration ||
+			duration <= 0 ||
+			startTime + duration > calculateTotalDuration({ tracks })
+		) {
+			return null;
+		}
+		const background = BACKGROUND_PRESETS.find(
+			(preset) => preset.id === options.backgroundPresetId,
+		);
+		if (!background) return null;
+
+		const element = buildSpeakerFrameBreakoutLayerElement({
+			startTime,
+			duration,
+			name: options.name ?? "Speaker Frame Breakout",
+			params: {
+				...SPEAKER_FRAME_BREAKOUT_DEFAULT_PARAMS,
+				...buildSpeakerFrameBackgroundSnapshot({
+					presetId: background.id,
+					params: background.params,
+				}),
+				positionX: options.positionX,
+				positionY: options.positionY,
+				scaleX: options.scaleX,
+				scaleY: options.scaleY,
+				cropTop: options.cropTop,
+				cornerRadius: options.cornerRadius,
+			},
+		});
+		const targetIndex = getDisplayTracks({ tracks }).findIndex(
+			(track) => track.id === trackId,
+		);
+		if (targetIndex < 0) return null;
+		const addTrackCommand = new AddTrackCommand({
+			type: "effect",
+			index: targetIndex,
+		});
+		const insertElementCommand = new InsertElementCommand({
+			element,
+			placement: {
+				mode: "explicit",
+				trackId: addTrackCommand.getTrackId(),
+			},
+		});
+		this.editor.command.execute({
+			command: new BatchCommand([addTrackCommand, insertElementCommand]),
+		});
+		return {
+			trackId: addTrackCommand.getTrackId(),
+			elementId: insertElementCommand.getElementId(),
+		};
+	}
+
+	createMaterializedSpeakerFrameBreakout({
+		trackId,
+		elementId,
+		options,
+	}: {
+		trackId: string;
+		elementId: string;
+		options: SpeakerFrameBreakoutOptions;
+	}): {
+		source: ElementRef;
+		foreground: ElementRef;
+		base: ElementRef;
+		background: ElementRef;
+	} | null {
+		const before = this.editor.scenes.getActiveScene().tracks;
+		const result = buildSpeakerFrameBreakoutEdit({
+			tracks: before,
+			trackId,
+			elementId,
+			options,
+		});
+		if (!result) return null;
+		this.editor.command.execute({
+			command: new TracksSnapshotCommand({
+				before,
+				after: result.tracks,
+			}),
+		});
+		return {
+			source: result.source,
+			foreground: result.foreground,
+			base: result.base,
+			background: result.background,
+		};
+	}
+
+	async applySpeakerFrameBreakout({
+		trackId,
+		elementId,
+		params,
+		signal,
+		onProgress,
+	}: {
+		trackId: string;
+		elementId: string;
+		params: ParamValues;
+		signal?: AbortSignal;
+		onProgress?: (progress: {
+			completedFrames: number;
+			totalFrames: number;
+		}) => void;
+	}): Promise<{
+		cacheKey: string;
+		sourceSignature: string;
+		preparedFrames: number;
+		backend: string;
+	}> {
+		throwIfSpeakerFrameApplyAborted(signal);
+		const scene = this.editor.scenes.getActiveScene();
+		const track = findTrackInSceneTracks({ tracks: scene.tracks, trackId });
+		const storedLayer = track?.elements.find(
+			(element) => element.id === elementId,
+		);
+		if (
+			!track ||
+			track.type !== "effect" ||
+			!storedLayer ||
+			storedLayer.type !== "effect" ||
+			!isSpeakerFrameBreakoutElement(storedLayer)
+		) {
+			throw new Error("Speaker Frame Breakout layer was not found");
+		}
+		const initialEditorStateRevision = this.editor.command.getStateRevision();
+		const initialLayerSnapshot = JSON.stringify(storedLayer);
+		const layer = { ...storedLayer, params };
+		const settings = readSpeakerFrameBreakoutSettings({ params });
+		const mediaAssets = this.editor.media.getAssets();
+		const bindings = getSpeakerFrameSourceBindings({
+			tracks: scene.tracks,
+			smartTrackId: trackId,
+			layer,
+		});
+		if (bindings.length === 0) {
+			throw new Error("Place this smart layer directly above a video first");
+		}
+		const sourceSignature = buildSpeakerFrameSourceSignature({
+			layer,
+			bindings,
+			mediaAssets,
+			settings,
+		});
+		const cacheKey = buildSpeakerFrameMatteCacheKey({
+			layerId: layer.id,
+			signature: sourceSignature,
+		});
+		const resolvedMatte = resolveBackgroundRemovalSettings({
+			settings: settings.matte,
+		});
+
+		const mediaById = new Map(mediaAssets.map((asset) => [asset.id, asset]));
+		const coverageGap = getSpeakerFrameSourceCoverageGap({
+			bindings,
+			layer,
+		});
+		if (coverageGap) {
+			throw new Error(
+				`Every frame of this smart layer must overlap a visible video (gap ${mediaTimeToSeconds(
+					{
+						time: coverageGap.startTime,
+					},
+				).toFixed(3)}s-${mediaTimeToSeconds({
+					time: coverageGap.endTime,
+				}).toFixed(3)}s)`,
+			);
+		}
+		const sampleTimes = buildSpeakerFrameMatteSampleTimes({
+			bindings,
+			layer,
+			previewFps: resolvedMatte.previewFps,
+		});
+		const plannedFrames = new Map<
+			string,
+			{
+				mediaId: string;
+				file?: File;
+				url?: string;
+				sourceTime: number;
+				temporalSequenceKey: string;
+			}
+		>();
+		let previousBindingKey = "";
+		let temporalSequenceOrdinal = 0;
+		const plannedSourceElements = new Map<string, VideoElement>();
+		for (const timelineTime of sampleTimes) {
+			const sourceBinding = resolveSpeakerFrameSourceAtTime({
+				bindings,
+				time: timelineTime,
+			});
+			if (!sourceBinding) {
+				throw new Error(
+					"Every prepared matte sample must resolve to a visible video",
+				);
+			}
+			const source = sourceBinding.element;
+			plannedSourceElements.set(source.id, source);
+			const bindingKey = `${sourceBinding.trackId}:${source.id}`;
+			if (bindingKey !== previousBindingKey) {
+				temporalSequenceOrdinal += 1;
+				previousBindingKey = bindingKey;
+			}
+			const asset = mediaById.get(source.mediaId);
+			if (!asset || asset.type !== "video" || (!asset.url && !asset.file)) {
+				throw new Error("A source video under this smart layer is unavailable");
+			}
+			const clipTime = timelineTime - source.startTime;
+			const sourceTimeTicks =
+				source.trimStart +
+				getSourceTimeAtClipTime({
+					clipTime,
+					retime: source.retime,
+				});
+			const sourceTime = mediaTimeToSeconds({
+				time: roundMediaTime({ time: sourceTimeTicks }),
+			});
+			const inferenceKey = backgroundRemovalService.getPreparedInferenceKey({
+				mediaId: asset.id,
+				sourceTime,
+				settings: resolvedMatte,
+			});
+			if (!plannedFrames.has(inferenceKey)) {
+				plannedFrames.set(inferenceKey, {
+					mediaId: asset.id,
+					file: asset.file,
+					url: asset.url,
+					sourceTime,
+					temporalSequenceKey: `${cacheKey}:${bindingKey}:${temporalSequenceOrdinal}`,
+				});
+			}
+		}
+		const expectedInferenceKeys = [...plannedFrames.keys()].sort();
+		if (expectedInferenceKeys.length === 0) {
+			throw new Error("No video frames were available under this layer");
+		}
+		for (const source of plannedSourceElements.values()) {
+			if ((source.masks?.length ?? 0) > 0) {
+				throw new Error(
+					`"${source.name}" has a custom mask. Remove it or use an unmasked duplicate before applying Speaker Frame Breakout.`,
+				);
+			}
+			if (source.backgroundRemoval?.enabled) {
+				throw new Error(
+					`"${source.name}" already removes its background. Use an unprocessed duplicate before applying Speaker Frame Breakout.`,
+				);
+			}
+			if (hasUnsupportedSpeakerFramePerspective({ source })) {
+				throw new Error(
+					`"${source.name}" uses perspective. Reset its perspective before applying Speaker Frame Breakout.`,
+				);
+			}
+		}
+		const preparedApply = await waitForSpeakerFrameApplyAbort({
+			promise: backgroundRemovalService.preparePreparedGroupApply({
+				groupKey: cacheKey,
+				expectedInferenceKeys,
+				temporalSmoothing: resolvedMatte.temporalSmoothing,
+			}),
+			signal,
+		});
+		throwIfSpeakerFrameApplyAborted(signal);
+		let preparedFrames = backgroundRemovalService.getPreparedGroupFrameCount({
+			groupKey: cacheKey,
+		});
+		if (preparedApply.reusable) {
+			onProgress?.({
+				completedFrames: expectedInferenceKeys.length,
+				totalFrames: expectedInferenceKeys.length,
+			});
+		} else {
+			await waitForSpeakerFrameApplyAbort({
+				promise: backgroundRemovalService.preload(),
+				signal,
+			});
+			throwIfSpeakerFrameApplyAborted(signal);
+			const applyVideoCache = new VideoCache();
+			try {
+				let completedFrames = 0;
+				for (const plannedFrame of plannedFrames.values()) {
+					throwIfSpeakerFrameApplyAborted(signal);
+					const frame = await applyVideoCache.getFrameAt({
+						mediaId: plannedFrame.mediaId,
+						file: plannedFrame.file,
+						url: plannedFrame.url,
+						time: plannedFrame.sourceTime,
+					});
+					if (!frame) {
+						throw new Error(
+							"One or more source video frames were unavailable. Reapply after the media is ready.",
+						);
+					}
+					await backgroundRemovalService.prepareMaskFrame({
+						groupKey: cacheKey,
+						source: frame.canvas,
+						mediaId: plannedFrame.mediaId,
+						sourceTime: plannedFrame.sourceTime,
+						settings: resolvedMatte,
+						signal,
+						temporalSequenceKey: plannedFrame.temporalSequenceKey,
+					});
+					completedFrames += 1;
+					onProgress?.({
+						completedFrames,
+						totalFrames: expectedInferenceKeys.length,
+					});
+				}
+			} finally {
+				applyVideoCache.clearAll();
+			}
+			backgroundRemovalService.markPreparedGroupComplete({
+				groupKey: cacheKey,
+				expectedInferenceKeys,
+			});
+			preparedFrames = backgroundRemovalService.getPreparedGroupFrameCount({
+				groupKey: cacheKey,
+			});
+		}
+		await waitForSpeakerFrameApplyAbort({
+			promise: backgroundRemovalService.flushPreparedMaskPersistence({
+				groupKey: cacheKey,
+			}),
+			signal,
+		});
+		if (preparedFrames === 0) {
+			throw new Error("No video frames were available under this layer");
+		}
+		throwIfSpeakerFrameApplyAborted(signal);
+
+		const freshScene = this.editor.scenes.getActiveScene();
+		const freshTrack = findTrackInSceneTracks({
+			tracks: freshScene.tracks,
+			trackId,
+		});
+		const freshElement = freshTrack?.elements.find(
+			(element) => element.id === elementId,
+		);
+		if (
+			!freshElement ||
+			freshElement.type !== "effect" ||
+			JSON.stringify(freshElement) !== initialLayerSnapshot
+		) {
+			throw new Error(
+				"The smart layer changed while Apply was running. Its newer settings were preserved; apply it again.",
+			);
+		}
+		const freshBindings = getSpeakerFrameSourceBindings({
+			tracks: freshScene.tracks,
+			smartTrackId: trackId,
+			layer: freshElement,
+		});
+		const freshSignature = buildSpeakerFrameSourceSignature({
+			layer: freshElement,
+			bindings: freshBindings,
+			mediaAssets: this.editor.media.getAssets(),
+			settings,
+		});
+		if (freshSignature !== sourceSignature) {
+			throw new Error(
+				"The source video changed while Apply was running. Apply it again.",
+			);
+		}
+		if (this.editor.command.getStateRevision() !== initialEditorStateRevision) {
+			throw new Error(
+				"The editor changed while Apply was running. The newer edit and Undo/Redo history were preserved; apply it again.",
+			);
+		}
+		const status = backgroundRemovalService.getStatus();
+		const backend = status.state === "ready" ? status.backend : "unknown";
+		const fade = clampSpeakerFrameBreakoutFade({
+			duration: freshElement.duration,
+			fadeInDuration: settings.fadeInDuration,
+			fadeOutDuration: settings.fadeOutDuration,
+		});
+		this.updateElements({
+			updates: [
+				{
+					trackId,
+					elementId,
+					patch: {
+						params: {
+							...params,
+							fadeInDuration: fade.fadeInDuration,
+							fadeOutDuration: fade.fadeOutDuration,
+							matteApplied: true,
+							matteCacheKey: cacheKey,
+							sourceSignature,
+							appliedStartTime: layer.startTime,
+							appliedDuration: layer.duration,
+							appliedBackend: backend,
+						},
+						transitions: buildSpeakerFrameBreakoutFadeTransitions({
+							element: freshElement,
+							fadeInDuration: fade.fadeInDuration,
+							fadeOutDuration: fade.fadeOutDuration,
+						}),
+					},
+				},
+			],
+		});
+		return {
+			cacheKey,
+			sourceSignature,
+			preparedFrames,
+			backend,
+		};
+	}
+
 	closeGap({
 		startTime,
 		endTime,
@@ -344,6 +892,9 @@ export class TimelineManager {
 		endTime: MediaTime;
 	}): void {
 		const before = this.editor.scenes.getActiveScene().tracks;
+		if (!isExactGlobalTimelineGap({ tracks: before, startTime, endTime })) {
+			return;
+		}
 		const after = removeTimeRangeFromTracks({
 			tracks: before,
 			startTime,
@@ -356,8 +907,10 @@ export class TimelineManager {
 
 	async removeAllSilence({
 		mode = "audio",
+		minSilenceSeconds,
 	}: {
 		mode?: "audio" | "fast" | "deep";
+		minSilenceSeconds?: number;
 	} = {}): Promise<void> {
 		const scene = this.editor.scenes.getActiveScene();
 		const before = scene.tracks;
@@ -375,6 +928,16 @@ export class TimelineManager {
 		const captionSourceTrack = findCaptionSourceTrack({ tracks: before });
 		const captionSource = captionSourceTrack?.captionSource;
 		const usesAdaptiveAudioAnalysis = mode === "audio" || mode === "deep";
+		const audioSettings =
+			mode === "audio"
+				? {
+						...AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
+						minSilenceSeconds: clampAudioMinSilenceSeconds(
+							minSilenceSeconds ??
+								AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.minSilenceSeconds,
+						),
+					}
+				: AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS;
 		const refinedCaptionWords =
 			usesAdaptiveAudioAnalysis && captionSource
 				? captionSource.words.map((word) => ({ ...word }))
@@ -471,7 +1034,7 @@ export class TimelineManager {
 							transcriptWords,
 							settings:
 								mode === "audio"
-									? AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS
+									? audioSettings
 									: DEEP_SILENCE_ANALYSIS_SETTINGS,
 						});
 						for (const refinedWord of result.refinedWords) {
@@ -594,6 +1157,39 @@ export class TimelineManager {
 		this.editor.command.execute({
 			command: new ApplyTransitionCommand(applications),
 		});
+	}
+
+	applyLoops({
+		applications,
+	}: {
+		applications: Array<{
+			trackId: string;
+			elementId: string;
+			loopId: string;
+		}>;
+	}): void {
+		const updates = applications.flatMap((application) => {
+			const entry = this.getElementsWithTracks({
+				elements: [application],
+			})[0];
+			if (
+				!entry ||
+				(entry.element.type !== "video" && entry.element.type !== "image")
+			) {
+				return [];
+			}
+			return [
+				{
+					trackId: application.trackId,
+					elementId: application.elementId,
+					patch: buildLoopPatch({
+						element: entry.element,
+						loopId: application.loopId,
+					}),
+				},
+			];
+		});
+		this.updateElements({ updates });
 	}
 
 	addClipEffect({
@@ -1303,4 +1899,37 @@ export class TimelineManager {
 		});
 		this.notify();
 	}
+}
+
+function throwIfSpeakerFrameApplyAborted(signal: AbortSignal | undefined) {
+	if (!signal?.aborted) return;
+	throw new DOMException(
+		"Speaker Frame Breakout Apply was cancelled",
+		"AbortError",
+	);
+}
+
+function waitForSpeakerFrameApplyAbort<T>({
+	promise,
+	signal,
+}: {
+	promise: Promise<T>;
+	signal: AbortSignal | undefined;
+}): Promise<T> {
+	if (!signal) return promise;
+	throwIfSpeakerFrameApplyAborted(signal);
+	return new Promise<T>((resolve, reject) => {
+		const onAbort = () => {
+			reject(
+				new DOMException(
+					"Speaker Frame Breakout Apply was cancelled",
+					"AbortError",
+				),
+			);
+		};
+		signal.addEventListener("abort", onAbort, { once: true });
+		void promise.then(resolve, reject).finally(() => {
+			signal.removeEventListener("abort", onAbort);
+		});
+	});
 }

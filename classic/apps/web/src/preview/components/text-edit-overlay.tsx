@@ -29,17 +29,23 @@ export function TextEditOverlay({
 	const editor = useEditor();
 	const viewport = usePreviewViewport();
 	const divRef = useRef<HTMLDivElement>(null);
+	const initialContent =
+		typeof element.params.content === "string" ? element.params.content : "";
 
 	useEffect(() => {
 		const div = divRef.current;
 		if (!div) return;
+		// Keep the contentEditable DOM uncontrolled while editing. Preview updates
+		// notify React on every keystroke, and rendering children here would reset
+		// the DOM back to the last committed text after the first character.
+		div.textContent = initialContent;
 		div.focus();
 		const range = document.createRange();
 		range.selectNodeContents(div);
 		const selection = window.getSelection();
 		selection?.removeAllRanges();
 		selection?.addRange(range);
-	}, []);
+	}, [initialContent]);
 
 	const handleInput = useCallback(() => {
 		const div = divRef.current;
@@ -147,9 +153,7 @@ export function TextEditOverlay({
 				onInput={handleInput}
 				onBlur={onCommit}
 				onKeyDown={(event) => handleKeyDown({ event })}
-			>
-				{textParams.content}
-			</div>
+			/>
 		</div>
 	);
 }

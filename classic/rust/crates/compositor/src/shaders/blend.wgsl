@@ -5,9 +5,9 @@ struct VertexOutput {
 
 struct BlendUniforms {
     blend_mode: u32,
-    _pad0: u32,
-    _pad1: u32,
-    _pad2: u32,
+    opacity: f32,
+    layer_is_premultiplied: u32,
+    _padding: u32,
 }
 
 @group(0) @binding(0) var base_texture: texture_2d<f32>;
@@ -131,12 +131,18 @@ fn blend_rgb(base: vec3f, layer: vec3f, mode: u32) -> vec3f {
 fn fragment_main(input: VertexOutput) -> @location(0) vec4f {
     let base = textureSample(base_texture, base_sampler, input.tex_coord);
     let layer = textureSample(layer_texture, layer_sampler, input.tex_coord);
+    let layer_rgb = select(
+        layer.rgb,
+        layer.rgb / max(layer.a, 0.0001),
+        uniforms.layer_is_premultiplied != 0u && layer.a > 0.0001,
+    );
+    let layer_alpha = clamp(layer.a * uniforms.opacity, 0.0, 1.0);
 
-    let blend_rgb_value = blend_rgb(base.rgb, layer.rgb, uniforms.blend_mode);
-    let out_alpha = layer.a + base.a * (1.0 - layer.a);
+    let blend_rgb_value = blend_rgb(base.rgb, layer_rgb, uniforms.blend_mode);
+    let out_alpha = layer_alpha + base.a * (1.0 - layer_alpha);
     let out_rgb =
-        ((1.0 - layer.a) * base.rgb) +
-        (layer.a * ((1.0 - base.a) * layer.rgb + base.a * blend_rgb_value));
+        ((1.0 - layer_alpha) * base.rgb) +
+        (layer_alpha * ((1.0 - base.a) * layer_rgb + base.a * blend_rgb_value));
 
     return vec4f(clamp01(out_rgb), out_alpha);
 }

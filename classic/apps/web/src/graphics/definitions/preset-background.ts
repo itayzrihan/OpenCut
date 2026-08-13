@@ -1,6 +1,12 @@
 import type { ParamDefinition } from "@/params";
 import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
-import type { GraphicDefinition } from "../types";
+import {
+	DEFAULT_GRAPHIC_SOURCE_SIZE,
+	GRAPHIC_LAYOUT_HEIGHT_PARAM,
+	GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM,
+	GRAPHIC_LAYOUT_WIDTH_PARAM,
+	type GraphicDefinition,
+} from "../types";
 
 type BackgroundParams = {
 	preset: string;
@@ -12,6 +18,8 @@ type BackgroundParams = {
 	intensity: number;
 	scale: number;
 	seed: number;
+	"layout.width": number;
+	"layout.height": number;
 };
 
 const BACKGROUND_STYLE_OPTIONS = BACKGROUND_PRESETS.reduce<
@@ -72,13 +80,64 @@ const BACKGROUND_PARAMS: ParamDefinition<keyof BackgroundParams & string>[] = [
 		max: 99,
 		step: 1,
 	},
+	{
+		key: GRAPHIC_LAYOUT_WIDTH_PARAM,
+		label: "Width",
+		type: "number",
+		default: 0,
+		min: 0,
+		max: 100_000,
+		step: 1,
+		keyframable: false,
+	},
+	{
+		key: GRAPHIC_LAYOUT_HEIGHT_PARAM,
+		label: "Height",
+		type: "number",
+		default: 0,
+		min: 0,
+		max: 100_000,
+		step: 1,
+		keyframable: false,
+	},
 ];
+
+function readLayoutDimension({ value }: { value: unknown }): number | null {
+	return typeof value === "number" && Number.isFinite(value) && value > 0
+		? Math.max(1, Math.round(value))
+		: null;
+}
 
 export const presetBackgroundGraphicDefinition: GraphicDefinition = {
 	id: "preset-background",
 	name: "Preset Background",
 	keywords: ["background", "pattern", "grid", "film", "texture"],
 	params: BACKGROUND_PARAMS,
+	resizeBehavior: "dimensions",
+	sourceSize({ params }) {
+		const pixelScale =
+			typeof params[GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM] === "number" &&
+			Number.isFinite(params[GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM]) &&
+			params[GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM] > 0
+				? params[GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM]
+				: 1;
+		return {
+			width:
+				readLayoutDimension({
+					value:
+						typeof params[GRAPHIC_LAYOUT_WIDTH_PARAM] === "number"
+							? params[GRAPHIC_LAYOUT_WIDTH_PARAM] / pixelScale
+							: null,
+				}) ?? DEFAULT_GRAPHIC_SOURCE_SIZE,
+			height:
+				readLayoutDimension({
+					value:
+						typeof params[GRAPHIC_LAYOUT_HEIGHT_PARAM] === "number"
+							? params[GRAPHIC_LAYOUT_HEIGHT_PARAM] / pixelScale
+							: null,
+				}) ?? DEFAULT_GRAPHIC_SOURCE_SIZE,
+		};
+	},
 	render({ ctx, params, width, height, localTime = 0 }) {
 		const style = String(params.preset ?? "clean");
 		const colorA = String(params.colorA ?? "#10131f");
@@ -96,6 +155,18 @@ export const presetBackgroundGraphicDefinition: GraphicDefinition = {
 		switch (style) {
 			case "grid":
 				drawGrid({ ctx, width, height, color: colorB, density, intensity });
+				break;
+			case "textured-grid":
+				drawTexturedGrid({
+					ctx,
+					width,
+					height,
+					color: colorB,
+					density,
+					intensity,
+					scale,
+					seed,
+				});
 				break;
 			case "grid-waves":
 				drawGrid({
@@ -391,6 +462,59 @@ function drawGrid({
 		ctx.moveTo(0, y);
 		ctx.lineTo(width, y);
 	}
+	ctx.stroke();
+}
+
+function drawTexturedGrid({
+	ctx,
+	width,
+	height,
+	color,
+	density,
+	intensity,
+	scale,
+	seed,
+}: DrawParams & { scale: number; seed: number }) {
+	const baseGap = Math.max(54, 190 - density * 2) * (0.82 + scale / 280);
+	const lineGap = 2 + scale / 18;
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = withAlpha(color, 0.11 + intensity * 0.36);
+	ctx.beginPath();
+
+	const drawClusters = ({
+		limit,
+		seedOffset,
+		vertical,
+	}: {
+		limit: number;
+		seedOffset: number;
+		vertical: boolean;
+	}) => {
+		let position = -baseGap * random(seed + seedOffset, 0);
+		let index = 0;
+		while (position <= limit + baseGap) {
+			const gapVariation =
+				0.62 + random(seed + seedOffset, index * 5 + 1) * 0.92;
+			position += baseGap * gapVariation;
+			const lineCount =
+				2 + Math.floor(random(seed + seedOffset, index * 5 + 2) * 3);
+			const clusterWidth = (lineCount - 1) * lineGap;
+			for (let line = 0; line < lineCount; line++) {
+				const coordinate = position + line * lineGap - clusterWidth / 2;
+				if (vertical) {
+					ctx.moveTo(coordinate, 0);
+					ctx.lineTo(coordinate, height);
+				} else {
+					ctx.moveTo(0, coordinate);
+					ctx.lineTo(width, coordinate);
+				}
+			}
+			index++;
+		}
+	};
+
+	drawClusters({ limit: width, seedOffset: 17, vertical: true });
+	drawClusters({ limit: height, seedOffset: 43, vertical: false });
 	ctx.stroke();
 }
 

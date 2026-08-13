@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bytemuck::{Pod, Zeroable};
-use gpu::{FULLSCREEN_SHADER_SOURCE, GpuContext};
+use gpu::{GpuContext, FULLSCREEN_SHADER_SOURCE};
 use thiserror::Error;
 use wgpu::util::DeviceExt;
 
@@ -14,6 +14,7 @@ const GRAYSCALE_SHADER_SOURCE: &str = include_str!("shaders/grayscale.wgsl");
 const TINT_SHADER_ID: &str = "tint";
 const COLOR_WASH_SHADER_ID: &str = "color-wash";
 const VIGNETTE_SHADER_ID: &str = "vignette";
+const EDITORIAL_EDGE_FEATHER_SHADER_ID: &str = "editorial-edge-feather";
 const PIXELATE_SHADER_ID: &str = "pixelate";
 const RGB_SPLIT_SHADER_ID: &str = "rgb-split";
 const CHROMATIC_SHIFT_SHADER_ID: &str = "chromatic-shift";
@@ -22,6 +23,8 @@ const NOISE_SHADER_ID: &str = "noise";
 const SHATTER_SHADER_ID: &str = "shatter";
 const TINT_SHADER_SOURCE: &str = include_str!("shaders/tint.wgsl");
 const VIGNETTE_SHADER_SOURCE: &str = include_str!("shaders/vignette.wgsl");
+const EDITORIAL_EDGE_FEATHER_SHADER_SOURCE: &str =
+    include_str!("shaders/editorial_edge_feather.wgsl");
 const PIXELATE_SHADER_SOURCE: &str = include_str!("shaders/pixelate.wgsl");
 const RGB_SPLIT_SHADER_SOURCE: &str = include_str!("shaders/rgb_split.wgsl");
 const SCANLINES_SHADER_SOURCE: &str = include_str!("shaders/scanlines.wgsl");
@@ -156,6 +159,16 @@ impl EffectPipeline {
                     &vertex_shader_module,
                     VIGNETTE_SHADER_ID,
                     VIGNETTE_SHADER_SOURCE,
+                ),
+            ),
+            (
+                EDITORIAL_EDGE_FEATHER_SHADER_ID.to_string(),
+                create_effect_pipeline(
+                    context,
+                    &pipeline_layout,
+                    &vertex_shader_module,
+                    EDITORIAL_EDGE_FEATHER_SHADER_ID,
+                    EDITORIAL_EDGE_FEATHER_SHADER_SOURCE,
                 ),
             ),
             (
@@ -440,6 +453,20 @@ fn pack_effect_uniforms(
                 color: read_vec4_uniform(pass, "u_color")?,
             })
         }
+        EDITORIAL_EDGE_FEATHER_SHADER_ID => {
+            ensure_supported_uniforms(pass, &["u_intensity", "u_height", "u_softness", "u_color"])?;
+            Ok(EffectUniformBuffer {
+                resolution: [width as f32, height as f32],
+                direction: [0.0, 0.0],
+                scalars: [
+                    read_number_uniform(pass, "u_intensity")?,
+                    read_number_uniform(pass, "u_height")?,
+                    read_number_uniform(pass, "u_softness")?,
+                    0.0,
+                ],
+                color: read_vec4_uniform(pass, "u_color")?,
+            })
+        }
         PIXELATE_SHADER_ID => {
             ensure_supported_uniforms(pass, &["u_amount", "u_intensity"])?;
             Ok(EffectUniformBuffer {
@@ -628,6 +655,27 @@ mod tests {
 
         assert_eq!(packed.scalars[0], 0.5);
         assert_eq!(packed.color, [0.2, 0.3, 0.4, 1.0]);
+    }
+
+    #[test]
+    fn packs_editorial_edge_feather_uniforms() {
+        let packed = pack_effect_uniforms(
+            &pass(
+                EDITORIAL_EDGE_FEATHER_SHADER_ID,
+                &[
+                    ("u_intensity", UniformValue::Number(0.38)),
+                    ("u_height", UniformValue::Number(0.2)),
+                    ("u_softness", UniformValue::Number(0.78)),
+                    ("u_color", UniformValue::Vector(vec![0.0, 0.0, 0.0, 1.0])),
+                ],
+            ),
+            1080,
+            1920,
+        )
+        .expect("editorial edge feather uniforms should pack");
+
+        assert_eq!(packed.scalars, [0.38, 0.2, 0.78, 0.0]);
+        assert_eq!(packed.color, [0.0, 0.0, 0.0, 1.0]);
     }
 
     #[test]

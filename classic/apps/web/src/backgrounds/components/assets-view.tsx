@@ -22,7 +22,12 @@ import {
 	type BackgroundPreset,
 } from "@/backgrounds/presets";
 import { generateBackgroundPreset } from "@/ai/preset-generation";
-import { buildGraphicPreviewUrl } from "@/graphics";
+import {
+	buildGraphicPreviewUrl,
+	GRAPHIC_LAYOUT_HEIGHT_PARAM,
+	GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM,
+	GRAPHIC_LAYOUT_WIDTH_PARAM,
+} from "@/graphics";
 import { buildGraphicElement } from "@/timeline/element-utils";
 import { useSharedLibraryStore } from "@/shared-library";
 import Image from "next/image";
@@ -135,11 +140,20 @@ function BackgroundPresetItem({ preset }: { preset: BackgroundPreset }) {
 	});
 
 	const handleAddToTimeline = () => {
+		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const element = buildGraphicElement({
 			definitionId: BACKGROUND_DEFINITION_ID,
 			name: preset.name,
 			startTime: editor.playback.getCurrentTime(),
-			params: preset.params,
+			params: {
+				...preset.params,
+				[GRAPHIC_LAYOUT_WIDTH_PARAM]: canvasSize.width,
+				[GRAPHIC_LAYOUT_HEIGHT_PARAM]: canvasSize.height,
+				[GRAPHIC_LAYOUT_PIXEL_SCALE_PARAM]: Math.min(
+					canvasSize.width / 512,
+					canvasSize.height / 512,
+				),
+			},
 		});
 		editor.timeline.insertElement({
 			placement: { mode: "auto", trackType: "graphic" },

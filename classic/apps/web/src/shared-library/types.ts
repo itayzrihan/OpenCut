@@ -64,6 +64,20 @@ export interface GeneratedEffectPreset {
 	updatedAt: string;
 }
 
+export interface GeneratedUiElementPreset {
+	id: string;
+	name: string;
+	description: string;
+	category: string;
+	keywords: string[];
+	whenToUse: string;
+	defaultDurationSeconds: number;
+	sourcePrompt?: string;
+	params: ParamValues;
+	createdAt: string;
+	updatedAt: string;
+}
+
 export interface SharedCaptionPreset {
 	id: string;
 	name: string;
@@ -79,6 +93,7 @@ export interface SharedLibraryManifest {
 	categories: SharedAssetCategory[];
 	generatedBackgrounds: GeneratedBackgroundPreset[];
 	generatedEffects: GeneratedEffectPreset[];
+	generatedUiElements: GeneratedUiElementPreset[];
 	captionPresets: SharedCaptionPreset[];
 	updatedAt: string;
 }

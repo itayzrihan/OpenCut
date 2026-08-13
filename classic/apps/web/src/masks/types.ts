@@ -12,6 +12,7 @@ export type BuiltinMaskType =
 	| "split"
 	| "cinematic-bars"
 	| "rectangle"
+	| "rounded-rectangle"
 	| "ellipse"
 	| "heart"
 	| "diamond"
@@ -41,6 +42,11 @@ export interface RectangleMaskParams extends BaseMaskParams {
 	height: number;
 	rotation: number;
 	scale: number;
+}
+
+export interface RoundedRectangleMaskParams extends RectangleMaskParams {
+	/** Corner radius as a fraction of the mask's shortest side. */
+	cornerRadius: number;
 }
 
 export interface TextMaskParams extends BaseMaskParams {
@@ -85,6 +91,12 @@ export interface RectangleMask {
 	params: RectangleMaskParams;
 }
 
+export interface RoundedRectangleMask {
+	id: string;
+	type: "rounded-rectangle";
+	params: RoundedRectangleMaskParams;
+}
+
 export interface EllipseMask {
 	id: string;
 	type: "ellipse";
@@ -119,6 +131,7 @@ export type BuiltinShapeMask =
 	| SplitMask
 	| CinematicBarsMask
 	| RectangleMask
+	| RoundedRectangleMask
 	| EllipseMask
 	| HeartMask
 	| DiamondMask

@@ -18,6 +18,7 @@ import type {
 	RenderedTextureDescriptor,
 	TextureUploadDescriptor,
 } from "./types";
+import { getCanvasSourceVersion } from "../canvas-source-version";
 
 /**
  * One slot in the derived-texture cache. The OffscreenCanvas is persistent —
@@ -35,6 +36,7 @@ type RenderedCacheEntry = {
 type ExternalCacheEntry = {
 	kind: "external";
 	source: CanvasImageSource;
+	sourceVersion?: string;
 	width: number;
 	height: number;
 };
@@ -43,12 +45,14 @@ class WasmCompositor {
 	private canvas: HTMLCanvasElement | null = null;
 	private initializedSize: { width: number; height: number } | null = null;
 	private cache = new Map<string, RenderedCacheEntry | ExternalCacheEntry>();
+	private generation = 0;
 
 	ensureInitialized({ width, height }: { width: number; height: number }) {
 		if (!this.canvas) {
 			initCompositor(width, height);
 			this.canvas = getCompositorCanvas();
 			this.initializedSize = { width, height };
+			this.generation += 1;
 			return;
 		}
 
@@ -59,7 +63,12 @@ class WasmCompositor {
 		) {
 			resizeCompositor(width, height);
 			this.initializedSize = { width, height };
+			this.generation += 1;
 		}
+	}
+
+	getGeneration(): number {
+		return this.generation;
 	}
 
 	getCanvas(): HTMLCanvasElement {
@@ -89,6 +98,7 @@ class WasmCompositor {
 
 	render(frame: FrameDescriptor) {
 		renderFrame(frame);
+		this.generation += 1;
 		if (isRenderPerfEnabled()) {
 			recordWasmFrameProfile(
 				getLastFrameProfile() as Array<{ name: string; durationMs: number }>,
@@ -98,9 +108,11 @@ class WasmCompositor {
 
 	private syncExternalTexture(texture: ExternalTextureDescriptor) {
 		const previous = this.cache.get(texture.id);
+		const sourceVersion = getCanvasSourceVersion({ source: texture.source });
 		if (
 			previous?.kind === "external" &&
 			previous.source === texture.source &&
+			previous.sourceVersion === sourceVersion &&
 			previous.width === texture.width &&
 			previous.height === texture.height
 		) {
@@ -127,6 +139,7 @@ class WasmCompositor {
 		this.cache.set(texture.id, {
 			kind: "external",
 			source: texture.source,
+			sourceVersion,
 			width: texture.width,
 			height: texture.height,
 		});
@@ -208,7 +221,11 @@ function ensureOffscreenCanvas({
 	height: number;
 	label: string;
 }): OffscreenCanvas {
-	if (source instanceof OffscreenCanvas) {
+	if (
+		source instanceof OffscreenCanvas &&
+		source.width === width &&
+		source.height === height
+	) {
 		return source;
 	}
 

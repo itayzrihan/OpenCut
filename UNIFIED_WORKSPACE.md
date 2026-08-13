@@ -18,19 +18,28 @@ no submodule initialization step.
 
 ## Product status
 
-| Area | Current source of truth |
-| --- | --- |
-| Full editor UI and timeline | `classic/apps/web` |
-| Silence cutting | `classic/apps/web/src/timeline` and `classic/rust/crates/timeline` |
-| Current project/local-drive persistence | `classic/apps/web/src/services/local-drive` |
-| Rewrite desktop UI | `apps/desktop` |
-| Typed Editor API | `crates/editor-api` |
-| MCP server and projection | `apps/mcp` and `crates/mcp` |
+| Area                                                                   | Current source of truth                                                                                  |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Full editor UI and timeline                                            | `classic/apps/web`                                                                                       |
+| Silence cutting                                                        | `classic/apps/web/src/timeline` and `classic/rust/crates/timeline`                                       |
+| Virtual camera, depth, speaker tiles, learned UI assets                | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
+| Speaker Frame Breakout smart layer and Paper Grid                      | Classic UI/rendering; typed create/update/inspect/apply contract in `crates/editor-api` and projected MCP; rewrite UI/rendering pending |
+| Editorial edge feather and feathered text assets                       | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
+| Current project/local-drive persistence                                | `classic/apps/web/src/services/local-drive`                                                              |
+| Rewrite desktop UI                                                     | `apps/desktop`                                                                                           |
+| Typed Editor API                                                       | `crates/editor-api`                                                                                      |
+| MCP server and projection                                              | `apps/mcp` and `crates/mcp`                                                                              |
 
-Organizational unification does not by itself connect the rewrite MCP to the
-classic editor state. Until a bridge or migration is implemented, MCP tools
-operate the rewrite runtime. This distinction must remain visible in product
-claims and tests.
+The local Classic editor connects to the stdio MCP through an authenticated
+loopback bridge. It publishes the active project, playhead, timeline, selection,
+semantic UI state, and its live AI tool catalog; those tools are projected
+dynamically through the canonical MCP capability registry. Rewrite-native tools
+still operate the rewrite runtime, while `classic.*` capabilities explicitly
+target the connected Classic browser session. Remote deployments do not expose
+this local bridge. The Classic and rewrite document models are not yet
+state-synchronized: the live Classic smart layer is controlled through the
+Classic bridge, while the typed Rust smart-layer contract controls the rewrite
+document until that synchronization and renderer migration are completed.
 
 ## Development
 

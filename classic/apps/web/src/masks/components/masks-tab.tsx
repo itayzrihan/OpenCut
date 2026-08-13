@@ -117,6 +117,8 @@ function withPreviewedMaskParam({
 			return { ...mask, params: { ...mask.params, [key]: value } };
 		case "rectangle":
 			return { ...mask, params: { ...mask.params, [key]: value } };
+		case "rounded-rectangle":
+			return { ...mask, params: { ...mask.params, [key]: value } };
 		case "ellipse":
 			return { ...mask, params: { ...mask.params, [key]: value } };
 		case "heart":

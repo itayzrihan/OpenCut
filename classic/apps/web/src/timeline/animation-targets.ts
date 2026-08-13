@@ -26,6 +26,8 @@ import {
 } from "@/params/registry";
 import type { TimelineElement } from "@/timeline";
 import { isVisualElement } from "@/timeline/element-utils";
+import { PARALLAX_CAMERA_KEYFRAME_PARAMS } from "@/parallax-story-teller/camera-keyframes";
+import { PARALLAX_CAMERA_GUIDE_KIND } from "@/parallax-story-teller/model";
 
 export interface AnimationPathDescriptor {
 	channelLayout: ParamChannelLayout;
@@ -99,6 +101,33 @@ function buildElementParamDescriptor({
 			...element,
 			params,
 		}),
+	});
+}
+
+function buildParallaxCameraParamDescriptor({
+	element,
+	paramKey,
+}: {
+	element: TimelineElement;
+	paramKey: string;
+}): AnimationPathDescriptor | null {
+	if (
+		element.type !== "effect" ||
+		(element.params.kind !== "parallax-story-teller" &&
+			element.params.kind !== PARALLAX_CAMERA_GUIDE_KIND)
+	) {
+		return null;
+	}
+
+	const param = PARALLAX_CAMERA_KEYFRAME_PARAMS.find(
+		(candidate) => candidate.key === paramKey,
+	);
+	if (!param) return null;
+
+	return buildParamDescriptor({
+		param,
+		baseParams: element.params,
+		setParams: (params) => ({ ...element, params }),
 	});
 }
 
@@ -181,6 +210,14 @@ export function resolveAnimationTarget({
 	element: TimelineElement;
 	path: AnimationPath;
 }): AnimationPathDescriptor | null {
+	const parallaxCameraTarget = buildParallaxCameraParamDescriptor({
+		element,
+		paramKey: path.startsWith("params.")
+			? path.slice("params.".length)
+			: "",
+	});
+	if (parallaxCameraTarget) return parallaxCameraTarget;
+
 	const elementParamTarget = buildElementParamDescriptor({
 		element,
 		paramKey: path,

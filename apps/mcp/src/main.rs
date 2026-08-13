@@ -1,5 +1,8 @@
 use opencut_editor_api::{AccessLevel, AccessPolicy, OpenCutRuntime};
-use opencut_mcp::{OpenCutMcp, serve_runtime_authenticated_http};
+use opencut_mcp::{
+    OpenCutMcp, default_classic_bridge_config_path, serve_runtime_authenticated_http,
+    spawn_classic_bridge,
+};
 use rmcp::{ServiceExt, transport::stdio};
 use tracing_subscriber::EnvFilter;
 
@@ -34,11 +37,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => {}
     }
 
+    let bridge_address = std::env::var("OPENCUT_CLASSIC_BRIDGE_ADDR")
+        .unwrap_or_else(|_| "127.0.0.1:0".into())
+        .parse()?;
+    let classic_bridge = if std::env::var_os("OPENCUT_CLASSIC_BRIDGE_DISABLED").is_none() {
+        let bridge = spawn_classic_bridge(
+            &runtime,
+            bridge_address,
+            default_classic_bridge_config_path(),
+        )
+        .await?;
+        tracing::info!(
+            address = %bridge.address(),
+            "OpenCut Classic browser bridge is ready"
+        );
+        Some(bridge)
+    } else {
+        None
+    };
+
     let server = OpenCutMcp::from_runtime(&runtime);
     tracing::info!("starting OpenCut MCP server over stdio");
 
     let service = server.serve(stdio()).await?;
     service.waiting().await?;
+    drop(classic_bridge);
     Ok(())
 }
 

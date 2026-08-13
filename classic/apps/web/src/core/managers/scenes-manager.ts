@@ -21,6 +21,7 @@ import {
 	ToggleBookmarkCommand,
 	UpdateBookmarkCommand,
 } from "@/commands/scene";
+import { restoreParallaxSceneMetadataForScenes } from "@/parallax-story-teller/model";
 import type { MediaTime } from "@/wasm";
 
 export class ScenesManager {
@@ -203,24 +204,32 @@ export class ScenesManager {
 		currentSceneId?: string;
 	}): void {
 		const ensuredScenes = ensureMainScene({ scenes });
+		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
+			scenes: ensuredScenes,
+			cameraCanvasSize:
+				this.editor.project.getActive()?.settings.canvasSize,
+		});
 		const currentScene = currentSceneId
-			? ensuredScenes.find((s) => s.id === currentSceneId)
+			? normalizedScenes.find((s) => s.id === currentSceneId)
 			: null;
 
-		const fallbackScene = getMainScene({ scenes: ensuredScenes });
+		const fallbackScene = getMainScene({ scenes: normalizedScenes });
 
-		this.list = ensuredScenes;
+		this.list = normalizedScenes;
 		this.active = currentScene || fallbackScene;
 		this.notify();
 
-		const hasAddedMainScene = ensuredScenes.length > scenes.length;
-		if (hasAddedMainScene) {
+		const hasAddedMainScene = normalizedScenes.length > scenes.length;
+		const hasRestoredParallaxMetadata = normalizedScenes.some(
+			(scene, index) => scene !== ensuredScenes[index],
+		);
+		if (hasAddedMainScene || hasRestoredParallaxMetadata) {
 			const activeProject = this.editor.project.getActive();
 
 			if (activeProject) {
 				const updatedProject = {
 					...activeProject,
-					scenes: ensuredScenes,
+					scenes: normalizedScenes,
 					metadata: {
 						...activeProject.metadata,
 						updatedAt: new Date(),
@@ -261,10 +270,15 @@ export class ScenesManager {
 		scenes: TScene[];
 		activeSceneId?: string;
 	}): void {
-		this.list = scenes;
+		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
+			scenes,
+			cameraCanvasSize:
+				this.editor.project.getActive()?.settings.canvasSize,
+		});
+		this.list = normalizedScenes;
 		const nextActiveSceneId = activeSceneId ?? this.active?.id ?? null;
 		this.active = nextActiveSceneId
-			? (scenes.find((scene) => scene.id === nextActiveSceneId) ?? null)
+			? (normalizedScenes.find((scene) => scene.id === nextActiveSceneId) ?? null)
 			: null;
 		this.notify();
 
@@ -272,7 +286,7 @@ export class ScenesManager {
 		if (activeProject) {
 			const updatedProject = {
 				...activeProject,
-				scenes,
+				scenes: normalizedScenes,
 				metadata: {
 					...activeProject.metadata,
 					updatedAt: new Date(),

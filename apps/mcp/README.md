@@ -69,6 +69,13 @@ subscriptions, cancellation, authorization policy, and automatic direct-tool
 projection around those capabilities. The headless server currently exposes
 72 tools; the desktop host adds semantic UI and window-capture capabilities.
 
+When the current Classic editor is open on localhost, it attaches to the stdio
+MCP process through an authenticated loopback bridge. The bridge publishes the
+open project, exact playhead, timeline source, selection, and semantic UI
+snapshot. It also projects the editor's live AI tool inventory as
+`opencut.classic.*` tools, so reads and edits operate on the browser's actual
+project rather than on a separate headless document.
+
 ## Run
 
 From the repository root:
@@ -96,6 +103,8 @@ The executable policy is configurable without rebuilding:
 | `OPENCUT_FFMPEG_PATH` | Optional absolute path to FFmpeg | `ffmpeg` from `PATH` |
 | `OPENCUT_FFPROBE_PATH` | Optional absolute path to FFprobe | `ffprobe` from `PATH` |
 | `OPENCUT_WHISPER_COMMAND` | Optional local OpenAI Whisper CLI executable | disabled |
+| `OPENCUT_CLASSIC_BRIDGE_ADDR` | Classic browser bridge loopback address | `127.0.0.1:0` |
+| `OPENCUT_CLASSIC_BRIDGE_DISABLED` | Disable the Classic browser bridge when set | unset |
 
 For example, `OPENCUT_MCP_MAX_ACCESS=read` makes the server read-only, while
 `OPENCUT_MCP_DENY=export.*,plugins.*` blocks those namespaces even when the
@@ -133,6 +142,32 @@ OPENCUT_MCP_HTTP_TOKEN=replace-with-a-random-secret-at-least-32-characters \
 
 The endpoint is `http://127.0.0.1:32123/mcp`. Non-loopback addresses and weak
 tokens are rejected.
+
+### Current Classic browser editor
+
+Start the stdio MCP server and the Classic web editor on the same workstation:
+
+```sh
+cargo run -p opencut-mcp-server
+cd classic
+bun run dev:web
+```
+
+The MCP process writes a short-lived connection record under OpenCut's local
+application-data directory. The browser never receives its bearer token:
+same-origin `/api/mcp-bridge/*` routes read the record on the server, verify
+that both sides are loopback-only, and proxy the authenticated requests. The
+editor displays an `MCP connected` badge while the live session is attached.
+
+Use `opencut.classic.session.read` to identify the connected project and exact
+playhead. Classic tools advertised by the open editor then appear dynamically,
+including full timeline reads, preview capture, and validated edit-plan
+application. Mutations require the connected `projectId` and may include
+`expectedRevision`.
+
+This bridge intentionally cannot inspect other browser tabs, capture the
+desktop, expose credentials, or execute arbitrary shell commands. It connects
+only the OpenCut editor page that loaded the local bridge component.
 
 ## Feature author contract
 

@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { AI_SKILLS, listAiSkills, loadAiSkill } from "@/ai/skills";
+import {
+	AI_SKILLS,
+	listAiSkills,
+	loadAiSkill,
+	loadAiSkillResource,
+} from "@/ai/skills";
 import { hyperframeGraphicDefinition } from "@/graphics/definitions/hyperframe";
 import { getHyperframeRasterTimeBucket } from "@/graphics/html-raster";
 
@@ -14,6 +19,7 @@ describe("AI skills", () => {
 			"text-effects",
 			"opencut-workspace",
 			"video-workflows",
+			"paper-grid-editorial",
 		]);
 		for (const skill of listed) {
 			expect(skill.description.length).toBeGreaterThan(0);
@@ -49,6 +55,76 @@ describe("AI skills", () => {
 			"motion-graphics",
 		);
 		expect(loadAiSkill({ name: "unknown" })).toBeNull();
+	});
+
+	test("projects the Paper Grid Editorial skill and loads references on demand", () => {
+		const skill = loadAiSkill({ name: "/Paper-Grid-Editorial" });
+		expect(skill?.content).toContain("Non-negotiable contract");
+		expect(skill?.content).toContain("three frames per second");
+		expect(skill?.resourceNames).toEqual([
+			"references/compositing-depth.md",
+			"references/editorial-grammar.md",
+			"references/hebrew-reference-project-profile.md",
+			"references/hyperframes-remotion-synthesis.md",
+			"references/i-recorded-three-times-full-analysis.md",
+			"references/kallaway-day1-full-analysis.md",
+			"references/lmsme-preview-first-minute.md",
+			"references/minimal-product-ui-assets.md",
+			"references/quality-gates.md",
+			"references/video-mp4-full-analysis.md",
+			"references/virtual-camera-canvas.md",
+		]);
+
+		const reference = loadAiSkillResource({
+			name: "paper-grid-editorial",
+			resource: "references/lmsme-preview-first-minute.md",
+		});
+		expect(reference?.content).toContain("180 JPEG frames");
+		expect(reference?.content).toContain("| 59-60 |");
+		const fullVideoReference = loadAiSkillResource({
+			name: "paper-grid-editorial",
+			resource: "references/video-mp4-full-analysis.md",
+		});
+		expect(fullVideoReference?.content).toContain("all 155 samples at 3fps");
+		expect(fullVideoReference?.content).toContain(
+			"Detect gaps on the original dialogue clip",
+		);
+		const threeTakeReference = loadAiSkillResource({
+			name: "paper-grid-editorial",
+			resource: "references/i-recorded-three-times-full-analysis.md",
+		});
+		expect(threeTakeReference?.content).toContain("all 170 samples at 3fps");
+		expect(threeTakeReference?.content).toContain(
+			"Repetition without duplicate-layer bugs",
+		);
+		expect(threeTakeReference?.content).toContain(
+			"Seventeen word-timed speech gaps",
+		);
+		const frameBreakoutReference = loadAiSkillResource({
+			name: "paper-grid-editorial",
+			resource: "references/kallaway-day1-full-analysis.md",
+		});
+		expect(frameBreakoutReference?.content).toContain(
+			"655 labeled samples at 10 fps",
+		);
+		expect(frameBreakoutReference?.content).toContain(
+			"create_speaker_frame_breakout",
+		);
+		expect(frameBreakoutReference?.content).toContain(
+			"One and only one audible speaker source",
+		);
+		const uiAssetReference = loadAiSkillResource({
+			name: "paper-grid-editorial",
+			resource: "references/minimal-product-ui-assets.md",
+		});
+		expect(uiAssetReference?.content).toContain("No orphaned one-offs");
+		expect(uiAssetReference?.content).toContain("saveAsUiElement");
+		expect(
+			loadAiSkillResource({
+				name: "paper-grid-editorial",
+				resource: "../SKILL.md",
+			}),
+		).toBeNull();
 	});
 });
 

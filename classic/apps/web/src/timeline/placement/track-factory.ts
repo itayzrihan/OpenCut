@@ -3,6 +3,7 @@ import type {
 	AudioTrack,
 	EffectTrack,
 	GraphicTrack,
+	ParallaxTrack,
 	TextTrack,
 	TrackType,
 	TimelineTrack,
@@ -54,6 +55,15 @@ export function buildEmptyTrack({
 	type: "effect";
 	name?: string;
 }): EffectTrack;
+export function buildEmptyTrack({
+	id,
+	type,
+	name,
+}: {
+	id: string;
+	type: "parallax";
+	name?: string;
+}): ParallaxTrack;
 
 export function buildEmptyTrack({
 	id,
@@ -116,6 +126,15 @@ export function buildEmptyTrack({
 				type: "effect",
 				elements: [],
 				hidden: false,
+			};
+		case "parallax":
+			return {
+				id,
+				name: trackName,
+				type: "parallax",
+				elements: [],
+				direction: "against-camera",
+				speedPercent: 35,
 			};
 		default:
 			throw new Error(`Unsupported track type: ${type}`);

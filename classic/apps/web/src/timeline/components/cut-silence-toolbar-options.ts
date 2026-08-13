@@ -1,4 +1,8 @@
 export type CutSilenceMode = "audio" | "fast" | "deep";
+export type CutSilenceOptions = {
+	mode: CutSilenceMode;
+	minSilenceSeconds?: number;
+};
 
 export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "audio";
 
@@ -28,10 +32,15 @@ export const CUT_SILENCE_ACTIONS = [
 
 export async function executeCutSilenceAction({
 	mode,
+	minSilenceSeconds,
 	removeAllSilence,
 }: {
 	mode: CutSilenceMode;
-	removeAllSilence: (options: { mode: CutSilenceMode }) => Promise<unknown>;
+	minSilenceSeconds?: number;
+	removeAllSilence: (options: CutSilenceOptions) => Promise<unknown>;
 }): Promise<void> {
-	await removeAllSilence({ mode });
+	await removeAllSilence({
+		mode,
+		...(minSilenceSeconds === undefined ? {} : { minSilenceSeconds }),
+	});
 }

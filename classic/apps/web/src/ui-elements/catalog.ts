@@ -5,8 +5,105 @@ export interface UiElementPreset {
 	id: string;
 	name: string;
 	description: string;
+	category: string;
+	keywords: string[];
+	whenToUse: string;
+	defaultDurationSeconds: number;
+	params: ParamValues;
+	bundle?: UiElementBundle;
+}
+
+export interface UiElementBundleGraphicClip {
+	name: string;
+	definitionId: string;
+	startOffsetSeconds: number;
+	durationSeconds: number;
 	params: ParamValues;
 }
+
+export interface UiElementBundleAudioClip {
+	name: string;
+	libraryAssetId: string;
+	startOffsetSeconds: number;
+	durationSeconds: number;
+	sourceDurationSeconds: number;
+	trimStartSeconds: number;
+	trimEndSeconds: number;
+	params: ParamValues;
+}
+
+export interface UiElementBundle {
+	graphics: UiElementBundleGraphicClip[];
+	audio: UiElementBundleAudioClip[];
+}
+
+export const COLOR_REVEAL_WHOOSH_ASSET_ID =
+	"19f29ed9-a604-4933-ae8c-e494b6cee47f";
+export const CANCELLATION_CHECKLIST_GLITCH_ASSET_ID =
+	"fedd7133-5b46-406a-8085-f733ea28b367";
+
+const RTL_CANCELLATION_CHECKLIST_PARAMS: ParamValues = {
+	template: "checkbox-list",
+	label: "שלוש דרכים לבטל הצלחה",
+	secondary: "",
+	items: "יש לו כסף\nקנו אותו\nעשו לו",
+	itemCount: 3,
+	itemsFontFamily: "Inter",
+	textDirection: "rtl",
+	textRevealMode: "determined-by-preset",
+	textTransitionIn: "blur-zoom",
+	animationIn: "list-one-by-one",
+	animationInEnd: 30,
+	animationOut: "list-blur-zoom-fade",
+	animationOutStart: 91.64,
+	animationStrength: 72,
+	eventAt: 79.38,
+	eventTransitionDuration: 6,
+	eventBackgroundEnabled: true,
+	eventBackground: "#D92D20",
+	itemStartPoints: "0,26.19,36.68",
+	itemEndPoints: "100,100,100",
+	listRevealMode: "sequential",
+	listBaseOpacity: 0,
+	listRiseDistance: 36,
+	listItemInDuration: 6,
+	listItemOutDuration: 0,
+	listBarFitToText: false,
+	listBarWidth: 54,
+	listBarHeight: 8,
+	listBarGap: 2.5,
+	listBarRadius: 14,
+	listBackgroundBlur: 0,
+	listTextAlign: "right",
+	listTextSize: 28,
+	accent: "#D8DBDE",
+	background: "#24272A",
+	foreground: "#FFFFFF",
+	checked: 3,
+	"transform.positionY": -476.68513939807315,
+};
+
+const COLOR_REVEAL_MASK_HTML = `<style>
+.hf-root{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.mono{position:absolute;inset:0;background:#808080;clip-path:inset(0 0 0 20%);animation:monoReveal 3s cubic-bezier(.65,0,.35,1) both}
+@keyframes monoReveal{
+  0%,12%{clip-path:inset(0 0 0 20%)}
+  85%{clip-path:inset(0 0 0 100%)}
+  100%{clip-path:inset(0 0 0 100%)}
+}
+</style>
+<div class="hf-root"><div class="mono"></div></div>`;
+
+const COLOR_REVEAL_DIVIDER_HTML = `<style>
+.hf-root{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.line{position:absolute;top:0;bottom:0;left:20%;width:5px;margin-left:-2.5px;background:#fff;box-shadow:0 0 7px rgba(255,255,255,.95),0 0 18px rgba(255,255,255,.62),0 0 32px rgba(255,255,255,.28);animation:dividerMove 3s cubic-bezier(.65,0,.35,1) both}
+@keyframes dividerMove{
+  0%,12%{left:20%;opacity:1}
+  85%{left:100%;opacity:1}
+  92%,100%{left:100%;opacity:0}
+}
+</style>
+<div class="hf-root"><div class="line"></div></div>`;
 
 function preset({
 	id,
@@ -25,6 +122,16 @@ function preset({
 	intensity = 60,
 	batteryMode = "drain",
 	screenMode = "auto",
+	category = "utility",
+	keywords = [],
+	whenToUse = "Use when the spoken beat needs a compact interface proof.",
+	defaultDurationSeconds = 2.5,
+	animationIn = "auto",
+	animationInEnd = 18,
+	animationOut = "auto",
+	animationOutStart = 82,
+	animationStrength = 100,
+	eventAt = 55,
 }: {
 	id: string;
 	name: string;
@@ -42,16 +149,33 @@ function preset({
 	intensity?: number;
 	batteryMode?: string;
 	screenMode?: string;
+	category?: string;
+	keywords?: string[];
+	whenToUse?: string;
+	defaultDurationSeconds?: number;
+	animationIn?: string;
+	animationInEnd?: number;
+	animationOut?: string;
+	animationOutStart?: number;
+	animationStrength?: number;
+	eventAt?: number;
 }): UiElementPreset {
 	return {
 		id,
 		name,
 		description,
+		category,
+		keywords,
+		whenToUse,
+		defaultDurationSeconds,
 		params: {
 			template,
 			label,
 			secondary,
 			items: items ?? "Research\nDesign\nEdit\nPublish",
+			itemCount: (items ?? "Research\nDesign\nEdit\nPublish")
+				.split("\n")
+				.filter((item) => item.trim().length > 0).length,
 			accent,
 			background,
 			foreground,
@@ -61,6 +185,12 @@ function preset({
 			intensity,
 			batteryMode,
 			screenMode,
+			animationIn,
+			animationInEnd,
+			animationOut,
+			animationOutStart,
+			animationStrength,
+			eventAt,
 		},
 	};
 }
@@ -68,6 +198,412 @@ function preset({
 export const UI_ELEMENT_DEFINITION_ID = UI_ELEMENT_GRAPHIC_ID;
 
 export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
+	{
+		id: "color-reveal-whoosh",
+		name: "Color Reveal + Whoosh",
+		description: "3s monochrome-to-color gate with its synced whoosh",
+		category: "transition",
+		keywords: [
+			"color reveal",
+			"monochrome",
+			"divider",
+			"whoosh",
+			"intro",
+			"transition",
+		],
+		whenToUse:
+			"Use as a three-second opening beat that reveals the original color with a full-height glowing divider and synchronized whoosh.",
+		defaultDurationSeconds: 3,
+		params: {
+			template: "split-title",
+			label: "MONO",
+			secondary: "COLOR",
+			accent: "#ffffff",
+			background: "#181818",
+			foreground: "#ffffff",
+		},
+		bundle: {
+			graphics: [
+				{
+					name: "3s monochrome-to-color reveal",
+					definitionId: "hyperframe",
+					startOffsetSeconds: 0,
+					durationSeconds: 3,
+					params: {
+						blendMode: "saturation",
+						"camera.depth": 0,
+						"camera.locked": true,
+						html: COLOR_REVEAL_MASK_HTML,
+						opacity: 1,
+						sourceHeight: 1920,
+						sourceWidth: 1080,
+						"transform.perspectiveX": 0,
+						"transform.perspectiveY": 0,
+						"transform.positionX": 0,
+						"transform.positionY": 0,
+						"transform.rotate": 0,
+						"transform.scaleX": 1,
+						"transform.scaleY": 1,
+					},
+				},
+				{
+					name: "Full-height glowing white divider — 3s",
+					definitionId: "hyperframe",
+					startOffsetSeconds: 0,
+					durationSeconds: 3,
+					params: {
+						blendMode: "normal",
+						"camera.depth": 0,
+						"camera.locked": true,
+						html: COLOR_REVEAL_DIVIDER_HTML,
+						opacity: 1,
+						sourceHeight: 1920,
+						sourceWidth: 1080,
+						"transform.perspectiveX": 0,
+						"transform.perspectiveY": 0,
+						"transform.positionX": 0,
+						"transform.positionY": 0,
+						"transform.rotate": 0,
+						"transform.scaleX": 1,
+						"transform.scaleY": 1,
+					},
+				},
+			],
+			audio: [
+				{
+					name: "soundreality-whoosh-end-384629",
+					libraryAssetId: COLOR_REVEAL_WHOOSH_ASSET_ID,
+					startOffsetSeconds: 0.88,
+					durationSeconds: 2,
+					sourceDurationSeconds: 8.04,
+					trimStartSeconds: 0,
+					trimEndSeconds: 6.04,
+					params: {
+						fadeInDuration: 0,
+						fadeOutDuration: 0,
+						muted: false,
+						volume: 0,
+					},
+				},
+			],
+		},
+	},
+	preset({
+		id: "product-note",
+		name: "Minimal Note",
+		description: "Clean topic card with sequential editable rows",
+		template: "minimal-note",
+		label: "Topic",
+		items: "First point\nSecond point\nThird point",
+		accent: "#4EA1FF",
+		background: "#F6F6F3",
+		foreground: "#151515",
+		category: "workflow",
+		keywords: ["note", "topic", "agenda", "minimal", "product ui"],
+		whenToUse: "Use for a short topic, agenda, or three-point explanation.",
+		defaultDurationSeconds: 3.2,
+		animationIn: "card-glass-unfold",
+		animationOut: "card-panel-drop",
+		animationInEnd: 24,
+		animationOutStart: 86,
+		eventAt: 62,
+	}),
+	preset({
+		id: "product-search",
+		name: "Search Query",
+		description: "Minimal editable search field",
+		template: "search-bar",
+		label: "How to create better edits?",
+		accent: "#4EA1FF",
+		background: "#F7F7F5",
+		foreground: "#151515",
+		category: "workflow",
+		keywords: ["search", "query", "research", "browser", "product ui"],
+		whenToUse: "Use when a person searches, researches, asks, or discovers.",
+		animationIn: "card-window-open",
+		animationOut: "card-window-close",
+		animationInEnd: 20,
+		animationOutStart: 84,
+		eventAt: 58,
+	}),
+	preset({
+		id: "product-goal",
+		name: "Goal Slider",
+		description: "Animated target slider with current value",
+		template: "goal-slider",
+		label: "$10,000",
+		secondary: "$7,200",
+		progress: 72,
+		accent: "#4EA1FF",
+		background: "#050505",
+		foreground: "#FFFFFF",
+		category: "metrics",
+		keywords: ["goal", "slider", "target", "money", "progress"],
+		whenToUse:
+			"Use for targets, funding, completion, or progress toward a goal.",
+		defaultDurationSeconds: 2.8,
+		animationIn: "progress-meter-sweep",
+		animationOut: "progress-complete-flash",
+		animationInEnd: 30,
+		animationOutStart: 86,
+		animationStrength: 88,
+		eventAt: 68,
+	}),
+	preset({
+		id: "product-earnings",
+		name: "Earnings Metric",
+		description: "Compact counting money pill",
+		template: "metric-pill",
+		label: "$",
+		secondary: "Earnings",
+		count: 5000,
+		accent: "#5DE6A8",
+		background: "#050505",
+		foreground: "#FFFFFF",
+		category: "metrics",
+		keywords: ["earnings", "money", "revenue", "counter", "metric"],
+		whenToUse: "Use when a spoken money amount needs a compact proof object.",
+		animationIn: "counter-count-up",
+		animationOut: "counter-metric-dim",
+		animationInEnd: 34,
+		animationOutStart: 88,
+		eventAt: 66,
+	}),
+	preset({
+		id: "product-followers",
+		name: "Follower Metric",
+		description: "Compact social count pill",
+		template: "metric-pill",
+		label: "",
+		secondary: "Followers",
+		count: 100000,
+		accent: "#5A8CFF",
+		background: "#050505",
+		foreground: "#FFFFFF",
+		category: "social",
+		keywords: ["followers", "audience", "social", "counter", "growth"],
+		whenToUse: "Use for audience, views, subscribers, or social proof.",
+		animationIn: "counter-metric-glow",
+		animationOut: "counter-stat-fade",
+		animationInEnd: 32,
+		animationOutStart: 88,
+		eventAt: 64,
+	}),
+	preset({
+		id: "product-folder",
+		name: "Folder Chip",
+		description: "Animated file or folder status chip",
+		template: "folder-pill",
+		label: "Project Files",
+		secondary: "3 items",
+		accent: "#4EA1FF",
+		background: "#050505",
+		foreground: "#FFFFFF",
+		category: "workflow",
+		keywords: ["folder", "files", "download", "project", "storage"],
+		whenToUse:
+			"Use for files, downloads, folders, assets, or project handoffs.",
+		animationIn: "card-panel-rise",
+		animationOut: "card-panel-drop",
+		animationInEnd: 22,
+		animationOutStart: 84,
+		eventAt: 55,
+	}),
+	preset({
+		id: "product-message-left",
+		name: "Message Left",
+		description: "Minimal avatar message from the left",
+		template: "avatar-message-left",
+		label: "Message content",
+		secondary: "Today",
+		accent: "#4EA1FF",
+		background: "#F7F7F5",
+		foreground: "#151515",
+		category: "communication",
+		keywords: ["message", "chat", "avatar", "dm", "left"],
+		whenToUse:
+			"Use for the first participant in a conversation or testimonial.",
+		animationIn: "chat-slide-thread",
+		animationOut: "chat-slide-away",
+		animationInEnd: 24,
+		animationOutStart: 86,
+		eventAt: 62,
+	}),
+	preset({
+		id: "product-message-right",
+		name: "Message Right",
+		description: "Minimal avatar message from the right",
+		template: "avatar-message-right",
+		label: "Reply content",
+		secondary: "Now",
+		accent: "#4EA1FF",
+		background: "#F7F7F5",
+		foreground: "#151515",
+		category: "communication",
+		keywords: ["message", "chat", "avatar", "dm", "right", "reply"],
+		whenToUse: "Use for the reply side of a conversation or comparison.",
+		animationIn: "chat-glow-reply",
+		animationOut: "chat-soft-fold",
+		animationInEnd: 24,
+		animationOutStart: 86,
+		eventAt: 62,
+	}),
+	preset({
+		id: "product-team",
+		name: "Team Stack",
+		description: "Sequential overlapping profile group",
+		template: "profile-stack",
+		label: "Your team",
+		count: 4,
+		accent: "#4EA1FF",
+		background: "#050505",
+		foreground: "#FFFFFF",
+		category: "social",
+		keywords: ["team", "people", "profiles", "avatars", "community"],
+		whenToUse: "Use for teams, customers, collaborators, or communities.",
+		animationIn: "card-social-slide",
+		animationOut: "card-dots-fade",
+		animationInEnd: 28,
+		animationOutStart: 86,
+		eventAt: 64,
+	}),
+	preset({
+		id: "product-notification",
+		name: "App Alert",
+		description: "Compact app notification with ping event",
+		template: "app-notification",
+		label: "New sale",
+		secondary: "A new order just arrived",
+		accent: "#5DE6A8",
+		background: "#F7F7F5",
+		foreground: "#151515",
+		category: "status",
+		keywords: ["notification", "alert", "app", "sale", "message"],
+		whenToUse: "Use for alerts, purchases, updates, or status changes.",
+		animationIn: "chat-notification-drop",
+		animationOut: "chat-notification-swipe",
+		animationInEnd: 22,
+		animationOutStart: 84,
+		animationStrength: 84,
+		eventAt: 58,
+	}),
+	preset({
+		id: "editorial-feature-checklist",
+		name: "Feature Proof Checklist",
+		description:
+			"Dark editorial checklist that confirms spoken features in order",
+		template: "checkbox-list",
+		label: "Everything you see.",
+		items: "Motion graphics\nColour grading\nSFX",
+		checked: 3,
+		accent: "#D8DBDE",
+		background: "#24272A",
+		foreground: "#FFFFFF",
+		category: "proof",
+		keywords: ["features", "checklist", "proof", "editing", "deliverables"],
+		whenToUse:
+			"Use when the speaker names two to four delivered features and each row should confirm in sequence.",
+		defaultDurationSeconds: 5.2,
+		animationIn: "list-one-by-one",
+		animationOut: "list-fade-stagger",
+		animationInEnd: 30,
+		animationOutStart: 90,
+		animationStrength: 72,
+		eventAt: 64,
+	}),
+	{
+		id: "rtl-cancellation-checklist-sfx",
+		name: "Cancellation Checklist — RTL + SFX",
+		description:
+			"Hebrew RTL checklist that turns red on cancellation and exits with a stationary blur zoom",
+		category: "argument",
+		keywords: [
+			"rtl",
+			"hebrew",
+			"checklist",
+			"cancel",
+			"red",
+			"glitch",
+			"sfx",
+		],
+		whenToUse:
+			"Use when spoken excuses appear one by one, then the argument is cancelled with a red state and synchronized glitch.",
+		defaultDurationSeconds: 5.625,
+		params: RTL_CANCELLATION_CHECKLIST_PARAMS,
+		bundle: {
+			graphics: [
+				{
+					name: "Cancellation Checklist — RTL",
+					definitionId: UI_ELEMENT_DEFINITION_ID,
+					startOffsetSeconds: 0,
+					durationSeconds: 5.625,
+					params: RTL_CANCELLATION_CHECKLIST_PARAMS,
+				},
+			],
+			audio: [
+				{
+					name: "alexzavesa-woosh-glitch-1-463012",
+					libraryAssetId: CANCELLATION_CHECKLIST_GLITCH_ASSET_ID,
+					startOffsetSeconds: 4.745,
+					durationSeconds: 1.985281,
+					sourceDurationSeconds: 1.985281,
+					trimStartSeconds: 0,
+					trimEndSeconds: 0,
+					params: {
+						fadeInDuration: 0,
+						fadeOutDuration: 0.12,
+						muted: false,
+						volume: -6,
+					},
+				},
+			],
+		},
+	},
+	preset({
+		id: "editorial-reject-task",
+		name: "Reject Task",
+		description: "Readable task enters first, then checks and rejects in red",
+		template: "checkbox-list",
+		label: "Stop wasting money",
+		items: "Testing editors",
+		checked: 1,
+		accent: "#E04747",
+		background: "#25282B",
+		foreground: "#FFFFFF",
+		category: "argument",
+		keywords: ["reject", "stop", "task", "strike", "negative", "editor"],
+		whenToUse:
+			"Use for a spoken behavior that must remain readable before a red check, strike, or rejection event.",
+		defaultDurationSeconds: 3,
+		animationIn: "list-all-then-check",
+		animationOut: "list-sweep-clear",
+		animationInEnd: 26,
+		animationOutStart: 86,
+		animationStrength: 82,
+		eventAt: 62,
+	}),
+	preset({
+		id: "editorial-comment-reply",
+		name: "Comment Reply",
+		description: "Compact creator comment prompt with a typed reply event",
+		template: "app-notification",
+		label: "@creator",
+		secondary: "Comment: Kallaway",
+		accent: "#EF4444",
+		background: "#F8F8F5",
+		foreground: "#171717",
+		category: "social",
+		keywords: ["comment", "reply", "creator", "cta", "social", "typing"],
+		whenToUse:
+			"Use for a comment-keyword CTA; time the typed keyword and confirmation event to the spoken instruction.",
+		defaultDurationSeconds: 3.5,
+		animationIn: "chat-message-type",
+		animationOut: "chat-soft-fold",
+		animationInEnd: 34,
+		animationOutStart: 88,
+		animationStrength: 76,
+		eventAt: 68,
+	}),
 	preset({
 		id: "neon-cta",
 		name: "Neon CTA",

@@ -5,6 +5,13 @@ import type { ElementType, TimelineElement } from "@/timeline";
 import { DEFAULTS } from "@/timeline/defaults";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import { CORNER_RADIUS_MAX, CORNER_RADIUS_MIN } from "@/text/background";
+import {
+	CAMERA_DEPTH_MAX,
+	CAMERA_DEPTH_MIN,
+	CAMERA_DEPTH_PARAM,
+	CAMERA_LOCKED_PARAM,
+	DEFAULT_CAMERA_DEPTH,
+} from "@/effects/virtual-camera";
 
 const FONT_WEIGHT_OPTIONS = [
 	{ value: "normal", label: "Normal" },
@@ -167,6 +174,23 @@ const visualElementParams: ElementParamDefinition[] = [
 		default: DEFAULTS.element.blendMode,
 		keyframable: false,
 		options: BLEND_MODE_OPTIONS,
+	},
+	{
+		key: CAMERA_DEPTH_PARAM,
+		label: "Camera Depth",
+		type: "number",
+		default: DEFAULT_CAMERA_DEPTH,
+		min: CAMERA_DEPTH_MIN,
+		max: CAMERA_DEPTH_MAX,
+		step: 0.05,
+		keyframable: false,
+	},
+	{
+		key: CAMERA_LOCKED_PARAM,
+		label: "Camera Lock",
+		type: "boolean",
+		default: false,
+		keyframable: false,
 	},
 ];
 
@@ -360,6 +384,14 @@ const textElementParams: ElementParamDefinition[] = [
 		keyframable: false,
 	},
 	{
+		key: "shadow.window",
+		label: "Window Shadow",
+		type: "boolean",
+		default: DEFAULTS.text.shadow.window,
+		keyframable: false,
+		dependencies: [{ param: "shadow.enabled", equals: true }],
+	},
+	{
 		key: "shadow.color",
 		label: "Shadow Color",
 		type: "color",
@@ -405,6 +437,30 @@ const textElementParams: ElementParamDefinition[] = [
 		type: "boolean",
 		default: DEFAULTS.text.background.enabled,
 		keyframable: false,
+	},
+	// Migration status: classic-only until the rewrite gains text-style
+	// controls and matching glyph-mask rendering.
+	{
+		key: "bottomFadeOut",
+		label: "Bottom Fade Out",
+		type: "number",
+		default: DEFAULTS.text.bottomFadeOut,
+		min: 0,
+		max: 100,
+		step: 1,
+		displayMultiplier: 100,
+		shortLabel: "%",
+	},
+	{
+		key: "bottomFadeOutEndOpacity",
+		label: "Fade Out End Opacity",
+		type: "number",
+		default: DEFAULTS.text.bottomFadeOutEndOpacity,
+		min: 0,
+		max: 100,
+		step: 1,
+		displayMultiplier: 100,
+		shortLabel: "%",
 	},
 	{
 		key: "background.color",

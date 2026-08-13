@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -19,10 +19,13 @@ import {
 } from "@/components/section";
 import { useEditor } from "@/editor/use-editor";
 import type { TextElement, TimelineElement } from "@/timeline";
+import { getDisplayTracks } from "@/timeline";
 import {
 	DEFAULT_TRANSITION_PERCENT,
 	TRANSITION_PRESETS,
+	arrangeOverlappingTextTransitions,
 	clampTransitionPercent,
+	getOverlappingTextTransitionEntries,
 } from "@/transitions";
 import { mediaTimeToSeconds } from "@/wasm";
 import type { ElementWithTrackForParams } from "./element-params-tab";
@@ -90,13 +93,9 @@ export function TextTransitionsTab({
 			}),
 		});
 	};
-	const targets = useMemo(
-		() =>
-			elementsWithTracks?.length
-				? elementsWithTracks
-				: [{ track: { id: trackId }, element }],
-		[elementsWithTracks, trackId, element],
-	);
+	const targets = elementsWithTracks?.length
+		? elementsWithTracks
+		: [{ track: { id: trackId }, element }];
 	const [inTransitionId, setInTransitionId] = useState(
 		element.transitions?.in?.presetId ?? "fade",
 	);
@@ -151,6 +150,68 @@ export function TextTransitionsTab({
 				];
 			}),
 		});
+	};
+
+	const getAllTextEntries = () =>
+		getDisplayTracks({ tracks: editor.scenes.getActiveScene().tracks }).flatMap(
+			(track) =>
+				track.type === "text"
+					? track.elements.map((textElement) => ({
+							trackId: track.id,
+							element: textElement,
+						}))
+					: [],
+		);
+
+	const selectedTextEntries = targets.flatMap((target) =>
+		target.element.type === "text"
+			? [{ trackId: target.track.id, element: target.element }]
+			: [],
+	);
+	const selectedOverlappingTextEntries =
+		getOverlappingTextTransitionEntries(selectedTextEntries);
+	const allOverlappingTextEntries =
+		getOverlappingTextTransitionEntries(getAllTextEntries());
+
+	const applyAndArrange = (entries: typeof selectedTextEntries) => {
+		const overlappingEntries = getOverlappingTextTransitionEntries(entries);
+		if (overlappingEntries.length < 2) return;
+
+		editor.timeline.applyTransitions({
+			applications: overlappingEntries.flatMap(({ trackId, element }) => [
+				{
+					trackId,
+					elementId: element.id,
+					presetId: inTransitionId,
+					side: "in" as const,
+					percent: inPercent,
+				},
+				{
+					trackId,
+					elementId: element.id,
+					presetId: outTransitionId,
+					side: "out" as const,
+					percent: outPercent,
+				},
+			]),
+		});
+
+		const refreshedEntries = editor.timeline
+			.getElementsWithTracks({
+				elements: overlappingEntries.map(({ trackId, element }) => ({
+					trackId,
+					elementId: element.id,
+				})),
+			})
+			.flatMap(({ track, element }) =>
+				element.type === "text" ? [{ trackId: track.id, element }] : [],
+			);
+		const updates = arrangeOverlappingTextTransitions({
+			entries: refreshedEntries,
+		});
+		if (updates.length > 0) {
+			editor.timeline.updateElements({ updates });
+		}
 	};
 
 	if (isScopedWordTransition) {
@@ -384,6 +445,22 @@ export function TextTransitionsTab({
 					</SectionField>
 					<Button type="button" onClick={applyTransitions}>
 						Apply transitions
+					</Button>
+					<Button
+						type="button"
+						variant="secondary"
+						disabled={selectedOverlappingTextEntries.length < 2}
+						onClick={() => applyAndArrange(selectedTextEntries)}
+					>
+						Apply &amp; arrange selected
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						disabled={allOverlappingTextEntries.length < 2}
+						onClick={() => applyAndArrange(getAllTextEntries())}
+					>
+						Apply &amp; arrange all text
 					</Button>
 				</SectionFields>
 			</SectionContent>

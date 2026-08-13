@@ -1,0 +1,60 @@
+{
+  "name": "@opencut/electron",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --kill-others --success first \"bun run dev:web\" \"bun run dev:shell\"",
+    "dev:web": "bun run --cwd ../web dev",
+    "dev:shell": "wait-on http-get://127.0.0.1:3000 && cross-env OPENCUT_ELECTRON_URL=http://127.0.0.1:3000 electron app",
+    "build:web": "bun run --cwd ../.. build:wasm && bun run --cwd ../web assets:verify && bun run --cwd ../web build:electron",
+    "pack": "bun run build:web && node scripts/package.cjs --dir",
+    "dist": "bun run build:web && node scripts/package.cjs",
+    "test": "bun test test/runtime.test.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^43.4.0",
+    "electron-builder": "25.1.8",
+    "wait-on": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.opencut.electron",
+    "productName": "OpenCut",
+    "asar": true,
+    "npmRebuild": false,
+    "directories": {
+      "app": "app",
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "../web/.next/standalone",
+        "to": "app-server"
+      },
+      {
+        "from": "../web/.next/static",
+        "to": "app-server/apps/web/.next/static"
+      },
+      {
+        "from": "../web/public",
+        "to": "app-server/apps/web/public"
+      }
+    ],
+    "icon": "../web/public/icons/ms-icon-310x310.png",
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.video"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "AudioVideo"
+    },
+    "artifactName": "OpenCut-Electron-${version}-${os}-${arch}.${ext}"
+  }
+}

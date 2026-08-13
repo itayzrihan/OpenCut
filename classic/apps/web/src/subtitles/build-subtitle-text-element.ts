@@ -17,6 +17,7 @@ import type {
 } from "@/text/primitives";
 import {
 	getCaptionGridCell,
+	resolveCaptionBottomFadeOut,
 	stripCaptionPunctuation,
 	type CaptionLayoutSettings,
 } from "./caption-layout";
@@ -438,6 +439,9 @@ export function buildSubtitleTextElement({
 			letterSpacing: style.letterSpacing,
 			lineHeight: style.lineHeight,
 			"background.enabled": style.background.enabled,
+			bottomFadeOut: resolveCaptionBottomFadeOut({
+				settings: layoutSettings,
+			}),
 			"background.color": style.background.color,
 			"background.cornerRadius":
 				style.background.cornerRadius ?? DEFAULTS.text.background.cornerRadius,

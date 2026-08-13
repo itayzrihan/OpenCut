@@ -1,4 +1,5 @@
 import { clampAnimationsToDuration } from "@/animation";
+import { retimeElementTransitionsForDuration } from "@/transitions/apply";
 import {
 	clampRetimeRate,
 	getSourceSpanAtClipTime,
@@ -95,15 +96,25 @@ const deriveRules: ElementUpdateRule[] = [
 const enforceRules: ElementUpdateRule[] = [
 	{
 		triggers: ["duration"],
-		apply: ({ element }) => ({
-			element: {
-				...element,
-				animations: clampAnimationsToDuration({
-					animations: element.animations,
-					duration: element.duration,
-				}),
-			},
-		}),
+		apply: ({ element, originalElement, patch }) => {
+			const elementWithAnchoredTransitions =
+				Object.prototype.hasOwnProperty.call(patch, "transitions")
+					? element
+					: retimeElementTransitionsForDuration({
+							element,
+							previousDuration: originalElement.duration,
+						});
+
+			return {
+				element: {
+					...elementWithAnchoredTransitions,
+					animations: clampAnimationsToDuration({
+						animations: elementWithAnchoredTransitions.animations,
+						duration: elementWithAnchoredTransitions.duration,
+					}),
+				},
+			};
+		},
 	},
 	{
 		triggers: ["startTime"],

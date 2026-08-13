@@ -1,4 +1,5 @@
 import { drawCssBackground } from "@/gradients";
+import { getGraphicDefinition, getGraphicLayoutSize } from "@/graphics";
 import { getMaskDefinition } from "@/masks";
 import { incrementCounter } from "@/diagnostics/render-perf";
 import type { AnyBaseNode } from "../nodes/base-node";
@@ -22,7 +23,12 @@ import { RootNode } from "../nodes/root-node";
 import { StickerNode } from "../nodes/sticker-node";
 import { renderTextToContext, TextNode } from "../nodes/text-node";
 import { VideoNode } from "../nodes/video-node";
+import { SpeakerFrameBreakoutNode } from "../nodes/speaker-frame-breakout-node";
+import { ParallaxSceneNode } from "../nodes/parallax-scene-node";
 import type { ResolvedVisualSourceNodeState } from "../nodes/visual-node";
+import { resolveCameraDepthFactor } from "@/effects/virtual-camera";
+import { getParallaxWorldOriginOffset } from "@/parallax-story-teller/camera-geometry";
+import { isStaticRenderNode } from "../static-node-cache";
 import type {
 	FrameDescriptor,
 	FrameItemDescriptor,
@@ -33,6 +39,30 @@ import type {
 } from "./types";
 
 type RendererSize = Pick<CanvasRenderer, "width" | "height">;
+
+type CameraLayerMetadata = {
+	depth: number;
+	locked: boolean;
+	motionFactor?: number;
+};
+
+type CameraAwareLayer = Extract<FrameItemDescriptor, { type: "layer" }> &
+	Record<symbol, CameraLayerMetadata | undefined>;
+
+type StaticFrameFragment = {
+	path: string;
+	width: number;
+	height: number;
+	params: object | undefined;
+	resolved: unknown;
+	items: FrameItemDescriptor[];
+	textures: TextureUploadDescriptor[];
+};
+
+const staticFrameFragmentCache = new WeakMap<
+	AnyBaseNode,
+	StaticFrameFragment
+>();
 
 export async function buildFrameDescriptor({
 	node,
@@ -71,7 +101,95 @@ export async function buildFrameDescriptor({
 	};
 }
 
-async function collectNode({
+async function collectNode(args: {
+	node: AnyBaseNode;
+	renderer: RendererSize;
+	path: string;
+	items: FrameItemDescriptor[];
+	textures: Map<string, TextureUploadDescriptor>;
+}): Promise<void> {
+	const { node, renderer, path, items, textures } = args;
+	if (!isStaticRenderNode(node)) {
+		await collectNodeUncached(args);
+		return;
+	}
+
+	const cached = staticFrameFragmentCache.get(node);
+	if (
+		cached &&
+		cached.path === path &&
+		cached.width === renderer.width &&
+		cached.height === renderer.height &&
+		cached.params === node.params &&
+		cached.resolved === node.resolved
+	) {
+		incrementCounter({ name: "frameCache.staticNodeHit" });
+		appendFrameFragment({ fragment: cached, items, textures });
+		return;
+	}
+
+	const fragment: StaticFrameFragment = {
+		path,
+		width: renderer.width,
+		height: renderer.height,
+		params: node.params,
+		resolved: node.resolved,
+		items: [],
+		textures: [],
+	};
+	const fragmentTextures = new Map<string, TextureUploadDescriptor>();
+	await collectNodeUncached({
+		...args,
+		items: fragment.items,
+		textures: fragmentTextures,
+	});
+	fragment.textures = [...fragmentTextures.values()];
+	staticFrameFragmentCache.set(node, fragment);
+	appendFrameFragment({ fragment, items, textures });
+}
+
+function appendFrameFragment({
+	fragment,
+	items,
+	textures,
+}: {
+	fragment: StaticFrameFragment;
+	items: FrameItemDescriptor[];
+	textures: Map<string, TextureUploadDescriptor>;
+}): void {
+	// Overlay movement applies transforms in place. Keep cached fragments
+	// immutable so a dynamic effect cannot accumulate its transform into the
+	// static cache and corrupt later frames.
+	items.push(...fragment.items.map(cloneFrameItemForFrame));
+	for (const texture of fragment.textures) {
+		textures.set(texture.id, texture);
+	}
+}
+
+function cloneFrameItemForFrame(
+	item: FrameItemDescriptor,
+): FrameItemDescriptor {
+	if (item.type === "layer") {
+		return {
+			...item,
+			transform: { ...item.transform },
+		};
+	}
+
+	if (item.type === "group") {
+		return {
+			...item,
+			items: item.items.map(cloneFrameItemForFrame),
+		};
+	}
+
+	return {
+		...item,
+		effect_pass_groups: item.effect_pass_groups,
+	};
+}
+
+async function collectNodeUncached({
 	node,
 	renderer,
 	path,
@@ -115,7 +233,7 @@ async function collectNode({
 				}
 			},
 		});
-		items.push({
+		const layer: Extract<FrameItemDescriptor, { type: "layer" }> = {
 			type: "layer",
 			textureId,
 			transform: fullCanvasTransform({ renderer }),
@@ -123,7 +241,69 @@ async function collectNode({
 			blendMode: "normal",
 			effectPassGroups: [],
 			mask: null,
+		};
+		setCameraLayerMetadata({
+			layer,
+			depth: 1,
+			locked: node.params.screenLocked ?? false,
 		});
+		items.push(layer);
+		return;
+	}
+
+	if (node instanceof SpeakerFrameBreakoutNode) {
+		collectSpeakerFrameBreakout({
+			node,
+			renderer,
+			path,
+			items,
+			textures,
+		});
+		return;
+	}
+
+	if (node instanceof ParallaxSceneNode) {
+		if (!node.resolved) return;
+		const nestedItems: FrameItemDescriptor[] = [];
+		for (let index = 0; index < node.children.length; index++) {
+			await collectNode({
+				node: node.children[index],
+				renderer,
+				path: `${path}:parallax:${index}`,
+				items: nestedItems,
+				textures,
+			});
+		}
+		rebaseParallaxWorldLayers({
+			items: nestedItems,
+			cameraWidth: node.params.cameraWidth ?? renderer.width,
+			cameraHeight: node.params.cameraHeight ?? renderer.height,
+			worldWidthFrames: node.params.worldWidthFrames,
+			worldHeightFrames: node.params.worldHeightFrames,
+		});
+		applyOverlayMovementToCollectedLayers({
+			movement: node.resolved.movement,
+			renderer,
+			cameraWidth: node.params.cameraWidth,
+			cameraHeight: node.params.cameraHeight,
+			items: nestedItems,
+		});
+		if (node.resolved.motionLoop) {
+			applyParallaxMotionLoopToCollectedLayers({
+				motionLoop: node.resolved.motionLoop,
+				cameraWidth: node.params.cameraWidth ?? renderer.width,
+				cameraHeight: node.params.cameraHeight ?? renderer.height,
+				items: nestedItems,
+			});
+		}
+		if (nestedItems.length > 0) {
+			items.push({
+				type: "group",
+				items: nestedItems,
+				opacity: 1,
+				blendMode: "normal",
+			});
+		}
 		return;
 	}
 
@@ -150,6 +330,8 @@ async function collectNode({
 			applyOverlayMovementToCollectedLayers({
 				movement: node.resolved.movement,
 				renderer,
+				cameraWidth: node.params.cameraWidth,
+				cameraHeight: node.params.cameraHeight,
 				items,
 			});
 			if (node.resolved.movement.flashAlpha > 0) {
@@ -221,7 +403,7 @@ async function collectNode({
 				);
 			},
 		});
-		items.push({
+		const layer: Extract<FrameItemDescriptor, { type: "layer" }> = {
 			type: "layer",
 			textureId,
 			transform: fullCanvasTransform({ renderer }),
@@ -229,7 +411,13 @@ async function collectNode({
 			blendMode: "normal",
 			effectPassGroups: [passes],
 			mask: null,
+		};
+		setCameraLayerMetadata({
+			layer,
+			depth: 1,
+			locked: true,
 		});
+		items.push(layer);
 		return;
 	}
 
@@ -260,21 +448,339 @@ async function collectNode({
 	}
 }
 
+function rebaseParallaxWorldLayers({
+	items,
+	cameraWidth,
+	cameraHeight,
+	worldWidthFrames,
+	worldHeightFrames,
+}: {
+	items: FrameItemDescriptor[];
+	cameraWidth: number;
+	cameraHeight: number;
+	worldWidthFrames: number;
+	worldHeightFrames: number;
+}) {
+	const offset = getParallaxWorldOriginOffset({
+		cameraWidth,
+		cameraHeight,
+		worldWidthFrames,
+		worldHeightFrames,
+	});
+	for (const item of items) {
+		if (item.type === "group") {
+			rebaseParallaxWorldLayers({
+				items: item.items,
+				cameraWidth,
+				cameraHeight,
+				worldWidthFrames,
+				worldHeightFrames,
+			});
+			continue;
+		}
+		if (item.type !== "layer") continue;
+		item.transform = {
+			...item.transform,
+			centerX: item.transform.centerX - offset.x,
+			centerY: item.transform.centerY - offset.y,
+		};
+	}
+}
+
+function collectSpeakerFrameBreakout({
+	node,
+	renderer,
+	path,
+	items,
+	textures,
+}: {
+	node: SpeakerFrameBreakoutNode;
+	renderer: RendererSize;
+	path: string;
+	items: FrameItemDescriptor[];
+	textures: Map<string, TextureUploadDescriptor>;
+}) {
+	const resolved = node.resolved;
+	if (!resolved || resolved.opacity <= 0) return;
+	const { width: canvasWidth, height: canvasHeight } = renderer;
+	const groupItems: Array<Extract<FrameItemDescriptor, { type: "layer" }>> = [];
+	const existingSourceTexture = [...textures.values()].find(
+		(texture) =>
+			texture.kind === "external" && texture.source === resolved.source,
+	);
+	const sourceTextureId = existingSourceTexture?.id ?? `${path}:speaker-source`;
+	if (!existingSourceTexture) {
+		textures.set(sourceTextureId, {
+			kind: "external",
+			id: sourceTextureId,
+			source: resolved.source,
+			width: resolved.sourceWidth,
+			height: resolved.sourceHeight,
+		});
+	}
+
+	const backgroundTextureId = `${path}:speaker-background`;
+	const backgroundDefinition = getGraphicDefinition({
+		definitionId: "preset-background",
+	});
+	const backgroundStyle = String(resolved.backgroundParams.preset ?? "clean");
+	const backgroundTimeKey = isAnimatedBackgroundStyle(backgroundStyle)
+		? `:${resolved.localTime.toFixed(3)}`
+		: "";
+	textures.set(backgroundTextureId, {
+		kind: "rendered",
+		id: backgroundTextureId,
+		contentHash: `speaker-background:${canvasWidth}x${canvasHeight}:${JSON.stringify(resolved.backgroundParams)}${backgroundTimeKey}`,
+		width: canvasWidth,
+		height: canvasHeight,
+		draw: (ctx) => {
+			backgroundDefinition.render({
+				ctx,
+				params: resolved.backgroundParams,
+				width: canvasWidth,
+				height: canvasHeight,
+				localTime: resolved.localTime,
+				duration: node.params.duration,
+			});
+		},
+	});
+	const backgroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
+		type: "layer",
+		textureId: backgroundTextureId,
+		transform: fullCanvasTransform({ renderer }),
+		opacity: 1,
+		blendMode: "normal",
+		effectPassGroups: [],
+		mask: null,
+	};
+	setCameraLayerMetadata({
+		layer: backgroundLayer,
+		depth: resolved.cameraDepth,
+		locked: resolved.cameraLocked,
+	});
+	groupItems.push(backgroundLayer);
+
+	const containScale = Math.min(
+		canvasWidth / resolved.sourceWidth,
+		canvasHeight / resolved.sourceHeight,
+	);
+	const scaledWidth =
+		resolved.sourceWidth * containScale * resolved.transform.scaleX;
+	const scaledHeight =
+		resolved.sourceHeight * containScale * resolved.transform.scaleY;
+	const transform: QuadTransformDescriptor = {
+		centerX: canvasWidth / 2 + resolved.transform.position.x,
+		centerY: canvasHeight / 2 + resolved.transform.position.y,
+		width: Math.abs(scaledWidth),
+		height: Math.abs(scaledHeight),
+		rotationDegrees: resolved.transform.rotate,
+		perspectiveXDegrees: resolved.transform.perspectiveX,
+		perspectiveYDegrees: resolved.transform.perspectiveY,
+		flipX: scaledWidth < 0,
+		flipY: scaledHeight < 0,
+	};
+
+	const frameMaskTextureId = `${path}:speaker-frame-mask`;
+	textures.set(frameMaskTextureId, {
+		kind: "rendered",
+		id: frameMaskTextureId,
+		contentHash: [
+			"speaker-frame-mask",
+			canvasWidth,
+			canvasHeight,
+			transformHash(transform),
+			resolved.cropTop,
+			resolved.cornerRadius,
+		].join(":"),
+		width: canvasWidth,
+		height: canvasHeight,
+		draw: (ctx) => {
+			const safeCropTop = Math.max(0, Math.min(0.95, resolved.cropTop));
+			const height = transform.height * (1 - safeCropTop);
+			const radius =
+				Math.max(0, Math.min(0.5, resolved.cornerRadius)) *
+				Math.min(transform.width, height);
+			const { canvas: localMask, context: localContext } = createCanvasSurface({
+				width: Math.max(1, Math.round(transform.width)),
+				height: Math.max(1, Math.round(transform.height)),
+			});
+			localContext.fillStyle = "white";
+			localContext.beginPath();
+			localContext.roundRect(
+				0,
+				transform.height * safeCropTop,
+				transform.width,
+				height,
+				radius,
+			);
+			localContext.fill();
+			drawTransformedCanvas({
+				ctx,
+				source: localMask,
+				transform,
+			});
+		},
+	});
+	const baseLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
+		type: "layer",
+		textureId: sourceTextureId,
+		transform,
+		opacity: resolved.sourceOpacity,
+		blendMode: resolved.blendMode,
+		effectPassGroups: resolved.effectPassGroups,
+		mask: {
+			textureId: frameMaskTextureId,
+			feather: 0,
+			inverted: false,
+		},
+	};
+	setCameraLayerMetadata({
+		layer: baseLayer,
+		depth: resolved.cameraDepth,
+		locked: resolved.cameraLocked,
+	});
+	groupItems.push(baseLayer);
+
+	if (resolved.mask) {
+		const matteTextureId = `${path}:speaker-matte`;
+		textures.set(matteTextureId, {
+			kind: "external",
+			id: matteTextureId,
+			source: resolved.mask.canvas,
+			width: resolved.mask.width,
+			height: resolved.mask.height,
+		});
+		const breakoutMaskTextureId = `${path}:speaker-breakout-region`;
+		textures.set(breakoutMaskTextureId, {
+			kind: "rendered",
+			id: breakoutMaskTextureId,
+			contentHash: [
+				"speaker-breakout-region",
+				canvasWidth,
+				canvasHeight,
+				transformHash(transform),
+				resolved.cropTop,
+			].join(":"),
+			width: canvasWidth,
+			height: canvasHeight,
+			draw: (ctx) => {
+				const safeCropTop = Math.max(0, Math.min(0.95, resolved.cropTop));
+				const { canvas: localMask, context: localContext } =
+					createCanvasSurface({
+						width: Math.max(1, Math.round(transform.width)),
+						height: Math.max(1, Math.round(transform.height)),
+					});
+				localContext.fillStyle = "white";
+				localContext.fillRect(
+					0,
+					0,
+					transform.width,
+					Math.min(transform.height, transform.height * safeCropTop + 2),
+				);
+				drawTransformedCanvas({
+					ctx,
+					source: localMask,
+					transform,
+				});
+			},
+		});
+		const foregroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
+			type: "layer",
+			textureId: sourceTextureId,
+			transform,
+			opacity: resolved.sourceOpacity,
+			blendMode: resolved.blendMode,
+			effectPassGroups: resolved.effectPassGroups,
+			sourceMask: { textureId: matteTextureId, inverted: false },
+			mask: {
+				textureId: breakoutMaskTextureId,
+				feather: 0,
+				inverted: false,
+			},
+		};
+		setCameraLayerMetadata({
+			layer: foregroundLayer,
+			depth: resolved.cameraDepth,
+			locked: resolved.cameraLocked,
+		});
+		groupItems.push(foregroundLayer);
+	}
+	items.push({
+		type: "group",
+		items: groupItems,
+		opacity: resolved.opacity,
+		blendMode: "normal",
+	});
+}
+
+function isAnimatedBackgroundStyle(style: string): boolean {
+	switch (style) {
+		case "grid-waves":
+		case "waves":
+		case "snow-screen":
+		case "retro-film":
+		case "aurora":
+		case "bokeh":
+		case "snowfall":
+		case "pixel-rain":
+		case "vhs-bars":
+		case "film-burn":
+		case "dust":
+		case "scratches":
+		case "rain":
+		case "embers":
+		case "smoke":
+			return true;
+		default:
+			return false;
+	}
+}
+
 function applyOverlayMovementToCollectedLayers({
 	movement,
 	renderer,
+	cameraWidth,
+	cameraHeight,
 	items,
 }: {
 	movement: OverlayMovementFrame;
 	renderer: RendererSize;
+	cameraWidth?: number;
+	cameraHeight?: number;
 	items: FrameItemDescriptor[];
 }) {
 	for (const item of items) {
+		if (item.type === "group") {
+			applyOverlayMovementToCollectedLayers({
+				movement,
+				renderer,
+				cameraWidth,
+				cameraHeight,
+				items: item.items,
+			});
+			continue;
+		}
 		if (item.type !== "layer") continue;
+		const metadata = getCameraLayerMetadata(item);
+		if (metadata.locked) continue;
+		const depthFactor =
+			metadata.motionFactor ??
+			resolveCameraDepthFactor({
+				depth: metadata.depth,
+				parallaxStrength: movement.parallaxStrength,
+			});
+		const translationFactor = metadata.motionFactor ?? depthFactor;
+		const scaleFactor =
+			metadata.motionFactor === undefined
+				? depthFactor
+				: Math.abs(metadata.motionFactor);
 		item.transform = transformQuad({
 			transform: item.transform,
 			movement,
-			renderer,
+			cameraWidth: cameraWidth ?? renderer.width,
+			cameraHeight: cameraHeight ?? renderer.height,
+			depthFactor: scaleFactor,
+			translationFactor,
 		});
 	}
 }
@@ -282,27 +788,112 @@ function applyOverlayMovementToCollectedLayers({
 function transformQuad({
 	transform,
 	movement,
-	renderer,
+	cameraWidth,
+	cameraHeight,
+	depthFactor,
+	translationFactor,
 }: {
 	transform: QuadTransformDescriptor;
 	movement: OverlayMovementFrame;
-	renderer: RendererSize;
+	cameraWidth: number;
+	cameraHeight: number;
+	depthFactor: number;
+	translationFactor: number;
 }): QuadTransformDescriptor {
-	const originX = renderer.width / 2;
-	const originY = renderer.height / 2;
-	const offsetX = (transform.centerX - originX) * movement.scale;
-	const offsetY = (transform.centerY - originY) * movement.scale;
-	const radians = (movement.rotate * Math.PI) / 180;
+	const effectiveScale = Math.max(0.01, 1 + (movement.scale - 1) * depthFactor);
+	const effectiveRotate = movement.rotate * depthFactor;
+	const originX = cameraWidth / 2;
+	const originY = cameraHeight / 2;
+	const offsetX = (transform.centerX - originX) * effectiveScale;
+	const offsetY = (transform.centerY - originY) * effectiveScale;
+	const radians = (effectiveRotate * Math.PI) / 180;
 	const cos = Math.cos(radians);
 	const sin = Math.sin(radians);
 
 	return {
 		...transform,
-		centerX: originX + offsetX * cos - offsetY * sin + movement.translateX,
-		centerY: originY + offsetX * sin + offsetY * cos + movement.translateY,
-		width: transform.width * movement.scale,
-		height: transform.height * movement.scale,
-		rotationDegrees: transform.rotationDegrees + movement.rotate,
+		centerX:
+			originX +
+			offsetX * cos -
+			offsetY * sin +
+			movement.translateX * translationFactor,
+		centerY:
+			originY +
+			offsetX * sin +
+			offsetY * cos +
+			movement.translateY * translationFactor,
+		width: transform.width * effectiveScale,
+		height: transform.height * effectiveScale,
+		rotationDegrees: transform.rotationDegrees + effectiveRotate,
+	};
+}
+
+function applyParallaxMotionLoopToCollectedLayers({
+	motionLoop,
+	cameraWidth,
+	cameraHeight,
+	items,
+}: {
+	motionLoop: import("@/parallax-story-teller/motion-loop").ParallaxMotionLoopFrame;
+	cameraWidth: number;
+	cameraHeight: number;
+	items: FrameItemDescriptor[];
+}) {
+	for (const item of items) {
+		if (item.type === "group") {
+			applyParallaxMotionLoopToCollectedLayers({
+				motionLoop,
+				cameraWidth,
+				cameraHeight,
+				items: item.items,
+			});
+			continue;
+		}
+		if (item.type !== "layer") continue;
+		item.transform = transformParallaxStoryQuad({
+			transform: item.transform,
+			motionLoop,
+			cameraWidth,
+			cameraHeight,
+		});
+	}
+}
+
+function transformParallaxStoryQuad({
+	transform,
+	motionLoop,
+	cameraWidth,
+	cameraHeight,
+}: {
+	transform: QuadTransformDescriptor;
+	motionLoop: import("@/parallax-story-teller/motion-loop").ParallaxMotionLoopFrame;
+	cameraWidth: number;
+	cameraHeight: number;
+}): QuadTransformDescriptor {
+	const scale = Math.max(0.01, motionLoop.scale * motionLoop.safeScale);
+	const originX = cameraWidth / 2;
+	const originY = cameraHeight / 2;
+	const offsetX = (transform.centerX - originX) * scale;
+	const offsetY = (transform.centerY - originY) * scale;
+	const radians = (motionLoop.rotate * Math.PI) / 180;
+	const cos = Math.cos(radians);
+	const sin = Math.sin(radians);
+
+	return {
+		...transform,
+		centerX:
+			originX +
+			offsetX * cos -
+			offsetY * sin +
+			motionLoop.translateX,
+		centerY:
+			originY +
+			offsetX * sin +
+			offsetY * cos +
+			motionLoop.translateY,
+		width: transform.width * scale,
+		height: transform.height * scale,
+		rotationDegrees: transform.rotationDegrees + motionLoop.rotate,
 	};
 }
 
@@ -594,6 +1185,9 @@ async function collectVisualSourceNode({
 		source,
 		width: sourceWidth,
 		height: sourceHeight,
+		...(node instanceof GraphicNode
+			? { previewScaleMode: "frame" as const }
+			: {}),
 	});
 	const backgroundRemoval =
 		node instanceof VideoNode ? node.resolved.backgroundRemoval : undefined;
@@ -615,6 +1209,25 @@ async function collectVisualSourceNode({
 		resolved: node.resolved,
 		sourceWidth,
 		sourceHeight,
+		cameraWidth: node.params.cameraCanvasWidth,
+		cameraHeight: node.params.cameraCanvasHeight,
+		layoutSize:
+			node instanceof GraphicNode
+				? getGraphicLayoutSize({
+						definitionId: node.params.definitionId,
+						params: node.resolved.resolvedParams,
+					})
+				: null,
+		fitSourceSize:
+			node instanceof GraphicNode &&
+			!getGraphicLayoutSize({
+				definitionId: node.params.definitionId,
+				params: node.resolved.resolvedParams,
+			})
+				? getGraphicDefinition({
+						definitionId: node.params.definitionId,
+					}).sourceSize?.({ params: node.resolved.resolvedParams })
+				: null,
 	});
 	const { mask, strokeLayer } = buildMaskArtifacts({
 		node,
@@ -629,7 +1242,7 @@ async function collectVisualSourceNode({
 		sourceMaskTextureId &&
 		backgroundRemoval.settings.mode !== "remove"
 	) {
-		items.push({
+		const backgroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
 			type: "layer",
 			textureId,
 			transform,
@@ -641,10 +1254,12 @@ async function collectVisualSourceNode({
 			],
 			sourceMask: { textureId: sourceMaskTextureId, inverted: true },
 			mask,
-		});
+		};
+		setCameraLayerMetadataFromNode({ layer: backgroundLayer, node });
+		items.push(backgroundLayer);
 	}
 
-	items.push({
+	const foregroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
 		type: "layer",
 		textureId,
 		transform,
@@ -656,8 +1271,11 @@ async function collectVisualSourceNode({
 				? { textureId: sourceMaskTextureId, inverted: false }
 				: null,
 		mask,
-	});
-	if (strokeLayer) {
+	};
+	setCameraLayerMetadataFromNode({ layer: foregroundLayer, node });
+	items.push(foregroundLayer);
+	if (strokeLayer?.type === "layer") {
+		setCameraLayerMetadataFromNode({ layer: strokeLayer, node });
 		items.push(strokeLayer);
 	}
 }
@@ -680,7 +1298,12 @@ function collectTextNode({
 	}
 
 	const textureId = `${path}:text`;
-	const { width, height } = renderer;
+	const width = node.params.worldPinned
+		? (node.params.cameraCanvasWidth ?? renderer.width)
+		: renderer.width;
+	const height = node.params.worldPinned
+		? (node.params.cameraCanvasHeight ?? renderer.height)
+		: renderer.height;
 	// Text output is fully determined by node.params + node.resolved. Both are
 	// plain data we can stringify cheaply; the resolved measured layout is the
 	// expensive part of text setup, so stringifying it here is orders of
@@ -696,21 +1319,88 @@ function collectTextNode({
 		width,
 		height,
 		draw: (ctx) => {
-			renderTextToContext({ node, ctx });
+			renderTextToContext({
+				node,
+				ctx,
+				omitWorldPosition: node.params.worldPinned,
+			});
 		},
 	});
-	items.push({
+	const transform = node.params.worldPinned
+		? {
+				centerX:
+					node.params.canvasCenter.x + node.resolved.transform.position.x,
+				centerY:
+					node.params.canvasCenter.y + node.resolved.transform.position.y,
+				width,
+				height,
+				rotationDegrees: 0,
+				perspectiveXDegrees: node.resolved.transform.perspectiveX,
+				perspectiveYDegrees: node.resolved.transform.perspectiveY,
+				flipX: false,
+				flipY: false,
+			}
+		: fullCanvasTransform({
+				renderer,
+				perspective: node.resolved.transform,
+			});
+	const layer: Extract<FrameItemDescriptor, { type: "layer" }> = {
 		type: "layer",
 		textureId,
-		transform: fullCanvasTransform({
-			renderer,
-			perspective: node.resolved.transform,
-		}),
+		transform,
 		opacity: node.resolved.opacity,
 		blendMode: node.params.blendMode ?? "normal",
 		effectPassGroups: node.resolved.effectPasses,
 		mask: null,
+	};
+	setCameraLayerMetadataFromNode({ layer, node });
+	items.push(layer);
+}
+
+function setCameraLayerMetadataFromNode({
+	layer,
+	node,
+}: {
+	layer: Extract<FrameItemDescriptor, { type: "layer" }>;
+	node: VideoNode | ImageNode | StickerNode | GraphicNode | TextNode;
+}) {
+	setCameraLayerMetadata({
+		layer,
+		depth: node.params.cameraDepth ?? 1,
+		locked: node.params.cameraLocked ?? false,
+		motionFactor: node.params.cameraMotionFactor,
 	});
+}
+
+function setCameraLayerMetadata({
+	layer,
+	depth,
+	locked,
+	motionFactor,
+}: {
+	layer: Extract<FrameItemDescriptor, { type: "layer" }>;
+	depth: number;
+	locked: boolean;
+	motionFactor?: number;
+}) {
+	(layer as CameraAwareLayer)[Symbol.for("opencut-camera-layer-metadata")] = {
+		depth,
+		locked,
+		motionFactor,
+	};
+}
+
+function getCameraLayerMetadata(
+	layer: Extract<FrameItemDescriptor, { type: "layer" }>,
+): CameraLayerMetadata {
+	return (
+		(layer as CameraAwareLayer)[
+			Symbol.for("opencut-camera-layer-metadata")
+		] ?? {
+			depth: 1,
+			locked: false,
+		}
+	);
 }
 
 function computeVisualTransform({
@@ -718,24 +1408,42 @@ function computeVisualTransform({
 	resolved,
 	sourceWidth,
 	sourceHeight,
+	cameraWidth,
+	cameraHeight,
+	layoutSize,
+	fitSourceSize,
 }: {
 	renderer: RendererSize;
 	resolved: ResolvedVisualSourceNodeState | ResolvedGraphicNodeState;
 	sourceWidth: number;
 	sourceHeight: number;
+	cameraWidth?: number;
+	cameraHeight?: number;
+	layoutSize?: { width: number; height: number } | null;
+	fitSourceSize?: { width: number; height: number } | null;
 }): QuadTransformDescriptor {
-	const containScale = Math.min(
-		renderer.width / sourceWidth,
-		renderer.height / sourceHeight,
-	);
-	const scaledWidth = sourceWidth * containScale * resolved.transform.scaleX;
-	const scaledHeight = sourceHeight * containScale * resolved.transform.scaleY;
+	const layoutWidth = cameraWidth ?? renderer.width;
+	const layoutHeight = cameraHeight ?? renderer.height;
+	const containScale = layoutSize
+		? 1
+		: Math.min(
+				layoutWidth / (fitSourceSize?.width ?? sourceWidth),
+				layoutHeight / (fitSourceSize?.height ?? sourceHeight),
+			);
+	const scaledWidth =
+		(layoutSize?.width ?? fitSourceSize?.width ?? sourceWidth) *
+		containScale *
+		resolved.transform.scaleX;
+	const scaledHeight =
+		(layoutSize?.height ?? fitSourceSize?.height ?? sourceHeight) *
+		containScale *
+		resolved.transform.scaleY;
 	const absWidth = Math.abs(scaledWidth);
 	const absHeight = Math.abs(scaledHeight);
 
 	return {
-		centerX: renderer.width / 2 + resolved.transform.position.x,
-		centerY: renderer.height / 2 + resolved.transform.position.y,
+		centerX: layoutWidth / 2 + resolved.transform.position.x,
+		centerY: layoutHeight / 2 + resolved.transform.position.y,
 		width: absWidth,
 		height: absHeight,
 		rotationDegrees: resolved.transform.rotate,

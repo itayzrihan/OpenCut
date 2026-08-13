@@ -31,8 +31,16 @@ function subscribeToStores({
 	};
 }
 
-const subscribePlayback: EditorSubscribe = ({ editor, onChange }) =>
-	editor.playback.subscribe(onChange);
+const subscribePlayback: EditorSubscribe = ({ editor, onChange }) => {
+	const unsubscribeState = editor.playback.subscribe(onChange);
+	const unsubscribeUpdate = editor.playback.onUpdate(() => onChange());
+	const unsubscribeSeek = editor.playback.onSeek(() => onChange());
+	return () => {
+		unsubscribeState();
+		unsubscribeUpdate();
+		unsubscribeSeek();
+	};
+};
 const subscribeTimeline: EditorSubscribe = ({ editor, onChange }) =>
 	editor.timeline.subscribe(onChange);
 const subscribeScenes: EditorSubscribe = ({ editor, onChange }) =>

@@ -86,6 +86,35 @@ bun install --frozen-lockfile
 bun run dev:web
 ```
 
+### Classic browser and Electron targets
+
+The complete editor under `classic/` has one UI and one editor state model, but
+two optimized delivery targets. No product feature is copied between them.
+
+| Target | Development | Production | Runtime profile |
+| --- | --- | --- | --- |
+| Browser | `bun run dev:web` | `bun run build:browser` | Compressed HTTP responses, tree-shaken package imports, no production source-map download, and a conservative worker CPU budget that preserves browser responsiveness. |
+| Electron | `bun run dev:electron` | `bun run pack:electron` or `bun run dist:electron` | The same Next.js UI in a sandboxed window, uncompressed loopback traffic, eager V8 code caching, a larger Chromium disk cache, high-performance GPU preference, continued background processing, and a larger worker CPU budget. |
+
+Run either target from `classic/` after `bun install`. `dev:electron` starts the
+normal web development server at `http://127.0.0.1:3000` and opens it in
+Electron, so the same session can also be inspected in a browser. The packaged
+app builds with `OPENCUT_RUNTIME_TARGET=electron`; the browser build uses
+`OPENCUT_RUNTIME_TARGET=browser`. Electron also marks its user agent at runtime,
+which keeps the profiles separate while both clients share one development
+server.
+
+Electron defaults to the discrete/high-performance GPU. Set
+`OPENCUT_ELECTRON_GPU=balanced` before launch on battery-sensitive machines.
+Its HTTP cache budget defaults to 512 MiB and can be changed with
+`OPENCUT_ELECTRON_DISK_CACHE_BYTES`. Browser source maps remain off in release
+builds; set `OPENCUT_BROWSER_SOURCE_MAPS=true` only for a diagnostic build.
+
+The Electron distribution is currently **classic-only**. It wraps the full
+classic product and does not replace the GPUI rewrite under `apps/desktop`.
+See [classic/apps/electron/README.md](classic/apps/electron/README.md) for
+packaging and platform details.
+
 ## MCP / Editor API
 
 The rewrite includes a transport-neutral Editor API and an MCP adapter. Editor

@@ -1,5 +1,11 @@
 import type { ParamValues } from "@/params";
 import type { BlendMode } from "@/rendering";
+import {
+	hasKeyframesForPath,
+	resolveAnimationPathValueAtTime,
+} from "@/animation";
+import type { ElementAnimations } from "@/animation/types";
+import { PARALLAX_CAMERA_KEYFRAME_PATHS } from "@/parallax-story-teller/camera-keyframes";
 
 export const OVERLAY_MOVEMENT_KIND = "overlay-movement";
 
@@ -41,7 +47,8 @@ export type OverlayMovementCurve =
 	| "darken-room"
 	| "vignette-push"
 	| "vintage-snap"
-	| "exposure-dip";
+	| "exposure-dip"
+	| "virtual-camera-route";
 
 export interface OverlayMovementDefaultSfx {
 	assetId: string;
@@ -65,6 +72,15 @@ export interface OverlayMovementSpec {
 	colorOverlayAlpha?: number;
 	colorOverlayBlendMode?: BlendMode;
 	alphaPulse?: number;
+	cameraFromX?: number;
+	cameraFromY?: number;
+	cameraToX?: number;
+	cameraToY?: number;
+	cameraFromScale?: number;
+	cameraToScale?: number;
+	parallaxStrength?: number;
+	handheldAmount?: number;
+	handheldFrequency?: number;
 	defaultSfx?: OverlayMovementDefaultSfx;
 }
 
@@ -90,6 +106,13 @@ export interface OverlayMovementFrame {
 	overlayAlpha: number;
 	overlayBlendMode: BlendMode;
 	vignetteAlpha: number;
+	parallaxStrength: number;
+}
+
+export interface OverlayMovementCameraState {
+	x: number;
+	y: number;
+	scale: number;
 }
 
 function movement({
@@ -109,6 +132,15 @@ function movement({
 	colorOverlayAlpha = 0,
 	colorOverlayBlendMode,
 	alphaPulse = 0,
+	cameraFromX,
+	cameraFromY,
+	cameraToX,
+	cameraToY,
+	cameraFromScale,
+	cameraToScale,
+	parallaxStrength,
+	handheldAmount,
+	handheldFrequency,
 	defaultDurationSeconds,
 	defaultSfx,
 }: {
@@ -129,6 +161,15 @@ function movement({
 	colorOverlayAlpha?: number;
 	colorOverlayBlendMode?: BlendMode;
 	alphaPulse?: number;
+	cameraFromX?: number;
+	cameraFromY?: number;
+	cameraToX?: number;
+	cameraToY?: number;
+	cameraFromScale?: number;
+	cameraToScale?: number;
+	parallaxStrength?: number;
+	handheldAmount?: number;
+	handheldFrequency?: number;
 	defaultSfx?: OverlayMovementDefaultSfx;
 }): OverlayMovementPreset {
 	const spec: OverlayMovementSpec = {
@@ -148,6 +189,15 @@ function movement({
 		...(colorOverlayAlpha ? { colorOverlayAlpha } : {}),
 		...(colorOverlayBlendMode ? { colorOverlayBlendMode } : {}),
 		...(alphaPulse ? { alphaPulse } : {}),
+		...(cameraFromX !== undefined ? { cameraFromX } : {}),
+		...(cameraFromY !== undefined ? { cameraFromY } : {}),
+		...(cameraToX !== undefined ? { cameraToX } : {}),
+		...(cameraToY !== undefined ? { cameraToY } : {}),
+		...(cameraFromScale !== undefined ? { cameraFromScale } : {}),
+		...(cameraToScale !== undefined ? { cameraToScale } : {}),
+		...(parallaxStrength !== undefined ? { parallaxStrength } : {}),
+		...(handheldAmount !== undefined ? { handheldAmount } : {}),
+		...(handheldFrequency !== undefined ? { handheldFrequency } : {}),
 		...(defaultSfx ? { defaultSfx } : {}),
 	};
 
@@ -394,6 +444,92 @@ export const OVERLAY_MOVEMENT_PRESETS: OverlayMovementPreset[] = [
 		rotate: 0.45,
 	}),
 	movement({
+		id: "camera-canvas-pan-right",
+		name: "Canvas Pan Right",
+		use: "Move across a wide canvas to content staged on the right",
+		defaultDurationSeconds: 1.25,
+		curve: "virtual-camera-route",
+		zoom: 0,
+		cameraFromX: 0,
+		cameraToX: 1,
+		cameraFromScale: 1,
+		cameraToScale: 1,
+		parallaxStrength: 0.18,
+		handheldAmount: 0.004,
+		handheldFrequency: 2,
+		defaultSfx: DEFAULT_SFX.whoosh,
+	}),
+	movement({
+		id: "camera-canvas-pan-left",
+		name: "Canvas Pan Left",
+		use: "Move across a wide canvas to content staged on the left",
+		defaultDurationSeconds: 1.25,
+		curve: "virtual-camera-route",
+		zoom: 0,
+		cameraFromX: 0,
+		cameraToX: -1,
+		cameraFromScale: 1,
+		cameraToScale: 1,
+		parallaxStrength: 0.18,
+		handheldAmount: 0.004,
+		handheldFrequency: 2,
+		defaultSfx: DEFAULT_SFX.whoosh,
+	}),
+	movement({
+		id: "camera-parallax-scroll",
+		name: "Parallax Canvas Scroll",
+		use: "Travel through foreground, subject, and background planes at different speeds",
+		defaultDurationSeconds: 2.4,
+		curve: "virtual-camera-route",
+		zoom: 0,
+		cameraFromX: -0.15,
+		cameraFromY: 0.04,
+		cameraToX: 1.05,
+		cameraToY: -0.08,
+		cameraFromScale: 1,
+		cameraToScale: 1.08,
+		parallaxStrength: 0.72,
+		handheldAmount: 0.005,
+		handheldFrequency: 3,
+		defaultSfx: DEFAULT_SFX.whoosh,
+	}),
+	movement({
+		id: "camera-dolly-through",
+		name: "Dolly Through Foreground",
+		use: "Push through a foreground occluder into a deeper canvas destination",
+		defaultDurationSeconds: 2,
+		curve: "virtual-camera-route",
+		zoom: 0,
+		cameraFromX: 0,
+		cameraFromY: 0,
+		cameraToX: 0.12,
+		cameraToY: -0.05,
+		cameraFromScale: 0.88,
+		cameraToScale: 2.35,
+		parallaxStrength: 0.9,
+		handheldAmount: 0.0045,
+		handheldFrequency: 2,
+		defaultSfx: DEFAULT_SFX.riser,
+	}),
+	movement({
+		id: "camera-world-canvas-tour",
+		name: "World Canvas Tour",
+		use: "Travel across a large designed map while nested elements animate independently",
+		defaultDurationSeconds: 5.2,
+		curve: "virtual-camera-route",
+		zoom: 0,
+		cameraFromX: -0.72,
+		cameraFromY: -0.28,
+		cameraToX: 0.86,
+		cameraToY: 0.34,
+		cameraFromScale: 0.72,
+		cameraToScale: 1.16,
+		parallaxStrength: 0.58,
+		handheldAmount: 0.0035,
+		handheldFrequency: 3,
+		defaultSfx: DEFAULT_SFX.riser,
+	}),
+	movement({
 		id: "impact-shake",
 		name: "Impact Shake",
 		use: "Decaying hit shake",
@@ -436,12 +572,14 @@ export function getOverlayMovementDefaultSfx({
 
 export function resolveOverlayMovementFrame({
 	effectParams,
+	animations,
 	localTime,
 	duration,
 	width,
 	height,
 }: {
 	effectParams: ParamValues;
+	animations?: ElementAnimations;
 	localTime: number;
 	duration: number;
 	width: number;
@@ -734,7 +872,130 @@ export function resolveOverlayMovementFrame({
 				}),
 			});
 		}
+		case "virtual-camera-route": {
+			const handheld = clamp({ value: spec.handheldAmount ?? 0, min: 0, max: 0.04 });
+			const frequency = Math.max(
+				1,
+				Math.round(clamp({ value: spec.handheldFrequency ?? 2, min: 1, max: 8 })),
+			);
+			const swayEnvelope = Math.sin(progress * Math.PI);
+			const swayX =
+				width *
+				handheld *
+				swayEnvelope *
+				(0.68 * Math.sin(progress * Math.PI * 2 * frequency) +
+					0.32 * Math.sin(progress * Math.PI * 2 * (frequency + 2)));
+			const swayY =
+				height *
+				handheld *
+				swayEnvelope *
+				(0.72 * Math.sin(progress * Math.PI * 2 * (frequency + 1)) +
+					0.28 * Math.sin(progress * Math.PI * 2 * (frequency + 3)));
+			const camera = resolveOverlayMovementCameraState({
+				effectParams,
+				animations,
+				localTime,
+				duration,
+				progress,
+			});
+
+			return frame({
+				spec,
+				label,
+				progress,
+				scale:
+					camera.scale *
+					(1 +
+						handheld *
+							0.18 *
+							swayEnvelope *
+							Math.sin(progress * Math.PI * 2 * frequency)),
+				translateX: -camera.x * width + swayX,
+				translateY: -camera.y * height + swayY,
+				rotate:
+					handheld *
+					28 *
+					swayEnvelope *
+					Math.sin(progress * Math.PI * 2 * (frequency + 1)),
+			});
+		}
 	}
+}
+
+export function resolveOverlayMovementCameraState({
+	effectParams,
+	animations,
+	localTime,
+	duration,
+	progress,
+}: {
+	effectParams: ParamValues;
+	animations?: ElementAnimations;
+	localTime: number;
+	duration: number;
+	progress?: number;
+}): OverlayMovementCameraState {
+	const spec = readOverlayMovementSpec({ params: effectParams });
+	const safeProgress = clamp01(
+		progress ?? localTime / Math.max(1, duration),
+	);
+	const routeProgress = smootherStep(safeProgress);
+	const fromX = spec?.cameraFromX ?? 0;
+	const fromY = spec?.cameraFromY ?? 0;
+	const toX = spec?.cameraToX ?? 0;
+	const toY = spec?.cameraToY ?? 0;
+	const fromScale = Math.max(0.05, spec?.cameraFromScale ?? 1);
+	const toScale = Math.max(0.05, spec?.cameraToScale ?? 1);
+
+	return {
+		x: resolveCameraKeyframeValue({
+			animations,
+			propertyPath: PARALLAX_CAMERA_KEYFRAME_PATHS.x,
+			localTime,
+			fallbackValue: lerp({ from: fromX, to: toX, progress: routeProgress }),
+		}),
+		y: resolveCameraKeyframeValue({
+			animations,
+			propertyPath: PARALLAX_CAMERA_KEYFRAME_PATHS.y,
+			localTime,
+			fallbackValue: lerp({ from: fromY, to: toY, progress: routeProgress }),
+		}),
+		scale: Math.max(
+			0.05,
+			resolveCameraKeyframeValue({
+				animations,
+				propertyPath: PARALLAX_CAMERA_KEYFRAME_PATHS.scale,
+				localTime,
+				fallbackValue: lerp({ from: fromScale, to: toScale, progress: routeProgress }),
+			}),
+		),
+	};
+}
+
+function resolveCameraKeyframeValue({
+	animations,
+	propertyPath,
+	localTime,
+	fallbackValue,
+}: {
+	animations?: ElementAnimations;
+	propertyPath: string;
+	localTime: number;
+	fallbackValue: number;
+}): number {
+	if (!hasKeyframesForPath({ animations, propertyPath })) {
+		return fallbackValue;
+	}
+
+	const value = resolveAnimationPathValueAtTime({
+		animations,
+		propertyPath,
+		localTime: Math.max(0, localTime),
+		fallbackValue,
+	});
+	return typeof value === "number" && Number.isFinite(value)
+		? value
+		: fallbackValue;
 }
 
 function frame({
@@ -787,6 +1048,7 @@ function frame({
 		overlayBlendMode:
 			alphaPulse > 0 ? "screen" : (spec.colorOverlayBlendMode ?? "normal"),
 		vignetteAlpha: clamp01((spec.vignette ?? 0) * (0.2 + pulse * 0.8)),
+		parallaxStrength: clamp({ value: spec.parallaxStrength ?? 0, min: 0, max: 1 }),
 	};
 }
 
@@ -835,7 +1097,8 @@ function isMovementCurve(value: unknown): value is OverlayMovementCurve {
 		value === "darken-room" ||
 		value === "vignette-push" ||
 		value === "vintage-snap" ||
-		value === "exposure-dip"
+		value === "exposure-dip" ||
+		value === "virtual-camera-route"
 	);
 }
 
@@ -869,6 +1132,16 @@ function easeOutCubic(value: number): number {
 	return 1 - Math.pow(1 - t, 3);
 }
 
+function smootherStep(value: number): number {
+	const t = clamp01(value);
+	return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+
+function lerp({ from, to, progress }: { from: number; to: number; progress: number }): number {
+	return from + (to - from) * progress;
+}
+
 function readStringParam({
 	params,
 	key,
@@ -891,4 +1164,9 @@ function parseJson(value: string | null): unknown {
 
 function clamp01(value: number): number {
 	return Math.max(0, Math.min(1, value));
+}
+
+
+function clamp({ value, min, max }: { value: number; min: number; max: number }): number {
+	return Math.max(min, Math.min(max, value));
 }

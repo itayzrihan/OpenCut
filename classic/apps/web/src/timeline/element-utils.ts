@@ -181,11 +181,13 @@ export function buildGraphicElement({
 	definitionId,
 	name,
 	startTime,
+	duration,
 	params,
 }: {
 	definitionId: string;
 	name?: string;
 	startTime: MediaTime;
+	duration?: MediaTime;
 	params?: Partial<ParamValues>;
 }): CreateGraphicElement {
 	const instance = buildDefaultGraphicInstance({ definitionId });
@@ -200,7 +202,7 @@ export function buildGraphicElement({
 			},
 			overrides: params,
 		}),
-		duration: DEFAULT_NEW_ELEMENT_DURATION,
+		duration: duration ?? DEFAULT_NEW_ELEMENT_DURATION,
 		startTime,
 		trimStart: ZERO_MEDIA_TIME,
 		trimEnd: ZERO_MEDIA_TIME,
@@ -410,7 +412,10 @@ export function getElementFontFamilies({
 	const families = new Set<string>();
 	for (const track of getDisplayTracks({ tracks })) {
 		for (const element of track.elements) {
-			if (element.type === "text" && typeof element.params.fontFamily === "string") {
+			if (
+				element.type === "text" &&
+				typeof element.params.fontFamily === "string"
+			) {
 				families.add(element.params.fontFamily);
 			}
 			if ("masks" in element) {

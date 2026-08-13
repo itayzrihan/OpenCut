@@ -1,10 +1,12 @@
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects/custom-ai-effect";
+import { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "@/effects/definitions/editorial-edge-feather";
 import type { ParamValues } from "@/params";
 
 export interface OverlayEffectPreset {
 	id: string;
 	name: string;
 	use: string;
+	effectType: string;
 	params: ParamValues;
 }
 
@@ -25,6 +27,7 @@ function overlay({
 		id,
 		name,
 		use,
+		effectType: CUSTOM_AI_EFFECT_TYPE,
 		params: {
 			label: name,
 			kind: "overlay-effect",
@@ -43,6 +46,18 @@ function overlay({
 export const OVERLAY_EFFECT_TYPE = CUSTOM_AI_EFFECT_TYPE;
 
 export const OVERLAY_EFFECT_PRESETS: OverlayEffectPreset[] = [
+	{
+		id: "editorial-edge-feather",
+		name: "Editorial Edge Feather",
+		use: "Soft black inner feather across the top and bottom 20% for premium talking-head contrast",
+		effectType: EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
+		params: {
+			intensity: 38,
+			height: 20,
+			softness: 78,
+			color: "#000000",
+		},
+	},
 	overlay({
 		id: "glow",
 		name: "Glow",

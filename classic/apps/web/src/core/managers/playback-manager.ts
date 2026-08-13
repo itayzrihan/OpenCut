@@ -27,8 +27,22 @@ export type PlaybackManagerEditor = {
 	scenes: PlaybackScenesReader;
 };
 
+export interface PlaybackPreparationContext {
+	time: MediaTime;
+	lookaheadSeconds: number;
+	signal: AbortSignal;
+}
+
+export interface PlaybackPreparer {
+	id: string;
+	prepare: (context: PlaybackPreparationContext) => Promise<void>;
+}
+
+const DEFAULT_PLAYBACK_PREBUFFER_SECONDS = 3;
+
 export class PlaybackManager {
 	private isPlaying = false;
+	private isBuffering = false;
 	private currentTime: MediaTime = ZERO_MEDIA_TIME;
 	private volume = 1;
 	private muted = false;
@@ -41,6 +55,11 @@ export class PlaybackManager {
 	private playbackStartWallTime = 0;
 	private playbackStartTime: MediaTime = ZERO_MEDIA_TIME;
 	private timelineScopeBound = false;
+	private suspensionCount = 0;
+	private resumeAfterSuspension = false;
+	private preparationId = 0;
+	private preparationAbortController: AbortController | null = null;
+	private preparers = new Map<string, PlaybackPreparer["prepare"]>();
 
 	constructor(private editor: PlaybackManagerEditor) {}
 
@@ -50,7 +69,7 @@ export class PlaybackManager {
 		}
 
 		const reconcile = () => {
-			this.reconcileTimelineScope();
+			this.handleTimelineScopeChange();
 		};
 		this.editor.timeline.subscribe(reconcile);
 		this.editor.scenes.subscribe(reconcile);
@@ -59,6 +78,11 @@ export class PlaybackManager {
 	}
 
 	play(): void {
+		if (this.suspensionCount > 0) {
+			return;
+		}
+		if (this.isPlaying || this.isBuffering) return;
+
 		const maxTime = this.editor.timeline.getTotalDuration();
 		if (maxTime <= 0) {
 			return;
@@ -68,19 +92,80 @@ export class PlaybackManager {
 			this.seek({ time: ZERO_MEDIA_TIME });
 		}
 
-		this.isPlaying = true;
-		this.startTimer();
+		if (this.preparers.size === 0) {
+			this.startPreparedPlayback();
+			return;
+		}
+
+		this.isBuffering = true;
 		this.notify();
+		const preparationId = ++this.preparationId;
+		const abortController = new AbortController();
+		this.preparationAbortController = abortController;
+		const context: PlaybackPreparationContext = {
+			time: this.currentTime,
+			lookaheadSeconds: DEFAULT_PLAYBACK_PREBUFFER_SECONDS,
+			signal: abortController.signal,
+		};
+
+		void Promise.allSettled(
+			[...this.preparers.values()].map((prepare) => prepare(context)),
+		).then((results) => {
+			if (
+				abortController.signal.aborted ||
+				preparationId !== this.preparationId ||
+				!this.isBuffering ||
+				this.suspensionCount > 0
+			) {
+				return;
+			}
+			for (const result of results) {
+				if (result.status === "rejected") {
+					console.warn("Playback prebuffer failed:", result.reason);
+				}
+			}
+			this.preparationAbortController = null;
+			this.startPreparedPlayback();
+		});
 	}
 
 	pause(): void {
+		this.cancelPreparation();
 		this.isPlaying = false;
+		this.isBuffering = false;
 		this.stopTimer();
 		this.notify();
 	}
 
+	suspend(): () => void {
+		if (this.suspensionCount === 0) {
+			this.resumeAfterSuspension = this.isPlaying || this.isBuffering;
+		}
+		this.suspensionCount++;
+
+		if (this.isPlaying || this.isBuffering) {
+			this.pause();
+		} else {
+			this.stopTimer();
+		}
+
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			this.suspensionCount = Math.max(0, this.suspensionCount - 1);
+			if (this.suspensionCount > 0) return;
+
+			const shouldResume = this.resumeAfterSuspension;
+			this.resumeAfterSuspension = false;
+			if (shouldResume) {
+				this.play();
+			}
+		};
+	}
+
 	toggle(): void {
-		if (this.isPlaying) {
+		if (this.isPlaying || this.isBuffering) {
 			this.pause();
 		} else {
 			this.play();
@@ -88,6 +173,11 @@ export class PlaybackManager {
 	}
 
 	seek({ time }: { time: MediaTime }): void {
+		const shouldRestartBuffering = this.isBuffering;
+		if (shouldRestartBuffering) {
+			this.cancelPreparation();
+			this.isBuffering = false;
+		}
 		this.currentTime = this.clampTimeToTimeline(time);
 		if (this.isPlaying) {
 			this.playbackStartWallTime = performance.now();
@@ -95,6 +185,7 @@ export class PlaybackManager {
 		}
 		this.notify();
 		this.notifySeek(this.currentTime);
+		if (shouldRestartBuffering) this.play();
 	}
 
 	setVolume({ volume }: { volume: number }): void {
@@ -134,8 +225,35 @@ export class PlaybackManager {
 		return this.isPlaying;
 	}
 
+	getIsBuffering(): boolean {
+		return this.isBuffering;
+	}
+
+	registerPlaybackPreparer({ id, prepare }: PlaybackPreparer): () => void {
+		this.preparers.set(id, prepare);
+		return () => {
+			if (this.preparers.get(id) === prepare) {
+				this.preparers.delete(id);
+			}
+		};
+	}
+
 	getCurrentTime(): MediaTime {
 		return this.currentTime;
+	}
+
+	getClockTime(): MediaTime {
+		if (!this.isPlaying) {
+			return this.currentTime;
+		}
+
+		const elapsedSeconds =
+			(performance.now() - this.playbackStartWallTime) / 1000;
+		const rawTime = addMediaTime({
+			a: this.playbackStartTime,
+			b: mediaTimeFromSeconds({ seconds: elapsedSeconds }),
+		});
+		return this.clampTimeToTimeline(rawTime);
 	}
 
 	getVolume(): number {
@@ -194,6 +312,35 @@ export class PlaybackManager {
 		}
 	}
 
+	private handleTimelineScopeChange(): void {
+		const shouldResume = this.isPlaying || this.isBuffering;
+		if (this.isPlaying) {
+			this.currentTime = this.clampTimeToTimeline(this.getClockTime());
+		}
+		if (shouldResume) this.pause();
+		this.reconcileTimelineScope();
+		if (!shouldResume || this.suspensionCount > 0) return;
+
+		queueMicrotask(() => {
+			if (!this.isPlaying && !this.isBuffering && this.suspensionCount === 0) {
+				this.play();
+			}
+		});
+	}
+
+	private startPreparedPlayback(): void {
+		this.isBuffering = false;
+		this.isPlaying = true;
+		this.startTimer();
+		this.notify();
+	}
+
+	private cancelPreparation(): void {
+		this.preparationId++;
+		this.preparationAbortController?.abort();
+		this.preparationAbortController = null;
+	}
+
 	private notify(): void {
 		this.listeners.forEach((fn) => {
 			fn();
@@ -233,12 +380,7 @@ export class PlaybackManager {
 		if (!this.isPlaying) return;
 
 		const fps = this.editor.project.getActive()?.settings.fps;
-		const elapsedSeconds =
-			(performance.now() - this.playbackStartWallTime) / 1000;
-		const rawTime = addMediaTime({
-			a: this.playbackStartTime,
-			b: mediaTimeFromSeconds({ seconds: elapsedSeconds }),
-		});
+		const rawTime = this.getClockTime();
 		const newTime = fps ? roundFrameTime({ time: rawTime, fps }) : rawTime;
 		const maxTime = this.editor.timeline.getTotalDuration();
 

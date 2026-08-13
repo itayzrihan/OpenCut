@@ -5,6 +5,7 @@ import { stageRepositoryAssetPaths } from "@/git/repository-assets";
 import type {
 	GeneratedBackgroundPreset,
 	GeneratedEffectPreset,
+	GeneratedUiElementPreset,
 	SharedAssetCategory,
 	SharedAudioAsset,
 	SharedAudioFolder,
@@ -30,7 +31,14 @@ const AUDIO_EXTENSIONS = new Set([
 	"wav",
 	"webm",
 ]);
-const STICKER_EXTENSIONS = new Set(["gif", "jpeg", "jpg", "png", "svg", "webp"]);
+const STICKER_EXTENSIONS = new Set([
+	"gif",
+	"jpeg",
+	"jpg",
+	"png",
+	"svg",
+	"webp",
+]);
 
 type ManifestPatch =
 	| {
@@ -56,6 +64,10 @@ type ManifestPatch =
 			preset: GeneratedEffectPreset;
 	  }
 	| {
+			action: "saveGeneratedUiElement";
+			preset: GeneratedUiElementPreset;
+	  }
+	| {
 			action: "saveCaptionPreset";
 			preset: SharedCaptionPreset;
 	  };
@@ -68,6 +80,7 @@ function emptyManifest(): SharedLibraryManifest {
 		categories: [],
 		generatedBackgrounds: [],
 		generatedEffects: [],
+		generatedUiElements: [],
 		captionPresets: [],
 		updatedAt: new Date().toISOString(),
 	};
@@ -147,6 +160,9 @@ async function readManifest(): Promise<SharedLibraryManifest> {
 			generatedEffects: Array.isArray(parsed.generatedEffects)
 				? parsed.generatedEffects
 				: [],
+			generatedUiElements: Array.isArray(parsed.generatedUiElements)
+				? parsed.generatedUiElements
+				: [],
 			captionPresets: Array.isArray(parsed.captionPresets)
 				? parsed.captionPresets
 				: [],
@@ -185,7 +201,13 @@ function sanitizeId({ value }: { value: unknown }): string | null {
 }
 
 function getExtension({ fileName }: { fileName: string }): string {
-	return fileName.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
+	return (
+		fileName
+			.split(".")
+			.pop()
+			?.toLowerCase()
+			.replace(/[^a-z0-9]/g, "") ?? ""
+	);
 }
 
 function isAudioFolder(value: unknown): value is SharedAudioFolder {
@@ -274,6 +296,13 @@ function parsePatch(body: unknown): ManifestPatch | null {
 						preset: body.preset as unknown as GeneratedEffectPreset,
 					}
 				: null;
+		case "saveGeneratedUiElement":
+			return isObject(body.preset)
+				? {
+						action: body.action,
+						preset: body.preset as unknown as GeneratedUiElementPreset,
+					}
+				: null;
 		case "saveCaptionPreset":
 			return isObject(body.preset)
 				? {
@@ -291,7 +320,9 @@ async function handleAudioImport({
 }: {
 	formData: FormData;
 }): Promise<NextResponse> {
-	const files = formData.getAll("files").filter((file): file is File => file instanceof File);
+	const files = formData
+		.getAll("files")
+		.filter((file): file is File => file instanceof File);
 	const metadata = readMetadataArray({ formData });
 	if (!metadata || files.length === 0 || metadata.length !== files.length) {
 		return NextResponse.json(
@@ -371,7 +402,10 @@ async function handleAudioImport({
 
 	await writeManifest({ manifest });
 	await stageRepositoryAssetPaths({ paths: stagedPaths });
-	return NextResponse.json({ assets: imported, manifest: await readManifest() });
+	return NextResponse.json({
+		assets: imported,
+		manifest: await readManifest(),
+	});
 }
 
 async function handleStickerImport({
@@ -379,7 +413,9 @@ async function handleStickerImport({
 }: {
 	formData: FormData;
 }): Promise<NextResponse> {
-	const files = formData.getAll("files").filter((file): file is File => file instanceof File);
+	const files = formData
+		.getAll("files")
+		.filter((file): file is File => file instanceof File);
 	const metadata = readMetadataArray({ formData });
 	if (!metadata || files.length === 0 || metadata.length !== files.length) {
 		return NextResponse.json(
@@ -454,10 +490,17 @@ async function handleStickerImport({
 
 	await writeManifest({ manifest });
 	await stageRepositoryAssetPaths({ paths: stagedPaths });
-	return NextResponse.json({ assets: imported, manifest: await readManifest() });
+	return NextResponse.json({
+		assets: imported,
+		manifest: await readManifest(),
+	});
 }
 
-async function handlePatch({ patch }: { patch: ManifestPatch }): Promise<NextResponse> {
+async function handlePatch({
+	patch,
+}: {
+	patch: ManifestPatch;
+}): Promise<NextResponse> {
 	const manifest = await readManifest();
 	const { manifestPath } = await getSharedLibraryPaths();
 	switch (patch.action) {
@@ -502,6 +545,12 @@ async function handlePatch({ patch }: { patch: ManifestPatch }): Promise<NextRes
 				item: patch.preset,
 			});
 			break;
+		case "saveGeneratedUiElement":
+			manifest.generatedUiElements = upsertById({
+				items: manifest.generatedUiElements,
+				item: patch.preset,
+			});
+			break;
 		case "saveCaptionPreset":
 			manifest.captionPresets = upsertById({
 				items: manifest.captionPresets,
@@ -536,7 +585,10 @@ export async function POST(request: Request) {
 
 		const patch = parsePatch(await request.json().catch(() => null));
 		if (!patch) {
-			return NextResponse.json({ error: "Invalid shared library patch" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Invalid shared library patch" },
+				{ status: 400 },
+			);
 		}
 		return handlePatch({ patch });
 	} catch (error) {

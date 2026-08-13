@@ -30,6 +30,12 @@ export type TextFontWeight = "normal" | "bold" | NumericTextFontWeight;
 export type TextFontStyle = "normal" | "italic";
 export type TextDecoration = "none" | "underline" | "line-through";
 
+export interface TextGradient {
+	startColor: string;
+	endColor: string;
+	angle: number;
+}
+
 const NUMERIC_TEXT_FONT_WEIGHTS = new Set<string>([
 	"100",
 	"200",
@@ -52,12 +58,16 @@ export interface TextLayoutParams {
 	textDecoration?: TextDecoration;
 	letterSpacing?: number;
 	lineHeight?: number;
+	gradient?: TextGradient;
+	bottomFadeOut?: number;
+	bottomFadeOutEndOpacity?: number;
 	strokeWidth?: number;
 	strokeColor?: string;
 	shadowBlur?: number;
 	shadowColor?: string;
 	shadowOffsetX?: number;
 	shadowOffsetY?: number;
+	windowShadow?: boolean;
 }
 
 export interface ResolvedTextStroke {
@@ -80,6 +90,10 @@ export interface ResolvedTextLayout {
 	fontSizeRatio: number;
 	textAlign: TextAlign;
 	textDecoration: TextDecoration;
+	gradient?: TextGradient;
+	bottomFadeOut: number;
+	bottomFadeOutEndOpacity: number;
+	windowShadow: boolean;
 }
 
 export interface MeasuredTextLayout extends ResolvedTextLayout {
@@ -114,11 +128,14 @@ export interface MeasuredWordGlyph {
 	shadowColor: string;
 	shadowOffsetX: number;
 	shadowOffsetY: number;
+	windowShadow: boolean;
 	strokeWidth: number;
 	strokeColor: string;
 	offsetX: number;
 	offsetY: number;
 	blendMode: BlendMode;
+	bottomFadeOut: number;
+	bottomFadeOutEndOpacity: number;
 	background?: {
 		enabled: boolean;
 		color: string;
@@ -136,7 +153,7 @@ export interface MeasuredWordGlyph {
 	glitchyProgress: number;
 	lightningActive: boolean;
 	glitchyActive: boolean;
-	gradient?: { startColor: string; endColor: string; angle: number };
+	gradient?: TextGradient;
 }
 
 export interface MeasuredWordLine {
@@ -226,6 +243,12 @@ export function resolveTextLayout({
 		fontSizeRatio,
 		textAlign: text.textAlign,
 		textDecoration: text.textDecoration ?? "none",
+		gradient: text.gradient,
+		bottomFadeOut: clampBottomFadeOut(text.bottomFadeOut),
+		bottomFadeOutEndOpacity: clampBottomFadeOutEndOpacity(
+			text.bottomFadeOutEndOpacity,
+		),
+		windowShadow: text.windowShadow ?? false,
 	};
 }
 
@@ -282,7 +305,7 @@ export function drawMeasuredTextLayout({
 	ctx.font = layout.fontString;
 	ctx.textAlign = layout.textAlign;
 	ctx.textBaseline = textBaseline;
-	ctx.fillStyle = textColor;
+	ctx.fillStyle = createTextFill({ ctx, layout, fallbackColor: textColor });
 	setCanvasLetterSpacing({ ctx, letterSpacingPx: layout.letterSpacing });
 
 	if (
@@ -319,7 +342,7 @@ export function drawMeasuredTextLayout({
 				radius,
 			);
 			ctx.fill();
-			ctx.fillStyle = textColor;
+			ctx.fillStyle = createTextFill({ ctx, layout, fallbackColor: textColor });
 		}
 	}
 
@@ -353,48 +376,108 @@ export function drawMeasuredTextLayout({
 				ctx.scale(word.scaleX, word.scaleY);
 				ctx.translate(-word.width / 2, 0);
 				drawWordBackground({ ctx, word });
-				ctx.save();
-				ctx.translate(drawTextX, 0);
-				applyTextShadow({
-					ctx,
-					shadow: {
-						color: word.shadowColor,
-						blur: word.shadowBlur,
-						offsetX: word.shadowOffsetX,
-						offsetY: word.shadowOffsetY,
-					},
-				});
-				if (word.strokeWidth > 0) {
-					ctx.strokeStyle = word.strokeColor;
-					ctx.lineWidth = word.strokeWidth;
-					ctx.lineJoin = "round";
-					ctx.lineCap = "round";
-					ctx.strokeText(word.drawText, 0, 0);
+				if (
+					word.bottomFadeOut > 0 &&
+					drawWordTextWithBottomFadeOut({
+						ctx,
+						word,
+						drawTextAlign,
+						drawTextX,
+						textBaseline,
+					})
+				) {
+					ctx.restore();
+					continue;
 				}
-				ctx.fillText(word.drawText, 0, 0);
-				drawGlower({
+				drawWordText({
 					ctx,
 					word,
+					drawTextAlign,
+					drawTextX,
+					textBaseline,
 				});
-				drawLightningStorm({ ctx, word });
-				drawGlitchy({ ctx, word });
-				drawTextDecoration({
-					ctx,
-					textDecoration: word.textDecoration,
-					lineWidth: word.width,
-					lineY: 0,
-					metrics: word.metrics,
-					scaledFontSize: word.scaledFontSize,
-					textAlign: drawTextAlign,
-				});
-				ctx.restore();
 				ctx.restore();
 			}
 		}
 		return;
 	}
 
-	applyTextShadow({ ctx, shadow: layout.shadow });
+	if (
+		layout.bottomFadeOut > 0 &&
+		drawPlainTextWithBottomFadeOut({
+			ctx,
+			layout,
+			textColor,
+			textBaseline,
+		})
+	) {
+		return;
+	}
+	drawPlainText({ ctx, layout });
+}
+
+function drawWordText({
+	ctx,
+	word,
+	drawTextAlign,
+	drawTextX,
+	textBaseline,
+	shadow = {
+		color: word.shadowColor,
+		blur: word.shadowBlur,
+		offsetX: word.shadowOffsetX,
+		offsetY: word.shadowOffsetY,
+	},
+}: {
+	ctx: TextCanvasContext;
+	word: MeasuredWordGlyph;
+	drawTextAlign: CanvasTextAlign;
+	drawTextX: number;
+	textBaseline: CanvasTextBaseline;
+	shadow?: ResolvedTextShadow | null;
+}): void {
+	ctx.save();
+	ctx.font = word.fontString;
+	ctx.textAlign = drawTextAlign;
+	ctx.textBaseline = textBaseline;
+	ctx.direction = word.direction;
+	ctx.fillStyle = createWordFill({ ctx, word });
+	setCanvasLetterSpacing({ ctx, letterSpacingPx: word.letterSpacing });
+	ctx.translate(drawTextX, 0);
+	applyTextShadow({ ctx, shadow });
+	if (word.strokeWidth > 0) {
+		ctx.strokeStyle = word.strokeColor;
+		ctx.lineWidth = word.strokeWidth;
+		ctx.lineJoin = "round";
+		ctx.lineCap = "round";
+		ctx.strokeText(word.drawText, 0, 0);
+	}
+	ctx.fillText(word.drawText, 0, 0);
+	drawGlower({ ctx, word });
+	drawLightningStorm({ ctx, word });
+	drawGlitchy({ ctx, word });
+	drawTextDecoration({
+		ctx,
+		textDecoration: word.textDecoration,
+		lineWidth: word.width,
+		lineY: 0,
+		metrics: word.metrics,
+		scaledFontSize: word.scaledFontSize,
+		textAlign: drawTextAlign,
+	});
+	ctx.restore();
+}
+
+function drawPlainText({
+	ctx,
+	layout,
+	shadow = layout.shadow,
+}: {
+	ctx: TextCanvasContext;
+	layout: MeasuredTextLayout;
+	shadow?: ResolvedTextShadow | null;
+}): void {
+	applyTextShadow({ ctx, shadow });
 	if (layout.stroke && layout.stroke.width > 0) {
 		ctx.strokeStyle = layout.stroke.color;
 		ctx.lineWidth = layout.stroke.width;
@@ -422,6 +505,314 @@ export function drawMeasuredTextLayout({
 	}
 }
 
+function drawWordTextWithBottomFadeOut({
+	ctx,
+	word,
+	drawTextAlign,
+	drawTextX,
+	textBaseline,
+}: {
+	ctx: TextCanvasContext;
+	word: MeasuredWordGlyph;
+	drawTextAlign: CanvasTextAlign;
+	drawTextX: number;
+	textBaseline: CanvasTextBaseline;
+}): boolean {
+	const ascent =
+		word.metrics.actualBoundingBoxAscent || word.scaledFontSize * 0.8;
+	const descent =
+		word.metrics.actualBoundingBoxDescent || word.scaledFontSize * 0.2;
+	const effectOutset = Math.ceil(
+		Math.max(
+			4,
+			word.strokeWidth * 2,
+			word.shadowBlur * 2 + Math.abs(word.shadowOffsetX),
+			word.shadowBlur * 2 + Math.abs(word.shadowOffsetY),
+			word.glowerProgress > 0 || word.lightningActive || word.glitchyActive
+				? word.scaledFontSize * 1.5
+				: 0,
+		),
+	);
+	const width = Math.max(1, Math.ceil(word.width + effectOutset * 2));
+	const height = Math.max(1, Math.ceil(ascent + descent + effectOutset * 2));
+	const surface = createTextEffectSurface({ width, height });
+	if (!surface) return false;
+
+	surface.ctx.translate(effectOutset, effectOutset + ascent);
+	drawWordText({
+		ctx: surface.ctx,
+		word,
+		drawTextAlign,
+		drawTextX,
+		textBaseline,
+	});
+	surface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	if (word.windowShadow) {
+		// Window Shadow intentionally removes the shadow from the glyph bounds,
+		// leaving it visible only around the outside edge of the text window.
+		surface.ctx.clearRect(0, effectOutset, width, ascent + descent);
+	} else {
+		const maskSurface = createTextEffectSurface({ width, height });
+		if (!maskSurface) return false;
+		maskSurface.ctx.translate(effectOutset, effectOutset + ascent);
+		drawWordText({
+			ctx: maskSurface.ctx,
+			word,
+			drawTextAlign,
+			drawTextX,
+			textBaseline,
+			shadow: null,
+		});
+		maskSurface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+		surface.ctx.globalCompositeOperation = "destination-out";
+		surface.ctx.drawImage(maskSurface.canvas, 0, 0);
+		surface.ctx.globalCompositeOperation = "source-over";
+	}
+	ctx.drawImage(surface.canvas, -effectOutset, -ascent - effectOutset);
+
+	surface.ctx.clearRect(0, 0, width, height);
+	surface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	surface.ctx.translate(effectOutset, effectOutset + ascent);
+	drawWordText({
+		ctx: surface.ctx,
+		word,
+		drawTextAlign,
+		drawTextX,
+		textBaseline,
+		shadow: null,
+	});
+	surface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	applyBottomFadeOutMask({
+		ctx: surface.ctx,
+		width,
+		height,
+		top: effectOutset,
+		bottom: effectOutset + ascent + descent,
+		strength: word.bottomFadeOut,
+		endOpacity: word.bottomFadeOutEndOpacity,
+	});
+	ctx.drawImage(surface.canvas, -effectOutset, -ascent - effectOutset);
+	return true;
+}
+
+function drawPlainTextWithBottomFadeOut({
+	ctx,
+	layout,
+	textColor,
+	textBaseline,
+}: {
+	ctx: TextCanvasContext;
+	layout: MeasuredTextLayout;
+	textColor: string;
+	textBaseline: CanvasTextBaseline;
+}): boolean {
+	const verticalBounds = getPlainTextVerticalBounds({ layout });
+	const effectOutset = Math.ceil(
+		Math.max(
+			4,
+			(layout.stroke?.width ?? 0) * 2,
+			(layout.shadow?.blur ?? 0) * 2 + Math.abs(layout.shadow?.offsetX ?? 0),
+			(layout.shadow?.blur ?? 0) * 2 + Math.abs(layout.shadow?.offsetY ?? 0),
+		),
+	);
+	const left =
+		layout.textAlign === "center"
+			? -layout.block.maxWidth / 2
+			: layout.textAlign === "right"
+				? -layout.block.maxWidth
+				: 0;
+	const top = verticalBounds.top;
+	const width = Math.max(
+		1,
+		Math.ceil(layout.block.maxWidth + effectOutset * 2),
+	);
+	const height = Math.max(
+		1,
+		Math.ceil(verticalBounds.bottom - top + effectOutset * 2),
+	);
+	const surface = createTextEffectSurface({ width, height });
+	if (!surface) return false;
+
+	surface.ctx.translate(effectOutset - left, effectOutset - top);
+	surface.ctx.font = layout.fontString;
+	surface.ctx.textAlign = layout.textAlign;
+	surface.ctx.textBaseline = textBaseline;
+	surface.ctx.fillStyle = createTextFill({
+		ctx: surface.ctx,
+		layout,
+		fallbackColor: textColor,
+	});
+	setCanvasLetterSpacing({
+		ctx: surface.ctx,
+		letterSpacingPx: layout.letterSpacing,
+	});
+	drawPlainText({ ctx: surface.ctx, layout });
+	surface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	if (layout.windowShadow) {
+		// Window Shadow intentionally removes the shadow from the glyph bounds,
+		// leaving it visible only around the outside edge of the text window.
+		surface.ctx.clearRect(0, effectOutset, width, verticalBounds.bottom - top);
+	} else {
+		const maskSurface = createTextEffectSurface({ width, height });
+		if (!maskSurface) return false;
+		maskSurface.ctx.translate(effectOutset - left, effectOutset - top);
+		maskSurface.ctx.font = layout.fontString;
+		maskSurface.ctx.textAlign = layout.textAlign;
+		maskSurface.ctx.textBaseline = textBaseline;
+		maskSurface.ctx.fillStyle = createTextFill({
+			ctx: maskSurface.ctx,
+			layout,
+			fallbackColor: textColor,
+		});
+		setCanvasLetterSpacing({
+			ctx: maskSurface.ctx,
+			letterSpacingPx: layout.letterSpacing,
+		});
+		drawPlainText({ ctx: maskSurface.ctx, layout, shadow: null });
+		maskSurface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+		surface.ctx.globalCompositeOperation = "destination-out";
+		surface.ctx.drawImage(maskSurface.canvas, 0, 0);
+		surface.ctx.globalCompositeOperation = "source-over";
+	}
+	ctx.drawImage(surface.canvas, left - effectOutset, top - effectOutset);
+
+	surface.ctx.clearRect(0, 0, width, height);
+	surface.ctx.translate(effectOutset - left, effectOutset - top);
+	surface.ctx.font = layout.fontString;
+	surface.ctx.textAlign = layout.textAlign;
+	surface.ctx.textBaseline = textBaseline;
+	surface.ctx.fillStyle = createTextFill({
+		ctx: surface.ctx,
+		layout,
+		fallbackColor: textColor,
+	});
+	setCanvasLetterSpacing({
+		ctx: surface.ctx,
+		letterSpacingPx: layout.letterSpacing,
+	});
+	drawPlainText({ ctx: surface.ctx, layout, shadow: null });
+	surface.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	applyBottomFadeOutMask({
+		ctx: surface.ctx,
+		width,
+		height,
+		top: effectOutset,
+		bottom: effectOutset + verticalBounds.bottom - top,
+		strength: layout.bottomFadeOut,
+		endOpacity: layout.bottomFadeOutEndOpacity,
+	});
+	ctx.drawImage(surface.canvas, left - effectOutset, top - effectOutset);
+	return true;
+}
+
+function getPlainTextVerticalBounds({
+	layout,
+}: {
+	layout: MeasuredTextLayout;
+}): { top: number; bottom: number } {
+	let top = Number.POSITIVE_INFINITY;
+	let bottom = Number.NEGATIVE_INFINITY;
+	for (let index = 0; index < layout.lineMetrics.length; index++) {
+		const metrics = layout.lineMetrics[index];
+		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
+		const ascent =
+			metrics.actualBoundingBoxAscent || layout.scaledFontSize * 0.8;
+		const descent =
+			metrics.actualBoundingBoxDescent || layout.scaledFontSize * 0.2;
+		top = Math.min(top, lineY - ascent);
+		bottom = Math.max(bottom, lineY + descent);
+	}
+	if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom <= top) {
+		return {
+			top: -layout.scaledFontSize * 0.8,
+			bottom: layout.scaledFontSize * 0.2,
+		};
+	}
+	return { top, bottom };
+}
+
+function applyBottomFadeOutMask({
+	ctx,
+	width,
+	height,
+	top,
+	bottom,
+	strength,
+	endOpacity,
+}: {
+	ctx: TextCanvasContext;
+	width: number;
+	height: number;
+	top: number;
+	bottom: number;
+	strength: number;
+	endOpacity: number;
+}): void {
+	const range = getBottomFadeOutRange({ top, bottom, strength });
+	const mask = ctx.createLinearGradient(0, range.start, 0, range.end);
+	mask.addColorStop(0, "rgba(255,255,255,1)");
+	mask.addColorStop(
+		1,
+		`rgba(255,255,255,${clampBottomFadeOutEndOpacity(endOpacity)})`,
+	);
+	ctx.globalCompositeOperation = "destination-in";
+	ctx.fillStyle = mask;
+	ctx.fillRect(0, 0, width, height);
+	ctx.globalCompositeOperation = "source-over";
+}
+
+function createTextEffectSurface({
+	width,
+	height,
+}: {
+	width: number;
+	height: number;
+}): {
+	canvas: HTMLCanvasElement | OffscreenCanvas;
+	ctx: TextCanvasContext;
+} | null {
+	if (typeof OffscreenCanvas !== "undefined") {
+		const canvas = new OffscreenCanvas(width, height);
+		const ctx = canvas.getContext("2d");
+		return ctx ? { canvas, ctx } : null;
+	}
+	if (typeof document !== "undefined") {
+		const canvas = document.createElement("canvas");
+		canvas.width = width;
+		canvas.height = height;
+		const ctx = canvas.getContext("2d");
+		return ctx ? { canvas, ctx } : null;
+	}
+	return null;
+}
+
+export function clampBottomFadeOut(value: number | undefined): number {
+	if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(1, value));
+}
+
+export function clampBottomFadeOutEndOpacity(value: number | undefined): number {
+	if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(1, value));
+}
+
+export function getBottomFadeOutRange({
+	top,
+	bottom,
+	strength,
+}: {
+	top: number;
+	bottom: number;
+	strength: number;
+}): { start: number; end: number } {
+	const clampedStrength = clampBottomFadeOut(strength);
+	const height = Math.max(0, bottom - top);
+	return {
+		start: bottom - height * clampedStrength,
+		end: bottom,
+	};
+}
+
 function createWordFill({ ctx, word }: { ctx: TextCanvasContext; word: MeasuredWordGlyph }) {
 	if (!word.gradient) return word.color;
 	const radians = (word.gradient.angle * Math.PI) / 180;
@@ -430,6 +821,44 @@ function createWordFill({ ctx, word }: { ctx: TextCanvasContext; word: MeasuredW
 	const gradient = ctx.createLinearGradient(word.width / 2 - dx, -dy, word.width / 2 + dx, dy);
 	gradient.addColorStop(0, word.gradient.startColor);
 	gradient.addColorStop(1, word.gradient.endColor);
+	return gradient;
+}
+
+function createTextFill({
+	ctx,
+	layout,
+	fallbackColor,
+}: {
+	ctx: TextCanvasContext;
+	layout: MeasuredTextLayout;
+	fallbackColor: string;
+}): string | CanvasGradient {
+	if (!layout.gradient) return fallbackColor;
+
+	const left =
+		layout.textAlign === "center"
+			? -layout.block.maxWidth / 2
+			: layout.textAlign === "right"
+				? -layout.block.maxWidth
+				: 0;
+	const width = Math.max(1, layout.block.maxWidth);
+	const bounds = getPlainTextVerticalBounds({ layout });
+	const height = Math.max(1, bounds.bottom - bounds.top);
+	const radians = (layout.gradient.angle * Math.PI) / 180;
+	const directionX = Math.cos(radians);
+	const directionY = Math.sin(radians);
+	const halfLength =
+		Math.abs(directionX) * (width / 2) + Math.abs(directionY) * (height / 2);
+	const centerX = left + width / 2;
+	const centerY = bounds.top + height / 2;
+	const gradient = ctx.createLinearGradient(
+		centerX - directionX * halfLength,
+		centerY - directionY * halfLength,
+		centerX + directionX * halfLength,
+		centerY + directionY * halfLength,
+	);
+	gradient.addColorStop(0, layout.gradient.startColor);
+	gradient.addColorStop(1, layout.gradient.endColor);
 	return gradient;
 }
 
@@ -526,15 +955,16 @@ function getGlyphEdgePoints({ word }: { word: MeasuredWordGlyph }): Array<{ x: n
 	context.fillText(word.drawText, originX, baseline);
 	const pixels = context.getImageData(0, 0, width, height).data;
 	const points: Array<{ x: number; y: number }> = [];
-	const alphaAt = (x: number, y: number) => pixels[(y * width + x) * 4 + 3] ?? 0;
+	const alphaAt = ({ x, y }: { x: number; y: number }) =>
+		pixels[(y * width + x) * 4 + 3] ?? 0;
 	for (let y = 1; y < height - 1; y += 2) {
 		for (let x = 1; x < width - 1; x += 2) {
-			if (alphaAt(x, y) < 80) continue;
+			if (alphaAt({ x, y }) < 80) continue;
 			if (
-				alphaAt(x - 1, y) < 40 ||
-				alphaAt(x + 1, y) < 40 ||
-				alphaAt(x, y - 1) < 40 ||
-				alphaAt(x, y + 1) < 40
+				alphaAt({ x: x - 1, y }) < 40 ||
+				alphaAt({ x: x + 1, y }) < 40 ||
+				alphaAt({ x, y: y - 1 }) < 40 ||
+				alphaAt({ x, y: y + 1 }) < 40
 			) {
 				points.push({ x: x - originX, y: y - baseline });
 			}
@@ -632,6 +1062,10 @@ function applyTextShadow({
 		!shadow ||
 		(shadow.blur <= 0 && shadow.offsetX === 0 && shadow.offsetY === 0)
 	) {
+		ctx.shadowBlur = 0;
+		ctx.shadowColor = "rgba(0,0,0,0)";
+		ctx.shadowOffsetX = 0;
+		ctx.shadowOffsetY = 0;
 		return;
 	}
 

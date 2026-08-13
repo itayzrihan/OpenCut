@@ -16,5 +16,10 @@ export function canTrackHaveAudio(
 export function canTrackBeHidden(
 	track: TimelineTrack,
 ): track is VideoTrack | TextTrack | GraphicTrack | EffectTrack {
-	return track.type !== "audio";
+	return (
+		track.type === "video" ||
+		track.type === "text" ||
+		track.type === "graphic" ||
+		track.type === "effect"
+	);
 }
