@@ -127,6 +127,16 @@ export function getBookmarkAtTime({
 	return index === -1 ? null : bookmarks[index];
 }
 
+export function getBookmarksByGroup({
+	bookmarks,
+	groupId,
+}: {
+	bookmarks: Bookmark[];
+	groupId: string;
+}): Bookmark[] {
+	return bookmarks.filter((bookmark) => bookmark.groupId === groupId);
+}
+
 export function getBookmarksActiveAtTime({
 	bookmarks,
 	time,

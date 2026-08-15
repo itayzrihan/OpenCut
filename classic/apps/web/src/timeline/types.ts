@@ -30,6 +30,8 @@ export interface Bookmark {
 	note?: string;
 	color?: string;
 	duration?: MediaTime;
+	/** Ties bookmarks marking the same reorganize-takes duplicate cluster together. */
+	groupId?: string;
 }
 
 export interface TScene {

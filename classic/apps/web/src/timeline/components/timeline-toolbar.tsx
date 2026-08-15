@@ -60,6 +60,7 @@ import {
 	ArrowDown01Icon,
 	AiAudioIcon,
 	AudioWave01Icon,
+	ArrangeIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { OcRippleIcon } from "@/components/icons";
@@ -83,6 +84,7 @@ import {
 	MIN_AUDIO_MIN_SILENCE_SECONDS,
 } from "@/timeline/audio-silence-analysis";
 import { Input } from "@/components/ui/input";
+import { hasSceneTranscript } from "@/timeline/reorganize-takes/selectors";
 
 export function TimelineToolbar({
 	zoomLevel,
@@ -121,6 +123,10 @@ export function TimelineToolbar({
 
 function ToolbarLeftSection() {
 	const timeline = useEditorTimelineScenes((editor) => editor.timeline);
+	const commandManager = useEditorTimelineScenes((editor) => editor.command);
+	const activeSceneTracks = useEditorTimelineScenes(
+		(editor) => editor.scenes.getActiveScene().tracks,
+	);
 	const graphEditor = useGraphEditorController();
 	const aiRangeSelection = useTimelineStore((s) => s.aiRangeSelection);
 	const armRangeSelection = useTimelineStore((s) => s.armRangeSelection);
@@ -135,6 +141,9 @@ function ToolbarLeftSection() {
 	const hasSelectedVideo = selectedTimelineElements.some(
 		({ element }) => element.type === "video",
 	);
+	const hasTranscribedSelection = hasSceneTranscript({
+		tracks: activeSceneTracks,
+	});
 	const selectedMediaId =
 		selectedElement && hasMediaId(selectedElement.element)
 			? selectedElement.element.mediaId
@@ -177,6 +186,12 @@ function ToolbarLeftSection() {
 				<CutSilenceToolbarControl
 					hasSelectedVideo={hasSelectedVideo}
 					removeAllSilence={(options) => timeline.removeAllSilence(options)}
+				/>
+				<ReorganizeTakesToolbarControl
+					hasSelectedVideo={hasSelectedVideo}
+					hasTranscribedSelection={hasTranscribedSelection}
+					reorganizeTakes={() => timeline.reorganizeTakes()}
+					undo={() => commandManager.undo()}
 				/>
 
 				<ToolbarButton
@@ -454,6 +469,71 @@ function CutSilenceToolbarControl({
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
+	);
+}
+
+function ReorganizeTakesToolbarControl({
+	hasSelectedVideo,
+	hasTranscribedSelection,
+	reorganizeTakes,
+	undo,
+}: {
+	hasSelectedVideo: boolean;
+	hasTranscribedSelection: boolean;
+	reorganizeTakes: () => Promise<void>;
+	undo: () => void;
+}) {
+	const [isRunning, setIsRunning] = useState(false);
+	const activeRunRef = useRef(false);
+	const disabled = !hasSelectedVideo || !hasTranscribedSelection || isRunning;
+
+	const run = async () => {
+		if (disabled || activeRunRef.current) return;
+		activeRunRef.current = true;
+		setIsRunning(true);
+		try {
+			await reorganizeTakes();
+			toast.success("Takes reorganized", {
+				description:
+					"Out-of-order lines were straightened out and duplicate takes were bookmarked.",
+				action: { label: "Undo", onClick: () => undo() },
+			});
+		} catch (error) {
+			console.error("Failed to reorganize takes:", error);
+			toast.error("Could not reorganize takes", {
+				description:
+					error instanceof Error ? error.message : "Please try again.",
+			});
+		} finally {
+			activeRunRef.current = false;
+			setIsRunning(false);
+		}
+	};
+
+	const tooltip = !hasSelectedVideo
+		? "Select a transcribed video clip to reorganize takes"
+		: !hasTranscribedSelection
+			? "Transcribe this clip first to reorganize takes"
+			: isRunning
+				? "Reorganizing takes using the transcript"
+				: "Reorganize takes using the transcript";
+
+	return (
+		<ToolbarButton
+			icon={
+				isRunning ? (
+					<Spinner className="size-3.5" />
+				) : (
+					<HugeiconsIcon icon={ArrangeIcon} />
+				)
+			}
+			tooltip={tooltip}
+			disabled={disabled}
+			onClick={({ event }) => {
+				event.stopPropagation();
+				void run();
+			}}
+		/>
 	);
 }
 

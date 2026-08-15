@@ -8,6 +8,7 @@ export {
 	getFrameTime,
 	getBookmarkAtTime,
 	getBookmarksActiveAtTime,
+	getBookmarksByGroup,
 } from "./utils";
 export { getBookmarkSnapPoints } from "./snap-source";
 export {

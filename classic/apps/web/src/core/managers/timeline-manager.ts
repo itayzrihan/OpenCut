@@ -23,6 +23,7 @@ import { mergeElementOverlay } from "@/timeline/element-overlay";
 import { applyElementUpdate } from "@/timeline/update-pipeline";
 import { findTrackInSceneTracks } from "@/timeline/track-element-update";
 import {
+	addMediaTime,
 	lastFrameMediaTime,
 	mediaTime,
 	mediaTimeFromSeconds,
@@ -65,7 +66,7 @@ import {
 	resolveAnimationPathValueAtTime,
 } from "@/animation";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import { BatchCommand } from "@/commands";
+import { BatchCommand, SetBookmarksCommand } from "@/commands";
 import {
 	AddTrackCommand,
 	RemoveTrackCommand,
@@ -106,6 +107,14 @@ import type {
 } from "@/timeline/group-move";
 import { withNormalizedTrackOrder } from "@/timeline";
 import { removeSilenceRangesFromTracks } from "@/timeline/cut-silence";
+import { applyReorganizeTakes } from "@/timeline/reorganize-takes/apply-reorganize-takes";
+import { segmentWordsIntoPhrases } from "@/timeline/reorganize-takes/segment-phrases";
+import {
+	getTranscriptWordsInRange,
+	hasSceneTranscript,
+} from "@/timeline/reorganize-takes/selectors";
+import { requestReorganizeTakesPlan } from "@/ai/reorganize-takes-plan";
+import { generateUUID } from "@/utils/id";
 import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
 import {
 	buildSpeakerFrameBreakoutEdit,
@@ -1104,6 +1113,104 @@ export class TimelineManager {
 		if (after === before) return;
 		this.editor.command.execute({
 			command: new TracksSnapshotCommand({ before, after }),
+		});
+	}
+
+	/**
+	 * Uses the scene's transcript to find takes read out of chronological order and duplicate
+	 * re-reads, then applies the fix immediately: reorders/splits the selected clip and marks
+	 * duplicate-take clusters with linked bookmarks so the editor can pick the best one. Applied
+	 * as a single atomic transaction so it reverts in one undo.
+	 */
+	async reorganizeTakes(): Promise<void> {
+		const scene = this.editor.scenes.getActiveScene();
+		const before = scene.tracks;
+		if (!hasSceneTranscript({ tracks: before })) {
+			throw new Error("Transcribe this clip first to reorganize takes.");
+		}
+
+		const selectedVideos = this.getElementsWithTracks({
+			elements: this.editor.selection.getSelectedElements(),
+		})
+			.filter(
+				(entry): entry is { track: TimelineTrack; element: VideoElement } =>
+					entry.element.type === "video",
+			)
+			.sort((left, right) => left.element.startTime - right.element.startTime);
+		const target = selectedVideos[0];
+		if (!target) return;
+		const element = target.element;
+
+		const elementEnd = addMediaTime({
+			a: element.startTime,
+			b: element.duration,
+		});
+		const scopedWords = getTranscriptWordsInRange({
+			tracks: before,
+			startTime: element.startTime,
+			endTime: elementEnd,
+		});
+		if (scopedWords.length === 0) {
+			throw new Error("No transcribed speech found in the selected clip.");
+		}
+		const phrases = segmentWordsIntoPhrases({ words: scopedWords });
+		if (phrases.length < 2) return;
+
+		const plan = await requestReorganizeTakesPlan({
+			phrases: phrases.map((phrase) => ({
+				id: phrase.id,
+				text: phrase.text,
+				startTime: phrase.startTime,
+				endTime: phrase.endTime,
+			})),
+		});
+
+		const activeScene = this.editor.scenes.getActiveSceneOrNull();
+		if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
+			throw new Error(
+				"The timeline changed while takes were being reorganized. Nothing was applied.",
+			);
+		}
+
+		const project = this.editor.project.getActive();
+		const result = applyReorganizeTakes({
+			tracks: before,
+			element,
+			scopedWords,
+			phrases,
+			plan,
+			canvasSize: project.settings.canvasSize,
+		});
+		if (!result) return;
+
+		const bookmarksBefore = scene.bookmarks;
+		const newBookmarks = plan.takeClusters.flatMap((cluster) => {
+			const groupId = generateUUID();
+			return cluster.ids.flatMap((phraseId) => {
+				const time = result.phraseStartTimes.get(phraseId);
+				if (time === undefined) return [];
+				return [{ time, groupId, note: cluster.label ?? "Take" }];
+			});
+		});
+		const bookmarksAfter = [...bookmarksBefore, ...newBookmarks].sort(
+			(left, right) => left.time - right.time,
+		);
+
+		this.editor.command.executeTransaction({
+			execute: () => {
+				this.editor.command.execute({
+					command: new TracksSnapshotCommand({ before, after: result.tracks }),
+				});
+				if (newBookmarks.length > 0) {
+					this.editor.command.execute({
+						command: new SetBookmarksCommand({
+							sceneId: scene.id,
+							before: bookmarksBefore,
+							after: bookmarksAfter,
+						}),
+					});
+				}
+			},
 		});
 	}
 
