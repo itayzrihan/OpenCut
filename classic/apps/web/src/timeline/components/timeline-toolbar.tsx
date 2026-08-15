@@ -418,6 +418,7 @@ function CutSilenceToolbarControl({
 									<span
 										className="mt-2 flex items-center gap-2"
 										onPointerDown={(event) => event.stopPropagation()}
+										onPointerUp={(event) => event.stopPropagation()}
 									>
 										<label
 											className="text-muted-foreground text-xs"
