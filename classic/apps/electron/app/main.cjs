@@ -2,10 +2,12 @@
 
 const { spawn } = require("node:child_process");
 const { existsSync } = require("node:fs");
+const { join } = require("node:path");
 const {
 	app,
 	BrowserWindow,
 	dialog,
+	ipcMain,
 	Menu,
 	shell,
 } = require("electron");
@@ -101,6 +103,28 @@ async function openExternal(candidate) {
 	}
 }
 
+const MEDIA_FILE_EXTENSIONS = [
+	"mp4", "mov", "mkv", "webm", "avi", "m4v",
+	"mp3", "wav", "aac", "flac", "ogg", "m4a",
+	"png", "jpg", "jpeg", "gif", "webp", "svg", "bmp",
+];
+
+// Runs in the main process so the resulting dialog is owned by the app window — unlike the
+// server-side PowerShell/osascript/zenity fallback in services/local-drive/server.ts, which is
+// spawned from a detached background process with no window to parent itself to.
+ipcMain.handle("opencut:pick-media-files", async (event) => {
+	const window = BrowserWindow.fromWebContents(event.sender) ?? mainWindow ?? undefined;
+	const result = await dialog.showOpenDialog(window, {
+		title: "Import media into OpenCut",
+		properties: ["openFile", "multiSelections"],
+		filters: [
+			{ name: "Media", extensions: MEDIA_FILE_EXTENSIONS },
+			{ name: "All Files", extensions: ["*"] },
+		],
+	});
+	return result.canceled ? [] : result.filePaths;
+});
+
 function createWindow(appUrl) {
 	const window = new BrowserWindow({
 		width: 1440,
@@ -116,6 +140,7 @@ function createWindow(appUrl) {
 			nodeIntegration: false,
 			sandbox: true,
 			webSecurity: true,
+			preload: join(__dirname, "preload.cjs"),
 		},
 	});
 
@@ -124,6 +149,21 @@ function createWindow(appUrl) {
 	);
 	window.on("closed", () => {
 		if (mainWindow === window) mainWindow = null;
+	});
+
+	// The default DevTools accelerator (Ctrl/Cmd+Shift+I, F12) is normally wired through
+	// Electron's default application menu roles. Menu.setApplicationMenu(null) above removes
+	// that menu — and with it those default shortcuts — so they're rebound explicitly here.
+	window.webContents.on("before-input-event", (event, input) => {
+		const isDevToolsShortcut =
+			input.type === "keyDown" &&
+			(input.key === "F12" ||
+				(input.key.toLowerCase() === "i" &&
+				(input.control || input.meta) &&
+				input.shift));
+		if (isDevToolsShortcut) {
+			window.webContents.toggleDevTools();
+		}
 	});
 
 	window.webContents.setWindowOpenHandler(({ url }) => {

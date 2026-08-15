@@ -68,6 +68,19 @@ export async function pickLocalMedia({
 	return localDriveRequest({ operation: "media.pick", payload: { projectId } });
 }
 
+export async function registerLocalMediaPaths({
+	projectId,
+	paths,
+}: {
+	projectId: string;
+	paths: string[];
+}): Promise<LocalDriveMediaRecord[]> {
+	return localDriveRequest({
+		operation: "media.registerPaths",
+		payload: { projectId, paths },
+	});
+}
+
 export async function uploadLocalMedia({
 	projectId,
 	id,

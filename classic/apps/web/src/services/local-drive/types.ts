@@ -32,6 +32,7 @@ export type LocalDriveOperation =
 	| "media.list"
 	| "media.put"
 	| "media.registerPath"
+	| "media.registerPaths"
 	| "media.pick"
 	| "media.delete"
 	| "media.clear"

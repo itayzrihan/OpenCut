@@ -671,10 +671,16 @@ async function chooseFiles(): Promise<string[]> {
 	}
 }
 
-export async function pickAndRegisterMedia(
+/**
+ * Registers each source path as a media asset, skipping paths that no longer resolve to a file
+ * or aren't recognizable image/audio/video media. Shared by the server-side dialog flow
+ * (pickAndRegisterMedia) and the Electron flow, which picks paths via the native dialog in the
+ * main process (properly parented to the app window) and hands them straight to this function.
+ */
+export async function registerPickedMediaPaths(
 	projectId: string,
+	paths: string[],
 ): Promise<LocalDriveMediaRecord[]> {
-	const paths = await chooseFiles();
 	const results: LocalDriveMediaRecord[] = [];
 	for (const sourcePath of paths) {
 		const sourceStat = await stat(sourcePath);
@@ -707,6 +713,13 @@ export async function pickAndRegisterMedia(
 		);
 	}
 	return results;
+}
+
+export async function pickAndRegisterMedia(
+	projectId: string,
+): Promise<LocalDriveMediaRecord[]> {
+	const paths = await chooseFiles();
+	return registerPickedMediaPaths(projectId, paths);
 }
 
 export async function getFontFile(projectId: string, fontId: string) {

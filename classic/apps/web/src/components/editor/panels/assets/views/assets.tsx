@@ -50,7 +50,11 @@ import { useFileUpload } from "@/media/use-file-upload";
 import { invokeAction } from "@/actions";
 import { processLocalDriveMedia, processMediaAssets } from "@/media/processing";
 import { showMediaUploadToast } from "@/media/upload-toast";
-import { pickLocalMedia } from "@/services/local-drive/client";
+import {
+	pickLocalMedia,
+	registerLocalMediaPaths,
+} from "@/services/local-drive/client";
+import { detectRuntimeTarget } from "@/platform/runtime-profile";
 import {
 	SelectableItem,
 	SelectableSurface,
@@ -96,6 +100,21 @@ import { FileOutput, Layers2, SplitSquareHorizontal } from "lucide-react";
 type MediaListEntry =
 	| { type: "media"; item: MediaAsset }
 	| { type: "sequence"; scene: TScene };
+
+/**
+ * In the Electron shell, picks files via the native dialog in the main process (properly
+ * parented to the app window) instead of asking the Next.js server to shell out to a system
+ * dialog — that dialog has no owner window in Electron and never comes to the front. Falls back
+ * to the server-side picker everywhere else (plain browser tabs, self-hosted deployments).
+ */
+async function pickLocalMediaRecords({ projectId }: { projectId: string }) {
+	if (detectRuntimeTarget() === "electron" && window.opencutElectron) {
+		const paths = await window.opencutElectron.pickMediaFiles();
+		if (paths.length === 0) return [];
+		return registerLocalMediaPaths({ projectId, paths });
+	}
+	return pickLocalMedia({ projectId });
+}
 
 export function MediaView() {
 	const editor = useEditor();
@@ -169,7 +188,7 @@ export function MediaView() {
 		setIsProcessing(true);
 		setProgress(0);
 		try {
-			const records = await pickLocalMedia({
+			const records = await pickLocalMediaRecords({
 				projectId: activeProject.metadata.id,
 			});
 			if (records.length === 0) return;

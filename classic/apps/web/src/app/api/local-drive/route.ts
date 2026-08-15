@@ -27,6 +27,7 @@ import {
 	listSharedRecords,
 	listPreferences,
 	pickAndRegisterMedia,
+	registerPickedMediaPaths,
 	putFontMetadata,
 	putHistory,
 	putMediaMetadata,
@@ -44,6 +45,16 @@ export const dynamic = "force-dynamic";
 function readString(value: unknown, label: string): string {
 	if (typeof value !== "string" || value.length === 0) {
 		throw new Error(`${label} is required`);
+	}
+	return value;
+}
+
+function readStringArray(value: unknown, label: string): string[] {
+	if (
+		!Array.isArray(value) ||
+		!value.every((item) => typeof item === "string" && item.length > 0)
+	) {
+		throw new Error(`${label} must be a list of strings`);
 	}
 	return value;
 }
@@ -115,6 +126,13 @@ export async function POST(request: Request) {
 				);
 			case "media.pick":
 				return NextResponse.json(await pickAndRegisterMedia(projectId()));
+			case "media.registerPaths":
+				return NextResponse.json(
+					await registerPickedMediaPaths(
+						projectId(),
+						readStringArray(body.paths, "paths"),
+					),
+				);
 			case "media.delete":
 				await deleteMedia(projectId(), readString(body.id, "media id"));
 				return NextResponse.json({ ok: true });
