@@ -125,6 +125,20 @@ ipcMain.handle("opencut:pick-media-files", async (event) => {
 	return result.canceled ? [] : result.filePaths;
 });
 
+ipcMain.handle("opencut:go-back", async (event) => {
+	const window = BrowserWindow.fromWebContents(event.sender);
+	if (window?.webContents.canGoBack()) {
+		window.webContents.goBack();
+		return true;
+	}
+	return false;
+});
+
+ipcMain.handle("opencut:can-go-back", async (event) => {
+	const window = BrowserWindow.fromWebContents(event.sender);
+	return window?.webContents.canGoBack() ?? false;
+});
+
 function createWindow(appUrl) {
 	const window = new BrowserWindow({
 		width: 1440,
@@ -166,17 +180,42 @@ function createWindow(appUrl) {
 		}
 	});
 
+	// OAuth providers that are allowed to redirect within the Electron window
+	const oauthProviders = [
+		"auth.openai.com",
+		"accounts.google.com",
+		"github.com",
+		"login.microsoftonline.com",
+	];
+
+	function isOAuthUrl(urlString) {
+		try {
+			const url = new URL(urlString);
+			return oauthProviders.some((provider) =>
+				url.hostname.includes(provider),
+			);
+		} catch {
+			return false;
+		}
+	}
+
 	window.webContents.setWindowOpenHandler(({ url }) => {
 		if (isInternalUrl(url, appUrl)) {
 			void window.loadURL(url);
+		} else if (isOAuthUrl(url)) {
+			// Allow OAuth flows to navigate in-window
+			void window.loadURL(url);
 		} else {
+			// External links open in default browser
 			void openExternal(url);
 		}
 		return { action: "deny" };
 	});
 
 	window.webContents.on("will-navigate", (event, url) => {
-		if (isInternalUrl(url, appUrl)) return;
+		// Allow navigation to internal app or OAuth providers
+		if (isInternalUrl(url, appUrl) || isOAuthUrl(url)) return;
+		// Block other external navigation
 		event.preventDefault();
 		void openExternal(url);
 	});

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "../components/ui/sonner";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
 import { TooltipProvider } from "../components/ui/tooltip";
+import { ElectronBackButton } from "@/components/electron-back-button";
 import { baseMetaData } from "./metadata";
 import { BotIdClient } from "botid/client";
 import { webEnv } from "@/env/web";
@@ -39,6 +40,7 @@ export default function RootLayout({
 					disableTransitionOnChange={true}
 				>
 					<TooltipProvider>
+						<ElectronBackButton />
 						<Toaster />
 						<Script
 							src="https://cdn.databuddy.cc/databuddy.js"

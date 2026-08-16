@@ -9,4 +9,6 @@ const { contextBridge, ipcRenderer } = require("electron");
 // never comes to the front over the app. Routing through the main process here fixes that.
 contextBridge.exposeInMainWorld("opencutElectron", {
 	pickMediaFiles: () => ipcRenderer.invoke("opencut:pick-media-files"),
+	goBack: () => ipcRenderer.invoke("opencut:go-back"),
+	canGoBack: () => ipcRenderer.invoke("opencut:can-go-back"),
 });
