@@ -364,7 +364,21 @@ export function CaptionReviewView() {
 						...nextTrack,
 						elements: nextTrack.elements.map((candidate) =>
 							candidate.id === item.elementId
-								? { ...candidate, ...elementPatch }
+								? {
+										...candidate,
+										...elementPatch,
+										// A naive spread would replace params wholesale —
+										// elementPatch.params only carries the changed
+										// `content` field, so merge it instead of clobbering
+										// the element's font/size/color overrides. Mirrors
+										// applyElementUpdate in timeline/update-pipeline.ts,
+										// which the normal editor.timeline.updateElements
+										// path already does for every other caption edit.
+										params: {
+											...candidate.params,
+											...(elementPatch.params ?? {}),
+										},
+									}
 								: candidate,
 						),
 					};
