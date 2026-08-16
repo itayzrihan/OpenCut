@@ -38,9 +38,9 @@ import {
 	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
 	clampAudioMinSilenceSeconds,
 	DEEP_AUDIO_FRAME_SECONDS,
-	extractCompactAudioFeatures,
 	FAST_AUDIO_FRAME_SECONDS,
 } from "@/timeline/audio-silence-analysis";
+import { extractCompactAudioFeaturesGPU } from "@/timeline/audio-silence-analysis-gpu";
 import {
 	canElementBeHidden,
 	canElementHaveAudio,
@@ -994,7 +994,7 @@ export class TimelineManager {
 					clipTime: clipDuration,
 					retime: element.retime,
 				});
-			const frames = await extractCompactAudioFeatures({
+			const frames = await extractCompactAudioFeaturesGPU({
 				samples: decoded.samples,
 				sampleRate: decoded.sampleRate,
 				sourceStartSeconds: sourceStart,
