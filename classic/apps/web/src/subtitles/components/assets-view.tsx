@@ -85,7 +85,8 @@ import {
 	CAPTION_WORD_ANIMATIONS,
 } from "@/text/caption-presets";
 import { toast } from "sonner";
-import { SpellCheck2, WandSparkles } from "lucide-react";
+import { SpellCheck2, WandSparkles, Zap } from "lucide-react";
+import { applyAndArrangeAllTextTransitions } from "@/transitions";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
 import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
 import { mediaTimeFromSeconds } from "@/wasm";
@@ -282,6 +283,7 @@ export function Captions() {
 	const [aiAction, setAiAction] = useState<
 		"correcting" | "optimizing" | "rearranging" | null
 	>(null);
+	const [autoTextsStep, setAutoTextsStep] = useState<string | null>(null);
 	const [presetNameDialogOpen, setPresetNameDialogOpen] = useState(false);
 	const [presetNameInput, setPresetNameInput] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -858,6 +860,43 @@ export function Captions() {
 		});
 	};
 
+	const handleAutoTexts = async () => {
+		if (isProcessing || autoTextsStep !== null) return;
+		if (activeDiagnostics.length > 0) return;
+		if (!requireCaptionAi()) return;
+
+		try {
+			setAutoTextsStep("Generating transcript...");
+			await handleGenerateTranscript();
+
+			const generatedScene = editor.scenes.getActiveSceneOrNull();
+			const hasCaptions = !!(
+				generatedScene &&
+				findCaptionSourceTrack({ tracks: generatedScene.tracks })?.captionSource
+			);
+			if (!hasCaptions) {
+				toast.error("Auto Texts stopped: transcript generation did not complete");
+				return;
+			}
+
+			setAutoTextsStep("Codex correcting transcript...");
+			await handleCorrectTranscript();
+
+			setAutoTextsStep("Codex rearranging rows...");
+			await handleRearrangeRows();
+
+			setAutoTextsStep("Arranging text transitions...");
+			applyAndArrangeAllTextTransitions({ editor });
+
+			toast.success("Auto Texts complete", {
+				description:
+					"Transcript generated, corrected, rearranged, and text transitions arranged.",
+			});
+		} finally {
+			setAutoTextsStep(null);
+		}
+	};
+
 	const handleImportClick = () => {
 		fileInputRef.current?.click();
 	};
@@ -1358,7 +1397,7 @@ export function Captions() {
 						variant="outline"
 						className="w-full"
 						onClick={() => void saveCurrentPreset()}
-						disabled={isProcessing}
+						disabled={isProcessing || autoTextsStep !== null}
 					>
 						Save preset
 					</Button>
@@ -1367,7 +1406,7 @@ export function Captions() {
 						variant="outline"
 						className="w-full"
 						onClick={applyCaptionSettings}
-						disabled={isProcessing || !hasGeneratedCaptions}
+						disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
 					>
 						Apply caption layout
 					</Button>
@@ -1376,7 +1415,7 @@ export function Captions() {
 							type="button"
 							variant="outline"
 							onClick={() => void handleCorrectTranscript()}
-							disabled={isProcessing || !hasGeneratedCaptions}
+							disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
 							className="min-w-0 gap-1.5"
 						>
 							{aiAction === "correcting" ? (
@@ -1392,7 +1431,7 @@ export function Captions() {
 							type="button"
 							variant="outline"
 							onClick={() => void handleOptimizeMessage()}
-							disabled={isProcessing || !hasGeneratedCaptions}
+							disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
 							className="min-w-0 gap-1.5"
 						>
 							{aiAction === "optimizing" ? (
@@ -1412,38 +1451,62 @@ export function Captions() {
 						variant="outline"
 						className="w-full"
 						onClick={() => void handleRearrangeRows()}
-						disabled={isProcessing || !hasGeneratedCaptions}
+						disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
 					>
 						{aiAction === "rearranging" && <Spinner className="mr-1" />}
 						{aiAction === "rearranging"
 							? "Rearranging rows..."
 							: "Codex Rearrange Rows"}
 					</Button>
-					<Button
-						type="button"
-						className="mt-auto w-full"
-						onClick={() => {
-							if (isTranscriptionProcessing) {
-								editor.transcription.cancel();
-								return;
+					<div className="mt-auto flex w-full flex-col gap-2">
+						<Button
+							type="button"
+							className="w-full"
+							onClick={() => {
+								if (isTranscriptionProcessing) {
+									editor.transcription.cancel();
+									return;
+								}
+								void handleGenerateTranscript();
+							}}
+							disabled={
+								isLocalProcessing ||
+								autoTextsStep !== null ||
+								transcriptionState.task.status === "cancelling" ||
+								(!isTranscriptionProcessing && activeDiagnostics.length > 0)
 							}
-							void handleGenerateTranscript();
-						}}
-						disabled={
-							isLocalProcessing ||
-							transcriptionState.task.status === "cancelling" ||
-							(!isTranscriptionProcessing && activeDiagnostics.length > 0)
-						}
-					>
-						{isProcessing && <Spinner className="mr-1" />}
-						{isTranscriptionProcessing
-							? transcriptionState.task.status === "cancelling"
-								? "Cancelling..."
-								: `Cancel · ${getTranscriptionStep({ phase: transcriptionState.task.phase })}`
-							: isLocalProcessing
-								? processing.step
-								: "Generate transcript"}
-					</Button>
+						>
+							{isProcessing && <Spinner className="mr-1" />}
+							{isTranscriptionProcessing
+								? transcriptionState.task.status === "cancelling"
+									? "Cancelling..."
+									: `Cancel · ${getTranscriptionStep({ phase: transcriptionState.task.phase })}`
+								: isLocalProcessing
+									? processing.step
+									: "Generate transcript"}
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							className="w-full gap-1.5"
+							onClick={() => void handleAutoTexts()}
+							disabled={
+								isProcessing ||
+								autoTextsStep !== null ||
+								activeDiagnostics.length > 0
+							}
+							title="Generate transcript, Codex-correct it, Codex-rearrange rows, then arrange all text transitions"
+						>
+							{autoTextsStep ? (
+								<Spinner className="size-4" />
+							) : (
+								<Zap className="size-4" />
+							)}
+							<span className="truncate">
+								{autoTextsStep ?? "Auto Texts"}
+							</span>
+						</Button>
+					</div>
 					{error && (
 						<div className="bg-destructive/10 border-destructive/20 rounded-md border p-3">
 							<p className="text-destructive text-sm">{error}</p>
