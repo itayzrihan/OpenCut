@@ -23,6 +23,7 @@ import {
 	rebuildCaptionTracksWithSource,
 } from "@/subtitles/caption-tracks";
 import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
+import { TracksSnapshotCommand } from "@/commands";
 import { requestTimelineScrollToTime } from "@/timeline/focus-event";
 import { mediaTimeToSeconds, type MediaTime } from "@/wasm";
 import { cn } from "@/utils/ui";
@@ -283,16 +284,20 @@ export function CaptionReviewView() {
 			return word;
 		});
 
-		const result = rebuildCaptionTracksWithSource({
-			tracks: activeScene.tracks,
+		const before = activeScene.tracks;
+		const after = rebuildCaptionTracksWithSource({
+			tracks: before,
 			words: updatedWords,
 			settings: source.settings,
-			canvasSize: { width: 1920, height: 1080 },
+			canvasSize: editor.project.getActive().settings.canvasSize,
 			layerCount: source.layerCount,
+			preserveEditedElements: false,
 		});
 
-		if (result) {
-			editor.timeline.updateTracks(result);
+		if (after) {
+			editor.command.execute({
+				command: new TracksSnapshotCommand({ before, after }),
+			});
 		}
 	};
 
