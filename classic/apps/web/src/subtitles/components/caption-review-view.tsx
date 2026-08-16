@@ -292,7 +292,7 @@ export function CaptionReviewView() {
 		});
 
 		if (result) {
-			editor.timeline.updateScene(result);
+			editor.timeline.updateTracks(result);
 		}
 	};
 
