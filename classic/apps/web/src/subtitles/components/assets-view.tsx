@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
 import { useEffect, useReducer, useRef, useState } from "react";
 import {
 	useEditor,
@@ -275,6 +282,8 @@ export function Captions() {
 	const [aiAction, setAiAction] = useState<
 		"correcting" | "optimizing" | "rearranging" | null
 	>(null);
+	const [presetNameDialogOpen, setPresetNameDialogOpen] = useState(false);
+	const [presetNameInput, setPresetNameInput] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const aiAbortControllerRef = useRef<AbortController | null>(null);
@@ -459,9 +468,14 @@ export function Captions() {
 	};
 
 	const saveCurrentPreset = async () => {
-		const name = window.prompt("Preset name");
-		const trimmedName = name?.trim();
+		setPresetNameInput("");
+		setPresetNameDialogOpen(true);
+	};
+
+	const handleSavePresetWithName = async () => {
+		const trimmedName = presetNameInput?.trim();
 		if (!trimmedName) return;
+		setPresetNameDialogOpen(false);
 		try {
 			const { rowBreaks: _rowBreaks, ...presetSettings } =
 				normalizeCaptionLayoutSettings({ settings: captionSettings });
@@ -1446,5 +1460,31 @@ export function Captions() {
 				</SectionContent>
 			</Section>
 		</PanelView>
+		<Dialog open={presetNameDialogOpen} onOpenChange={setPresetNameDialogOpen}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Save Preset</DialogTitle>
+				</DialogHeader>
+				<Input
+					placeholder="Enter preset name"
+					value={presetNameInput}
+					onChange={(e) => setPresetNameInput(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") {
+							void handleSavePresetWithName();
+						}
+					}}
+					autoFocus
+				/>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => setPresetNameDialogOpen(false)}>
+						Cancel
+					</Button>
+					<Button onClick={() => void handleSavePresetWithName()}>
+						Save
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }
