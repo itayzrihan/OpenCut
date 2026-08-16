@@ -18,8 +18,17 @@ import {
 	findClosestCaptionReviewItem,
 	type CaptionReviewItem,
 } from "@/subtitles/caption-review";
-import { findCaptionSourceTrack } from "@/subtitles/caption-tracks";
-import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
+import {
+	findCaptionSourceTrack,
+	getGeneratedCaptionWords,
+} from "@/subtitles/caption-tracks";
+import {
+	buildSubtitleCuesFromWords,
+	splitCaptionCuesByLayer,
+	stripCaptionPunctuation,
+} from "@/subtitles/caption-layout";
+import type { TextTrack } from "@/timeline";
+import type { TranscriptionWord } from "@/transcription/types";
 import { TracksSnapshotCommand } from "@/commands";
 import { requestTimelineScrollToTime } from "@/timeline/focus-event";
 import { mediaTimeToSeconds, type MediaTime } from "@/wasm";
@@ -34,6 +43,39 @@ function itemKey(
 	item: Pick<CaptionReviewItem, "trackId" | "elementId" | "wordIndex">,
 ) {
 	return `${item.trackId}:${item.elementId}:${item.wordIndex}`;
+}
+
+/**
+ * Finds the exact TranscriptionWord a rendered caption-review item corresponds
+ * to. Generated (ASR) words have no `.source` link back to their word run, so
+ * this mirrors the reference-identity lookup caption-source-sync.ts's
+ * syncElementWords uses: rebuild the expected caption layout from the source
+ * words and match by object identity via elementIndex/wordIndex.
+ */
+function findSourceWordIndex({
+	item,
+	captionSourceTrack,
+}: {
+	item: CaptionReviewItem;
+	captionSourceTrack: TextTrack | null;
+}): number {
+	const source = captionSourceTrack?.captionSource;
+	if (!source || item.trackId !== captionSourceTrack.id) return -1;
+
+	const generatedWords = getGeneratedCaptionWords({ words: source.words });
+	const captions = buildSubtitleCuesFromWords({
+		words: generatedWords,
+		settings: source.settings,
+	});
+	const layers = splitCaptionCuesByLayer({
+		captions,
+		layerCount: source.layerCount ?? 1,
+	});
+	const expectedWord = layers[source.layerIndex ?? 0]?.[item.elementIndex]
+		?.words?.[item.wordIndex] as TranscriptionWord | undefined;
+	if (!expectedWord) return -1;
+
+	return source.words.findIndex((word) => word === expectedWord);
 }
 
 function elementKey(item: Pick<CaptionReviewItem, "trackId" | "elementId">) {
@@ -119,24 +161,10 @@ export function CaptionReviewView() {
 			),
 		[selectedElements],
 	);
-	const captionSource = useMemo(
+	const captionSourceTrack = useMemo(
 		() =>
-			activeScene
-				? (findCaptionSourceTrack({ tracks: activeScene.tracks })
-						?.captionSource ?? null)
-				: null,
+			activeScene ? findCaptionSourceTrack({ tracks: activeScene.tracks }) : null,
 		[activeScene],
-	);
-	const excludedPunctuationWordIds = useMemo(
-		() =>
-			new Set(
-				captionSource?.words.flatMap((word) =>
-					word.excludeFromPunctuationHiding && word.source?.wordId
-						? [word.source.wordId]
-						: [],
-				) ?? [],
-			),
-		[captionSource],
 	);
 
 	useEffect(() => {
@@ -281,12 +309,12 @@ export function CaptionReviewView() {
 			tracks: activeScene.tracks,
 			item,
 		});
-		const wordId = element?.wordRuns?.[item.wordIndex]?.id;
-		if (!element || !wordId) return;
+		if (!element) return;
 
-		const wordSourceIndex = source.words.findIndex(
-			(word) => word.source?.wordId === wordId,
-		);
+		const wordSourceIndex = findSourceWordIndex({
+			item,
+			captionSourceTrack: sourceTrack,
+		});
 		if (wordSourceIndex < 0) return;
 
 		const word = source.words[wordSourceIndex];
@@ -402,17 +430,14 @@ export function CaptionReviewView() {
 							? itemKey(closestItem) === key
 							: false;
 						const isSelected = selectedElementKeys.has(elementKey(item));
-						const itemElement = activeScene
-							? findCaptionReviewTextElement({
-									tracks: activeScene.tracks,
-									item,
-								})
-							: null;
-						const itemWordId =
-							itemElement?.wordRuns?.[item.wordIndex]?.id ?? null;
-						const isExcludedFromPunctuationHiding = itemWordId
-							? excludedPunctuationWordIds.has(itemWordId)
-							: false;
+						const itemWordSourceIndex = findSourceWordIndex({
+							item,
+							captionSourceTrack,
+						});
+						const isExcludedFromPunctuationHiding =
+							itemWordSourceIndex >= 0 &&
+							!!captionSourceTrack?.captionSource?.words[itemWordSourceIndex]
+								?.excludeFromPunctuationHiding;
 						const insertControl =
 							index === 0 ? null : (
 								<button
