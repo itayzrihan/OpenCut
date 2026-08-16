@@ -468,8 +468,10 @@ function syncElementWords({
 		const run = element.wordRuns?.[wordOffset];
 		const renderedText =
 			run?.text ?? contentWords[wordOffset] ?? expectedWord.text;
+		const shouldHidePunctuation =
+			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
 		const nextText =
-			source.settings.hidePunctuation &&
+			shouldHidePunctuation &&
 			stripCaptionPunctuation({ text: current.text }) ===
 				stripCaptionPunctuation({ text: renderedText })
 				? current.text
@@ -551,8 +553,10 @@ function syncPresentationOnlyElementWords({
 		if (sourceIndex == null) return;
 
 		const current = nextWords[sourceIndex];
+		const shouldHidePunctuation =
+			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
 		const nextText =
-			source.settings.hidePunctuation &&
+			shouldHidePunctuation &&
 			stripCaptionPunctuation({ text: current.text }) ===
 				stripCaptionPunctuation({ text: nextEntry.text })
 				? current.text
@@ -622,8 +626,10 @@ function syncElementWordsByPreviousWordRuns({
 		usedSourceIndexes.add(sourceIndex);
 
 		const current = nextWords[sourceIndex];
+		const shouldHidePunctuation =
+			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
 		const nextText =
-			source.settings.hidePunctuation &&
+			shouldHidePunctuation &&
 			stripCaptionPunctuation({ text: current.text }) ===
 				stripCaptionPunctuation({ text: nextEntry.text })
 				? current.text

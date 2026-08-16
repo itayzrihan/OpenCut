@@ -18,10 +18,15 @@ import {
 	findClosestCaptionReviewItem,
 	type CaptionReviewItem,
 } from "@/subtitles/caption-review";
+import {
+	findCaptionSourceTrack,
+	rebuildCaptionTracksWithSource,
+} from "@/subtitles/caption-tracks";
+import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
 import { requestTimelineScrollToTime } from "@/timeline/focus-event";
 import { mediaTimeToSeconds, type MediaTime } from "@/wasm";
 import { cn } from "@/utils/ui";
-import { AlignLeft, AlignRight, Plus, X } from "lucide-react";
+import { AlignLeft, AlignRight, Plus, X, Eye, EyeOff } from "lucide-react";
 
 type CaptionReviewDirection = "ltr" | "rtl";
 
@@ -249,6 +254,48 @@ export function CaptionReviewView() {
 		});
 	};
 
+	const togglePunctuationExclusion = (item: CaptionReviewItem) => {
+		if (!activeScene) return;
+		const sourceTrack = findCaptionSourceTrack({ tracks: activeScene.tracks });
+		const source = sourceTrack?.captionSource;
+		if (!source) return;
+
+		const itemStart = mediaTimeToSeconds({ time: item.startTime });
+		const itemEnd =
+			mediaTimeToSeconds({ time: item.startTime }) +
+			mediaTimeToSeconds({ time: item.duration });
+
+		const updatedWords = source.words.map((word) => {
+			const wordStart = word.start;
+			const wordEnd = word.end;
+			const timeOverlaps =
+				Math.max(itemStart, wordStart) < Math.min(itemEnd, wordEnd);
+			if (
+				timeOverlaps &&
+				stripCaptionPunctuation({ text: word.text }) ===
+					stripCaptionPunctuation({ text: item.text })
+			) {
+				return {
+					...word,
+					excludeFromPunctuationHiding: !word.excludeFromPunctuationHiding,
+				};
+			}
+			return word;
+		});
+
+		const result = rebuildCaptionTracksWithSource({
+			tracks: activeScene.tracks,
+			words: updatedWords,
+			settings: source.settings,
+			canvasSize: { width: 1920, height: 1080 },
+			layerCount: source.layerCount,
+		});
+
+		if (result) {
+			editor.timeline.updateScene(result);
+		}
+	};
+
 	return (
 		<PanelView
 			title="See captions"
@@ -301,6 +348,28 @@ export function CaptionReviewView() {
 							? itemKey(closestItem) === key
 							: false;
 						const isSelected = selectedElementKeys.has(elementKey(item));
+						const sourceTrack = activeScene
+							? findCaptionSourceTrack({ tracks: activeScene.tracks })
+							: null;
+						const source = sourceTrack?.captionSource;
+						const itemStart = mediaTimeToSeconds({ time: item.startTime });
+						const itemEnd =
+							mediaTimeToSeconds({ time: item.startTime }) +
+							mediaTimeToSeconds({ time: item.duration });
+						const isExcludedFromPunctuationHiding = source?.words.some(
+							(word) => {
+								const wordStart = word.start;
+								const wordEnd = word.end;
+								const timeOverlaps =
+									Math.max(itemStart, wordStart) < Math.min(itemEnd, wordEnd);
+								return (
+									timeOverlaps &&
+									stripCaptionPunctuation({ text: word.text }) ===
+										stripCaptionPunctuation({ text: item.text }) &&
+									word.excludeFromPunctuationHiding
+								);
+							},
+						) ?? false;
 						const insertControl =
 							index === 0 ? null : (
 								<button
@@ -379,6 +448,30 @@ export function CaptionReviewView() {
 									<span className="min-w-0 max-w-40 truncate">
 										{displayText(item.text)}
 									</span>
+								</button>
+								<button
+									type="button"
+									className={cn(
+										"flex h-7 w-7 shrink-0 items-center justify-center border-s focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+										isExcludedFromPunctuationHiding
+											? "bg-primary/15 text-primary"
+											: "text-muted-foreground hover:bg-primary/15 hover:text-primary",
+									)}
+									onClick={() => togglePunctuationExclusion(item)}
+									aria-label={`Toggle punctuation exclusion for ${displayText(
+										item.text,
+									)}`}
+									title={
+										isExcludedFromPunctuationHiding
+											? "Always show punctuation for this word"
+											: "Exclude from global punctuation hiding"
+									}
+								>
+									{isExcludedFromPunctuationHiding ? (
+										<Eye className="size-3.5" />
+									) : (
+										<EyeOff className="size-3.5" />
+									)}
 								</button>
 								<button
 									type="button"
