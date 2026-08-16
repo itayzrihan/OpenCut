@@ -9,6 +9,9 @@ import {
 } from "@/effects/overlay-presets";
 import { EFFECT_TARGET_ELEMENT_TYPES } from "@/effects";
 import { buildEffectElement } from "@/timeline/element-utils";
+import { ZERO_MEDIA_TIME } from "@/wasm";
+
+const FULL_LENGTH_PRESET_IDS = new Set(["editorial-edge-feather"]);
 
 export function OverlayEffectsView() {
 	return (
@@ -29,10 +32,14 @@ function OverlayEffectItem({ preset }: { preset: OverlayEffectPreset }) {
 	const editor = useEditor();
 
 	const handleAddToTimeline = () => {
+		const isFullLength = FULL_LENGTH_PRESET_IDS.has(preset.id);
 		const element = buildEffectElement({
 			effectType: preset.effectType,
 			name: preset.name,
-			startTime: editor.playback.getCurrentTime(),
+			startTime: isFullLength
+				? ZERO_MEDIA_TIME
+				: editor.playback.getCurrentTime(),
+			duration: isFullLength ? editor.timeline.getTotalDuration() : undefined,
 			params: preset.params,
 		});
 		editor.timeline.insertElement({
