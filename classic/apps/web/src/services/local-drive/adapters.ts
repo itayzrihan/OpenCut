@@ -123,14 +123,14 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 		kind,
 		legacy,
 	}: {
-		kind: "audio" | "stickers";
+		kind: "audio" | "fonts" | "stickers";
 		legacy?: StorageAdapter<File>;
 	}) {
 		this.kind = kind;
 		this.legacy = legacy;
 	}
 
-	private kind: "audio" | "stickers";
+	private kind: "audio" | "fonts" | "stickers";
 	private legacy?: StorageAdapter<File>;
 
 	private url(id: string, file?: File): string {

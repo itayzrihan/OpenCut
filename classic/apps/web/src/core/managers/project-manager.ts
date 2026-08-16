@@ -36,7 +36,6 @@ import {
 	isSupportedFontFile,
 	loadProjectFont,
 } from "@/fonts/custom-fonts";
-import { copyFontToRepository } from "@/fonts/repository-fonts";
 import { SYSTEM_FONTS } from "@/fonts/system-fonts";
 import { DEFAULTS } from "@/timeline/defaults";
 import { getElementFontFamilies } from "@/timeline/element-utils";
@@ -167,6 +166,7 @@ export class ProjectManager {
 	}
 
 	async createNewProject({ name }: { name: string }): Promise<string> {
+		const sharedFonts = await this.loadSharedFonts();
 		const mainScene = buildDefaultScene({ name: "Main scene", isMain: true });
 		const newProject: TProject = {
 			metadata: {
@@ -189,7 +189,9 @@ export class ProjectManager {
 					color: DEFAULT_BACKGROUND_COLOR,
 				},
 			},
-			customFonts: [],
+			customFonts: sharedFonts.map((font) =>
+				this.getProjectFontMetadata({ font }),
+			),
 			aiEditHistory: [],
 			version: CURRENT_PROJECT_VERSION,
 		};
@@ -382,15 +384,20 @@ export class ProjectManager {
 
 		const project = this.getActive();
 		const projectId = project.metadata.id;
-		const [projectFonts, commandHistory] = await Promise.all([
+		const [projectFonts, sharedFonts, commandHistory] = await Promise.all([
 			storageService.loadAllProjectFonts({ projectId }),
+			storageService.loadAllSharedFonts(),
 			storageService.loadCommandHistory({ projectId }),
 		]);
+		const archiveFontsById = new Map(
+			sharedFonts.map((font) => [font.id, font] as const),
+		);
+		for (const font of projectFonts) archiveFontsById.set(font.id, font);
 
 		return createProjectArchive({
 			project,
 			mediaAssets: this.editor.media.getAssets(),
-			projectFonts,
+			projectFonts: [...archiveFontsById.values()],
 			commandHistory,
 		});
 	}
@@ -542,18 +549,12 @@ export class ProjectManager {
 			try {
 				await loadProjectFont({ font: baseFont });
 
-				const repositoryCopy = await copyFontToRepository({
-					projectId,
-					fontId,
-					file,
-				});
-				const font: ProjectFontAsset = {
-					...baseFont,
-					sourceUrl: repositoryCopy?.sourceUrl,
-					repositoryPath: repositoryCopy?.repositoryPath,
-				};
+				const font = baseFont;
 
-				await storageService.saveProjectFont({ projectId, font });
+				await Promise.all([
+					storageService.saveSharedFont({ font }),
+					storageService.saveProjectFont({ projectId, font }),
+				]);
 
 				importedFonts.push(this.getProjectFontMetadata({ font }));
 				existingFamilies.add(family);
@@ -993,8 +994,41 @@ export class ProjectManager {
 			}
 		}
 
+		const sharedFonts = await this.loadSharedFonts();
+		const sharedFamilies = new Set(
+			sharedFonts.map((font) => font.family.toLowerCase()),
+		);
 		await Promise.all(
-			runtimeFonts.map(async (font) => {
+			runtimeFonts.flatMap((font) => {
+				if (
+					!("file" in font) ||
+					sharedFamilies.has(font.family.toLowerCase())
+				) {
+					return [];
+				}
+				sharedFamilies.add(font.family.toLowerCase());
+				return [
+					storageService.saveSharedFont({ font }).catch((error) => {
+						console.warn(
+							`Could not migrate project font "${font.family}" to the shared library:`,
+							error,
+						);
+					}),
+				];
+			}),
+		);
+
+		const mergedFonts = new Map<string, RuntimeProjectFont>();
+		for (const font of sharedFonts) {
+			mergedFonts.set(font.family.toLowerCase(), font);
+		}
+		for (const font of runtimeFonts) {
+			mergedFonts.set(font.family.toLowerCase(), font);
+		}
+		const availableFonts = [...mergedFonts.values()];
+
+		await Promise.all(
+			availableFonts.map(async (font) => {
 				try {
 					await loadProjectFont({ font });
 				} catch (error) {
@@ -1003,7 +1037,26 @@ export class ProjectManager {
 			}),
 		);
 
-		return runtimeFonts;
+		return availableFonts;
+	}
+
+	private async loadSharedFonts(): Promise<ProjectFontAsset[]> {
+		try {
+			const fonts = await storageService.loadAllSharedFonts();
+			await Promise.all(
+				fonts.map(async (font) => {
+					try {
+						await loadProjectFont({ font });
+					} catch (error) {
+						console.warn(`Failed to load shared font "${font.family}":`, error);
+					}
+				}),
+			);
+			return fonts;
+		} catch (error) {
+			console.error("Failed to load shared font library:", error);
+			return [];
+		}
 	}
 
 	private async restoreProjectFontFromRepository({

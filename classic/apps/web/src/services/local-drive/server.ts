@@ -48,9 +48,10 @@ const SHARED_COLLECTIONS = new Set([
 	"effects",
 	"ui-elements",
 	"caption-presets",
+	"fonts",
 	"recovery-snapshots",
 ]);
-const SHARED_FILE_KINDS = new Set(["audio", "stickers"]);
+const SHARED_FILE_KINDS = new Set(["audio", "fonts", "stickers"]);
 
 interface StoredMediaRecord extends MediaAssetData {
 	fileName: string;

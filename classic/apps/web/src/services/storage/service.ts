@@ -14,6 +14,10 @@ import {
 	uploadLocalMedia,
 } from "@/services/local-drive/client";
 import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
+import {
+	LocalDriveFileAdapter,
+	LocalDriveJsonAdapter,
+} from "@/services/local-drive/adapters";
 import { IndexedDBAdapter } from "./indexeddb-adapter";
 import { OPFSAdapter } from "./opfs-adapter";
 import type { StorageCapacityCheckResult } from "./quota";
@@ -163,6 +167,8 @@ export class StorageService {
 	private projectsAdapter: IndexedDBAdapter<SerializedProject>;
 	private commandHistoryAdapter: IndexedDBAdapter<SerializedCommandHistory>;
 	private savedSoundsAdapter: IndexedDBAdapter<SavedSoundsData>;
+	private sharedFontsMetadataAdapter: LocalDriveJsonAdapter<ProjectFontData>;
+	private sharedFontFilesAdapter: LocalDriveFileAdapter;
 	private config: StorageConfig;
 	private browserMigrationPromise: Promise<void> | null = null;
 
@@ -192,6 +198,9 @@ export class StorageService {
 			storeName: "saved-sounds",
 			version: this.config.version,
 		});
+		this.sharedFontsMetadataAdapter =
+			new LocalDriveJsonAdapter<ProjectFontData>({ collection: "fonts" });
+		this.sharedFontFilesAdapter = new LocalDriveFileAdapter({ kind: "fonts" });
 	}
 
 	private getLegacyMediaAdapters(projectId: string) {
@@ -646,6 +655,45 @@ export class StorageService {
 			operation: "font.put",
 			payload: { projectId, font: metadata, storedPath },
 		});
+	}
+
+	async saveSharedFont({ font }: { font: ProjectFontAsset }) {
+		await this.sharedFontFilesAdapter.set({ key: font.id, value: font.file });
+		const metadata: ProjectFontData = {
+			id: font.id,
+			family: font.family,
+			fileName: font.fileName,
+			mimeType: font.mimeType,
+			size: font.file.size,
+			lastModified: font.file.lastModified,
+			createdAt: font.createdAt,
+			sourceUrl: font.sourceUrl,
+			repositoryPath: font.repositoryPath,
+		};
+		await this.sharedFontsMetadataAdapter.set({
+			key: font.id,
+			value: metadata,
+		});
+	}
+
+	async loadAllSharedFonts(): Promise<ProjectFontAsset[]> {
+		const metadata = await this.sharedFontsMetadataAdapter.getAll();
+		const fonts = await Promise.all(
+			metadata.map(async (font): Promise<ProjectFontAsset | null> => {
+				const storedFile = await this.sharedFontFilesAdapter.get(font.id);
+				if (!storedFile) return null;
+				const file = new File([storedFile], font.fileName, {
+					type: font.mimeType || storedFile.type,
+					lastModified: font.lastModified,
+				});
+				return {
+					...font,
+					file,
+					url: URL.createObjectURL(file),
+				};
+			}),
+		);
+		return fonts.filter((font): font is ProjectFontAsset => font !== null);
 	}
 
 	async loadProjectFont({ projectId, id }: { projectId: string; id: string }) {
