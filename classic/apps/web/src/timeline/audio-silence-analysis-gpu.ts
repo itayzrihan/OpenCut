@@ -96,9 +96,18 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
 async function initializeGPU(): Promise<GPUContext | null> {
 	try {
-		const adapter = await navigator.gpu?.requestAdapter();
-		if (!adapter) return null;
+		if (!navigator.gpu) {
+			console.warn("[GPU Audio] WebGPU not available on this system");
+			return null;
+		}
 
+		const adapter = await navigator.gpu.requestAdapter();
+		if (!adapter) {
+			console.warn("[GPU Audio] No WebGPU adapter available");
+			return null;
+		}
+
+		console.log("[GPU Audio] WebGPU adapter found:", adapter.limits);
 		const device = await adapter.requestDevice();
 		const queue = device.queue;
 
@@ -176,12 +185,14 @@ export async function extractCompactAudioFeaturesGPU({
 	// Try GPU first, fall back to CPU if unavailable
 	if (!gpuContext) {
 		if (!gpuInitPromise) {
+			console.log("[GPU Audio] Initializing WebGPU...");
 			gpuInitPromise = initializeGPU();
 		}
 		gpuContext = await gpuInitPromise;
 	}
 
 	if (!gpuContext) {
+		console.log("[GPU Audio] GPU unavailable, falling back to CPU audio analysis");
 		// Fallback to CPU (import from the original module to avoid circular dependency)
 		const { extractCompactAudioFeatures } = await import(
 			"./audio-silence-analysis"
@@ -197,6 +208,10 @@ export async function extractCompactAudioFeaturesGPU({
 			yieldControl,
 		});
 	}
+
+	console.log(
+		`[GPU Audio] Processing ${frameCount} frames on GPU (frame size: ${frameSize} samples)`,
+	);
 
 	const device = gpuContext.device;
 	const queue = gpuContext.queue;
@@ -257,11 +272,13 @@ export async function extractCompactAudioFeaturesGPU({
 	});
 
 	// Run compute shader
+	const startTime = performance.now();
 	const commandEncoder = device.createCommandEncoder();
 	const passEncoder = commandEncoder.beginComputePass();
 	passEncoder.setPipeline(gpuContext.computePipeline);
 	passEncoder.setBindGroup(0, bindGroup);
-	passEncoder.dispatchWorkgroups(Math.ceil(frameCount / 256));
+	const workgroups = Math.ceil(frameCount / 256);
+	passEncoder.dispatchWorkgroups(workgroups);
 	passEncoder.end();
 
 	// Read results
@@ -275,6 +292,11 @@ export async function extractCompactAudioFeaturesGPU({
 	await stagingBuffer.mapAsync(GPUMapMode.READ);
 	const frameData = new Float32Array(stagingBuffer.getMappedRange()).slice();
 	stagingBuffer.unmap();
+
+	const gpuTime = performance.now() - startTime;
+	console.log(
+		`[GPU Audio] GPU compute completed in ${gpuTime.toFixed(2)}ms (${workgroups} workgroups)`,
+	);
 
 	// Convert GPU results to AudioAnalysisFrame[]
 	const frames: AudioAnalysisFrame[] = [];
