@@ -942,7 +942,8 @@ export function Captions() {
 	const warnings = processing.status === "idle" ? processing.warnings : [];
 
 	return (
-		<PanelView
+		<>
+			<PanelView
 			title="Captions"
 			contentClassName="px-0 flex flex-col h-full"
 			actions={
@@ -1459,8 +1460,8 @@ export function Captions() {
 					)}
 				</SectionContent>
 			</Section>
-		</PanelView>
-		<Dialog open={presetNameDialogOpen} onOpenChange={setPresetNameDialogOpen}>
+			</PanelView>
+			<Dialog open={presetNameDialogOpen} onOpenChange={setPresetNameDialogOpen}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Save Preset</DialogTitle>
@@ -1485,6 +1486,7 @@ export function Captions() {
 					</Button>
 				</DialogFooter>
 			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</>
 	);
 }
