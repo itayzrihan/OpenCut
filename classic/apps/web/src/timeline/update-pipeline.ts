@@ -193,9 +193,11 @@ export function applyElementUpdate({
 	if (
 		element.type === "text" &&
 		nextElement.type === "text" &&
-		textPatch.wordRuns === undefined &&
 		Object.prototype.hasOwnProperty.call(patch.params ?? {}, "content") &&
-		(element.wordRuns?.length ?? 0) > 0
+		(element.wordRuns?.length ?? 0) > 0 &&
+		(textPatch.wordRuns === undefined ||
+			textContentFromWordRuns({ wordRuns: textPatch.wordRuns }) !==
+				nextElement.params.content)
 	) {
 		const content =
 			typeof nextElement.params.content === "string"

@@ -7,6 +7,16 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
 import {
 	useEditor,
@@ -57,6 +67,15 @@ const CAPTION_WORD_TIMING_VERTICAL_PADDING_PX = 8;
 const WORD_TIMING_HORIZONTAL_OVERSCAN_PX = 800;
 
 type WordDragMode = "move" | "left" | "right";
+
+type WordTextEditorState =
+	| {
+			mode: "insert";
+			wordIndex: number;
+			position: "before" | "after";
+			value: string;
+	  }
+	| { mode: "edit"; wordIndex: number; value: string };
 
 const WORD_DRAG_THRESHOLD_PX = 2;
 
@@ -122,6 +141,8 @@ export function CaptionWordTimingTrack({
 	const dragPreviewRef = useRef<WordDragPreview | null>(null);
 	const didWordDragRef = useRef(false);
 	const [dragPreview, setDragPreview] = useState<WordDragPreview | null>(null);
+	const [wordTextEditor, setWordTextEditor] =
+		useState<WordTextEditorState | null>(null);
 
 	const sourceTrack = useMemo(
 		() => (scene ? findCaptionSourceTrack({ tracks: scene.tracks }) : null),
@@ -354,16 +375,16 @@ export function CaptionWordTimingTrack({
 		[commitWords, updateVisibleTextLayerWordStructure, words],
 	);
 
-	const insertWord = useCallback(
+	const commitInsertedWord = useCallback(
 		({
 			wordIndex,
 			position,
+			text,
 		}: {
 			wordIndex: number;
 			position: "before" | "after";
+			text: string;
 		}) => {
-			const text = window.prompt("Add transcript word");
-			if (text === null) return;
 			const trimmed = text.trim();
 			if (!trimmed) return;
 			const insertIndex = position === "before" ? wordIndex : wordIndex + 1;
@@ -407,6 +428,19 @@ export function CaptionWordTimingTrack({
 			]);
 		},
 		[commitWords, updateVisibleTextLayerWordStructure, words],
+	);
+
+	const insertWord = useCallback(
+		({
+			wordIndex,
+			position,
+		}: {
+			wordIndex: number;
+			position: "before" | "after";
+		}) => {
+			setWordTextEditor({ mode: "insert", wordIndex, position, value: "" });
+		},
+		[],
 	);
 
 	const beginWordDrag = useCallback(
@@ -503,17 +537,29 @@ export function CaptionWordTimingTrack({
 		({ wordIndex }: { wordIndex: number }) => {
 			const word = words[wordIndex];
 			if (!word) return;
-			const nextText = window.prompt("Edit transcript word", word.text);
-			if (nextText === null) return;
-			const trimmed = nextText.trim();
-			if (!trimmed) return;
-			updateWord({
-				wordIndex,
-				update: (current) => ({ ...current, text: trimmed }),
-			});
+			setWordTextEditor({ mode: "edit", wordIndex, value: word.text });
 		},
-		[updateWord, words],
+		[words],
 	);
+
+	const commitWordTextEditor = useCallback(() => {
+		if (!wordTextEditor) return;
+		const text = wordTextEditor.value.trim();
+		if (!text) return;
+		if (wordTextEditor.mode === "insert") {
+			commitInsertedWord({
+				wordIndex: wordTextEditor.wordIndex,
+				position: wordTextEditor.position,
+				text,
+			});
+		} else {
+			updateWord({
+				wordIndex: wordTextEditor.wordIndex,
+				update: (current) => ({ ...current, text }),
+			});
+		}
+		setWordTextEditor(null);
+	}, [commitInsertedWord, updateWord, wordTextEditor]);
 
 	const selectWord = useCallback(
 		({ event, wordIndex }: { event: React.MouseEvent; wordIndex: number }) => {
@@ -583,137 +629,185 @@ export function CaptionWordTimingTrack({
 	}
 
 	return (
-		// eslint-disable-next-line jsx-a11y/no-static-element-interactions -- timeline timing row is a spatial gesture surface; individual words and tips are native buttons.
-		<div
-			ref={rowRef}
-			className="relative border-b border-red-500/20 bg-red-950/10"
-			style={{
-				width: `${dynamicTimelineWidth}px`,
-				height: `${wordTimingTrackHeight}px`,
-			}}
-			onMouseDown={onMouseDown}
-			onMouseUp={onMouseUp}
-			aria-label="Transcript word timing track"
-		>
-			<div className="absolute inset-y-0 left-0 flex items-center px-2 text-[10px] font-medium uppercase text-red-200/70 pointer-events-none">
-				Words
-			</div>
-			{visibleWordIndexes.map((index) => {
-				const word = words[index];
-				const preview = getVisibleWordTiming({ word, index, dragPreview });
-				const layout = wordLayouts.get(index) ?? {
-					lane: 0,
-					laneCount: 1,
-				};
-				const laneHeight = CAPTION_WORD_TIMING_LANE_HEIGHT_PX;
-				const refs = wordElementRefs.get(index) ?? [];
-				const isSelected = refs.some((ref) =>
-					selectedTextWordKeys.has(getSelectedTextWordKey(ref)),
-				);
-				const pixelsPerSecond = getTimelinePixelsPerSecond({ zoomLevel });
-				const left = preview.start * pixelsPerSecond;
-				const width = Math.max(
-					WORD_TIMING_MIN_WORD_WIDTH_PX,
-					(preview.end - preview.start) * pixelsPerSecond,
-				);
+		<>
+			<div
+				role="presentation"
+				ref={rowRef}
+				className="relative border-b border-red-500/20 bg-red-950/10"
+				style={{
+					width: `${dynamicTimelineWidth}px`,
+					height: `${wordTimingTrackHeight}px`,
+				}}
+				onMouseDown={onMouseDown}
+				onMouseUp={onMouseUp}
+				aria-label="Transcript word timing track"
+			>
+				<div className="absolute inset-y-0 left-0 flex items-center px-2 text-[10px] font-medium uppercase text-red-200/70 pointer-events-none">
+					Words
+				</div>
+				{visibleWordIndexes.map((index) => {
+					const word = words[index];
+					const preview = getVisibleWordTiming({ word, index, dragPreview });
+					const layout = wordLayouts.get(index) ?? {
+						lane: 0,
+						laneCount: 1,
+					};
+					const laneHeight = CAPTION_WORD_TIMING_LANE_HEIGHT_PX;
+					const refs = wordElementRefs.get(index) ?? [];
+					const isSelected = refs.some((ref) =>
+						selectedTextWordKeys.has(getSelectedTextWordKey(ref)),
+					);
+					const pixelsPerSecond = getTimelinePixelsPerSecond({ zoomLevel });
+					const left = preview.start * pixelsPerSecond;
+					const width = Math.max(
+						WORD_TIMING_MIN_WORD_WIDTH_PX,
+						(preview.end - preview.start) * pixelsPerSecond,
+					);
 
-				return (
-					<ContextMenu key={`${index}-${word.text}`}>
-						<ContextMenuTrigger asChild>
-							<div
-								className={cn(
-									"absolute overflow-hidden rounded-sm border border-red-300/40 bg-red-500/20 text-red-50 shadow-sm",
-									isSelected &&
-										"border-primary bg-primary/30 text-primary-foreground",
-									dragPreview?.wordIndex === index &&
-										"border-red-100 bg-red-500/35",
-								)}
-								style={{
-									left,
-									width,
-									top:
-										CAPTION_WORD_TIMING_VERTICAL_PADDING_PX / 2 +
-										layout.lane * laneHeight,
-									height: laneHeight - 2,
-								}}
-								title={`${word.text} ${word.start.toFixed(2)}s-${word.end.toFixed(2)}s`}
-								onDoubleClick={() => editWordText({ wordIndex: index })}
-							>
-								<button
-									type="button"
-									className="absolute inset-y-0 left-0 w-2 cursor-w-resize"
-									aria-label={`Adjust start of ${word.text}`}
-									onMouseDown={(event) =>
-										beginWordDrag({ event, wordIndex: index, mode: "left" })
-									}
-								/>
-								<button
-									type="button"
-									className="absolute inset-y-0 right-0 w-2 cursor-e-resize"
-									aria-label={`Adjust end of ${word.text}`}
-									onMouseDown={(event) =>
-										beginWordDrag({ event, wordIndex: index, mode: "right" })
-									}
-								/>
-								<button
-									type="button"
-									className="flex size-full cursor-grab items-center justify-center px-2 text-[11px] leading-none"
-									onMouseDown={(event) =>
-										beginWordDrag({ event, wordIndex: index, mode: "move" })
-									}
-									onClick={(event) => selectWord({ event, wordIndex: index })}
-									aria-label={`Move ${word.text}`}
+					return (
+						<ContextMenu key={`${index}-${word.text}`}>
+							<ContextMenuTrigger asChild>
+								<div
+									className={cn(
+										"absolute overflow-hidden rounded-sm border border-red-300/40 bg-red-500/20 text-red-50 shadow-sm",
+										isSelected &&
+											"border-primary bg-primary/30 text-primary-foreground",
+										dragPreview?.wordIndex === index &&
+											"border-red-100 bg-red-500/35",
+									)}
+									style={{
+										left,
+										width,
+										top:
+											CAPTION_WORD_TIMING_VERTICAL_PADDING_PX / 2 +
+											layout.lane * laneHeight,
+										height: laneHeight - 2,
+									}}
+									title={`${word.text} ${word.start.toFixed(2)}s-${word.end.toFixed(2)}s`}
+									onDoubleClick={() => editWordText({ wordIndex: index })}
 								>
-									<span className="truncate">{word.text}</span>
-								</button>
-							</div>
-						</ContextMenuTrigger>
-						<ContextMenuContent>
-							<ContextMenuItem
-								onSelect={() =>
-									insertWord({ wordIndex: index, position: "before" })
-								}
-							>
-								Add word before
-							</ContextMenuItem>
-							<ContextMenuItem
-								onSelect={() =>
-									insertWord({ wordIndex: index, position: "after" })
-								}
-							>
-								Add word after
-							</ContextMenuItem>
-							<ContextMenuItem
-								variant="destructive"
-								onSelect={() => removeWord({ wordIndex: index })}
-							>
-								Remove word
-							</ContextMenuItem>
-						</ContextMenuContent>
-					</ContextMenu>
-				);
-			})}
-			{issues.map((issue) => {
-				const left = timelineTimeToPixels({
-					time: secondsToMediaTime(issue.time),
-					zoomLevel,
-				});
-				return (
-					<button
-						key={issue.key}
-						type="button"
-						className="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 bg-red-500 shadow-[0_0_0_1px_rgba(255,255,255,0.55)]"
-						style={{ left }}
-						title="Caption layer ends before this word timing. Click to extend it."
-						aria-label="Extend caption layer to word timing"
-						onClick={(event) => {
-							event.stopPropagation();
-							extendCaptionToIssue({ issue });
+									<button
+										type="button"
+										className="absolute inset-y-0 left-0 w-2 cursor-w-resize"
+										aria-label={`Adjust start of ${word.text}`}
+										onMouseDown={(event) =>
+											beginWordDrag({ event, wordIndex: index, mode: "left" })
+										}
+									/>
+									<button
+										type="button"
+										className="absolute inset-y-0 right-0 w-2 cursor-e-resize"
+										aria-label={`Adjust end of ${word.text}`}
+										onMouseDown={(event) =>
+											beginWordDrag({ event, wordIndex: index, mode: "right" })
+										}
+									/>
+									<button
+										type="button"
+										className="flex size-full cursor-grab items-center justify-center px-2 text-[11px] leading-none"
+										onMouseDown={(event) =>
+											beginWordDrag({ event, wordIndex: index, mode: "move" })
+										}
+										onClick={(event) => selectWord({ event, wordIndex: index })}
+										aria-label={`Move ${word.text}`}
+									>
+										<span className="truncate">{word.text}</span>
+									</button>
+								</div>
+							</ContextMenuTrigger>
+							<ContextMenuContent>
+								<ContextMenuItem
+									onSelect={() =>
+										insertWord({ wordIndex: index, position: "before" })
+									}
+								>
+									Add word before
+								</ContextMenuItem>
+								<ContextMenuItem
+									onSelect={() =>
+										insertWord({ wordIndex: index, position: "after" })
+									}
+								>
+									Add word after
+								</ContextMenuItem>
+								<ContextMenuItem
+									variant="destructive"
+									onSelect={() => removeWord({ wordIndex: index })}
+								>
+									Remove word
+								</ContextMenuItem>
+							</ContextMenuContent>
+						</ContextMenu>
+					);
+				})}
+				{issues.map((issue) => {
+					const left = timelineTimeToPixels({
+						time: secondsToMediaTime(issue.time),
+						zoomLevel,
+					});
+					return (
+						<button
+							key={issue.key}
+							type="button"
+							className="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 bg-red-500 shadow-[0_0_0_1px_rgba(255,255,255,0.55)]"
+							style={{ left }}
+							title="Caption layer ends before this word timing. Click to extend it."
+							aria-label="Extend caption layer to word timing"
+							onClick={(event) => {
+								event.stopPropagation();
+								extendCaptionToIssue({ issue });
+							}}
+						/>
+					);
+				})}
+			</div>
+			<Dialog
+				open={wordTextEditor !== null}
+				onOpenChange={(open) => {
+					if (!open) setWordTextEditor(null);
+				}}
+			>
+				<DialogContent>
+					<form
+						onSubmit={(event) => {
+							event.preventDefault();
+							commitWordTextEditor();
 						}}
-					/>
-				);
-			})}
-		</div>
+					>
+						<DialogHeader>
+							<DialogTitle>
+								{wordTextEditor?.mode === "edit"
+									? "Edit transcript word"
+									: "Add transcript word"}
+							</DialogTitle>
+						</DialogHeader>
+						<DialogBody>
+							<Input
+								value={wordTextEditor?.value ?? ""}
+								onChange={(event) =>
+									setWordTextEditor((current) =>
+										current ? { ...current, value: event.target.value } : null,
+									)
+								}
+								aria-label="Transcript word"
+							/>
+						</DialogBody>
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setWordTextEditor(null)}
+							>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={!wordTextEditor?.value.trim()}>
+								{wordTextEditor?.mode === "edit" ? "Save" : "Add"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }
 

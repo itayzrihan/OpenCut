@@ -206,6 +206,44 @@ describe("applyElementUpdate", () => {
 		expect(updated.wordRuns?.[1]?.style).toEqual({ color: "#00ff00" });
 	});
 
+	test("reconciles content when a full element patch carries stale word runs", () => {
+		const element = buildTextElement();
+		const tracks = buildTextTracks(element);
+		reconcileContent = () => [
+			{
+				id: "alpha",
+				text: "Alpha",
+				lineIndex: 0,
+				previousWordIndex: 0,
+				startTime: 0,
+				endTime: 4,
+			},
+			{
+				id: "word-1",
+				text: "Changed",
+				lineIndex: 0,
+				previousWordIndex: 1,
+				startTime: 4,
+				endTime: 10,
+			},
+		];
+
+		const updated = applyElementUpdate({
+			element,
+			patch: {
+				...element,
+				params: { ...element.params, content: "Alpha Changed" },
+			},
+			context: { tracks, trackId: "text-track" },
+		}) as TextElement;
+
+		expect(updated.params.content).toBe("Alpha Changed");
+		expect(updated.wordRuns?.map((word) => word.text)).toEqual([
+			"Alpha",
+			"Changed",
+		]);
+	});
+
 	test("fits timed words to a trimmed layer and removes invisible text", () => {
 		const element = buildTextElement();
 		const tracks = buildTextTracks(element);

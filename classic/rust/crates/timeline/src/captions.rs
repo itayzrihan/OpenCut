@@ -194,12 +194,30 @@ pub struct ReconcileCaptionWordsOptions {
 pub fn reconcile_caption_words(
     ReconcileCaptionWordsOptions { words, text_layers }: ReconcileCaptionWordsOptions,
 ) -> Vec<CaptionWord> {
+    let mut seen_generated_words = HashSet::new();
     let mut reconciled = words
         .into_iter()
         .filter(|word| {
-            word.source
+            if word
+                .source
                 .as_ref()
-                .is_none_or(|source| source.source_type != "text-layer")
+                .is_some_and(|source| source.source_type == "text-layer")
+            {
+                return false;
+            }
+
+            let normalized_text = word
+                .text
+                .chars()
+                .filter(|character| character.is_alphanumeric())
+                .flat_map(char::to_lowercase)
+                .collect::<String>();
+            let normalized_text = if normalized_text.is_empty() {
+                word.text.trim().to_lowercase()
+            } else {
+                normalized_text
+            };
+            seen_generated_words.insert((normalized_text, word.start.to_bits(), word.end.to_bits()))
         })
         .collect::<Vec<_>>();
     let mut seen_layers = HashSet::new();
@@ -707,6 +725,27 @@ mod tests {
         assert_eq!(result[1].source.as_ref().unwrap().track_id, "new-track");
         assert_eq!(result[1].start, 2.0);
         assert_eq!(result[2].end, 4.0);
+    }
+
+    #[test]
+    fn removes_duplicate_generated_words_with_identical_timing() {
+        let result = reconcile_caption_words(ReconcileCaptionWordsOptions {
+            words: vec![
+                generated_word("לילדים,", 21.5, 22.0),
+                generated_word("לילדים", 21.5, 22.0),
+                generated_word("לילדים", 21.5, 22.0),
+                generated_word("הבאה", 22.0, 22.5),
+            ],
+            text_layers: Vec::new(),
+        });
+
+        assert_eq!(
+            result
+                .iter()
+                .map(|word| word.text.as_str())
+                .collect::<Vec<_>>(),
+            vec!["לילדים,", "הבאה"]
+        );
     }
 
     #[test]
