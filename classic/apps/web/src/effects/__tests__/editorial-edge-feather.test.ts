@@ -8,9 +8,9 @@ import { OVERLAY_EFFECT_PRESETS } from "@/effects/overlay-presets";
 describe("editorial edge feather", () => {
 	test("builds an editable native top-and-bottom feather pass", () => {
 		const effectParams = {
-			intensity: 38,
-			height: 20,
-			softness: 78,
+			intensity: 60,
+			height: 30,
+			softness: 80,
 			color: "#000000",
 		};
 		const passes = editorialEdgeFeatherEffectDefinition.renderer.passes.map(
@@ -36,9 +36,9 @@ describe("editorial edge feather", () => {
 			{
 				shader: EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
 				uniforms: {
-					u_intensity: 0.38,
-					u_height: 0.2,
-					u_softness: 0.78,
+					u_intensity: 0.6,
+					u_height: 0.3,
+					u_softness: 0.8,
 					u_color: [0, 0, 0, 1],
 				},
 			},
@@ -51,6 +51,6 @@ describe("editorial edge feather", () => {
 		);
 
 		expect(preset?.effectType).toBe(EDITORIAL_EDGE_FEATHER_EFFECT_TYPE);
-		expect(preset?.params.height).toBe(20);
+		expect(preset?.params.height).toBe(30);
 	});
 });

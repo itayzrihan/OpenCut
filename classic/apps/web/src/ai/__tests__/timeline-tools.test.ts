@@ -749,7 +749,7 @@ describe("AI timeline tool access", () => {
 		});
 		expect(featherEffect).toMatchObject({
 			details: { effectType: "editorial-edge-feather" },
-			parameters: { height: 20, softness: 78 },
+			parameters: { height: 30, softness: 80 },
 		});
 
 		const featheredText = await runtime.executeTool({

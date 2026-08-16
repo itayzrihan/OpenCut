@@ -52,9 +52,9 @@ export const OVERLAY_EFFECT_PRESETS: OverlayEffectPreset[] = [
 		use: "Soft black inner feather across the top and bottom 20% for premium talking-head contrast",
 		effectType: EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
 		params: {
-			intensity: 38,
-			height: 20,
-			softness: 78,
+			intensity: 60,
+			height: 30,
+			softness: 80,
 			color: "#000000",
 		},
 	},

@@ -26,6 +26,10 @@ import { generateEffectPreset } from "@/ai/preset-generation";
 import type { ParamValues } from "@/params";
 import { Sparkles } from "lucide-react";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "@/effects/definitions/editorial-edge-feather";
+import { ZERO_MEDIA_TIME } from "@/wasm";
+
+const FULL_LENGTH_EFFECT_TYPES = new Set([EDITORIAL_EDGE_FEATHER_EFFECT_TYPE]);
 
 export function EffectsView() {
 	const effects = effectsRegistry
@@ -154,10 +158,13 @@ function EffectItem({ effect }: { effect: EffectDefinition }) {
 	const editor = useEditor();
 
 	const handleAddToTimeline = useCallback(() => {
-		const currentTime = editor.playback.getCurrentTime();
+		const isFullLength = FULL_LENGTH_EFFECT_TYPES.has(effect.type);
 		const element = buildEffectElement({
 			effectType: effect.type,
-			startTime: currentTime,
+			startTime: isFullLength
+				? ZERO_MEDIA_TIME
+				: editor.playback.getCurrentTime(),
+			duration: isFullLength ? editor.timeline.getTotalDuration() : undefined,
 		});
 
 		editor.timeline.insertElement({
