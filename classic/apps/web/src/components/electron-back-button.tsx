@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeftIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 
@@ -62,7 +62,7 @@ export function ElectronBackButton() {
 				title="Go back to OpenCut"
 				className="gap-2"
 			>
-				<HugeiconsIcon icon={ArrowLeftIcon} className="h-4 w-4" />
+				<HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
 				Back
 			</Button>
 		</div>

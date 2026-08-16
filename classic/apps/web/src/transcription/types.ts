@@ -12,6 +12,7 @@ export interface TranscriptionWord {
 	text: string;
 	start: number;
 	end: number;
+	hidePunctuation?: boolean;
 	source?: {
 		type: "text-layer";
 		trackId: string;
