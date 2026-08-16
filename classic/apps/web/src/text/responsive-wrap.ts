@@ -99,6 +99,65 @@ export function reflowResponsiveTextElement({
 	};
 }
 
+export function buildAutoFitTextPatch({
+	element,
+	text,
+	canvasHeight,
+	maxWidth,
+	ctx,
+}: {
+	element: TextElement;
+	text: TextLayoutParams;
+	canvasHeight: number;
+	maxWidth: number;
+	ctx: TextLayoutMeasurementContext;
+}): Pick<TextElement, "params" | "responsiveText" | "wordRuns"> {
+	const sourceContent = text.content
+		.trim()
+		.replace(/[ \t]*\r?\n[ \t]*/g, " ")
+		.replace(/\s+/g, " ");
+	const safeCanvasHeight = Math.max(1, canvasHeight);
+	const safeMaxWidth = Math.max(1, maxWidth);
+	const scaledFontSize =
+		text.fontSize * (safeCanvasHeight / FONT_SIZE_SCALE_REFERENCE);
+
+	ctx.save();
+	ctx.font = buildTextFontString({
+		fontFamily: text.fontFamily,
+		fontWeight: normalizeTextFontWeight({
+			value: text.fontWeight,
+			fallback: "normal",
+		}),
+		fontStyle: text.fontStyle,
+		scaledFontSize,
+	});
+	setCanvasLetterSpacing({
+		ctx,
+		letterSpacingPx: text.letterSpacing ?? 0,
+	});
+	const content = wrapTextToWidth({
+		ctx,
+		text: sourceContent,
+		maxWidth: safeMaxWidth,
+	});
+	ctx.restore();
+
+	return {
+		params: { ...element.params, content },
+		responsiveText: {
+			sourceContent,
+			generatedContent: content,
+			maxWidth: safeMaxWidth,
+			canvasHeight: safeCanvasHeight,
+			fontSize: text.fontSize,
+		},
+		wordRuns: reassignWordRunLines({
+			wordRuns: element.wordRuns,
+			content,
+		}),
+	};
+}
+
 function reassignWordRunLines({
 	wordRuns,
 	content,

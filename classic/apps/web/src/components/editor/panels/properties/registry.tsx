@@ -39,9 +39,9 @@ import { OcShapesIcon } from "@/components/icons";
 import { TextTransitionsTab } from "./components/text-transitions-tab";
 import { TextWordsTab } from "./components/text-words-tab";
 import { TextPlacementTab } from "./components/text-placement-tab";
+import { TextTab } from "./components/text-tab";
 import type { TextOverrideScope } from "./text-scope";
 import { BackgroundRemovalTab } from "./components/background-removal-tab";
-import { TEXT_PARAM_KEYS } from "./text-param-keys";
 import { SpeakerFrameBreakoutPropertiesTab } from "@/simple-advanced-layers/components/speaker-frame-breakout-properties-tab";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
 import {
@@ -229,12 +229,10 @@ function buildTextTab({ element }: { element: TextElement }): PropertiesTabDef {
 		label: "Text",
 		icon: <HugeiconsIcon icon={TextFontIcon} size={16} />,
 		content: ({ trackId, elementsWithTracks, textScope }) => (
-			<ElementParamsTab
+			<TextTab
 				element={element}
 				trackId={trackId}
 				elementsWithTracks={elementsWithTracks}
-				paramKeys={TEXT_PARAM_KEYS}
-				sectionKey="text"
 				textScope={textScope}
 			/>
 		),

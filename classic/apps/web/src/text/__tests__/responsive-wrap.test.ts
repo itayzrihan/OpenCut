@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { TextLayoutMeasurementContext } from "@/text/layout";
 import {
+	buildAutoFitTextPatch,
 	reflowResponsiveTextElement,
 	wrapTextToWidth,
 } from "@/text/responsive-wrap";
@@ -93,5 +94,33 @@ describe("responsive caption wrapping", () => {
 		});
 
 		expect(result).toBeNull();
+	});
+
+	test("explicitly auto-fits manually edited content and restores responsiveness", () => {
+		const element = createElement("one\ntwo three four");
+		const patch = buildAutoFitTextPatch({
+			element,
+			text: {
+				content: "one\ntwo three four",
+				fontSize: 1,
+				fontFamily: "Arial",
+				fontWeight: "normal",
+				fontStyle: "normal",
+				textAlign: "center",
+			},
+			canvasHeight: 100,
+			maxWidth: 100,
+			ctx: createContext(),
+		});
+
+		expect(patch.params.content).toBe("one two three four");
+		expect(patch.wordRuns?.map((word) => word.lineIndex)).toEqual([0, 0, 0, 0]);
+		expect(patch.responsiveText).toMatchObject({
+			sourceContent: "one two three four",
+			generatedContent: "one two three four",
+			maxWidth: 100,
+			canvasHeight: 100,
+			fontSize: 1,
+		});
 	});
 });
