@@ -2,8 +2,8 @@ import type { AudioAnalysisFrame } from "opencut-wasm";
 
 /**
  * GPU-accelerated audio feature extraction using WebGPU.
- * Processes multiple frames in parallel on the GPU, achieving 10-50x speedup
- * over CPU implementation for large audio files.
+ * Processes multiple frames in parallel on the GPU, achieving large speedups
+ * over the CPU implementation for long audio files.
  */
 
 interface GPUContext {
@@ -13,9 +13,12 @@ interface GPUContext {
 	bindGroupLayout: GPUBindGroupLayout;
 }
 
-let gpuContext: GPUContext | null = null;
-let gpuInitPromise: Promise<GPUContext | null> | null = null;
+let gpuContextPromise: Promise<GPUContext | null> | null = null;
 
+// All params are stored as f32 (even integer-valued ones) so the JS side never
+// has to bit-reinterpret an integer as a float across the buffer boundary; the
+// shader converts back to u32 where indices are needed. Struct is padded to a
+// multiple of 16 bytes as required for the uniform address space.
 const AUDIO_ANALYSIS_SHADER = `
 @group(0) @binding(0) var<storage, read> samples: array<f32>;
 @group(0) @binding(1) var<storage, read_write> frames: array<AudioFrame>;
@@ -27,29 +30,30 @@ struct AudioFrame {
 	rms: f32,
 	peak: f32,
 	zeroCrossingRate: f32,
-	_pad: u32,
+	_pad0: f32,
 }
 
 struct AnalysisParams {
-	frameSize: u32,
-	firstSample: u32,
-	finalSample: u32,
+	frameSize: f32,
+	firstSample: f32,
+	finalSample: f32,
 	sampleRate: f32,
 	sourceStartSeconds: f32,
 	playbackRate: f32,
+	_pad0: f32,
+	_pad1: f32,
 }
 
-@compute @workgroup_size(256)
+@compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 	let frameIndex = global_id.x;
-	let frameSize = params.frameSize;
-	let firstSample = params.firstSample;
-	let finalSample = params.finalSample;
+	let frameSize = u32(params.frameSize);
+	let firstSample = u32(params.firstSample);
+	let finalSample = u32(params.finalSample);
 	let sampleRate = params.sampleRate;
 	let sourceStartSeconds = params.sourceStartSeconds;
 	let playbackRate = params.playbackRate;
 
-	// Calculate sample range for this frame
 	let frameStartSample = firstSample + frameIndex * frameSize;
 	if (frameStartSample >= finalSample) {
 		return;
@@ -58,7 +62,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 	let frameEndSample = min(finalSample, frameStartSample + frameSize);
 	let sampleCount = frameEndSample - frameStartSample;
 
-	// Calculate frame statistics
 	var sumSquares: f32 = 0.0;
 	var peak: f32 = 0.0;
 	var zeroCrossings: u32 = 0u;
@@ -80,7 +83,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 		previous = sample;
 	}
 
-	// Store results
 	let sourceFrameStart = f32(frameStartSample) / sampleRate;
 	let sourceFrameEnd = f32(frameEndSample) / sampleRate;
 	let rms = sqrt(sumSquares / f32(max(1u, sampleCount)));
@@ -94,10 +96,10 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 }
 `;
 
-async function initializeGPU(): Promise<GPUContext | null> {
+async function createGPUContext(): Promise<GPUContext | null> {
 	try {
 		if (!navigator.gpu) {
-			console.warn("[GPU Audio] WebGPU not available on this system");
+			console.warn("[GPU Audio] WebGPU is not available in this runtime");
 			return null;
 		}
 
@@ -106,10 +108,14 @@ async function initializeGPU(): Promise<GPUContext | null> {
 			console.warn("[GPU Audio] No WebGPU adapter available");
 			return null;
 		}
+		console.log("[GPU Audio] Adapter acquired:", adapter.info ?? "(no adapter info)");
 
-		console.log("[GPU Audio] WebGPU adapter found:", adapter.limits);
 		const device = await adapter.requestDevice();
-		const queue = device.queue;
+		device.addEventListener("uncapturederror", (event) => {
+			console.error("[GPU Audio] Uncaptured WebGPU error:", event.error.message);
+		});
+
+		device.pushErrorScope("validation");
 
 		const bindGroupLayout = device.createBindGroupLayout({
 			entries: [
@@ -132,20 +138,61 @@ async function initializeGPU(): Promise<GPUContext | null> {
 		});
 
 		const shaderModule = device.createShaderModule({ code: AUDIO_ANALYSIS_SHADER });
+		const compilationInfo = await shaderModule.getCompilationInfo();
+		const shaderErrors = compilationInfo.messages.filter((m) => m.type === "error");
+		if (shaderErrors.length > 0) {
+			console.error(
+				"[GPU Audio] Shader compilation errors:",
+				shaderErrors.map((m) => `${m.lineNum}:${m.linePos} ${m.message}`),
+			);
+			await device.popErrorScope();
+			return null;
+		}
+
 		const computePipeline = device.createComputePipeline({
 			layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] }),
 			compute: { module: shaderModule, entryPoint: "main" },
 		});
 
-		return { device, queue, computePipeline, bindGroupLayout };
+		const validationError = await device.popErrorScope();
+		if (validationError) {
+			console.error("[GPU Audio] Pipeline creation failed:", validationError.message);
+			return null;
+		}
+
+		console.log("[GPU Audio] WebGPU pipeline ready");
+		return { device, queue: device.queue, computePipeline, bindGroupLayout };
 	} catch (error) {
-		console.warn("WebGPU initialization failed, falling back to CPU:", error);
+		console.warn("[GPU Audio] WebGPU initialization failed, falling back to CPU:", error);
 		return null;
 	}
 }
 
+function getGPUContext(): Promise<GPUContext | null> {
+	if (!gpuContextPromise) {
+		console.log("[GPU Audio] Initializing WebGPU...");
+		gpuContextPromise = createGPUContext();
+	}
+	return gpuContextPromise;
+}
+
+async function runOnCPU(options: {
+	samples: Float32Array;
+	sampleRate: number;
+	sourceStartSeconds: number;
+	sourceEndSeconds: number;
+	playbackRate: number;
+	frameDurationSeconds: number;
+	yieldEveryFrames: number;
+	yieldControl: () => Promise<void>;
+}): Promise<AudioAnalysisFrame[]> {
+	const { extractCompactAudioFeatures } = await import("./audio-silence-analysis");
+	return extractCompactAudioFeatures(options);
+}
+
 /**
- * GPU-accelerated audio feature extraction. Falls back to CPU if WebGPU unavailable.
+ * GPU-accelerated audio feature extraction. Falls back to CPU if WebGPU is
+ * unavailable or the shader fails to compile/validate on this device.
  */
 export async function extractCompactAudioFeaturesGPU({
 	samples,
@@ -166,7 +213,6 @@ export async function extractCompactAudioFeaturesGPU({
 	yieldEveryFrames?: number;
 	yieldControl?: () => Promise<void>;
 }): Promise<AudioAnalysisFrame[]> {
-	// Validate inputs
 	if (
 		!Number.isFinite(sampleRate) ||
 		sampleRate <= 0 ||
@@ -182,41 +228,23 @@ export async function extractCompactAudioFeaturesGPU({
 		return [];
 	}
 
-	// Try GPU first, fall back to CPU if unavailable
+	const cpuOptions = {
+		samples,
+		sampleRate,
+		sourceStartSeconds,
+		sourceEndSeconds,
+		playbackRate,
+		frameDurationSeconds,
+		yieldEveryFrames,
+		yieldControl,
+	};
+
+	const gpuContext = await getGPUContext();
 	if (!gpuContext) {
-		if (!gpuInitPromise) {
-			console.log("[GPU Audio] Initializing WebGPU...");
-			gpuInitPromise = initializeGPU();
-		}
-		gpuContext = await gpuInitPromise;
+		console.log("[GPU Audio] GPU unavailable, using CPU audio analysis");
+		return runOnCPU(cpuOptions);
 	}
 
-	if (!gpuContext) {
-		console.log("[GPU Audio] GPU unavailable, falling back to CPU audio analysis");
-		// Fallback to CPU (import from the original module to avoid circular dependency)
-		const { extractCompactAudioFeatures } = await import(
-			"./audio-silence-analysis"
-		);
-		return extractCompactAudioFeatures({
-			samples,
-			sampleRate,
-			sourceStartSeconds,
-			sourceEndSeconds,
-			playbackRate,
-			frameDurationSeconds,
-			yieldEveryFrames,
-			yieldControl,
-		});
-	}
-
-	console.log(
-		`[GPU Audio] Processing ${frameCount} frames on GPU (frame size: ${frameSize} samples)`,
-	);
-
-	const device = gpuContext.device;
-	const queue = gpuContext.queue;
-
-	// Calculate frame parameters
 	const firstSample = Math.max(
 		0,
 		Math.min(samples.length, Math.floor(sourceStartSeconds * sampleRate)),
@@ -228,103 +256,123 @@ export async function extractCompactAudioFeaturesGPU({
 	const frameSize = Math.max(1, Math.round(sampleRate * frameDurationSeconds));
 	const frameCount = Math.ceil((finalSample - firstSample) / frameSize);
 
-	// Create GPU buffers
-	const samplesBuffer = device.createBuffer({
-		size: samples.byteLength,
-		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-		mappedAtCreation: true,
-	});
-	new Float32Array(samplesBuffer.getMappedRange()).set(samples);
-	samplesBuffer.unmap();
+	if (frameCount === 0) return [];
 
-	const frameSize32 = 6; // 4 f32 + 1 u32 pad
-	const framesBuffer = device.createBuffer({
-		size: frameCount * frameSize32 * 4,
-		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
-	});
-
-	const paramsBuffer = device.createBuffer({
-		size: 32, // 4 u32 + 3 f32 (padded)
-		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-		mappedAtCreation: true,
-	});
-
-	const paramsDataU32 = new Uint32Array(paramsBuffer.getMappedRange(0, 16));
-	paramsDataU32[0] = frameSize;
-	paramsDataU32[1] = firstSample;
-	paramsDataU32[2] = finalSample;
-	paramsDataU32[3] = Math.floor(sampleRate);
-
-	const paramsDataF32 = new Float32Array(paramsBuffer.getMappedRange(16, 12));
-	paramsDataF32[0] = sourceStartSeconds;
-	paramsDataF32[1] = playbackRate;
-
-	paramsBuffer.unmap();
-
-	// Create bind group
-	const bindGroup = device.createBindGroup({
-		layout: gpuContext.bindGroupLayout,
-		entries: [
-			{ binding: 0, resource: { buffer: samplesBuffer } },
-			{ binding: 1, resource: { buffer: framesBuffer } },
-			{ binding: 2, resource: { buffer: paramsBuffer } },
-		],
-	});
-
-	// Run compute shader
-	const startTime = performance.now();
-	const commandEncoder = device.createCommandEncoder();
-	const passEncoder = commandEncoder.beginComputePass();
-	passEncoder.setPipeline(gpuContext.computePipeline);
-	passEncoder.setBindGroup(0, bindGroup);
-	const workgroups = Math.ceil(frameCount / 256);
-	passEncoder.dispatchWorkgroups(workgroups);
-	passEncoder.end();
-
-	// Read results
-	const stagingBuffer = device.createBuffer({
-		size: frameCount * frameSize32 * 4,
-		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-	});
-	commandEncoder.copyBufferToBuffer(framesBuffer, 0, stagingBuffer, 0, stagingBuffer.size);
-	queue.submit([commandEncoder.finish()]);
-
-	await stagingBuffer.mapAsync(GPUMapMode.READ);
-	const frameData = new Float32Array(stagingBuffer.getMappedRange()).slice();
-	stagingBuffer.unmap();
-
-	const gpuTime = performance.now() - startTime;
 	console.log(
-		`[GPU Audio] GPU compute completed in ${gpuTime.toFixed(2)}ms (${workgroups} workgroups)`,
+		`[GPU Audio] Processing ${frameCount} frames on GPU (frame size: ${frameSize} samples, ${samples.length} total samples)`,
 	);
 
-	// Convert GPU results to AudioAnalysisFrame[]
-	const frames: AudioAnalysisFrame[] = [];
-	for (let i = 0; i < frameCount; i++) {
-		const offset = i * frameSize32;
-		frames.push({
-			start: frameData[offset],
-			end: frameData[offset + 1],
-			rms: frameData[offset + 2],
-			peak: frameData[offset + 3],
-			zeroCrossingRate: frameData[offset + 4],
+	const { device, queue } = gpuContext;
+
+	try {
+		device.pushErrorScope("validation");
+
+		const samplesBuffer = device.createBuffer({
+			size: Math.max(4, samples.byteLength),
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+			mappedAtCreation: true,
 		});
-	}
+		new Float32Array(samplesBuffer.getMappedRange()).set(samples);
+		samplesBuffer.unmap();
 
-	// Cleanup
-	samplesBuffer.destroy();
-	framesBuffer.destroy();
-	paramsBuffer.destroy();
-	stagingBuffer.destroy();
+		// AudioFrame struct = 6 x f32 = 24 bytes.
+		const FRAME_STRUCT_FLOATS = 6;
+		const framesBuffer = device.createBuffer({
+			size: frameCount * FRAME_STRUCT_FLOATS * 4,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+		});
 
-	// Yield control periodically
-	for (let i = 0; i < frameCount; i += yieldEveryFrames) {
-		if (i > 0 && i < frameCount) {
-			await yieldControl();
+		// AnalysisParams struct = 8 x f32 = 32 bytes (padded to multiple of 16).
+		const paramsBuffer = device.createBuffer({
+			size: 32,
+			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+			mappedAtCreation: true,
+		});
+		new Float32Array(paramsBuffer.getMappedRange()).set([
+			frameSize,
+			firstSample,
+			finalSample,
+			sampleRate,
+			sourceStartSeconds,
+			playbackRate,
+			0,
+			0,
+		]);
+		paramsBuffer.unmap();
+
+		const bindGroup = device.createBindGroup({
+			layout: gpuContext.bindGroupLayout,
+			entries: [
+				{ binding: 0, resource: { buffer: samplesBuffer } },
+				{ binding: 1, resource: { buffer: framesBuffer } },
+				{ binding: 2, resource: { buffer: paramsBuffer } },
+			],
+		});
+
+		const startTime = performance.now();
+		const commandEncoder = device.createCommandEncoder();
+		const passEncoder = commandEncoder.beginComputePass();
+		passEncoder.setPipeline(gpuContext.computePipeline);
+		passEncoder.setBindGroup(0, bindGroup);
+		const workgroups = Math.ceil(frameCount / 64);
+		passEncoder.dispatchWorkgroups(workgroups);
+		passEncoder.end();
+
+		const stagingBuffer = device.createBuffer({
+			size: frameCount * FRAME_STRUCT_FLOATS * 4,
+			usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+		});
+		commandEncoder.copyBufferToBuffer(framesBuffer, 0, stagingBuffer, 0, stagingBuffer.size);
+		queue.submit([commandEncoder.finish()]);
+
+		await stagingBuffer.mapAsync(GPUMapMode.READ);
+		const frameData = new Float32Array(stagingBuffer.getMappedRange()).slice();
+		stagingBuffer.unmap();
+
+		const validationError = await device.popErrorScope();
+		if (validationError) {
+			console.error(
+				"[GPU Audio] GPU execution failed, falling back to CPU:",
+				validationError.message,
+			);
+			samplesBuffer.destroy();
+			framesBuffer.destroy();
+			paramsBuffer.destroy();
+			stagingBuffer.destroy();
+			return runOnCPU(cpuOptions);
 		}
-	}
 
-	return frames;
+		const gpuTime = performance.now() - startTime;
+		console.log(
+			`[GPU Audio] GPU compute completed in ${gpuTime.toFixed(2)}ms (${workgroups} workgroups, ${frameCount} frames)`,
+		);
+
+		const frames: AudioAnalysisFrame[] = [];
+		for (let i = 0; i < frameCount; i++) {
+			const offset = i * FRAME_STRUCT_FLOATS;
+			frames.push({
+				start: frameData[offset],
+				end: frameData[offset + 1],
+				rms: frameData[offset + 2],
+				peak: frameData[offset + 3],
+				zeroCrossingRate: frameData[offset + 4],
+			});
+		}
+
+		samplesBuffer.destroy();
+		framesBuffer.destroy();
+		paramsBuffer.destroy();
+		stagingBuffer.destroy();
+
+		for (let i = 0; i < frameCount; i += yieldEveryFrames) {
+			if (i > 0) await yieldControl();
+		}
+
+		return frames;
+	} catch (error) {
+		console.error("[GPU Audio] GPU execution threw, falling back to CPU:", error);
+		return runOnCPU(cpuOptions);
+	}
 }
 
 async function yieldToBrowser(): Promise<void> {
