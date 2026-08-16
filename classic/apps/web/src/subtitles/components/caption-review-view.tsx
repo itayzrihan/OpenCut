@@ -18,10 +18,7 @@ import {
 	findClosestCaptionReviewItem,
 	type CaptionReviewItem,
 } from "@/subtitles/caption-review";
-import {
-	findCaptionSourceTrack,
-	rebuildCaptionTracksWithSource,
-} from "@/subtitles/caption-tracks";
+import { findCaptionSourceTrack } from "@/subtitles/caption-tracks";
 import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
 import { TracksSnapshotCommand } from "@/commands";
 import { requestTimelineScrollToTime } from "@/timeline/focus-event";
@@ -121,6 +118,25 @@ export function CaptionReviewView() {
 				),
 			),
 		[selectedElements],
+	);
+	const captionSource = useMemo(
+		() =>
+			activeScene
+				? (findCaptionSourceTrack({ tracks: activeScene.tracks })
+						?.captionSource ?? null)
+				: null,
+		[activeScene],
+	);
+	const excludedPunctuationWordIds = useMemo(
+		() =>
+			new Set(
+				captionSource?.words.flatMap((word) =>
+					word.excludeFromPunctuationHiding && word.source?.wordId
+						? [word.source.wordId]
+						: [],
+				) ?? [],
+			),
+		[captionSource],
 	);
 
 	useEffect(() => {
@@ -259,46 +275,79 @@ export function CaptionReviewView() {
 		if (!activeScene) return;
 		const sourceTrack = findCaptionSourceTrack({ tracks: activeScene.tracks });
 		const source = sourceTrack?.captionSource;
-		if (!source) return;
+		if (!sourceTrack || !source) return;
 
-		const itemStart = mediaTimeToSeconds({ time: item.startTime });
-		const itemEnd =
-			mediaTimeToSeconds({ time: item.startTime }) +
-			mediaTimeToSeconds({ time: item.duration });
-
-		const updatedWords = source.words.map((word) => {
-			const wordStart = word.start;
-			const wordEnd = word.end;
-			const timeOverlaps =
-				Math.max(itemStart, wordStart) < Math.min(itemEnd, wordEnd);
-			if (
-				timeOverlaps &&
-				stripCaptionPunctuation({ text: word.text }) ===
-					stripCaptionPunctuation({ text: item.text })
-			) {
-				return {
-					...word,
-					excludeFromPunctuationHiding: !word.excludeFromPunctuationHiding,
-				};
-			}
-			return word;
+		const element = findCaptionReviewTextElement({
+			tracks: activeScene.tracks,
+			item,
 		});
+		const wordId = element?.wordRuns?.[item.wordIndex]?.id;
+		if (!element || !wordId) return;
 
+		const wordSourceIndex = source.words.findIndex(
+			(word) => word.source?.wordId === wordId,
+		);
+		if (wordSourceIndex < 0) return;
+
+		const word = source.words[wordSourceIndex];
+		const nextExclude = !word.excludeFromPunctuationHiding;
+		const nextDisplayText =
+			source.settings.hidePunctuation && !nextExclude
+				? stripCaptionPunctuation({ text: word.text })
+				: word.text;
+
+		const elementPatch =
+			nextDisplayText !== item.text
+				? buildCaptionReviewWordPatch({
+						element,
+						wordIndex: item.wordIndex,
+						text: nextDisplayText,
+					})
+				: null;
+
+		const nextWords = source.words.map((candidate, index) =>
+			index === wordSourceIndex
+				? { ...candidate, excludeFromPunctuationHiding: nextExclude }
+				: candidate,
+		);
+
+		// Patch only this word's flag on the caption source and only this element's
+		// rendered text — never call rebuildCaptionTracksWithSource here, since it
+		// either duplicates elements the user has manually rearranged/transitioned
+		// (preserveEditedElements: true) or wipes every element's manual timing
+		// (preserveEditedElements: false). This scoped patch touches nothing else.
 		const before = activeScene.tracks;
-		const after = rebuildCaptionTracksWithSource({
-			tracks: before,
-			words: updatedWords,
-			settings: source.settings,
-			canvasSize: editor.project.getActive().settings.canvasSize,
-			layerCount: source.layerCount,
-			preserveEditedElements: false,
-		});
+		const after = {
+			...before,
+			overlay: before.overlay.map((track) => {
+				let nextTrack = track;
+				if (nextTrack.type === "text" && nextTrack.id === sourceTrack.id) {
+					nextTrack = {
+						...nextTrack,
+						captionSource: { ...source, words: nextWords },
+					};
+				}
+				if (
+					elementPatch &&
+					nextTrack.type === "text" &&
+					nextTrack.id === item.trackId
+				) {
+					nextTrack = {
+						...nextTrack,
+						elements: nextTrack.elements.map((candidate) =>
+							candidate.id === item.elementId
+								? { ...candidate, ...elementPatch }
+								: candidate,
+						),
+					};
+				}
+				return nextTrack;
+			}),
+		};
 
-		if (after) {
-			editor.command.execute({
-				command: new TracksSnapshotCommand({ before, after }),
-			});
-		}
+		editor.command.execute({
+			command: new TracksSnapshotCommand({ before, after }),
+		});
 	};
 
 	return (
@@ -353,28 +402,17 @@ export function CaptionReviewView() {
 							? itemKey(closestItem) === key
 							: false;
 						const isSelected = selectedElementKeys.has(elementKey(item));
-						const sourceTrack = activeScene
-							? findCaptionSourceTrack({ tracks: activeScene.tracks })
+						const itemElement = activeScene
+							? findCaptionReviewTextElement({
+									tracks: activeScene.tracks,
+									item,
+								})
 							: null;
-						const source = sourceTrack?.captionSource;
-						const itemStart = mediaTimeToSeconds({ time: item.startTime });
-						const itemEnd =
-							mediaTimeToSeconds({ time: item.startTime }) +
-							mediaTimeToSeconds({ time: item.duration });
-						const isExcludedFromPunctuationHiding = source?.words.some(
-							(word) => {
-								const wordStart = word.start;
-								const wordEnd = word.end;
-								const timeOverlaps =
-									Math.max(itemStart, wordStart) < Math.min(itemEnd, wordEnd);
-								return (
-									timeOverlaps &&
-									stripCaptionPunctuation({ text: word.text }) ===
-										stripCaptionPunctuation({ text: item.text }) &&
-									word.excludeFromPunctuationHiding
-								);
-							},
-						) ?? false;
+						const itemWordId =
+							itemElement?.wordRuns?.[item.wordIndex]?.id ?? null;
+						const isExcludedFromPunctuationHiding = itemWordId
+							? excludedPunctuationWordIds.has(itemWordId)
+							: false;
 						const insertControl =
 							index === 0 ? null : (
 								<button
