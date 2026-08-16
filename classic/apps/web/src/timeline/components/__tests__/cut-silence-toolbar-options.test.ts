@@ -6,13 +6,13 @@ import {
 } from "@/timeline/components/cut-silence-toolbar-options";
 
 describe("cut silence toolbar options", () => {
-	test("uses synchronized 0.1-second audio cutting as the one-click default", () => {
+	test("uses synchronized 0.3-second audio cutting as the one-click default", () => {
 		expect(DEFAULT_CUT_SILENCE_MODE).toBe("audio");
 		expect(CUT_SILENCE_ACTIONS[0]).toMatchObject({
 			mode: "audio",
 			label: "Audio-based tight cut (default)",
 		});
-		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("0.1 seconds");
+		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("0.3 seconds");
 		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("captions");
 	});
 

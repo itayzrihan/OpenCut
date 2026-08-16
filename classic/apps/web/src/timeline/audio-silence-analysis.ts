@@ -3,7 +3,7 @@ import type { AudioAnalysisFrame } from "opencut-wasm";
 export const DEEP_AUDIO_FRAME_SECONDS = 0.02;
 export const FAST_AUDIO_FRAME_SECONDS = 0.05;
 export const AUDIO_BASED_AUDIO_FRAME_SECONDS = 0.01;
-export const DEFAULT_AUDIO_MIN_SILENCE_SECONDS = 0.1;
+export const DEFAULT_AUDIO_MIN_SILENCE_SECONDS = 0.3;
 export const MIN_AUDIO_MIN_SILENCE_SECONDS = 0.01;
 export const MAX_AUDIO_MIN_SILENCE_SECONDS = 60;
 

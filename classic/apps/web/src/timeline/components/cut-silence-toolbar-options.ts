@@ -11,7 +11,7 @@ export const CUT_SILENCE_ACTIONS = [
 		mode: "audio",
 		label: "Audio-based tight cut (default)",
 		description:
-			"Removes audio pauses from 0.1 seconds and keeps existing captions synchronized.",
+			"Removes audio pauses from 0.3 seconds and keeps existing captions synchronized.",
 	},
 	{
 		mode: "fast",

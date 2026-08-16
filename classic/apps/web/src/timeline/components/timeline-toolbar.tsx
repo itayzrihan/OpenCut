@@ -359,7 +359,7 @@ function CutSilenceToolbarControl({
 				? "Deeply analyzing speech, noise, and caption timing"
 				: activeMode === "fast"
 					? "Cutting clear silences"
-					: "Cut audio pauses from 0.1 seconds and synchronize captions";
+					: "Cut audio pauses from 0.3 seconds and synchronize captions";
 
 	return (
 		<div
@@ -424,7 +424,7 @@ function CutSilenceToolbarControl({
 								<span className="text-muted-foreground block text-xs leading-snug whitespace-normal">
 									{action.mode === "audio"
 										? action.description.replace(
-												"0.1",
+												"0.3",
 												formattedAudioMinSilenceSeconds,
 											)
 										: action.description}
