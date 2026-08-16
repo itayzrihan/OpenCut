@@ -219,6 +219,18 @@ export interface TextElement extends BaseTimelineElement {
 	type: "text";
 	hidden?: boolean;
 	effects?: Effect[];
+	/**
+	 * Captions remember the text before pixel-based wrapping so changing the
+	 * layer font size can reflow automatic line breaks. A direct content edit
+	 * no longer matches generatedContent and is therefore treated as manual.
+	 */
+	responsiveText?: {
+		sourceContent: string;
+		generatedContent: string;
+		maxWidth: number;
+		canvasHeight: number;
+		fontSize: number;
+	};
 	wordRuns?: TextWordRun[];
 	textRowOverrides?: TextRowOverride[];
 	captionWordAnimationId?: string;

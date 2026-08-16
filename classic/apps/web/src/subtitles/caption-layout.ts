@@ -18,7 +18,7 @@ export const DEFAULT_CAPTION_LAYOUT = {
 	rows: 2,
 	inPaddingPercent: 0,
 	outPaddingPercent: 0,
-	bottomFadeOutPercent: 30,
+	bottomFadeOutPercent: 50,
 	revealMode: "determined-by-preset" as TextCaptionRevealMode,
 	transitionIn: "none" as TextWordTransitionIn,
 	wordAnimationId: "none",
@@ -330,7 +330,11 @@ export function buildCaptionChunksFromWords({
 		words: TranscriptionWord[];
 	}> = [];
 
-	for (let rowStart = 0; rowStart < rowGroups.length; rowStart += normalized.rows) {
+	for (
+		let rowStart = 0;
+		rowStart < rowGroups.length;
+		rowStart += normalized.rows
+	) {
 		const rows = rowGroups.slice(rowStart, rowStart + normalized.rows);
 		const group = rows.flat();
 		if (group.length === 0) continue;

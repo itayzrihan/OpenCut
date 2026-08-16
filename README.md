@@ -134,6 +134,24 @@ edit the active project while the desktop is open.
 See [apps/mcp/README.md](apps/mcp/README.md) for architecture, client
 configuration, the feature-registration contract, and security controls.
 
+### Automatic MCP startup for Classic
+
+The Classic development launchers start the authenticated loopback MCP bridge
+automatically:
+
+```sh
+cd classic
+bun run dev:web       # browser + MCP bridge
+bun run dev:electron  # Electron + MCP bridge
+```
+
+`bun run --cwd apps/electron dev:shell` also ensures the bridge when the Electron
+shell is started by itself. The launcher reuses an already healthy bridge (for
+example one started by an MCP client), otherwise it starts the local
+`opencut-mcp` binary and keeps its stdio input open for the lifetime of the
+editor. The optional development asset check remains available as
+`bun run --cwd classic/apps/web dev:verify`.
+
 ## Contributing
 
 We're not set up to take outside contributions yet while the architecture is being designed. If you want to follow along, ask questions, or just hang out, [join the Discord](https://discord.gg/zmR9N35cjK) or [open an issue](https://github.com/opencut-app/opencut/issues).

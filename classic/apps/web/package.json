@@ -4,8 +4,10 @@
   "private": true,
   "packageManager": "bun@1.2.18",
   "scripts": {
-    "predev": "bun run assets:verify && bun run --cwd ../.. build:wasm",
-    "dev": "next dev --turbopack",
+    "dev": "bun run dev:with-mcp",
+    "dev:next": "next dev --turbopack",
+    "dev:with-mcp": "node ../../scripts/dev-web-with-mcp.mjs",
+    "dev:verify": "bun run assets:verify && bun run --cwd ../.. build:wasm",
     "prebuild": "bun run assets:verify && bun run --cwd ../.. build:wasm",
     "build": "cross-env OPENCUT_RUNTIME_TARGET=browser next build",
     "build:electron": "cross-env OPENCUT_RUNTIME_TARGET=electron next build",

@@ -24,6 +24,7 @@ import {
 } from "./primitives";
 import { getCaptionWordAnimation } from "./caption-presets";
 import { FONT_SIZE_SCALE_REFERENCE } from "./typography";
+import { reflowResponsiveTextElement } from "./responsive-wrap";
 
 export interface ResolvedTextBackground extends TextBackground {
 	paddingX: number;
@@ -129,11 +130,21 @@ export function measureTextElement({
 	localTime: number;
 	ctx: TextLayoutMeasurementContext;
 }): MeasuredTextElement {
-	const text = resolveTextEffectParamsAtTime({
+	let text = resolveTextEffectParamsAtTime({
 		text: buildTextLayoutParamsFromElement({ element }),
 		element,
 		localTime,
 	});
+	const responsive = reflowResponsiveTextElement({
+		element,
+		text,
+		canvasHeight,
+		ctx,
+	});
+	if (responsive) {
+		element = responsive.element;
+		text = responsive.text;
+	}
 	const measuredLayout = measureTextLayout({
 		text,
 		canvasHeight,
@@ -228,8 +239,7 @@ function resolveTextEffectParamsAtTime({
 		}),
 		bottomFadeOutEndOpacity: resolveNumberAtTime({
 			baseValue:
-				text.bottomFadeOutEndOpacity ??
-				DEFAULTS.text.bottomFadeOutEndOpacity,
+				text.bottomFadeOutEndOpacity ?? DEFAULTS.text.bottomFadeOutEndOpacity,
 			animations: element.animations,
 			propertyPath: "bottomFadeOutEndOpacity",
 			localTime,
@@ -449,7 +459,10 @@ function measureWordRunsLayout({
 				false;
 			const persistentProgress = (enabled: boolean) =>
 				enabled
-					? Math.max(0, Math.min(1, (localTime - start) / Math.max(0.001, end - start)))
+					? Math.max(
+							0,
+							Math.min(1, (localTime - start) / Math.max(0.001, end - start)),
+						)
 					: 0;
 			const glowerProgress = Math.max(
 				persistentProgress(glowerEnabled),
@@ -478,7 +491,8 @@ function measureWordRunsLayout({
 						: glowerDirectionSetting,
 				lightningProgress: persistentProgress(lightningEnabled),
 				glitchyProgress: persistentProgress(glitchyEnabled),
-				lightningActive: lightningEnabled && localTime >= start && localTime < end,
+				lightningActive:
+					lightningEnabled && localTime >= start && localTime < end,
 				glitchyActive: glitchyEnabled && localTime >= start && localTime < end,
 				drawText: resolveDrawText({
 					run,
@@ -615,7 +629,11 @@ function measureWordRunsLayout({
 	};
 }
 
-function getRenderWordRuns({ element }: { element: TextElement }): TextWordRun[] {
+function getRenderWordRuns({
+	element,
+}: {
+	element: TextElement;
+}): TextWordRun[] {
 	const runs = element.wordRuns ?? [];
 	if (runs.length === 0) return runs;
 

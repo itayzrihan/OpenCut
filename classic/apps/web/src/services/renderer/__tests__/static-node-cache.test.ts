@@ -3,6 +3,8 @@ import type { ImageNodeParams } from "@/services/renderer/nodes/image-node";
 import { ImageNode } from "@/services/renderer/nodes/image-node";
 import type { VideoNodeParams } from "@/services/renderer/nodes/video-node";
 import { VideoNode } from "@/services/renderer/nodes/video-node";
+import type { TextNodeParams } from "@/services/renderer/nodes/text-node";
+import { TextNode } from "@/services/renderer/nodes/text-node";
 import {
 	isStaticRenderNode,
 	isStaticRenderNodeActiveAtTime,
@@ -32,10 +34,26 @@ function createImageParams(
 	};
 }
 
-function createImageNode(
-	overrides: Partial<ImageNodeParams> = {},
-): ImageNode {
+function createImageNode(overrides: Partial<ImageNodeParams> = {}): ImageNode {
 	return new ImageNode(createImageParams(overrides));
+}
+
+function createTextNode(overrides: Partial<TextNodeParams> = {}): TextNode {
+	return new TextNode({
+		id: "text-1",
+		name: "Text",
+		type: "text",
+		duration: 10 as TextNodeParams["duration"],
+		startTime: 2 as TextNodeParams["startTime"],
+		trimStart: 0 as TextNodeParams["trimStart"],
+		trimEnd: 0 as TextNodeParams["trimEnd"],
+		params: { content: "Hello", fontSize: 3 },
+		transform,
+		opacity: 1,
+		canvasCenter: { x: 960, y: 540 },
+		canvasHeight: 1080,
+		...overrides,
+	});
 }
 
 describe("static renderer node classification", () => {
@@ -43,12 +61,8 @@ describe("static renderer node classification", () => {
 		const node = createImageNode();
 
 		expect(isStaticRenderNode(node)).toBe(true);
-		expect(
-			isStaticRenderNodeActiveAtTime({ node, time: 2 }),
-		).toBe(true);
-		expect(
-			isStaticRenderNodeActiveAtTime({ node, time: 12 }),
-		).toBe(false);
+		expect(isStaticRenderNodeActiveAtTime({ node, time: 2 })).toBe(true);
+		expect(isStaticRenderNodeActiveAtTime({ node, time: 12 })).toBe(false);
 	});
 
 	test("keeps animated image layers on the per-frame path", () => {
@@ -65,5 +79,29 @@ describe("static renderer node classification", () => {
 		} satisfies VideoNodeParams);
 
 		expect(isStaticRenderNode(node)).toBe(false);
+	});
+
+	test("keeps timed caption text on the per-frame path", () => {
+		const node = createTextNode({
+			wordRuns: [
+				{
+					id: "word-1",
+					text: "Hello",
+					lineIndex: 0,
+					startTime: 0 as NonNullable<
+						TextNodeParams["wordRuns"]
+					>[number]["startTime"],
+					endTime: 1 as NonNullable<
+						TextNodeParams["wordRuns"]
+					>[number]["endTime"],
+				},
+			],
+		});
+
+		expect(isStaticRenderNode(node)).toBe(false);
+	});
+
+	test("still caches plain text without timed words", () => {
+		expect(isStaticRenderNode(createTextNode())).toBe(true);
 	});
 });

@@ -145,13 +145,23 @@ tokens are rejected.
 
 ### Current Classic browser editor
 
-Start the stdio MCP server and the Classic web editor on the same workstation:
+The Classic development launchers start the stdio MCP server and its
+authenticated loopback bridge automatically:
 
 ```sh
-cargo run -p opencut-mcp-server
 cd classic
-bun run dev:web
+bun run dev:web       # browser + MCP bridge
+bun run dev:electron  # Electron + MCP bridge
 ```
+
+The Electron shell also ensures the bridge when it is started on its own with
+`bun run --cwd apps/electron dev:shell`. The launcher reuses an already healthy
+bridge (for example one started by an MCP client), otherwise it starts the
+workspace `opencut-mcp` binary and keeps its stdio input open for the lifetime
+of the editor.
+
+To start the MCP server manually, use `cargo run -p opencut-mcp-server` from the
+repository root. Automatic startup detects and reuses that bridge.
 
 The MCP process writes a short-lived connection record under OpenCut's local
 application-data directory. The browser never receives its bearer token:

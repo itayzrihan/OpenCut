@@ -27,6 +27,7 @@ export function isStaticRenderNode(node: AnyBaseNode): boolean {
 
 	if (node instanceof TextNode) {
 		return (
+			(node.params.wordRuns?.length ?? 0) === 0 &&
 			hasNoAnimationChannels(node.params.animations) &&
 			(node.params.effects?.length ?? 0) === 0 &&
 			!node.params.clipMediaAsset

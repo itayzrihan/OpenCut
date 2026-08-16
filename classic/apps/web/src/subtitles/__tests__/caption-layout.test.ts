@@ -76,14 +76,14 @@ describe("caption placement layout", () => {
 	});
 
 	test("defaults to no word animation", () => {
-		expect(normalizeCaptionLayoutSettings({ settings: undefined })).toMatchObject(
-			{
-				bottomFadeOutPercent: 30,
-				revealMode: "determined-by-preset",
-				transitionIn: "none",
-				wordAnimationId: "none",
-			},
-		);
+		expect(
+			normalizeCaptionLayoutSettings({ settings: undefined }),
+		).toMatchObject({
+			bottomFadeOutPercent: 50,
+			revealMode: "determined-by-preset",
+			transitionIn: "none",
+			wordAnimationId: "none",
+		});
 	});
 
 	test("normalizes caption bottom fade and keeps zero as an explicit opt-out", () => {
@@ -92,7 +92,7 @@ describe("caption placement layout", () => {
 		});
 		expect(
 			resolveCaptionBottomFadeOut({ settings: defaultSettings }),
-		).toBeCloseTo(0.3);
+		).toBeCloseTo(0.5);
 		expect(
 			normalizeCaptionLayoutSettings({
 				settings: { bottomFadeOutPercent: 150 },
@@ -204,13 +204,10 @@ describe("caption placement layout", () => {
 		expect(captions).toHaveLength(2);
 		expect(captions[0]?.text).toBe("If you\nleave");
 		expect(captions[1]?.text).toBe("the room\nnow");
-		expect(captions.flatMap((caption) => caption.words ?? []).map((word) => word.text)).toEqual([
-			"If",
-			"you",
-			"leave",
-			"the",
-			"room",
-			"now",
-		]);
+		expect(
+			captions
+				.flatMap((caption) => caption.words ?? [])
+				.map((word) => word.text),
+		).toEqual(["If", "you", "leave", "the", "room", "now"]);
 	});
 });

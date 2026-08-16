@@ -23,10 +23,11 @@ import {
 } from "./caption-layout";
 import type { SubtitleCue, SubtitleStyleOverrides } from "./types";
 import { getReadableWordTimings } from "./caption-readable-timing";
+import { wrapTextToWidth } from "@/text/responsive-wrap";
 
 const SUBTITLE_MAX_WIDTH_RATIO = 0.8;
 const SUBTITLE_BOTTOM_MARGIN_RATIO = 0.05;
-const SUBTITLE_FONT_SIZE = 5;
+const SUBTITLE_FONT_SIZE = 3;
 const MEASUREMENT_CANVAS_SIZE = 4096;
 
 function quoteFontFamily({ fontFamily }: { fontFamily: string }): string {
@@ -38,58 +39,6 @@ function createMeasurementContext(): CanvasRenderingContext2D | null {
 	canvas.width = MEASUREMENT_CANVAS_SIZE;
 	canvas.height = MEASUREMENT_CANVAS_SIZE;
 	return canvas.getContext("2d");
-}
-
-function measureLineWidth({
-	ctx,
-	text,
-}: {
-	ctx: CanvasRenderingContext2D;
-	text: string;
-}): number {
-	return ctx.measureText(text).width;
-}
-
-function wrapSubtitleText({
-	ctx,
-	text,
-	maxWidth,
-}: {
-	ctx: CanvasRenderingContext2D;
-	text: string;
-	maxWidth: number;
-}): string {
-	const normalized = text.trim().replace(/\r\n/g, "\n");
-	const paragraphs = normalized.split("\n");
-	const wrappedParagraphs: string[] = [];
-
-	for (const paragraph of paragraphs) {
-		const trimmedParagraph = paragraph.trim();
-		if (!trimmedParagraph) {
-			wrappedParagraphs.push("");
-			continue;
-		}
-
-		const words = trimmedParagraph.split(/\s+/);
-		let currentLine = words[0] ?? "";
-		const lines: string[] = [];
-
-		for (let i = 1; i < words.length; i++) {
-			const nextLine = `${currentLine} ${words[i]}`;
-			if (measureLineWidth({ ctx, text: nextLine }) <= maxWidth) {
-				currentLine = nextLine;
-				continue;
-			}
-
-			lines.push(currentLine);
-			currentLine = words[i];
-		}
-
-		lines.push(currentLine);
-		wrappedParagraphs.push(lines.join("\n"));
-	}
-
-	return wrappedParagraphs.join("\n");
 }
 
 function measureWrappedTextBlock({
@@ -385,7 +334,7 @@ export function buildSubtitleTextElement({
 	if (ctx) {
 		ctx.font = fontString;
 		setCanvasLetterSpacing({ ctx, letterSpacingPx: style.letterSpacing });
-		content = wrapSubtitleText({
+		content = wrapTextToWidth({
 			ctx,
 			text: displayText,
 			maxWidth,
@@ -418,6 +367,13 @@ export function buildSubtitleTextElement({
 	return {
 		...DEFAULTS.text.element,
 		name: `Caption ${index + 1}`,
+		responsiveText: {
+			sourceContent: displayText.replace(/[ \t]*\n[ \t]*/g, " "),
+			generatedContent: content,
+			maxWidth,
+			canvasHeight: canvasSize.height,
+			fontSize: style.fontSize,
+		},
 		wordRuns,
 		captionRevealMode: revealMode,
 		captionTransitionIn: transitionIn,
@@ -442,6 +398,11 @@ export function buildSubtitleTextElement({
 			bottomFadeOut: resolveCaptionBottomFadeOut({
 				settings: layoutSettings,
 			}),
+			bottomFadeOutEndOpacity: 0.3,
+			"shadow.enabled": true,
+			"shadow.blur": 50,
+			"shadow.offsetX": 0,
+			"shadow.offsetY": 0,
 			"background.color": style.background.color,
 			"background.cornerRadius":
 				style.background.cornerRadius ?? DEFAULTS.text.background.cornerRadius,
