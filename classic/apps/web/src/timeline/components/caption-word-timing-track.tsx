@@ -28,8 +28,10 @@ import {
 	findCaptionSourceTracks,
 	updateCaptionSourceWords,
 } from "@/subtitles/caption-tracks";
+import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
+import { TracksSnapshotCommand } from "@/commands";
 import type { SelectedTextWordRef } from "@/selection/editor-selection";
-import type { TextElement, TextTrack } from "@/timeline/types";
+import type { SceneTracks, TextElement, TextTrack } from "@/timeline/types";
 import {
 	getTimelinePixelsPerSecond,
 	timelineTimeToPixels,
@@ -373,6 +375,100 @@ export function CaptionWordTimingTrack({
 			commitWords(words.filter((_, index) => index !== wordIndex));
 		},
 		[commitWords, updateVisibleTextLayerWordStructure, words],
+	);
+
+	const togglePunctuationExclusion = useCallback(
+		({ wordIndex }: { wordIndex: number }) => {
+			if (!scene || !sourceTrack?.captionSource) return;
+			const current = words[wordIndex];
+			if (!current) return;
+
+			const nextExclude = !current.excludeFromPunctuationHiding;
+			const nextDisplayText =
+				source?.settings.hidePunctuation && !nextExclude
+					? stripCaptionPunctuation({ text: current.text })
+					: current.text;
+
+			const before = scene.tracks;
+			const refs = wordElementRefs.get(wordIndex) ?? [];
+			const elementUpdates =
+				nextDisplayText !== current.text && refs.length
+					? buildTextElementWordUpdates({
+							tracks: before,
+							refs,
+							currentWord: {
+								text: current.text,
+								start: current.start,
+								end: current.end,
+							},
+							nextWord: {
+								text: nextDisplayText,
+								start: current.start,
+								end: current.end,
+							},
+						})
+					: [];
+			const elementPatchByKey = new Map(
+				elementUpdates.map((update) => [
+					`${update.trackId}:${update.elementId}`,
+					update.patch,
+				]),
+			);
+
+			// Patch only this word's flag on the caption source and only the
+			// element(s) rendering it — never a full rebuild, which would either
+			// duplicate manually rearranged elements or wipe every element's
+			// manual timing. Merge params rather than overwrite it, since the
+			// text patch's params only carries the changed content field.
+			const after: SceneTracks = {
+				...before,
+				overlay: before.overlay.map((track) => {
+					if (track.type !== "text") return track;
+					let nextTrack = track;
+
+					if (nextTrack.id === sourceTrack.id && nextTrack.captionSource) {
+						nextTrack = {
+							...nextTrack,
+							captionSource: {
+								...nextTrack.captionSource,
+								words: nextTrack.captionSource.words.map((word, index) =>
+									index === wordIndex
+										? { ...word, excludeFromPunctuationHiding: nextExclude }
+										: word,
+								),
+							},
+						};
+					}
+
+					const hasPendingElementPatch = nextTrack.elements.some((element) =>
+						elementPatchByKey.has(`${nextTrack.id}:${element.id}`),
+					);
+					if (hasPendingElementPatch) {
+						nextTrack = {
+							...nextTrack,
+							elements: nextTrack.elements.map((element) => {
+								const patch = elementPatchByKey.get(
+									`${nextTrack.id}:${element.id}`,
+								);
+								if (!patch) return element;
+								return {
+									...element,
+									...patch,
+									params: { ...element.params, ...(patch.params ?? {}) },
+								};
+							}),
+						};
+					}
+
+					return nextTrack;
+				}),
+			};
+
+			editor.command.execute({
+				command: new TracksSnapshotCommand({ before, after }),
+			});
+		},
+		[editor, scene, source, sourceTrack, wordElementRefs, words],
 	);
 
 	const commitInsertedWord = useCallback(
@@ -729,6 +825,13 @@ export function CaptionWordTimingTrack({
 									}
 								>
 									Add word after
+								</ContextMenuItem>
+								<ContextMenuItem
+									onSelect={() => togglePunctuationExclusion({ wordIndex: index })}
+								>
+									{word.excludeFromPunctuationHiding
+										? "Include in punctuation hiding"
+										: "Exclude from punctuation hiding"}
 								</ContextMenuItem>
 								<ContextMenuItem
 									variant="destructive"
