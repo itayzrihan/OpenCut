@@ -543,6 +543,43 @@ export class SharedLibraryService {
 		return imported;
 	}
 
+	async updateAudioAsset({
+		assetId,
+		name,
+		folder,
+	}: {
+		assetId: string;
+		name?: string;
+		folder?: SharedAudioFolder;
+	}): Promise<SharedAudioAsset | null> {
+		const current = await this.findAudioAsset({ id: assetId });
+		if (!current) return null;
+		const normalizedName = name?.trim();
+		if (current.storageKind === "browser") {
+			const updated: SharedAudioAsset = {
+				...current,
+				...(normalizedName ? { name: normalizedName } : {}),
+				...(folder ? { folder } : {}),
+				updatedAt: nowIso(),
+			};
+			await this.audioMetadata.set({ key: assetId, value: updated });
+			return updated;
+		}
+		const manifest = await this.patchRepositoryManifest({
+			body: {
+				action: "updateAudioAsset",
+				assetId,
+				...(normalizedName ? { name: normalizedName } : {}),
+				...(folder ? { folder } : {}),
+			},
+		});
+		const updated =
+			manifest.audioAssets.find((asset) => asset.id === assetId) ?? null;
+		if (!updated) return null;
+		await this.audioMetadata.set({ key: assetId, value: updated });
+		return updated;
+	}
+
 	async upsertArchiveAudioAsset({
 		asset,
 		file,

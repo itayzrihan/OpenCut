@@ -1,4 +1,4 @@
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { stageRepositoryAssetPaths } from "@/git/repository-assets";
@@ -41,6 +41,12 @@ const STICKER_EXTENSIONS = new Set([
 ]);
 
 type ManifestPatch =
+	| {
+			action: "updateAudioAsset";
+			assetId: string;
+			name?: string;
+			folder?: SharedAudioFolder;
+	  }
 	| {
 			action: "createCategory";
 			category: SharedAssetCategory;
@@ -265,6 +271,17 @@ function parsePatch(body: unknown): ManifestPatch | null {
 		return null;
 	}
 	switch (body.action) {
+		case "updateAudioAsset": {
+			if (typeof body.assetId !== "string") return null;
+			const name =
+				typeof body.name === "string" && body.name.trim()
+					? body.name.trim()
+					: undefined;
+			const folder = isAudioFolder(body.folder) ? body.folder : undefined;
+			return name || folder
+				? { action: body.action, assetId: body.assetId, name, folder }
+				: null;
+		}
 		case "createCategory":
 			return isObject(body.category)
 				? {
@@ -502,8 +519,78 @@ async function handlePatch({
 	patch: ManifestPatch;
 }): Promise<NextResponse> {
 	const manifest = await readManifest();
-	const { manifestPath } = await getSharedLibraryPaths();
+	const { libraryRoot, manifestPath, repositoryRoot } =
+		await getSharedLibraryPaths();
+	const stagedPaths = [manifestPath];
 	switch (patch.action) {
+		case "updateAudioAsset": {
+			const current = manifest.audioAssets.find(
+				(asset) => asset.id === patch.assetId,
+			);
+			if (!current) {
+				return NextResponse.json(
+					{ error: "Shared audio asset not found" },
+					{ status: 404 },
+				);
+			}
+			const nextFolder = patch.folder ?? current.folder;
+			let updated: SharedAudioAsset = {
+				...current,
+				...(patch.name ? { name: patch.name } : {}),
+				folder: nextFolder,
+				updatedAt: new Date().toISOString(),
+			};
+			if (
+				nextFolder !== current.folder &&
+				current.storageKind === "repo" &&
+				current.fileName
+			) {
+				const previousPath = path.join(
+					libraryRoot,
+					"audio",
+					current.folder,
+					current.fileName,
+				);
+				const nextDirectory = path.join(libraryRoot, "audio", nextFolder);
+				const nextPath = path.join(nextDirectory, current.fileName);
+				await mkdir(nextDirectory, { recursive: true });
+				await rename(previousPath, nextPath);
+				stagedPaths.push(previousPath, nextPath);
+				updated = {
+					...updated,
+					sourceUrl: `/shared-library/audio/${nextFolder}/${current.fileName}`,
+					repositoryPath: toRepositoryPath({
+						parts: [
+							repositoryRoot,
+							"shared-library",
+							"audio",
+							nextFolder,
+							current.fileName,
+						],
+					}),
+				};
+			}
+			manifest.audioAssets = upsertById({
+				items: manifest.audioAssets,
+				item: updated,
+			});
+			if (nextFolder !== current.folder) {
+				const previousScope = `audio:${current.folder}`;
+				manifest.categories = manifest.categories.map((category) =>
+					category.scope === previousScope &&
+					category.assetIds.includes(current.id)
+						? {
+								...category,
+								assetIds: category.assetIds.filter(
+									(assetId) => assetId !== current.id,
+								),
+								updatedAt: new Date().toISOString(),
+							}
+						: category,
+				);
+			}
+			break;
+		}
 		case "createCategory":
 			manifest.categories = upsertById({
 				items: manifest.categories,
@@ -560,7 +647,7 @@ async function handlePatch({
 	}
 
 	await writeManifest({ manifest });
-	await stageRepositoryAssetPaths({ paths: [manifestPath] });
+	await stageRepositoryAssetPaths({ paths: stagedPaths });
 	return NextResponse.json({ manifest: await readManifest() });
 }
 

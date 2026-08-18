@@ -29,6 +29,7 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
+	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ import {
 	FavouriteIcon,
 	FilterMailIcon,
 	Folder03Icon,
+	Menu02Icon,
 	MusicNote03Icon,
 	PauseIcon,
 	PlayIcon,
@@ -416,10 +418,28 @@ const SharedAudioItem = memo(function SharedAudioItem({
 	onPlay: ({ asset }: { asset: SharedAudioAsset }) => void;
 	onAddToTimeline: ({ asset }: { asset: SharedAudioAsset }) => Promise<boolean>;
 }) {
+	const updateAudioAsset = useSharedLibraryStore(
+		(state) => state.updateAudioAsset,
+	);
+	const [isRenameOpen, setIsRenameOpen] = useState(false);
+	const [draftName, setDraftName] = useState(asset.name);
+
 	const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
 		event.dataTransfer.setData("application/x-shared-audio-asset-id", asset.id);
 		event.dataTransfer.setData("text/plain", asset.name);
 	};
+
+	const handleRename = async () => {
+		const name = draftName.trim();
+		if (!name) return;
+		const updated = await updateAudioAsset({ assetId: asset.id, name });
+		if (updated) setIsRenameOpen(false);
+	};
+
+	const destinationFolder: SharedAudioFolder =
+		asset.folder === "sfx" ? "music" : "sfx";
+	const destinationLabel =
+		destinationFolder === "music" ? "Move to Music" : "Move to Sound effects";
 
 	return (
 		<div
@@ -460,6 +480,68 @@ const SharedAudioItem = memo(function SharedAudioItem({
 			>
 				<HugeiconsIcon icon={PlusSignIcon} />
 			</Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant="text"
+						size="icon"
+						className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
+						onClick={(event) => event.stopPropagation()}
+						title="Sound options"
+					>
+						<HugeiconsIcon icon={Menu02Icon} />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					<DropdownMenuItem
+						onSelect={() => {
+							setDraftName(asset.name);
+							setIsRenameOpen(true);
+						}}
+					>
+						Rename
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onSelect={() =>
+							void updateAudioAsset({
+								assetId: asset.id,
+								folder: destinationFolder,
+							})
+						}
+					>
+						{destinationLabel}
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			<Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Rename sound</DialogTitle>
+						<DialogDescription>
+							The stable sound ID stays unchanged, so presets and timeline clips
+							continue to resolve this file.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogBody>
+						<Input
+							value={draftName}
+							onChange={(event) => setDraftName(event.target.value)}
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									event.preventDefault();
+									void handleRename();
+								}
+							}}
+						/>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="text" onClick={() => setIsRenameOpen(false)}>
+							Cancel
+						</Button>
+						<Button onClick={() => void handleRename()}>Rename</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 });

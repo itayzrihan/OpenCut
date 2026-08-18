@@ -27,6 +27,11 @@ interface SharedLibraryStore {
 		files: File[];
 		folder: SharedAudioFolder;
 	}) => Promise<SharedAudioAsset[]>;
+	updateAudioAsset: (args: {
+		assetId: string;
+		name?: string;
+		folder?: SharedAudioFolder;
+	}) => Promise<SharedAudioAsset | null>;
 	importStickerFiles: (args: {
 		files: File[];
 	}) => Promise<SharedStickerAsset[]>;
@@ -130,6 +135,54 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 			toast.error(message);
 			console.error("Failed to import audio:", error);
 			return [];
+		}
+	},
+
+	updateAudioAsset: async ({ assetId, name, folder }) => {
+		try {
+			const updated = await sharedLibraryService.updateAudioAsset({
+				assetId,
+				name,
+				folder,
+			});
+			if (!updated) {
+				toast.error("Sound not found");
+				return null;
+			}
+			set((state) => {
+				const previousFolder = state.audioAssets.find(
+					(asset) => asset.id === assetId,
+				)?.folder;
+				const previousScope = previousFolder ? `audio:${previousFolder}` : null;
+				return {
+					audioAssets: state.audioAssets.map((asset) =>
+						asset.id === updated.id ? updated : asset,
+					),
+					categories:
+						folder && folder !== previousFolder && previousScope
+							? state.categories.map((category) =>
+									category.scope === previousScope
+										? {
+												...category,
+												assetIds: category.assetIds.filter(
+													(id) => id !== assetId,
+												),
+											}
+										: category,
+								)
+							: state.categories,
+				};
+			});
+			toast.success(folder ? "Sound moved" : "Sound renamed");
+			return updated;
+		} catch (error) {
+			const message = messageFromError({
+				error,
+				fallback: "Failed to update sound",
+			});
+			toast.error(message);
+			console.error("Failed to update shared audio:", error);
+			return null;
 		}
 	},
 
