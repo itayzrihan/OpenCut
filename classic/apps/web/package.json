@@ -5,7 +5,7 @@
   "packageManager": "bun@1.2.18",
   "scripts": {
     "dev": "bun run dev:with-mcp",
-    "dev:next": "next dev --turbopack",
+    "dev:next": "next dev --webpack",
     "dev:with-mcp": "node ../../scripts/dev-web-with-mcp.mjs",
     "dev:verify": "bun run assets:verify && bun run --cwd ../.. build:wasm",
     "prebuild": "bun run assets:verify && bun run --cwd ../.. build:wasm",

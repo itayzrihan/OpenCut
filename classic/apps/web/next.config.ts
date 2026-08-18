@@ -55,6 +55,10 @@ const nextConfig: NextConfig = {
 			...config.resolve.alias,
 			"opencut-wasm": localWasmEntry,
 		};
+		config.experiments = {
+			...config.experiments,
+			asyncWebAssembly: true,
+		};
 		return config;
 	},
 	images: {
