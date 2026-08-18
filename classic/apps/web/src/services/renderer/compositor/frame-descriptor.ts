@@ -24,6 +24,7 @@ import { StickerNode } from "../nodes/sticker-node";
 import { renderTextToContext, TextNode } from "../nodes/text-node";
 import { VideoNode } from "../nodes/video-node";
 import { SpeakerFrameBreakoutNode } from "../nodes/speaker-frame-breakout-node";
+import { PersonCutoutLayerNode } from "../nodes/person-cutout-layer-node";
 import { ParallaxSceneNode } from "../nodes/parallax-scene-node";
 import type { ResolvedVisualSourceNodeState } from "../nodes/visual-node";
 import { resolveCameraDepthFactor } from "@/effects/virtual-camera";
@@ -253,6 +254,17 @@ async function collectNodeUncached({
 
 	if (node instanceof SpeakerFrameBreakoutNode) {
 		collectSpeakerFrameBreakout({
+			node,
+			renderer,
+			path,
+			items,
+			textures,
+		});
+		return;
+	}
+
+	if (node instanceof PersonCutoutLayerNode) {
+		collectPersonCutoutLayer({
 			node,
 			renderer,
 			path,
@@ -705,6 +717,116 @@ function collectSpeakerFrameBreakout({
 		});
 		groupItems.push(foregroundLayer);
 	}
+	items.push({
+		type: "group",
+		items: groupItems,
+		opacity: resolved.opacity,
+		blendMode: "normal",
+	});
+}
+
+function collectPersonCutoutLayer({
+	node,
+	renderer,
+	path,
+	items,
+	textures,
+}: {
+	node: PersonCutoutLayerNode;
+	renderer: RendererSize;
+	path: string;
+	items: FrameItemDescriptor[];
+	textures: Map<string, TextureUploadDescriptor>;
+}) {
+	const resolved = node.resolved;
+	if (!resolved || resolved.opacity <= 0) return;
+	const { width: canvasWidth, height: canvasHeight } = renderer;
+	const groupItems: Array<Extract<FrameItemDescriptor, { type: "layer" }>> = [];
+	const existingSourceTexture = [...textures.values()].find(
+		(texture) =>
+			texture.kind === "external" && texture.source === resolved.source,
+	);
+	const sourceTextureId = existingSourceTexture?.id ?? `${path}:cutout-source`;
+	if (!existingSourceTexture) {
+		textures.set(sourceTextureId, {
+			kind: "external",
+			id: sourceTextureId,
+			source: resolved.source,
+			width: resolved.sourceWidth,
+			height: resolved.sourceHeight,
+		});
+	}
+
+	const containScale = Math.min(
+		canvasWidth / resolved.sourceWidth,
+		canvasHeight / resolved.sourceHeight,
+	);
+	const scaledWidth =
+		resolved.sourceWidth * containScale * resolved.transform.scaleX;
+	const scaledHeight =
+		resolved.sourceHeight * containScale * resolved.transform.scaleY;
+	const transform: QuadTransformDescriptor = {
+		centerX: canvasWidth / 2 + resolved.transform.position.x,
+		centerY: canvasHeight / 2 + resolved.transform.position.y,
+		width: Math.abs(scaledWidth),
+		height: Math.abs(scaledHeight),
+		rotationDegrees: resolved.transform.rotate,
+		perspectiveXDegrees: resolved.transform.perspectiveX,
+		perspectiveYDegrees: resolved.transform.perspectiveY,
+		flipX: scaledWidth < 0,
+		flipY: scaledHeight < 0,
+	};
+
+	const maskTextureId = resolved.mask ? `${path}:cutout-matte` : null;
+	if (resolved.mask && maskTextureId) {
+		textures.set(maskTextureId, {
+			kind: "external",
+			id: maskTextureId,
+			source: resolved.mask.canvas,
+			width: resolved.mask.width,
+			height: resolved.mask.height,
+		});
+	}
+
+	if (resolved.backgroundMode !== "remove" && maskTextureId) {
+		const backgroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
+			type: "layer",
+			textureId: sourceTextureId,
+			transform,
+			opacity: resolved.sourceOpacity,
+			blendMode: resolved.blendMode,
+			effectPassGroups: [
+				...resolved.backgroundEffectPasses,
+				...resolved.effectPassGroups,
+			],
+			sourceMask: { textureId: maskTextureId, inverted: true },
+			mask: null,
+		};
+		setCameraLayerMetadata({
+			layer: backgroundLayer,
+			depth: resolved.cameraDepth,
+			locked: resolved.cameraLocked,
+		});
+		groupItems.push(backgroundLayer);
+	}
+
+	const foregroundLayer: Extract<FrameItemDescriptor, { type: "layer" }> = {
+		type: "layer",
+		textureId: sourceTextureId,
+		transform,
+		opacity: resolved.sourceOpacity,
+		blendMode: resolved.blendMode,
+		effectPassGroups: resolved.effectPassGroups,
+		sourceMask: maskTextureId ? { textureId: maskTextureId, inverted: false } : null,
+		mask: null,
+	};
+	setCameraLayerMetadata({
+		layer: foregroundLayer,
+		depth: resolved.cameraDepth,
+		locked: resolved.cameraLocked,
+	});
+	groupItems.push(foregroundLayer);
+
 	items.push({
 		type: "group",
 		items: groupItems,

@@ -11,6 +11,7 @@ import {
 	SPEAKER_FRAME_BREAKOUT_DEFAULT_PARAMS,
 	SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE,
 } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person-cutout-layer";
 import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
 import { mediaTimeToSeconds, ZERO_MEDIA_TIME } from "@/wasm";
 
@@ -23,10 +24,14 @@ describe("simple advanced layers catalog", () => {
 		expect(tabs["simple-advanced-layers"].label).toBe("simple advanced layers");
 	});
 
-	test("publishes one smart Speaker Frame Breakout draggable", () => {
-		expect(SIMPLE_ADVANCED_LAYER_PRESETS).toHaveLength(1);
+	test("publishes four smart layer draggables", () => {
+		expect(SIMPLE_ADVANCED_LAYER_PRESETS).toHaveLength(4);
+	});
 
-		const preset = SIMPLE_ADVANCED_LAYER_PRESETS[0];
+	test("publishes the Speaker Frame Breakout draggable", () => {
+		const preset = SIMPLE_ADVANCED_LAYER_PRESETS.find(
+			(entry) => entry.id === SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE,
+		);
 		expect(preset?.effectType).toBe(SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE);
 
 		const dragData = buildSimpleAdvancedLayerDragData({ preset: preset! });
@@ -52,6 +57,41 @@ describe("simple advanced layers catalog", () => {
 			}),
 		).toBe(6);
 	});
+
+	test.each([
+		["doubleman", "Doubleman", "remove"],
+		["blur-backdrop", "Blur Background", "blur"],
+		["color-pop-backdrop", "Color Pop", "grayscale"],
+	])(
+		"publishes the %s person-cutout-layer draggable",
+		(id, name, backgroundMode) => {
+			const preset = SIMPLE_ADVANCED_LAYER_PRESETS.find(
+				(entry) => entry.id === id,
+			);
+			expect(preset?.effectType).toBe(PERSON_CUTOUT_LAYER_EFFECT_TYPE);
+
+			const dragData = buildSimpleAdvancedLayerDragData({ preset: preset! });
+			expect(dragData).toMatchObject({
+				id,
+				name,
+				type: "effect",
+				effectType: PERSON_CUTOUT_LAYER_EFFECT_TYPE,
+				targetElementTypes: ["video"],
+				placement: "layer-above-target",
+			});
+			expect(dragData.params).toMatchObject({
+				backgroundMode,
+				matteApplied: false,
+				fadeInDuration: 0.35,
+				fadeOutDuration: 0.35,
+			});
+			expect(
+				mediaTimeToSeconds({
+					time: dragData.duration ?? ZERO_MEDIA_TIME,
+				}),
+			).toBe(6);
+		},
+	);
 
 	test("keeps Paper Grid available in the shared Backgrounds catalog", () => {
 		expect(

@@ -44,6 +44,8 @@ import type { TextOverrideScope } from "./text-scope";
 import { BackgroundRemovalTab } from "./components/background-removal-tab";
 import { SpeakerFrameBreakoutPropertiesTab } from "@/simple-advanced-layers/components/speaker-frame-breakout-properties-tab";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { PersonCutoutLayerPropertiesTab } from "@/simple-advanced-layers/components/person-cutout-layer-properties-tab";
+import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person-cutout-layer";
 import {
 	isParallaxCameraGuideElement,
 	isParallaxStoryElement,
@@ -400,6 +402,25 @@ function buildSpeakerFrameBreakoutTab({
 	};
 }
 
+function buildPersonCutoutLayerTab({
+	element,
+}: {
+	element: EffectElement;
+}): PropertiesTabDef {
+	return {
+		id: "person-cutout-layer",
+		label: "Cutout",
+		icon: <HugeiconsIcon icon={MagicWand05Icon} size={16} />,
+		content: ({ trackId }) => (
+			<PersonCutoutLayerPropertiesTab
+				key={`${trackId}:${element.id}`}
+				element={element}
+				trackId={trackId}
+			/>
+		),
+	};
+}
+
 function getTextConfig({
 	element,
 }: {
@@ -523,6 +544,12 @@ function getEffectConfig({
 		return {
 			defaultTab: "speaker-frame-breakout",
 			tabs: [buildSpeakerFrameBreakoutTab({ element })],
+		};
+	}
+	if (element.effectType === PERSON_CUTOUT_LAYER_EFFECT_TYPE) {
+		return {
+			defaultTab: "person-cutout-layer",
+			tabs: [buildPersonCutoutLayerTab({ element })],
 		};
 	}
 	return {

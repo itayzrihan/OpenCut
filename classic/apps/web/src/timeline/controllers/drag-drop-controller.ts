@@ -33,12 +33,14 @@ import type { MediaAsset } from "@/media/types";
 import type { ProcessedMediaAsset } from "@/media/processing";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person-cutout-layer";
 import {
 	addMediaTime,
 	roundFrameTime,
 	type MediaTime,
 } from "@/wasm";
 import {
+	buildPersonCutoutLayerElement,
 	buildSpeakerFrameBreakoutLayerElement,
 	normalizeDropTargetForDrag,
 } from "@/timeline/smart-layer-drop";
@@ -647,13 +649,20 @@ export class DragDropController {
 						name: dragData.name,
 						params: dragData.params,
 					})
-				: buildEffectElement({
-						effectType: dragData.effectType,
-						startTime: target.xPosition,
-						duration: dragData.duration,
-						name: dragData.name,
-						params: dragData.params,
-					});
+				: dragData.effectType === PERSON_CUTOUT_LAYER_EFFECT_TYPE
+					? buildPersonCutoutLayerElement({
+							startTime: target.xPosition,
+							duration: dragData.duration,
+							name: dragData.name,
+							params: dragData.params,
+						})
+					: buildEffectElement({
+							effectType: dragData.effectType,
+							startTime: target.xPosition,
+							duration: dragData.duration,
+							name: dragData.name,
+							params: dragData.params,
+						});
 
 		this.insertAtTarget({ element, target, trackType: "effect" });
 	}

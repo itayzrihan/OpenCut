@@ -78,6 +78,8 @@ import {
 	DuplicateElementsCommand,
 	UpdateElementsCommand,
 	ApplyTransitionCommand,
+	ApplyTextTransitionsWithSfxCommand,
+	UpdateTextRevealWithTypingSfxCommand,
 	SplitElementsCommand,
 	MergeTextElementsCommand,
 	MoveElementCommand,
@@ -144,7 +146,14 @@ import { getDisplayTracks } from "@/timeline/track-order";
 import {
 	buildSpeakerFrameBreakoutFadeTransitions,
 	buildSpeakerFrameBreakoutLayerElement,
+	buildPersonCutoutLayerFadeTransitions,
 } from "@/timeline/smart-layer-drop";
+import {
+	buildPersonCutoutLayerMatteCacheKey,
+	buildPersonCutoutLayerSourceSignature,
+	isPersonCutoutLayerElement,
+	readPersonCutoutLayerSettings,
+} from "@/simple-advanced-layers/person-cutout-layer";
 
 const DEEP_SILENCE_ANALYSIS_SETTINGS = {
 	minSilenceSeconds: 0.32,
@@ -893,6 +902,325 @@ export class TimelineManager {
 		};
 	}
 
+	async applyPersonCutoutLayer({
+		trackId,
+		elementId,
+		params,
+		signal,
+		onProgress,
+	}: {
+		trackId: string;
+		elementId: string;
+		params: ParamValues;
+		signal?: AbortSignal;
+		onProgress?: (progress: {
+			completedFrames: number;
+			totalFrames: number;
+		}) => void;
+	}): Promise<{
+		cacheKey: string;
+		sourceSignature: string;
+		preparedFrames: number;
+		backend: string;
+	}> {
+		throwIfSpeakerFrameApplyAborted(signal);
+		const scene = this.editor.scenes.getActiveScene();
+		const track = findTrackInSceneTracks({ tracks: scene.tracks, trackId });
+		const storedLayer = track?.elements.find(
+			(element) => element.id === elementId,
+		);
+		if (
+			!track ||
+			track.type !== "effect" ||
+			!storedLayer ||
+			storedLayer.type !== "effect" ||
+			!isPersonCutoutLayerElement(storedLayer)
+		) {
+			throw new Error("This smart layer was not found");
+		}
+		const initialEditorStateRevision = this.editor.command.getStateRevision();
+		const initialLayerSnapshot = JSON.stringify(storedLayer);
+		const layer = { ...storedLayer, params };
+		const settings = readPersonCutoutLayerSettings({ params });
+		const mediaAssets = this.editor.media.getAssets();
+		const bindings = getSpeakerFrameSourceBindings({
+			tracks: scene.tracks,
+			smartTrackId: trackId,
+			layer,
+		});
+		if (bindings.length === 0) {
+			throw new Error("Place this smart layer directly above a video first");
+		}
+		const sourceSignature = buildPersonCutoutLayerSourceSignature({
+			layer,
+			bindings,
+			mediaAssets,
+			settings,
+		});
+		const cacheKey = buildPersonCutoutLayerMatteCacheKey({
+			layerId: layer.id,
+			signature: sourceSignature,
+		});
+		const resolvedMatte = resolveBackgroundRemovalSettings({
+			settings: settings.matte,
+		});
+
+		const mediaById = new Map(mediaAssets.map((asset) => [asset.id, asset]));
+		const coverageGap = getSpeakerFrameSourceCoverageGap({
+			bindings,
+			layer,
+		});
+		if (coverageGap) {
+			throw new Error(
+				`Every frame of this smart layer must overlap a visible video (gap ${mediaTimeToSeconds(
+					{
+						time: coverageGap.startTime,
+					},
+				).toFixed(3)}s-${mediaTimeToSeconds({
+					time: coverageGap.endTime,
+				}).toFixed(3)}s)`,
+			);
+		}
+		const sampleTimes = buildSpeakerFrameMatteSampleTimes({
+			bindings,
+			layer,
+			previewFps: resolvedMatte.previewFps,
+		});
+		const plannedFrames = new Map<
+			string,
+			{
+				mediaId: string;
+				file?: File;
+				url?: string;
+				sourceTime: number;
+				temporalSequenceKey: string;
+			}
+		>();
+		let previousBindingKey = "";
+		let temporalSequenceOrdinal = 0;
+		const plannedSourceElements = new Map<string, VideoElement>();
+		for (const timelineTime of sampleTimes) {
+			const sourceBinding = resolveSpeakerFrameSourceAtTime({
+				bindings,
+				time: timelineTime,
+			});
+			if (!sourceBinding) {
+				throw new Error(
+					"Every prepared matte sample must resolve to a visible video",
+				);
+			}
+			const source = sourceBinding.element;
+			plannedSourceElements.set(source.id, source);
+			const bindingKey = `${sourceBinding.trackId}:${source.id}`;
+			if (bindingKey !== previousBindingKey) {
+				temporalSequenceOrdinal += 1;
+				previousBindingKey = bindingKey;
+			}
+			const asset = mediaById.get(source.mediaId);
+			if (!asset || asset.type !== "video" || (!asset.url && !asset.file)) {
+				throw new Error("A source video under this smart layer is unavailable");
+			}
+			const clipTime = timelineTime - source.startTime;
+			const sourceTimeTicks =
+				source.trimStart +
+				getSourceTimeAtClipTime({
+					clipTime,
+					retime: source.retime,
+				});
+			const sourceTime = mediaTimeToSeconds({
+				time: roundMediaTime({ time: sourceTimeTicks }),
+			});
+			const inferenceKey = backgroundRemovalService.getPreparedInferenceKey({
+				mediaId: asset.id,
+				sourceTime,
+				settings: resolvedMatte,
+			});
+			if (!plannedFrames.has(inferenceKey)) {
+				plannedFrames.set(inferenceKey, {
+					mediaId: asset.id,
+					file: asset.file,
+					url: asset.url,
+					sourceTime,
+					temporalSequenceKey: `${cacheKey}:${bindingKey}:${temporalSequenceOrdinal}`,
+				});
+			}
+		}
+		const expectedInferenceKeys = [...plannedFrames.keys()].sort();
+		if (expectedInferenceKeys.length === 0) {
+			throw new Error("No video frames were available under this layer");
+		}
+		for (const source of plannedSourceElements.values()) {
+			if ((source.masks?.length ?? 0) > 0) {
+				throw new Error(
+					`"${source.name}" has a custom mask. Remove it or use an unmasked duplicate before applying ${storedLayer.name}.`,
+				);
+			}
+			if (source.backgroundRemoval?.enabled) {
+				throw new Error(
+					`"${source.name}" already removes its background. Use an unprocessed duplicate before applying ${storedLayer.name}.`,
+				);
+			}
+			if (hasUnsupportedSpeakerFramePerspective({ source })) {
+				throw new Error(
+					`"${source.name}" uses perspective. Reset its perspective before applying ${storedLayer.name}.`,
+				);
+			}
+		}
+		const preparedApply = await waitForSpeakerFrameApplyAbort({
+			promise: backgroundRemovalService.preparePreparedGroupApply({
+				groupKey: cacheKey,
+				expectedInferenceKeys,
+				temporalSmoothing: resolvedMatte.temporalSmoothing,
+			}),
+			signal,
+		});
+		throwIfSpeakerFrameApplyAborted(signal);
+		let preparedFrames = backgroundRemovalService.getPreparedGroupFrameCount({
+			groupKey: cacheKey,
+		});
+		if (preparedApply.reusable) {
+			onProgress?.({
+				completedFrames: expectedInferenceKeys.length,
+				totalFrames: expectedInferenceKeys.length,
+			});
+		} else {
+			await waitForSpeakerFrameApplyAbort({
+				promise: backgroundRemovalService.preload(),
+				signal,
+			});
+			throwIfSpeakerFrameApplyAborted(signal);
+			const applyVideoCache = new VideoCache();
+			try {
+				let completedFrames = 0;
+				for (const plannedFrame of plannedFrames.values()) {
+					throwIfSpeakerFrameApplyAborted(signal);
+					const frame = await applyVideoCache.getFrameAt({
+						mediaId: plannedFrame.mediaId,
+						file: plannedFrame.file,
+						url: plannedFrame.url,
+						time: plannedFrame.sourceTime,
+					});
+					if (!frame) {
+						throw new Error(
+							"One or more source video frames were unavailable. Reapply after the media is ready.",
+						);
+					}
+					await backgroundRemovalService.prepareMaskFrame({
+						groupKey: cacheKey,
+						source: frame.canvas,
+						mediaId: plannedFrame.mediaId,
+						sourceTime: plannedFrame.sourceTime,
+						settings: resolvedMatte,
+						signal,
+						temporalSequenceKey: plannedFrame.temporalSequenceKey,
+					});
+					completedFrames += 1;
+					onProgress?.({
+						completedFrames,
+						totalFrames: expectedInferenceKeys.length,
+					});
+				}
+			} finally {
+				applyVideoCache.clearAll();
+			}
+			backgroundRemovalService.markPreparedGroupComplete({
+				groupKey: cacheKey,
+				expectedInferenceKeys,
+			});
+			preparedFrames = backgroundRemovalService.getPreparedGroupFrameCount({
+				groupKey: cacheKey,
+			});
+		}
+		await waitForSpeakerFrameApplyAbort({
+			promise: backgroundRemovalService.flushPreparedMaskPersistence({
+				groupKey: cacheKey,
+			}),
+			signal,
+		});
+		if (preparedFrames === 0) {
+			throw new Error("No video frames were available under this layer");
+		}
+		throwIfSpeakerFrameApplyAborted(signal);
+
+		const freshScene = this.editor.scenes.getActiveScene();
+		const freshTrack = findTrackInSceneTracks({
+			tracks: freshScene.tracks,
+			trackId,
+		});
+		const freshElement = freshTrack?.elements.find(
+			(element) => element.id === elementId,
+		);
+		if (
+			!freshElement ||
+			freshElement.type !== "effect" ||
+			JSON.stringify(freshElement) !== initialLayerSnapshot
+		) {
+			throw new Error(
+				"The smart layer changed while Apply was running. Its newer settings were preserved; apply it again.",
+			);
+		}
+		const freshBindings = getSpeakerFrameSourceBindings({
+			tracks: freshScene.tracks,
+			smartTrackId: trackId,
+			layer: freshElement,
+		});
+		const freshSignature = buildPersonCutoutLayerSourceSignature({
+			layer: freshElement,
+			bindings: freshBindings,
+			mediaAssets: this.editor.media.getAssets(),
+			settings,
+		});
+		if (freshSignature !== sourceSignature) {
+			throw new Error(
+				"The source video changed while Apply was running. Apply it again.",
+			);
+		}
+		if (this.editor.command.getStateRevision() !== initialEditorStateRevision) {
+			throw new Error(
+				"The editor changed while Apply was running. The newer edit and Undo/Redo history were preserved; apply it again.",
+			);
+		}
+		const status = backgroundRemovalService.getStatus();
+		const backend = status.state === "ready" ? status.backend : "unknown";
+		const fade = clampSpeakerFrameBreakoutFade({
+			duration: freshElement.duration,
+			fadeInDuration: settings.fadeInDuration,
+			fadeOutDuration: settings.fadeOutDuration,
+		});
+		this.updateElements({
+			updates: [
+				{
+					trackId,
+					elementId,
+					patch: {
+						params: {
+							...params,
+							fadeInDuration: fade.fadeInDuration,
+							fadeOutDuration: fade.fadeOutDuration,
+							matteApplied: true,
+							matteCacheKey: cacheKey,
+							sourceSignature,
+							appliedStartTime: layer.startTime,
+							appliedDuration: layer.duration,
+							appliedBackend: backend,
+						},
+						transitions: buildPersonCutoutLayerFadeTransitions({
+							element: freshElement,
+							fadeInDuration: fade.fadeInDuration,
+							fadeOutDuration: fade.fadeOutDuration,
+						}),
+					},
+				},
+			],
+		});
+		return {
+			cacheKey,
+			sourceSignature,
+			preparedFrames,
+			backend,
+		};
+	}
+
 	closeGap({
 		startTime,
 		endTime,
@@ -1263,6 +1591,36 @@ export class TimelineManager {
 		}
 		this.editor.command.execute({
 			command: new ApplyTransitionCommand(applications),
+		});
+	}
+
+	applyTextTransitionsWithSfx({
+		applications,
+	}: {
+		applications: ConstructorParameters<
+			typeof ApplyTextTransitionsWithSfxCommand
+		>[0];
+	}): void {
+		if (applications.length === 0) {
+			return;
+		}
+		this.editor.command.execute({
+			command: new ApplyTextTransitionsWithSfxCommand(applications),
+		});
+	}
+
+	updateTextRevealWithTypingSfx({
+		updates,
+		revealMode,
+	}: ConstructorParameters<
+		typeof UpdateTextRevealWithTypingSfxCommand
+	>[0]): void {
+		if (updates.length === 0) return;
+		this.editor.command.execute({
+			command: new UpdateTextRevealWithTypingSfxCommand({
+				updates,
+				revealMode,
+			}),
 		});
 	}
 

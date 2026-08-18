@@ -13,6 +13,7 @@ import { ColorNode } from "./nodes/color-node";
 import { BlurBackgroundNode } from "./nodes/blur-background-node";
 import { EffectLayerNode } from "./nodes/effect-layer-node";
 import { SpeakerFrameBreakoutNode } from "./nodes/speaker-frame-breakout-node";
+import { PersonCutoutLayerNode } from "./nodes/person-cutout-layer-node";
 import { ParallaxSceneNode } from "./nodes/parallax-scene-node";
 import type { AnyBaseNode } from "./nodes/base-node";
 import type { TBackground, TCanvasSize } from "@/project/types";
@@ -33,6 +34,14 @@ import {
 	readSpeakerFrameBreakoutFade,
 	readSpeakerFrameBreakoutSettings,
 } from "@/simple-advanced-layers/speaker-frame-breakout";
+import {
+	buildPersonCutoutLayerSourceSignature,
+	buildPersonCutoutLayerLegacySourceSignatures,
+	isPersonCutoutLayerAppliedAndCurrent,
+	isPersonCutoutLayerElement,
+	readPersonCutoutLayerFade,
+	readPersonCutoutLayerSettings,
+} from "@/simple-advanced-layers/person-cutout-layer";
 import {
 	findParallaxCameraGuideElement,
 	isParallaxCameraGuideElement,
@@ -247,6 +256,98 @@ function buildTrackNodes({
 							settings,
 							currentSourceSignature: sourceSignature,
 							isAppliedAndCurrent: isSpeakerFrameBreakoutAppliedAndCurrent({
+								layer: element,
+								signature: sourceSignature,
+								legacySignatures: legacySourceSignatures,
+							}),
+							isPreview: isPreview ?? false,
+							sources,
+						}),
+					);
+					continue;
+				}
+				if (isPersonCutoutLayerElement(element)) {
+					const storedSettings = readPersonCutoutLayerSettings({
+						params: element.params,
+					});
+					const fade = readPersonCutoutLayerFade({ element });
+					const settings = {
+						...storedSettings,
+						...fade,
+					};
+					const bindings = getSpeakerFrameSourceBindings({
+						tracks: sceneTracks,
+						smartTrackId: track.id,
+						layer: element,
+					});
+					const sourceSignature = buildPersonCutoutLayerSourceSignature({
+						layer: element,
+						bindings,
+						mediaAssets,
+						settings,
+					});
+					const legacySourceSignatures =
+						buildPersonCutoutLayerLegacySourceSignatures({
+							layer: element,
+							bindings,
+							mediaAssets,
+							settings,
+							maxTrackIndexShift: getDisplayTracks({ tracks: sceneTracks }).length,
+						});
+					const sources = bindings.flatMap(({ trackId, trackIndex, element: source }) => {
+						const mediaAsset = mediaMap.get(source.mediaId);
+						if (
+							!mediaAsset ||
+							mediaAsset.type !== "video" ||
+							(!mediaAsset.url && !mediaAsset.file)
+						) {
+							return [];
+						}
+						const camera = readCameraLayerSettings({
+							params: source.params,
+						});
+						return [
+							{
+								trackId,
+								trackIndex,
+								elementId: source.id,
+								mediaId: source.mediaId,
+								url: mediaAsset.url,
+								file: mediaAsset.file,
+								duration: source.duration,
+								timeOffset: source.startTime,
+								trimStart: source.trimStart,
+								trimEnd: source.trimEnd,
+								retime: source.retime,
+								transform: buildTransformFromParams({
+									params: source.params,
+								}),
+								animations: removeSourceLayoutAnimations({
+									animations:
+										buildTransitionAnimationsFromElement({
+											element: source,
+										}),
+								}),
+								opacity: readOpacityFromParams({
+									params: source.params,
+								}),
+								blendMode: readBlendModeFromParams({
+									params: source.params,
+								}),
+								effects: source.effects ?? [],
+								cameraDepth: camera.depth,
+								cameraLocked: camera.locked,
+							},
+						];
+					});
+					nodes.push(
+						new PersonCutoutLayerNode({
+							layerId: element.id,
+							timeOffset: element.startTime,
+							duration: element.duration,
+							settings,
+							currentSourceSignature: sourceSignature,
+							isAppliedAndCurrent: isPersonCutoutLayerAppliedAndCurrent({
 								layer: element,
 								signature: sourceSignature,
 								legacySignatures: legacySourceSignatures,

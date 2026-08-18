@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { EffectDragData } from "@/timeline/drag";
 import {
+	buildPersonCutoutLayerElement,
 	buildSpeakerFrameBreakoutLayerElement,
 	normalizeDropTargetForDrag,
 } from "@/timeline/smart-layer-drop";
@@ -59,6 +60,34 @@ describe("smart-layer drop placement", () => {
 
 		expect(element.type).toBe("effect");
 		expect(element.effectType).toBe("speaker-frame-breakout");
+		expect(mediaTimeToSeconds({ time: element.duration })).toBe(6);
+		expect(element.params.matteApplied).toBe(false);
+		expect(
+			mediaTimeToSeconds({
+				time: element.transitions?.in?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBe(0.35);
+		expect(
+			mediaTimeToSeconds({
+				time: element.transitions?.out?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBe(0.35);
+		expect(element.transitions?.in?.presetId).toBe("fade");
+		expect(element.transitions?.out?.presetId).toBe("fade");
+	});
+
+	test("builds one unapplied six-second person-cutout-layer with native fade metadata", () => {
+		const element = buildPersonCutoutLayerElement({
+			startTime: mediaTimeFromSeconds({ seconds: 2 }),
+			name: "Doubleman",
+			params: { backgroundMode: "remove" },
+			createdAt: "2026-07-28T00:00:00.000Z",
+		});
+
+		expect(element.type).toBe("effect");
+		expect(element.effectType).toBe("person-cutout-layer");
+		expect(element.name).toBe("Doubleman");
+		expect(element.params.backgroundMode).toBe("remove");
 		expect(mediaTimeToSeconds({ time: element.duration })).toBe(6);
 		expect(element.params.matteApplied).toBe(false);
 		expect(

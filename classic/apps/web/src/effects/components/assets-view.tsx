@@ -26,15 +26,20 @@ import { generateEffectPreset } from "@/ai/preset-generation";
 import type { ParamValues } from "@/params";
 import { Sparkles } from "lucide-react";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
+import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person-cutout-layer";
 import { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "@/effects/definitions/editorial-edge-feather";
 import { ZERO_MEDIA_TIME } from "@/wasm";
 
 const FULL_LENGTH_EFFECT_TYPES = new Set([EDITORIAL_EDGE_FEATHER_EFFECT_TYPE]);
+const SMART_LAYER_ONLY_EFFECT_TYPES = new Set([
+	SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE,
+	PERSON_CUTOUT_LAYER_EFFECT_TYPE,
+]);
 
 export function EffectsView() {
 	const effects = effectsRegistry
 		.getAll()
-		.filter((effect) => effect.type !== SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE);
+		.filter((effect) => !SMART_LAYER_ONLY_EFFECT_TYPES.has(effect.type));
 	const { generatedEffects, loadLibrary } = useSharedLibraryStore();
 
 	useEffect(() => {

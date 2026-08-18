@@ -3,12 +3,14 @@ import { blurEffectDefinition } from "./blur";
 import { customAiEffectDefinition } from "../custom-ai-effect";
 import { editorialEdgeFeatherEffectDefinition } from "./editorial-edge-feather";
 import { speakerFrameBreakoutEffectDefinition } from "./speaker-frame-breakout";
+import { personCutoutLayerEffectDefinition } from "./person-cutout-layer";
 
 const defaultEffects = [
 	blurEffectDefinition,
 	customAiEffectDefinition,
 	editorialEdgeFeatherEffectDefinition,
 	speakerFrameBreakoutEffectDefinition,
+	personCutoutLayerEffectDefinition,
 ];
 
 export function registerDefaultEffects(): void {

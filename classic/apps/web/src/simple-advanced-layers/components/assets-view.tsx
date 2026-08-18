@@ -31,7 +31,7 @@ function SimpleAdvancedLayerItem({
 	return (
 		<DraggableItem
 			name={preset.name}
-			preview={<SpeakerFrameBreakoutPreview description={preset.description} />}
+			preview={<PresetPreview preset={preset} />}
 			dragData={buildSimpleAdvancedLayerDragData({ preset })}
 			aspectRatio={9 / 16}
 			shouldShowPlusOnDrag={false}
@@ -39,6 +39,19 @@ function SimpleAdvancedLayerItem({
 			containerClassName="w-full [&_button]:hidden"
 		/>
 	);
+}
+
+function PresetPreview({ preset }: { preset: SimpleAdvancedLayerPreset }) {
+	switch (preset.id) {
+		case "doubleman":
+			return <DoublemanPreview description={preset.description} />;
+		case "blur-backdrop":
+			return <BlurBackgroundPreview description={preset.description} />;
+		case "color-pop-backdrop":
+			return <ColorPopPreview description={preset.description} />;
+		default:
+			return <SpeakerFrameBreakoutPreview description={preset.description} />;
+	}
 }
 
 function SpeakerFrameBreakoutPreview({ description }: { description: string }) {
@@ -59,6 +72,71 @@ function SpeakerFrameBreakoutPreview({ description }: { description: string }) {
 			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
 				<p className="truncate text-[9px] leading-none text-white/90">
 					Paper Grid / Fade in-out
+				</p>
+			</div>
+		</div>
+	);
+}
+
+function PersonSilhouette() {
+	return (
+		<div className="absolute inset-x-[22%] bottom-[8%] h-[70%]">
+			<div className="absolute left-1/2 top-0 h-[26%] w-[44%] -translate-x-1/2 rounded-full bg-[#efc7ad]" />
+			<div className="absolute inset-x-0 bottom-0 h-[62%] rounded-t-[46%] bg-gradient-to-b from-slate-500 to-slate-800" />
+		</div>
+	);
+}
+
+function DoublemanPreview({ description }: { description: string }) {
+	return (
+		<div
+			className="relative size-full overflow-hidden bg-[linear-gradient(45deg,#e5e5e5_25%,transparent_25%),linear-gradient(-45deg,#e5e5e5_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e5e5_75%),linear-gradient(-45deg,transparent_75%,#e5e5e5_75%)] bg-[length:14px_14px] bg-[position:0_0,0_7px,7px_-7px,-7px_0] bg-[#fafafa]"
+			title={description}
+		>
+			<PersonSilhouette />
+			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
+				DOUBLEMAN
+			</div>
+			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
+				<p className="truncate text-[9px] leading-none text-white/90">
+					Same size / Transparent
+				</p>
+			</div>
+		</div>
+	);
+}
+
+function BlurBackgroundPreview({ description }: { description: string }) {
+	return (
+		<div className="relative size-full overflow-hidden" title={description}>
+			<div className="absolute inset-0 bg-gradient-to-br from-sky-300 via-emerald-200 to-amber-200 blur-[6px]" />
+			<PersonSilhouette />
+			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
+				BLUR BG
+			</div>
+			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
+				<p className="truncate text-[9px] leading-none text-white/90">
+					Person sharp / Backdrop soft
+				</p>
+			</div>
+		</div>
+	);
+}
+
+function ColorPopPreview({ description }: { description: string }) {
+	return (
+		<div className="relative size-full overflow-hidden" title={description}>
+			<div className="absolute inset-0 bg-gradient-to-br from-neutral-300 via-neutral-400 to-neutral-600 grayscale" />
+			<div className="absolute inset-x-[22%] bottom-[8%] h-[70%]">
+				<div className="absolute left-1/2 top-0 h-[26%] w-[44%] -translate-x-1/2 rounded-full bg-[#efc7ad]" />
+				<div className="absolute inset-x-0 bottom-0 h-[62%] rounded-t-[46%] bg-gradient-to-b from-rose-500 to-indigo-700" />
+			</div>
+			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
+				COLOR POP
+			</div>
+			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
+				<p className="truncate text-[9px] leading-none text-white/90">
+					Backdrop B&amp;W / Person color
 				</p>
 			</div>
 		</div>

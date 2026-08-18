@@ -51,6 +51,10 @@ import {
 	type ResolvedSpeakerFrameBreakoutNodeState,
 } from "./nodes/speaker-frame-breakout-node";
 import {
+	PersonCutoutLayerNode,
+	type ResolvedPersonCutoutLayerNodeState,
+} from "./nodes/person-cutout-layer-node";
+import {
 	ParallaxSceneNode,
 	type ResolvedParallaxSceneNodeState,
 } from "./nodes/parallax-scene-node";
@@ -150,6 +154,8 @@ async function resolveNode({
 		node.resolved = await resolveBlurBackgroundNode({ node, context });
 	} else if (node instanceof SpeakerFrameBreakoutNode) {
 		node.resolved = await resolveSpeakerFrameBreakoutNode({ node, context });
+	} else if (node instanceof PersonCutoutLayerNode) {
+		node.resolved = await resolvePersonCutoutLayerNode({ node, context });
 	} else if (node instanceof EffectLayerNode) {
 		node.resolved = resolveEffectLayerNode({ node, context });
 	} else if (node instanceof ParallaxSceneNode) {
@@ -402,6 +408,188 @@ async function resolveSpeakerFrameBreakoutNode({
 		transform: visualState.transform,
 		cropTop: node.params.settings.cropTop,
 		cornerRadius: node.params.settings.cornerRadius,
+		opacity: Math.min(fadeIn, fadeOut),
+		sourceOpacity: visualState.opacity,
+		blendMode: source.blendMode,
+		effectPassGroups: visualState.effectPasses,
+		cameraDepth: source.cameraDepth,
+		cameraLocked: source.cameraLocked,
+		localTime: localSeconds,
+	};
+}
+
+async function resolvePersonCutoutLayerNode({
+	node,
+	context,
+}: {
+	node: PersonCutoutLayerNode;
+	context: ResolveContext;
+}): Promise<ResolvedPersonCutoutLayerNodeState | null> {
+	const clipTime = context.time - node.params.timeOffset;
+	if (clipTime < 0 || clipTime >= node.params.duration) {
+		return null;
+	}
+	if (!node.params.isAppliedAndCurrent) {
+		if (!node.params.isPreview) {
+			throw new Error(
+				"This layer's source changed after Apply. Reapply the layer before export.",
+			);
+		}
+		return null;
+	}
+	const source = node.params.sources.find(
+		(candidate) =>
+			context.time >= candidate.timeOffset &&
+			context.time < candidate.timeOffset + candidate.duration,
+	);
+	if (!source) return null;
+
+	const sourceClipTime = context.time - source.timeOffset;
+	const sourceTimeTicks =
+		source.trimStart +
+		getSourceTimeAtClipTime({
+			clipTime: sourceClipTime,
+			retime: source.retime,
+		});
+	const sourceTime = mediaTimeToSeconds({
+		time: roundMediaTime({ time: sourceTimeTicks }),
+	});
+	const frame = await videoCache.getFrameAt({
+		mediaId: source.mediaId,
+		file: source.file,
+		url: source.url,
+		time: sourceTime,
+	});
+	if (!frame) {
+		const previous = node.resolved;
+		if (
+			node.params.isPreview &&
+			previous?.sourceElementId === source.elementId &&
+			Math.abs(previous.sourceTime - sourceTime) <= 0.15
+		) {
+			return previous;
+		}
+		return null;
+	}
+
+	const visualState = resolveVisualState({
+		params: {
+			duration: source.duration,
+			timeOffset: source.timeOffset,
+			trimStart: source.trimStart,
+			trimEnd: source.trimEnd,
+			retime: source.retime,
+			transform: source.transform,
+			animations: source.animations,
+			opacity: source.opacity,
+			blendMode: source.blendMode,
+			effects: source.effects,
+			cameraDepth: source.cameraDepth,
+			cameraLocked: source.cameraLocked,
+		},
+		context,
+		sourceWidth: frame.canvas.width,
+		sourceHeight: frame.canvas.height,
+	});
+	if (!visualState) return null;
+
+	const settings = resolveBackgroundRemovalSettings({
+		settings: node.params.settings.matte,
+	});
+	let mask = backgroundRemovalService.getPreparedMaskFrame({
+		groupKey: node.params.settings.matteCacheKey,
+		mediaId: source.mediaId,
+		sourceTime,
+		settings,
+	});
+	if (!mask) {
+		if (node.params.isPreview) {
+			mask = backgroundRemovalService.getPreviewMaskOrSchedule({
+				source: frame.canvas,
+				mediaId: source.mediaId,
+				sourceTime,
+				settings,
+			});
+			if (!mask) {
+				const previous = node.resolved;
+				const maxMaskHoldSeconds = Math.max(0.15, 2 / settings.previewFps);
+				if (
+					previous?.sourceElementId === source.elementId &&
+					previous.mask &&
+					Math.abs(previous.sourceTime - sourceTime) <= maxMaskHoldSeconds
+				) {
+					mask = previous.mask;
+				}
+			}
+		} else {
+			await backgroundRemovalService.hydratePreparedGroup({
+				groupKey: node.params.settings.matteCacheKey,
+			});
+			mask = backgroundRemovalService.getPreparedMaskFrame({
+				groupKey: node.params.settings.matteCacheKey,
+				mediaId: source.mediaId,
+				sourceTime,
+				settings,
+			});
+			if (!mask) {
+				// A browser cleanup, reload, or older project can lose the
+				// prepared cache while the applied source snapshot remains valid.
+				// Rebuild the quantized matte on demand so export stays complete.
+				mask = await backgroundRemovalService.segmentFrame({
+					source: frame.canvas,
+					mediaId: source.mediaId,
+					sourceTime,
+					settings,
+					isPreview: true,
+					temporalSequenceKey: node.params.settings.matteCacheKey,
+				});
+			}
+		}
+	}
+
+	const resolutionScale = Math.max(
+		0.5,
+		Math.min(context.renderer.width / 1920, context.renderer.height / 1080),
+	);
+	const backgroundEffectPasses =
+		settings.mode === "blur"
+			? [
+					buildGaussianBlurPasses({
+						sigmaX: settings.blurSigma * resolutionScale,
+						sigmaY: settings.blurSigma * resolutionScale,
+					}),
+				]
+			: settings.mode === "grayscale"
+				? [[{ shader: "grayscale", uniforms: {} }]]
+				: [];
+
+	const localSeconds = mediaTimeToSeconds({
+		time: roundMediaTime({ time: clipTime }),
+	});
+	const durationSeconds = mediaTimeToSeconds({
+		time: roundMediaTime({ time: node.params.duration }),
+	});
+	const fadeIn =
+		node.params.settings.fadeInDuration <= 0
+			? 1
+			: smoothstep01(localSeconds / node.params.settings.fadeInDuration);
+	const secondsRemaining = Math.max(0, durationSeconds - localSeconds);
+	const fadeOut =
+		node.params.settings.fadeOutDuration <= 0
+			? 1
+			: smoothstep01(secondsRemaining / node.params.settings.fadeOutDuration);
+
+	return {
+		source: frame.canvas,
+		sourceWidth: frame.canvas.width,
+		sourceHeight: frame.canvas.height,
+		sourceElementId: source.elementId,
+		sourceMediaId: source.mediaId,
+		sourceTime,
+		mask,
+		backgroundMode: node.params.settings.backgroundMode,
+		backgroundEffectPasses,
+		transform: visualState.transform,
 		opacity: Math.min(fadeIn, fadeOut),
 		sourceOpacity: visualState.opacity,
 		blendMode: source.blendMode,
