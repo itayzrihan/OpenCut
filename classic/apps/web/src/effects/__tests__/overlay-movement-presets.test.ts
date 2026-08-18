@@ -52,6 +52,25 @@ describe("overlay movement presets", () => {
 		});
 	});
 
+	test("preserves the authored Camera Flash companion sound by asset id", () => {
+		const preset = OVERLAY_MOVEMENT_PRESETS.find(
+			(item) => item.id === "camera-flash",
+		);
+		if (!preset) throw new Error("Missing Camera Flash preset");
+
+		expect(getOverlayMovementDefaultSfx({ params: preset.params })).toEqual({
+			assetId: "1feab1d1-0580-41a4-8ed9-4a177eaf675e",
+			name: "Camera Flash",
+			autoInsert: true,
+			startOffsetSeconds: 0,
+			durationSeconds: 2.3983666666666665,
+			sourceDurationSeconds: 7.758366666666667,
+			trimStartSeconds: 0,
+			trimEndSeconds: 5.36,
+			volume: -16.4,
+		});
+	});
+
 	test("adds longer handheld instant zoom variants without changing the original", () => {
 		const original = OVERLAY_MOVEMENT_PRESETS.find(
 			(item) => item.id === "instant-zoom",

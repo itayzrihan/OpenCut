@@ -1,5 +1,10 @@
 "use client";
 
+import { VolumeHighIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useMemo } from "react";
+import { BatchCommand } from "@/commands";
+import { InsertElementCommand } from "@/commands/timeline";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { useEditor } from "@/editor/use-editor";
@@ -8,9 +13,88 @@ import {
 	type OverlayMovementPreset,
 } from "@/effects/overlay-movement-presets";
 import { EFFECT_TARGET_ELEMENT_TYPES, CUSTOM_AI_EFFECT_TYPE } from "@/effects";
-import { buildEffectElement } from "@/timeline/element-utils";
+import {
+	buildEffectElement,
+	buildLibraryAudioElement,
+} from "@/timeline/element-utils";
+import type { CreateTimelineElement, TrackType } from "@/timeline";
+import type { TimelineDragData } from "@/timeline/drag";
 import { cn } from "@/utils/ui";
-import { mediaTimeFromSeconds } from "@/wasm";
+import { generateUUID } from "@/utils/id";
+import {
+	addMediaTime,
+	mediaTimeFromSeconds,
+	type MediaTime,
+	ZERO_MEDIA_TIME,
+} from "@/wasm";
+
+const OVERLAY_MOVEMENT_BUNDLE_ID_PARAM = "opencut.overlayMovement.bundleId";
+
+interface OverlayMovementTimelineItem {
+	trackType: TrackType;
+	element: CreateTimelineElement;
+}
+
+function buildOverlayMovementTimelineItems({
+	preset,
+	startTime,
+}: {
+	preset: OverlayMovementPreset;
+	startTime: MediaTime;
+}): OverlayMovementTimelineItem[] {
+	const duration = preset.defaultDurationSeconds
+		? mediaTimeFromSeconds({ seconds: preset.defaultDurationSeconds })
+		: undefined;
+	const autoSfx = preset.spec.defaultSfx?.autoInsert
+		? preset.spec.defaultSfx
+		: null;
+	const bundleId = autoSfx ? generateUUID() : null;
+	const effect = buildEffectElement({
+		effectType: CUSTOM_AI_EFFECT_TYPE,
+		name: preset.name,
+		startTime,
+		duration,
+		params: {
+			...preset.params,
+			...(bundleId ? { [OVERLAY_MOVEMENT_BUNDLE_ID_PARAM]: bundleId } : {}),
+		},
+	});
+	const items: OverlayMovementTimelineItem[] = [
+		{ trackType: "effect", element: effect },
+	];
+	if (!autoSfx || !bundleId) return items;
+
+	const audio = buildLibraryAudioElement({
+		libraryAssetId: autoSfx.assetId,
+		librarySourceType: "shared",
+		name: `${preset.name} SFX`,
+		startTime: addMediaTime({
+			a: startTime,
+			b: mediaTimeFromSeconds({
+				seconds: autoSfx.startOffsetSeconds ?? 0,
+			}),
+		}),
+		duration: mediaTimeFromSeconds({
+			seconds: autoSfx.durationSeconds ?? 0,
+		}),
+	});
+	audio.sourceDuration = mediaTimeFromSeconds({
+		seconds: autoSfx.sourceDurationSeconds ?? autoSfx.durationSeconds ?? 0,
+	});
+	audio.trimStart = mediaTimeFromSeconds({
+		seconds: autoSfx.trimStartSeconds ?? 0,
+	});
+	audio.trimEnd = mediaTimeFromSeconds({
+		seconds: autoSfx.trimEndSeconds ?? 0,
+	});
+	audio.params = {
+		...audio.params,
+		...(autoSfx.volume !== undefined ? { volume: autoSfx.volume } : {}),
+		[OVERLAY_MOVEMENT_BUNDLE_ID_PARAM]: bundleId,
+	};
+	items.push({ trackType: "audio", element: audio });
+	return items;
+}
 
 export function OverlayMovementView() {
 	return (
@@ -33,8 +117,50 @@ function OverlayMovementItem({ preset }: { preset: OverlayMovementPreset }) {
 		preset.defaultDurationSeconds !== undefined
 			? mediaTimeFromSeconds({ seconds: preset.defaultDurationSeconds })
 			: undefined;
+	const bundleItems = useMemo(
+		() =>
+			buildOverlayMovementTimelineItems({
+				preset,
+				startTime: ZERO_MEDIA_TIME,
+			}),
+		[preset],
+	);
+	const hasAutoSfx = bundleItems.length > 1;
+	const dragData: TimelineDragData = hasAutoSfx
+		? {
+				id: preset.id,
+				name: preset.name,
+				type: "element-bundle",
+				anchorElementType: "effect",
+				duration: bundleItems[0]?.element.duration ?? ZERO_MEDIA_TIME,
+				items: bundleItems,
+			}
+		: {
+				id: preset.id,
+				name: preset.name,
+				type: "effect",
+				effectType: CUSTOM_AI_EFFECT_TYPE,
+				params: preset.params,
+				targetElementTypes: EFFECT_TARGET_ELEMENT_TYPES,
+				placement: "layer",
+				duration,
+			};
 
 	const handleAddToTimeline = () => {
+		if (hasAutoSfx) {
+			const commands = buildOverlayMovementTimelineItems({
+				preset,
+				startTime: editor.playback.getCurrentTime(),
+			}).map(
+				({ element, trackType }) =>
+					new InsertElementCommand({
+						element,
+						placement: { mode: "auto", trackType },
+					}),
+			);
+			editor.command.execute({ command: new BatchCommand(commands) });
+			return;
+		}
 		const element = buildEffectElement({
 			effectType: CUSTOM_AI_EFFECT_TYPE,
 			name: preset.name,
@@ -52,16 +178,7 @@ function OverlayMovementItem({ preset }: { preset: OverlayMovementPreset }) {
 		<DraggableItem
 			name={preset.name}
 			preview={<OverlayMovementPreview preset={preset} />}
-			dragData={{
-				id: preset.id,
-				name: preset.name,
-				type: "effect",
-				effectType: CUSTOM_AI_EFFECT_TYPE,
-				params: preset.params,
-				targetElementTypes: EFFECT_TARGET_ELEMENT_TYPES,
-				placement: "layer",
-				duration,
-			}}
+			dragData={dragData}
 			onAddToTimeline={handleAddToTimeline}
 			aspectRatio={1}
 			variant="card"
@@ -112,6 +229,15 @@ function OverlayMovementPreview({ preset }: { preset: OverlayMovementPreset }) {
 			{hasVignette && (
 				<div className="absolute inset-0 bg-[radial-gradient(circle,transparent_34%,rgba(0,0,0,0.72)_100%)]" />
 			)}
+			{preset.spec.defaultSfx?.autoInsert ? (
+				<div
+					className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/65 text-white/90"
+					title="Includes sound effect"
+					aria-label="Includes sound effect"
+				>
+					<HugeiconsIcon icon={VolumeHighIcon} size={14} />
+				</div>
+			) : null}
 			<div className="absolute right-3 bottom-3 left-3">
 				<div className="truncate text-[11px] font-medium leading-tight text-white">
 					{preset.name}

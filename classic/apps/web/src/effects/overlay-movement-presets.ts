@@ -28,6 +28,18 @@ const DEFAULT_SFX = {
 	},
 } as const;
 
+export const CAMERA_FLASH_SFX = {
+	assetId: "1feab1d1-0580-41a4-8ed9-4a177eaf675e",
+	name: "Camera Flash",
+	autoInsert: true,
+	startOffsetSeconds: 0,
+	durationSeconds: 2.3983666666666665,
+	sourceDurationSeconds: 7.758366666666667,
+	trimStartSeconds: 0,
+	trimEndSeconds: 5.36,
+	volume: -16.4,
+} as const;
+
 export type OverlayMovementCurve =
 	| "curve-zoom"
 	| "push-in"
@@ -53,6 +65,13 @@ export type OverlayMovementCurve =
 export interface OverlayMovementDefaultSfx {
 	assetId: string;
 	name: string;
+	autoInsert?: boolean;
+	startOffsetSeconds?: number;
+	durationSeconds?: number;
+	sourceDurationSeconds?: number;
+	trimStartSeconds?: number;
+	trimEndSeconds?: number;
+	volume?: number;
 }
 
 export interface OverlayMovementSpec {
@@ -325,7 +344,7 @@ export const OVERLAY_MOVEMENT_PRESETS: OverlayMovementPreset[] = [
 		curve: "flash-punch",
 		zoom: 0.16,
 		flash: 0.78,
-		defaultSfx: DEFAULT_SFX.click,
+		defaultSfx: CAMERA_FLASH_SFX,
 	}),
 	movement({
 		id: "flash-bloom-zoom",

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { VolumeHighIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -26,6 +28,7 @@ import {
 	arrangeOverlappingTextTransitions,
 	clampTransitionPercent,
 	getOverlappingTextTransitionEntries,
+	hasTextTransitionSfx,
 } from "@/transitions";
 import { mediaTimeToSeconds } from "@/wasm";
 import type { ElementWithTrackForParams } from "./element-params-tab";
@@ -81,15 +84,17 @@ export function TextTransitionsTab({
 				if (target.element.type !== "text") return [];
 				const targetScope = resolveTextScopeForEntry({ scope, target });
 				if (!targetScope) return [];
-				return [{
-					trackId: target.track.id,
-					elementId: target.element.id,
-					patch: buildScopedTextPatch({
-						element: target.element,
-						scope: targetScope,
-						patch,
-					}),
-				}];
+				return [
+					{
+						trackId: target.track.id,
+						elementId: target.element.id,
+						patch: buildScopedTextPatch({
+							element: target.element,
+							scope: targetScope,
+							patch,
+						}),
+					},
+				];
 			}),
 		});
 	};
@@ -124,7 +129,7 @@ export function TextTransitionsTab({
 	);
 
 	const applyTransitions = () => {
-		editor.timeline.applyTransitions({
+		editor.timeline.applyTextTransitionsWithSfx({
 			applications: targets.flatMap((target) => {
 				if (
 					target.element.type === "audio" ||
@@ -177,7 +182,7 @@ export function TextTransitionsTab({
 		const overlappingEntries = getOverlappingTextTransitionEntries(entries);
 		if (overlappingEntries.length < 2) return;
 
-		editor.timeline.applyTransitions({
+		editor.timeline.applyTextTransitionsWithSfx({
 			applications: overlappingEntries.flatMap(({ trackId, element }) => [
 				{
 					trackId,
@@ -274,13 +279,13 @@ export function TextTransitionsTab({
 									onValueChange={(value) =>
 										updateGlower({
 											glowerDirection:
-												value === "rtl" || value === "ltr"
-													? value
-													: "auto",
+												value === "rtl" || value === "ltr" ? value : "auto",
 										})
 									}
 								>
-									<SelectTrigger><SelectValue /></SelectTrigger>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
 									<SelectContent>
 										{WORD_DIRECTIONS.map((direction) => (
 											<SelectItem key={direction.value} value={direction.value}>
@@ -376,7 +381,9 @@ export function TextTransitionsTab({
 									})
 								}
 							>
-								<SelectTrigger><SelectValue /></SelectTrigger>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
 								<SelectContent>
 									{WORD_DIRECTIONS.map((direction) => (
 										<SelectItem key={direction.value} value={direction.value}>
@@ -390,12 +397,20 @@ export function TextTransitionsTab({
 					<SectionField label="In transition">
 						<Select value={inTransitionId} onValueChange={setInTransitionId}>
 							<SelectTrigger>
-								<SelectValue />
+								<SelectValue>
+									<TransitionPresetLabel
+										transitionId={inTransitionId}
+										side="in"
+									/>
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent>
 								{TRANSITION_PRESETS.map((transition) => (
 									<SelectItem key={transition.id} value={transition.id}>
-										{transition.label}
+										<TransitionPresetLabel
+											transitionId={transition.id}
+											side="in"
+										/>
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -418,12 +433,20 @@ export function TextTransitionsTab({
 					<SectionField label="Out transition">
 						<Select value={outTransitionId} onValueChange={setOutTransitionId}>
 							<SelectTrigger>
-								<SelectValue />
+								<SelectValue>
+									<TransitionPresetLabel
+										transitionId={outTransitionId}
+										side="out"
+									/>
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent>
 								{TRANSITION_PRESETS.map((transition) => (
 									<SelectItem key={transition.id} value={transition.id}>
-										{transition.label}
+										<TransitionPresetLabel
+											transitionId={transition.id}
+											side="out"
+										/>
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -465,6 +488,30 @@ export function TextTransitionsTab({
 				</SectionFields>
 			</SectionContent>
 		</Section>
+	);
+}
+
+function TransitionPresetLabel({
+	transitionId,
+	side,
+}: {
+	transitionId: string;
+	side: "in" | "out";
+}) {
+	const transition = TRANSITION_PRESETS.find(
+		(candidate) => candidate.id === transitionId,
+	);
+	return (
+		<span className="flex items-center gap-2">
+			{hasTextTransitionSfx({ transitionId, side }) ? (
+				<HugeiconsIcon
+					icon={VolumeHighIcon}
+					size={14}
+					aria-label="Includes sound effect"
+				/>
+			) : null}
+			{transition?.label ?? transitionId}
+		</span>
 	);
 }
 

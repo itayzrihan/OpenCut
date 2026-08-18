@@ -1,5 +1,7 @@
 "use client";
 
+import { VolumeHighIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -15,7 +17,7 @@ import {
 	SectionFields,
 } from "@/components/section";
 import { useEditor } from "@/editor/use-editor";
-import type { TextElement } from "@/timeline";
+import type { TextCaptionRevealMode, TextElement } from "@/timeline";
 import {
 	CAPTION_ACCENT_COLORS,
 	CAPTION_WORD_ANIMATIONS,
@@ -104,43 +106,53 @@ export function TextWordsTab({
 		return scopedPatch;
 	};
 
-	const updateScopedSettings = (patch: TextScopedSettings) => {
+	const buildScopedUpdates = (patch: TextScopedSettings) => {
 		if (isBulk) {
-			editor.timeline.updateElements({
-				updates: bulkTextEntries.flatMap((entry) => {
-					const entryScope = isBulkWordScope
-						? resolveTextScopeForEntry({ scope, entry })
-						: ({ type: "layer" } as const);
-					if (!entryScope) return [];
-					return [
-						{
-							trackId: entry.track.id,
-							elementId: entry.element.id,
-							patch: applyPatchToElement({
-								targetElement: entry.element,
-								scope: entryScope,
-								patch,
-							}),
-						},
-					];
+			return bulkTextEntries.flatMap((entry) => {
+				const entryScope = isBulkWordScope
+					? resolveTextScopeForEntry({ scope, entry })
+					: ({ type: "layer" } as const);
+				if (!entryScope) return [];
+				return [
+					{
+						trackId: entry.track.id,
+						elementId: entry.element.id,
+						patch: applyPatchToElement({
+							targetElement: entry.element,
+							scope: entryScope,
+							patch,
+						}),
+					},
+				];
+			});
+		}
+
+		return [
+			{
+				trackId,
+				elementId: element.id,
+				patch: applyPatchToElement({
+					targetElement: element,
+					scope: effectiveScope,
+					patch,
 				}),
+			},
+		];
+	};
+
+	const updateScopedSettings = (patch: TextScopedSettings) => {
+		const updates = buildScopedUpdates(patch);
+		const updatesWholeLayers = isBulk
+			? !isBulkWordScope
+			: effectiveScope.type === "layer";
+		if (patch.revealMode !== undefined && updatesWholeLayers) {
+			editor.timeline.updateTextRevealWithTypingSfx({
+				updates,
+				revealMode: patch.revealMode,
 			});
 			return;
 		}
-
-		editor.timeline.updateElements({
-			updates: [
-				{
-					trackId,
-					elementId: element.id,
-					patch: applyPatchToElement({
-						targetElement: element,
-						scope: effectiveScope,
-						patch,
-					}),
-				},
-			],
-		});
+		editor.timeline.updateElements({ updates });
 	};
 
 	const clearOverride = () => {
@@ -290,12 +302,14 @@ export function TextWordsTab({
 							}
 						>
 							<SelectTrigger>
-								<SelectValue />
+								<SelectValue>
+									<RevealModeLabel revealMode={values.revealMode} />
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent>
 								{REVEAL_MODES.map((mode) => (
 									<SelectItem key={mode.value} value={mode.value}>
-										{mode.label}
+										<RevealModeLabel revealMode={mode.value} />
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -396,6 +410,26 @@ export function TextWordsTab({
 	);
 }
 
+function RevealModeLabel({
+	revealMode,
+}: {
+	revealMode: TextCaptionRevealMode;
+}) {
+	const mode = REVEAL_MODES.find((candidate) => candidate.value === revealMode);
+	return (
+		<span className="flex items-center gap-2">
+			{revealMode === "letter-by-letter" ? (
+				<HugeiconsIcon
+					icon={VolumeHighIcon}
+					size={14}
+					aria-label="Includes typing sound"
+				/>
+			) : null}
+			{mode?.label ?? revealMode}
+		</span>
+	);
+}
+
 function resolveTextScopeForEntry({
 	scope,
 	entry,
@@ -411,7 +445,11 @@ function resolveTextScopeForEntry({
 	return wordIds.length > 0 ? { type: "words", wordIds } : null;
 }
 
-function buildLineRows({ wordRuns }: { wordRuns: ReturnType<typeof getWordRuns> }) {
+function buildLineRows({
+	wordRuns,
+}: {
+	wordRuns: ReturnType<typeof getWordRuns>;
+}) {
 	const rows = new Map<
 		number,
 		Array<{ id: string; text: string; index: number }>

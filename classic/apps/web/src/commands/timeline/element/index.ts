@@ -1,5 +1,7 @@
 export { InsertElementCommand } from "./insert-element";
 export { DeleteElementsCommand } from "./delete-elements";
+export { ApplyTextTransitionsWithSfxCommand } from "./apply-text-transitions-with-sfx";
+export { UpdateTextRevealWithTypingSfxCommand } from "./update-text-reveal-with-typing-sfx";
 export { DuplicateElementsCommand } from "./duplicate-elements";
 export { SplitElementsCommand } from "./split-elements";
 export { MergeTextElementsCommand } from "./merge-text-elements";

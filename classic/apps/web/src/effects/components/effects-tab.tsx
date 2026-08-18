@@ -12,7 +12,7 @@ import { useElementPreview } from "@/timeline/hooks/use-element-preview";
 import { getOverlayMovementDefaultSfx } from "@/effects/overlay-movement-presets";
 import { sharedLibraryService } from "@/shared-library";
 import { buildLibraryAudioElement } from "@/timeline/element-utils";
-import { mediaTimeFromSeconds, mediaTimeToSeconds } from "@/wasm";
+import { addMediaTime, mediaTimeFromSeconds, mediaTimeToSeconds } from "@/wasm";
 import {
 	Section,
 	SectionContent,
@@ -364,18 +364,43 @@ function OverlayMovementSfxButton({ element }: { element: EffectElement }) {
 				0.05,
 				mediaTimeToSeconds({ time: element.duration }),
 			);
-			const resolvedDurationSeconds = Math.min(
-				durationSeconds ?? movementDurationSeconds,
-				movementDurationSeconds,
-			);
+			const resolvedDurationSeconds =
+				defaultSfx.durationSeconds ??
+				Math.min(
+					durationSeconds ?? movementDurationSeconds,
+					movementDurationSeconds,
+				);
 			const audioElement = buildLibraryAudioElement({
 				libraryAssetId: asset.id,
 				librarySourceType: "shared",
 				name: `${element.name} SFX`,
 				duration: mediaTimeFromSeconds({ seconds: resolvedDurationSeconds }),
-				startTime: element.startTime,
+				startTime: addMediaTime({
+					a: element.startTime,
+					b: mediaTimeFromSeconds({
+						seconds: defaultSfx.startOffsetSeconds ?? 0,
+					}),
+				}),
 				buffer,
 			});
+			audioElement.sourceDuration = mediaTimeFromSeconds({
+				seconds:
+					defaultSfx.sourceDurationSeconds ??
+					durationSeconds ??
+					resolvedDurationSeconds,
+			});
+			audioElement.trimStart = mediaTimeFromSeconds({
+				seconds: defaultSfx.trimStartSeconds ?? 0,
+			});
+			audioElement.trimEnd = mediaTimeFromSeconds({
+				seconds: defaultSfx.trimEndSeconds ?? 0,
+			});
+			audioElement.params = {
+				...audioElement.params,
+				...(defaultSfx.volume !== undefined
+					? { volume: defaultSfx.volume }
+					: {}),
+			};
 
 			editor.timeline.insertElement({
 				placement: { mode: "auto", trackType: "audio" },
