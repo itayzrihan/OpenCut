@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
+import { VolumeHighIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { generateUiElementPreset } from "@/ai/preset-generation";
@@ -220,9 +222,13 @@ function UiElementPresetItem({ preset }: { preset: UiElementPreset }) {
 							unoptimized
 						/>
 					)}
-					{preset.bundle ? (
-						<div className="absolute bottom-8 right-2 rounded-full bg-black/60 px-1.5 py-0.5 text-[8px] text-white/90">
-							SFX
+					{preset.bundle?.audio.length ? (
+						<div
+							className="absolute bottom-8 right-2 flex size-6 items-center justify-center rounded-full bg-black/65 text-white/90"
+							title="Includes sound effects"
+							aria-label="Includes sound effects"
+						>
+							<HugeiconsIcon icon={VolumeHighIcon} size={14} />
 						</div>
 					) : null}
 					<div className="absolute inset-x-0 bottom-0 bg-black/55 px-1.5 py-1">

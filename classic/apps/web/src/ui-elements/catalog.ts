@@ -41,6 +41,35 @@ export const COLOR_REVEAL_WHOOSH_ASSET_ID =
 	"19f29ed9-a604-4933-ae8c-e494b6cee47f";
 export const CANCELLATION_CHECKLIST_GLITCH_ASSET_ID =
 	"fedd7133-5b46-406a-8085-f733ea28b367";
+export const GOAL_SLIDER_IN_SFX_ASSET_ID =
+	"80930d56-fba9-4869-b9b7-b94dc804497d";
+export const GOAL_SLIDER_OUT_SFX_ASSET_ID =
+	"748324d3-6e31-4bff-92a2-843ea2e20127";
+export const COUNTER_TYPING_SFX_ASSET_ID =
+	"d7c18d8a-10cb-47d4-af34-6a1bea4300d3";
+
+const GOAL_SLIDER_PARAMS: ParamValues = {
+	template: "goal-slider",
+	label: "$10,000",
+	secondary: "$7,200",
+	items: "Research\nDesign\nEdit\nPublish",
+	itemCount: 4,
+	accent: "#4EA1FF",
+	background: "#050505",
+	foreground: "#FFFFFF",
+	progress: 72,
+	checked: 2,
+	count: 3,
+	intensity: 60,
+	batteryMode: "drain",
+	screenMode: "auto",
+	animationIn: "progress-meter-sweep",
+	animationInEnd: 30,
+	animationOut: "progress-complete-flash",
+	animationOutStart: 86,
+	animationStrength: 88,
+	eventAt: 68,
+};
 
 const RTL_CANCELLATION_CHECKLIST_PARAMS: ParamValues = {
 	template: "checkbox-list",
@@ -132,6 +161,7 @@ function preset({
 	animationOutStart = 82,
 	animationStrength = 100,
 	eventAt = 55,
+	bundleAudio,
 }: {
 	id: string;
 	name: string;
@@ -159,7 +189,32 @@ function preset({
 	animationOutStart?: number;
 	animationStrength?: number;
 	eventAt?: number;
+	bundleAudio?: UiElementBundleAudioClip[];
 }): UiElementPreset {
+	const params: ParamValues = {
+		template,
+		label,
+		secondary,
+		items: items ?? "Research\nDesign\nEdit\nPublish",
+		itemCount: (items ?? "Research\nDesign\nEdit\nPublish")
+			.split("\n")
+			.filter((item) => item.trim().length > 0).length,
+		accent,
+		background,
+		foreground,
+		progress,
+		checked,
+		count,
+		intensity,
+		batteryMode,
+		screenMode,
+		animationIn,
+		animationInEnd,
+		animationOut,
+		animationOutStart,
+		animationStrength,
+		eventAt,
+	};
 	return {
 		id,
 		name,
@@ -168,30 +223,21 @@ function preset({
 		keywords,
 		whenToUse,
 		defaultDurationSeconds,
-		params: {
-			template,
-			label,
-			secondary,
-			items: items ?? "Research\nDesign\nEdit\nPublish",
-			itemCount: (items ?? "Research\nDesign\nEdit\nPublish")
-				.split("\n")
-				.filter((item) => item.trim().length > 0).length,
-			accent,
-			background,
-			foreground,
-			progress,
-			checked,
-			count,
-			intensity,
-			batteryMode,
-			screenMode,
-			animationIn,
-			animationInEnd,
-			animationOut,
-			animationOutStart,
-			animationStrength,
-			eventAt,
-		},
+		params,
+		bundle: bundleAudio
+			? {
+					graphics: [
+						{
+							name,
+							definitionId: UI_ELEMENT_DEFINITION_ID,
+							startOffsetSeconds: 0,
+							durationSeconds: defaultDurationSeconds,
+							params,
+						},
+					],
+					audio: bundleAudio,
+				}
+			: undefined,
 	};
 }
 
@@ -326,29 +372,60 @@ export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
 		animationOutStart: 84,
 		eventAt: 58,
 	}),
-	preset({
+	{
 		id: "product-goal",
 		name: "Goal Slider",
 		description: "Animated target slider with current value",
-		template: "goal-slider",
-		label: "$10,000",
-		secondary: "$7,200",
-		progress: 72,
-		accent: "#4EA1FF",
-		background: "#050505",
-		foreground: "#FFFFFF",
 		category: "metrics",
 		keywords: ["goal", "slider", "target", "money", "progress"],
 		whenToUse:
 			"Use for targets, funding, completion, or progress toward a goal.",
-		defaultDurationSeconds: 2.8,
-		animationIn: "progress-meter-sweep",
-		animationOut: "progress-complete-flash",
-		animationInEnd: 30,
-		animationOutStart: 86,
-		animationStrength: 88,
-		eventAt: 68,
-	}),
+		defaultDurationSeconds: 3.06,
+		params: GOAL_SLIDER_PARAMS,
+		bundle: {
+			graphics: [
+				{
+					name: "Goal Slider",
+					definitionId: UI_ELEMENT_DEFINITION_ID,
+					startOffsetSeconds: 0,
+					durationSeconds: 3.06,
+					params: GOAL_SLIDER_PARAMS,
+				},
+			],
+			audio: [
+				{
+					name: "Goal Slider in",
+					libraryAssetId: GOAL_SLIDER_IN_SFX_ASSET_ID,
+					startOffsetSeconds: 0,
+					durationSeconds: 1.536,
+					sourceDurationSeconds: 1.536,
+					trimStartSeconds: 0,
+					trimEndSeconds: 0,
+					params: {
+						fadeInDuration: 0,
+						fadeOutDuration: 0,
+						muted: false,
+						volume: -8.9,
+					},
+				},
+				{
+					name: "Goal Slider out",
+					libraryAssetId: GOAL_SLIDER_OUT_SFX_ASSET_ID,
+					startOffsetSeconds: 1.798275,
+					durationSeconds: 1.26,
+					sourceDurationSeconds: 5.88,
+					trimStartSeconds: 0,
+					trimEndSeconds: 4.62,
+					params: {
+						fadeInDuration: 0,
+						fadeOutDuration: 0,
+						muted: false,
+						volume: -8.9,
+					},
+				},
+			],
+		},
+	},
 	preset({
 		id: "product-earnings",
 		name: "Earnings Metric",
@@ -517,15 +594,7 @@ export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
 		description:
 			"Hebrew RTL checklist that turns red on cancellation and exits with a stationary blur zoom",
 		category: "argument",
-		keywords: [
-			"rtl",
-			"hebrew",
-			"checklist",
-			"cancel",
-			"red",
-			"glitch",
-			"sfx",
-		],
+		keywords: ["rtl", "hebrew", "checklist", "cancel", "red", "glitch", "sfx"],
 		whenToUse:
 			"Use when spoken excuses appear one by one, then the argument is cancelled with a red state and synchronized glitch.",
 		defaultDurationSeconds: 5.625,
@@ -717,6 +786,25 @@ export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
 		template: "counter",
 		label: "Downloads",
 		count: 128,
+		// Copied from the Counter + Typing pairing authored in ROGA2.
+		defaultDurationSeconds: 1.74,
+		bundleAudio: [
+			{
+				name: "Typing",
+				libraryAssetId: COUNTER_TYPING_SFX_ASSET_ID,
+				startOffsetSeconds: 0.09808333333333333,
+				durationSeconds: 1.3114166666666668,
+				sourceDurationSeconds: 1.3114166666666668,
+				trimStartSeconds: 0,
+				trimEndSeconds: 0,
+				params: {
+					fadeInDuration: 0,
+					fadeOutDuration: 0,
+					muted: false,
+					volume: -9.6,
+				},
+			},
+		],
 	}),
 	preset({
 		id: "badge-new",
