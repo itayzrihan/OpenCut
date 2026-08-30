@@ -118,7 +118,10 @@ import {
 } from "./expanded-layout";
 import { getTransitionPreset } from "@/transitions";
 import type { MediaAsset } from "@/media/types";
-import { isUnifiedAnglesAsset } from "@/media/unified-angles";
+import {
+	isUnifiedAnglesAsset,
+	resolveUnifiedAnglesAudioAsset,
+} from "@/media/unified-angles";
 import { UI_ELEMENT_GRAPHIC_ID } from "@/graphics/definitions/ui-element";
 import { UiElementTimelineMarkers } from "@/ui-elements/components/timeline-markers";
 import { useTimelineStore } from "@/timeline/timeline-store";
@@ -1909,6 +1912,17 @@ function AudioElementContent({
 	mediaAsset: MediaAsset | null;
 }) {
 	const pixelsPerSecond = useContext(PixelsPerSecondContext);
+	const mediaAssets = useEditorMedia((currentEditor) =>
+		currentEditor.media.getAssets(),
+	);
+	const mediaMap = useMemo(
+		() => new Map(mediaAssets.map((asset) => [asset.id, asset])),
+		[mediaAssets],
+	);
+	const sourceMediaAsset =
+		element.sourceType === "upload" && mediaAsset
+			? resolveUnifiedAnglesAudioAsset({ asset: mediaAsset, mediaMap })
+			: mediaAsset;
 	if (pixelsPerSecond === null) {
 		throw new Error(
 			"AudioElementContent must be rendered inside PixelsPerSecondContext.Provider",
@@ -1974,14 +1988,17 @@ function AudioElementContent({
 	const audioUrl =
 		element.sourceType === "library"
 			? (currentSharedAudioSource?.url ?? element.sourceUrl)
-			: mediaAsset?.url;
+			: sourceMediaAsset?.url;
 	const sourceFile =
 		element.sourceType === "upload"
-			? mediaAsset?.file
+			? sourceMediaAsset?.file
 			: currentSharedAudioSource?.file;
 	const sourceKey =
 		element.sourceType === "upload"
-			? buildWaveformSourceKey({ kind: "media", id: element.mediaId })
+			? buildWaveformSourceKey({
+					kind: "media",
+					id: sourceMediaAsset?.id ?? element.mediaId,
+				})
 			: buildWaveformSourceKey({
 					kind: "library",
 					id: element.libraryAssetId ?? element.sourceUrl ?? element.id,

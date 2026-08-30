@@ -33,6 +33,7 @@ import {
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
 import { decodeAudioToFloat32 } from "@/media/audio";
+import { resolveUnifiedAnglesAudioAsset } from "@/media/unified-angles";
 import {
 	AUDIO_BASED_AUDIO_FRAME_SECONDS,
 	AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS,
@@ -1288,13 +1289,22 @@ export class TimelineManager {
 
 		for (const { track, element } of selectedVideos) {
 			if (element.type !== "video") continue;
-			const asset = mediaById.get(element.mediaId);
+			const referencedAsset = mediaById.get(element.mediaId);
+			const asset = referencedAsset
+				? resolveUnifiedAnglesAudioAsset({
+						asset: referencedAsset,
+						mediaMap: mediaById,
+					})
+				: null;
 			if (
 				(!asset?.file && !asset?.url) ||
 				track.type !== "video" ||
 				track.muted ||
 				isElementMuted({ element }) ||
-				!doesElementHaveEnabledAudio({ element, mediaAsset: asset })
+				!doesElementHaveEnabledAudio({
+					element,
+					mediaAsset: referencedAsset,
+				})
 			) {
 				continue;
 			}

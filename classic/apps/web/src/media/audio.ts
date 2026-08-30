@@ -16,7 +16,8 @@ import {
 } from "@/timeline/audio-state";
 import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
 import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
-import { canTrackHaveAudio, getDisplayTracks } from "@/timeline";
+import { canTrackHaveAudio } from "@/timeline/track-capabilities";
+import { getDisplayTracks } from "@/timeline/track-order";
 import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
 import {
@@ -185,10 +186,16 @@ export async function collectAudioElements({
 
 	for (const { element, mediaAsset } of candidates) {
 		if (element.type === "audio") {
-			const uploadedAsset =
+			const referencedUploadedAsset =
 				element.sourceType === "upload"
 					? mediaMap.get(element.mediaId)
 					: undefined;
+			const uploadedAsset = referencedUploadedAsset
+				? resolveUnifiedAnglesAudioAsset({
+						asset: referencedUploadedAsset,
+						mediaMap,
+					})
+				: null;
 			const audioBufferPromise = uploadedAsset
 				? resolveCachedAssetAudio({ asset: uploadedAsset })
 				: element.sourceType === "upload"
@@ -271,7 +278,12 @@ async function resolveAudioBufferForElement({
 }): Promise<AudioBuffer | null> {
 	try {
 		if (element.sourceType === "upload") {
-			const asset = mediaMap.get(element.mediaId);
+			const referencedAsset = mediaMap.get(element.mediaId);
+			if (!referencedAsset) return null;
+			const asset = resolveUnifiedAnglesAudioAsset({
+				asset: referencedAsset,
+				mediaMap,
+			});
 			if (!asset) return null;
 			return await resolveAudioBufferForAsset({ asset, audioContext });
 		}
@@ -576,7 +588,12 @@ export async function collectAudioMixSources({
 
 			if (element.type === "audio") {
 				if (element.sourceType === "upload") {
-					const mediaAsset = mediaMap.get(element.mediaId);
+					const referencedAsset = mediaMap.get(element.mediaId);
+					if (!referencedAsset) continue;
+					const mediaAsset = resolveUnifiedAnglesAudioAsset({
+						asset: referencedAsset,
+						mediaMap,
+					});
 					if (!mediaAsset) continue;
 
 					audioMixSources.push(
@@ -657,7 +674,12 @@ export async function collectAudioClips({
 
 			if (element.type === "audio") {
 				if (element.sourceType === "upload") {
-					const mediaAsset = mediaMap.get(element.mediaId);
+					const referencedAsset = mediaMap.get(element.mediaId);
+					if (!referencedAsset) continue;
+					const mediaAsset = resolveUnifiedAnglesAudioAsset({
+						asset: referencedAsset,
+						mediaMap,
+					});
 					if (!mediaAsset) continue;
 
 					clips.push(
