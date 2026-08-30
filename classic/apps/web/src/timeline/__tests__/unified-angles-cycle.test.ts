@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { MediaAsset } from "@/media/types";
 import { createUnifiedAnglesAsset } from "@/media/unified-angles";
-import { buildUnifiedAngleCycleUpdates } from "@/timeline/unified-angles-cycle";
+import {
+	buildUnifiedAngleCycleUpdates,
+	buildUnifiedAngleSetUpdates,
+} from "@/timeline/unified-angles-cycle";
 import { mediaTime, type MediaTime } from "@/wasm";
 
 function video(id: string): MediaAsset {
@@ -20,6 +23,31 @@ function time(value: number): MediaTime {
 }
 
 describe("Unified Angles cycling", () => {
+	test("sets every selected cut to the same chosen angle", () => {
+		const angles = [video("one"), video("two")];
+		const asset: MediaAsset = {
+			id: "unified",
+			...createUnifiedAnglesAsset({ assets: angles }),
+		};
+		const updates = buildUnifiedAngleSetUpdates({
+			asset,
+			angleAssetId: "two",
+			targets: [0, 1, 2].map((startTime) => ({
+				trackId: "main",
+				elementId: `cut-${startTime}`,
+				mediaId: asset.id,
+				startTime: time(startTime),
+				trackOrder: 0,
+			})),
+		});
+
+		expect(updates.map((update) => update.patch.unifiedAngleId)).toEqual([
+			"two",
+			"two",
+			"two",
+		]);
+	});
+
 	test("orders cuts chronologically and alternates from the chosen first angle", () => {
 		const angles = [video("one"), video("two")];
 		const asset: MediaAsset = {

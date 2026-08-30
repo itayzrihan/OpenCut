@@ -131,7 +131,10 @@ import { InsertSelectionIntoCanvasCommand } from "@/commands/parallax/insert-sel
 import type { InsertSelectionMode } from "@/parallax-story-teller/insert-selection";
 import { toast } from "sonner";
 import { getDisplayTrackIds } from "@/timeline/track-order";
-import { buildUnifiedAngleCycleUpdates } from "@/timeline/unified-angles-cycle";
+import {
+	buildUnifiedAngleCycleUpdates,
+	buildUnifiedAngleSetUpdates,
+} from "@/timeline/unified-angles-cycle";
 import {
 	getAnimationsWithoutAppliedLoop,
 	getAppliedLoopKeyframes,
@@ -780,6 +783,33 @@ function TimelineElementMenuContent({
 			});
 		}
 	};
+	const handleSetUnifiedAngle = (angleAssetId: string) => {
+		const selectedTargets =
+			isCurrentElementSelected &&
+			unifiedAngleCycleTarget?.asset.id === mediaAsset?.id
+				? unifiedAngleCycleTarget.targets
+				: null;
+		editor.timeline.updateElements({
+			updates: selectedTargets
+				? buildUnifiedAngleSetUpdates({
+						asset: unifiedAngleCycleTarget.asset,
+						targets: selectedTargets,
+						angleAssetId,
+					})
+				: [
+						{
+							trackId,
+							elementId: element.id,
+							patch: { unifiedAngleId: angleAssetId },
+						},
+					],
+		});
+		if (selectedTargets) {
+			toast.success("Camera angle changed", {
+				description: `${selectedTargets.length} selected cuts updated.`,
+			});
+		}
+	};
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
 	const canToggleCurrentSourceAudio =
 		selectedElementCount === 1 &&
@@ -869,17 +899,7 @@ function TimelineElementMenuContent({
 							return (
 								<ContextMenuItem
 									key={angle.id}
-									onClick={() =>
-										editor.timeline.updateElements({
-											updates: [
-												{
-													trackId,
-													elementId: element.id,
-													patch: { unifiedAngleId: angle.id },
-												},
-											],
-										})
-									}
+									onClick={() => handleSetUnifiedAngle(angle.id)}
 								>
 									<span className="w-4">
 										{activeAngleId === angle.id ? "✓" : ""}

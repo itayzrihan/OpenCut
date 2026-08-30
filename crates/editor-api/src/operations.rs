@@ -2312,6 +2312,14 @@ struct ItemAngleSetInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ItemAnglesSetInput {
+    item_ids: Vec<String>,
+    angle_asset_id: String,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ItemAnglesCycleInput {
     item_ids: Vec<String>,
     starting_angle_asset_id: String,
@@ -2738,6 +2746,111 @@ fn register_item_operations(
                 )?;
                 Ok(OperationSuccess::new(output)
                     .summary("Switched camera angle")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
+    let set_angles_state = state.clone();
+    let set_angles_events = events.clone();
+    register::<ItemAnglesSetInput, MutationOutput, _, _>(
+        registry,
+        "timeline.items.angle.set",
+        "Switch selected Unified Angles cameras",
+        "Switches multiple selected timeline cuts from the same Unified Angles asset to one camera in a single undoable transaction.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &[
+            "timeline",
+            "clips",
+            "multicam",
+            "angle",
+            "switch",
+            "selection",
+        ],
+        move |context, input| {
+            let state = set_angles_state.clone();
+            let events = set_angles_events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Switch selected camera angles",
+                    input.expected_revision,
+                    |document| {
+                        if input.item_ids.len() < 2
+                            || input.item_ids.iter().collect::<HashSet<_>>().len()
+                                != input.item_ids.len()
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "itemIds must contain at least two distinct timeline items".into(),
+                            ));
+                        }
+
+                        let locations = input
+                            .item_ids
+                            .iter()
+                            .map(|id| {
+                                let (track_index, item_index) = find_item_location(document, id)?;
+                                let item = &document
+                                    .project
+                                    .as_ref()
+                                    .expect("item location requires an open project")
+                                    .timeline
+                                    .tracks[track_index]
+                                    .items[item_index];
+                                let asset_id = item.asset_id.clone().ok_or_else(|| {
+                                    CapabilityError::InvalidInput(format!(
+                                        "timeline item `{id}` has no media asset"
+                                    ))
+                                })?;
+                                Ok((track_index, item_index, id.clone(), asset_id))
+                            })
+                            .collect::<Result<Vec<_>, CapabilityError>>()?;
+                        let unified_asset_id = locations[0].3.clone();
+                        if locations
+                            .iter()
+                            .any(|location| location.3 != unified_asset_id)
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "all selected items must use the same Unified Angles asset".into(),
+                            ));
+                        }
+                        let unified = document
+                            .project
+                            .as_ref()
+                            .expect("item location requires an open project")
+                            .assets
+                            .iter()
+                            .find(|asset| asset.id == unified_asset_id)
+                            .and_then(|asset| asset.unified_angles.as_ref())
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(format!(
+                                    "asset `{unified_asset_id}` is not a Unified Angles asset"
+                                ))
+                            })?;
+                        if !unified.angle_asset_ids.contains(&input.angle_asset_id) {
+                            return Err(CapabilityError::InvalidInput(format!(
+                                "asset `{}` is not an angle of `{unified_asset_id}`",
+                                input.angle_asset_id
+                            )));
+                        }
+
+                        let project = project_mut(document)?;
+                        let mut changed_ids = Vec::with_capacity(locations.len());
+                        for (track_index, item_index, item_id, _) in locations {
+                            project.timeline.tracks[track_index].items[item_index]
+                                .active_angle_asset_id = Some(input.angle_asset_id.clone());
+                            changed_ids.push(item_id);
+                        }
+                        Ok(changed_ids)
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Switched selected camera angles")
                     .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
             }
         },
@@ -7504,6 +7617,42 @@ mod tests {
             }),
         )
         .await;
+        invoke(
+            &runtime,
+            "timeline.items.angle.set",
+            json!({
+                "itemIds": [third_item_id, item_id, right_item_id],
+                "angleAssetId": source_ids[2],
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
+        let uniform_state = invoke(
+            &runtime,
+            "app.state.read",
+            json!({"projectId": project_id, "pointer": "/project/timeline/tracks"}),
+        )
+        .await;
+        let uniform_items: Vec<_> = uniform_state["value"]
+            .as_array()
+            .expect("tracks")
+            .iter()
+            .flat_map(|track| track["items"].as_array().expect("items"))
+            .filter(|item| {
+                [
+                    item_id.as_str(),
+                    right_item_id.as_str(),
+                    third_item_id.as_str(),
+                ]
+                .contains(&item["id"].as_str().expect("item id"))
+            })
+            .collect();
+        assert_eq!(uniform_items.len(), 3);
+        assert!(
+            uniform_items
+                .iter()
+                .all(|item| item["activeAngleAssetId"] == source_ids[2])
+        );
         invoke(
             &runtime,
             "timeline.items.angles.cycle",
