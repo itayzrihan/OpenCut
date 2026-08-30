@@ -530,15 +530,16 @@ impl MediaAsset {
                     self.id
                 )));
             }
-            if unified.angle_asset_ids.len() != 2
-                || unified.angle_asset_ids[0] == unified.angle_asset_ids[1]
+            if unified.angle_asset_ids.len() < 2
+                || unified.angle_asset_ids.iter().collect::<HashSet<_>>().len()
+                    != unified.angle_asset_ids.len()
                 || !unified
                     .angle_asset_ids
                     .contains(&unified.default_angle_asset_id)
                 || !unified.angle_asset_ids.contains(&unified.audio_asset_id)
             {
                 return Err(ModelError::Invalid(format!(
-                    "Unified Angles asset `{}` must reference two distinct angles and choose its default video and audio from them",
+                    "Unified Angles asset `{}` must reference at least two distinct angles and choose its default video and audio from them",
                     self.id
                 )));
             }

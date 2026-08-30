@@ -52,9 +52,24 @@ describe("Unified Angles", () => {
 		).toBe("one");
 	});
 
-	test("rejects selections that are not exactly two videos", () => {
+	test("supports three or more angles", () => {
+		const unified = createUnifiedAnglesAsset({
+			assets: [
+				video({ id: "one" }),
+				video({ id: "two" }),
+				video({ id: "three" }),
+			],
+		});
+		expect(unified.unifiedAngles?.angleAssetIds).toEqual([
+			"one",
+			"two",
+			"three",
+		]);
+	});
+
+	test("rejects selections with fewer than two videos", () => {
 		expect(() =>
 			createUnifiedAnglesAsset({ assets: [video({ id: "one" })] }),
-		).toThrow("exactly two");
+		).toThrow("at least two");
 	});
 });

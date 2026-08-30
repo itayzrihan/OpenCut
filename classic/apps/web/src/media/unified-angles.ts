@@ -15,11 +15,12 @@ export function createUnifiedAnglesAsset({
 	assets: MediaAsset[];
 	name?: string;
 }): Omit<MediaAsset, "id"> {
-	if (assets.length !== 2 || assets.some((asset) => asset.type !== "video")) {
-		throw new Error("Select exactly two video files to unify");
+	if (assets.length < 2 || assets.some((asset) => asset.type !== "video")) {
+		throw new Error("Select at least two video files to unify");
 	}
-	if (assets[0].id === assets[1].id) {
-		throw new Error("Unified Angles requires two different video files");
+	const angleAssetIds = assets.map((asset) => asset.id);
+	if (new Set(angleAssetIds).size !== angleAssetIds.length) {
+		throw new Error("Unified Angles requires different video files");
 	}
 	const audioAsset = assets.find((asset) => asset.hasAudio !== false);
 	if (!audioAsset) {
@@ -31,11 +32,15 @@ export function createUnifiedAnglesAsset({
 		.filter((duration): duration is number => duration != null);
 
 	return {
-		name: name?.trim() || `${defaultAsset.name} + ${assets[1].name}`,
+		name:
+			name?.trim() ||
+			(assets.length === 2
+				? `${defaultAsset.name} + ${assets[1].name}`
+				: `${defaultAsset.name} + ${assets.length - 1} angles`),
 		type: "video",
 		size: 0,
 		lastModified: Date.now(),
-		fileName: `${defaultAsset.name} + ${assets[1].name}.unified-angles`,
+		fileName: `${defaultAsset.name} + ${assets.length - 1} angles.unified-angles`,
 		mimeType: "application/vnd.opencut.unified-angles",
 		storageKind: "copied",
 		sourcePath: "",
@@ -47,7 +52,7 @@ export function createUnifiedAnglesAsset({
 		thumbnailUrl: defaultAsset.thumbnailUrl,
 		unifiedAngles: {
 			version: 1,
-			angleAssetIds: [assets[0].id, assets[1].id],
+			angleAssetIds,
 			defaultAngleAssetId: defaultAsset.id,
 			audioAssetId: audioAsset.id,
 		},

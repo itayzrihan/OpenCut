@@ -405,11 +405,11 @@ export function MediaView() {
 		[activeProject, editor, mediaFiles],
 	);
 	const selectedVideosCanUnify = useMemo(() => {
-		if (selectedMediaIds.length !== 2) return false;
+		if (selectedMediaIds.length < 2) return false;
 		const selected = new Set(selectedMediaIds);
 		const assets = mediaFiles.filter((asset) => selected.has(asset.id));
 		return (
-			assets.length === 2 &&
+			assets.length === selectedMediaIds.length &&
 			assets.every(
 				(asset) => asset.type === "video" && !isUnifiedAnglesAsset(asset),
 			)

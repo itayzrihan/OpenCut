@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     future::Future,
     path::Path,
     process::{Command, Stdio},
@@ -1540,9 +1541,12 @@ fn register_media_operations(
                     "Create Unified Angles",
                     input.expected_revision,
                     |document| {
-                        if input.asset_ids.len() != 2 || input.asset_ids[0] == input.asset_ids[1] {
+                        if input.asset_ids.len() < 2
+                            || input.asset_ids.iter().collect::<HashSet<_>>().len()
+                                != input.asset_ids.len()
+                        {
                             return Err(CapabilityError::InvalidInput(
-                                "assetIds must contain exactly two distinct video assets".into(),
+                                "assetIds must contain at least two distinct video assets".into(),
                             ));
                         }
                         let sources: Vec<_> = {
@@ -2308,6 +2312,14 @@ struct ItemAngleSetInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ItemAnglesCycleInput {
+    item_ids: Vec<String>,
+    starting_angle_asset_id: String,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ItemDuplicateInput {
     item_ids: Vec<String>,
     #[serde(default)]
@@ -2726,6 +2738,133 @@ fn register_item_operations(
                 )?;
                 Ok(OperationSuccess::new(output)
                     .summary("Switched camera angle")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
+    let cycle_angles_state = state.clone();
+    let cycle_angles_events = events.clone();
+    register::<ItemAnglesCycleInput, MutationOutput, _, _>(
+        registry,
+        "timeline.items.angles.cycle",
+        "Alternate Unified Angles cameras",
+        "Assigns selected cuts from one Unified Angles asset to its cameras in timeline order, cycling through every angle from the chosen starting camera.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &[
+            "timeline",
+            "clips",
+            "multicam",
+            "angles",
+            "alternate",
+            "cycle",
+        ],
+        move |context, input| {
+            let state = cycle_angles_state.clone();
+            let events = cycle_angles_events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Alternate camera angles",
+                    input.expected_revision,
+                    |document| {
+                        if input.item_ids.len() < 2
+                            || input.item_ids.iter().collect::<HashSet<_>>().len()
+                                != input.item_ids.len()
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "itemIds must contain at least two distinct timeline items".into(),
+                            ));
+                        }
+
+                        let mut locations = input
+                            .item_ids
+                            .iter()
+                            .map(|id| {
+                                let (track_index, item_index) = find_item_location(document, id)?;
+                                let item = &document
+                                    .project
+                                    .as_ref()
+                                    .expect("item location requires an open project")
+                                    .timeline
+                                    .tracks[track_index]
+                                    .items[item_index];
+                                let asset_id = item.asset_id.clone().ok_or_else(|| {
+                                    CapabilityError::InvalidInput(format!(
+                                        "timeline item `{id}` has no media asset"
+                                    ))
+                                })?;
+                                Ok((
+                                    track_index,
+                                    item_index,
+                                    item.start_seconds,
+                                    id.clone(),
+                                    asset_id,
+                                ))
+                            })
+                            .collect::<Result<Vec<_>, CapabilityError>>()?;
+                        let unified_asset_id = locations[0].4.clone();
+                        if locations
+                            .iter()
+                            .any(|location| location.4 != unified_asset_id)
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "all selected items must use the same Unified Angles asset".into(),
+                            ));
+                        }
+                        let unified = document
+                            .project
+                            .as_ref()
+                            .expect("item location requires an open project")
+                            .assets
+                            .iter()
+                            .find(|asset| asset.id == unified_asset_id)
+                            .and_then(|asset| asset.unified_angles.clone())
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(format!(
+                                    "asset `{unified_asset_id}` is not a Unified Angles asset"
+                                ))
+                            })?;
+                        let starting_index = unified
+                            .angle_asset_ids
+                            .iter()
+                            .position(|id| id == &input.starting_angle_asset_id)
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(format!(
+                                    "asset `{}` is not an angle of `{unified_asset_id}`",
+                                    input.starting_angle_asset_id
+                                ))
+                            })?;
+
+                        locations.sort_by(|left, right| {
+                            left.2
+                                .total_cmp(&right.2)
+                                .then_with(|| left.0.cmp(&right.0))
+                                .then_with(|| left.1.cmp(&right.1))
+                                .then_with(|| left.3.cmp(&right.3))
+                        });
+                        let project = project_mut(document)?;
+                        let mut changed_ids = Vec::with_capacity(locations.len());
+                        for (index, (track_index, item_index, _, item_id, _)) in
+                            locations.into_iter().enumerate()
+                        {
+                            let angle_index =
+                                (starting_index + index) % unified.angle_asset_ids.len();
+                            project.timeline.tracks[track_index].items[item_index]
+                                .active_angle_asset_id =
+                                Some(unified.angle_asset_ids[angle_index].clone());
+                            changed_ids.push(item_id);
+                        }
+                        Ok(changed_ids)
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Alternated camera angles")
                     .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
             }
         },
@@ -7278,7 +7417,11 @@ mod tests {
             .id
             .clone();
         let mut source_ids = Vec::new();
-        for (name, source) in [("Angle 1", "C:/media/a.mp4"), ("Angle 2", "C:/media/b.mp4")] {
+        for (name, source) in [
+            ("Angle 1", "C:/media/a.mp4"),
+            ("Angle 2", "C:/media/b.mp4"),
+            ("Angle 3", "C:/media/c.mp4"),
+        ] {
             let imported = invoke(
                 &runtime,
                 "media.import",
@@ -7341,12 +7484,32 @@ mod tests {
             .as_str()
             .expect("right item id")
             .to_owned();
+        let second_split = invoke(
+            &runtime,
+            "timeline.item.split",
+            json!({"itemId": right_item_id, "atSeconds": 8.0}),
+        )
+        .await;
+        let third_item_id = second_split["changedIds"][1]
+            .as_str()
+            .expect("third item id")
+            .to_owned();
         invoke(
             &runtime,
             "timeline.item.angle.set",
             json!({
                 "itemId": right_item_id,
                 "angleAssetId": source_ids[1],
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
+        invoke(
+            &runtime,
+            "timeline.items.angles.cycle",
+            json!({
+                "itemIds": [third_item_id, item_id, right_item_id],
+                "startingAngleAssetId": source_ids[1],
                 "expectedRevision": runtime.snapshot().expect("snapshot").revision
             }),
         )
@@ -7369,23 +7532,30 @@ mod tests {
             stored_unified["unifiedAngles"]["audioAssetId"],
             source_ids[0]
         );
+        assert_eq!(
+            stored_unified["unifiedAngles"]["angleAssetIds"]
+                .as_array()
+                .expect("angle ids")
+                .len(),
+            3
+        );
         let items: Vec<_> = value["project"]["timeline"]["tracks"]
             .as_array()
             .expect("tracks")
             .iter()
             .flat_map(|track| track["items"].as_array().expect("items"))
             .collect();
-        assert!(
-            items
-                .iter()
-                .any(|item| item["id"] == item_id && item["activeAngleAssetId"].is_null())
-        );
-        assert!(
-            items
-                .iter()
-                .any(|item| item["id"] == right_item_id
-                    && item["activeAngleAssetId"] == source_ids[1])
-        );
+        for (item_id, angle_id) in [
+            (&item_id, &source_ids[1]),
+            (&right_item_id, &source_ids[2]),
+            (&third_item_id, &source_ids[0]),
+        ] {
+            assert!(
+                items.iter().any(|item| {
+                    item["id"] == *item_id && item["activeAngleAssetId"] == *angle_id
+                })
+            );
+        }
     }
 
     #[tokio::test]

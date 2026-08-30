@@ -130,6 +130,8 @@ import { isParallaxStoryElement } from "@/parallax-story-teller/model";
 import { InsertSelectionIntoCanvasCommand } from "@/commands/parallax/insert-selection-into-canvas";
 import type { InsertSelectionMode } from "@/parallax-story-teller/insert-selection";
 import { toast } from "sonner";
+import { getDisplayTrackIds } from "@/timeline/track-order";
+import { buildUnifiedAngleCycleUpdates } from "@/timeline/unified-angles-cycle";
 import {
 	getAnimationsWithoutAppliedLoop,
 	getAppliedLoopKeyframes,
@@ -716,6 +718,68 @@ function TimelineElementMenuContent({
 				.map((id) => clipMediaAssets.find((asset) => asset.id === id))
 				.filter((asset): asset is MediaAsset => Boolean(asset))
 		: [];
+	const unifiedAngleCycleTarget = useMemo(() => {
+		if (!activeScene || selectedElements.length < 2) return null;
+		const entries = editor.timeline.getElementsWithTracks({
+			elements: selectedElements,
+		});
+		if (
+			entries.length !== selectedElements.length ||
+			entries.some((entry) => entry.element.type !== "video")
+		) {
+			return null;
+		}
+		const firstElement = entries[0]?.element;
+		if (!firstElement || firstElement.type !== "video") return null;
+		if (
+			entries.some(
+				(entry) =>
+					entry.element.type !== "video" ||
+					entry.element.mediaId !== firstElement.mediaId,
+			)
+		) {
+			return null;
+		}
+		const asset = clipMediaAssets.find(
+			(candidate) => candidate.id === firstElement.mediaId,
+		);
+		if (!asset || !isUnifiedAnglesAsset(asset)) return null;
+		const trackOrder = new Map(
+			getDisplayTrackIds({ tracks: activeScene.tracks }).map((id, index) => [
+				id,
+				index,
+			]),
+		);
+		return {
+			asset,
+			targets: entries.map(({ track, element: selectedElement }) => ({
+				trackId: track.id,
+				elementId: selectedElement.id,
+				mediaId: firstElement.mediaId,
+				startTime: selectedElement.startTime,
+				trackOrder: trackOrder.get(track.id) ?? Number.MAX_SAFE_INTEGER,
+			})),
+		};
+	}, [activeScene, clipMediaAssets, editor, selectedElements]);
+	const handleCycleUnifiedAngles = (startingAngleAssetId: string) => {
+		if (!unifiedAngleCycleTarget) return;
+		try {
+			editor.timeline.updateElements({
+				updates: buildUnifiedAngleCycleUpdates({
+					asset: unifiedAngleCycleTarget.asset,
+					targets: unifiedAngleCycleTarget.targets,
+					startingAngleAssetId,
+				}),
+			});
+			toast.success("Camera angles alternated", {
+				description: `${unifiedAngleCycleTarget.targets.length} cuts updated in timeline order.`,
+			});
+		} catch (error) {
+			toast.error("Could not alternate camera angles", {
+				description: error instanceof Error ? error.message : undefined,
+			});
+		}
+	};
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
 	const canToggleCurrentSourceAudio =
 		selectedElementCount === 1 &&
@@ -824,6 +888,29 @@ function TimelineElementMenuContent({
 								</ContextMenuItem>
 							);
 						})}
+					</ContextMenuSubContent>
+				</ContextMenuSub>
+			)}
+			{unifiedAngleCycleTarget && isCurrentElementSelected && (
+				<ContextMenuSub>
+					<ContextMenuSubTrigger>One on, one off</ContextMenuSubTrigger>
+					<ContextMenuSubContent className="w-64">
+						{unifiedAngleCycleTarget.asset.unifiedAngles.angleAssetIds.map(
+							(angleAssetId, index) => {
+								const angle = clipMediaAssets.find(
+									(candidate) => candidate.id === angleAssetId,
+								);
+								return (
+									<ContextMenuItem
+										key={angleAssetId}
+										onClick={() => handleCycleUnifiedAngles(angleAssetId)}
+									>
+										Start with Angle {index + 1}:{" "}
+										{angle?.name ?? "Missing media"}
+									</ContextMenuItem>
+								);
+							},
+						)}
 					</ContextMenuSubContent>
 				</ContextMenuSub>
 			)}

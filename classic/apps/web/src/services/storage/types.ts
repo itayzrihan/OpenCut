@@ -39,7 +39,7 @@ export interface MediaAssetData {
 
 export interface UnifiedAnglesMetadata {
 	version: 1;
-	angleAssetIds: [string, string];
+	angleAssetIds: string[];
 	defaultAngleAssetId: string;
 	audioAssetId: string;
 }
