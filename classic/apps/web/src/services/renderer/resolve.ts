@@ -24,6 +24,7 @@ import {
 } from "@/text/measure-element";
 import { resolveColorAtTime, resolveOpacityAtTime } from "@/animation/values";
 import { resolveTransformAtTime } from "@/rendering/animation-values";
+import { resolveVisualFitScale } from "@/rendering/fit-mode";
 import { videoCache } from "@/services/video-cache/service";
 import type { CanvasRenderer } from "./canvas-renderer";
 import { resolveEffectLayerVisualOverlay } from "./effect-layer-visual-overlay";
@@ -672,10 +673,13 @@ function resolveVisualState({
 	});
 	const cameraWidth = params.cameraCanvasWidth ?? context.renderer.width;
 	const cameraHeight = params.cameraCanvasHeight ?? context.renderer.height;
-	const containScale = Math.min(
-		cameraWidth / sourceWidth,
-		cameraHeight / sourceHeight,
-	);
+	const containScale = resolveVisualFitScale({
+		containerWidth: cameraWidth,
+		containerHeight: cameraHeight,
+		sourceWidth,
+		sourceHeight,
+		fitMode: params.fitMode ?? "contain",
+	});
 	const effectWidth = Math.round(
 		Math.abs(sourceWidth * containScale * transform.scaleX),
 	);

@@ -21,7 +21,7 @@ use crate::{
     SelectionState, ShapeProperties, SmartLayer, SmartLayerAppliedSnapshot, SmartLayerBackground,
     SmartLayerBackgroundRemoval, SmartLayerFade, SmartLayerSourceItemSnapshot,
     SpeakerFrameBreakoutSettings, SpeakerFrameLayout, TextProperties, Timeline, TimelineItem,
-    TimelineItemKind, Track, TrackKind, Transform, Transition, UnifiedAngles,
+    TimelineItemKind, Track, TrackKind, Transform, Transition, UnifiedAngles, VisualFitMode,
     render::{RenderTarget, render},
     runtime::{EditorStore, HistoryEntry, now_ms},
 };
@@ -2328,6 +2328,14 @@ struct ItemAnglesCycleInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ItemsFitModeSetInput {
+    item_ids: Vec<String>,
+    fit_mode: VisualFitMode,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ItemDuplicateInput {
     item_ids: Vec<String>,
     #[serde(default)]
@@ -2394,6 +2402,7 @@ fn register_item_operations(
                             linked_item_ids: Default::default(),
                             asset_id: input.asset_id,
                             active_angle_asset_id: None,
+                            fit_mode: None,
                             transform: input.transform.unwrap_or_default(),
                             opacity: input.opacity.unwrap_or(1.0),
                             blend_mode: input.blend_mode.unwrap_or_default(),
@@ -2856,6 +2865,81 @@ fn register_item_operations(
         },
     )?;
 
+    let set_fit_mode_state = state.clone();
+    let set_fit_mode_events = events.clone();
+    register::<ItemsFitModeSetInput, MutationOutput, _, _>(
+        registry,
+        "timeline.items.fit.set",
+        "Set video framing",
+        "Sets one or more video timeline items to fit the entire source inside the frame or fill the frame while cropping overflow.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["timeline", "video", "framing", "fit", "crop"],
+        move |context, input| {
+            let state = set_fit_mode_state.clone();
+            let events = set_fit_mode_events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Set video framing",
+                    input.expected_revision,
+                    |document| {
+                        if input.item_ids.is_empty()
+                            || input.item_ids.iter().collect::<HashSet<_>>().len()
+                                != input.item_ids.len()
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "itemIds must contain distinct video timeline items".into(),
+                            ));
+                        }
+
+                        let locations = input
+                            .item_ids
+                            .iter()
+                            .map(|id| {
+                                let (track_index, item_index) = find_item_location(document, id)?;
+                                let item = &document
+                                    .project
+                                    .as_ref()
+                                    .expect("item location requires an open project")
+                                    .timeline
+                                    .tracks[track_index]
+                                    .items[item_index];
+                                if item.kind != TimelineItemKind::Video {
+                                    return Err(CapabilityError::InvalidInput(format!(
+                                        "timeline item `{id}` is not a video"
+                                    )));
+                                }
+                                if item.asset_id.is_none() {
+                                    return Err(CapabilityError::InvalidInput(format!(
+                                        "timeline item `{id}` has no media asset"
+                                    )));
+                                }
+                                Ok((track_index, item_index, id.clone()))
+                            })
+                            .collect::<Result<Vec<_>, CapabilityError>>()?;
+
+                        let project = project_mut(document)?;
+                        let mut changed_ids = Vec::with_capacity(locations.len());
+                        for (track_index, item_index, item_id) in locations {
+                            project.timeline.tracks[track_index].items[item_index].fit_mode =
+                                Some(input.fit_mode);
+                            changed_ids.push(item_id);
+                        }
+                        Ok(changed_ids)
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Updated video framing")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
     let cycle_angles_state = state.clone();
     let cycle_angles_events = events.clone();
     register::<ItemAnglesCycleInput, MutationOutput, _, _>(
@@ -3288,6 +3372,7 @@ fn register_speaker_frame_breakout_operations(
                             linked_item_ids: Default::default(),
                             asset_id: None,
                             active_angle_asset_id: None,
+                            fit_mode: None,
                             transform: Transform::default(),
                             opacity: 1.0,
                             blend_mode: BlendMode::default(),
@@ -4886,6 +4971,7 @@ fn insert_caption_cues(
             linked_item_ids: Default::default(),
             asset_id: None,
             active_angle_asset_id: None,
+            fit_mode: None,
             transform: Transform::default(),
             opacity: 1.0,
             blend_mode: BlendMode::default(),
@@ -7627,6 +7713,16 @@ mod tests {
             }),
         )
         .await;
+        invoke(
+            &runtime,
+            "timeline.items.fit.set",
+            json!({
+                "itemIds": [third_item_id, item_id, right_item_id],
+                "fitMode": "cover",
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
         let uniform_state = invoke(
             &runtime,
             "app.state.read",
@@ -7653,6 +7749,7 @@ mod tests {
                 .iter()
                 .all(|item| item["activeAngleAssetId"] == source_ids[2])
         );
+        assert!(uniform_items.iter().all(|item| item["fitMode"] == "cover"));
         invoke(
             &runtime,
             "timeline.items.angles.cycle",

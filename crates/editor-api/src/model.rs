@@ -764,6 +764,13 @@ pub enum TrackKind {
     Adjustment,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum VisualFitMode {
+    Contain,
+    Cover,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct TimelineItem {
@@ -794,6 +801,8 @@ pub struct TimelineItem {
     pub asset_id: Option<String>,
     #[serde(default)]
     pub active_angle_asset_id: Option<String>,
+    #[serde(default)]
+    pub fit_mode: Option<VisualFitMode>,
     #[serde(default)]
     pub transform: Transform,
     #[serde(default = "default_opacity")]
@@ -864,6 +873,12 @@ impl TimelineItem {
         {
             return Err(ModelError::Invalid(format!(
                 "timeline item `{}` requires an assetId",
+                self.id
+            )));
+        }
+        if self.fit_mode.is_some() && !matches!(self.kind, TimelineItemKind::Video) {
+            return Err(ModelError::Invalid(format!(
+                "non-video timeline item `{}` must not define fitMode",
                 self.id
             )));
         }

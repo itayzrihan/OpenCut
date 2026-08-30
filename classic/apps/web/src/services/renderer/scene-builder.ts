@@ -412,6 +412,7 @@ function buildTrackNodes({
 							trimEnd: element.trimEnd,
 							retime: element.retime,
 							transform: buildTransformFromParams({ params: element.params }),
+							fitMode: element.fitMode ?? "contain",
 							animations: buildTransitionAnimationsFromElement({ element }),
 							opacity: readOpacityFromParams({ params: element.params }),
 							blendMode: readBlendModeFromParams({ params: element.params }),

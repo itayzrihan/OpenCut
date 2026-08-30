@@ -11,6 +11,7 @@ export interface VisualNodeParams {
 	trimEnd: number;
 	retime?: RetimeConfig;
 	transform: Transform;
+	fitMode?: "contain" | "cover";
 	animations?: VisualElement["animations"];
 	opacity: number;
 	blendMode?: BlendMode;

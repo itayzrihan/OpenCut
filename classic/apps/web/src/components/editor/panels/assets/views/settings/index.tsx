@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import {
 	Select,
@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/select";
 import { FPS_PRESETS } from "@/fps/presets";
 import { floatToFrameRate, frameRateToFloat } from "@/fps/utils";
-import { useEditor, useEditorProject } from "@/editor/use-editor";
+import {
+	useEditor,
+	useEditorProject,
+	useEditorSelection,
+	useEditorTimelineScenes,
+} from "@/editor/use-editor";
 import {
 	Section,
 	SectionContent,
@@ -31,6 +36,7 @@ import { dimensionToAspectRatio } from "@/utils/geometry";
 import { formatNumberForDisplay } from "@/utils/math";
 import { OcSquarePlusIcon } from "@/components/icons";
 import type { TCanvasSize } from "@/project/types";
+import { toast } from "sonner";
 
 type SettingsView = "project-info" | "background";
 
@@ -100,6 +106,12 @@ export function SettingsView() {
 	const [view, setView] = useState<SettingsView>("project-info");
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActive());
+	const activeScene = useEditorTimelineScenes((e) =>
+		e.scenes.getActiveSceneOrNull(),
+	);
+	const selectedElements = useEditorSelection((e) =>
+		e.selection.getSelectedElements(),
+	);
 	const { canvasPresets } = useEditorStore();
 	const currentCanvasSize = activeProject.settings.canvasSize;
 	const canvasSizeMode = activeProject.settings.canvasSizeMode ?? "preset";
@@ -208,7 +220,73 @@ export function SettingsView() {
 	});
 
 	const isCustomSelected = canvasSizeMode === "custom";
-
+	const { videoFramingTargets, framingScopeLabel } = useMemo(() => {
+		if (!activeScene) {
+			return {
+				videoFramingTargets: [],
+				framingScopeLabel: "Main Track video clips",
+			};
+		}
+		const selectedVideoTargets = editor.timeline
+			.getElementsWithTracks({ elements: selectedElements })
+			.flatMap(({ track, element }) =>
+				element.type === "video"
+					? [
+							{
+								trackId: track.id,
+								elementId: element.id,
+								fitMode: element.fitMode ?? "contain",
+							},
+						]
+					: [],
+			);
+		if (selectedVideoTargets.length > 0) {
+			return {
+				videoFramingTargets: selectedVideoTargets,
+				framingScopeLabel: "Selected video clips",
+			};
+		}
+		return {
+			videoFramingTargets: activeScene.tracks.main.elements.flatMap(
+				(element) =>
+					element.type === "video"
+						? [
+								{
+									trackId: activeScene.tracks.main.id,
+									elementId: element.id,
+									fitMode: element.fitMode ?? "contain",
+								},
+							]
+						: [],
+			),
+			framingScopeLabel: "Main Track video clips",
+		};
+	}, [activeScene, editor, selectedElements]);
+	const selectedVideoFitMode = videoFramingTargets.every(
+		(target) => target.fitMode === "cover",
+	)
+		? "cover"
+		: videoFramingTargets.every((target) => target.fitMode === "contain")
+			? "contain"
+			: "mixed";
+	const applyVideoFitMode = (fitMode: "contain" | "cover") => {
+		if (videoFramingTargets.length === 0) return;
+		editor.timeline.updateElements({
+			updates: videoFramingTargets.map((target) => ({
+				trackId: target.trackId,
+				elementId: target.elementId,
+				patch: { fitMode },
+			})),
+		});
+		toast.success(
+			fitMode === "cover"
+				? "Videos fill the frame"
+				: "Videos fit inside the frame",
+			{
+				description: `${videoFramingTargets.length} clip${videoFramingTargets.length === 1 ? "" : "s"} updated.`,
+			},
+		);
+	};
 	return (
 		<PanelView
 			contentClassName="px-0"
@@ -315,6 +393,50 @@ export function SettingsView() {
 									}
 								/>
 							</div>
+						</SectionContent>
+					</Section>
+					<Section
+						showTopBorder={false}
+						collapsible
+						sectionKey="settings:video-framing"
+					>
+						<SectionHeader>
+							<SectionTitle className="flex-1">Video framing</SectionTitle>
+						</SectionHeader>
+						<SectionContent className="px-2 flex flex-col gap-2 pb-3">
+							<p className="px-1 text-xs text-muted-foreground">
+								Applies to {framingScopeLabel.toLowerCase()}.
+							</p>
+							<Button
+								variant={
+									selectedVideoFitMode === "contain" ? "secondary" : "ghost"
+								}
+								className="h-auto items-start justify-start px-3 py-2 text-left"
+								disabled={videoFramingTargets.length === 0}
+								onClick={() => applyVideoFitMode("contain")}
+							>
+								<span className="flex flex-col items-start">
+									<span>Fit entire video</span>
+									<span className="text-xs font-normal text-muted-foreground">
+										Keeps the complete image and may show background.
+									</span>
+								</span>
+							</Button>
+							<Button
+								variant={
+									selectedVideoFitMode === "cover" ? "secondary" : "ghost"
+								}
+								className="h-auto items-start justify-start px-3 py-2 text-left"
+								disabled={videoFramingTargets.length === 0}
+								onClick={() => applyVideoFitMode("cover")}
+							>
+								<span className="flex flex-col items-start">
+									<span>Fill frame (crop)</span>
+									<span className="text-xs font-normal text-muted-foreground">
+										Fills the canvas without stretching and crops overflow.
+									</span>
+								</span>
+							</Button>
 						</SectionContent>
 					</Section>
 				</div>

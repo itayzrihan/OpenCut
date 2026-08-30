@@ -30,6 +30,10 @@ import type { ResolvedVisualSourceNodeState } from "../nodes/visual-node";
 import { resolveCameraDepthFactor } from "@/effects/virtual-camera";
 import { getParallaxWorldOriginOffset } from "@/parallax-story-teller/camera-geometry";
 import { isStaticRenderNode } from "../static-node-cache";
+import {
+	resolveVisualFitScale,
+	type VisualFitMode,
+} from "@/rendering/fit-mode";
 import type {
 	FrameDescriptor,
 	FrameItemDescriptor,
@@ -817,7 +821,9 @@ function collectPersonCutoutLayer({
 		opacity: resolved.sourceOpacity,
 		blendMode: resolved.blendMode,
 		effectPassGroups: resolved.effectPassGroups,
-		sourceMask: maskTextureId ? { textureId: maskTextureId, inverted: false } : null,
+		sourceMask: maskTextureId
+			? { textureId: maskTextureId, inverted: false }
+			: null,
 		mask: null,
 	};
 	setCameraLayerMetadata({
@@ -1003,16 +1009,8 @@ function transformParallaxStoryQuad({
 
 	return {
 		...transform,
-		centerX:
-			originX +
-			offsetX * cos -
-			offsetY * sin +
-			motionLoop.translateX,
-		centerY:
-			originY +
-			offsetX * sin +
-			offsetY * cos +
-			motionLoop.translateY,
+		centerX: originX + offsetX * cos - offsetY * sin + motionLoop.translateX,
+		centerY: originY + offsetX * sin + offsetY * cos + motionLoop.translateY,
 		width: transform.width * scale,
 		height: transform.height * scale,
 		rotationDegrees: transform.rotationDegrees + motionLoop.rotate,
@@ -1350,6 +1348,7 @@ async function collectVisualSourceNode({
 						definitionId: node.params.definitionId,
 					}).sourceSize?.({ params: node.resolved.resolvedParams })
 				: null,
+		fitMode: node instanceof VideoNode ? node.params.fitMode : "contain",
 	});
 	const { mask, strokeLayer } = buildMaskArtifacts({
 		node,
@@ -1534,6 +1533,7 @@ function computeVisualTransform({
 	cameraHeight,
 	layoutSize,
 	fitSourceSize,
+	fitMode = "contain",
 }: {
 	renderer: RendererSize;
 	resolved: ResolvedVisualSourceNodeState | ResolvedGraphicNodeState;
@@ -1543,15 +1543,19 @@ function computeVisualTransform({
 	cameraHeight?: number;
 	layoutSize?: { width: number; height: number } | null;
 	fitSourceSize?: { width: number; height: number } | null;
+	fitMode?: VisualFitMode;
 }): QuadTransformDescriptor {
 	const layoutWidth = cameraWidth ?? renderer.width;
 	const layoutHeight = cameraHeight ?? renderer.height;
 	const containScale = layoutSize
 		? 1
-		: Math.min(
-				layoutWidth / (fitSourceSize?.width ?? sourceWidth),
-				layoutHeight / (fitSourceSize?.height ?? sourceHeight),
-			);
+		: resolveVisualFitScale({
+				containerWidth: layoutWidth,
+				containerHeight: layoutHeight,
+				sourceWidth: fitSourceSize?.width ?? sourceWidth,
+				sourceHeight: fitSourceSize?.height ?? sourceHeight,
+				fitMode,
+			});
 	const scaledWidth =
 		(layoutSize?.width ?? fitSourceSize?.width ?? sourceWidth) *
 		containScale *

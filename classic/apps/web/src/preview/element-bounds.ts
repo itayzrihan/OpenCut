@@ -16,6 +16,10 @@ import { getElementLocalTime } from "@/animation";
 import { resolveTransformAtTime } from "@/rendering/animation-values";
 import { buildTransformFromParams } from "@/rendering";
 import { buildTransitionAnimationsFromElement } from "@/transitions";
+import {
+	resolveVisualFitScale,
+	type VisualFitMode,
+} from "@/rendering/fit-mode";
 
 export interface ElementBounds {
 	cx: number;
@@ -82,6 +86,7 @@ function getVisualElementBounds({
 	sourceHeight,
 	transform,
 	layoutSize,
+	fitMode = "contain",
 }: {
 	canvasWidth: number;
 	canvasHeight: number;
@@ -94,10 +99,17 @@ function getVisualElementBounds({
 		rotate: number;
 	};
 	layoutSize?: { width: number; height: number } | null;
+	fitMode?: VisualFitMode;
 }): ElementBounds {
 	const containScale = layoutSize
 		? 1
-		: Math.min(canvasWidth / sourceWidth, canvasHeight / sourceHeight);
+		: resolveVisualFitScale({
+				containerWidth: canvasWidth,
+				containerHeight: canvasHeight,
+				sourceWidth,
+				sourceHeight,
+				fitMode,
+			});
 	const scaledWidth =
 		(layoutSize?.width ?? sourceWidth) * containScale * transform.scaleX;
 	const scaledHeight =
@@ -190,6 +202,7 @@ function getElementBounds({
 			sourceWidth,
 			sourceHeight,
 			transform,
+			fitMode: element.type === "video" ? element.fitMode : "contain",
 		});
 	}
 
