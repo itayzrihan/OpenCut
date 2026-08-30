@@ -31,6 +31,7 @@ import { sharedLibraryService } from "@/shared-library";
 import { createMediaSource } from "@/media/source";
 import { createCachedAssetResolver } from "@/media/cached-asset-resolver";
 import { layoutTimedAudioChunks } from "@/media/audio-chunk-layout";
+import { resolveUnifiedAnglesAudioAsset } from "@/media/unified-angles";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;
@@ -188,11 +189,10 @@ export async function collectAudioElements({
 				element.sourceType === "upload"
 					? mediaMap.get(element.mediaId)
 					: undefined;
-			const audioBufferPromise =
-				uploadedAsset
-					? resolveCachedAssetAudio({ asset: uploadedAsset })
-					: element.sourceType === "upload"
-						? Promise.resolve(null)
+			const audioBufferPromise = uploadedAsset
+				? resolveCachedAssetAudio({ asset: uploadedAsset })
+				: element.sourceType === "upload"
+					? Promise.resolve(null)
 					: resolveAudioBufferForElement({
 							element,
 							mediaMap,
@@ -223,9 +223,14 @@ export async function collectAudioElements({
 
 		if (element.type === "video") {
 			if (!mediaAsset || !mediaSupportsAudio({ media: mediaAsset })) continue;
+			const audioAsset = resolveUnifiedAnglesAudioAsset({
+				asset: mediaAsset,
+				mediaMap,
+			});
+			if (!audioAsset) continue;
 
 			pendingElements.push(
-				resolveCachedAssetAudio({ asset: mediaAsset }).then((audioBuffer) => {
+				resolveCachedAssetAudio({ asset: audioAsset }).then((audioBuffer) => {
 					if (!audioBuffer) return null;
 					return {
 						timelineElement: element,
@@ -587,8 +592,17 @@ export async function collectAudioMixSources({
 
 			if (element.type === "video") {
 				if (mediaAsset && mediaSupportsAudio({ media: mediaAsset })) {
+					const audioAsset = resolveUnifiedAnglesAudioAsset({
+						asset: mediaAsset,
+						mediaMap,
+					});
+					if (!audioAsset) continue;
 					audioMixSources.push(
-						collectMediaAudioSource({ element, mediaAsset, volume }),
+						collectMediaAudioSource({
+							element,
+							mediaAsset: audioAsset,
+							volume,
+						}),
 					);
 				}
 			}
@@ -664,10 +678,15 @@ export async function collectAudioClips({
 
 			if (element.type === "video") {
 				if (mediaAsset && mediaSupportsAudio({ media: mediaAsset })) {
+					const audioAsset = resolveUnifiedAnglesAudioAsset({
+						asset: mediaAsset,
+						mediaMap,
+					});
+					if (!audioAsset) continue;
 					clips.push(
 						collectMediaAudioClip({
 							element,
-							mediaAsset,
+							mediaAsset: audioAsset,
 							muted,
 							volume,
 						}),

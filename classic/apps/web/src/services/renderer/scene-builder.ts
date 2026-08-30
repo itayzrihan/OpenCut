@@ -2,6 +2,7 @@ import type { SceneTracks, TimelineTrack, TScene } from "@/timeline";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
 import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
+import { resolveUnifiedAnglesVideoAsset } from "@/media/unified-angles";
 import type { ParamValues } from "@/params";
 import { RootNode } from "./nodes/root-node";
 import { VideoNode } from "./nodes/video-node";
@@ -105,7 +106,9 @@ function buildTrackNodes({
 			if (element.type === "effect") {
 				const nestedSceneId = readParallaxSceneId({ params: element.params });
 				if (nestedSceneId && !visitedSceneIds.has(nestedSceneId)) {
-					const nestedScene = scenes.find((scene) => scene.id === nestedSceneId);
+					const nestedScene = scenes.find(
+						(scene) => scene.id === nestedSceneId,
+					);
 					if (nestedScene) {
 						const cameraGuide = findParallaxCameraGuideElement({
 							scene: nestedScene,
@@ -133,15 +136,14 @@ function buildTrackNodes({
 							cameraDuration: hasInternalCamera
 								? cameraGuide.duration
 								: element.duration,
-							cameraTimeOffset: hasInternalCamera
-								? cameraGuide.startTime
-								: 0,
+							cameraTimeOffset: hasInternalCamera ? cameraGuide.startTime : 0,
 							cameraUsesSourceTime: Boolean(hasInternalCamera),
 							worldWidthFrames: nestedScene.parallax?.worldWidthFrames ?? 1,
-							worldHeightFrames:
-								nestedScene.parallax?.worldHeightFrames ?? 1,
+							worldHeightFrames: nestedScene.parallax?.worldHeightFrames ?? 1,
 						});
-						const nestedTracks = getDisplayTracks({ tracks: nestedScene.tracks })
+						const nestedTracks = getDisplayTracks({
+							tracks: nestedScene.tracks,
+						})
 							.filter(
 								(nestedTrack) =>
 									!("hidden" in nestedTrack && nestedTrack.hidden) &&
@@ -155,10 +157,10 @@ function buildTrackNodes({
 							tracks: nestedTracks,
 							sceneTracks: nestedScene.tracks,
 							mediaMap,
-								mediaAssets,
-								canvasSize,
-								cameraCanvasSize,
-								isPreview,
+							mediaAssets,
+							canvasSize,
+							cameraCanvasSize,
+							isPreview,
 							scenes,
 							visitedSceneIds: nextVisited,
 							isParallaxCanvasScene: Boolean(nestedScene.parallax),
@@ -200,54 +202,56 @@ function buildTrackNodes({
 							bindings,
 							mediaAssets,
 							settings,
-							maxTrackIndexShift: getDisplayTracks({ tracks: sceneTracks }).length,
+							maxTrackIndexShift: getDisplayTracks({ tracks: sceneTracks })
+								.length,
 						});
-					const sources = bindings.flatMap(({ trackId, trackIndex, element: source }) => {
-						const mediaAsset = mediaMap.get(source.mediaId);
-						if (
-							!mediaAsset ||
-							mediaAsset.type !== "video" ||
-							(!mediaAsset.url && !mediaAsset.file)
-						) {
-							return [];
-						}
-						const camera = readCameraLayerSettings({
-							params: source.params,
-						});
-						return [
-							{
-								trackId,
-								trackIndex,
-								elementId: source.id,
-								mediaId: source.mediaId,
-								url: mediaAsset.url,
-								file: mediaAsset.file,
-								duration: source.duration,
-								timeOffset: source.startTime,
-								trimStart: source.trimStart,
-								trimEnd: source.trimEnd,
-								retime: source.retime,
-								transform: buildTransformFromParams({
-									params: source.params,
-								}),
-								animations: removeSourceLayoutAnimations({
-									animations:
-										buildTransitionAnimationsFromElement({
+					const sources = bindings.flatMap(
+						({ trackId, trackIndex, element: source }) => {
+							const mediaAsset = mediaMap.get(source.mediaId);
+							if (
+								!mediaAsset ||
+								mediaAsset.type !== "video" ||
+								(!mediaAsset.url && !mediaAsset.file)
+							) {
+								return [];
+							}
+							const camera = readCameraLayerSettings({
+								params: source.params,
+							});
+							return [
+								{
+									trackId,
+									trackIndex,
+									elementId: source.id,
+									mediaId: source.mediaId,
+									url: mediaAsset.url,
+									file: mediaAsset.file,
+									duration: source.duration,
+									timeOffset: source.startTime,
+									trimStart: source.trimStart,
+									trimEnd: source.trimEnd,
+									retime: source.retime,
+									transform: buildTransformFromParams({
+										params: source.params,
+									}),
+									animations: removeSourceLayoutAnimations({
+										animations: buildTransitionAnimationsFromElement({
 											element: source,
 										}),
-								}),
-								opacity: readOpacityFromParams({
-									params: source.params,
-								}),
-								blendMode: readBlendModeFromParams({
-									params: source.params,
-								}),
-								effects: source.effects ?? [],
-								cameraDepth: camera.depth,
-								cameraLocked: camera.locked,
-							},
-						];
-					});
+									}),
+									opacity: readOpacityFromParams({
+										params: source.params,
+									}),
+									blendMode: readBlendModeFromParams({
+										params: source.params,
+									}),
+									effects: source.effects ?? [],
+									cameraDepth: camera.depth,
+									cameraLocked: camera.locked,
+								},
+							];
+						},
+					);
 					nodes.push(
 						new SpeakerFrameBreakoutNode({
 							layerId: element.id,
@@ -292,54 +296,56 @@ function buildTrackNodes({
 							bindings,
 							mediaAssets,
 							settings,
-							maxTrackIndexShift: getDisplayTracks({ tracks: sceneTracks }).length,
+							maxTrackIndexShift: getDisplayTracks({ tracks: sceneTracks })
+								.length,
 						});
-					const sources = bindings.flatMap(({ trackId, trackIndex, element: source }) => {
-						const mediaAsset = mediaMap.get(source.mediaId);
-						if (
-							!mediaAsset ||
-							mediaAsset.type !== "video" ||
-							(!mediaAsset.url && !mediaAsset.file)
-						) {
-							return [];
-						}
-						const camera = readCameraLayerSettings({
-							params: source.params,
-						});
-						return [
-							{
-								trackId,
-								trackIndex,
-								elementId: source.id,
-								mediaId: source.mediaId,
-								url: mediaAsset.url,
-								file: mediaAsset.file,
-								duration: source.duration,
-								timeOffset: source.startTime,
-								trimStart: source.trimStart,
-								trimEnd: source.trimEnd,
-								retime: source.retime,
-								transform: buildTransformFromParams({
-									params: source.params,
-								}),
-								animations: removeSourceLayoutAnimations({
-									animations:
-										buildTransitionAnimationsFromElement({
+					const sources = bindings.flatMap(
+						({ trackId, trackIndex, element: source }) => {
+							const mediaAsset = mediaMap.get(source.mediaId);
+							if (
+								!mediaAsset ||
+								mediaAsset.type !== "video" ||
+								(!mediaAsset.url && !mediaAsset.file)
+							) {
+								return [];
+							}
+							const camera = readCameraLayerSettings({
+								params: source.params,
+							});
+							return [
+								{
+									trackId,
+									trackIndex,
+									elementId: source.id,
+									mediaId: source.mediaId,
+									url: mediaAsset.url,
+									file: mediaAsset.file,
+									duration: source.duration,
+									timeOffset: source.startTime,
+									trimStart: source.trimStart,
+									trimEnd: source.trimEnd,
+									retime: source.retime,
+									transform: buildTransformFromParams({
+										params: source.params,
+									}),
+									animations: removeSourceLayoutAnimations({
+										animations: buildTransitionAnimationsFromElement({
 											element: source,
 										}),
-								}),
-								opacity: readOpacityFromParams({
-									params: source.params,
-								}),
-								blendMode: readBlendModeFromParams({
-									params: source.params,
-								}),
-								effects: source.effects ?? [],
-								cameraDepth: camera.depth,
-								cameraLocked: camera.locked,
-							},
-						];
-					});
+									}),
+									opacity: readOpacityFromParams({
+										params: source.params,
+									}),
+									blendMode: readBlendModeFromParams({
+										params: source.params,
+									}),
+									effects: source.effects ?? [],
+									cameraDepth: camera.depth,
+									cameraLocked: camera.locked,
+								},
+							];
+						},
+					);
 					nodes.push(
 						new PersonCutoutLayerNode({
 							layerId: element.id,
@@ -382,7 +388,15 @@ function buildTrackNodes({
 							}),
 						}
 					: readCameraLayerSettings({ params: element.params });
-				const mediaAsset = mediaMap.get(element.mediaId);
+				const referencedAsset = mediaMap.get(element.mediaId);
+				const mediaAsset =
+					element.type === "video" && referencedAsset
+						? resolveUnifiedAnglesVideoAsset({
+								asset: referencedAsset,
+								angleAssetId: element.unifiedAngleId,
+								mediaMap,
+							})
+						: referencedAsset;
 				if (!mediaAsset) continue;
 
 				if (element.type === "video" && mediaAsset.type === "video") {
@@ -408,11 +422,11 @@ function buildTrackNodes({
 							...(isPreview && {
 								maxSourceSize: PREVIEW_MAX_VIDEO_SIZE,
 							}),
-									cameraDepth: camera.depth,
-									cameraLocked: camera.locked,
-									cameraMotionFactor: camera.motionFactor,
-									cameraCanvasWidth: cameraCanvasSize.width,
-									cameraCanvasHeight: cameraCanvasSize.height,
+							cameraDepth: camera.depth,
+							cameraLocked: camera.locked,
+							cameraMotionFactor: camera.motionFactor,
+							cameraCanvasWidth: cameraCanvasSize.width,
+							cameraCanvasHeight: cameraCanvasSize.height,
 						}),
 					);
 				}
@@ -431,11 +445,11 @@ function buildTrackNodes({
 							blendMode: readBlendModeFromParams({ params: element.params }),
 							effects: element.effects ?? [],
 							masks: element.masks ?? [],
-									cameraDepth: camera.depth,
-									cameraLocked: camera.locked,
-									cameraMotionFactor: camera.motionFactor,
-									cameraCanvasWidth: cameraCanvasSize.width,
-									cameraCanvasHeight: cameraCanvasSize.height,
+							cameraDepth: camera.depth,
+							cameraLocked: camera.locked,
+							cameraMotionFactor: camera.motionFactor,
+							cameraCanvasWidth: cameraCanvasSize.width,
+							cameraCanvasHeight: cameraCanvasSize.height,
 							...(isPreview && {
 								maxSourceSize: PREVIEW_MAX_IMAGE_SIZE,
 							}),
@@ -596,7 +610,15 @@ function buildBlurBackgroundNodes({
 			continue;
 		}
 
-		const mediaAsset = mediaMap.get(element.mediaId);
+		const referencedAsset = mediaMap.get(element.mediaId);
+		const mediaAsset =
+			element.type === "video" && referencedAsset
+				? resolveUnifiedAnglesVideoAsset({
+						asset: referencedAsset,
+						angleAssetId: element.unifiedAngleId,
+						mediaMap,
+					})
+				: referencedAsset;
 		if (
 			!mediaAsset?.url ||
 			(mediaAsset.type !== "video" && mediaAsset.type !== "image")
@@ -670,7 +692,8 @@ export function buildScene({
 		scenes,
 		visitedSceneIds: new Set(activeSceneId ? [activeSceneId] : []),
 		isParallaxCanvasScene: Boolean(
-			activeSceneId && scenes.find((scene) => scene.id === activeSceneId)?.parallax,
+			activeSceneId &&
+			scenes.find((scene) => scene.id === activeSceneId)?.parallax,
 		),
 	});
 

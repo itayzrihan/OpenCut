@@ -403,6 +403,9 @@ function clientMediaRecord(
 	projectId: string,
 	record: StoredMediaRecord,
 ): LocalDriveMediaRecord {
+	if (record.unifiedAngles) {
+		return { ...record, sourcePath: "", missing: false };
+	}
 	const sourcePath = storedMediaPath(projectId, record);
 	return {
 		...record,
@@ -425,6 +428,7 @@ export async function getMediaFile(projectId: string, mediaId: string) {
 		(item) => item.id === mediaId,
 	);
 	if (!record) return null;
+	if (record.unifiedAngles) return null;
 	const path = storedMediaPath(projectId, record);
 	const fileStat = await stat(path).catch(() => null);
 	if (!fileStat?.isFile()) return null;
@@ -439,7 +443,11 @@ export async function putMediaMetadata(
 	await mutateMediaIndex(projectId, (records) => {
 		const index = records.findIndex((item) => item.id === metadata.id);
 		if (index < 0) {
-			throw new Error("Media bytes or source path must be registered first");
+			if (!metadata.unifiedAngles) {
+				throw new Error("Media bytes or source path must be registered first");
+			}
+			records.push({ ...metadata });
+			return records;
 		}
 		const existing = records[index];
 		records[index] = {
@@ -456,6 +464,7 @@ export async function putMediaMetadata(
 			hasAudio: metadata.hasAudio,
 			thumbnailUrl: metadata.thumbnailUrl,
 			ephemeral: metadata.ephemeral,
+			unifiedAngles: metadata.unifiedAngles,
 			fileName: metadata.fileName || existing.fileName,
 			mimeType: metadata.mimeType || existing.mimeType,
 		};

@@ -206,6 +206,7 @@ fn build_ffmpeg_plan(
         .map(|asset| (asset.id.as_str(), asset))
         .collect();
     let mut inputs = Vec::new();
+    let mut next_input_index = 2usize;
     for track in &project.timeline.tracks {
         if !track.enabled || track.hidden {
             continue;
@@ -217,15 +218,50 @@ fn build_ffmpeg_plan(
             let Some(asset_id) = item.asset_id.as_deref() else {
                 continue;
             };
-            let asset = assets
+            let referenced_asset = assets
                 .get(asset_id)
                 .ok_or_else(|| format!("item `{}` references missing asset", item.id))?;
-            if asset.offline {
-                return Err(format!("asset `{}` is offline", asset.name));
+            let (visual_asset, audio_asset) =
+                if let Some(unified) = &referenced_asset.unified_angles {
+                    let visual_id = item
+                        .active_angle_asset_id
+                        .as_ref()
+                        .unwrap_or(&unified.default_angle_asset_id);
+                    let visual = assets.get(visual_id.as_str()).ok_or_else(|| {
+                        format!("Unified Angles asset `{asset_id}` is missing angle `{visual_id}`")
+                    })?;
+                    let audio = assets.get(unified.audio_asset_id.as_str()).ok_or_else(|| {
+                        format!(
+                            "Unified Angles asset `{asset_id}` is missing audio source `{}`",
+                            unified.audio_asset_id
+                        )
+                    })?;
+                    (*visual, *audio)
+                } else {
+                    (*referenced_asset, *referenced_asset)
+                };
+            if visual_asset.offline || audio_asset.offline {
+                return Err(format!("asset `{}` is offline", referenced_asset.name));
             }
-            let index = inputs.len() + 2;
-            append_input(&mut arguments, asset, item);
-            inputs.push((index, track.muted, item, *asset));
+            let visual_index = next_input_index;
+            append_input(&mut arguments, visual_asset, item);
+            next_input_index += 1;
+            let audio_index = if audio_asset.id == visual_asset.id {
+                visual_index
+            } else {
+                let index = next_input_index;
+                append_input(&mut arguments, audio_asset, item);
+                next_input_index += 1;
+                index
+            };
+            inputs.push((
+                visual_index,
+                audio_index,
+                track.muted,
+                item,
+                visual_asset,
+                audio_asset,
+            ));
         }
     }
 
@@ -234,11 +270,13 @@ fn build_ffmpeg_plan(
     let mut base_index = 0usize;
     let mut audio_labels = vec!["[1:a]".to_owned()];
 
-    for (input_index, track_muted, item, asset) in inputs {
-        if asset.has_video && visual_kind(item.kind) {
-            let visual_label = format!("visual{input_index}");
+    for (visual_input_index, audio_input_index, track_muted, item, visual_asset, audio_asset) in
+        inputs
+    {
+        if visual_asset.has_video && visual_kind(item.kind) {
+            let visual_label = format!("visual{visual_input_index}");
             let mut chain = format!(
-                "[{input_index}:v]trim=duration={},setpts=(PTS-STARTPTS)/{}+{}/TB",
+                "[{visual_input_index}:v]trim=duration={},setpts=(PTS-STARTPTS)/{}+{}/TB",
                 item.duration_seconds * item.speed,
                 item.speed,
                 item.start_seconds
@@ -257,14 +295,14 @@ fn build_ffmpeg_plan(
             base_index = next_base;
         }
         if matches!(target, RenderTarget::Video)
-            && asset.has_audio
+            && audio_asset.has_audio
             && !track_muted
             && !item.audio.muted
         {
-            let label = format!("audio{input_index}");
+            let label = format!("audio{audio_input_index}");
             let delay_ms = (item.start_seconds * 1000.0).round() as u64;
             let mut chain = format!(
-                "[{input_index}:a]atrim=duration={},asetpts=PTS-STARTPTS",
+                "[{audio_input_index}:a]atrim=duration={},asetpts=PTS-STARTPTS",
                 item.duration_seconds * item.speed
             );
             append_atempo(&mut chain, item.speed);

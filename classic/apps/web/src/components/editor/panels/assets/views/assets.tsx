@@ -73,6 +73,10 @@ import {
 } from "@/components/editor/panels/assets/assets-panel-store";
 import { MASKABLE_ELEMENT_TYPES } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
+import {
+	createUnifiedAnglesAsset,
+	isUnifiedAnglesAsset,
+} from "@/media/unified-angles";
 import type { TScene } from "@/timeline";
 import { cn } from "@/utils/ui";
 import { useContainerSize } from "@/hooks/use-container-size";
@@ -360,9 +364,7 @@ export function MediaView() {
 				toast.success(`Exported “${scene.name}” for Premiere Pro`);
 			} catch (error) {
 				toast.error(
-					error instanceof Error
-						? error.message
-						: "Premiere XML export failed",
+					error instanceof Error ? error.message : "Premiere XML export failed",
 				);
 			}
 		},
@@ -377,6 +379,42 @@ export function MediaView() {
 	const handlePodcastSyncSelected = useCallback(() => {
 		handleCreatePodcastSync({ ids: selectedMediaIds });
 	}, [handleCreatePodcastSync, selectedMediaIds]);
+	const handleUnify = useCallback(
+		async ({ ids }: { ids: string[] }) => {
+			if (!activeProject) return;
+			const selectedIdSet = new Set(ids);
+			const assets = mediaFiles.filter((asset) => selectedIdSet.has(asset.id));
+			try {
+				const unifiedAsset = createUnifiedAnglesAsset({ assets });
+				const created = await editor.media.addMediaAsset({
+					projectId: activeProject.metadata.id,
+					asset: unifiedAsset,
+				});
+				if (!created) throw new Error("Could not save the virtual media asset");
+				setSelectedMediaIds([]);
+				toast.success("Unified Angles created", {
+					description:
+						"Drag the new virtual video to the timeline and switch angles after any cut.",
+				});
+			} catch (error) {
+				toast.error("Could not unify these videos", {
+					description: error instanceof Error ? error.message : undefined,
+				});
+			}
+		},
+		[activeProject, editor, mediaFiles],
+	);
+	const selectedVideosCanUnify = useMemo(() => {
+		if (selectedMediaIds.length !== 2) return false;
+		const selected = new Set(selectedMediaIds);
+		const assets = mediaFiles.filter((asset) => selected.has(asset.id));
+		return (
+			assets.length === 2 &&
+			assets.every(
+				(asset) => asset.type === "video" && !isUnifiedAnglesAsset(asset),
+			)
+		);
+	}, [mediaFiles, selectedMediaIds]);
 
 	return (
 		<>
@@ -403,6 +441,8 @@ export function MediaView() {
 						onImport={() => void importFromDrive()}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
+						onUnify={() => void handleUnify({ ids: selectedMediaIds })}
+						canUnify={selectedVideosCanUnify}
 					/>
 				}
 				className={cn(isDragOver && "bg-accent/30")}
@@ -437,6 +477,7 @@ export function MediaView() {
 							revealId={highlightMediaId}
 							onRemove={handleRemove}
 							onCreatePodcastSync={handleCreatePodcastSync}
+							onUnify={handleUnify}
 							onOpenSequence={handleOpenSequence}
 							onUnnestSequence={handleUnnestSequence}
 							onPremiereExport={handlePremiereExport}
@@ -518,6 +559,7 @@ function MediaItemWithContextMenu({
 	children,
 	onRemove,
 	onCreatePodcastSync,
+	onUnify,
 }: {
 	item: MediaAsset;
 	children: React.ReactNode;
@@ -529,6 +571,7 @@ function MediaItemWithContextMenu({
 		ids: string[];
 	}) => void;
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
+	onUnify: ({ ids }: { ids: string[] }) => void;
 }) {
 	const { isSelected, selectedIds } = useSelection();
 	const idsToDelete = isSelected(item.id) ? selectedIds : [item.id];
@@ -540,6 +583,9 @@ function MediaItemWithContextMenu({
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
 				<ContextMenuItem>Export clips</ContextMenuItem>
+				<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
+					Unify as Unified Angles
+				</ContextMenuItem>
 				<ContextMenuItem
 					onClick={() => onCreatePodcastSync({ ids: idsToDelete })}
 				>
@@ -567,6 +613,7 @@ function MediaItemList({
 	revealId,
 	onRemove,
 	onCreatePodcastSync,
+	onUnify,
 	onOpenSequence,
 	onUnnestSequence,
 	onPremiereExport,
@@ -585,6 +632,7 @@ function MediaItemList({
 		ids: string[];
 	}) => void;
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
+	onUnify: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
 	onPremiereExport: ({ scene }: { scene: TScene }) => void;
@@ -658,6 +706,7 @@ function MediaItemList({
 				entries,
 				mode,
 				onCreatePodcastSync,
+				onUnify,
 				onOpenSequence,
 				onRemove,
 				onUnnestSequence,
@@ -680,6 +729,7 @@ type MediaListRowProps = {
 		ids: string[];
 	}) => void;
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
+	onUnify: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
 	onPremiereExport: ({ scene }: { scene: TScene }) => void;
@@ -693,6 +743,7 @@ function MediaListRow({
 	mode,
 	onRemove,
 	onCreatePodcastSync,
+	onUnify,
 	onOpenSequence,
 	onUnnestSequence,
 	onPremiereExport,
@@ -717,6 +768,7 @@ function MediaListRow({
 					variant={isGrid ? "grid" : "compact"}
 					onRemove={onRemove}
 					onCreatePodcastSync={onCreatePodcastSync}
+					onUnify={onUnify}
 					onOpenSequence={onOpenSequence}
 					onUnnestSequence={onUnnestSequence}
 					onPremiereExport={onPremiereExport}
@@ -731,6 +783,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 	variant,
 	onRemove,
 	onCreatePodcastSync,
+	onUnify,
 	onOpenSequence,
 	onUnnestSequence,
 	onPremiereExport,
@@ -745,6 +798,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 		ids: string[];
 	}) => void;
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
+	onUnify: ({ ids }: { ids: string[] }) => void;
 	onOpenSequence: ({ sceneId }: { sceneId: string }) => void;
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
 	onPremiereExport: ({ scene }: { scene: TScene }) => void;
@@ -768,6 +822,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 			item={entry.item}
 			onRemove={onRemove}
 			onCreatePodcastSync={onCreatePodcastSync}
+			onUnify={onUnify}
 		>
 			<SelectableItem className={cn(!isGrid && "w-full")} id={entry.item.id}>
 				<MediaAssetDraggable
@@ -924,6 +979,16 @@ function MediaPreview({
 	}
 
 	if (item.type === "video") {
+		if (isUnifiedAnglesAsset(item)) {
+			return (
+				<MediaTypePlaceholder
+					icon={Video01Icon}
+					label="Unified Angles"
+					duration={item.duration}
+					variant="bordered"
+				/>
+			);
+		}
 		if (item.thumbnailUrl) {
 			return (
 				<div className="relative size-full">
@@ -979,6 +1044,8 @@ function MediaActions({
 	onImport,
 	selectedCount,
 	onPodcastSync,
+	onUnify,
+	canUnify,
 }: {
 	mediaViewMode: MediaViewMode;
 	setMediaViewMode: (mode: MediaViewMode) => void;
@@ -989,6 +1056,8 @@ function MediaActions({
 	onImport: () => void;
 	selectedCount: number;
 	onPodcastSync: () => void;
+	onUnify: () => void;
+	canUnify: boolean;
 }) {
 	return (
 		<div className="flex gap-1.5">
@@ -1072,6 +1141,17 @@ function MediaActions({
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
+			<Button
+				variant="outline"
+				onClick={onUnify}
+				disabled={isProcessing || !canUnify}
+				size="sm"
+				className="items-center justify-center gap-1.5"
+				title="Create one virtual clip from two selected camera angles"
+			>
+				<Layers2 className="size-4" />
+				Unify
+			</Button>
 			<Button
 				variant="outline"
 				onClick={onPodcastSync}

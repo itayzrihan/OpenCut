@@ -199,6 +199,8 @@ export interface ElementTransitions {
 export interface VideoElement extends BaseTimelineElement {
 	type: "video";
 	mediaId: string;
+	/** Selected source inside a Unified Angles virtual media asset. */
+	unifiedAngleId?: string;
 	isSourceAudioEnabled?: boolean;
 	hidden?: boolean;
 	retime?: RetimeConfig;

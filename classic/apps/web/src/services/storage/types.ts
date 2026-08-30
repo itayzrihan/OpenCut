@@ -34,6 +34,14 @@ export interface MediaAssetData {
 	hasAudio?: boolean;
 	ephemeral?: boolean;
 	thumbnailUrl?: string;
+	unifiedAngles?: UnifiedAnglesMetadata;
+}
+
+export interface UnifiedAnglesMetadata {
+	version: 1;
+	angleAssetIds: [string, string];
+	defaultAngleAssetId: string;
+	audioAssetId: string;
 }
 
 export type ProjectFontData = ProjectFont;

@@ -288,7 +288,65 @@ impl Project {
             preset.validate()?;
         }
         let asset_ids: HashSet<_> = self.assets.iter().map(|asset| asset.id.as_str()).collect();
-        self.timeline.validate(&asset_ids)
+        for asset in &self.assets {
+            if let Some(unified) = &asset.unified_angles {
+                for source_id in &unified.angle_asset_ids {
+                    let source = self
+                        .assets
+                        .iter()
+                        .find(|candidate| candidate.id == *source_id)
+                        .ok_or_else(|| {
+                            ModelError::Invalid(format!(
+                                "Unified Angles asset `{}` references unknown angle `{source_id}`",
+                                asset.id
+                            ))
+                        })?;
+                    if source.id == asset.id
+                        || source.media_type != MediaType::Video
+                        || source.unified_angles.is_some()
+                    {
+                        return Err(ModelError::Invalid(format!(
+                            "Unified Angles source `{source_id}` must be a concrete video asset"
+                        )));
+                    }
+                }
+                let audio = self
+                    .assets
+                    .iter()
+                    .find(|candidate| candidate.id == unified.audio_asset_id)
+                    .expect("audio angle was checked above");
+                if !audio.has_audio {
+                    return Err(ModelError::Invalid(format!(
+                        "Unified Angles audio source `{}` has no audio",
+                        audio.id
+                    )));
+                }
+            }
+        }
+        self.timeline.validate(&asset_ids)?;
+        for item in self.timeline.tracks.iter().flat_map(|track| &track.items) {
+            let Some(active_angle_id) = &item.active_angle_asset_id else {
+                continue;
+            };
+            let unified = item
+                .asset_id
+                .as_deref()
+                .and_then(|id| self.assets.iter().find(|asset| asset.id == id))
+                .and_then(|asset| asset.unified_angles.as_ref())
+                .ok_or_else(|| {
+                    ModelError::Invalid(format!(
+                        "timeline item `{}` selects an angle without referencing a Unified Angles asset",
+                        item.id
+                    ))
+                })?;
+            if !unified.angle_asset_ids.contains(active_angle_id) {
+                return Err(ModelError::Invalid(format!(
+                    "timeline item `{}` selects unknown angle `{active_angle_id}`",
+                    item.id
+                )));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -441,9 +499,19 @@ pub struct MediaAsset {
     pub proxy_source: Option<String>,
     pub offline: bool,
     #[serde(default)]
+    pub unified_angles: Option<UnifiedAngles>,
+    #[serde(default)]
     pub metadata: BTreeMap<String, Value>,
     #[serde(default)]
     pub extensions: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UnifiedAngles {
+    pub angle_asset_ids: Vec<String>,
+    pub default_angle_asset_id: String,
+    pub audio_asset_id: String,
 }
 
 impl MediaAsset {
@@ -455,6 +523,26 @@ impl MediaAsset {
         }
         validate_optional_non_negative(self.duration_seconds, "asset durationSeconds")?;
         validate_optional_positive(self.frame_rate, "asset frameRate")?;
+        if let Some(unified) = &self.unified_angles {
+            if self.media_type != MediaType::Video || !self.has_video || !self.has_audio {
+                return Err(ModelError::Invalid(format!(
+                    "Unified Angles asset `{}` must be an audiovisual video asset",
+                    self.id
+                )));
+            }
+            if unified.angle_asset_ids.len() != 2
+                || unified.angle_asset_ids[0] == unified.angle_asset_ids[1]
+                || !unified
+                    .angle_asset_ids
+                    .contains(&unified.default_angle_asset_id)
+                || !unified.angle_asset_ids.contains(&unified.audio_asset_id)
+            {
+                return Err(ModelError::Invalid(format!(
+                    "Unified Angles asset `{}` must reference two distinct angles and choose its default video and audio from them",
+                    self.id
+                )));
+            }
+        }
         Ok(())
     }
 }
@@ -703,6 +791,8 @@ pub struct TimelineItem {
     #[serde(default)]
     pub linked_item_ids: BTreeSet<String>,
     pub asset_id: Option<String>,
+    #[serde(default)]
+    pub active_angle_asset_id: Option<String>,
     #[serde(default)]
     pub transform: Transform,
     #[serde(default = "default_opacity")]

@@ -24,6 +24,7 @@ no submodule initialization step.
 | Silence cutting                                                        | `classic/apps/web/src/timeline` and `classic/rust/crates/timeline`                                       |
 | Virtual camera, depth, speaker tiles, learned UI assets                | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
 | Speaker Frame Breakout smart layer and Paper Grid                      | Classic UI/rendering; typed create/update/inspect/apply contract in `crates/editor-api` and projected MCP; rewrite UI/rendering pending |
+| Unified Angles virtual multicam                                        | Classic UI/preview/export plus typed `media.angles.unify` and `timeline.item.angle.set` contracts in `crates/editor-api`; rewrite UI migration pending |
 | Editorial edge feather and feathered text assets                       | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
 | Current project/local-drive persistence                                | `classic/apps/web/src/services/local-drive`                                                              |
 | Rewrite desktop UI                                                     | `apps/desktop`                                                                                           |

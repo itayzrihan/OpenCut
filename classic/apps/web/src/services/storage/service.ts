@@ -575,10 +575,11 @@ export class StorageService {
 					hasAudio: mediaAsset.hasAudio,
 					thumbnailUrl: mediaAsset.thumbnailUrl,
 					ephemeral: mediaAsset.ephemeral,
+					unifiedAngles: mediaAsset.unifiedAngles,
 				},
 			},
 		});
-		mediaAsset.url = targetUrl;
+		if (!mediaAsset.unifiedAngles) mediaAsset.url = targetUrl;
 		mediaAsset.size = size;
 		mediaAsset.lastModified = lastModified;
 	}

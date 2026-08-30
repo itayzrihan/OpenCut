@@ -20,7 +20,7 @@ use crate::{
     SelectionState, ShapeProperties, SmartLayer, SmartLayerAppliedSnapshot, SmartLayerBackground,
     SmartLayerBackgroundRemoval, SmartLayerFade, SmartLayerSourceItemSnapshot,
     SpeakerFrameBreakoutSettings, SpeakerFrameLayout, TextProperties, Timeline, TimelineItem,
-    TimelineItemKind, Track, TrackKind, Transform, Transition,
+    TimelineItemKind, Track, TrackKind, Transform, Transition, UnifiedAngles,
     render::{RenderTarget, render},
     runtime::{EditorStore, HistoryEntry, now_ms},
 };
@@ -1365,6 +1365,16 @@ struct MediaImportInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct MediaAnglesUnifyInput {
+    asset_ids: Vec<String>,
+    name: Option<String>,
+    audio_asset_id: Option<String>,
+    default_angle_asset_id: Option<String>,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct EntityPatchInput {
     id: String,
     patch: Value,
@@ -1492,6 +1502,7 @@ fn register_media_operations(
                             has_audio: matches!(media_type, MediaType::Video | MediaType::Audio),
                             proxy_source: None,
                             offline: false,
+                            unified_angles: None,
                             metadata: input.metadata,
                             extensions: Map::new(),
                         };
@@ -1501,6 +1512,128 @@ fn register_media_operations(
                 )?;
                 Ok(OperationSuccess::new(output)
                     .summary("Imported media")
+                    .changed([STATE_RESOURCE, PROJECT_RESOURCE]))
+            }
+        },
+    )?;
+
+    let unify_state = state.clone();
+    let unify_events = events.clone();
+    register::<MediaAnglesUnifyInput, MutationOutput, _, _>(
+        registry,
+        "media.angles.unify",
+        "Create Unified Angles asset",
+        "Creates one virtual video asset from exactly two concrete camera-angle videos and selects one source for all audio.",
+        "media",
+        AccessLevel::Write,
+        false,
+        false,
+        &["media", "video", "multicam", "angles", "unify"],
+        move |context, input| {
+            let state = unify_state.clone();
+            let events = unify_events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Create Unified Angles",
+                    input.expected_revision,
+                    |document| {
+                        if input.asset_ids.len() != 2 || input.asset_ids[0] == input.asset_ids[1] {
+                            return Err(CapabilityError::InvalidInput(
+                                "assetIds must contain exactly two distinct video assets".into(),
+                            ));
+                        }
+                        let sources: Vec<_> = {
+                            let project = project_mut(document)?;
+                            input
+                                .asset_ids
+                                .iter()
+                                .map(|source_id| {
+                                    project
+                                        .assets
+                                        .iter()
+                                        .find(|asset| asset.id == *source_id)
+                                        .cloned()
+                                        .ok_or_else(|| unknown("asset", source_id))
+                                })
+                                .collect::<Result<_, _>>()?
+                        };
+                        if sources.iter().any(|asset| {
+                            asset.media_type != MediaType::Video || asset.unified_angles.is_some()
+                        }) {
+                            return Err(CapabilityError::InvalidInput(
+                                "Unified Angles sources must be concrete video assets".into(),
+                            ));
+                        }
+                        let default_angle_asset_id = input
+                            .default_angle_asset_id
+                            .unwrap_or_else(|| sources[0].id.clone());
+                        let audio_asset_id = input.audio_asset_id.unwrap_or_else(|| {
+                            sources
+                                .iter()
+                                .find(|asset| asset.has_audio)
+                                .map(|asset| asset.id.clone())
+                                .unwrap_or_else(|| sources[0].id.clone())
+                        });
+                        if !input.asset_ids.contains(&default_angle_asset_id)
+                            || !input.asset_ids.contains(&audio_asset_id)
+                        {
+                            return Err(CapabilityError::InvalidInput(
+                                "defaultAngleAssetId and audioAssetId must be selected angles"
+                                    .into(),
+                            ));
+                        }
+                        let audio_source = sources
+                            .iter()
+                            .find(|asset| asset.id == audio_asset_id)
+                            .expect("audio source belongs to selected angles");
+                        if !audio_source.has_audio {
+                            return Err(CapabilityError::InvalidInput(format!(
+                                "asset `{audio_asset_id}` has no audio stream"
+                            )));
+                        }
+                        let default_source = sources
+                            .iter()
+                            .find(|asset| asset.id == default_angle_asset_id)
+                            .expect("default source belongs to selected angles");
+                        let id = document.allocate_id("asset");
+                        let name = input.name.unwrap_or_else(|| {
+                            format!("{} + {}", sources[0].name, sources[1].name)
+                        });
+                        let duration_seconds = sources
+                            .iter()
+                            .filter_map(|asset| asset.duration_seconds)
+                            .reduce(f64::min);
+                        project_mut(document)?.assets.push(MediaAsset {
+                            id: id.clone(),
+                            name,
+                            source: format!("opencut://unified-angles/{id}"),
+                            media_type: MediaType::Video,
+                            duration_seconds,
+                            width: default_source.width,
+                            height: default_source.height,
+                            frame_rate: default_source.frame_rate,
+                            sample_rate: audio_source.sample_rate,
+                            channels: audio_source.channels,
+                            has_video: true,
+                            has_audio: true,
+                            proxy_source: None,
+                            offline: false,
+                            unified_angles: Some(UnifiedAngles {
+                                angle_asset_ids: input.asset_ids,
+                                default_angle_asset_id,
+                                audio_asset_id,
+                            }),
+                            metadata: Default::default(),
+                            extensions: Map::new(),
+                        });
+                        Ok(vec![id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Created Unified Angles asset")
                     .changed([STATE_RESOURCE, PROJECT_RESOURCE]))
             }
         },
@@ -2167,6 +2300,14 @@ struct ItemSplitInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ItemAngleSetInput {
+    item_id: String,
+    angle_asset_id: String,
+    expected_revision: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ItemDuplicateInput {
     item_ids: Vec<String>,
     #[serde(default)]
@@ -2232,6 +2373,7 @@ fn register_item_operations(
                             group_id: None,
                             linked_item_ids: Default::default(),
                             asset_id: input.asset_id,
+                            active_angle_asset_id: None,
                             transform: input.transform.unwrap_or_default(),
                             opacity: input.opacity.unwrap_or(1.0),
                             blend_mode: input.blend_mode.unwrap_or_default(),
@@ -2514,6 +2656,76 @@ fn register_item_operations(
                 )?;
                 Ok(OperationSuccess::new(output)
                     .summary("Split timeline item")
+                    .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
+            }
+        },
+    )?;
+
+    let angle_state = state.clone();
+    let angle_events = events.clone();
+    register::<ItemAngleSetInput, MutationOutput, _, _>(
+        registry,
+        "timeline.item.angle.set",
+        "Switch Unified Angles camera",
+        "Switches one timeline segment to another camera inside its Unified Angles asset without changing the clip or its single audio source.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["timeline", "clip", "multicam", "angle", "switch"],
+        move |context, input| {
+            let state = angle_state.clone();
+            let events = angle_events.clone();
+            async move {
+                let id = input.item_id;
+                let angle_asset_id = input.angle_asset_id;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Switch camera angle",
+                    input.expected_revision,
+                    |document| {
+                        let (track_index, item_index) = find_item_location(document, &id)?;
+                        let unified_asset_id = document
+                            .project
+                            .as_ref()
+                            .expect("item location requires an open project")
+                            .timeline
+                            .tracks[track_index]
+                            .items[item_index]
+                            .asset_id
+                            .clone()
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(format!(
+                                    "timeline item `{id}` has no media asset"
+                                ))
+                            })?;
+                        let unified = document
+                            .project
+                            .as_ref()
+                            .expect("item location requires an open project")
+                            .assets
+                            .iter()
+                            .find(|asset| asset.id == unified_asset_id)
+                            .and_then(|asset| asset.unified_angles.as_ref())
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(format!(
+                                    "timeline item `{id}` does not use a Unified Angles asset"
+                                ))
+                            })?;
+                        if !unified.angle_asset_ids.contains(&angle_asset_id) {
+                            return Err(CapabilityError::InvalidInput(format!(
+                                "asset `{angle_asset_id}` is not an angle of `{unified_asset_id}`"
+                            )));
+                        }
+                        find_editable_item_mut(document, &id)?.active_angle_asset_id =
+                            Some(angle_asset_id.clone());
+                        Ok(vec![id.clone(), angle_asset_id.clone()])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Switched camera angle")
                     .changed([STATE_RESOURCE, TIMELINE_RESOURCE]))
             }
         },
@@ -2823,6 +3035,7 @@ fn register_speaker_frame_breakout_operations(
                             group_id: None,
                             linked_item_ids: Default::default(),
                             asset_id: None,
+                            active_angle_asset_id: None,
                             transform: Transform::default(),
                             opacity: 1.0,
                             blend_mode: BlendMode::default(),
@@ -4420,6 +4633,7 @@ fn insert_caption_cues(
             group_id: None,
             linked_item_ids: Default::default(),
             asset_id: None,
+            active_angle_asset_id: None,
             transform: Transform::default(),
             opacity: 1.0,
             blend_mode: BlendMode::default(),
@@ -7041,6 +7255,137 @@ mod tests {
             original_item
         );
         let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn unified_angles_are_created_split_switched_and_visible_through_state_read() {
+        let runtime = OpenCutRuntime::default();
+        invoke(
+            &runtime,
+            "project.create",
+            json!({"name": "Unified Angles"}),
+        )
+        .await;
+        let snapshot = runtime.snapshot().expect("snapshot");
+        let project = snapshot.project.as_ref().expect("project");
+        let project_id = project.id.clone();
+        let video_track_id = project
+            .timeline
+            .tracks
+            .iter()
+            .find(|track| track.kind == TrackKind::Video)
+            .expect("video track")
+            .id
+            .clone();
+        let mut source_ids = Vec::new();
+        for (name, source) in [("Angle 1", "C:/media/a.mp4"), ("Angle 2", "C:/media/b.mp4")] {
+            let imported = invoke(
+                &runtime,
+                "media.import",
+                json!({
+                    "name": name,
+                    "source": source,
+                    "mediaType": "video",
+                    "durationSeconds": 12.0,
+                    "width": 1920,
+                    "height": 1080,
+                    "frameRate": 30.0,
+                    "sampleRate": 48000,
+                    "channels": 2
+                }),
+            )
+            .await;
+            source_ids.push(
+                imported["changedIds"][0]
+                    .as_str()
+                    .expect("asset id")
+                    .to_owned(),
+            );
+        }
+        let unified = invoke(
+            &runtime,
+            "media.angles.unify",
+            json!({
+                "assetIds": source_ids,
+                "name": "Interview — Unified Angles",
+                "audioAssetId": source_ids[0],
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
+        let unified_id = unified["changedIds"][0]
+            .as_str()
+            .expect("unified id")
+            .to_owned();
+        let added = invoke(
+            &runtime,
+            "timeline.item.add",
+            json!({
+                "trackId": video_track_id,
+                "name": "Interview — Unified Angles",
+                "kind": "video",
+                "startSeconds": 0.0,
+                "durationSeconds": 10.0,
+                "assetId": unified_id
+            }),
+        )
+        .await;
+        let item_id = added["changedIds"][0].as_str().expect("item id").to_owned();
+        let split = invoke(
+            &runtime,
+            "timeline.item.split",
+            json!({"itemId": item_id, "atSeconds": 5.0}),
+        )
+        .await;
+        let right_item_id = split["changedIds"][1]
+            .as_str()
+            .expect("right item id")
+            .to_owned();
+        invoke(
+            &runtime,
+            "timeline.item.angle.set",
+            json!({
+                "itemId": right_item_id,
+                "angleAssetId": source_ids[1],
+                "expectedRevision": runtime.snapshot().expect("snapshot").revision
+            }),
+        )
+        .await;
+
+        let state = invoke(
+            &runtime,
+            "app.state.read",
+            json!({"projectId": project_id, "pointer": ""}),
+        )
+        .await;
+        let value = &state["value"];
+        let stored_unified = value["project"]["assets"]
+            .as_array()
+            .expect("assets")
+            .iter()
+            .find(|asset| asset["id"] == unified_id)
+            .expect("unified asset");
+        assert_eq!(
+            stored_unified["unifiedAngles"]["audioAssetId"],
+            source_ids[0]
+        );
+        let items: Vec<_> = value["project"]["timeline"]["tracks"]
+            .as_array()
+            .expect("tracks")
+            .iter()
+            .flat_map(|track| track["items"].as_array().expect("items"))
+            .collect();
+        assert!(
+            items
+                .iter()
+                .any(|item| item["id"] == item_id && item["activeAngleAssetId"].is_null())
+        );
+        assert!(
+            items
+                .iter()
+                .any(|item| item["id"] == right_item_id
+                    && item["activeAngleAssetId"] == source_ids[1])
+        );
     }
 
     #[tokio::test]

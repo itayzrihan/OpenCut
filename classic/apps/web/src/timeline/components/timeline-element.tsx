@@ -118,6 +118,7 @@ import {
 } from "./expanded-layout";
 import { getTransitionPreset } from "@/transitions";
 import type { MediaAsset } from "@/media/types";
+import { isUnifiedAnglesAsset } from "@/media/unified-angles";
 import { UI_ELEMENT_GRAPHIC_ID } from "@/graphics/definitions/ui-element";
 import { UiElementTimelineMarkers } from "@/ui-elements/components/timeline-markers";
 import { useTimelineStore } from "@/timeline/timeline-store";
@@ -703,6 +704,15 @@ function TimelineElementMenuContent({
 		);
 	};
 	const hasAudio = mediaSupportsAudio({ media: mediaAsset });
+	const unifiedAngles =
+		element.type === "video" && isUnifiedAnglesAsset(mediaAsset)
+			? mediaAsset.unifiedAngles
+			: null;
+	const unifiedAngleAssets = unifiedAngles
+		? unifiedAngles.angleAssetIds
+				.map((id) => clipMediaAssets.find((asset) => asset.id === id))
+				.filter((asset): asset is MediaAsset => Boolean(asset))
+		: [];
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
 	const canToggleCurrentSourceAudio =
 		selectedElementCount === 1 &&
@@ -782,6 +792,38 @@ function TimelineElementMenuContent({
 					isMuted={isMuted}
 				/>
 			)}
+			{element.type === "video" && unifiedAngles && (
+				<ContextMenuSub>
+					<ContextMenuSubTrigger>Switch camera angle</ContextMenuSubTrigger>
+					<ContextMenuSubContent className="w-64">
+						{unifiedAngleAssets.map((angle, index) => {
+							const activeAngleId =
+								element.unifiedAngleId ?? unifiedAngles.defaultAngleAssetId;
+							return (
+								<ContextMenuItem
+									key={angle.id}
+									onClick={() =>
+										editor.timeline.updateElements({
+											updates: [
+												{
+													trackId,
+													elementId: element.id,
+													patch: { unifiedAngleId: angle.id },
+												},
+											],
+										})
+									}
+								>
+									<span className="w-4">
+										{activeAngleId === angle.id ? "✓" : ""}
+									</span>
+									Angle {index + 1}: {angle.name}
+								</ContextMenuItem>
+							);
+						})}
+					</ContextMenuSubContent>
+				</ContextMenuSub>
+			)}
 			{element.type === "text" && (
 				<ContextMenuSub>
 					<ContextMenuSubTrigger>Clip media into text</ContextMenuSubTrigger>
@@ -790,7 +832,13 @@ function TimelineElementMenuContent({
 							<ContextMenuItem
 								onClick={() =>
 									editor.timeline.updateElements({
-										updates: [{ trackId, elementId: element.id, patch: { clipMediaId: undefined } }],
+										updates: [
+											{
+												trackId,
+												elementId: element.id,
+												patch: { clipMediaId: undefined },
+											},
+										],
 									})
 								}
 							>
@@ -802,7 +850,13 @@ function TimelineElementMenuContent({
 								key={asset.id}
 								onClick={() =>
 									editor.timeline.updateElements({
-										updates: [{ trackId, elementId: element.id, patch: { clipMediaId: asset.id } }],
+										updates: [
+											{
+												trackId,
+												elementId: element.id,
+												patch: { clipMediaId: asset.id },
+											},
+										],
 									})
 								}
 							>
@@ -810,7 +864,9 @@ function TimelineElementMenuContent({
 							</ContextMenuItem>
 						))}
 						{clipMediaAssets.length === 0 && (
-							<ContextMenuItem disabled>Import image or video first</ContextMenuItem>
+							<ContextMenuItem disabled>
+								Import image or video first
+							</ContextMenuItem>
 						)}
 					</ContextMenuSubContent>
 				</ContextMenuSub>
