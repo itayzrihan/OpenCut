@@ -118,6 +118,10 @@ export default function ProjectsPage() {
 			}),
 		[savedProjects, searchQuery, sortOption],
 	);
+	const projectIds = useMemo(
+		() => projectsToDisplay.map((project) => project.id),
+		[projectsToDisplay],
+	);
 
 	useEffect(() => {
 		if (!editor.project.getIsInitialized()) {
@@ -131,7 +135,7 @@ export default function ProjectsPage() {
 			<StoragePersistenceDialog />
 			<ChangelogNotification />
 			<ProjectsHeader />
-			<ProjectsToolbar projectIds={projectsToDisplay.map((p) => p.id)} />
+			<ProjectsToolbar projectIds={projectIds} />
 			<main className="mx-auto px-4 pt-2 pb-6 flex flex-col gap-4">
 				{isLoading || !isInitialized ? (
 					<ProjectsSkeleton />
@@ -153,11 +157,12 @@ export default function ProjectsPage() {
 										: "flex flex-col"
 								}
 							>
-								{projectsToDisplay.map((project) => (
+								{projectsToDisplay.map((project, index) => (
 									<ProjectItem
 										key={project.id}
 										project={project}
-										allProjectIds={projectsToDisplay.map((p) => p.id)}
+										allProjectIds={projectIds}
+										prioritizeThumbnail={index < 4}
 									/>
 								))}
 							</div>
@@ -638,9 +643,11 @@ function ImportProjectButton({ className }: { className?: string }) {
 function ProjectItem({
 	project,
 	allProjectIds,
+	prioritizeThumbnail,
 }: {
 	project: TProjectMetadata;
 	allProjectIds: string[];
+	prioritizeThumbnail: boolean;
 }) {
 	const {
 		selectedProjectIds,
@@ -701,6 +708,8 @@ function ProjectItem({
 							src={project.thumbnail}
 							alt="Project thumbnail"
 							fill
+							loading={prioritizeThumbnail ? "eager" : "lazy"}
+							sizes="(max-width: 639px) 100vw, (max-width: 1023px) 33vw, 25vw"
 							className="object-cover"
 						/>
 					) : (
@@ -737,6 +746,8 @@ function ProjectItem({
 						src={project.thumbnail}
 						alt="Project thumbnail"
 						fill
+						loading={prioritizeThumbnail ? "eager" : "lazy"}
+						sizes="40px"
 						className="object-cover"
 					/>
 				) : (

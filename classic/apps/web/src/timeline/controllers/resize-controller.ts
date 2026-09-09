@@ -11,6 +11,7 @@ import {
 } from "@/wasm";
 import {
 	computeGroupResize,
+	buildRippleResizeUpdates,
 	type GroupResizeMember,
 	type GroupResizeResult,
 	type GroupResizeUpdate,
@@ -43,6 +44,8 @@ interface ResizeSession {
 	startX: number;
 	fps: FrameRate;
 	members: GroupResizeMember[];
+	cutTime: MediaTime;
+	rippleInsertion: boolean;
 	result: GroupResizeResult | null;
 }
 
@@ -53,6 +56,7 @@ type Session = { kind: "idle" } | ResizeSession;
 export interface ResizeConfig {
 	zoomLevel: number;
 	snappingEnabled: boolean;
+	rippleEditingEnabled: boolean;
 	isShiftHeld: () => boolean;
 	getSceneTracks: () => SceneTracks;
 	getCurrentPlayheadTime: () => MediaTime;
@@ -73,18 +77,17 @@ export interface ResizeConfigRef {
 export function buildResizeMembers({
 	tracks,
 	selectedElements,
+	allowRightNeighborOverlap = false,
 }: {
 	tracks: SceneTracks;
 	selectedElements: ElementRef[];
+	allowRightNeighborOverlap?: boolean;
 }): GroupResizeMember[] {
 	const selectedElementIds = new Set(
 		selectedElements.map((el) => el.elementId),
 	);
 	const trackMap = new Map(
-		getDisplayTracks({ tracks }).map((track) => [
-			track.id,
-			track,
-		]),
+		getDisplayTracks({ tracks }).map((track) => [track.id, track]),
 	);
 
 	return selectedElements.flatMap(({ trackId, elementId }) => {
@@ -110,18 +113,21 @@ export function buildResizeMembers({
 					? elementEnd
 					: maxMediaTime({ a: bound, b: elementEnd });
 			}, null);
-		const rightNeighborBound = otherElements
-			.filter(
-				(el) =>
-					el.startTime >= addMediaTime({ a: element.startTime, b: element.duration }),
-			)
-			.reduce<MediaTime | null>(
-				(bound, el) =>
-					bound === null
-						? el.startTime
-						: minMediaTime({ a: bound, b: el.startTime }),
-				null,
-			);
+		const rightNeighborBound = allowRightNeighborOverlap
+			? null
+			: otherElements
+					.filter(
+						(el) =>
+							el.startTime >=
+							addMediaTime({ a: element.startTime, b: element.duration }),
+					)
+					.reduce<MediaTime | null>(
+						(bound, el) =>
+							bound === null
+								? el.startTime
+								: minMediaTime({ a: bound, b: el.startTime }),
+						null,
+					);
 
 		return [
 			{
@@ -223,9 +229,14 @@ export class ResizeController {
 			? this.config.selectedElements
 			: [ref];
 
+		const tracks = this.config.getSceneTracks();
+		const rippleInsertion =
+			side === "right" &&
+			(track.id === tracks.main.id || this.config.rippleEditingEnabled);
 		const members = buildResizeMembers({
-			tracks: this.config.getSceneTracks(),
+			tracks,
 			selectedElements: activeSelection,
+			allowRightNeighborOverlap: rippleInsertion,
 		});
 		if (members.length === 0) return;
 
@@ -237,6 +248,8 @@ export class ResizeController {
 			startX: event.clientX,
 			fps,
 			members,
+			cutTime: addMediaTime({ a: element.startTime, b: element.duration }),
+			rippleInsertion,
 			result: null,
 		};
 		this.activate();
@@ -315,7 +328,10 @@ export class ResizeController {
 			) {
 				closestSnapDistance = snapResult.snapDistance;
 				closestSnapPoint = snapResult.snapPoint;
-				deltaTime = subMediaTime({ a: snapResult.snappedTime, b: baseEdgeTime });
+				deltaTime = subMediaTime({
+					a: snapResult.snappedTime,
+					b: baseEdgeTime,
+				});
 			}
 		}
 
@@ -335,12 +351,23 @@ export class ResizeController {
 			),
 		});
 		const deltaTime = this.snappedDelta({ session, rawDeltaTime });
-		const result = computeGroupResize({
+		const groupResult = computeGroupResize({
 			members: session.members,
 			side: session.side,
 			deltaTime,
 			fps: session.fps,
 		});
+		const result = session.rippleInsertion
+			? {
+					deltaTime: groupResult.deltaTime,
+					updates: buildRippleResizeUpdates({
+						tracks: this.config.getSceneTracks(),
+						selectedUpdates: groupResult.updates,
+						cutTime: session.cutTime,
+						insertedDuration: groupResult.deltaTime,
+					}),
+				}
+			: groupResult;
 
 		session.result = result;
 		this.config.previewElements(result.updates);

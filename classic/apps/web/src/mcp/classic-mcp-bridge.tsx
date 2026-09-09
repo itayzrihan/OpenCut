@@ -143,6 +143,10 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		let publishAgain = false;
 		let lastActiveAtMs =
 			document.visibilityState === "visible" ? Date.now() : 0;
+		let lastPlaybackPlaying = editor.playback.getIsPlaying();
+		let lastPlaybackPositionSeconds = mediaTimeToSeconds({
+			time: editor.playback.getCurrentTime(),
+		});
 		const toolSessionState = createTimelineToolSessionState();
 
 		const readTimeline = () => {
@@ -234,6 +238,25 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		const markStateChanged = () => {
 			revision += 1;
 			schedulePublish();
+		};
+		const markPlaybackChanged = () => {
+			const playing = editor.playback.getIsPlaying();
+			const positionSeconds = mediaTimeToSeconds({
+				time: editor.playback.getCurrentTime(),
+			});
+			const playbackModeChanged = playing !== lastPlaybackPlaying;
+			const positionJumped =
+				Math.abs(positionSeconds - lastPlaybackPositionSeconds) >= 0.5;
+
+			lastPlaybackPlaying = playing;
+			lastPlaybackPositionSeconds = positionSeconds;
+
+			// The playback clock notifies up to 60 times per second. The heartbeat
+			// publishes normal playhead progress; publish immediately only for a
+			// play/pause transition or a meaningful seek.
+			if (!playing || playbackModeChanged || positionJumped) {
+				schedulePublish();
+			}
 		};
 		const markTabActivityChanged = () => {
 			if (document.visibilityState === "visible" || document.hasFocus()) {
@@ -333,11 +356,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 			editor.project.subscribe(markDocumentChanged),
 			editor.media.subscribe(markDocumentChanged),
 			editor.selection.subscribe(markStateChanged),
-			editor.playback.subscribe(schedulePublish),
-			// Playback's frame clock runs up to 60 times per second. Publishing the
-			// full semantic timeline on every frame competes with local media range
-			// reads and preview rendering. Play/pause/seek state publishes promptly;
-			// the heartbeat refreshes an advancing playhead while it is running.
+			editor.playback.subscribe(markPlaybackChanged),
 			backgroundRemovalService.subscribe(schedulePublish),
 		];
 		const heartbeat = window.setInterval(

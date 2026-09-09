@@ -36,6 +36,56 @@ pub struct TimeRange {
 }
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RippleInsertionClipTiming {
+    pub id: String,
+    pub start_time: MediaTime,
+    pub duration: MediaTime,
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RippleInsertTimeOptions {
+    pub clips: Vec<RippleInsertionClipTiming>,
+    pub cut_time: MediaTime,
+    pub inserted_duration: MediaTime,
+}
+
+/// Inserts time at a timeline cut while preserving companion-layer alignment.
+/// Clips beginning at or after the cut move with the later edit. Clips that
+/// strictly span the cut grow so effects, captions, and audio beds that cover
+/// both sides continue to cover both sides after the insertion.
+#[export]
+pub fn ripple_insert_time(
+    RippleInsertTimeOptions {
+        clips,
+        cut_time,
+        inserted_duration,
+    }: RippleInsertTimeOptions,
+) -> Vec<RippleInsertionClipTiming> {
+    if inserted_duration <= MediaTime::ZERO {
+        return clips;
+    }
+
+    clips
+        .into_iter()
+        .map(|mut clip| {
+            let end_time = clip.start_time + clip.duration;
+            if clip.start_time >= cut_time {
+                clip.start_time = clip.start_time + inserted_duration;
+            } else if end_time > cut_time {
+                clip.duration = clip.duration + inserted_duration;
+            }
+            clip
+        })
+        .collect()
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -402,6 +452,38 @@ mod tests {
             source_rate: None,
             collision_group: None,
         }
+    }
+
+    #[test]
+    fn ripple_insertion_moves_later_clips_and_extends_spanning_layers() {
+        let result = ripple_insert_time(RippleInsertTimeOptions {
+            clips: vec![
+                RippleInsertionClipTiming {
+                    id: "earlier".into(),
+                    start_time: time(0),
+                    duration: time(10),
+                },
+                RippleInsertionClipTiming {
+                    id: "spanning".into(),
+                    start_time: time(5),
+                    duration: time(20),
+                },
+                RippleInsertionClipTiming {
+                    id: "later".into(),
+                    start_time: time(10),
+                    duration: time(4),
+                },
+            ],
+            cut_time: time(10),
+            inserted_duration: time(3),
+        });
+
+        assert_eq!(result[0].start_time, time(0));
+        assert_eq!(result[0].duration, time(10));
+        assert_eq!(result[1].start_time, time(5));
+        assert_eq!(result[1].duration, time(23));
+        assert_eq!(result[2].start_time, time(13));
+        assert_eq!(result[2].duration, time(4));
     }
 
     fn preserve(

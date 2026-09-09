@@ -23,6 +23,8 @@ export interface StoredProjectFontRecord extends ProjectFont {
 export type LocalDriveOperation =
 	| "status"
 	| "project.list"
+	| "project.listMetadata"
+	| "project.listOutdated"
 	| "project.get"
 	| "project.put"
 	| "project.delete"

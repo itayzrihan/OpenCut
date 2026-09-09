@@ -38,7 +38,11 @@ let hasCleanedUpMetaDb = false;
 const MIN_MIGRATION_DISPLAY_MS = 1000;
 
 interface ProjectsMigrationStorage {
-	getAll(): Promise<ProjectRecord[]>;
+	getAll({
+		targetVersion,
+	}: {
+		targetVersion: number;
+	}): Promise<ProjectRecord[]>;
 	set({ key, value }: { key: string; value: ProjectRecord }): Promise<void>;
 }
 
@@ -96,8 +100,11 @@ export async function runStorageMigrations({
 
 	try {
 		await dependencies.cleanupLegacyMetaDatabase();
-		const projects = await dependencies.projectsStorage.getAll();
 		const orderedMigrations = [...migrations].sort((a, b) => a.from - b.from);
+		const finalTargetVersion = orderedMigrations.at(-1)?.to ?? 0;
+		const projects = await dependencies.projectsStorage.getAll({
+			targetVersion: finalTargetVersion,
+		});
 
 		for (const project of projects) {
 			if (!isRecord(project)) {
@@ -112,7 +119,7 @@ export async function runStorageMigrations({
 
 			const sourceVersion = getProjectVersion({ project: projectRecord });
 			let currentVersion = sourceVersion;
-			const targetVersion = orderedMigrations.at(-1)?.to ?? currentVersion;
+			const targetVersion = finalTargetVersion || currentVersion;
 
 			if (currentVersion >= targetVersion) {
 				continue;

@@ -5,11 +5,11 @@ import type {
 } from "@/animation/types";
 import type { VideoElement } from "@/timeline";
 import {
-	TRANSITION_PRESETS,
 	buildTransitionAnimations,
 	buildTransitionAnimationsFromElement,
 	buildTransitionPatch,
-} from "@/transitions";
+} from "@/transitions/apply";
+import { TRANSITION_PRESETS } from "@/transitions/registry";
 import {
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
@@ -233,6 +233,57 @@ describe("transitions", () => {
 		expect(patch.animations?.["transform.scaleX"]).toEqual(scaleX);
 		expect(patch.animations?.["transform.scaleY"]).toEqual(scaleY);
 		expect(patch.animations?.opacity).toBeUndefined();
+	});
+
+	test("floors the flicker transition to 10% even when the user asks for less", () => {
+		const element = buildVideoElement();
+		const patch = buildTransitionPatch({
+			element,
+			presetId: "flicker",
+			side: "in",
+			percent: 3,
+		});
+
+		expect(
+			mediaTimeToSeconds({
+				time: patch.transitions?.in?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBe(1);
+
+		const generousPatch = buildTransitionPatch({
+			element,
+			presetId: "flicker",
+			side: "in",
+			percent: 20,
+		});
+		expect(
+			mediaTimeToSeconds({
+				time: generousPatch.transitions?.in?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBe(2);
+
+		const defaultPatch = buildTransitionPatch({
+			element,
+			presetId: "flicker",
+			side: "in",
+		});
+		expect(
+			mediaTimeToSeconds({
+				time: defaultPatch.transitions?.in?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBe(1);
+
+		const unaffectedPatch = buildTransitionPatch({
+			element,
+			presetId: "fade",
+			side: "in",
+			percent: 3,
+		});
+		expect(
+			mediaTimeToSeconds({
+				time: unaffectedPatch.transitions?.in?.duration ?? ZERO_MEDIA_TIME,
+			}),
+		).toBeCloseTo(0.3, 5);
 	});
 
 	test("keeps unrelated keyframes in playback animations with transitions", () => {

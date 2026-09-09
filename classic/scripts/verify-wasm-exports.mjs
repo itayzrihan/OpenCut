@@ -22,6 +22,7 @@ const requiredExports = [
 	"realignCaptionWordsAfterTimeRemoval",
 	"removeCaptionWordTimeRanges",
 	"resolveBackgroundRemovalSettings",
+	"rippleInsertTime",
 	"searchAgentTools",
 	"textLayerDurationForWords",
 	"transitionAgentTask",

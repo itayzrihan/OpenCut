@@ -26,13 +26,21 @@ export async function GET(request: Request) {
 			required(params, "id"),
 		);
 		if (!file) return new NextResponse(null, { status: 404 });
+		const etag = `W/"${file.stat.size}-${Math.trunc(file.stat.mtimeMs)}"`;
+		if (request.headers.get("if-none-match") === etag) {
+			return new NextResponse(null, {
+				status: 304,
+				headers: { ETag: etag },
+			});
+		}
 		return new NextResponse(
 			Readable.toWeb(createReadStream(file.path)) as unknown as BodyInit,
 			{
 				headers: {
-					"Cache-Control": "private, no-cache",
+					"Cache-Control": "private, max-age=31536000, immutable",
 					"Content-Length": String(file.stat.size),
 					"Content-Type": params.get("mimeType") || "application/octet-stream",
+					ETag: etag,
 				},
 			},
 		);

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bytemuck::{Pod, Zeroable};
-use gpu::{GpuContext, FULLSCREEN_SHADER_SOURCE};
+use gpu::{FULLSCREEN_SHADER_SOURCE, GpuContext};
 use thiserror::Error;
 use wgpu::util::DeviceExt;
 

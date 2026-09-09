@@ -25,6 +25,15 @@ import type {
 export const DEFAULT_TRANSITION_PERCENT = 5;
 export const MAX_DEFAULT_TRANSITION_SECONDS = 3;
 
+/**
+ * Flicker needs enough room for its multiple flashes to read as distinct
+ * blinks rather than a blur; below this it starts looking "regular" instead
+ * of like a flickering light. Enforced even when the user dials in less.
+ */
+const MINIMUM_TRANSITION_PERCENT_BY_PRESET: Partial<Record<string, number>> = {
+	flicker: 10,
+};
+
 export function clampTransitionPercent(value: number) {
 	if (!Number.isFinite(value)) return 0;
 	return Math.min(100, Math.max(0, value));
@@ -370,10 +379,18 @@ export function buildTransitionPatch({
 	percent?: number;
 	duration?: MediaTime;
 }): Partial<TimelineElement> {
+	const minimumPercent = MINIMUM_TRANSITION_PERCENT_BY_PRESET[presetId];
+	const effectivePercent =
+		minimumPercent !== undefined
+			? Math.max(percent ?? DEFAULT_TRANSITION_PERCENT, minimumPercent)
+			: percent;
 	const transitionDuration =
 		duration ??
 		mediaTimeFromSeconds({
-			seconds: getDefaultTransitionDurationSeconds({ element, percent }),
+			seconds: getDefaultTransitionDurationSeconds({
+				element,
+				percent: effectivePercent,
+			}),
 		});
 	const nextTransitions = { ...(element.transitions ?? {}) };
 

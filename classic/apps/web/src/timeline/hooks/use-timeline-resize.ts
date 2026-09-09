@@ -27,11 +27,15 @@ export function useTimelineResize({
 	const editor = useEditor();
 	const isShiftHeldRef = useShiftKey();
 	const snappingEnabled = useTimelineStore((state) => state.snappingEnabled);
+	const rippleEditingEnabled = useTimelineStore(
+		(state) => state.rippleEditingEnabled,
+	);
 	const { selectedElements } = useElementSelection();
 
 	const config: ResizeConfig = {
 		zoomLevel,
 		snappingEnabled,
+		rippleEditingEnabled,
 		isShiftHeld: () => isShiftHeldRef.current,
 		getSceneTracks: () => editor.scenes.getActiveScene().tracks,
 		getCurrentPlayheadTime: () => editor.playback.getCurrentTime(),

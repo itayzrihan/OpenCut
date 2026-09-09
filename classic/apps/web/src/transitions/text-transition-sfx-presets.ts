@@ -1,5 +1,5 @@
 export interface TextTransitionSfxPreset {
-	transitionId: "push-right" | "slide-up" | "pop" | "grow";
+	transitionId: "push-right" | "slide-up" | "pop" | "grow" | "flicker";
 	side: "in" | "out";
 	assetId: string;
 	name: string;
@@ -13,6 +13,7 @@ export interface TextTransitionSfxPreset {
 
 const WHOOSH_ASSET_ID = "19f29ed9-a604-4933-ae8c-e494b6cee47f";
 const METAL_SLICE_ASSET_ID = "49fd6fc0-53c5-4536-8370-ba27bb19ffcf";
+const CLICK_ASSET_ID = "bfc2e3c8-fd6f-4f80-99f5-8a32da79f709";
 
 /**
  * These values are copied from the repeated, user-authored examples in Galya2.
@@ -72,6 +73,21 @@ const TEXT_TRANSITION_SFX_PRESETS: Record<
 		trimEndSeconds: 4.52,
 		volume: 0,
 	},
+	flicker: {
+		transitionId: "flicker",
+		side: "in",
+		// Copied exactly from the user-authored Flicker pairing in Galya8: the
+		// dead air at the front of the source clip is trimmed off so the click
+		// transient itself lands right on the first flash.
+		assetId: CLICK_ASSET_ID,
+		name: "Flicker SFX",
+		leadInSeconds: 0.124875,
+		durationSeconds: 0.562833,
+		sourceDurationSeconds: 0.762833,
+		trimStartSeconds: 0.2,
+		trimEndSeconds: 0,
+		volume: -13,
+	},
 };
 
 export function getTextTransitionSfxPreset({
@@ -87,6 +103,7 @@ export function getTextTransitionSfxPreset({
 		case "slide-up":
 		case "pop":
 		case "grow":
+		case "flicker":
 			preset = TEXT_TRANSITION_SFX_PRESETS[transitionId];
 			break;
 		default:

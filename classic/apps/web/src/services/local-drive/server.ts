@@ -36,6 +36,8 @@ import type {
 
 const execFileAsync = promisify(execFile);
 const PROJECT_FILE = "project.json";
+const PROJECT_LIBRARY_FILE = "library.json";
+const PROJECT_THUMBNAIL_FILE = "thumbnail.bin";
 const HISTORY_FILE = "history.json";
 const MEDIA_INDEX_FILE = "index.json";
 const FONT_INDEX_FILE = "index.json";
@@ -65,9 +67,20 @@ interface StoredFontRecord extends ProjectFontData {
 	storedPath: string;
 }
 
+interface ProjectLibraryEntry {
+	schemaVersion: 3;
+	sourceSize: number;
+	sourceMtimeMs: number;
+	project: Record<string, unknown>;
+	thumbnailMimeType?: string;
+}
+
 function driveRoot(): string {
 	const configured = process.env.POCUT_PROJECTS_DIR?.trim();
-	return resolve(configured || join(homedir(), "Movies", "PoCut Projects"));
+	return resolve(
+		/* turbopackIgnore: true */ configured ||
+			join(homedir(), "Movies", "PoCut Projects"),
+	);
 }
 
 function projectsRoot(): string {
@@ -108,6 +121,18 @@ function assertId(id: string, label: string): string {
 
 function projectRoot(projectId: string): string {
 	return join(projectsRoot(), assertId(projectId, "project id"));
+}
+
+function projectFilePath(projectId: string): string {
+	return join(projectRoot(projectId), PROJECT_FILE);
+}
+
+function projectLibraryPath(projectId: string): string {
+	return join(projectRoot(projectId), PROJECT_LIBRARY_FILE);
+}
+
+function projectThumbnailPath(projectId: string): string {
+	return join(projectRoot(projectId), PROJECT_THUMBNAIL_FILE);
 }
 
 function mediaRoot(projectId: string): string {
@@ -189,6 +214,172 @@ async function writeJsonAtomic({
 		await unlink(temporaryPath).catch(() => undefined);
 		throw error;
 	}
+}
+
+async function writeBytesAtomic({
+	path,
+	bytes,
+}: {
+	path: string;
+	bytes: Uint8Array;
+}): Promise<void> {
+	await mkdir(resolve(path, ".."), { recursive: true });
+	const temporaryPath = `${path}.${randomUUID()}.tmp`;
+	try {
+		await writeFile(temporaryPath, bytes, { flag: "wx" });
+		await rename(temporaryPath, path);
+	} catch (error) {
+		await unlink(temporaryPath).catch(() => undefined);
+		throw error;
+	}
+}
+
+async function optimizeProjectThumbnail({
+	bytes,
+	mimeType,
+}: {
+	bytes: Uint8Array;
+	mimeType: string;
+}): Promise<{ bytes: Uint8Array; mimeType: string }> {
+	try {
+		const { default: sharp } = await import("sharp");
+		const optimized = await sharp(bytes)
+			.rotate()
+			.resize({
+				width: 640,
+				height: 360,
+				fit: "cover",
+				withoutEnlargement: true,
+			})
+			.webp({ quality: 76, effort: 3 })
+			.toBuffer();
+		return { bytes: optimized, mimeType: "image/webp" };
+	} catch {
+		return { bytes, mimeType };
+	}
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+async function createProjectLibraryEntry({
+	projectId,
+	project,
+	sourceSize,
+	sourceMtimeMs,
+}: {
+	projectId: string;
+	project: unknown;
+	sourceSize: number;
+	sourceMtimeMs: number;
+}): Promise<ProjectLibraryEntry> {
+	const projection: Record<string, unknown> = {
+		id: projectId,
+	};
+	let thumbnailMimeType: string | undefined;
+	if (isRecord(project)) {
+		if (isRecord(project.metadata)) {
+			const metadata = { ...project.metadata };
+			const thumbnail = metadata.thumbnail;
+			if (typeof thumbnail === "string") {
+				try {
+					const separator = thumbnail.indexOf(",");
+					const header = separator >= 0 ? thumbnail.slice(0, separator) : "";
+					const mimeMatch = /^data:(image\/[A-Za-z0-9.+-]+);base64$/.exec(
+						header,
+					);
+					if (mimeMatch?.[1]) {
+						const optimized = await optimizeProjectThumbnail({
+							bytes: Buffer.from(thumbnail.slice(separator + 1), "base64"),
+							mimeType: mimeMatch[1],
+						});
+						thumbnailMimeType = optimized.mimeType;
+						await writeBytesAtomic({
+							path: projectThumbnailPath(projectId),
+							bytes: optimized.bytes,
+						});
+						metadata.thumbnail = `/api/local-drive/project-thumbnail?projectId=${encodeURIComponent(projectId)}&v=${Math.trunc(sourceMtimeMs)}`;
+					}
+				} catch (error) {
+					// Thumbnail generation is derived work. Never reject the authoritative
+					// project save because a large/corrupt preview could not be decoded.
+					console.warn("Could not create project thumbnail", error);
+					delete metadata.thumbnail;
+				}
+			}
+			projection.metadata = metadata;
+		}
+		if (typeof project.version === "number") {
+			projection.version = project.version;
+		}
+		if (typeof project.name === "string") projection.name = project.name;
+	}
+	return {
+		schemaVersion: 3,
+		sourceSize,
+		sourceMtimeMs,
+		project: projection,
+		...(thumbnailMimeType && { thumbnailMimeType }),
+	};
+}
+
+function isCurrentLibraryEntry(
+	value: unknown,
+	{
+		sourceSize,
+		sourceMtimeMs,
+	}: {
+		sourceSize: number;
+		sourceMtimeMs: number;
+	},
+): value is ProjectLibraryEntry {
+	return (
+		isRecord(value) &&
+		value.schemaVersion === 3 &&
+		value.sourceSize === sourceSize &&
+		value.sourceMtimeMs === sourceMtimeMs &&
+		isRecord(value.project)
+	);
+}
+
+async function readProjectLibraryEntry(
+	projectId: string,
+): Promise<Record<string, unknown> | null> {
+	const path = projectFilePath(projectId);
+	let sourceStat;
+	try {
+		sourceStat = await stat(path);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+		throw error;
+	}
+	const cached = await readJson<unknown | null>({
+		path: projectLibraryPath(projectId),
+		fallback: null,
+	});
+	if (
+		isCurrentLibraryEntry(cached, {
+			sourceSize: sourceStat.size,
+			sourceMtimeMs: sourceStat.mtimeMs,
+		})
+	) {
+		return cached.project;
+	}
+
+	const project = await readJson<unknown | null>({ path, fallback: null });
+	if (project === null) return null;
+	const libraryEntry = await createProjectLibraryEntry({
+		projectId,
+		project,
+		sourceSize: sourceStat.size,
+		sourceMtimeMs: sourceStat.mtimeMs,
+	});
+	await writeJsonAtomic({
+		path: projectLibraryPath(projectId),
+		value: libraryEntry,
+	});
+	return libraryEntry.project;
 }
 
 function mediaIndexPath(projectId: string): string {
@@ -347,18 +538,115 @@ export async function listProjects(): Promise<unknown[]> {
 	return projects.filter((project) => project !== null);
 }
 
+export async function listProjectMetadata(): Promise<
+	Record<string, unknown>[]
+> {
+	await ensureRoot();
+	const entries = await readdir(projectsRoot(), { withFileTypes: true });
+	const projectEntries = entries.filter(
+		(entry) => entry.isDirectory() && SAFE_ID.test(entry.name),
+	);
+	const projects: Array<Record<string, unknown> | null> = [];
+	const indexingConcurrency = 4;
+	for (
+		let index = 0;
+		index < projectEntries.length;
+		index += indexingConcurrency
+	) {
+		projects.push(
+			...(await Promise.all(
+				projectEntries
+					.slice(index, index + indexingConcurrency)
+					.map((entry) => readProjectLibraryEntry(entry.name)),
+			)),
+		);
+	}
+	return projects.filter(
+		(project): project is Record<string, unknown> => project !== null,
+	);
+}
+
+export async function listOutdatedProjects(
+	targetVersion: number,
+): Promise<unknown[]> {
+	const library = await listProjectMetadata();
+	const outdatedIds = library.flatMap((project) => {
+		const version =
+			typeof project.version === "number" && Number.isFinite(project.version)
+				? project.version
+				: 0;
+		return version < targetVersion && typeof project.id === "string"
+			? [project.id]
+			: [];
+	});
+	const projects = await Promise.all(outdatedIds.map((id) => getProject(id)));
+	return projects.filter((project) => project !== null);
+}
+
 export async function getProject(projectId: string): Promise<unknown | null> {
 	return readJson({
-		path: join(projectRoot(projectId), PROJECT_FILE),
+		path: projectFilePath(projectId),
 		fallback: null,
 	});
 }
 
 export async function putProject(projectId: string, project: unknown) {
-	await writeJsonAtomic({
-		path: join(projectRoot(projectId), PROJECT_FILE),
-		value: project,
+	const path = projectFilePath(projectId);
+	await withMutationLock(path, async () => {
+		const libraryEntry = await createProjectLibraryEntry({
+			projectId,
+			project,
+			sourceSize: 0,
+			sourceMtimeMs: Date.now(),
+		});
+		let storedProject = project;
+		if (
+			isRecord(project) &&
+			isRecord(project.metadata) &&
+			typeof project.metadata.thumbnail === "string" &&
+			project.metadata.thumbnail.startsWith("data:")
+		) {
+			const indexedMetadata = isRecord(libraryEntry.project.metadata)
+				? libraryEntry.project.metadata
+				: null;
+			const metadata = { ...project.metadata };
+			if (typeof indexedMetadata?.thumbnail === "string") {
+				metadata.thumbnail = indexedMetadata.thumbnail;
+			} else {
+				delete metadata.thumbnail;
+			}
+			storedProject = { ...project, metadata };
+		}
+
+		await writeJsonAtomic({ path, value: storedProject });
+		const sourceStat = await stat(path);
+		libraryEntry.sourceSize = sourceStat.size;
+		libraryEntry.sourceMtimeMs = sourceStat.mtimeMs;
+		await writeJsonAtomic({
+			path: projectLibraryPath(projectId),
+			value: libraryEntry,
+		});
 	});
+}
+
+export async function getProjectThumbnail(projectId: string) {
+	await readProjectLibraryEntry(projectId);
+	const libraryEntry = await readJson<ProjectLibraryEntry | null>({
+		path: projectLibraryPath(projectId),
+		fallback: null,
+	});
+	if (!libraryEntry?.thumbnailMimeType) return null;
+	const path = projectThumbnailPath(projectId);
+	try {
+		return {
+			path,
+			mimeType: libraryEntry.thumbnailMimeType,
+			stat: await stat(path),
+		};
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+		throw error;
+	}
 }
 
 export async function deleteProject(projectId: string) {

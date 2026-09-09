@@ -22,6 +22,8 @@ import {
 	getSharedRecord,
 	listFonts,
 	listMedia,
+	listOutdatedProjects,
+	listProjectMetadata,
 	listProjects,
 	listSharedFileIds,
 	listSharedRecords,
@@ -59,6 +61,13 @@ function readStringArray(value: unknown, label: string): string[] {
 	return value;
 }
 
+function readNonNegativeInteger(value: unknown, label: string): number {
+	if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+		throw new Error(`${label} must be a non-negative integer`);
+	}
+	return value;
+}
+
 export async function GET(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
@@ -90,6 +99,14 @@ export async function POST(request: Request) {
 				return NextResponse.json(await getLocalDriveStatus());
 			case "project.list":
 				return NextResponse.json(await listProjects());
+			case "project.listMetadata":
+				return NextResponse.json(await listProjectMetadata());
+			case "project.listOutdated":
+				return NextResponse.json(
+					await listOutdatedProjects(
+						readNonNegativeInteger(body.targetVersion, "targetVersion"),
+					),
+				);
 			case "project.get":
 				return NextResponse.json(await getProject(projectId()));
 			case "project.put":

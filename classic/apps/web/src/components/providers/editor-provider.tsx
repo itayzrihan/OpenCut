@@ -40,11 +40,13 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 		const loadProject = async () => {
 			try {
 				setIsLoading(true);
-				await initializeGpuRenderer();
+				const gpuInitialization = initializeGpuRenderer();
+				const projectLoad = editor.project.loadProject({ id: projectId });
+				const [projectExists] = await Promise.all([
+					projectLoad,
+					gpuInitialization,
+				]);
 				editor.renderer.setDegraded(!isGpuAvailable());
-				const projectExists = await editor.project.loadProject({
-					id: projectId,
-				});
 
 				if (cancelled) return;
 

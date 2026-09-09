@@ -35,6 +35,11 @@ type RouteContext = {
 
 type BridgeConfig = z.infer<typeof bridgeConfigSchema>;
 
+const BRIDGE_CONFIG_CACHE_MS = 5_000;
+let bridgeConfigCache:
+	| { expiresAtMs: number; configs: BridgeConfig[] }
+	| undefined;
+
 function bridgeConfigDirectories(): string[] {
 	const home = homedir();
 	const directories = [
@@ -52,7 +57,9 @@ function bridgeConfigDirectories(): string[] {
 	];
 	return [
 		...new Set(
-			directories.filter((directory): directory is string => Boolean(directory)),
+			directories.filter((directory): directory is string =>
+				Boolean(directory),
+			),
 		),
 	];
 }
@@ -85,6 +92,11 @@ function validateBridgeConfig(raw: string): BridgeConfig | null {
 }
 
 async function loadBridgeConfigs(): Promise<BridgeConfig[]> {
+	const now = Date.now();
+	if (bridgeConfigCache && bridgeConfigCache.expiresAtMs > now) {
+		return bridgeConfigCache.configs;
+	}
+
 	const paths: string[] = [];
 	for (const directory of bridgeConfigDirectories()) {
 		paths.push(join(directory, "mcp-classic-bridge.json"));
@@ -123,6 +135,10 @@ async function loadBridgeConfigs(): Promise<BridgeConfig[]> {
 	if (sorted.length === 0) {
 		throw new Error("The OpenCut MCP bridge config was not found");
 	}
+	bridgeConfigCache = {
+		expiresAtMs: now + BRIDGE_CONFIG_CACHE_MS,
+		configs: sorted,
+	};
 	return sorted;
 }
 
@@ -213,6 +229,9 @@ async function proxyBridgeRequest({
 		.map((result) => result.value);
 	const successful = responses.filter((response) => response.ok);
 	if (successful.length === 0) {
+		// A bridge process can restart between cache refreshes. Force the next
+		// request to discover its new loopback endpoint immediately.
+		bridgeConfigCache = undefined;
 		return NextResponse.json(
 			{ error: "The OpenCut MCP bridge stopped responding" },
 			{ status: 503 },

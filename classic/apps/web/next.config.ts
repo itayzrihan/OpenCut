@@ -14,6 +14,7 @@ const runtimeTarget =
 	process.env.OPENCUT_RUNTIME_TARGET === "electron" ? "electron" : "browser";
 
 const nextConfig: NextConfig = {
+	allowedDevOrigins: ["127.0.0.1"],
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
@@ -62,6 +63,7 @@ const nextConfig: NextConfig = {
 		return config;
 	},
 	images: {
+		localPatterns: [{ pathname: "/**" }],
 		remotePatterns: [
 			{
 				protocol: "https",

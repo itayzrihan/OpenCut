@@ -535,14 +535,7 @@ fn registered_agent_capabilities() -> Vec<AgentCapabilityDescriptor> {
         ),
         registered_capability("skills.list", "read", true, true, false, &[]),
         registered_capability("skills.load", "read", true, true, false, &[]),
-        registered_capability(
-            "skills.load_resource",
-            "read",
-            true,
-            true,
-            false,
-            &[],
-        ),
+        registered_capability("skills.load_resource", "read", true, true, false, &[]),
         registered_capability(
             "timeline.edit_source",
             "edit",

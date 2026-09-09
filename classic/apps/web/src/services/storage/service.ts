@@ -237,8 +237,11 @@ export class StorageService {
 	createDriveMigrationDependencies(): StorageMigrationRunnerDependencies {
 		return {
 			projectsStorage: {
-				getAll: () =>
-					localDriveRequest<ProjectRecord[]>({ operation: "project.list" }),
+				getAll: ({ targetVersion }) =>
+					localDriveRequest<ProjectRecord[]>({
+						operation: "project.listOutdated",
+						payload: { targetVersion },
+					}),
 				set: ({ key, value }) =>
 					localDriveRequest({
 						operation: "project.put",
@@ -465,8 +468,8 @@ export class StorageService {
 
 	async loadAllProjectsMetadata(): Promise<TProjectMetadata[]> {
 		await this.ensureBrowserDataMigrated();
-		const projects = await localDriveRequest<SerializedProject[]>({
-			operation: "project.list",
+		const projects = await localDriveRequest<Record<string, unknown>[]>({
+			operation: "project.listMetadata",
 		});
 		const metadata = projects
 			.map((project) => readProjectMetadata(project))

@@ -105,6 +105,7 @@ export class ProjectManager {
 	private active: TProject | null = null;
 	private savedProjects: TProjectMetadata[] = [];
 	private isLoading = true;
+	private projectLoad: { id: string; promise: Promise<boolean> } | undefined;
 	private isInitialized = false;
 	private loadError: string | null = null;
 	private migrationFailures: StorageMigrationFailure[] = [];
@@ -220,6 +221,20 @@ export class ProjectManager {
 	}
 
 	async loadProject({ id }: { id: string }): Promise<boolean> {
+		if (this.projectLoad?.id === id) return this.projectLoad.promise;
+
+		const promise = this.loadProjectOnce({ id });
+		this.projectLoad = { id, promise };
+		try {
+			return await promise;
+		} finally {
+			if (this.projectLoad?.promise === promise) {
+				this.projectLoad = undefined;
+			}
+		}
+	}
+
+	private async loadProjectOnce({ id }: { id: string }): Promise<boolean> {
 		if (this.active && this.active.metadata.id !== id) {
 			// Route changes can switch projects without going through the explicit Exit
 			// action. Persist the current project before clearing any in-memory state.
@@ -251,7 +266,24 @@ export class ProjectManager {
 			}
 
 			const project = result.project;
-			const projectFonts = await this.hydrateProjectFonts({ project });
+			const customFontFamilies = new Set(
+				project.customFonts?.map((font) => font.family) ?? [],
+			);
+			const projectFontsPromise = this.hydrateProjectFonts({ project });
+			const mediaPromise = this.editor.media.loadProjectMedia({
+				projectId: id,
+			});
+			const historyPromise = this.editor.command.loadHistory({ projectId: id });
+			const fontFamiliesPromise = loadFonts({
+				families: [
+					...new Set(
+						(project.scenes ?? []).flatMap((scene) =>
+							getElementFontFamilies({ tracks: scene.tracks }),
+						),
+					),
+				].filter((family) => !customFontFamilies.has(family)),
+			});
+			const projectFonts = await projectFontsPromise;
 			const projectWithFonts: TProject = {
 				...project,
 				customFonts: projectFonts.map((font) =>
@@ -269,21 +301,7 @@ export class ProjectManager {
 				});
 			}
 
-			await this.editor.media.loadProjectMedia({ projectId: id });
-			await this.editor.command.loadHistory({ projectId: id });
-
-			const customFontFamilies = new Set(
-				projectWithFonts.customFonts?.map((font) => font.family) ?? [],
-			);
-			await loadFonts({
-				families: [
-					...new Set(
-						(projectWithFonts.scenes ?? []).flatMap((scene) =>
-							getElementFontFamilies({ tracks: scene.tracks }),
-						),
-					),
-				].filter((family) => !customFontFamilies.has(family)),
-			});
+			await Promise.all([mediaPromise, historyPromise, fontFamiliesPromise]);
 
 			if (!projectWithFonts.metadata.thumbnail) {
 				try {
@@ -954,6 +972,7 @@ export class ProjectManager {
 	}: {
 		project: TProject;
 	}): Promise<RuntimeProjectFont[]> {
+		const sharedFontsPromise = this.loadSharedFonts();
 		let storedFonts: ProjectFontAsset[] = [];
 		try {
 			storedFonts = await storageService.loadAllProjectFonts({
@@ -964,27 +983,38 @@ export class ProjectManager {
 		}
 
 		const storedById = new Map(storedFonts.map((font) => [font.id, font]));
+		const sharedFonts = await sharedFontsPromise;
+		const sharedById = new Map(sharedFonts.map((font) => [font.id, font]));
+		const sharedByFamily = new Map(
+			sharedFonts.map((font) => [font.family.toLowerCase(), font]),
+		);
 		const runtimeFonts: RuntimeProjectFont[] = [];
 		const seen = new Set<string>();
 
-		for (const font of project.customFonts ?? []) {
-			const stored = storedById.get(font.id);
-			if (stored) {
-				runtimeFonts.push({
-					...stored,
-					...font,
-					file: stored.file,
-					url: stored.url,
-				});
-				seen.add(font.id);
-				continue;
-			}
-
-			const restored = await this.restoreProjectFontFromRepository({
-				projectId: project.metadata.id,
-				font,
-			});
-			runtimeFonts.push(restored ?? font);
+		const hydratedCustomFonts = await Promise.all(
+			(project.customFonts ?? []).map(async (font) => {
+				const stored =
+					storedById.get(font.id) ??
+					sharedById.get(font.id) ??
+					sharedByFamily.get(font.family.toLowerCase());
+				if (stored) {
+					return {
+						...stored,
+						...font,
+						file: stored.file,
+						url: stored.url,
+					};
+				}
+				return (
+					(await this.restoreProjectFontFromRepository({
+						projectId: project.metadata.id,
+						font,
+					})) ?? font
+				);
+			}),
+		);
+		for (const font of hydratedCustomFonts) {
+			runtimeFonts.push(font);
 			seen.add(font.id);
 		}
 
@@ -994,7 +1024,6 @@ export class ProjectManager {
 			}
 		}
 
-		const sharedFonts = await this.loadSharedFonts();
 		const sharedFamilies = new Set(
 			sharedFonts.map((font) => font.family.toLowerCase()),
 		);
@@ -1023,7 +1052,10 @@ export class ProjectManager {
 			mergedFonts.set(font.family.toLowerCase(), font);
 		}
 		for (const font of runtimeFonts) {
-			mergedFonts.set(font.family.toLowerCase(), font);
+			const family = font.family.toLowerCase();
+			const sharedFont = mergedFonts.get(family);
+			if (!("file" in font) && sharedFont && "file" in sharedFont) continue;
+			mergedFonts.set(family, font);
 		}
 		const availableFonts = [...mergedFonts.values()];
 
@@ -1042,17 +1074,7 @@ export class ProjectManager {
 
 	private async loadSharedFonts(): Promise<ProjectFontAsset[]> {
 		try {
-			const fonts = await storageService.loadAllSharedFonts();
-			await Promise.all(
-				fonts.map(async (font) => {
-					try {
-						await loadProjectFont({ font });
-					} catch (error) {
-						console.warn(`Failed to load shared font "${font.family}":`, error);
-					}
-				}),
-			);
-			return fonts;
+			return await storageService.loadAllSharedFonts();
 		} catch (error) {
 			console.error("Failed to load shared font library:", error);
 			return [];
@@ -1145,7 +1167,35 @@ export class ProjectManager {
 			targetCanvas: tempCanvas,
 		});
 
-		const thumbnailDataUrl = tempCanvas.toDataURL("image/png");
+		const thumbnailCanvas = document.createElement("canvas");
+		thumbnailCanvas.width = 640;
+		thumbnailCanvas.height = 360;
+		const thumbnailContext = thumbnailCanvas.getContext("2d");
+		if (!thumbnailContext) return false;
+
+		const sourceAspect = tempCanvas.width / tempCanvas.height;
+		const thumbnailAspect = thumbnailCanvas.width / thumbnailCanvas.height;
+		const sourceWidth =
+			sourceAspect > thumbnailAspect
+				? tempCanvas.height * thumbnailAspect
+				: tempCanvas.width;
+		const sourceHeight =
+			sourceAspect > thumbnailAspect
+				? tempCanvas.height
+				: tempCanvas.width / thumbnailAspect;
+		thumbnailContext.drawImage(
+			tempCanvas,
+			(tempCanvas.width - sourceWidth) / 2,
+			(tempCanvas.height - sourceHeight) / 2,
+			sourceWidth,
+			sourceHeight,
+			0,
+			0,
+			thumbnailCanvas.width,
+			thumbnailCanvas.height,
+		);
+
+		const thumbnailDataUrl = thumbnailCanvas.toDataURL("image/webp", 0.76);
 
 		await this.updateThumbnail({ thumbnail: thumbnailDataUrl });
 		return true;

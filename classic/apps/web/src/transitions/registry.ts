@@ -1019,6 +1019,29 @@ export const TRANSITION_PRESETS: TransitionPreset[] = [
 			],
 		},
 	}),
+	preset({
+		id: "flicker",
+		label: "Flicker",
+		state: {},
+		keywords: ["flicker", "flash", "strobe", "neon", "light"],
+		recipe: {
+			// Irregular flash widths and dip depths so it reads as a flickering
+			// light settling on, not a metronomic blink (which looks "regular").
+			opacity: keys(
+				[0, 0],
+				[0.05, 1],
+				[0.11, 0.06],
+				[0.2, 1],
+				[0.27, 0.12],
+				[0.38, 1],
+				[0.45, 0.04],
+				[0.58, 1],
+				[0.66, 0.18],
+				[0.78, 1],
+				[1, 1],
+			),
+		},
+	}),
 	premiumPreset({
 		id: "shatter",
 		label: "Shatter · ניפוץ",

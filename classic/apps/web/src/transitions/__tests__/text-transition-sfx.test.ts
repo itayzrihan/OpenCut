@@ -16,6 +16,7 @@ describe("text transition companion SFX", () => {
 		expect(hasTextTransitionSfx({ transitionId: "grow", side: "in" })).toBe(
 			false,
 		);
+		expect(hasTextTransitionSfx({ transitionId: "flicker" })).toBe(true);
 		expect(hasTextTransitionSfx({ transitionId: "fade" })).toBe(false);
 	});
 
@@ -44,6 +45,18 @@ describe("text transition companion SFX", () => {
 			trimStartSeconds: 0.36,
 			trimEndSeconds: 4.52,
 			volume: 0,
+		});
+		expect(
+			getTextTransitionSfxPreset({ transitionId: "flicker" }),
+		).toMatchObject({
+			assetId: "bfc2e3c8-fd6f-4f80-99f5-8a32da79f709",
+			side: "in",
+			leadInSeconds: 0.124875,
+			durationSeconds: 0.562833,
+			sourceDurationSeconds: 0.762833,
+			trimStartSeconds: 0.2,
+			trimEndSeconds: 0,
+			volume: -13,
 		});
 	});
 });
