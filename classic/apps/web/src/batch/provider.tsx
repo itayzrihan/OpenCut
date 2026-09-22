@@ -1,18 +1,18 @@
 "use client";
 import {
 	createContext,
+	useCallback,
 	useContext,
 	useEffect,
 	useRef,
 	useState,
 	type ReactNode,
-	type Dispatch,
-	type SetStateAction,
 } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { batchEditIsLocked } from "opencut-wasm";
+import type { EditorCore } from "@/core";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,29 +25,31 @@ import {
 } from "@/components/ui/dialog";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
 import type { FullAutoOptions } from "@/ai/full-auto-edit";
-import type {
-	BatchRun,
-	BatchState,
-	BatchSource,
-	SingleEditProgress,
-} from "./types";
+import type { BatchRun, BatchState, BatchSource } from "./types";
 import { batchRequest } from "./client";
-import { setBatchReadOnlyProjects } from "./read-only";
+import { setBatchReadOnlyProjects, beginAutomationHandoff } from "./read-only";
 import { AutomationProgress } from "./automation-progress";
+import { AutomationWorkerHost, type AutomationWorkerTask } from "./worker-host";
+type StartProject = (input: {
+	editor: EditorCore;
+	options: FullAutoOptions;
+}) => Promise<void>;
 const Context = createContext<{
-	single: SingleEditProgress | null;
-	setSingle: Dispatch<SetStateAction<SingleEditProgress | null>>;
 	state: BatchState;
 	loaded: boolean;
 	open: () => void;
 	refresh: () => Promise<void>;
+	startProject: StartProject;
+	preparingProjectId: string | null;
 }>({
-	single: null,
-	setSingle: () => {},
 	state: { runs: [] },
 	loaded: false,
 	open: () => {},
 	refresh: async () => {},
+	startProject: async () => {
+		throw new Error("Automation host is not ready");
+	},
+	preparingProjectId: null,
 });
 export const useBatchEdit = () => useContext(Context);
 export function BatchEditProvider({ children }: { children: ReactNode }) {
@@ -56,7 +58,6 @@ export function BatchEditProvider({ children }: { children: ReactNode }) {
 	return <BatchEditHost>{children}</BatchEditHost>;
 }
 function BatchEditHost({ children }: { children: ReactNode }) {
-	const [single, setSingle] = useState<SingleEditProgress | null>(null);
 	const [state, setState] = useState<BatchState>({ runs: [] });
 	const [loaded, setLoaded] = useState(false);
 	const [open, setOpen] = useState(false);
@@ -68,20 +69,17 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		music: false,
 	});
 	const [starting, setStarting] = useState(false);
-	const [workerId, setWorkerId] = useState("");
-	const frame = useRef<HTMLIFrameElement>(null);
-	const pending = useRef<{
-		run: BatchRun;
-		token: string;
-		files: BatchSource[];
-	} | null>(null);
+	const [workers, setWorkers] = useState<AutomationWorkerTask[]>([]);
+	const [preparingProjectId, setPreparingProjectId] = useState<string | null>(
+		null,
+	);
+	const preparing = useRef(false);
+	const requestVersion = useRef(0);
+	const latestState = useRef<BatchState>({ runs: [] });
 	const input = useRef<HTMLInputElement>(null);
 	const { status, isLoading, login } = useAiOAuthStatus();
-	const active = state.runs.some((r) =>
-		r.jobs.some((j) => batchEditIsLocked({ status: j.status })),
-	);
-	const refresh = async () => {
-		const value = await batchRequest();
+	const applyState = useCallback((value: BatchState) => {
+		latestState.current = value;
 		setBatchReadOnlyProjects(
 			value.runs.flatMap((r) =>
 				r.jobs
@@ -91,80 +89,129 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		);
 		setState(value);
 		setLoaded(true);
-	};
+	}, []);
+	const refresh = useCallback(async () => {
+		const version = ++requestVersion.current;
+		const value = await batchRequest();
+		if (version === requestVersion.current) applyState(value);
+	}, [applyState]);
 	useEffect(() => {
-		let alive = true;
 		const poll = () => {
-			if (alive) void refresh().catch(() => {});
+			void refresh().catch(() => {});
 		};
 		poll();
 		const timer = setInterval(poll, 3000);
 		return () => {
-			alive = false;
 			clearInterval(timer);
 		};
-	}, []);
+	}, [refresh]);
 	useEffect(() => {
-		const receive = (event: MessageEvent) => {
-			if (
-				event.origin !== location.origin ||
-				event.source !== frame.current?.contentWindow
-			)
-				return;
-			if (event.data?.type === "opencut-batch-ready" && pending.current) {
-				frame.current.contentWindow?.postMessage(
-					{ type: "opencut-batch-start", ...pending.current },
-					location.origin,
-				);
-				pending.current = null;
-				setStarting(false);
-			}
-			if (event.data?.type === "opencut-batch-finished") {
-				void refresh();
-				setWorkerId("");
-				toast.info("Batch finished. Review the project results.");
-			}
-		};
-		window.addEventListener("message", receive);
-		return () => window.removeEventListener("message", receive);
-	}, []);
+		// A crashed frame cannot send its finish message. Retire it after lease expiry.
+		const expired = new Set(
+			state.runs
+				.filter(
+					(r) =>
+						r.jobs.some((j) => j.status === "interrupted") &&
+						r.jobs.every((j) => !batchEditIsLocked({ status: j.status })),
+				)
+				.map((r) => r.id),
+		);
+		if (expired.size)
+			setWorkers((prev) =>
+				prev.some((w) => expired.has(w.run.id))
+					? prev.filter((w) => !expired.has(w.run.id))
+					: prev,
+			);
+	}, [state]);
 	useEffect(() => {
-		if (!workerId && single?.status !== "running") return;
+		if (!workers.length && !preparingProjectId) return;
 		const guard = (event: BeforeUnloadEvent) => {
 			event.preventDefault();
 			event.returnValue = "";
 		};
 		window.addEventListener("beforeunload", guard);
 		return () => window.removeEventListener("beforeunload", guard);
-	}, [workerId, single?.status]);
+	}, [workers.length, preparingProjectId]);
+	const launch = async (task: AutomationWorkerTask) => {
+		// Publish the lock immediately, before the visible editor can write again.
+		requestVersion.current++;
+		applyState({
+			...latestState.current,
+			runs: [
+				task.run,
+				...latestState.current.runs.filter((r) => r.id !== task.run.id),
+			],
+		});
+		setWorkers((prev) => [...prev, task]);
+		void refresh().catch(() => {});
+	};
+	const checkModel = async () => {
+		const response = await fetch("/api/transcription/whisper-cpp");
+		const model = await response.json();
+		if (!response.ok || !model.ivritLargeV3)
+			throw new Error(
+				"Configure ivrit-ai Whisper large-v3 before starting automatic editing",
+			);
+	};
+	const startProject: StartProject = async ({ editor, options }) => {
+		if (preparing.current)
+			throw new Error(
+				"Another project is being handed off. Please try again in a moment.",
+			);
+		const projectId = editor.project.getActive().metadata.id;
+		const release = beginAutomationHandoff(projectId);
+		preparing.current = true;
+		setPreparingProjectId(projectId);
+		try {
+			await checkModel();
+			await editor.save.flush();
+			await editor.command.flushHistory();
+			const project = editor.project.getActive();
+			if (project.metadata.id !== projectId)
+				throw new Error("Project changed before handoff. Nothing was queued.");
+			const result = await batchRequest<{ run: BatchRun; token: string }>({
+				action: "project",
+				id: crypto.randomUUID(),
+				projectId,
+				expectedUpdatedAt: project.metadata.updatedAt.toISOString(),
+				options,
+			});
+			await launch({ ...result, files: [] });
+			toast.success("Full Auto Edit queued. You can work in another project.");
+		} finally {
+			release();
+			preparing.current = false;
+			setPreparingProjectId(null);
+		}
+	};
+	const finishWorker = (id: string) => {
+		setWorkers((prev) => prev.filter((w) => w.run.id !== id));
+		void refresh().catch(() => {});
+		toast.info(
+			"Background run finished. Review each result in the activity panel.",
+		);
+	};
 	const start = async () => {
-		if (starting || active || !files.length) return;
+		if (starting || !files.length) return;
 		setStarting(true);
 		try {
-			const check = await fetch("/api/transcription/whisper-cpp");
-			const model = await check.json();
-			if (!check.ok || !model.ivritLargeV3)
-				throw new Error(
-					"Configure ivrit-ai Whisper large-v3 before starting the batch",
-				);
-			const id = crypto.randomUUID();
+			await checkModel();
 			const result = await batchRequest<{ run: BatchRun; token: string }>({
 				action: "create",
-				id,
+				id: crypto.randomUUID(),
 				files: files.map((f) => ({
 					projectId: crypto.randomUUID(),
 					fileName: f.name,
 				})),
 				options,
 			});
-			pending.current = { ...result, files };
-			setWorkerId(id);
+			await launch({ ...result, files });
 			setOpen(false);
 			setFiles([]);
-			await refresh();
 		} catch (e) {
-			setStarting(false);
 			toast.error(e instanceof Error ? e.message : "Could not start batch");
+		} finally {
+			setStarting(false);
 		}
 	};
 	const cancel = async ({
@@ -188,34 +235,24 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				loaded,
 				open: () => setOpen(true),
 				refresh,
-				single,
-				setSingle,
+				startProject,
+				preparingProjectId,
 			}}
 		>
 			{children}
-			{workerId && (
-				<iframe
-					key={workerId}
-					ref={frame}
-					src="/batch-worker"
-					title="Full Auto Edit background worker"
-					aria-hidden
-					tabIndex={-1}
-					style={{
-						position: "fixed",
-						left: -10000,
-						width: 640,
-						height: 360,
-						pointerEvents: "none",
-					}}
+			{workers.map((worker) => (
+				<AutomationWorkerHost
+					key={worker.run.id}
+					task={worker}
+					onFinished={finishWorker}
 				/>
-			)}
+			))}
 			<AutomationProgress
 				state={state}
-				single={single}
 				onOpenBatch={() => setOpen(true)}
-				onClearSingle={() => setSingle(null)}
+				onCancel={cancel}
 			/>
+
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
@@ -259,14 +296,14 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 						<div className="flex gap-3">
 							<Button
 								variant="outline"
-								disabled={active || starting}
+								disabled={starting}
 								onClick={() => input.current?.click()}
 							>
 								Choose videos
 							</Button>
 							<Button
 								variant="outline"
-								disabled={active || starting}
+								disabled={starting}
 								onClick={async () => {
 									try {
 										const picked = await batchRequest<BatchSource[]>({
@@ -315,7 +352,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 								<label key={key} className="flex items-center gap-3 text-sm">
 									<Checkbox
 										checked={options[key]}
-										disabled={active || starting}
+										disabled={starting}
 										onCheckedChange={(v) =>
 											setOptions((p) => ({ ...p, [key]: v === true }))
 										}
@@ -331,90 +368,96 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 							60% / 25% and black edge feather.
 						</p>
 						<p className="text-xs text-muted-foreground">
-							You can keep using the app. Batch projects show live progress and
+							You can keep using the app. Automatic edits show live progress and
 							stay read-only until their job stops. Keep this app tab open while
-							the batch runs.
+							editing runs. You can add more projects to the queue.
 						</p>
 						{!isLoading && !status.authenticated && (
 							<Button variant="outline" onClick={login}>
 								Log in to AI to start
 							</Button>
 						)}
-						{state.runs.slice(0, 3).map((run) => (
-							<section key={run.id} className="space-y-2 border-t pt-4">
-								<div className="flex justify-between items-center">
-									<h3 className="text-sm font-medium">
-										{run.jobs.length} projects ·{" "}
-										{new Date(run.updatedAt).toLocaleDateString()}
-									</h3>
-									{run.jobs.some((j) =>
-										batchEditIsLocked({ status: j.status }),
-									) && (
-										<Button
-											variant="text"
-											onClick={() => cancel({ id: run.id })}
-										>
-											Cancel remaining
-										</Button>
-									)}
-								</div>
-								<p className="text-xs text-muted-foreground">
-									{Object.entries(run.options)
-										.filter(([, v]) => v)
-										.map(
-											([k]) =>
-												({
-													zoom: "Zoom",
-													transitions: "Transitions",
-													wordAnimation: "Word animation & reveal",
-													music: "Music",
-												})[k],
-										)
-										.join(" · ") || "Basic Full Auto Edit"}
-								</p>
-								{run.jobs.map((job) => (
-									<div
-										key={job.projectId}
-										className="rounded-md border p-3 text-sm space-y-1"
-									>
-										<div className="flex items-center justify-between gap-3">
-											<span className="font-medium">{job.fileName}</span>
-											<span>{job.status}</span>
-										</div>
-										<p
-											role="status"
-											className="text-xs text-muted-foreground whitespace-pre-wrap"
-										>
-											{job.message}
-										</p>
-										<div className="flex gap-4">
-											{job.created && (
-												<Link
-													href={`/editor/${job.projectId}`}
-													onClick={() => setOpen(false)}
-													className="text-xs underline"
-												>
-													{batchEditIsLocked({ status: job.status })
-														? "View live · read-only"
-														: "Open project"}
-												</Link>
-											)}
-											{batchEditIsLocked({ status: job.status }) && (
-												<button
-													disabled={job.cancelRequested}
-													className="text-xs underline disabled:opacity-50"
-													onClick={() =>
-														cancel({ id: run.id, projectId: job.projectId })
-													}
-												>
-													{job.cancelRequested ? "Cancelling…" : "Cancel"}
-												</button>
-											)}
-										</div>
+						{state.runs
+							.filter(
+								(r, i) =>
+									i < 10 ||
+									r.jobs.some((j) => batchEditIsLocked({ status: j.status })),
+							)
+							.map((run) => (
+								<section key={run.id} className="space-y-2 border-t pt-4">
+									<div className="flex justify-between items-center">
+										<h3 className="text-sm font-medium">
+											{run.jobs.length} projects ·{" "}
+											{new Date(run.updatedAt).toLocaleDateString()}
+										</h3>
+										{run.jobs.some((j) =>
+											batchEditIsLocked({ status: j.status }),
+										) && (
+											<Button
+												variant="text"
+												onClick={() => cancel({ id: run.id })}
+											>
+												Cancel remaining
+											</Button>
+										)}
 									</div>
-								))}
-							</section>
-						))}
+									<p className="text-xs text-muted-foreground">
+										{Object.entries(run.options)
+											.filter(([, v]) => v)
+											.map(
+												([k]) =>
+													({
+														zoom: "Zoom",
+														transitions: "Transitions",
+														wordAnimation: "Word animation & reveal",
+														music: "Music",
+													})[k],
+											)
+											.join(" · ") || "Basic Full Auto Edit"}
+									</p>
+									{run.jobs.map((job) => (
+										<div
+											key={job.projectId}
+											className="rounded-md border p-3 text-sm space-y-1"
+										>
+											<div className="flex items-center justify-between gap-3">
+												<span className="font-medium">{job.fileName}</span>
+												<span>{job.status}</span>
+											</div>
+											<p
+												role="status"
+												className="text-xs text-muted-foreground whitespace-pre-wrap"
+											>
+												{job.message}
+											</p>
+											<div className="flex gap-4">
+												{job.created && (
+													<Link
+														href={`/editor/${job.projectId}`}
+														onClick={() => setOpen(false)}
+														className="text-xs underline"
+													>
+														{batchEditIsLocked({ status: job.status })
+															? "View live · read-only"
+															: "Open project"}
+													</Link>
+												)}
+												{batchEditIsLocked({ status: job.status }) && (
+													<button
+														disabled={job.cancelRequested}
+														className="text-xs underline disabled:opacity-50"
+														onClick={() =>
+															cancel({ id: run.id, projectId: job.projectId })
+														}
+													>
+														{job.cancelRequested ? "Cancelling…" : "Cancel"}
+													</button>
+												)}
+											</div>
+										</div>
+									))}
+								</section>
+							))}
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setOpen(false)}>
@@ -422,11 +465,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 						</Button>
 						<Button
 							disabled={
-								!loaded ||
-								active ||
-								starting ||
-								!files.length ||
-								!status.authenticated
+								!loaded || starting || !files.length || !status.authenticated
 							}
 							onClick={start}
 						>
@@ -459,7 +498,7 @@ export function BatchProjectBadge({ projectId }: { projectId: string }) {
 			className="block text-xs text-muted-foreground truncate"
 			title={job.message}
 		>
-			Batch · {batchEditIsLocked({ status: job.status }) ? "Locked · " : ""}
+			Auto Edit · {batchEditIsLocked({ status: job.status }) ? "Locked · " : ""}
 			{job.status}
 		</span>
 	) : null;

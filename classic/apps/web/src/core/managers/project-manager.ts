@@ -1,4 +1,8 @@
-import { isBatchReadOnly } from "@/batch/read-only";
+import {
+	isBatchReadOnly,
+	automationReadVersion,
+	acknowledgeAutomationReload,
+} from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type {
 	TProject,
@@ -295,6 +299,7 @@ export class ProjectManager {
 			this.editor.media.clearAllAssets();
 			this.editor.scenes.clearScenes();
 
+			const automationVersion = automationReadVersion(id);
 			const result = await storageService.loadProject({ id });
 			if (!result) {
 				this.active = null;
@@ -339,6 +344,11 @@ export class ProjectManager {
 			}
 
 			await Promise.all([mediaPromise, historyPromise, fontFamiliesPromise]);
+			this.editor.save.discardPending();
+			acknowledgeAutomationReload({
+				projectId: id,
+				version: automationVersion,
+			});
 
 			if (!projectWithFonts.metadata.thumbnail && !isBatchReadOnly(id)) {
 				try {

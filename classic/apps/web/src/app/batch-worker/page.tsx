@@ -4,6 +4,11 @@ import { executeBatch } from "@/batch/worker";
 let started = false;
 export default function BatchWorker() {
 	useEffect(() => {
+		const ready = () => {
+			if (!started)
+				parent.postMessage({ type: "opencut-batch-ready" }, location.origin);
+		};
+		const handshake = setInterval(ready, 1000);
 		const handle = (event: MessageEvent) => {
 			if (
 				event.origin !== location.origin ||
@@ -13,11 +18,15 @@ export default function BatchWorker() {
 			)
 				return;
 			started = true;
+			clearInterval(handshake);
 			void executeBatch(event.data);
 		};
 		window.addEventListener("message", handle);
-		parent.postMessage({ type: "opencut-batch-ready" }, location.origin);
-		return () => window.removeEventListener("message", handle);
+		ready();
+		return () => {
+			clearInterval(handshake);
+			window.removeEventListener("message", handle);
+		};
 	}, []);
 	return <p>Full Auto Edit batch worker</p>;
 }

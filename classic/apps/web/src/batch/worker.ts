@@ -24,6 +24,7 @@ export async function executeBatch({
 	let current: string | undefined;
 	let abort: AbortController | undefined;
 	let state: BatchRun = run;
+	let executionRunId: string | undefined;
 	let queue: Promise<unknown> = Promise.resolve();
 	const send = (data: Record<string, unknown> = {}) => {
 		const task = queue.then(async () => {
@@ -33,6 +34,7 @@ export async function executeBatch({
 				...data,
 			});
 			state = result.runs.find((r) => r.id === run.id)!;
+			executionRunId = result.executionRunId;
 			if (
 				current &&
 				state.jobs.find((j) => j.projectId === current)?.cancelRequested
@@ -54,9 +56,33 @@ export async function executeBatch({
 	const stop = () => abort?.abort();
 	window.addEventListener("pagehide", stop);
 	try {
+		// Every owner keeps its lease alive while waiting; only the oldest active run uses AI/GPU.
+		await send();
+		while (true) {
+			for (const job of state.jobs)
+				if (job.cancelRequested && batchEditIsLocked({ status: job.status })) {
+					await send({
+						projectId: job.projectId,
+						event: "cancel",
+						message: "Cancelled before editing",
+					});
+				}
+			if (!state.jobs.some((j) => batchEditIsLocked({ status: j.status })))
+				return;
+			if (executionRunId === run.id) break;
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			await send();
+		}
 		await initializeGpuRenderer();
 		// Create all project entries immediately. Shared custom fonts are inherited by ProjectManager.
 		for (const job of run.jobs) {
+			if (
+				job.source === "existing" ||
+				!batchEditIsLocked({
+					status: state.jobs.find((j) => j.projectId === job.projectId)!.status,
+				})
+			)
+				continue;
 			await editor.project.createNewProject({
 				id: job.projectId,
 				name: job.name,
@@ -68,6 +94,11 @@ export async function executeBatch({
 		}
 		// Persist source media before editing so queued projects survive navigation.
 		for (const [i, job] of run.jobs.entries()) {
+			if (
+				job.source === "existing" ||
+				!batchEditIsLocked({ status: state.jobs[i].status })
+			)
+				continue;
 			current = job.projectId;
 			abort = new AbortController();
 			await send();

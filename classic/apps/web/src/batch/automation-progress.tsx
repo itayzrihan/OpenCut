@@ -8,16 +8,10 @@ import {
 	useReducedMotion,
 	AnimatePresence,
 } from "motion/react";
-import {
-	Check,
-	ChevronUp,
-	X,
-	Loader2,
-	AlertCircle,
-	Square,
-} from "lucide-react";
-import { batchEditIsLocked, fullAutoEditStages } from "opencut-wasm";
-import type { BatchState, SingleEditProgress } from "./types";
+import { Check, ChevronUp, X, Loader2, AlertCircle } from "lucide-react";
+import { batchEditIsLocked } from "opencut-wasm";
+import type { BatchState } from "./types";
+import { automationView } from "./progress-view";
 const stageNames: Record<string, string> = {
 	preflight: "Check source, font & model",
 	framing: "Vertical frame · face & body",
@@ -41,18 +35,17 @@ const clamp = ({
 }) => Math.max(min, Math.min(Math.max(min, max), value));
 export function AutomationProgress({
 	state,
-	single,
 	onOpenBatch,
-	onClearSingle,
+	onCancel,
 }: {
 	state: BatchState;
-	single: SingleEditProgress | null;
 	onOpenBatch: () => void;
-	onClearSingle: () => void;
+	onCancel: (input: { id: string; projectId?: string }) => Promise<void>;
 }) {
 	const [expanded, setExpanded] = useState(false);
 	const [openedAt] = useState(() => Date.now());
 	const [dismissed, setDismissed] = useState("");
+	const [selection, setSelection] = useState("");
 	const [viewport, setViewport] = useState({ width: 1000, height: 800 });
 	const x = useMotionValue(0),
 		y = useMotionValue(0);
@@ -112,65 +105,25 @@ export function AutomationProgress({
 		window.addEventListener("resize", resize);
 		return () => window.removeEventListener("resize", resize);
 	}, [x, y]);
-	const run =
-		state.runs.find((r) =>
-			r.jobs.some((j) => batchEditIsLocked({ status: j.status })),
-		) ?? state.runs[0];
-	const useSingle =
-		single?.status === "running" ||
-		(!!single &&
-			!run?.jobs.some((j) => batchEditIsLocked({ status: j.status })) &&
-			(!run || single.updatedAt > run.updatedAt));
-	const key = useSingle ? `single-${single!.id}` : run?.id;
-	const visible =
-		!!key &&
-		key !== dismissed &&
-		(useSingle ||
-			(!!run &&
-				(openedAt - run.updatedAt < 600000 ||
-					run.jobs.some((j) => batchEditIsLocked({ status: j.status })))));
-	const job =
-		run?.jobs.find((j) => j.status === "running" || j.status === "importing") ??
-		run?.jobs.find((j) => batchEditIsLocked({ status: j.status })) ??
-		run?.jobs.at(-1);
-	const stages = fullAutoEditStages(
-		useSingle
-			? single!.options
-			: (run?.options ?? {
-					zoom: false,
-					transitions: false,
-					wordAnimation: false,
-					music: false,
-				}),
-	);
-	const completed = useSingle
-		? single!.completedStages
-		: (job?.completedStages ?? 0);
-	const totalVideos = useSingle ? 1 : (run?.jobs.length ?? 1);
-	const ready = useSingle
-		? single!.status === "completed"
-			? 1
-			: 0
-		: (run?.jobs.filter((j) => j.status === "completed").length ?? 0);
-	const stopped = useSingle
-		? single!.status !== "running"
-			? 1
-			: 0
-		: (run?.jobs.filter((j) => !batchEditIsLocked({ status: j.status }))
-				.length ?? 0);
-	const active = useSingle
-		? single!.status === "running"
-		: !!run?.jobs.some((j) => batchEditIsLocked({ status: j.status }));
-	const message = useSingle ? single!.message : (job?.message ?? "Preparing…");
-	const error = useSingle
-		? ["failed", "cancelled"].includes(single!.status)
-		: !!run?.jobs.some((j) =>
-				["failed", "cancelled", "interrupted"].includes(j.status),
-			);
-	const stageWork = useSingle
-		? completed
-		: (run?.jobs.reduce((sum, j) => sum + (j.completedStages ?? 0), 0) ?? 0);
-	const percent = Math.round((100 * stageWork) / (stages.length * totalVideos));
+	const view = automationView({ state, openedAt, selection });
+	const {
+		run,
+		job,
+		entries,
+		stages,
+		completed,
+		totalVideos,
+		ready,
+		stopped,
+		active,
+		message,
+		activityMessage,
+		error,
+		percent,
+		key,
+	} = view;
+	const visible = entries.length > 0 && (active || key !== dismissed);
+
 	if (!visible) return null;
 	return (
 		<div
@@ -199,9 +152,7 @@ export function AutomationProgress({
 					>
 						<header className="p-4 pb-2 flex items-start justify-between gap-3">
 							<div>
-								<h2 className="text-sm font-semibold">
-									{useSingle ? "Full Auto Edit" : "Batch · Full Auto Edit"}
-								</h2>
+								<h2 className="text-sm font-semibold">Background edits</h2>
 								<p className="text-xs text-muted-foreground mt-1">
 									{ready}/{totalVideos} videos ready
 									{stopped > ready
@@ -218,9 +169,25 @@ export function AutomationProgress({
 							</button>
 						</header>
 						<div className="px-4 pb-3 space-y-2 max-h-56 overflow-y-auto">
-							<p className="text-xs font-medium truncate">
-								{useSingle ? single!.name : job?.fileName}
-							</p>
+							{entries.length > 1 && (
+								<select
+									aria-label="Background project"
+									className="w-full text-xs bg-background border rounded p-1"
+									value={run && job ? `${run.id}:${job.projectId}` : ""}
+									onChange={(e) => setSelection(e.target.value)}
+								>
+									{entries.map(({ run: r, job: j }) => (
+										<option
+											key={`${r.id}:${j.projectId}`}
+											value={`${r.id}:${j.projectId}`}
+										>
+											{j.name} · {j.status}
+										</option>
+									))}
+								</select>
+							)}
+
+							<p className="text-xs font-medium truncate">{job?.fileName}</p>
 							<p
 								role="status"
 								className="text-xs text-muted-foreground leading-relaxed"
@@ -237,7 +204,7 @@ export function AutomationProgress({
 											<Check size={13} className="text-emerald-500" />
 										) : i === completed &&
 										  active &&
-										  (useSingle || job?.status === "running") ? (
+										  job?.status === "running" ? (
 											<Loader2
 												size={13}
 												className={reduced ? "" : "animate-spin"}
@@ -246,46 +213,34 @@ export function AutomationProgress({
 											<span className="w-[13px] text-center">·</span>
 										)}
 										<span>{stageNames[stage] ?? stage}</span>
-										{i === completed &&
-											active &&
-											(useSingle || job?.status === "running") && (
-												<span className="ml-auto text-[10px] text-primary">
-													Working
-												</span>
-											)}
+										{i === completed && active && job?.status === "running" && (
+											<span className="ml-auto text-[10px] text-primary">
+												Working
+											</span>
+										)}
 									</li>
 								))}
 							</ol>
 						</div>
 						<footer className="border-t px-4 py-2 flex justify-between gap-3 text-xs">
-							{useSingle ? (
-								active ? (
-									<button
-										className="flex items-center gap-1"
-										onClick={single!.cancel}
-									>
-										<Square size={10} />
-										Cancel editing
-									</button>
-								) : (
-									<button
-										onClick={() => {
-											setDismissed(key!);
-											onClearSingle();
-										}}
-									>
-										Dismiss
-									</button>
-								)
-							) : (
-								<button className="underline" onClick={onOpenBatch}>
-									All videos & controls
+							<button className="underline" onClick={onOpenBatch}>
+								All videos & controls
+							</button>
+							{job && run && batchEditIsLocked({ status: job.status }) && (
+								<button
+									disabled={job.cancelRequested}
+									onClick={() =>
+										void onCancel({ id: run.id, projectId: job.projectId })
+									}
+								>
+									{job.cancelRequested ? "Cancelling..." : "Cancel editing"}
 								</button>
 							)}
+
 							<span className="text-muted-foreground">
 								{percent}% of stages complete
 							</span>
-							{!active && !useSingle && (
+							{!active && (
 								<button onClick={() => setDismissed(key!)}>Dismiss</button>
 							)}
 						</footer>
@@ -441,7 +396,7 @@ export function AutomationProgress({
 					</span>
 					<span className="block truncate text-[11px] text-muted-foreground mt-1">
 						{active
-							? message
+							? activityMessage
 							: `${ready} completed · ${stopped - ready} stopped`}
 					</span>
 				</span>

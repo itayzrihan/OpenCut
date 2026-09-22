@@ -56,8 +56,79 @@ async function transaction<T>(
 	return pending;
 }
 const publicState = (s: Store): BatchState => ({
+	executionRunId: [...s.runs]
+		.reverse()
+		.find((r) => r.jobs.some((j) => batchEditIsLocked({ status: j.status })))
+		?.id,
 	runs: s.runs.map(({ token: _token, heartbeat: _heartbeat, ...run }) => run),
 });
+function retainRuns(runs: StoredRun[]) {
+	let completed = 0;
+	return runs.filter(
+		(r) =>
+			r.jobs.some((j) => batchEditIsLocked({ status: j.status })) ||
+			completed++ < 20,
+	);
+}
+export async function createProjectEdit({
+	id,
+	projectId,
+	expectedUpdatedAt,
+	options,
+}: {
+	id: string;
+	projectId: string;
+	expectedUpdatedAt: string;
+	options: FullAutoOptions;
+}) {
+	return transaction(async (s) => {
+		const replay = s.runs.find((r) => r.id === id);
+		if (replay) throw new Error("This edit was already submitted");
+		if (
+			s.runs.some((r) =>
+				r.jobs.some(
+					(j) =>
+						j.projectId === projectId &&
+						batchEditIsLocked({ status: j.status }),
+				),
+			)
+		)
+			throw new Error("This project already has an active automatic edit");
+		const project = (await getProject(projectId)) as {
+			metadata?: { name?: string; updatedAt?: string };
+		} | null;
+		if (!project?.metadata)
+			throw new Error(
+				"Save the imported project before starting automatic editing",
+			);
+		if (project.metadata.updatedAt !== expectedUpdatedAt)
+			throw new Error("Project changed before handoff. Save and try again.");
+		const run: StoredRun = {
+			id,
+			kind: "single",
+			createdAt: Date.now(),
+			options,
+			token: randomUUID(),
+			heartbeat: Date.now(),
+			updatedAt: Date.now(),
+			jobs: [
+				{
+					projectId,
+					name: project.metadata.name ?? "Project",
+					fileName: project.metadata.name ?? "Project",
+					source: "existing",
+					status: "ready",
+					message: "Queued for background Full Auto Edit",
+					cancelRequested: false,
+					created: true,
+					completedStages: 0,
+				},
+			],
+		};
+		s.runs = retainRuns([run, ...s.runs]);
+		return { token: run.token, run: publicState({ runs: [run] }).runs[0] };
+	});
+}
 export const getBatchState = () => transaction(publicState);
 export async function createBatch({
 	id,
@@ -71,19 +142,18 @@ export async function createBatch({
 	return transaction(async (s) => {
 		if (s.runs.some((r) => r.id === id))
 			throw new Error("This batch was already submitted");
-		if (
-			s.runs.some((r) =>
-				r.jobs.some((j) => batchEditIsLocked({ status: j.status })),
-			)
-		)
-			throw new Error(
-				"A batch is already running. Wait for it to finish or cancel it.",
-			);
-		for (const f of files)
-			if (await getProject(f.projectId))
+		const reserved = new Set(
+			s.runs.flatMap((r) => r.jobs.map((j) => j.projectId)),
+		);
+		for (const f of files) {
+			if (reserved.has(f.projectId) || (await getProject(f.projectId)))
 				throw new Error("Batch requires new project ids");
+			reserved.add(f.projectId);
+		}
 		const run: StoredRun = {
 			id,
+			kind: "batch",
+			createdAt: Date.now(),
 			options,
 			token: randomUUID(),
 			heartbeat: Date.now(),
@@ -98,7 +168,7 @@ export async function createBatch({
 				completedStages: 0,
 			})),
 		};
-		s.runs = [run, ...s.runs].slice(0, 20);
+		s.runs = retainRuns([run, ...s.runs]);
 		return { token: run.token, run: publicState({ runs: [run] }).runs[0] };
 	});
 }
@@ -171,6 +241,26 @@ export async function cancelBatch({
 		return publicState(s);
 	});
 }
+function checkProjectWrite({
+	s,
+	projectId,
+	token,
+}: {
+	s: Store;
+	projectId: string;
+	token: string | null;
+}) {
+	const activeRun = s.runs.find((r) =>
+		r.jobs.some(
+			(j) =>
+				j.projectId === projectId && batchEditIsLocked({ status: j.status }),
+		),
+	);
+	if (token && (!activeRun || activeRun.token !== token))
+		throw new Error("Expired batch writer; write rejected");
+	if (activeRun && token !== activeRun.token)
+		throw new Error("Project is locked while Full Auto Edit is working");
+}
 export async function assertBatchProjectWrite({
 	projectId,
 	token,
@@ -178,25 +268,21 @@ export async function assertBatchProjectWrite({
 	projectId: string;
 	token: string | null;
 }) {
-	return transaction((s) => {
-		const run = s.runs.find((r) =>
-			r.jobs.some((j) => j.projectId === projectId),
-		);
-		const job = run?.jobs.find((j) => j.projectId === projectId);
-		if (
-			token &&
-			(!run ||
-				token !== run.token ||
-				!job ||
-				!batchEditIsLocked({ status: job.status }))
-		)
-			throw new Error("Expired batch writer; write rejected");
-		if (
-			job &&
-			batchEditIsLocked({ status: job.status }) &&
-			token !== run?.token
-		)
-			throw new Error("Project is locked while Full Auto Edit is working");
+	return transaction((s) => checkProjectWrite({ s, projectId, token }));
+}
+/** Hold the queue mutex across document/history writes so enqueue cannot overtake an in-flight save. */
+export async function withBatchProjectWrite<T>({
+	projectId,
+	token,
+	write,
+}: {
+	projectId: string;
+	token: string | null;
+	write: () => Promise<T>;
+}) {
+	return transaction(async (s) => {
+		checkProjectWrite({ s, projectId, token });
+		return await write();
 	});
 }
 export async function assertNoActiveBatch() {

@@ -1,4 +1,8 @@
-import { assertBatchProjectWrite, assertNoActiveBatch } from "@/batch/server";
+import {
+	assertBatchProjectWrite,
+	assertNoActiveBatch,
+	withBatchProjectWrite,
+} from "@/batch/server";
 /* eslint-disable opencut/prefer-object-params -- Route dispatch mirrors storage operation signatures. */
 import { NextResponse } from "next/server";
 import {
@@ -132,7 +136,11 @@ export async function POST(request: Request) {
 			case "project.get":
 				return NextResponse.json(await getProject(projectId()));
 			case "project.put":
-				await putProject(projectId(), body.project);
+				await withBatchProjectWrite({
+					projectId: projectId(),
+					token: request.headers.get("X-OpenCut-Batch-Token"),
+					write: () => putProject(projectId(), body.project),
+				});
 				return NextResponse.json({ ok: true });
 			case "project.delete":
 				await deleteProject(projectId());
@@ -140,7 +148,11 @@ export async function POST(request: Request) {
 			case "history.get":
 				return NextResponse.json(await getHistory(projectId()));
 			case "history.put":
-				await putHistory(projectId(), body.history);
+				await withBatchProjectWrite({
+					projectId: projectId(),
+					token: request.headers.get("X-OpenCut-Batch-Token"),
+					write: () => putHistory(projectId(), body.history),
+				});
 				return NextResponse.json({ ok: true });
 			case "history.delete":
 				await deleteHistory(projectId());

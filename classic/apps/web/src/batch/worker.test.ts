@@ -12,7 +12,7 @@ let active = "",
 const created: string[] = [],
 	edits: string[] = [],
 	saved: string[] = [];
-const run: BatchRun = {
+let run: BatchRun = {
 	id: "test",
 	options,
 	updatedAt: 0,
@@ -110,7 +110,7 @@ mock.module("./client", () => ({
 					} as const
 				)[data.event as "import"];
 		}
-		return { runs: [structuredClone(run)] };
+		return { executionRunId: run.id, runs: [structuredClone(run)] };
 	},
 }));
 mock.module("@/ai/full-auto-edit", () => ({
@@ -151,7 +151,7 @@ test("worker creates one project per video, isolates failed imports, respects ca
 			token: "test-lease",
 			files: run.jobs.map((j) => new File(["video"], j.fileName)),
 		});
-		expect(created).toEqual(["bad", "good", "cancelled"]);
+		expect(created).toEqual(["bad", "good"]);
 		expect(run.jobs.map((j) => j.status)).toEqual([
 			"failed",
 			"completed",
@@ -162,5 +162,51 @@ test("worker creates one project per video, isolates failed imports, respects ca
 		expect(saved).toEqual(["good"]);
 	} finally {
 		Object.assign(globals, previous);
+	}
+});
+
+test("existing-project worker never recreates or imports the project", async () => {
+	const oldRun = run;
+	run = {
+		id: "existing",
+		kind: "single",
+		options,
+		updatedAt: 0,
+		jobs: [
+			{
+				projectId: "original",
+				name: "Original",
+				fileName: "Original",
+				source: "existing",
+				status: "ready",
+				created: true,
+				cancelRequested: false,
+				completedStages: 0,
+				message: "",
+			},
+		],
+	};
+	const globals = globalThis as unknown as Record<string, unknown>;
+	const old = {
+		window: globals.window,
+		parent: globals.parent,
+		location: globals.location,
+	};
+	globals.window = {
+		addEventListener: () => {},
+		removeEventListener: () => {},
+	};
+	globals.parent = { postMessage: () => {} };
+	globals.location = { origin: "http://localhost" };
+	const createdBefore = created.length;
+	try {
+		await executeBatch({ run, token: "existing-token", files: [] });
+		expect(created.length).toBe(createdBefore);
+		expect(edits.at(-1)).toBe("original");
+		expect(saved.at(-1)).toBe("original");
+		expect(run.jobs[0].status).toBe("completed");
+	} finally {
+		run = oldRun;
+		Object.assign(globals, old);
 	}
 });

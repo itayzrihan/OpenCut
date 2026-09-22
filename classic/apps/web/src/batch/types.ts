@@ -9,6 +9,7 @@ export type BatchJobStatus =
 	| "cancelled"
 	| "interrupted";
 export interface BatchJob {
+	source?: "existing" | "import";
 	projectId: string;
 	name: string;
 	fileName: string;
@@ -19,25 +20,16 @@ export interface BatchJob {
 	completedStages: number;
 }
 export interface BatchRun {
+	kind?: "single" | "batch";
+	createdAt?: number;
 	id: string;
 	options: FullAutoOptions;
 	jobs: BatchJob[];
 	updatedAt: number;
 }
 export interface BatchState {
+	executionRunId?: string;
 	runs: BatchRun[];
 }
 
 export type BatchSource = File | { name: string; sourcePath: string };
-
-export interface SingleEditProgress {
-	updatedAt: number;
-	id: string;
-	projectId: string;
-	name: string;
-	options: FullAutoOptions;
-	status: "running" | "completed" | "failed" | "cancelled";
-	completedStages: number;
-	message: string;
-	cancel: () => void;
-}

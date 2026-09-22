@@ -61,6 +61,8 @@ export default function Editor() {
 		.flatMap((r) => r.jobs)
 		.find((j) => j.projectId === projectId);
 	const readOnly = !!job && batchEditIsLocked({ status: job.status });
+	if (batch.preparingProjectId === projectId)
+		return <p className="p-8">Saving project for background editing...</p>;
 	if (!batch.loaded) return <p className="p-8">Checking project status…</p>;
 
 	return (
@@ -72,7 +74,7 @@ export default function Editor() {
 			>
 				{readOnly && (
 					<div className="fixed top-0 inset-x-0 z-100 bg-background border-b p-3 flex justify-between gap-4 text-sm">
-						<span role="status">Batch · Read-only · {job?.message}</span>
+						<span role="status">Auto Edit · Read-only · {job?.message}</span>
 						<Link href="/projects" className="underline shrink-0">
 							Back to Projects
 						</Link>

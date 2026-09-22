@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,7 +12,7 @@ import {
 	DialogDescription,
 } from "@/components/ui/dialog";
 import { useEditor } from "@/editor/use-editor";
-import { runFullAutoEdit, type FullAutoOptions } from "@/ai/full-auto-edit";
+import { type FullAutoOptions } from "@/ai/full-auto-edit";
 import { toast } from "sonner";
 import { useBatchEdit } from "@/batch/provider";
 
@@ -24,9 +24,7 @@ export function FullAutoEditButton({
 	onRunningChange?: (running: boolean) => void;
 }) {
 	const editor = useEditor();
-	const { single, setSingle } = useBatchEdit();
-	const singleRunning = single?.status === "running";
-	const controller = useRef<AbortController | null>(null);
+	const { startProject } = useBatchEdit();
 	const [open, setOpen] = useState(false);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
@@ -37,85 +35,28 @@ export function FullAutoEditButton({
 		music: false,
 	});
 	const run = async () => {
-		if (controller.current || singleRunning) return;
-		const abort = new AbortController();
-		controller.current = abort;
+		if (running) return;
 		setRunning(true);
-		setOpen(false);
-		const project = editor.project.getActive();
-		setSingle({
-			updatedAt: Date.now(),
-			id: crypto.randomUUID(),
-			projectId: project.metadata.id,
-			name: project.metadata.name,
-			options,
-			status: "running",
-			completedStages: 0,
-			message: "Starting Full Auto Edit…",
-			cancel: () => abort.abort(),
-		});
 		onRunningChange?.(true);
 		try {
-			const notes = await runFullAutoEdit({
-				editor,
-				signal: abort.signal,
-				onProgress: setStatus,
-				onStep: (p) =>
-					setSingle((prev) =>
-						prev
-							? {
-									...prev,
-									updatedAt: Date.now(),
-									completedStages: p.completedStages,
-									message: p.message,
-								}
-							: prev,
-					),
-				options,
-			});
-			setStatus(
-				[
-					"Saved. Review captions, speech cuts and framing before export. Each completed stage supports Undo.",
-					...notes,
-				].join("\n"),
-			);
-			setSingle((prev) =>
-				prev
-					? {
-							...prev,
-							status: "completed",
-							updatedAt: Date.now(),
-							message: "Saved · ready for review",
-						}
-					: prev,
-			);
-			toast.success("Full Auto Edit ready for review");
-		} catch (error) {
+			await startProject({ editor, options });
+			setOpen(false);
+		} catch (e) {
 			const message =
-				error instanceof Error ? error.message : "Full Auto Edit failed";
+				e instanceof Error ? e.message : "Could not queue Full Auto Edit";
 			setStatus(message);
-			setSingle((prev) =>
-				prev
-					? {
-							...prev,
-							status: abort.signal.aborted ? "cancelled" : "failed",
-							updatedAt: Date.now(),
-							message,
-						}
-					: prev,
-			);
 			toast.error(message);
 		} finally {
-			controller.current = null;
 			setRunning(false);
 			onRunningChange?.(false);
 		}
 	};
+
 	return (
 		<div className="mb-4 space-y-2 rounded-md border p-3">
 			<Button
 				className="w-full"
-				disabled={disabled || running || singleRunning}
+				disabled={disabled || running}
 				onClick={() => setOpen(true)}
 			>
 				<WandSparkles /> Full Auto Edit
@@ -181,18 +122,13 @@ export function FullAutoEditButton({
 						)}
 					</div>
 					<DialogFooter>
-						{running ? (
-							<Button
-								variant="outline"
-								onClick={() => controller.current?.abort()}
-							>
-								Cancel Full Auto Edit
-							</Button>
-						) : (
-							<Button variant="outline" onClick={() => setOpen(false)}>
-								Close
-							</Button>
-						)}
+						<Button
+							variant="outline"
+							disabled={running}
+							onClick={() => setOpen(false)}
+						>
+							Close
+						</Button>
 						<Button disabled={running} onClick={run}>
 							{running && <Loader2 className="animate-spin" />}Start Full Auto
 							Edit

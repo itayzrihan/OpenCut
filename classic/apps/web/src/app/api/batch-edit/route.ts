@@ -7,6 +7,7 @@ import {
 } from "@/services/local-drive/server";
 import {
 	getBatchState,
+	createProjectEdit,
 	createBatch,
 	updateBatch,
 	cancelBatch,
@@ -23,6 +24,13 @@ const options = z
 	.strict();
 const schema = z.discriminatedUnion("action", [
 	z.object({ action: z.literal("pick") }),
+	z.object({
+		action: z.literal("project"),
+		id: z.string().uuid(),
+		projectId: z.string().uuid(),
+		expectedUpdatedAt: z.string().datetime(),
+		options,
+	}),
 	z.object({
 		action: z.literal("create"),
 		id: z.string().uuid(),
@@ -77,6 +85,8 @@ export async function POST(request: Request) {
 					.filter((p) => /\.(mp4|mov|mkv|webm|m4v|avi|mts|m2ts)$/i.test(p))
 					.map((p) => ({ sourcePath: p, name: basename(p) })),
 			);
+		if (body.action === "project")
+			return NextResponse.json(await createProjectEdit(body));
 		if (body.action === "create") {
 			if (
 				new Set(body.files.map((f) => f.projectId)).size !== body.files.length
