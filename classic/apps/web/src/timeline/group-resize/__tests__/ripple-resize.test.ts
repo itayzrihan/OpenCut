@@ -1,29 +1,8 @@
-import { beforeAll, describe, expect, mock, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 import type { SceneTracks } from "@/timeline";
 import { mediaTime } from "@/wasm";
 
-mock.module("../ripple-resize-wasm", () => ({
-	rippleResizeWasm: {
-		rippleInsertTime: ({
-			clips,
-			cutTime,
-			insertedDuration,
-		}: {
-			clips: Array<{ id: string; startTime: number; duration: number }>;
-			cutTime: number;
-			insertedDuration: number;
-		}) =>
-			clips.map((clip) => {
-				if (clip.startTime >= cutTime) {
-					return { ...clip, startTime: clip.startTime + insertedDuration };
-				}
-				if (clip.startTime + clip.duration > cutTime) {
-					return { ...clip, duration: clip.duration + insertedDuration };
-				}
-				return clip;
-			}),
-	},
-}));
+import "./mock-ripple-wasm";
 
 let buildRippleResizeUpdates: typeof import("../ripple-resize").buildRippleResizeUpdates;
 

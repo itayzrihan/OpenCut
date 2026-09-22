@@ -6,9 +6,33 @@ import {
 	normalizeCaptionLayoutSettings,
 	resolveCaptionBottomFadeOut,
 	stripCaptionPunctuation,
+	splitCaptionCuesByLayer,
 } from "@/subtitles/caption-layout";
 
 describe("caption placement layout", () => {
+	test("defaults new transcripts to one row", () => {
+		expect(normalizeCaptionLayoutSettings({ settings: undefined }).rows).toBe(
+			1,
+		);
+	});
+
+	test("reuses an overflow layer after it becomes free", () => {
+		const captions = [0, 0, 0, 1, 1, 1].map((startTime, index) => ({
+			text: `Caption ${index}`,
+			startTime,
+			duration: 0.5,
+		}));
+		const layers = splitCaptionCuesByLayer({ captions, layerCount: 2 });
+		expect(layers).toHaveLength(3);
+		expect(layers.flat()).toHaveLength(captions.length);
+		for (const layer of layers) {
+			for (let index = 1; index < layer.length; index++) {
+				expect(layer[index].startTime).toBeGreaterThanOrEqual(
+					layer[index - 1].startTime + layer[index - 1].duration,
+				);
+			}
+		}
+	});
 	test("selects a grid from the canvas ratio", () => {
 		expect(
 			getCaptionPlacementGrid({ canvasSize: { width: 1080, height: 1080 } }),
@@ -21,7 +45,7 @@ describe("caption placement layout", () => {
 		).toEqual({ columns: 3, rows: 5 });
 	});
 
-	test("defaults to bottom-center in each ratio grid", () => {
+	test("defaults to center in each ratio grid", () => {
 		const settings = normalizeCaptionLayoutSettings({ settings: undefined });
 
 		expect(
@@ -29,19 +53,19 @@ describe("caption placement layout", () => {
 				settings,
 				canvasSize: { width: 1080, height: 1080 },
 			}),
-		).toEqual({ columns: 3, rows: 3, columnIndex: 1, rowIndex: 2 });
+		).toEqual({ columns: 3, rows: 3, columnIndex: 1, rowIndex: 1 });
 		expect(
 			getCaptionGridCell({
 				settings,
 				canvasSize: { width: 1920, height: 1080 },
 			}),
-		).toEqual({ columns: 5, rows: 3, columnIndex: 2, rowIndex: 2 });
+		).toEqual({ columns: 5, rows: 3, columnIndex: 2, rowIndex: 1 });
 		expect(
 			getCaptionGridCell({
 				settings,
 				canvasSize: { width: 1080, height: 1920 },
 			}),
-		).toEqual({ columns: 3, rows: 5, columnIndex: 1, rowIndex: 4 });
+		).toEqual({ columns: 3, rows: 5, columnIndex: 1, rowIndex: 2 });
 	});
 
 	test("normalizes placement mode and coordinates", () => {
@@ -72,6 +96,10 @@ describe("caption placement layout", () => {
 			normalizeCaptionLayoutSettings({
 				settings: undefined,
 			}).hidePunctuation,
+		).toBe(true);
+		expect(
+			normalizeCaptionLayoutSettings({ settings: { hidePunctuation: false } })
+				.hidePunctuation,
 		).toBe(false);
 	});
 
@@ -79,7 +107,7 @@ describe("caption placement layout", () => {
 		expect(
 			normalizeCaptionLayoutSettings({ settings: undefined }),
 		).toMatchObject({
-			bottomFadeOutPercent: 50,
+			bottomFadeOutPercent: 60,
 			revealMode: "determined-by-preset",
 			transitionIn: "none",
 			wordAnimationId: "none",
@@ -92,7 +120,7 @@ describe("caption placement layout", () => {
 		});
 		expect(
 			resolveCaptionBottomFadeOut({ settings: defaultSettings }),
-		).toBeCloseTo(0.5);
+		).toBeCloseTo(0.6);
 		expect(
 			normalizeCaptionLayoutSettings({
 				settings: { bottomFadeOutPercent: 150 },
@@ -118,7 +146,7 @@ describe("caption placement layout", () => {
 					bottomFadeOutPercent: undefined,
 				},
 			}),
-		).toBe(0);
+		).toBe(0.6);
 	});
 
 	test("strips punctuation without collapsing caption lines", () => {

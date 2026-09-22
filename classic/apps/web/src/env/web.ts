@@ -27,6 +27,7 @@ const webEnvSchema = z.object({
 	WHISPER_CPP_BINARY_PATH: z.string().optional(),
 	WHISPER_CPP_MODEL_PATH: z.string().optional(),
 	WHISPER_CPP_FFMPEG_PATH: z.string().optional(),
+	WHISPER_CPP_DEVICE: z.enum(["auto", "cpu"]).default("auto"),
 	OPENAI_CODEX_OAUTH_CLIENT_ID: z
 		.string()
 		.default("app_EMoamEEZ73f0CkXaXp7hrann"),

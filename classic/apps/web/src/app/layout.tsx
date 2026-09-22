@@ -1,3 +1,4 @@
+import { BatchEditRoot } from "@/batch/root";
 import { ThemeProvider } from "next-themes";
 import Script from "next/script";
 import "./globals.css";
@@ -54,7 +55,7 @@ export default function RootLayout({
 							data-track-web-vitals={false}
 							data-track-sessions={false}
 						/>
-						{children}
+						<BatchEditRoot>{children}</BatchEditRoot>
 					</TooltipProvider>
 				</ThemeProvider>
 			</body>

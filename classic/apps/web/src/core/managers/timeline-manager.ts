@@ -1246,10 +1246,13 @@ export class TimelineManager {
 	async removeAllSilence({
 		mode = "audio",
 		minSilenceSeconds,
+		signal,
 	}: {
 		mode?: "audio" | "fast" | "deep";
 		minSilenceSeconds?: number;
+		signal?: AbortSignal;
 	} = {}): Promise<void> {
+		signal?.throwIfAborted();
 		const scene = this.editor.scenes.getActiveScene();
 		const before = scene.tracks;
 		const project = this.editor.project.getActive();
@@ -1288,6 +1291,7 @@ export class TimelineManager {
 		let analyzedClipCount = 0;
 
 		for (const { track, element } of selectedVideos) {
+			signal?.throwIfAborted();
 			if (element.type !== "video") continue;
 			const referencedAsset = mediaById.get(element.mediaId);
 			const asset = referencedAsset
@@ -1418,6 +1422,7 @@ export class TimelineManager {
 				"The selected video clips do not have enabled, decodable audio to analyze.",
 			);
 		}
+		signal?.throwIfAborted();
 		const activeScene = this.editor.scenes.getActiveSceneOrNull();
 		if (activeScene?.id !== scene.id || activeScene.tracks !== before) {
 			throw new Error(
@@ -2346,10 +2351,23 @@ export class TimelineManager {
 		return null;
 	}
 
-	updateTracks(newTracks: SceneTracks): void {
+	// Keep the existing positional API for callers; timeline splices already
+	// transform canonical caption sources and must not reconcile them twice.
+	// eslint-disable-next-line opencut/prefer-object-params
+	updateTracks(
+		newTracks: SceneTracks,
+		options?: { captionsAlreadySynced: boolean },
+	): void {
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
 		this.previewTracks = null;
+		if (options?.captionsAlreadySynced) {
+			this.editor.scenes.updateSceneTracks({
+				tracks: withNormalizedTrackOrder({ tracks: newTracks }),
+			});
+			this.notify();
+			return;
+		}
 		const previousTracks = this.editor.scenes.getActiveSceneOrNull()?.tracks;
 		const normalizedTracks = normalizeTextLayerWordRunIds({
 			tracks: newTracks,

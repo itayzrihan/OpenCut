@@ -1,6 +1,7 @@
+import { buildWords, segmentStart, segmentEnd, roundSeconds } from "./whisper-json";
 import { webEnv } from "@/env/web";
 import { type NextRequest, NextResponse } from "next/server";
-import { spawn } from "node:child_process";
+import { runProcess } from "./run-process";
 import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -8,40 +9,6 @@ import { join } from "node:path";
 import { z } from "zod";
 
 export const runtime = "nodejs";
-
-interface WhisperSegment {
-	text?: string;
-	timestamps?: {
-		from?: string;
-		to?: string;
-	};
-	offsets?: {
-		from?: number;
-		to?: number;
-	};
-	tokens?: Array<{
-		text?: string;
-		t_dtw?: number;
-		timestamps?: {
-			from?: string;
-			to?: string;
-		};
-		offsets?: {
-			from?: number;
-			to?: number;
-		};
-	}>;
-}
-
-interface WordTiming {
-	text: string;
-	start: number;
-	end: number;
-	dtwStart?: number;
-	dtwEnd?: number;
-	segmentStart?: number;
-	segmentEnd?: number;
-}
 
 interface PcmAudio {
 	samples: Float32Array;
@@ -108,110 +75,6 @@ function firstExisting(paths: string[]) {
 		}
 	}
 	return null;
-}
-
-function parseTimestamp(value?: string) {
-	if (!value) return 0;
-	const parts = value.trim().replace(",", ".").split(":").map(Number);
-	if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-	if (parts.length === 2) return parts[0] * 60 + parts[1];
-	return Number(value) || 0;
-}
-
-function segmentStart(segment: WhisperSegment) {
-	if (typeof segment.offsets?.from === "number") return segment.offsets.from / 1000;
-	return parseTimestamp(segment.timestamps?.from);
-}
-
-function segmentEnd(segment: WhisperSegment) {
-	if (typeof segment.offsets?.to === "number") return segment.offsets.to / 1000;
-	return parseTimestamp(segment.timestamps?.to);
-}
-
-function tokenStart({
-	token,
-	fallback,
-}: {
-	token: NonNullable<WhisperSegment["tokens"]>[number];
-	fallback: number;
-}) {
-	if (typeof token.offsets?.from === "number") return token.offsets.from / 1000;
-	return parseTimestamp(token.timestamps?.from) || fallback;
-}
-
-function tokenEnd({
-	token,
-	fallback,
-}: {
-	token: NonNullable<WhisperSegment["tokens"]>[number];
-	fallback: number;
-}) {
-	if (typeof token.offsets?.to === "number") return token.offsets.to / 1000;
-	return parseTimestamp(token.timestamps?.to) || fallback;
-}
-
-function tokenDtwSeconds(token: NonNullable<WhisperSegment["tokens"]>[number]) {
-	const value = Number(token.t_dtw);
-	return Number.isFinite(value) && value >= 0 ? value / 100 : null;
-}
-
-function roundSeconds(value: number) {
-	return Math.round(value * 1000) / 1000;
-}
-
-function cleanTokenText(text: string) {
-	return text.replace(/\[_BEG_\]|\[_TT_\d+\]|\[_EOT_\]|\[_SOLM_\]|\[_PREV_\]|\[_NOT_\]/g, "");
-}
-
-function isPunctuationOnly(text: string) {
-	return /^[\s.,!?;:()[\]{}"'`\-.]+$/.test(text);
-}
-
-function finalizeWordTimings(words: WordTiming[]) {
-	if (words.length === 0) return words;
-
-	const centers = words.map((word) => (
-		typeof word.dtwStart === "number" && typeof word.dtwEnd === "number"
-			? (word.dtwStart + word.dtwEnd) / 2
-			: null
-	));
-
-	return words.map((word, index) => {
-		const center = centers[index];
-		if (center === null) {
-			return {
-				text: word.text,
-				start: roundSeconds(Math.max(0, word.start)),
-				end: roundSeconds(Math.max(word.end, word.start + 0.001)),
-			};
-		}
-
-		const prevCenter = index > 0 ? centers[index - 1] : null;
-		const nextCenter = index + 1 < centers.length ? centers[index + 1] : null;
-		const segmentStartTime = Number.isFinite(word.segmentStart)
-			? Number(word.segmentStart)
-			: word.start;
-		const segmentEndTime = Number.isFinite(word.segmentEnd)
-			? Number(word.segmentEnd)
-			: word.end;
-		const midpointStart = prevCenter === null
-			? segmentStartTime
-			: (prevCenter + center) / 2;
-		const dtwStart = typeof word.dtwStart === "number" ? word.dtwStart : word.start;
-		const dtwEnd = typeof word.dtwEnd === "number" ? word.dtwEnd : word.end;
-
-		// Start captions no earlier than the aligned token onset.
-		const start = Math.max(segmentStartTime, midpointStart, dtwStart);
-		const end = nextCenter === null
-			? Math.min(segmentEndTime, dtwEnd + 0.12)
-			: (center + nextCenter) / 2;
-
-		return {
-			text: word.text,
-			start: roundSeconds(Math.max(0, start)),
-			end: roundSeconds(Math.max(end, start + 0.001)),
-		};
-	});
 }
 
 function dtwPresetForModel(modelPath: string) {
@@ -395,115 +258,6 @@ function refineWordTimingsWithEnergy({
 	return trimWordOverlaps(refined);
 }
 
-function buildWords({ segments }: { segments: WhisperSegment[] }) {
-	const words: WordTiming[] = [];
-
-	for (const segment of segments) {
-		const segmentStartTime = segmentStart(segment);
-		const segmentEndTime = segmentEnd(segment);
-		let current: WordTiming | null = null;
-
-		for (const token of segment.tokens || []) {
-			const raw = cleanTokenText(token.text || "");
-			if (!raw.trim()) continue;
-
-			const start = tokenStart({ token, fallback: segmentStartTime });
-			const end = tokenEnd({ token, fallback: segmentEndTime });
-			const dtw = tokenDtwSeconds(token);
-			const hasLeadingSpace = /^\s/.test(raw);
-			const piece = raw.replace(/\s+/g, " ").trim();
-			if (!piece) continue;
-
-			if (isPunctuationOnly(piece)) {
-				if (current) {
-					current.text += piece;
-					current.end = Math.max(current.end, end);
-					if (dtw !== null) {
-						current.dtwEnd = dtw;
-					}
-				}
-				continue;
-			}
-
-			if (!current || hasLeadingSpace) {
-				if (current) words.push(current);
-				current = {
-					text: piece,
-					start,
-					end: Math.max(end, start + 0.001),
-					dtwStart: dtw ?? undefined,
-					dtwEnd: dtw ?? undefined,
-					segmentStart: segmentStartTime,
-					segmentEnd: segmentEndTime,
-				};
-				continue;
-			}
-
-			current.text += piece;
-			current.end = Math.max(current.end, end);
-			if (dtw !== null) {
-				current.dtwEnd = dtw;
-				current.dtwStart ??= dtw;
-			}
-		}
-
-		if (current) {
-			words.push(current);
-			continue;
-		}
-
-		const fallbackWords = (segment.text || "").trim().split(/\s+/).filter(Boolean);
-		if (fallbackWords.length === 0) continue;
-		const duration = Math.max(0.1, segmentEndTime - segmentStartTime);
-		const wordDuration = duration / fallbackWords.length;
-		fallbackWords.forEach((text, index) => {
-			words.push({
-				text,
-				start: segmentStartTime + index * wordDuration,
-				end: segmentStartTime + (index + 1) * wordDuration,
-			});
-		});
-	}
-
-	return finalizeWordTimings(words);
-}
-
-function runProcess({
-	command,
-	args,
-	cwd,
-	timeoutMs = 30 * 60 * 1000,
-}: {
-	command: string;
-	args: string[];
-	cwd?: string;
-	timeoutMs?: number;
-}) {
-	return new Promise<void>((resolve, reject) => {
-		const child = spawn(command, args, { cwd, windowsHide: true });
-		let stderr = "";
-		const timeout = setTimeout(() => {
-			child.kill("SIGKILL");
-		}, timeoutMs);
-
-		child.stderr.on("data", (chunk) => {
-			stderr += chunk.toString();
-		});
-		child.on("error", (error) => {
-			clearTimeout(timeout);
-			reject(error);
-		});
-		child.on("close", (code) => {
-			clearTimeout(timeout);
-			if (code === 0) {
-				resolve();
-				return;
-			}
-			reject(new Error(stderr.slice(-1000) || `${command} exited with ${code}`));
-		});
-	});
-}
-
 export async function POST(request: NextRequest) {
 	const workDir = await mkdtemp(join(tmpdir(), "opencut-whisper-"));
 
@@ -544,6 +298,7 @@ export async function POST(request: NextRequest) {
 			command: ffmpegPath,
 			args: ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath],
 			cwd: workDir,
+			signal: request.signal,
 		});
 
 		await runProcess({
@@ -560,8 +315,10 @@ export async function POST(request: NextRequest) {
 				outBase,
 				"-np",
 				...dtwArgs,
+				...(webEnv.WHISPER_CPP_DEVICE === "cpu" ? ["-ng"] : []),
 			],
 			cwd: workDir,
+			signal: request.signal,
 		});
 
 		const raw = whisperJsonSchema.parse(JSON.parse(await readFile(outJson, "utf8")));
@@ -598,4 +355,16 @@ export async function POST(request: NextRequest) {
 	} finally {
 		await rm(workDir, { recursive: true, force: true });
 	}
+}
+
+/** Read-only recipe preflight, without exposing local paths. */
+export async function GET() {
+	const configured = webEnv.WHISPER_CPP_MODEL_PATH;
+	const ivritLargeV3 = !!configured && /ivrit/i.test(configured)
+		&& /large[.-]v3/i.test(configured) && existsSync(configured);
+	const available = ivritLargeV3
+		&& !!firstExisting([webEnv.WHISPER_CPP_BINARY_PATH, ...DEFAULT_BINARY_PATHS]
+			.filter((value): value is string => !!value))
+		&& !!firstExisting(DEFAULT_FFMPEG_PATHS);
+	return NextResponse.json({ ivritLargeV3: available }, { status: available ? 200 : 503 });
 }

@@ -398,7 +398,7 @@ export function buildSubtitleTextElement({
 			bottomFadeOut: resolveCaptionBottomFadeOut({
 				settings: layoutSettings,
 			}),
-			bottomFadeOutEndOpacity: 0.3,
+			bottomFadeOutEndOpacity: DEFAULTS.text.bottomFadeOutEndOpacity,
 			"shadow.enabled": true,
 			"shadow.blur": 50,
 			"shadow.offsetX": 0,

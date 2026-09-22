@@ -20,9 +20,14 @@ import { ClassicMcpBridge } from "@/mcp/classic-mcp-bridge";
 interface EditorProviderProps {
 	projectId: string;
 	children: React.ReactNode;
+	readOnly?: boolean;
 }
 
-export function EditorProvider({ projectId, children }: EditorProviderProps) {
+export function EditorProvider({
+	projectId,
+	children,
+	readOnly = false,
+}: EditorProviderProps) {
 	const activeProject = useEditorProject((e) => e.project.getActiveOrNull());
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
@@ -88,7 +93,26 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [projectId, router]);
+	}, [projectId, router, readOnly]);
+
+	useEffect(() => {
+		if (!readOnly) return;
+		let busy = false;
+		const timer = setInterval(async () => {
+			if (busy) return;
+			busy = true;
+			try {
+				await EditorCore.getInstance().project.refreshBatchPreview({
+					id: projectId,
+				});
+			} catch (error) {
+				console.warn("Batch preview refresh failed", error);
+			} finally {
+				busy = false;
+			}
+		}, 5000);
+		return () => clearInterval(timer);
+	}, [projectId, readOnly]);
 
 	if (error) {
 		return (
@@ -124,7 +148,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 
 	return (
 		<>
-			<EditorRuntimeBindings />
+			{!readOnly && <EditorRuntimeBindings />}
 			{children}
 		</>
 	);

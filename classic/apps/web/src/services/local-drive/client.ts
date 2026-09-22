@@ -1,3 +1,4 @@
+import { batchWriteHeaders } from "@/batch/write-token";
 import type { ProjectFontData } from "@/services/storage/types";
 import type {
 	LocalDriveMediaRecord,
@@ -26,7 +27,7 @@ export async function localDriveRequest<T>({
 }): Promise<T> {
 	const response = await fetch(API_PATH, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...batchWriteHeaders() },
 		body: JSON.stringify({ operation, ...payload }),
 		cache: "no-store",
 	});
@@ -103,6 +104,7 @@ export async function uploadLocalMedia({
 	if (migration) params.set("migration", "1");
 	const response = await fetch(`/api/local-drive/media?${params}`, {
 		method: "POST",
+		headers: batchWriteHeaders(),
 		body: file,
 	});
 	if (!response.ok) throw new Error(await readError(response));
@@ -120,6 +122,7 @@ export async function uploadLocalFont({
 	const params = new URLSearchParams({ projectId, id, fileName: file.name });
 	const response = await fetch(`/api/local-drive/font?${params}`, {
 		method: "POST",
+		headers: batchWriteHeaders(),
 		body: file,
 	});
 	if (!response.ok) throw new Error(await readError(response));

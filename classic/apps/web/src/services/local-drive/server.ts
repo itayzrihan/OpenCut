@@ -910,7 +910,7 @@ export async function clearMedia(projectId: string) {
 	await rm(mediaRoot(projectId), { recursive: true, force: true });
 }
 
-async function chooseFiles(): Promise<string[]> {
+export async function chooseFiles(): Promise<string[]> {
 	const currentPlatform = platform();
 	try {
 		if (currentPlatform === "darwin") {

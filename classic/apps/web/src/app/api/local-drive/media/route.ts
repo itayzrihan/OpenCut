@@ -1,3 +1,4 @@
+import { assertBatchProjectWrite } from "@/batch/server";
 /* eslint-disable opencut/prefer-object-params -- HTTP range helpers mirror protocol parameters. */
 import { NextResponse } from "next/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
@@ -105,6 +106,10 @@ export async function POST(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
+		await assertBatchProjectWrite({
+			projectId: required(url.searchParams, "projectId"),
+			token: request.headers.get("X-OpenCut-Batch-Token"),
+		});
 		const body = request.body;
 		if (!body) throw new Error("Media request body is required");
 		const size = Number(required(url.searchParams, "size"));

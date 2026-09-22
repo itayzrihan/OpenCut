@@ -86,7 +86,7 @@ import {
 } from "@/text/caption-presets";
 import { toast } from "sonner";
 import { SpellCheck2, WandSparkles, Zap } from "lucide-react";
-import { applyAndArrangeAllTextTransitions } from "@/transitions";
+import { runAutoTexts } from "@/subtitles/auto-texts";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
 import { removeTimeRangeFromTracks } from "@/timeline/remove-time-range";
 import { mediaTimeFromSeconds } from "@/wasm";
@@ -861,38 +861,35 @@ export function Captions() {
 	};
 
 	const handleAutoTexts = async () => {
-		if (isProcessing || autoTextsStep !== null) return;
-		if (activeDiagnostics.length > 0) return;
-		if (!requireCaptionAi()) return;
-
+		if (
+			isProcessing ||
+			autoTextsStep !== null ||
+			activeDiagnostics.length > 0 ||
+			!requireCaptionAi()
+		)
+			return;
+		const controller = new AbortController();
+		aiAbortControllerRef.current = controller;
 		try {
-			setAutoTextsStep("Generating transcript...");
-			await handleGenerateTranscript();
-
-			const generatedScene = editor.scenes.getActiveSceneOrNull();
-			const hasCaptions = !!(
-				generatedScene &&
-				findCaptionSourceTrack({ tracks: generatedScene.tracks })?.captionSource
-			);
-			if (!hasCaptions) {
-				toast.error("Auto Texts stopped: transcript generation did not complete");
-				return;
-			}
-
-			setAutoTextsStep("Codex correcting transcript...");
-			await handleCorrectTranscript();
-
-			setAutoTextsStep("Codex rearranging rows...");
-			await handleRearrangeRows();
-
-			setAutoTextsStep("Arranging text transitions...");
-			applyAndArrangeAllTextTransitions({ editor });
-
-			toast.success("Auto Texts complete", {
-				description:
-					"Transcript generated, corrected, rearranged, and text transitions arranged.",
+			await runAutoTexts({
+				editor,
+				signal: controller.signal,
+				onProgress: setAutoTextsStep,
+				settings: captionSettings,
+				language: selectedLanguage,
 			});
+			toast.success("Auto Texts complete");
+		} catch (error) {
+			toast.error(
+				controller.signal.aborted
+					? "Auto Texts cancelled; completed stages remain undoable"
+					: error instanceof Error
+						? error.message
+						: "Auto Texts failed",
+			);
 		} finally {
+			if (aiAbortControllerRef.current === controller)
+				aiAbortControllerRef.current = null;
 			setAutoTextsStep(null);
 		}
 	};

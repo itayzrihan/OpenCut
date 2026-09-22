@@ -24,6 +24,12 @@ import {
 } from "@/ai/timeline-tools";
 import { AiPlanReview } from "./ai-plan-review";
 import { useAiOAuthStatus } from "./use-ai-oauth-status";
+import { LocalSubjectFramingButton } from "./local-subject-framing-button";
+import { AutomaticMusicButton } from "./automatic-music-button";
+import { FullAutoEditButton } from "./full-auto-edit-button";
+import { AutomaticWordAnimationButton } from "./automatic-word-animation-button";
+import { AutomaticZoomButton } from "./automatic-zoom-button";
+import { AutomaticTextTransitionsButton } from "./automatic-text-transitions-button";
 
 function readPlanHeading({ text }: { text: string }): {
 	title?: string;
@@ -75,6 +81,7 @@ export function AiChatView() {
 	const [enabled, setEnabled] = useState<Set<ContextOption>>(
 		() => new Set(["playhead", "selected", "range", "layers"]),
 	);
+	const [automaticRunning, setAutomaticRunning] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [agentStatus, setAgentStatus] = useState("");
 	const [responseText, setResponseText] = useState("");
@@ -113,7 +120,7 @@ export function AiChatView() {
 
 	const handleSend = async () => {
 		const prompt = message.trim();
-		if (!prompt || isRunning) return;
+		if (!prompt || isRunning || automaticRunning) return;
 		if (!status.authenticated) {
 			login();
 			return;
@@ -352,6 +359,37 @@ export function AiChatView() {
 			)}
 
 			<div className="flex-1 overflow-y-auto p-3">
+                <LocalSubjectFramingButton disabled={isRunning || isApplying || automaticRunning} onRunningChange={setAutomaticRunning} />
+				<AutomaticZoomButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<AutomaticTextTransitionsButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<AutomaticWordAnimationButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<AutomaticMusicButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<FullAutoEditButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
 				<div className="grid grid-cols-2 gap-2">
 					{contextOptions.map((option) => (
 						<label

@@ -1,3 +1,4 @@
+import { isBatchReadOnly } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type {
 	TProject,
@@ -166,12 +167,18 @@ export class ProjectManager {
 		}
 	}
 
-	async createNewProject({ name }: { name: string }): Promise<string> {
+	async createNewProject({
+		name,
+		id,
+	}: {
+		name: string;
+		id?: string;
+	}): Promise<string> {
 		const sharedFonts = await this.loadSharedFonts();
 		const mainScene = buildDefaultScene({ name: "Main scene", isMain: true });
 		const newProject: TProject = {
 			metadata: {
-				id: generateUUID(),
+				id: id ?? generateUUID(),
 				name,
 				duration: getProjectDurationFromScenes({ scenes: [mainScene] }),
 				createdAt: new Date(),
@@ -212,6 +219,8 @@ export class ProjectManager {
 				projectId: newProject.metadata.id,
 			});
 			this.updateMetadata(newProject);
+			this.isLoading = false;
+			this.notify();
 
 			return newProject.metadata.id;
 		} catch (error) {
@@ -232,6 +241,34 @@ export class ProjectManager {
 				this.projectLoad = undefined;
 			}
 		}
+	}
+
+	/** Refresh a locked viewer without clearing its active scene or editor history. */
+	async refreshBatchPreview({ id }: { id: string }): Promise<void> {
+		if (
+			!isBatchReadOnly(id) ||
+			this.active?.metadata.id !== id ||
+			this.isLoading
+		)
+			return;
+		const [result, assets] = await Promise.all([
+			storageService.loadProject({ id }),
+			storageService.loadAllMediaAssets({ projectId: id }),
+		]);
+		if (
+			!result ||
+			!isBatchReadOnly(id) ||
+			this.active?.metadata.id !== id ||
+			this.isLoading
+		)
+			return;
+		this.active = result.project;
+		this.editor.media.setAssets({ assets });
+		this.editor.scenes.initializeScenes({
+			scenes: result.project.scenes,
+			currentSceneId: result.project.currentSceneId,
+		});
+		this.notify();
 	}
 
 	private async loadProjectOnce({ id }: { id: string }): Promise<boolean> {
@@ -303,7 +340,7 @@ export class ProjectManager {
 
 			await Promise.all([mediaPromise, historyPromise, fontFamiliesPromise]);
 
-			if (!projectWithFonts.metadata.thumbnail) {
+			if (!projectWithFonts.metadata.thumbnail && !isBatchReadOnly(id)) {
 				try {
 					const didUpdateThumbnail = await this.updateThumbnailFromTimeline();
 					if (didUpdateThumbnail) {
@@ -325,6 +362,7 @@ export class ProjectManager {
 	}
 
 	async saveCurrentProject(): Promise<void> {
+		if (isBatchReadOnly(this.active?.metadata.id)) return;
 		if (!this.active) return;
 
 		const projectAtSaveStart = this.active;
@@ -444,6 +482,11 @@ export class ProjectManager {
 
 	getExportState(): ExportState {
 		return this.exportState;
+	}
+
+	async refreshProjectMetadata(): Promise<void> {
+		this.savedProjects = await storageService.loadAllProjectsMetadata();
+		this.notify();
 	}
 
 	async loadAllProjects(): Promise<void> {

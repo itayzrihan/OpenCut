@@ -1109,7 +1109,13 @@ function resolveEffectLayerNode({
 		? []
 		: resolveEffectPasses({
 				definition,
-				effectParams: node.params.effectParams,
+				effectParams:
+					definition.type === "automatic-zoom"
+						? {
+								...node.params.effectParams,
+								spanSeconds: node.params.duration / 120000,
+							}
+						: node.params.effectParams,
 				width: context.renderer.width,
 				height: context.renderer.height,
 				localTime,

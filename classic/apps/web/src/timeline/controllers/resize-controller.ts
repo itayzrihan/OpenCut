@@ -64,7 +64,10 @@ export interface ResizeConfig {
 	selectedElements: ElementRef[];
 	discardPreview: () => void;
 	previewElements: (updates: GroupResizeUpdate[]) => void;
-	commitElements: (updates: GroupResizeUpdate[]) => void;
+	commitElements: (args: {
+		updates: GroupResizeUpdate[];
+		timeEdit?: GroupResizeResult["timeEdit"];
+	}) => void;
 	onSnapPointChange?: (snapPoint: SnapPoint | null) => void;
 }
 
@@ -139,6 +142,7 @@ export function buildResizeMembers({
 				trimEnd: element.trimEnd,
 				sourceDuration: element.sourceDuration,
 				retime: isRetimableElement(element) ? element.retime : undefined,
+				ripple: allowRightNeighborOverlap,
 				leftNeighborBound,
 				rightNeighborBound,
 			},
@@ -231,8 +235,7 @@ export class ResizeController {
 
 		const tracks = this.config.getSceneTracks();
 		const rippleInsertion =
-			side === "right" &&
-			(track.id === tracks.main.id || this.config.rippleEditingEnabled);
+			track.id === tracks.main.id || this.config.rippleEditingEnabled;
 		const members = buildResizeMembers({
 			tracks,
 			selectedElements: activeSelection,
@@ -248,7 +251,10 @@ export class ResizeController {
 			startX: event.clientX,
 			fps,
 			members,
-			cutTime: addMediaTime({ a: element.startTime, b: element.duration }),
+			cutTime:
+				side === "left"
+					? element.startTime
+					: addMediaTime({ a: element.startTime, b: element.duration }),
 			rippleInsertion,
 			result: null,
 		};
@@ -357,19 +363,42 @@ export class ResizeController {
 			deltaTime,
 			fps: session.fps,
 		});
+		const timeEdit = {
+			cutTime:
+				session.side === "left" && groupResult.deltaTime > 0
+					? addMediaTime({ a: session.cutTime, b: groupResult.deltaTime })
+					: session.cutTime,
+			insertedDuration:
+				session.side === "left"
+					? mediaTime({ ticks: -groupResult.deltaTime })
+					: groupResult.deltaTime,
+		};
 		const result = session.rippleInsertion
 			? {
+					timeEdit,
 					deltaTime: groupResult.deltaTime,
 					updates: buildRippleResizeUpdates({
 						tracks: this.config.getSceneTracks(),
-						selectedUpdates: groupResult.updates,
-						cutTime: session.cutTime,
-						insertedDuration: groupResult.deltaTime,
+						selectedUpdates:
+							session.side === "left"
+								? groupResult.updates.map((update) => ({
+										...update,
+										patch: {
+											...update.patch,
+											startTime: mediaTime({
+												ticks: update.patch.startTime - groupResult.deltaTime,
+											}),
+										},
+									}))
+								: groupResult.updates,
+						...timeEdit,
 					}),
 				}
 			: groupResult;
 
 		session.result = result;
+		// Each frame is computed from committed tracks, never accumulated previews.
+		this.config.discardPreview();
 		this.config.previewElements(result.updates);
 	}
 
@@ -383,7 +412,10 @@ export class ResizeController {
 			session.result &&
 			hasResizeChanges({ members: session.members, result: session.result })
 		) {
-			this.config.commitElements(session.result.updates);
+			this.config.commitElements({
+				updates: session.result.updates,
+				timeEdit: session.result.timeEdit,
+			});
 		}
 
 		this.finishSession();

@@ -1,3 +1,4 @@
+import { assertBatchEditable } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type { Command, CommandResult } from "@/commands";
 import type { EditorSelectionSnapshot } from "@/selection/editor-selection";
@@ -35,6 +36,7 @@ export class CommandManager {
 	constructor(private editor: EditorCore) {}
 
 	execute({ command }: { command: Command }): Command {
+		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		const shouldRecordHistory = this.transactionDepth === 0;
 		const beforeSnapshot =
 			shouldRecordHistory && command.canPersistHistory
@@ -69,6 +71,7 @@ export class CommandManager {
 
 	/** Execute several editor commands as one atomic, persisted undo entry. */
 	executeTransaction<T>({ execute }: { execute: () => T }): T {
+		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		if (this.transactionDepth > 0) {
 			return execute();
 		}
@@ -181,6 +184,7 @@ export class CommandManager {
 	}
 
 	undo(): void {
+		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		if (this.history.length === 0) return;
 		const entry = this.history.pop();
 		if (!entry) {
@@ -209,6 +213,7 @@ export class CommandManager {
 	}
 
 	redo(): void {
+		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		if (this.redoStack.length === 0) return;
 		const entry = this.redoStack.pop();
 		if (!entry) {

@@ -4,6 +4,10 @@ use std::collections::BTreeMap;
 use time::MediaTime;
 
 mod captions;
+mod automatic_zoom;
+pub use automatic_zoom::*;
+mod automatic_text_transitions;
+pub use automatic_text_transitions::*;
 mod edit_provenance;
 mod silence_analysis;
 mod source_document;
@@ -58,7 +62,9 @@ pub struct RippleInsertTimeOptions {
 /// Inserts time at a timeline cut while preserving companion-layer alignment.
 /// Clips beginning at or after the cut move with the later edit. Clips that
 /// strictly span the cut grow so effects, captions, and audio beds that cover
-/// both sides continue to cover both sides after the insertion.
+/// both sides continue to cover both sides after the insertion. A negative
+/// duration removes [cut_time + inserted_duration, cut_time), mapping both
+/// endpoints. Fully consumed companions have zero duration for the caller to remove.
 #[export]
 pub fn ripple_insert_time(
     RippleInsertTimeOptions {
@@ -67,7 +73,7 @@ pub fn ripple_insert_time(
         inserted_duration,
     }: RippleInsertTimeOptions,
 ) -> Vec<RippleInsertionClipTiming> {
-    if inserted_duration <= MediaTime::ZERO {
+    if inserted_duration == MediaTime::ZERO {
         return clips;
     }
 
@@ -75,6 +81,21 @@ pub fn ripple_insert_time(
         .into_iter()
         .map(|mut clip| {
             let end_time = clip.start_time + clip.duration;
+            if inserted_duration < MediaTime::ZERO {
+                let start = (cut_time + inserted_duration).max(MediaTime::ZERO);
+                let map = |t: MediaTime| {
+                    if t <= start {
+                        t
+                    } else if t < cut_time {
+                        start
+                    } else {
+                        t - (cut_time - start)
+                    }
+                };
+                clip.start_time = map(clip.start_time);
+                clip.duration = map(end_time) - clip.start_time;
+                return clip;
+            }
             if clip.start_time >= cut_time {
                 clip.start_time = clip.start_time + inserted_duration;
             } else if end_time > cut_time {
@@ -486,6 +507,51 @@ mod tests {
         assert_eq!(result[2].duration, time(4));
     }
 
+    #[test]
+    fn ripple_removal_maps_both_boundaries_without_negative_durations() {
+        let clips = [(0, 5), (0, 20), (6, 2), (9, 4), (10, 4), (5, 5)]
+            .into_iter()
+            .enumerate()
+            .map(|(i, (start, duration))| RippleInsertionClipTiming {
+                id: i.to_string(),
+                start_time: time(start),
+                duration: time(duration),
+            })
+            .collect();
+        let result = ripple_insert_time(RippleInsertTimeOptions {
+            clips,
+            cut_time: time(10),
+            inserted_duration: time(-5),
+        });
+        let timings: Vec<_> = result.iter().map(|c| (c.start_time, c.duration)).collect();
+        assert_eq!(
+            timings,
+            vec![
+                (time(0), time(5)),
+                (time(0), time(15)),
+                (time(5), time(0)),
+                (time(5), time(3)),
+                (time(5), time(4)),
+                (time(5), time(0))
+            ]
+        );
+    }
+
+    #[test]
+    fn ripple_removal_at_timeline_origin_preserves_later_relative_timing() {
+        let result = ripple_insert_time(RippleInsertTimeOptions {
+            clips: vec![RippleInsertionClipTiming {
+                id: "caption".into(),
+                start_time: time(3),
+                duration: time(4),
+            }],
+            cut_time: time(2),
+            inserted_duration: time(-2),
+        });
+        assert_eq!(result[0].start_time, time(1));
+        assert_eq!(result[0].duration, time(4));
+    }
+
     fn preserve(
         clips: Vec<PreservedClipTiming>,
         removed_ranges: Vec<TimeRange>,
@@ -797,3 +863,18 @@ mod tests {
         assert_eq!(result.clips[0].duration, time(90));
     }
 }
+
+mod automatic_word_animation;
+pub use automatic_word_animation::*;
+
+mod full_auto_edit;
+pub use full_auto_edit::*;
+
+mod automatic_music;
+pub use automatic_music::*;
+
+mod local_subject_framing;
+pub use local_subject_framing::*;
+
+mod batch_edit;
+pub use batch_edit::*;

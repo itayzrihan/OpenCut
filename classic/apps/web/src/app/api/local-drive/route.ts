@@ -1,3 +1,4 @@
+import { assertBatchProjectWrite, assertNoActiveBatch } from "@/batch/server";
 /* eslint-disable opencut/prefer-object-params -- Route dispatch mirrors storage operation signatures. */
 import { NextResponse } from "next/server";
 import {
@@ -94,6 +95,27 @@ export async function POST(request: Request) {
 		const collection = () => readString(body.collection, "collection");
 		const kind = () => readString(body.kind, "kind");
 
+		const projectWrites = [
+			"project.put",
+			"project.delete",
+			"history.put",
+			"history.delete",
+			"media.put",
+			"media.registerPath",
+			"media.registerPaths",
+			"media.pick",
+			"media.delete",
+			"media.clear",
+			"font.put",
+			"font.delete",
+			"font.clear",
+		];
+		if (projectWrites.includes(operation))
+			await assertBatchProjectWrite({
+				projectId: projectId(),
+				token: request.headers.get("X-OpenCut-Batch-Token"),
+			});
+		if (operation === "all.clear") await assertNoActiveBatch();
 		switch (operation) {
 			case "status":
 				return NextResponse.json(await getLocalDriveStatus());

@@ -1,3 +1,4 @@
+import { isBatchReadOnly } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 
 type SaveManagerOptions = {
@@ -66,6 +67,7 @@ export class SaveManager {
 	}
 
 	markDirty({ force = false }: { force?: boolean } = {}): void {
+		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id)) return;
 		if (this.isPaused && !force) return;
 		this.hasPendingSave = true;
 		if (!this.isPaused) {
@@ -74,6 +76,7 @@ export class SaveManager {
 	}
 
 	async flush(): Promise<void> {
+		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id)) { this.discardPending(); return; }
 		this.hasPendingSave = true;
 		this.clearTimer();
 

@@ -97,6 +97,8 @@ export class TranscriptionManager {
 		}
 
 		const scene = this.editor.scenes.getActiveScene();
+		const projectId = this.editor.project.getActive().metadata.id;
+		const revision = this.editor.command.getStateRevision();
 		const taskId = this.dependencies.generateId();
 		const normalizedSettings = normalizeCaptionLayoutSettings({ settings });
 		this.transition({
@@ -140,9 +142,13 @@ export class TranscriptionManager {
 				phase: "generating_captions",
 			});
 
-			if (this.editor.scenes.getActiveSceneOrNull()?.id !== scene.id) {
+			if (
+				this.editor.scenes.getActiveSceneOrNull()?.id !== scene.id ||
+				this.editor.project.getActive().metadata.id !== projectId ||
+				this.editor.command.getStateRevision() !== revision
+			) {
 				throw new Error(
-					"The active scene changed while transcription was running; captions were not inserted",
+					"The timeline changed while transcription was running; captions were not inserted",
 				);
 			}
 			const captionChunks = buildCaptionChunks({

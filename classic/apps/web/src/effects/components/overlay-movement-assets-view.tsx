@@ -3,6 +3,7 @@
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo } from "react";
+import { ClassicZooms } from "./classic-zooms";
 import { BatchCommand } from "@/commands";
 import { InsertElementCommand } from "@/commands/timeline";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -99,6 +100,8 @@ function buildOverlayMovementTimelineItems({
 export function OverlayMovementView() {
 	return (
 		<PanelView title="Overlay Movement">
+			<ClassicZooms />
+			<h3 className="mb-3 text-sm font-medium">Overlay Movements</h3>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(118px, 1fr))" }}

@@ -22,8 +22,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push:local": "cross-env NODE_ENV=development drizzle-kit push",
     "db:push:prod": "cross-env NODE_ENV=production drizzle-kit push",
-    "skills:generate": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs",
-    "skills:check": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs --check"
+    "skills:generate": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs && node src/ai/skills/automatic-zoom/generate.mjs && node src/ai/skills/automatic-text-transitions/generate.mjs && node src/ai/skills/automatic-word-animation/generate.mjs",
+    "skills:check": "node src/ai/skills/paper-grid-editorial/scripts/generate_runtime_projection.mjs --check && node src/ai/skills/automatic-zoom/generate.mjs --check && node src/ai/skills/automatic-text-transitions/generate.mjs --check && node src/ai/skills/automatic-word-animation/generate.mjs --check"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

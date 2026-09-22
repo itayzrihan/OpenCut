@@ -15,7 +15,7 @@ export function buildRippleResizeUpdates({
 	cutTime: MediaTime;
 	insertedDuration: MediaTime;
 }): GroupResizeUpdate[] {
-	if (insertedDuration <= 0) return selectedUpdates;
+	if (insertedDuration === 0) return selectedUpdates;
 
 	const selectedIds = new Set(
 		selectedUpdates.map((update) => update.elementId),
@@ -49,11 +49,60 @@ export function buildRippleResizeUpdates({
 			return [];
 		}
 
+		// Map words through the same timeline edit. Passing them explicitly also
+		// prevents a pure ripple move from being interpreted as trimming text.
+		const wordRuns =
+			element.type === "text" && element.wordRuns
+				? element.wordRuns.flatMap((word) => {
+						if (word.startTime == null || word.endTime == null) return [word];
+						const [mapped] = rippleResizeWasm.rippleInsertTime({
+							clips: [
+								{
+									id: word.id,
+									startTime: element.startTime + word.startTime,
+									duration: word.endTime - word.startTime,
+								},
+							],
+							cutTime,
+							insertedDuration,
+						});
+						if (mapped.duration <= 0 && word.endTime > word.startTime)
+							return [];
+						return [
+							{
+								...word,
+								startTime: mediaTime({
+									ticks: mapped.startTime - timing.startTime,
+								}),
+								endTime: mediaTime({
+									ticks: mapped.startTime + mapped.duration - timing.startTime,
+								}),
+							},
+						];
+					})
+				: undefined;
+		const textPatch =
+			element.type === "text" && wordRuns
+				? {
+						wordRuns,
+						params: {
+							...element.params,
+							content: wordRuns
+								.map(
+									(word, index) =>
+										`${index === 0 ? "" : word.lineIndex === wordRuns[index - 1].lineIndex ? " " : "\n"}${word.text}`,
+								)
+								.join(""),
+						},
+					}
+				: {};
+
 		return [
 			{
 				trackId,
 				elementId: element.id,
 				patch: {
+					...textPatch,
 					trimStart: element.trimStart,
 					trimEnd: element.trimEnd,
 					startTime: mediaTime({ ticks: timing.startTime }),

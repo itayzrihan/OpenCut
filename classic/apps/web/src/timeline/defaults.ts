@@ -19,8 +19,8 @@ const defaultAudioFadeDuration = 0;
 
 const defaultTextLetterSpacing = 0;
 const defaultTextLineHeight = 1.2;
-const defaultTextBottomFadeOut = 0;
-const defaultTextBottomFadeOutEndOpacity = 0;
+const defaultTextBottomFadeOut = 0.6;
+const defaultTextBottomFadeOutEndOpacity = 0.25;
 const defaultNewElementDuration = mediaTime({ ticks: 5 * TICKS_PER_SECOND });
 
 const defaultTextBackground = {

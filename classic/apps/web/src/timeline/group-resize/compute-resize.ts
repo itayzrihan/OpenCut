@@ -131,15 +131,15 @@ function buildResizeUpdate({
 		return {
 			trackId: member.trackId,
 			elementId: member.elementId,
-		patch: {
-			trimStart: maxMediaTime({
-				a: ZERO_MEDIA_TIME,
-				b: addMediaTime({ a: member.trimStart, b: sourceDelta }),
-			}),
-			trimEnd: member.trimEnd,
-			startTime: addMediaTime({ a: member.startTime, b: deltaTime }),
-			duration: subMediaTime({ a: member.duration, b: deltaTime }),
-		},
+			patch: {
+				trimStart: maxMediaTime({
+					a: ZERO_MEDIA_TIME,
+					b: addMediaTime({ a: member.trimStart, b: sourceDelta }),
+				}),
+				trimEnd: member.trimEnd,
+				startTime: addMediaTime({ a: member.startTime, b: deltaTime }),
+				duration: subMediaTime({ a: member.duration, b: deltaTime }),
+			},
 		};
 	}
 
@@ -171,8 +171,9 @@ function getMinimumAllowedDeltaTime({
 		return subMediaTime({ a: minDuration, b: member.duration });
 	}
 
-	const leftNeighborFloor =
-		member.leftNeighborBound !== null
+	const leftNeighborFloor = member.ripple
+		? mediaTime({ ticks: -Number.MAX_SAFE_INTEGER })
+		: member.leftNeighborBound !== null
 			? subMediaTime({ a: member.leftNeighborBound, b: member.startTime })
 			: subMediaTime({ a: ZERO_MEDIA_TIME, b: member.startTime });
 	if (member.sourceDuration == null) {
@@ -301,7 +302,11 @@ function getDurationForVisibleSourceSpan({
 	});
 }
 
-function getSourceDuration({ member }: { member: GroupResizeMember }): MediaTime {
+function getSourceDuration({
+	member,
+}: {
+	member: GroupResizeMember;
+}): MediaTime {
 	if (member.sourceDuration != null) {
 		return member.sourceDuration;
 	}
@@ -310,8 +315,8 @@ function getSourceDuration({ member }: { member: GroupResizeMember }): MediaTime
 		a: addMediaTime({
 			a: member.trimStart,
 			b: getVisibleSourceSpanForDuration({
-			member,
-			duration: member.duration,
+				member,
+				duration: member.duration,
 			}),
 		}),
 		b: member.trimEnd,

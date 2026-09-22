@@ -12,6 +12,7 @@ import {
 import type { ResizeSide } from "@/timeline/group-resize";
 import type { SnapPoint } from "@/timeline/snapping";
 import type { TimelineElement } from "@/timeline";
+import { UpdateElementsCommand } from "@/commands";
 
 export type { ResizeSide };
 
@@ -50,14 +51,21 @@ export function useTimelineResize({
 					updates: patch as Partial<TimelineElement>,
 				})),
 			}),
-		commitElements: (updates) =>
-			editor.timeline.updateElements({
-				updates: updates.map(({ trackId, elementId, patch }) => ({
-					trackId,
-					elementId,
-					patch: patch as Partial<TimelineElement>,
-				})),
-			}),
+		commitElements: ({ updates, timeEdit }) => {
+			const removed = updates.filter((update) => update.patch.duration <= 0);
+			const retained = updates.filter((update) => update.patch.duration > 0);
+			editor.command.execute({
+				command: new UpdateElementsCommand({
+					captionTimeEdit: timeEdit,
+					removedElementIds: removed.map((update) => update.elementId),
+					updates: retained.map(({ trackId, elementId, patch }) => ({
+						trackId,
+						elementId,
+						patch: patch as Partial<TimelineElement>,
+					})),
+				}),
+			});
+		},
 		onSnapPointChange,
 	};
 	const configRef = useCommittedRef(config);

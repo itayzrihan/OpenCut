@@ -8,6 +8,8 @@ use wgpu::util::DeviceExt;
 use crate::{EffectPass, UniformValue};
 
 const GAUSSIAN_BLUR_SHADER_ID: &str = "gaussian-blur";
+const AUTOMATIC_ZOOM_SHADER_ID: &str = "automatic-zoom";
+const AUTOMATIC_ZOOM_SHADER_SOURCE: &str = include_str!("shaders/automatic_zoom.wgsl");
 const GAUSSIAN_BLUR_SHADER_SOURCE: &str = include_str!("shaders/gaussian_blur.wgsl");
 const GRAYSCALE_SHADER_ID: &str = "grayscale";
 const GRAYSCALE_SHADER_SOURCE: &str = include_str!("shaders/grayscale.wgsl");
@@ -111,6 +113,16 @@ impl EffectPipeline {
                     immediate_size: 0,
                 });
         let pipelines = HashMap::from([
+            (
+                AUTOMATIC_ZOOM_SHADER_ID.to_string(),
+                create_effect_pipeline(
+                    context,
+                    &pipeline_layout,
+                    &vertex_shader_module,
+                    AUTOMATIC_ZOOM_SHADER_ID,
+                    AUTOMATIC_ZOOM_SHADER_SOURCE,
+                ),
+            ),
             (
                 GAUSSIAN_BLUR_SHADER_ID.to_string(),
                 create_effect_pipeline(
@@ -421,6 +433,15 @@ fn pack_effect_uniforms(
     let shader = pass.shader.as_str();
 
     match shader {
+        AUTOMATIC_ZOOM_SHADER_ID => {
+            ensure_supported_uniforms(pass, &["u_scale", "u_anchor"])?;
+            Ok(EffectUniformBuffer {
+                resolution: [width as f32, height as f32],
+                direction: read_vec2_uniform(pass, "u_anchor")?,
+                scalars: [read_number_uniform(pass, "u_scale")?, 0.0, 0.0, 0.0],
+                color: [0.0; 4],
+            })
+        }
         GRAYSCALE_SHADER_ID => {
             ensure_supported_uniforms(pass, &[])?;
             Ok(EffectUniformBuffer {
@@ -655,6 +676,24 @@ mod tests {
 
         assert_eq!(packed.scalars[0], 0.5);
         assert_eq!(packed.color, [0.2, 0.3, 0.4, 1.0]);
+    }
+
+    #[test]
+    fn packs_native_zoom_scale_and_anchor() {
+        let packed = pack_effect_uniforms(
+            &pass(
+                AUTOMATIC_ZOOM_SHADER_ID,
+                &[
+                    ("u_scale", UniformValue::Number(1.18)),
+                    ("u_anchor", UniformValue::Vector(vec![0.5, 0.4])),
+                ],
+            ),
+            1080,
+            1920,
+        )
+        .unwrap();
+        assert_eq!(packed.scalars[0], 1.18);
+        assert_eq!(packed.direction, [0.5, 0.4]);
     }
 
     #[test]

@@ -9,6 +9,10 @@ import {
 	PREMIUM_VIDEO_EDITOR_RUNTIME_RESOURCES,
 	PREMIUM_VIDEO_EDITOR_RUNTIME_SKILL,
 } from "./paper-grid-editorial/runtime.generated";
+import { AUTOMATIC_TEXT_TRANSITIONS_SKILL } from "./automatic-text-transitions/runtime.generated";
+import { AUTOMATIC_ZOOM_SKILL } from "./automatic-zoom/runtime.generated";
+
+import { AUTOMATIC_WORD_ANIMATION_SKILL } from "./automatic-word-animation/runtime.generated";
 
 export interface AiSkill {
 	name: string;
@@ -18,6 +22,24 @@ export interface AiSkill {
 }
 
 export const AI_SKILLS: readonly AiSkill[] = [
+	{
+		name: "automatic-word-animation",
+		description:
+			"Sparse semantic word accents and exceptional typing reveals with sound.",
+		content: AUTOMATIC_WORD_ANIMATION_SKILL,
+	},
+	{
+		name: "automatic-text-transitions",
+		description:
+			"Semantic Galya/Shemi text entrance and exit accents with deterministic companion sounds.",
+		content: AUTOMATIC_TEXT_TRANSITIONS_SKILL,
+	},
+	{
+		name: "automatic-zoom",
+		description:
+			"Direct semantic native zoom layers from full Timeline Source and speech; no Overlay Movements.",
+		content: AUTOMATIC_ZOOM_SKILL,
+	},
 	{
 		name: "creative-direction",
 		description:

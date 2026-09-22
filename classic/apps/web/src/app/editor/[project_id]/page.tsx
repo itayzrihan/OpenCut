@@ -1,4 +1,7 @@
 "use client";
+import Link from "next/link";
+import { useBatchEdit } from "@/batch/provider";
+import { batchEditIsLocked } from "opencut-wasm";
 
 import { useParams } from "next/navigation";
 import {
@@ -53,11 +56,33 @@ import type { EditorCore } from "@/core";
 export default function Editor() {
 	const params = useParams();
 	const projectId = params.project_id as string;
+	const batch = useBatchEdit();
+	const job = batch.state.runs
+		.flatMap((r) => r.jobs)
+		.find((j) => j.projectId === projectId);
+	const readOnly = !!job && batchEditIsLocked({ status: job.status });
+	if (!batch.loaded) return <p className="p-8">Checking project status…</p>;
 
 	return (
 		<MobileGate>
-			<EditorProvider projectId={projectId}>
-				<div className="bg-background flex h-screen w-screen flex-col overflow-hidden">
+			<EditorProvider
+				key={`${projectId}:${readOnly}`}
+				projectId={projectId}
+				readOnly={readOnly}
+			>
+				{readOnly && (
+					<div className="fixed top-0 inset-x-0 z-100 bg-background border-b p-3 flex justify-between gap-4 text-sm">
+						<span role="status">Batch · Read-only · {job?.message}</span>
+						<Link href="/projects" className="underline shrink-0">
+							Back to Projects
+						</Link>
+					</div>
+				)}
+				<div
+					inert={readOnly}
+					className="bg-background flex h-screen w-screen flex-col overflow-hidden"
+					style={readOnly ? { paddingTop: 48 } : undefined}
+				>
 					<DegradedRendererBanner />
 					<EditorHeader />
 					<div className="min-h-0 min-w-0 flex-1">
@@ -116,7 +141,8 @@ function PreviewPanelWithOverlays() {
 		overlay: safeAreaPreviewOverlay,
 		overlays,
 	});
-	const shouldTrackOverlayTime = Boolean(activeScene?.parallax) || showBookmarkNotes;
+	const shouldTrackOverlayTime =
+		Boolean(activeScene?.parallax) || showBookmarkNotes;
 	const selectOverlayTime = useCallback(
 		(editor: EditorCore) =>
 			shouldTrackOverlayTime
@@ -196,81 +222,81 @@ function EditorLayout() {
 	return (
 		<div className="flex size-full min-h-0 flex-col">
 			<ParallaxCanvasEditorBanner />
-		<ResizablePanelGroup
-			direction="vertical"
-			className="size-full gap-[0.18rem]"
-			onLayout={(sizes) => {
-				setPanel({
-					panel: "mainContent",
-					size: sizes[0] ?? panels.mainContent,
-				});
-				setPanel({
-					panel: "timeline",
-					size: sizes[1] ?? panels.timeline,
-				});
-			}}
-		>
-			<ResizablePanel
-				defaultSize={panels.mainContent}
-				minSize={30}
-				maxSize={85}
-				className="min-h-0"
+			<ResizablePanelGroup
+				direction="vertical"
+				className="size-full gap-[0.18rem]"
+				onLayout={(sizes) => {
+					setPanel({
+						panel: "mainContent",
+						size: sizes[0] ?? panels.mainContent,
+					});
+					setPanel({
+						panel: "timeline",
+						size: sizes[1] ?? panels.timeline,
+					});
+				}}
 			>
-				<ResizablePanelGroup
-					direction="horizontal"
-					className="size-full gap-[0.19rem] px-3"
-					onLayout={(sizes) => {
-						setPanel({ panel: "tools", size: sizes[0] ?? panels.tools });
-						setPanel({ panel: "preview", size: sizes[1] ?? panels.preview });
-						setPanel({
-							panel: "properties",
-							size: sizes[2] ?? panels.properties,
-						});
-					}}
+				<ResizablePanel
+					defaultSize={panels.mainContent}
+					minSize={30}
+					maxSize={85}
+					className="min-h-0"
 				>
-					<ResizablePanel
-						defaultSize={panels.tools}
-						minSize={15}
-						maxSize={40}
-						className="min-w-0"
+					<ResizablePanelGroup
+						direction="horizontal"
+						className="size-full gap-[0.19rem] px-3"
+						onLayout={(sizes) => {
+							setPanel({ panel: "tools", size: sizes[0] ?? panels.tools });
+							setPanel({ panel: "preview", size: sizes[1] ?? panels.preview });
+							setPanel({
+								panel: "properties",
+								size: sizes[2] ?? panels.properties,
+							});
+						}}
 					>
-						<AssetsPanel />
-					</ResizablePanel>
+						<ResizablePanel
+							defaultSize={panels.tools}
+							minSize={15}
+							maxSize={40}
+							className="min-w-0"
+						>
+							<AssetsPanel />
+						</ResizablePanel>
 
-					<ResizableHandle withHandle />
+						<ResizableHandle withHandle />
 
-					<ResizablePanel
-						defaultSize={panels.preview}
-						minSize={30}
-						className="min-h-0 min-w-0 flex-1"
-					>
-						<PreviewPanelWithOverlays />
-					</ResizablePanel>
+						<ResizablePanel
+							defaultSize={panels.preview}
+							minSize={30}
+							className="min-h-0 min-w-0 flex-1"
+						>
+							<PreviewPanelWithOverlays />
+						</ResizablePanel>
 
-					<ResizableHandle withHandle />
+						<ResizableHandle withHandle />
 
-					<ResizablePanel
-						defaultSize={panels.properties}
-						minSize={15}
-						maxSize={40}
-						className="min-w-0"
-					>
-						<PropertiesPanel />
-					</ResizablePanel>
-				</ResizablePanelGroup>
-			</ResizablePanel>
+						<ResizablePanel
+							defaultSize={panels.properties}
+							minSize={15}
+							maxSize={40}
+							className="min-w-0"
+						>
+							<PropertiesPanel />
+						</ResizablePanel>
+					</ResizablePanelGroup>
+				</ResizablePanel>
 
-			<ResizableHandle withHandle />
+				<ResizableHandle withHandle />
 
-			<ResizablePanel
-				defaultSize={panels.timeline}
-				minSize={15}
-				maxSize={70}
-				className="min-h-0 px-3 pb-3"
-			>
-				<Timeline />
-			</ResizablePanel>
-		</ResizablePanelGroup>
+				<ResizablePanel
+					defaultSize={panels.timeline}
+					minSize={15}
+					maxSize={70}
+					className="min-h-0 px-3 pb-3"
+				>
+					<Timeline />
+				</ResizablePanel>
+			</ResizablePanelGroup>
 		</div>
 	);
 }

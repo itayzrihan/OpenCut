@@ -1,4 +1,9 @@
 "use client";
+import {
+	BatchEditButton,
+	BatchProjectBadge,
+	useBatchEdit,
+} from "@/batch/provider";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -93,6 +98,16 @@ const VIEW_MODE_OPTIONS = [
 export default function ProjectsPage() {
 	const { searchQuery, sortKey, sortOrder, viewMode } = useProjectsStore();
 	const editor = useEditor();
+	const batch = useBatchEdit();
+	const batchRevision = batch.state.runs
+		.flatMap((r) =>
+			r.jobs.map((j) => `${j.projectId}:${j.created}:${j.status}`),
+		)
+		.join(",");
+	useEffect(() => {
+		if (batch.loaded)
+			void editor.project.refreshProjectMetadata().catch(console.error);
+	}, [batch.loaded, batchRevision, editor]);
 	const sortOption: TProjectSortOption = `${sortKey}-${sortOrder}`;
 
 	const [
@@ -221,6 +236,7 @@ function ProjectsHeader() {
 
 				<div className="flex items-center gap-3 md:gap-4">
 					<SearchBar className="hidden md:block" />
+					<BatchEditButton />
 					<ImportProjectButton />
 					<NewProjectButton />
 				</div>
@@ -727,6 +743,7 @@ function ProjectItem({
 			</div>
 
 			<CardContent className="flex flex-col gap-2 px-0 pt-4">
+				<BatchProjectBadge projectId={project.id} />
 				<h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
 					{project.name}
 				</h3>

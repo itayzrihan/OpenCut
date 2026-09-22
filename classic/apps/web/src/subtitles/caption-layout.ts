@@ -15,19 +15,19 @@ export type CaptionPlacementMode = "grid" | "manual";
 
 export const DEFAULT_CAPTION_LAYOUT = {
 	wordsPerRow: 4,
-	rows: 2,
+	rows: 1,
 	inPaddingPercent: 0,
 	outPaddingPercent: 0,
-	bottomFadeOutPercent: 50,
+	bottomFadeOutPercent: 60,
 	revealMode: "determined-by-preset" as TextCaptionRevealMode,
 	transitionIn: "none" as TextWordTransitionIn,
 	wordAnimationId: "none",
 	accentColor: "#c8ff4d",
 	wordDirection: "auto" as TextWordDirection,
-	hidePunctuation: false,
+	hidePunctuation: true,
 	placementMode: "grid" as CaptionPlacementMode,
 	placementGridX: 0.5,
-	placementGridY: 1,
+	placementGridY: 0.5,
 	manualPositionX: 0,
 	manualPositionY: 0,
 };
@@ -279,7 +279,8 @@ export function resolveCaptionBottomFadeOut({
 }: {
 	settings: CaptionLayoutSettings | undefined;
 }): number {
-	if (typeof settings?.bottomFadeOutPercent !== "number") return 0;
+	if (typeof settings?.bottomFadeOutPercent !== "number")
+		return DEFAULT_CAPTION_LAYOUT.bottomFadeOutPercent / 100;
 	return (
 		clampNumber({
 			value: settings.bottomFadeOutPercent,
@@ -498,8 +499,7 @@ export function splitCaptionCuesByLayer({
 
 		if (layerEnds[layerIndex] > caption.startTime) {
 			layerIndex = layerEnds.findIndex(
-				(end, candidateIndex) =>
-					candidateIndex < safeLayerCount && end <= caption.startTime,
+				(end) => end <= caption.startTime,
 			);
 		}
 

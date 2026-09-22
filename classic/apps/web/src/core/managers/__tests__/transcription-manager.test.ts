@@ -64,6 +64,7 @@ function transitionTaskForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	sampleAutomaticZoom: () => ({scale:1,anchorX:0.5,anchorY:0.5}),
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -163,12 +164,31 @@ function createEditor() {
 			getActiveScene: () => scene,
 			getActiveSceneOrNull: () => scene,
 		},
+		project: { getActive: () => ({ metadata: { id: "project-1" } }) },
+		command: { getStateRevision: () => 0 },
 		media: { getAssets: () => [] },
 		timeline: { getTotalDuration: () => 120_000 },
 	} as unknown as EditorCore;
 }
 
 describe("TranscriptionManager", () => {
+
+	test("rejects a stale transcript when the timeline changed during transcription", async () => {
+		const editor = createEditor();
+		let revision = 0;
+		editor.command.getStateRevision = () => revision;
+		let inserted = false;
+		const manager = new TranscriptionManager({ editor, dependencies: {
+			extractAudio: async () => new Blob(["audio"]),
+			transcribe: async () => { revision += 1; return {text:"hello",segments:[{text:"hello",start:0,end:1}],language:"en"}; },
+			insertCaptions: () => {inserted = true; return ["captions"];},
+			generateId: () => "stale-task", transitionTask: transitionTaskForTest,
+		}});
+		const state = await manager.start();
+		expect(state.task.status).toBe("failed");
+		expect(state.task.error).toContain("timeline changed");
+		expect(inserted).toBe(false);
+	});
 	test("runs a durable transcription task and retains only safe result handles", async () => {
 		const inserted: Array<Record<string, unknown>> = [];
 		const manager = new TranscriptionManager({
