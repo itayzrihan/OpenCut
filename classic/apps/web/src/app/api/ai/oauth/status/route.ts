@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { type NextRequest, NextResponse } from "next/server";
 import {
 	getOpenAIOAuthStatus,
@@ -6,7 +7,7 @@ import {
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
+async function GETHandler(request: NextRequest) {
 	const result = await getOpenAIOAuthStatus({ request });
 	const response = NextResponse.json(result.status);
 	if (result.refreshedCredentials) {
@@ -17,3 +18,5 @@ export async function GET(request: NextRequest) {
 	}
 	return response;
 }
+
+export const GET = withAccount(GETHandler);

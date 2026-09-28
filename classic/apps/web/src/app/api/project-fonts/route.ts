@@ -1,7 +1,7 @@
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { stageRepositoryAssetPaths } from "@/git/repository-assets";
+import { accountDataRoot, withAccount } from "@/accounts/server";
 
 export const runtime = "nodejs";
 
@@ -36,32 +36,9 @@ async function pathExists({ target }: { target: string }): Promise<boolean> {
 	}
 }
 
-async function resolvePublicRoot(): Promise<{
-	publicRoot: string;
-	repositoryRoot: string;
-}> {
-	const cwd = process.cwd();
-	const candidates = [
-		{
-			publicRoot: path.join(cwd, "public"),
-			repositoryRoot: "public",
-		},
-		{
-			publicRoot: path.join(cwd, "apps", "web", "public"),
-			repositoryRoot: path.join("apps", "web", "public"),
-		},
-	];
+async function resolvePublicRoot() { return { publicRoot: accountDataRoot(), repositoryRoot: "" }; }
 
-	for (const candidate of candidates) {
-		if (await pathExists({ target: candidate.publicRoot })) {
-			return candidate;
-		}
-	}
-
-	return candidates[0];
-}
-
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		const formData = await request.formData();
 		const projectId = sanitizeSegment({ value: formData.get("projectId") });
@@ -98,9 +75,8 @@ export async function POST(request: Request) {
 
 		await mkdir(projectFontsDir, { recursive: true });
 		await writeFile(storedPath, Buffer.from(await file.arrayBuffer()));
-		await stageRepositoryAssetPaths({ paths: [storedPath] });
 
-		const sourceUrl = `/project-fonts/${projectId}/${storedFileName}`;
+		const sourceUrl = `/api/account-assets/project-fonts/${projectId}/${storedFileName}`;
 		const repositoryPath = path.posix.join(
 			...repositoryRoot.split(path.sep),
 			"project-fonts",
@@ -118,3 +94,5 @@ export async function POST(request: Request) {
 		return NextResponse.json({ error: "Failed to copy font" }, { status: 500 });
 	}
 }
+
+export const POST = withAccount(POSTHandler);

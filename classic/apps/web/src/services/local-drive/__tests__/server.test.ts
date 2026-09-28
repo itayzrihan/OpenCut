@@ -1,4 +1,6 @@
-import { describe, expect, mock, test } from "bun:test";
+import { accountScope } from "@/accounts/server";
+const test = (name: string, body: () => Promise<void>) => runTest(name, () => accountScope.run({ id: "test-account", login: "test", displayName: "Test" }, body));
+import { describe, expect, mock, test as runTest } from "bun:test";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -17,8 +19,8 @@ describe("local-drive shared collections", () => {
 			putProject,
 		} = await import("../server");
 		const directory = await mkdtemp(join(tmpdir(), "pocut-project-index-"));
-		const previousProjectsDirectory = process.env.POCUT_PROJECTS_DIR;
-		process.env.POCUT_PROJECTS_DIR = directory;
+		const previousProjectsDirectory = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
 
 		try {
 			const embeddedThumbnail = `data:image/png;base64,${"AAECAw==".repeat(1024)}`;
@@ -59,7 +61,7 @@ describe("local-drive shared collections", () => {
 			expect(metadata.every((project) => !("scenes" in project))).toBe(true);
 			const storedProject = JSON.parse(
 				await readFile(
-					join(directory, "projects", "current", "project.json"),
+					join(directory, "data", "test-account", "projects", "current", "project.json"),
 					"utf8",
 				),
 			) as { metadata: { thumbnail?: string } };
@@ -82,9 +84,9 @@ describe("local-drive shared collections", () => {
 			expect(await listOutdatedProjects(33)).toEqual([]);
 		} finally {
 			if (previousProjectsDirectory === undefined) {
-				delete process.env.POCUT_PROJECTS_DIR;
+				delete process.env.OPENCUT_ACCOUNTS_DIR;
 			} else {
-				process.env.POCUT_PROJECTS_DIR = previousProjectsDirectory;
+				process.env.OPENCUT_ACCOUNTS_DIR = previousProjectsDirectory;
 			}
 			await rm(directory, { recursive: true, force: true });
 		}
@@ -94,8 +96,8 @@ describe("local-drive shared collections", () => {
 		const { getSharedRecord, listSharedRecords, putSharedRecord } =
 			await import("../server");
 		const directory = await mkdtemp(join(tmpdir(), "pocut-local-drive-"));
-		const previousProjectsDirectory = process.env.POCUT_PROJECTS_DIR;
-		process.env.POCUT_PROJECTS_DIR = directory;
+		const previousProjectsDirectory = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
 
 		try {
 			expect(await listSharedRecords("ui-elements")).toEqual([]);
@@ -111,9 +113,9 @@ describe("local-drive shared collections", () => {
 			});
 		} finally {
 			if (previousProjectsDirectory === undefined) {
-				delete process.env.POCUT_PROJECTS_DIR;
+				delete process.env.OPENCUT_ACCOUNTS_DIR;
 			} else {
-				process.env.POCUT_PROJECTS_DIR = previousProjectsDirectory;
+				process.env.OPENCUT_ACCOUNTS_DIR = previousProjectsDirectory;
 			}
 			await rm(directory, { recursive: true, force: true });
 		}
@@ -123,8 +125,8 @@ describe("local-drive shared collections", () => {
 		const { getSharedFile, getSharedRecord, putSharedRecord, storeSharedFile } =
 			await import("../server");
 		const directory = await mkdtemp(join(tmpdir(), "pocut-shared-fonts-"));
-		const previousProjectsDirectory = process.env.POCUT_PROJECTS_DIR;
-		process.env.POCUT_PROJECTS_DIR = directory;
+		const previousProjectsDirectory = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
 
 		try {
 			const bytes = new Uint8Array([0, 1, 0, 0, 102, 111, 110, 116]);
@@ -152,9 +154,9 @@ describe("local-drive shared collections", () => {
 			});
 		} finally {
 			if (previousProjectsDirectory === undefined) {
-				delete process.env.POCUT_PROJECTS_DIR;
+				delete process.env.OPENCUT_ACCOUNTS_DIR;
 			} else {
-				process.env.POCUT_PROJECTS_DIR = previousProjectsDirectory;
+				process.env.OPENCUT_ACCOUNTS_DIR = previousProjectsDirectory;
 			}
 			await rm(directory, { recursive: true, force: true });
 		}

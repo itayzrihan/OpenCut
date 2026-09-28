@@ -1,4 +1,5 @@
 import type { ProjectFontAsset } from "@/fonts/types";
+import { accountAssetUrl } from "@/accounts/browser";
 import type { MediaAsset } from "@/media/types";
 import type { TProject, TProjectMetadata } from "@/project/types";
 import type { SavedSound, SavedSoundsData, SoundEffect } from "@/sounds/types";
@@ -119,7 +120,7 @@ function readProjectMetadata(entry: unknown): TProjectMetadata | null {
 		id,
 		name,
 		...(typeof metadata.thumbnail === "string" && {
-			thumbnail: metadata.thumbnail,
+			thumbnail: metadata.thumbnail.startsWith("/") ? accountAssetUrl(metadata.thumbnail) : metadata.thumbnail,
 		}),
 		duration: roundMediaTime({ time: duration }),
 		createdAt,

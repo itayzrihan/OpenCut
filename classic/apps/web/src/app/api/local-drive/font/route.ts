@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { assertBatchProjectWrite } from "@/batch/server";
 /* eslint-disable opencut/prefer-object-params -- Route helpers mirror URL parameter access. */
 import { createReadStream } from "node:fs";
@@ -18,7 +19,7 @@ function required(searchParams: URLSearchParams, key: string): string {
 	return value;
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
@@ -68,3 +69,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

@@ -72,8 +72,9 @@ export function buildUnifiedAngleCycleUpdates({
 		targets,
 		angleAssetId: startingAngleAssetId,
 	});
-	const firstAngleIndex =
-		asset.unifiedAngles.angleAssetIds.indexOf(startingAngleAssetId);
+	if (!isUnifiedAnglesAsset(asset)) throw new Error("A Unified Angles asset is required");
+	const angleAssetIds = asset.unifiedAngles.angleAssetIds;
+	const firstAngleIndex = angleAssetIds.indexOf(startingAngleAssetId);
 
 	return [...targets]
 		.sort(
@@ -87,8 +88,8 @@ export function buildUnifiedAngleCycleUpdates({
 			elementId: target.elementId,
 			patch: {
 				unifiedAngleId:
-					asset.unifiedAngles.angleAssetIds[
-						(firstAngleIndex + index) % asset.unifiedAngles.angleAssetIds.length
+					angleAssetIds[
+						(firstAngleIndex + index) % angleAssetIds.length
 					],
 			},
 		}));

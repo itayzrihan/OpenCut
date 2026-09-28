@@ -1,4 +1,5 @@
 import { batchWriteHeaders } from "@/batch/write-token";
+import { accountAssetUrl } from "@/accounts/browser";
 import type { ProjectFontData } from "@/services/storage/types";
 import type {
 	LocalDriveMediaRecord,
@@ -43,7 +44,7 @@ export function localMediaUrl({
 	id: string;
 }): string {
 	const params = new URLSearchParams({ projectId, id });
-	return `/api/local-drive/media?${params}`;
+	return accountAssetUrl(`/api/local-drive/media?${params}`);
 }
 
 export function localFontUrl({
@@ -54,7 +55,7 @@ export function localFontUrl({
 	id: string;
 }): string {
 	const params = new URLSearchParams({ projectId, id });
-	return `/api/local-drive/font?${params}`;
+	return accountAssetUrl(`/api/local-drive/font?${params}`);
 }
 
 export async function getLocalDriveStatus(): Promise<LocalDriveStatus> {

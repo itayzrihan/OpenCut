@@ -1,6 +1,7 @@
 /* eslint-disable opencut/prefer-object-params -- Adapter internals mirror the Storage API's key/value signatures. */
 import type { StorageAdapter } from "@/services/storage/types";
 import { localDriveRequest } from "./client";
+import { accountAssetUrl } from "@/accounts/browser";
 
 type ListableStorageAdapter<T> = StorageAdapter<T> & { getAll(): Promise<T[]> };
 
@@ -136,7 +137,7 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 	private url(id: string, file?: File): string {
 		const params = new URLSearchParams({ kind: this.kind, id });
 		if (file?.type) params.set("mimeType", file.type);
-		return `/api/local-drive/shared-file?${params}`;
+		return accountAssetUrl(`/api/local-drive/shared-file?${params}`);
 	}
 
 	private async putFile(id: string, file: File): Promise<void> {

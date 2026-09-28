@@ -40,6 +40,7 @@ import { useContainerSize } from "@/hooks/use-container-size";
 import { useFileUpload } from "@/media/use-file-upload";
 import { useSoundSearch } from "@/sounds/use-sound-search";
 import { useSoundsStore } from "@/sounds/sounds-store";
+import { SpeechView } from "./speech-view";
 import {
 	sharedLibraryService,
 	useSharedLibraryStore,
@@ -77,9 +78,11 @@ export function SoundsView() {
 						<TabsTrigger value="music">Music</TabsTrigger>
 						<TabsTrigger value="online">Online</TabsTrigger>
 						<TabsTrigger value="saved">Saved</TabsTrigger>
+						<TabsTrigger value="speech">Voiceover</TabsTrigger>
 					</TabsList>
 				</div>
 				<Separator className="my-4" />
+				<TabsContent value="speech" className="mt-0 min-h-0 flex-1"><SpeechView /></TabsContent>
 				<TabsContent
 					value="sound-effects"
 					className="mt-0 flex min-h-0 flex-1 flex-col p-5 pt-0"
@@ -279,7 +282,7 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				<div className="min-w-0">
 					<p className="text-sm font-medium">{folderLabel}</p>
 					<p className="text-muted-foreground text-xs">
-						Copied into the repository and shared across projects
+						Stored privately in your account and shared across your projects
 					</p>
 				</div>
 				<Button size="sm" onClick={openFilePicker}>
@@ -344,7 +347,7 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 						<DialogHeader>
 							<DialogTitle>Create category</DialogTitle>
 							<DialogDescription>
-								Categories are saved in the repository manifest and can contain
+								Categories are saved in your account library and can contain
 								the same file in many places.
 							</DialogDescription>
 						</DialogHeader>

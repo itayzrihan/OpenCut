@@ -3860,6 +3860,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "opencut-account-core"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "opencut-desktop"
 version = "0.1.0"
 dependencies = [
@@ -5339,7 +5348,9 @@ name = "storage"
 version = "0.1.0"
 dependencies = [
  "bridge",
+ "opencut-account-core",
  "serde",
+ "serde_json",
  "tsify-next",
  "wasm-bindgen",
 ]

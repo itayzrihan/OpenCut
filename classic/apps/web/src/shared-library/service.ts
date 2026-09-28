@@ -1,4 +1,5 @@
 import { IndexedDBAdapter } from "@/services/storage/indexeddb-adapter";
+import { accountAssetUrl } from "@/accounts/browser";
 import { OPFSAdapter } from "@/services/storage/opfs-adapter";
 import {
 	LocalDriveFileAdapter,
@@ -666,7 +667,7 @@ export class SharedLibraryService {
 		const cached = this.audioUrlCache.get(id);
 		if (cached) return cached;
 		const asset = await this.findAudioAsset({ id });
-		if (asset?.sourceUrl) return asset.sourceUrl;
+		if (asset?.sourceUrl) return accountAssetUrl(asset.sourceUrl);
 		const file = await this.getAudioAssetFile({ id });
 		if (!file || typeof URL === "undefined") return null;
 		const url = URL.createObjectURL(file);
@@ -841,7 +842,7 @@ export class SharedLibraryService {
 		const cached = this.stickerUrlCache.get(id);
 		if (cached) return cached;
 		const asset = await this.findStickerAsset({ id });
-		if (asset?.sourceUrl) return asset.sourceUrl;
+		if (asset?.sourceUrl) return accountAssetUrl(asset.sourceUrl);
 		const file = await this.getStickerAssetFile({ id });
 		if (!file || typeof URL === "undefined") return null;
 		const url = URL.createObjectURL(file);

@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
@@ -47,7 +48,7 @@ const chatRequestSchema = z
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
 	const contentLength = Number(request.headers.get("content-length") ?? "0");
 	if (
 		Number.isFinite(contentLength) &&
@@ -90,11 +91,12 @@ export async function POST(request: NextRequest) {
 		);
 	}
 
+	const credentials = oauth.credentials;
 	try {
 		const responseBody = await retryOverload({
 			request: () =>
 				forwardCodexResponsesRequest({
-					credentials: oauth.credentials,
+					credentials,
 					body: parsed.data,
 					signal: request.signal,
 				}),
@@ -126,3 +128,5 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
+
+export const POST = withAccount(POSTHandler);

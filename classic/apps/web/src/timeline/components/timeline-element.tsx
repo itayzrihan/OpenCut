@@ -784,15 +784,16 @@ function TimelineElementMenuContent({
 		}
 	};
 	const handleSetUnifiedAngle = (angleAssetId: string) => {
+		const cycleTarget = unifiedAngleCycleTarget;
 		const selectedTargets =
 			isCurrentElementSelected &&
-			unifiedAngleCycleTarget?.asset.id === mediaAsset?.id
-				? unifiedAngleCycleTarget.targets
+			cycleTarget && cycleTarget.asset.id === mediaAsset?.id
+				? cycleTarget.targets
 				: null;
 		editor.timeline.updateElements({
-			updates: selectedTargets
+			updates: selectedTargets && cycleTarget
 				? buildUnifiedAngleSetUpdates({
-						asset: unifiedAngleCycleTarget.asset,
+						asset: cycleTarget.asset,
 						targets: selectedTargets,
 						angleAssetId,
 					})

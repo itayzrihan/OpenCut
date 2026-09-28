@@ -1,4 +1,5 @@
 import type { StorageAdapter } from "./types";
+import { accountNamespace } from "@/accounts/browser";
 
 export class OPFSAdapter implements StorageAdapter<File> {
 	private directoryName: string;
@@ -9,7 +10,7 @@ export class OPFSAdapter implements StorageAdapter<File> {
 
 	private async getDirectory(): Promise<FileSystemDirectoryHandle> {
 		const opfsRoot = await navigator.storage.getDirectory();
-		return await opfsRoot.getDirectoryHandle(this.directoryName, {
+		return await opfsRoot.getDirectoryHandle(accountNamespace(this.directoryName), {
 			create: true,
 		});
 	}

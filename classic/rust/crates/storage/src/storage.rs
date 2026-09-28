@@ -1,6 +1,41 @@
 use bridge::export;
 use serde::Deserialize;
 
+/// Host identity and I/O are adapters; the account transaction is shared with
+/// OpenCutRuntime. JSON keeps the projection independent of UI frameworks.
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountStorageOptions {
+    pub state_json: String,
+    pub authenticated_id: String,
+    pub configuration_json: String,
+}
+
+#[export]
+pub fn account_configure_storage(AccountStorageOptions { state_json, authenticated_id, configuration_json }: AccountStorageOptions) -> Result<String, String> {
+    let mut state: opencut_account_core::AccountState = serde_json::from_str(&state_json).map_err(|e| e.to_string())?;
+    let configuration = serde_json::from_str(&configuration_json).map_err(|e| e.to_string())?;
+    state.configure_storage(&authenticated_id, configuration)?;
+    serde_json::to_string(&state).map_err(|e| e.to_string())
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountSnapshotOptions {
+    pub manifest_json: String,
+    pub authenticated_id: String,
+}
+
+#[export]
+pub fn account_validate_snapshot(AccountSnapshotOptions { manifest_json, authenticated_id }: AccountSnapshotOptions) -> Result<(), String> {
+    let manifest: opencut_account_core::snapshot::SnapshotManifest = serde_json::from_str(&manifest_json).map_err(|error| error.to_string())?;
+    manifest.validate(&authenticated_id)
+}
+
 pub const LINK_MEDIA_AT_BYTES: f64 = 1024.0 * 1024.0 * 1024.0;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

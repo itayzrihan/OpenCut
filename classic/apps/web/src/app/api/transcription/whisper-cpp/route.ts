@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import {
 	buildWords,
 	segmentStart,
@@ -274,7 +275,7 @@ function refineWordTimingsWithEnergy({
 	return trimWordOverlaps(refined);
 }
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
 	const workDir = await mkdtemp(join(tmpdir(), "opencut-whisper-"));
 
 	try {
@@ -395,7 +396,7 @@ export async function POST(request: NextRequest) {
 }
 
 /** Read-only recipe preflight, without exposing local paths. */
-export async function GET() {
+async function GETHandler() {
 	const configured = webEnv.WHISPER_CPP_MODEL_PATH;
 	const ivritLargeV3 =
 		!!configured &&
@@ -415,3 +416,6 @@ export async function GET() {
 		{ status: available ? 200 : 503 },
 	);
 }
+
+export const POST = withAccount(POSTHandler);
+export const GET = withAccount(GETHandler);

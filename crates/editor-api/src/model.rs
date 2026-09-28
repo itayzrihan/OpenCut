@@ -77,6 +77,8 @@ impl MediaTime {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct EditorDocument {
+    #[serde(default)]
+    pub account: Option<opencut_account_core::AccountState>,
     pub schema_version: u32,
     pub revision: u64,
     pub next_id: u64,
@@ -92,6 +94,7 @@ pub struct EditorDocument {
 impl Default for EditorDocument {
     fn default() -> Self {
         Self {
+            account: None,
             schema_version: CURRENT_SCHEMA_VERSION,
             revision: 0,
             next_id: 1,
@@ -123,6 +126,9 @@ impl EditorDocument {
     }
 
     pub fn validate(&self) -> Result<(), ModelError> {
+        if let Some(account) = &self.account {
+            account.validate().map_err(ModelError::Invalid)?;
+        }
         if self.schema_version == 0 {
             return Err(ModelError::Invalid(
                 "schemaVersion must be greater than zero".into(),

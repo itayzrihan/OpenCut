@@ -1,20 +1,25 @@
 import { localDriveRequest } from "./client";
 
-const EXACT_KEYS = new Set([
-	"opencut-keybindings",
-	"stickers-settings",
-	"panel-sizes",
-	"projects-view-mode",
-	"assets-panel",
-	"timeline-store",
-	"preview-settings",
-	"opencut-caption-review-direction",
-	"text-line-arrangement-presets",
-	"graph-editor-presets",
-]);
+export function shouldPersistPreference(key: string): boolean {
+	// Settings are forward-compatible. Device migration markers are not settings
+	// and must never suppress a different machine's local data import.
+	return !!key && key.length <= 256 && !key.startsWith("pocut-local-drive-") && !key.startsWith("legacy-");
+}
 
-function shouldPersistPreference(key: string): boolean {
-	return EXACT_KEYS.has(key) || key.startsWith("opencut.caption.");
+export async function saveAllAccountPreferences() {
+	for (let index = 0; index < localStorage.length; index++) {
+		const key = localStorage.key(index);
+		if (!key || !shouldPersistPreference(key)) continue;
+		const value = localStorage.getItem(key);
+		if (value !== null) await localDriveRequest({ operation: "preferences.put", payload: { key, value } });
+	}
+}
+
+export async function hydrateAccountPreferences() {
+	const preferences = await localDriveRequest<Record<string, string>>({ operation: "preferences.list" });
+	let changed = false;
+	for (const [key, value] of Object.entries(preferences)) if (shouldPersistPreference(key) && localStorage.getItem(key) !== value) { localStorage.setItem(key, value); changed = true; }
+	return changed;
 }
 
 let isMirrorInstalled = false;

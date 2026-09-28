@@ -7,6 +7,10 @@ const { build: baseConfiguration } = require("../package.json");
 const unpacked = process.argv.includes("--dir");
 const targets = Platform.current().createTarget(unpacked ? "dir" : null);
 const appDirectory = join(__dirname, "..", "app");
+const buildDirectory = process.env.OPENCUT_BUILD_DIR || ".next";
+if (!/^\.next(?:-[a-zA-Z0-9_-]+)?$/.test(buildDirectory)) {
+	throw new Error("OPENCUT_BUILD_DIR must be .next or a .next- prefixed directory name");
+}
 
 const configuration = {
 	...baseConfiguration,
@@ -19,7 +23,8 @@ const configuration = {
 	icon: "../../web/public/icons/ms-icon-310x310.png",
 	extraResources: baseConfiguration.extraResources.map((resource) => ({
 		...resource,
-		from: `../${resource.from}`,
+		from: `../${resource.from.replace(/\.next(?=\/)/g, buildDirectory)}`,
+		to: resource.to.replace(/\.next(?=\/)/g, buildDirectory),
 	})),
 	win: {
 		...baseConfiguration.win,

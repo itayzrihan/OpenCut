@@ -1,6 +1,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
+import type { webpack as WebpackTypes } from "next/dist/compiled/webpack/webpack";
 import { withBotId } from "botid/next/config";
 import { withContentCollections } from "@content-collections/next";
 
@@ -14,6 +15,8 @@ const runtimeTarget =
 	process.env.OPENCUT_RUNTIME_TARGET === "electron" ? "electron" : "browser";
 
 const nextConfig: NextConfig = {
+	distDir: process.env.OPENCUT_BUILD_DIR || ".next",
+	typescript: { tsconfigPath: "tsconfig.build.json" },
 	allowedDevOrigins: ["127.0.0.1"],
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
@@ -51,7 +54,7 @@ const nextConfig: NextConfig = {
 	turbopack: {
 		root: workspaceRootDirectory,
 	},
-	webpack: (config) => {
+	webpack: (config, { isServer, dev, webpack }) => {
 		config.resolve.alias = {
 			...config.resolve.alias,
 			"opencut-wasm": localWasmEntry,
@@ -60,6 +63,18 @@ const nextConfig: NextConfig = {
 			...config.experiments,
 			asyncWebAssembly: true,
 		};
+		if (isServer && !dev) {
+			// Next emits node chunks under server/chunks, but its shared runtime
+			// resolves async WASM relative to server/. Emit that runtime copy as a
+			// tracked asset so both page collection and standalone packaging work.
+			config.plugins.push({ apply(compiler: WebpackTypes.Compiler) {
+				compiler.hooks.thisCompilation.tap("OpenCutServerWasm", (compilation: WebpackTypes.Compilation) => {
+					compilation.hooks.processAssets.tap({ name: "OpenCutServerWasm", stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL }, () => {
+						for (const asset of compilation.getAssets()) if (/^static\/wasm\/[^/]+\.wasm$/.test(asset.name)) compilation.emitAsset(`../${asset.name}`, asset.source);
+					});
+				});
+			} });
+		}
 		return config;
 	},
 	images: {

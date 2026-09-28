@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { type NextRequest, NextResponse } from "next/server";
 import {
 	CHATGPT_CODEX_MODEL_FALLBACKS,
@@ -14,7 +15,7 @@ import { webEnv } from "@/env/web";
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
+async function GETHandler(request: NextRequest) {
 	const oauth = await getOpenAIOAuthStatus({ request });
 	const discoveryEndpoint = getCodexModelsEndpoint();
 
@@ -151,3 +152,5 @@ function getCodexModelsEndpoint(): string {
 	url.searchParams.set("client_version", "1.0.0");
 	return url.toString();
 }
+
+export const GET = withAccount(GETHandler);

@@ -28,6 +28,7 @@ import {
 	normalizeCodexModelId,
 } from "@/ai/codex-models";
 import { webEnv } from "@/env/web";
+import { hostCookieSecret } from "@/accounts/host-key";
 
 const AUTHORIZE_URL = "https://auth.openai.com/oauth/authorize";
 const TOKEN_URL = "https://auth.openai.com/oauth/token";
@@ -121,7 +122,7 @@ export async function createOpenAIAuthorizationResponse({
 	});
 	const bindingCookieValue =
 		request.cookies.get(OAUTH_BINDING_COOKIE)?.value ?? randomUUID();
-	const sessionBinding = hashSessionBinding(bindingCookieValue);
+	const sessionBinding = hashSessionBinding(accountBoundOAuthValue(request, bindingCookieValue));
 	const statePayload: OAuthState = {
 		state,
 		codeVerifier: verifier,
@@ -1669,18 +1670,23 @@ function unsealJson(sealed: string): unknown {
 }
 
 function getCookieKey(): Buffer {
-	return createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest();
+	return webEnv.BETTER_AUTH_SECRET ? createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest() : hostCookieSecret();
 }
 
 function getSessionBinding({ request }: { request: NextRequest }): string {
 	const oauthBinding = request.cookies.get(OAUTH_BINDING_COOKIE)?.value;
-	if (oauthBinding) return hashSessionBinding(oauthBinding);
+	if (oauthBinding) return hashSessionBinding(accountBoundOAuthValue(request, oauthBinding));
 	const sessionCookie =
 		request.cookies.get("better-auth.session_token")?.value ??
 		request.cookies.get("__Secure-better-auth.session_token")?.value ??
 		request.cookies.get("better-auth.session-token")?.value ??
 		"sessionless";
 	return hashSessionBinding(sessionCookie);
+}
+
+function accountBoundOAuthValue(request: NextRequest, value: string): string {
+	const accountSession = request.cookies.get("opencut-account")?.value;
+	return accountSession ? `${value}:${accountSession}` : value;
 }
 
 function hashSessionBinding(value: string): string {

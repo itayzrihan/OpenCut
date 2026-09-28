@@ -1,4 +1,5 @@
 import { BatchEditRoot } from "@/batch/root";
+import { AccountGate } from "@/accounts/gate";
 import { ThemeProvider } from "next-themes";
 import Script from "next/script";
 import "./globals.css";
@@ -31,6 +32,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<script src="/account-scope.js" />
 				<BotIdClient protect={protectedRoutes} />
 				<link rel="stylesheet" href={TYPEKIT_STYLESHEET_URL} />
 			</head>
@@ -55,7 +57,7 @@ export default function RootLayout({
 							data-track-web-vitals={false}
 							data-track-sessions={false}
 						/>
-						<BatchEditRoot>{children}</BatchEditRoot>
+						<AccountGate><BatchEditRoot>{children}</BatchEditRoot></AccountGate>
 					</TooltipProvider>
 				</ThemeProvider>
 			</body>

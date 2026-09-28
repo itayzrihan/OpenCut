@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import {
 	assertBatchProjectWrite,
 	assertNoActiveBatch,
@@ -73,7 +74,7 @@ function readNonNegativeInteger(value: unknown, label: string): number {
 	return value;
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		return NextResponse.json(await getLocalDriveStatus(), {
@@ -87,7 +88,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const body = (await request.json()) as Record<string, unknown>;
@@ -271,3 +272,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

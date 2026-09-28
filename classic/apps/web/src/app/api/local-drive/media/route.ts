@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { assertBatchProjectWrite } from "@/batch/server";
 /* eslint-disable opencut/prefer-object-params -- HTTP range helpers mirror protocol parameters. */
 import { NextResponse } from "next/server";
@@ -80,7 +81,7 @@ async function serve(request: Request, includeBody: boolean) {
 	});
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		return await serve(request, true);
 	} catch (error) {
@@ -91,7 +92,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function HEAD(request: Request) {
+async function HEADHandler(request: Request) {
 	try {
 		return await serve(request, false);
 	} catch (error) {
@@ -102,7 +103,7 @@ export async function HEAD(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
@@ -133,3 +134,9 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const HEAD = withAccount(HEADHandler);
+
+export const POST = withAccount(POSTHandler);

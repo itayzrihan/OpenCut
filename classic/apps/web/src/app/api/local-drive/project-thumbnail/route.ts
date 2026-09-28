@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { NextResponse } from "next/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
 import {
@@ -34,7 +35,7 @@ async function serve(request: Request, includeBody: boolean) {
 	);
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		return await serve(request, true);
 	} catch (error) {
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function HEAD(request: Request) {
+async function HEADHandler(request: Request) {
 	try {
 		return await serve(request, false);
 	} catch (error) {
@@ -55,3 +56,7 @@ export async function HEAD(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const HEAD = withAccount(HEADHandler);

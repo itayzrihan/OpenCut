@@ -13,7 +13,9 @@ import {
 	unlink,
 	writeFile,
 } from "node:fs/promises";
-import { homedir, platform } from "node:os";
+import { platform } from "node:os";
+import { accountDataRoot } from "@/accounts/server";
+import { assertAccountMediaSource } from "@/accounts/media-source";
 import {
 	basename,
 	extname,
@@ -76,11 +78,7 @@ interface ProjectLibraryEntry {
 }
 
 function driveRoot(): string {
-	const configured = process.env.POCUT_PROJECTS_DIR?.trim();
-	return resolve(
-		/* turbopackIgnore: true */ configured ||
-			join(homedir(), "Movies", "PoCut Projects"),
-	);
+	return accountDataRoot();
 }
 
 function projectsRoot(): string {
@@ -718,6 +716,7 @@ export async function getMediaFile(projectId: string, mediaId: string) {
 	if (!record) return null;
 	if (record.unifiedAngles) return null;
 	const path = storedMediaPath(projectId, record);
+	if (record.storageKind === "linked") await assertAccountMediaSource(path);
 	const fileStat = await stat(path).catch(() => null);
 	if (!fileStat?.isFile()) return null;
 	return { path, record, stat: fileStat };
@@ -773,7 +772,7 @@ export async function registerMediaPath({
 	if (!record.sourcePath || !isAbsolute(record.sourcePath)) {
 		throw new Error("A valid absolute source path is required");
 	}
-	const sourcePath = normalize(record.sourcePath);
+	const sourcePath = await assertAccountMediaSource(record.sourcePath);
 	const sourceStat = await stat(sourcePath);
 	if (!sourceStat.isFile()) throw new Error("Media source is not a file");
 	const storageDisposition = disposition({
