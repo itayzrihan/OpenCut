@@ -63,11 +63,11 @@ impl StorageConfiguration {
     pub fn validate(&self) -> Result<(), String> {
         if self.automatic_snapshots && self.mode == StorageMode::LocalOnly { return Err("Automatic snapshots require connected storage".into()); }
         if let Some(destination) = &self.destination_id { validate_id(destination)?; }
-        if self.mode == StorageMode::ExternalDrive && self.destination_id.is_none() {
-            return Err("Choose an external storage destination first".into());
+        if self.mode != StorageMode::LocalOnly && self.destination_id.is_none() {
+            return Err("Choose a storage destination first".into());
         }
-        if self.mode != StorageMode::ExternalDrive && self.destination_id.is_some() {
-            return Err("Only external-drive mode accepts a destination".into());
+        if self.mode == StorageMode::LocalOnly && self.destination_id.is_some() {
+            return Err("Local-only mode cannot have a destination".into());
         }
         if self.devices.len() > 64 { return Err("At most 64 personal devices are supported".into()); }
         let mut ids = BTreeSet::new();
@@ -128,5 +128,15 @@ mod tests {
     fn rejects_traversal_and_unpaired_device_mode() {
         for id in ["", "../alice", "C:\\alice", "a/b", "a.b"] { assert!(validate_id(id).is_err()); }
         assert!(StorageConfiguration { mode: StorageMode::PersonalDevices, ..Default::default() }.validate().is_err());
+    }
+    #[test]
+    fn personal_devices_require_a_destination_and_a_verified_device() {
+        let device = Device { id: "desktop".into(), name: "My desktop".into(), fingerprint: "a".repeat(64), enabled: true };
+        let mut configuration = StorageConfiguration { mode: StorageMode::PersonalDevices, destination_id: Some("mounted_share".into()), devices: vec![device], automatic_snapshots: true };
+        let mut state = account();
+        state.configure_storage("alice", configuration.clone()).unwrap();
+        assert_eq!(state.storage, configuration);
+        configuration.destination_id = None;
+        assert!(state.configure_storage("alice", configuration).is_err());
     }
 }

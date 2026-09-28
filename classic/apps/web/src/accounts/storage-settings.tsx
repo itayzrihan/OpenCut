@@ -1,10 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 import { saveAllAccountPreferences } from "@/services/local-drive/preferences";
+type StorageMode = "localOnly" | "externalDrive" | "personalDevices";
 type State = {
 	profile: {
 		folder: string | null;
-		account: { storage: { automaticSnapshots?: boolean } };
+		deviceId: string;
+		account: { storage: { mode: StorageMode; automaticSnapshots?: boolean } };
+	};
+	currentDevice: { id: string; name: string; fingerprint: string };
+	devices: {
+		id: string;
+		name: string;
+		fingerprint: string;
+		lastSeenAt: string;
+	}[];
+	connection: {
+		status: "local" | "connected" | "unavailable";
+		error: string | null;
 	};
 	snapshots: {
 		id: string;
@@ -28,6 +41,8 @@ export function StorageSettings() {
 	const [error, setError] = useState(""),
 		[busy, setBusy] = useState(false);
 	const [automatic, setAutomatic] = useState(false);
+	const [mode, setMode] = useState<StorageMode>("localOnly"),
+		[deviceName, setDeviceName] = useState("");
 	async function refresh(statusOnly = false) {
 		const response = await fetch(
 				`/api/accounts/storage${statusOnly ? "?status=1" : ""}`,
@@ -39,6 +54,8 @@ export function StorageSettings() {
 		if (!statusOnly) {
 			setFolder(result.profile.folder ?? "");
 			setAutomatic(result.profile.account.storage.automaticSnapshots ?? false);
+			setMode(result.profile.account.storage.mode);
+			setDeviceName(result.currentDevice.name);
 		}
 		if (statusOnly && result.job?.status !== "running") {
 			if (
@@ -102,49 +119,116 @@ export function StorageSettings() {
 					your machines. OpenCut keeps a separate account vault outside Git.
 				</p>
 			</div>
-			<label className="block space-y-1 text-sm">
-				<span>Existing storage folder</span>
-				<input
-					value={folder}
-					onChange={(event) => setFolder(event.target.value)}
-					placeholder="Full path to your drive or mounted share"
-					className="w-full rounded border bg-background p-2"
-					disabled={disabled}
-				/>
-			</label>
-			<label className="flex items-center gap-2 text-sm">
-				<input
-					type="checkbox"
-					checked={automatic}
-					onChange={(event) => setAutomatic(event.target.checked)}
-					disabled={disabled}
-				/>
-				Automatically save changed work every five minutes while OpenCut is open
-			</label>
+			<fieldset className="space-y-2" disabled={disabled}>
+				<legend className="mb-2 text-sm font-medium">
+					Where to keep saved versions
+				</legend>
+				<div className="grid gap-2 sm:grid-cols-3">
+					{(
+						[
+							["localOnly", "Local only", "Work on this computer."],
+							[
+								"externalDrive",
+								"External drive",
+								"Use a drive or provider’s synced folder.",
+							],
+							[
+								"personalDevices",
+								"My machines",
+								"Use a folder shared by one of your computers.",
+							],
+						] as const
+					).map(([value, label, description]) => (
+						<label
+							key={value}
+							className={`cursor-pointer rounded border p-3 text-sm ${mode === value ? "border-primary bg-primary/5" : ""}`}
+						>
+							<span className="flex items-center gap-2 font-medium">
+								<input
+									type="radio"
+									name="storage-mode"
+									value={value}
+									checked={mode === value}
+									onChange={() => setMode(value)}
+								/>
+								{label}
+							</span>
+							<span className="mt-2 block text-xs text-muted-foreground">
+								{description}
+							</span>
+						</label>
+					))}
+				</div>
+			</fieldset>
+			{mode !== "localOnly" && (
+				<>
+					{mode === "personalDevices" && (
+						<p className="text-sm text-muted-foreground">
+							Choose a folder on this machine, or a mounted share from another
+							machine you own. To connect another computer, recover this account
+							there and select the same shared folder. The machine hosting the
+							share must be reachable when saving or opening versions.
+						</p>
+					)}
+					<label className="block space-y-1 text-sm">
+						<span>
+							{mode === "personalDevices"
+								? "Shared folder on your machine"
+								: "Existing storage folder"}
+						</span>
+						<input
+							value={folder}
+							onChange={(event) => setFolder(event.target.value)}
+							placeholder="Full path to your drive or mounted share"
+							className="w-full rounded border bg-background p-2"
+							disabled={disabled}
+						/>
+					</label>
+					<label className="block space-y-1 text-sm">
+						<span>Name for this machine</span>
+						<input
+							value={deviceName}
+							onChange={(event) => setDeviceName(event.target.value)}
+							maxLength={128}
+							disabled={disabled}
+							className="w-full rounded border bg-background p-2"
+						/>
+					</label>
+					<label className="flex items-center gap-2 text-sm">
+						<input
+							type="checkbox"
+							checked={automatic}
+							onChange={(event) => setAutomatic(event.target.checked)}
+							disabled={disabled}
+						/>
+						Automatically save changed work every five minutes while OpenCut is
+						open
+					</label>
+				</>
+			)}
 			<div className="flex flex-wrap gap-2">
 				<button
-					disabled={disabled || !folder.trim()}
+					disabled={
+						disabled ||
+						!state ||
+						(mode !== "localOnly" && (!folder.trim() || !deviceName.trim()))
+					}
 					onClick={() =>
 						void action({
 							action: "configure",
-							folder: folder.trim(),
+							folder: mode === "localOnly" ? null : folder.trim(),
+							mode,
+							deviceName: deviceName.trim(),
 							automaticSnapshots: automatic,
 						})
 					}
 					className="rounded border px-4 py-2 disabled:opacity-50"
 				>
-					Connect folder
-				</button>
-				<button
-					disabled={disabled}
-					onClick={() => void action({ action: "configure", folder: null })}
-					className="rounded border px-4 py-2 disabled:opacity-50"
-				>
-					Local only
+					Save storage choice
 				</button>
 				{state?.profile.folder && (
 					<button
-						disabled={disabled}
+						disabled={disabled || state.connection.status !== "connected"}
 						onClick={() => void action({ action: "publish" })}
 						className="rounded bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
 					>
@@ -153,10 +237,56 @@ export function StorageSettings() {
 				)}
 			</div>
 			<p className="text-sm">
-				{state?.profile.folder
-					? `Connected: ${state.profile.folder}`
-					: "Local only. Your work stays on this machine."}
+				{state?.connection.status === "unavailable"
+					? `Destination unavailable: ${state.profile.folder}. Your local workspace remains available.`
+					: state?.profile.folder
+						? `Connected: ${state.profile.folder}`
+						: "Local only. Your work stays on this machine."}
 			</p>
+			{state?.connection.error && (
+				<p role="status" className="break-words text-sm text-amber-600">
+					{state.connection.error}
+				</p>
+			)}
+			<button
+				disabled={disabled}
+				onClick={() => void refresh().catch((error) => setError(error.message))}
+				className="text-sm underline disabled:opacity-50"
+			>
+				Refresh connection and versions
+			</button>
+			{!!state?.devices.length && (
+				<div className="space-y-2">
+					<h3 className="font-medium">Machines using this vault</h3>
+					<p className="text-xs text-muted-foreground">
+						These identities were verified from the shared vault. The last
+						connection or save does not indicate whether a machine is online
+						now.
+					</p>
+					<ul className="space-y-2">
+						{state.devices.map((device) => (
+							<li key={device.id} className="rounded border p-3 text-sm">
+								<p className="font-medium">
+									{device.name}
+									{device.id === state.currentDevice.id
+										? " (this machine)"
+										: ""}
+								</p>
+								<p className="text-xs text-muted-foreground">
+									Last connection or save:{" "}
+									{new Date(device.lastSeenAt).toLocaleString()}
+								</p>
+								<details className="mt-1 text-xs">
+									<summary className="cursor-pointer">
+										Device fingerprint
+									</summary>
+									<code className="break-all">{device.fingerprint}</code>
+								</details>
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
 			{running && (
 				<div className="flex items-center gap-4">
 					<p role="status">
@@ -195,6 +325,14 @@ export function StorageSettings() {
 								className="flex items-center justify-between gap-3 rounded border p-3 text-sm"
 							>
 								<span>
+									<span className="block font-medium">
+										{state.devices.find(
+											(device) => device.id === snapshot.deviceId,
+										)?.name ?? `Machine ${snapshot.deviceId.slice(0, 8)}`}
+										{snapshot.deviceId === state.currentDevice.id
+											? " (this machine)"
+											: ""}
+									</span>
 									{new Date(snapshot.createdAt).toLocaleString()} ·{" "}
 									{snapshot.files} files · {(snapshot.bytes / 1e6).toFixed(1)}{" "}
 									MB

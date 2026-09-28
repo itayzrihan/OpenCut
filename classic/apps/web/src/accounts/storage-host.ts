@@ -23,6 +23,12 @@ import { pipeline } from "node:stream/promises";
 import { accountsRoot, accountDataRoot, requireAccount } from "./server";
 import { hashFile } from "./migration";
 import { assertAccountMediaSource } from "./media-source";
+import { MAGIC, seal, unseal } from "./vault-crypto";
+import {
+	localStorageDevice,
+	listStorageDevices,
+	publishStorageDevice,
+} from "./storage-devices";
 
 export type StorageState = {
 	id: string;
@@ -67,7 +73,6 @@ type Source = {
 	mtimeMs: number;
 	data?: Buffer;
 };
-const MAGIC = Buffer.from("OCV1");
 function profilePath() {
 	return join(
 		accountsRoot(),
@@ -97,7 +102,7 @@ export async function readStorageProfile(): Promise<Profile> {
 				storage: { mode: "localOnly", destinationId: null, devices: [] },
 			},
 			folder: null,
-			deviceId: randomUUID(),
+			deviceId: (await localStorageDevice()).id,
 		};
 	}
 }
@@ -109,8 +114,17 @@ export async function configureStorageFolder(
 	folder: string | null,
 	policy: StoragePolicy,
 	automaticSnapshots = false,
+	options: { mode?: StorageState["storage"]["mode"]; deviceName?: string } = {},
 ) {
 	const profile = await readStorageProfile();
+	const mode = options.mode ?? (folder ? "externalDrive" : "localOnly");
+	if (
+		!["localOnly", "externalDrive", "personalDevices"].includes(mode) ||
+		(mode === "localOnly") !== (folder === null)
+	)
+		throw new Error(
+			"Choose a folder for external or personal-machine storage, or use local only",
+		);
 	if (folder !== null) {
 		if (!isAbsolute(folder))
 			throw new Error("Choose an existing absolute folder path");
@@ -122,10 +136,33 @@ export async function configureStorageFolder(
 				"Choose a destination outside the account host's private storage",
 			);
 	}
+	const device = await localStorageDevice(
+		profile.deviceId,
+		options.deviceName ??
+			profile.account.storage.devices.find(
+				(entry) => entry.id === profile.deviceId,
+			)?.name,
+	);
+	const root = folder
+		? join(folder, "OpenCut Vaults", requireAccount().id)
+		: null;
+	const key = root ? await accountStorageKey() : null;
+	const devices = root && key ? await listStorageDevices(root, key) : [];
 	const configuration = {
-		mode: folder ? "externalDrive" : "localOnly",
-		destinationId: folder ? randomUUID() : null,
-		devices: [],
+		mode,
+		destinationId: folder
+			? ((folder === profile.folder
+					? profile.account.storage.destinationId
+					: null) ?? randomUUID())
+			: null,
+		devices: [...devices.filter((entry) => entry.id !== device.id), device].map(
+			({ id, name, fingerprint, enabled }) => ({
+				id,
+				name,
+				fingerprint,
+				enabled,
+			}),
+		),
 		automaticSnapshots: !!folder && automaticSnapshots,
 	};
 	profile.account = JSON.parse(
@@ -136,6 +173,7 @@ export async function configureStorageFolder(
 		}),
 	);
 	profile.folder = folder;
+	if (root && key) await publishStorageDevice(root, key, device);
 	await atomicJson(profilePath(), profile);
 	return profile;
 }
@@ -160,7 +198,7 @@ export async function accountStorageKey(): Promise<Buffer> {
 }
 async function vault() {
 	const profile = await readStorageProfile();
-	if (!profile.folder || profile.account.storage.mode !== "externalDrive")
+	if (!profile.folder || profile.account.storage.mode === "localOnly")
 		throw new Error("Connect a storage folder first");
 	const folder = await realpath(profile.folder);
 	return {
@@ -190,29 +228,6 @@ async function walk(root: string, prefix = ""): Promise<Source[]> {
 			throw new Error("Snapshot exceeds 100,000 files");
 	}
 	return files;
-}
-function seal(data: Buffer, key: Buffer, aad: string) {
-	const iv = randomBytes(12),
-		cipher = createCipheriv("aes-256-gcm", key, iv);
-	cipher.setAAD(Buffer.from(aad));
-	return Buffer.concat([
-		MAGIC,
-		iv,
-		cipher.update(data),
-		cipher.final(),
-		cipher.getAuthTag(),
-	]);
-}
-function unseal(data: Buffer, key: Buffer, aad: string) {
-	if (data.length < 32 || !data.subarray(0, 4).equals(MAGIC))
-		throw new Error("Invalid encrypted snapshot");
-	const decipher = createDecipheriv("aes-256-gcm", key, data.subarray(4, 16));
-	decipher.setAAD(Buffer.from(aad));
-	decipher.setAuthTag(data.subarray(-16));
-	return Buffer.concat([
-		decipher.update(data.subarray(16, -16)),
-		decipher.final(),
-	]);
 }
 async function decodeObject(
 	path: string,
@@ -388,6 +403,16 @@ export async function publishAccountSnapshot(
 		`${accountId}:manifest:${snapshotId}`,
 	);
 	const temporary = join(root, "snapshots", `${snapshotId}.partial`);
+	await publishStorageDevice(
+		root,
+		key,
+		await localStorageDevice(
+			profile.deviceId,
+			profile.account.storage.devices.find(
+				(entry) => entry.id === profile.deviceId,
+			)?.name,
+		),
+	);
 	await writeFile(temporary, encoded, { flag: "wx" });
 	await rename(temporary, join(root, "snapshots", `${snapshotId}.manifest`));
 	await atomicJson(
@@ -473,6 +498,33 @@ export async function listAccountSnapshots(policy: StoragePolicy) {
 		});
 	}
 	return snapshots.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+export async function readStorageConnection(policy: StoragePolicy) {
+	const profile = await readStorageProfile();
+	if (!profile.folder)
+		return {
+			status: "local" as const,
+			devices: [],
+			snapshots: [],
+			error: null,
+		};
+	try {
+		const { root, key } = await vault();
+		const devices = await listStorageDevices(root, key);
+		return {
+			status: "connected" as const,
+			devices,
+			snapshots: await listAccountSnapshots(policy),
+			error: null,
+		};
+	} catch (error) {
+		return {
+			status: "unavailable" as const,
+			devices: [],
+			snapshots: [],
+			error: error instanceof Error ? error.message : String(error),
+		};
+	}
 }
 export async function restoreAccountSnapshot(
 	snapshotId: string,

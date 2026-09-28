@@ -59,8 +59,10 @@ folder is a fallback. These files are user data and are never packaged or pushed
 
 ## External storage and multiple machines
 
-Choose an existing folder on an external drive, in a provider's local synced
-folder, or on a mounted share hosted by one of your machines. No provider account
+Choose **Local only**, **External drive**, or **My machines** in Account & storage.
+For external storage, choose an existing folder on a drive or in a provider's local
+synced folder. For your machines, choose a local shared folder on its host or a
+mounted share hosted by one of your other computers. No provider account
 or central OpenCut storage service is required. The folder contains an encrypted
 vault separated by account ID. The application always keeps a local workspace.
 
@@ -71,6 +73,15 @@ of publishing inconsistent files; automatic mode retries on its next check.
 
 Download the password-protected account recovery file. On another machine,
 recover that identity, connect the same folder/share, and open a saved version.
+Name each machine when connecting. The vault lists its verified device identities
+and shows which machine saved each version. Device names and public identity
+records are encrypted in the vault and signed by a separate key kept on that
+machine. "Last connection or save" is historical activity, not live availability.
+The device list does not revoke an account recovery file or a copied vault key.
+OS folder sharing must already be configured; OpenCut does not expose a network
+server or change your sharing permissions. If the drive or host is disconnected,
+storage settings remain accessible and local editing continues; reconnect the
+destination or switch to Local only.
 Before switching a nonempty workspace, OpenCut saves its current version and
 retains its local directory. Concurrent versions remain separate. Restore checks
 every encrypted object before activation; an interrupted activation has a journal
@@ -99,6 +110,10 @@ an explicit internal testing check, not a verified claim.
 - Cross-account HTTP access, pinned account URLs, ranges and private library
   delivery pass; anonymous requests cannot access private data.
 - Shared Rust account policy and Editor API revision/dry-run/undo tests pass.
+- Personal-machine storage passes the same canonical policy and registry round
+  trip. Distinct device identities survive account recovery; forged device records
+  and records from another account are rejected, and disconnected drives leave
+  storage settings usable.
 - Synthetic two-host encrypted identity transfer restores exact project bytes
   using the packaged standalone server without hosted infrastructure.
 - Recovery tests cover both versions, corruption, cancellation, concurrent edits,

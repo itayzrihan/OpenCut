@@ -17,6 +17,8 @@ import {
 	publishAccountSnapshot,
 	restoreAccountSnapshot,
 	listAccountSnapshots,
+	readStorageProfile,
+	readStorageConnection,
 	type StoragePolicy,
 } from "./storage-host";
 const policy: StoragePolicy = {
@@ -49,7 +51,13 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 				join(accountDataRoot(), "settings.json"),
 				'{"keep":"all settings"}',
 			);
-			await configureStorageFolder(folder, policy);
+			await configureStorageFolder(folder, policy, true, {
+				mode: "personalDevices",
+				deviceName: "Editing desktop",
+			});
+			expect((await readStorageProfile()).account.storage.mode).toBe(
+				"personalDevices",
+			);
 			await expect(exportAccountIdentity("incorrect password")).rejects.toThrow(
 				"Invalid password",
 			);
@@ -72,12 +80,39 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 			account.id,
 		);
 		await accountScope.run(restored.account, async () => {
-			await configureStorageFolder(folder, policy);
+			await configureStorageFolder(folder, policy, true, {
+				mode: "personalDevices",
+				deviceName: "Travel laptop",
+			});
+			const profile = await readStorageProfile();
+			expect(profile.deviceId).not.toBe(snapshot.deviceId);
+			expect((await readStorageProfile()).deviceId).toBe(profile.deviceId);
+			const connection = await readStorageConnection(policy);
+			expect(connection.status).toBe("connected");
+			expect(connection.devices.map((device) => device.name).sort()).toEqual([
+				"Editing desktop",
+				"Travel laptop",
+			]);
+			expect(
+				new Set(connection.devices.map((device) => device.fingerprint)).size,
+			).toBe(2);
 			expect(await listAccountSnapshots(policy)).toHaveLength(1);
 			await restoreAccountSnapshot(snapshot.snapshotId, policy);
 			expect(
 				await readFile(join(accountDataRoot(), "settings.json"), "utf8"),
 			).toBe('{"keep":"all settings"}');
+			await configureStorageFolder(null, policy, false, { mode: "localOnly" });
+			expect((await readStorageProfile()).account.storage.devices[0].name).toBe(
+				"Travel laptop",
+			);
+			await configureStorageFolder(folder, policy, true, {
+				mode: "personalDevices",
+			});
+			expect(
+				(await readStorageConnection(policy)).devices.find(
+					(device) => device.id === profile.deviceId,
+				)?.name,
+			).toBe("Travel laptop");
 		});
 	} finally {
 		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;

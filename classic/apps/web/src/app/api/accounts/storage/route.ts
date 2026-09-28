@@ -3,7 +3,7 @@ import { withAccount, importLocked, requireAccount } from "@/accounts/server";
 import {
 	configureStorageFolder,
 	readStorageProfile,
-	listAccountSnapshots,
+	readStorageConnection,
 	accountSnapshotNeeded,
 	type StoragePolicy,
 } from "@/accounts/storage-host";
@@ -14,6 +14,7 @@ import {
 } from "@/accounts/storage-jobs";
 import { exportAccountIdentity } from "@/accounts/identity-transfer";
 import { readBoundedBody } from "@/accounts/request-body";
+import { localStorageDevice } from "@/accounts/storage-devices";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const policy: StoragePolicy = {
@@ -24,9 +25,24 @@ export const GET = withAccount(async (request: Request) => {
 	try {
 		if (new URL(request.url).searchParams.has("status"))
 			return Response.json({ job: await storageJob() });
+		const connection = await readStorageConnection(policy);
+		const profile = await readStorageProfile();
+		const device = await localStorageDevice(
+			profile.deviceId,
+			profile.account.storage.devices.find(
+				(entry) => entry.id === profile.deviceId,
+			)?.name,
+		);
 		return Response.json({
-			profile: await readStorageProfile(),
-			snapshots: await listAccountSnapshots(policy),
+			profile,
+			currentDevice: {
+				id: device.id,
+				name: device.name,
+				fingerprint: device.fingerprint,
+			},
+			snapshots: connection.snapshots,
+			devices: connection.devices,
+			connection: { status: connection.status, error: connection.error },
 			job: await storageJob(),
 		});
 	} catch (error) {
@@ -69,6 +85,7 @@ export const POST = withAccount(async (request: Request) => {
 					body.folder,
 					policy,
 					body.automaticSnapshots === true,
+					{ mode: body.mode, deviceName: body.deviceName },
 				),
 			});
 		if (body.action === "publish")

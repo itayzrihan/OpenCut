@@ -6510,6 +6510,13 @@ mod tests {
         assert!(matches!(invoke_error(&runtime, "account.storage.configure", wrong).await, CapabilityError::InvalidInput(_)));
         invoke(&runtime, "history.undo", json!({})).await;
         assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
+        let machines = json!({"mode":"personalDevices","destinationId":"shared_folder","devices":[{"id":"desktop","name":"Editing desktop","fingerprint":"b".repeat(64),"enabled":true}],"automaticSnapshots":true});
+        let revision = runtime.snapshot().unwrap().revision;
+        invoke(&runtime, "account.storage.configure", json!({"accountId":"alice","configuration":machines,"expectedRevision":revision})).await;
+        let state = invoke(&runtime, "app.state.read", json!({})).await;
+        assert_eq!(state["value"]["account"]["storage"], machines);
+        invoke(&runtime, "history.undo", json!({})).await;
+        assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
     }
 
     async fn invoke(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {

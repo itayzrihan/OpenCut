@@ -73,6 +73,12 @@ every five minutes while the client is open. Automatic merge and direct peer
 discovery are not implemented. Mounted shares are the current personal-machine
 transport. Snapshot publication allows editor saves and rejects a source that
 changes during the transfer. Interrupted activation recovers via its journal.
+Storage setup exposes all three canonical modes, including personal machines.
+Each machine has its own persistent Ed25519 identity; encrypted, signed records in
+the mounted vault provide device names, fingerprints and historical activity.
+Recovery on a second host creates a distinct device identity. This is discovery
+through the shared folder, not direct network discovery or online presence.
+Unavailable destinations preserve access to local work and storage settings.
 
 Classic MCP requests namespace browser sessions by authenticated account.
 Command completions must match their originating session, and disconnecting one

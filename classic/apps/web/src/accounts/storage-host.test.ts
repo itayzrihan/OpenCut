@@ -18,6 +18,8 @@ import {
 	restoreAccountSnapshot,
 	listAccountSnapshots,
 	accountSnapshotNeeded,
+	readStorageConnection,
+	readStorageProfile,
 	type StoragePolicy,
 } from "./storage-host";
 
@@ -144,6 +146,11 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 					"utf8",
 				),
 			).toBe(original);
+			await rename(join(root, "external"), join(root, "unplugged"));
+			expect((await readStorageConnection(policy)).status).toBe("unavailable");
+			expect((await readStorageProfile()).folder).toBe(join(root, "external"));
+			await configureStorageFolder(null, policy, false, { mode: "localOnly" });
+			expect((await readStorageConnection(policy)).status).toBe("local");
 		});
 	} finally {
 		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
