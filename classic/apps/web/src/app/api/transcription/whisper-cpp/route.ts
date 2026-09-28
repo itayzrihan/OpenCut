@@ -1,4 +1,9 @@
-import { buildWords, segmentStart, segmentEnd, roundSeconds } from "./whisper-json";
+import {
+	buildWords,
+	segmentStart,
+	segmentEnd,
+	roundSeconds,
+} from "./whisper-json";
 import { webEnv } from "@/env/web";
 import { type NextRequest, NextResponse } from "next/server";
 import { runProcess } from "./run-process";
@@ -79,8 +84,10 @@ function firstExisting(paths: string[]) {
 
 function dtwPresetForModel(modelPath: string) {
 	const normalized = modelPath.toLowerCase().replace(/\\/g, "/");
-	if (normalized.includes("large-v3") || normalized.includes("large.v3")) return "large.v3";
-	if (normalized.includes("large-v2") || normalized.includes("large.v2")) return "large.v2";
+	if (normalized.includes("large-v3") || normalized.includes("large.v3"))
+		return "large.v3";
+	if (normalized.includes("large-v2") || normalized.includes("large.v2"))
+		return "large.v2";
 	if (normalized.includes("large")) return "large";
 	if (normalized.includes("medium")) return "medium";
 	if (normalized.includes("small")) return "small";
@@ -100,7 +107,10 @@ function readUInt16LE({ buffer, offset }: { buffer: Buffer; offset: number }) {
 }
 
 function parsePcm16Wav(buffer: Buffer): PcmAudio | null {
-	if (buffer.toString("ascii", 0, 4) !== "RIFF" || buffer.toString("ascii", 8, 12) !== "WAVE") {
+	if (
+		buffer.toString("ascii", 0, 4) !== "RIFF" ||
+		buffer.toString("ascii", 8, 12) !== "WAVE"
+	) {
 		return null;
 	}
 
@@ -204,7 +214,11 @@ function findEnergyOnset({
 	}
 
 	const searchEnd = Math.min(word.end - 0.02, word.start + 0.25);
-	for (let time = word.start + frameSeconds; time <= searchEnd; time += frameSeconds) {
+	for (
+		let time = word.start + frameSeconds;
+		time <= searchEnd;
+		time += frameSeconds
+	) {
 		const current = rmsForRange({ audio, from: time, to: time + frameSeconds });
 		const next = rmsForRange({
 			audio,
@@ -219,7 +233,9 @@ function findEnergyOnset({
 	return word.start;
 }
 
-function trimWordOverlaps(words: Array<{ text: string; start: number; end: number }>) {
+function trimWordOverlaps(
+	words: Array<{ text: string; start: number; end: number }>,
+) {
 	return words.map((word, index) => {
 		const next = words[index + 1];
 		const nextStart = next ? next.start : Number.POSITIVE_INFINITY;
@@ -267,16 +283,22 @@ export async function POST(request: NextRequest) {
 		const language = String(form.get("language") || "he");
 
 		if (!(audio instanceof File)) {
-			return NextResponse.json({ error: "Missing audio file" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Missing audio file" },
+				{ status: 400 },
+			);
 		}
 
-		const whisperPath = firstExisting([
-			webEnv.WHISPER_CPP_BINARY_PATH,
-			...DEFAULT_BINARY_PATHS,
-		].filter((value): value is string => !!value));
-		const modelPath = firstExisting([
-			webEnv.WHISPER_CPP_MODEL_PATH,
-		].filter((value): value is string => !!value));
+		const whisperPath = firstExisting(
+			[webEnv.WHISPER_CPP_BINARY_PATH, ...DEFAULT_BINARY_PATHS].filter(
+				(value): value is string => !!value,
+			),
+		);
+		const modelPath = firstExisting(
+			[webEnv.WHISPER_CPP_MODEL_PATH].filter(
+				(value): value is string => !!value,
+			),
+		);
 		const ffmpegPath = firstExisting(DEFAULT_FFMPEG_PATHS);
 
 		if (!whisperPath || !modelPath || !ffmpegPath) {
@@ -296,7 +318,18 @@ export async function POST(request: NextRequest) {
 		await writeFile(inputPath, Buffer.from(await audio.arrayBuffer()));
 		await runProcess({
 			command: ffmpegPath,
-			args: ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath],
+			args: [
+				"-y",
+				"-i",
+				inputPath,
+				"-ar",
+				"16000",
+				"-ac",
+				"1",
+				"-c:a",
+				"pcm_s16le",
+				wavPath,
+			],
 			cwd: workDir,
 			signal: request.signal,
 		});
@@ -313,15 +346,20 @@ export async function POST(request: NextRequest) {
 				"-ojf",
 				"-of",
 				outBase,
-				"-np",
 				...dtwArgs,
 				...(webEnv.WHISPER_CPP_DEVICE === "cpu" ? ["-ng"] : []),
 			],
 			cwd: workDir,
 			signal: request.signal,
+			requiredStderrPattern:
+				webEnv.WHISPER_CPP_DEVICE === "gpu"
+					? /using (?:CUDA\d*|Metal|Vulkan\d*|SYCL\d*) backend/i
+					: undefined,
 		});
 
-		const raw = whisperJsonSchema.parse(JSON.parse(await readFile(outJson, "utf8")));
+		const raw = whisperJsonSchema.parse(
+			JSON.parse(await readFile(outJson, "utf8")),
+		);
 		const segments = (raw.transcription || [])
 			.map((segment) => ({
 				text: (segment.text || "").trim(),
@@ -347,8 +385,7 @@ export async function POST(request: NextRequest) {
 		console.error("whisper.cpp transcription failed:", error);
 		return NextResponse.json(
 			{
-				error:
-					error instanceof Error ? error.message : "Transcription failed",
+				error: error instanceof Error ? error.message : "Transcription failed",
 			},
 			{ status: 500 },
 		);
@@ -360,11 +397,21 @@ export async function POST(request: NextRequest) {
 /** Read-only recipe preflight, without exposing local paths. */
 export async function GET() {
 	const configured = webEnv.WHISPER_CPP_MODEL_PATH;
-	const ivritLargeV3 = !!configured && /ivrit/i.test(configured)
-		&& /large[.-]v3/i.test(configured) && existsSync(configured);
-	const available = ivritLargeV3
-		&& !!firstExisting([webEnv.WHISPER_CPP_BINARY_PATH, ...DEFAULT_BINARY_PATHS]
-			.filter((value): value is string => !!value))
-		&& !!firstExisting(DEFAULT_FFMPEG_PATHS);
-	return NextResponse.json({ ivritLargeV3: available }, { status: available ? 200 : 503 });
+	const ivritLargeV3 =
+		!!configured &&
+		/ivrit/i.test(configured) &&
+		/large[.-]v3/i.test(configured) &&
+		existsSync(configured);
+	const available =
+		ivritLargeV3 &&
+		!!firstExisting(
+			[webEnv.WHISPER_CPP_BINARY_PATH, ...DEFAULT_BINARY_PATHS].filter(
+				(value): value is string => !!value,
+			),
+		) &&
+		!!firstExisting(DEFAULT_FFMPEG_PATHS);
+	return NextResponse.json(
+		{ ivritLargeV3: available },
+		{ status: available ? 200 : 503 },
+	);
 }

@@ -73,20 +73,69 @@ fn read(o: &AutomaticMusicOptions) -> Result<(Value, Vec<Value>, i64), String> {
         }
         let name = a["name"].as_str().ok_or("Missing music name")?;
         let duration = duration_ticks(&a);
-        catalog.push(json!({"id":id,"name":name,"durationSeconds":a["duration"],"durationTicks":duration,"categories":a["categories"],"eligible":duration.is_some_and(|d|d>=end)}));
+        catalog.push(json!({"id":id,"name":name,"durationSeconds":a["duration"],"durationTicks":duration,"categories":a["categories"],"eligible":duration.is_some_and(|d|d>=end),"lastUsedAt":a["lastUsedAt"].as_u64().unwrap_or(0),"presentationKey":a["presentationKey"]}));
+    }
+    // Retain every catalog entry, but reserve recent choices when alternatives exist.
+    // With a small library leave at least one choice; with one eligible song allow it.
+    let eligible = catalog.iter().filter(|a| a["eligible"] == true).count();
+    let mut recent: Vec<(String, u64)> = catalog
+        .iter()
+        .filter(|a| a["eligible"] == true && a["lastUsedAt"].as_u64().unwrap_or(0) > 0)
+        .map(|a| {
+            (
+                a["id"].as_str().unwrap().to_owned(),
+                a["lastUsedAt"].as_u64().unwrap(),
+            )
+        })
+        .collect();
+    recent.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    let cooldown: HashSet<String> = recent
+        .into_iter()
+        .take(5.min(eligible.saturating_sub(1)))
+        .map(|a| a.0)
+        .collect();
+    for a in &mut catalog {
+        a["durationEligible"] = a["eligible"].clone();
+        a["recentlyUsed"] = json!(cooldown.contains(a["id"].as_str().unwrap()));
+        if a["recentlyUsed"] == true {
+            a["eligible"] = json!(false);
+        }
+    }
+    // Random keys come from the host's cryptographic RNG, once per request.
+    catalog.sort_by(|a, b| {
+        a["presentationKey"]
+            .as_str()
+            .unwrap_or("")
+            .cmp(b["presentationKey"].as_str().unwrap_or(""))
+    });
+    for a in &mut catalog {
+        a.as_object_mut().unwrap().remove("presentationKey");
     }
     Ok((doc, catalog, end))
 }
 #[export]
 pub fn automatic_music_catalog(o: AutomaticMusicOptions) -> AutomaticMusicResult {
     match read(&o) {
-        Ok((_, catalog, end)) => AutomaticMusicResult {
-            valid: true,
-            eligible_count: catalog.iter().filter(|a| a["eligible"] == true).count(),
-            catalog_json: json!(catalog).to_string(),
-            duration_ticks: end,
-            ..Default::default()
-        },
+        Ok((mut doc, catalog, end)) => {
+            // A previous generated song is not evidence of what suits the speech.
+            for track in doc["scene"]["tracks"].as_array_mut().unwrap() {
+                if let Some(elements) = track["elements"].as_array_mut() {
+                    elements.retain(|e| e["automaticMusicOwner"] != OWNER);
+                }
+            }
+            doc["scene"]["tracks"].as_array_mut().unwrap().retain(|t| {
+                t["automaticMusicOwner"] != OWNER
+                    || t["elements"].as_array().is_some_and(|es| !es.is_empty())
+            });
+            AutomaticMusicResult {
+                valid: true,
+                source_json: doc.to_string(),
+                eligible_count: catalog.iter().filter(|a| a["eligible"] == true).count(),
+                catalog_json: json!(catalog).to_string(),
+                duration_ticks: end,
+                ..Default::default()
+            }
+        }
         Err(error) => AutomaticMusicResult {
             error,
             ..Default::default()
@@ -114,6 +163,11 @@ fn compile(o: AutomaticMusicOptions) -> Result<AutomaticMusicResult, String> {
         .find(|a| a["id"] == plan.asset_id)
         .ok_or("Choose an existing Music asset ID")?;
     if asset["eligible"] != true {
+        if asset["recentlyUsed"] == true {
+            return Err(
+                "This song was used recently. Choose an eligible alternative for variety".into(),
+            );
+        }
         return Err(
             "Music must be at least as long as the video; never loop or stretch a shorter song"
                 .into(),
@@ -148,7 +202,7 @@ fn compile(o: AutomaticMusicOptions) -> Result<AutomaticMusicResult, String> {
     tracks.push(json!({"id":format!("{OWNER}:track:{suffix}"),"name":"Automatic Music","type":"audio","area":"audio","muted":false,"automaticMusicOwner":OWNER,"elements":[{
         "id":format!("{OWNER}:clip:{suffix}"),"name":asset["name"],"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":plan.asset_id,
         "startTime":0,"duration":end,"sourceDuration":source_duration,"trimStart":0,"trimEnd":source_duration-end,"automaticMusicOwner":OWNER,"automaticMusicReason":plan.reason,
-        "params":{"volume":-28,"muted":false,"fadeInDuration":0,"fadeOutDuration":0}
+        "params":{"volume":-31,"muted":false,"fadeInDuration":0,"fadeOutDuration":0}
     }]}));
     Ok(AutomaticMusicResult {
         valid: true,
@@ -163,6 +217,58 @@ fn compile(o: AutomaticMusicOptions) -> Result<AutomaticMusicResult, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn repeated_model_choice_is_rejected_and_complete_catalog_is_retained() {
+        let assets: Vec<Value> = (0..12).map(|i|json!({"id":format!("song-{i}"),"name":format!("Song {i}"),"folder":"music","duration":180,"lastUsedAt":if i<5 {100-i} else {0},"presentationKey":format!("{:02}",11-i)})).collect();
+        let mut o = options(doc(), "song-0");
+        o.assets_json = json!(assets).to_string();
+        let prepared = automatic_music_catalog(options_with_assets(&o));
+        let catalog: Vec<Value> = serde_json::from_str(&prepared.catalog_json).unwrap();
+        assert_eq!(catalog.len(), 12);
+        assert_eq!(prepared.eligible_count, 7);
+        assert_eq!(catalog[0]["id"], "song-11");
+        assert!(
+            compile_automatic_music(options_with_assets(&o))
+                .error
+                .contains("recently")
+        );
+        o.plan_json = json!({"assetId":"song-11","reason":"Fits the speech"}).to_string();
+        assert!(compile_automatic_music(o).valid);
+    }
+    fn options_with_assets(o: &AutomaticMusicOptions) -> AutomaticMusicOptions {
+        AutomaticMusicOptions {
+            source_json: o.source_json.clone(),
+            assets_json: o.assets_json.clone(),
+            plan_json: o.plan_json.clone(),
+        }
+    }
+    #[test]
+    fn small_library_rotates_but_single_long_enough_song_remains_available() {
+        let mut o = options(doc(), "long");
+        let mut a = assets();
+        a[1]["lastUsedAt"] = json!(100);
+        a[2]["lastUsedAt"] = json!(200);
+        o.assets_json = a.to_string();
+        assert_eq!(
+            automatic_music_catalog(options_with_assets(&o)).eligible_count,
+            1
+        );
+        assert!(!compile_automatic_music(options_with_assets(&o)).valid);
+        a[1]["duration"] = json!(30);
+        o.assets_json = a.to_string();
+        assert!(compile_automatic_music(o).valid);
+    }
+    #[test]
+    fn planning_context_removes_old_music_without_modifying_compilation_source() {
+        let first = compile_automatic_music(options(doc(), "long"));
+        let original: Value = serde_json::from_str(&first.source_json).unwrap();
+        let o = options(original.clone(), "exact");
+        let prepared = automatic_music_catalog(options_with_assets(&o));
+        assert!(!prepared.source_json.contains("automaticMusicReason"));
+        assert!(prepared.source_json.contains("manual"));
+        assert!(o.source_json.contains("automaticMusicReason"));
+        assert!(compile_automatic_music(o).valid);
+    }
     fn doc() -> Value {
         json!({"schemaVersion":2,"scene":{"tracks":[{"id":"v","area":"main","type":"video","elements":[{"type":"video","startTime":0,"duration":14400000}]},{"id":"manual","area":"audio","type":"audio","elements":[{"id":"sfx","duration":20000000}]}]}})
     }
@@ -192,7 +298,7 @@ mod tests {
         }
     }
     #[test]
-    fn exact_and_long_are_full_span_at_minus_28() {
+    fn exact_and_long_are_full_span_at_minus_31() {
         for (id, trim) in [("exact", 0), ("long", 7200000)] {
             let r = compile_automatic_music(options(doc(), id));
             assert!(r.valid, "{}", r.error);
@@ -201,7 +307,7 @@ mod tests {
             assert_eq!(e["duration"], 14400000);
             assert_eq!(e["startTime"], 0);
             assert_eq!(e["trimEnd"], trim);
-            assert_eq!(e["params"]["volume"], -28);
+            assert_eq!(e["params"]["volume"], -31);
             assert_eq!(d["scene"]["tracks"][1], doc()["scene"]["tracks"][1]);
         }
     }

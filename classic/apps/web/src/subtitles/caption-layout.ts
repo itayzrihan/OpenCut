@@ -108,7 +108,7 @@ function normalizeCaptionRowBreaks(value: unknown): number[] | undefined {
 
 export function stripCaptionPunctuation({ text }: { text: string }): string {
 	return text
-		.replace(/\p{P}+/gu, "")
+		.replace(/(?![?¿؟？])\p{P}/gu, "")
 		.replace(/[^\S\n]+/g, " ")
 		.replace(/[ \t]*\n[ \t]*/g, "\n")
 		.replace(/\n{3,}/g, "\n\n")

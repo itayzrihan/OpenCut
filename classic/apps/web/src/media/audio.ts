@@ -1,3 +1,4 @@
+import { getClipAudioTiming } from "@/media/audio-sync";
 import type {
 	AudioElement,
 	VideoElement,
@@ -211,9 +212,7 @@ export async function collectAudioElements({
 					return {
 						timelineElement: element,
 						buffer: audioBuffer,
-						startTime: element.startTime / TICKS_PER_SECOND,
-						duration: element.duration / TICKS_PER_SECOND,
-						trimStart: element.trimStart / TICKS_PER_SECOND,
+						...getClipAudioTiming(element),
 						trimEnd: element.trimEnd / TICKS_PER_SECOND,
 						volume: resolveEffectiveAudioGain({
 							element,
@@ -242,9 +241,7 @@ export async function collectAudioElements({
 					return {
 						timelineElement: element,
 						buffer: audioBuffer,
-						startTime: element.startTime / TICKS_PER_SECOND,
-						duration: element.duration / TICKS_PER_SECOND,
-						trimStart: element.trimStart / TICKS_PER_SECOND,
+						...getClipAudioTiming(element),
 						trimEnd: element.trimEnd / TICKS_PER_SECOND,
 						volume: resolveEffectiveAudioGain({
 							element,
@@ -293,20 +290,38 @@ async function resolveAudioBufferForElement({
 		const file = await loadLibraryAudioFile({ element });
 		if (!file) return null;
 		const arrayBuffer = await file.arrayBuffer();
-		return await audioContext.decodeAudioData(arrayBuffer.slice(0));
+		const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+		return decoded;
 	} catch (error) {
 		console.warn("Failed to decode audio:", error);
 		return null;
 	}
 }
 
-async function resolveAudioBufferForAsset({
+export async function resolveAudioBufferForAsset({
 	asset,
 	audioContext,
 }: {
 	asset: MediaAsset;
 	audioContext: AudioContext;
 }): Promise<AudioBuffer | null> {
+	// Chromium's WebCodecs AAC decoder can stall while draining a complete MP4.
+	// Web Audio's container decoder is independent and also resamples to the
+	// export context. Prefer it for local files; retain the streaming decoder
+	// for formats Web Audio cannot decode and URL-backed media.
+	if (asset.file || (asset.url && asset.size && asset.size <= 1024 * 1024 * 1024)) {
+		try {
+			const bytes = asset.file
+				? await asset.file.arrayBuffer()
+				: await fetch(asset.url!).then((response) => {
+						if (!response.ok) throw new Error("Audio source fetch failed");
+						return response.arrayBuffer();
+					});
+			return await audioContext.decodeAudioData(bytes);
+		} catch {
+			// Unsupported container: use Mediabunny's demuxer below.
+		}
+	}
 	const input = new Input({
 		source: createMediaSource(asset),
 		formats: ALL_FORMATS,
@@ -436,6 +451,8 @@ function getLibraryAudioSourceKey({
 
 export interface AudioClipSource {
 	timelineElement: AudioCapableElement;
+	/** Original, untrimmed asset; never a buffer cut to the video edit. */
+	mediaAsset?: MediaAsset;
 	id: string;
 	sourceKey: string;
 	file?: File;
@@ -463,9 +480,7 @@ async function fetchLibraryAudioSource({
 		return {
 			timelineElement: element,
 			file,
-			startTime: element.startTime / TICKS_PER_SECOND,
-			duration: element.duration / TICKS_PER_SECOND,
-			trimStart: element.trimStart / TICKS_PER_SECOND,
+			...getClipAudioTiming(element),
 			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,
 			retime: element.retime,
@@ -494,9 +509,7 @@ async function fetchLibraryAudioClip({
 			id: element.id,
 			sourceKey: getLibraryAudioSourceKey({ element }),
 			file,
-			startTime: element.startTime / TICKS_PER_SECOND,
-			duration: element.duration / TICKS_PER_SECOND,
-			trimStart: element.trimStart / TICKS_PER_SECOND,
+			...getClipAudioTiming(element),
 			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,
 			muted,
@@ -521,9 +534,7 @@ function collectMediaAudioSource({
 		timelineElement: element,
 		file: mediaAsset.file,
 		url: mediaAsset.url,
-		startTime: element.startTime / TICKS_PER_SECOND,
-		duration: element.duration / TICKS_PER_SECOND,
-		trimStart: element.trimStart / TICKS_PER_SECOND,
+		...getClipAudioTiming(element),
 		trimEnd: element.trimEnd / TICKS_PER_SECOND,
 		volume,
 		retime: element.retime,
@@ -543,13 +554,12 @@ function collectMediaAudioClip({
 }): AudioClipSource {
 	return {
 		timelineElement: element,
+		mediaAsset,
 		id: element.id,
 		sourceKey: mediaAsset.id,
 		file: mediaAsset.file,
 		url: mediaAsset.url,
-		startTime: element.startTime / TICKS_PER_SECOND,
-		duration: element.duration / TICKS_PER_SECOND,
-		trimStart: element.trimStart / TICKS_PER_SECOND,
+		...getClipAudioTiming(element),
 		trimEnd: element.trimEnd / TICKS_PER_SECOND,
 		volume,
 		muted,
@@ -763,7 +773,7 @@ export async function createTimelineAudioBuffer({
 	);
 
 	for (const element of audioElements) {
-		if (element.muted) continue;
+		if (element.muted || element.duration <= 0) continue;
 
 		const renderedBuffer = shouldMaintainPitch({
 			rate: element.retime?.rate ?? 1,

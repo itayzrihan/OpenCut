@@ -1130,7 +1130,7 @@ export function Captions() {
 								}
 							/>
 						</SectionField>
-						<SectionField label="Hide punctuation">
+						<SectionField label="Hide punctuation (keep ?)">
 							<Switch
 								checked={captionSettings.hidePunctuation}
 								onCheckedChange={(checked) =>

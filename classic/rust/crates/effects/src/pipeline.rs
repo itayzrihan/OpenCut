@@ -13,6 +13,8 @@ const AUTOMATIC_ZOOM_SHADER_SOURCE: &str = include_str!("shaders/automatic_zoom.
 const GAUSSIAN_BLUR_SHADER_SOURCE: &str = include_str!("shaders/gaussian_blur.wgsl");
 const GRAYSCALE_SHADER_ID: &str = "grayscale";
 const GRAYSCALE_SHADER_SOURCE: &str = include_str!("shaders/grayscale.wgsl");
+const COLOR_CORRECTION_SHADER_ID: &str = "color-correction";
+const COLOR_CORRECTION_SHADER_SOURCE: &str = include_str!("shaders/color_correction.wgsl");
 const TINT_SHADER_ID: &str = "tint";
 const COLOR_WASH_SHADER_ID: &str = "color-wash";
 const VIGNETTE_SHADER_ID: &str = "vignette";
@@ -113,6 +115,16 @@ impl EffectPipeline {
                     immediate_size: 0,
                 });
         let pipelines = HashMap::from([
+            (
+                COLOR_CORRECTION_SHADER_ID.to_string(),
+                create_effect_pipeline(
+                    context,
+                    &pipeline_layout,
+                    &vertex_shader_module,
+                    COLOR_CORRECTION_SHADER_ID,
+                    COLOR_CORRECTION_SHADER_SOURCE,
+                ),
+            ),
             (
                 AUTOMATIC_ZOOM_SHADER_ID.to_string(),
                 create_effect_pipeline(
@@ -433,6 +445,23 @@ fn pack_effect_uniforms(
     let shader = pass.shader.as_str();
 
     match shader {
+        COLOR_CORRECTION_SHADER_ID => {
+            ensure_supported_uniforms(
+                pass,
+                &["u_exposure", "u_temperature", "u_tint", "u_saturation"],
+            )?;
+            Ok(EffectUniformBuffer {
+                resolution: [width as f32, height as f32],
+                direction: [0.0; 2],
+                scalars: [
+                    read_number_uniform(pass, "u_exposure")?,
+                    read_number_uniform(pass, "u_temperature")?,
+                    read_number_uniform(pass, "u_tint")?,
+                    read_number_uniform(pass, "u_saturation")?,
+                ],
+                color: [0.0; 4],
+            })
+        }
         AUTOMATIC_ZOOM_SHADER_ID => {
             ensure_supported_uniforms(pass, &["u_scale", "u_anchor"])?;
             Ok(EffectUniformBuffer {
@@ -657,6 +686,27 @@ mod tests {
                 .map(|(name, value)| ((*name).to_string(), value.clone()))
                 .collect(),
         }
+    }
+
+    #[test]
+    fn packs_color_correction_and_rejects_incomplete_parameters() {
+        let complete = pass(
+            COLOR_CORRECTION_SHADER_ID,
+            &[
+                ("u_exposure", UniformValue::Number(0.35)),
+                ("u_temperature", UniformValue::Number(-0.3)),
+                ("u_tint", UniformValue::Number(0.0)),
+                ("u_saturation", UniformValue::Number(0.96)),
+            ],
+        );
+        let packed = pack_effect_uniforms(&complete, 1080, 1920).unwrap();
+        assert_eq!(packed.scalars, [0.35, -0.3, 0.0, 0.96]);
+        let mut incomplete = complete;
+        incomplete.uniforms.remove("u_temperature");
+        assert!(matches!(
+            pack_effect_uniforms(&incomplete, 1080, 1920),
+            Err(EffectsError::MissingUniform { .. })
+        ));
     }
 
     #[test]

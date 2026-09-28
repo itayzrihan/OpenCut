@@ -150,12 +150,13 @@ export async function runFullAutoEdit({
 					break;
 				}
 				case "framing": {
-					await runLocalSubjectFraming({
+					const framed = await runLocalSubjectFraming({
 						editor,
 						signal,
 						onProgress: progress,
 						mode: "framing",
 					});
+					notes.push(...framed.warnings);
 					break;
 				}
 				case "silence": {

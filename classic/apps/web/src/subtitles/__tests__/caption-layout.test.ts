@@ -149,11 +149,17 @@ describe("caption placement layout", () => {
 		).toBe(0.6);
 	});
 
-	test("strips punctuation without collapsing caption lines", () => {
+	test("hides punctuation while keeping question marks and caption lines", () => {
 		expect(stripCaptionPunctuation({ text: "Hello, world." })).toBe(
 			"Hello world",
 		);
-		expect(stripCaptionPunctuation({ text: "One!\nTwo?" })).toBe("One\nTwo");
+		expect(stripCaptionPunctuation({ text: "One!\nTwo?" })).toBe("One\nTwo?");
+		expect(stripCaptionPunctuation({ text: '"למה?!" כן, למה?' })).toBe(
+			"למה? כן למה?",
+		);
+		expect(stripCaptionPunctuation({ text: "¿Por qué? لماذا؟ なぜ？" })).toBe(
+			"¿Por qué? لماذا؟ なぜ？",
+		);
 	});
 
 	test("shares free time between consecutive one-word layers without overlap", () => {

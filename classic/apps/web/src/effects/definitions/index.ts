@@ -1,3 +1,4 @@
+import { colorCorrectionEffectDefinition } from "./color-correction";
 import { effectsRegistry } from "../registry";
 import { automaticZoomEffectDefinition } from "./automatic-zoom";
 import { blurEffectDefinition } from "./blur";
@@ -7,6 +8,7 @@ import { speakerFrameBreakoutEffectDefinition } from "./speaker-frame-breakout";
 import { personCutoutLayerEffectDefinition } from "./person-cutout-layer";
 
 const defaultEffects = [
+	colorCorrectionEffectDefinition,
 	automaticZoomEffectDefinition,
 	blurEffectDefinition,
 	customAiEffectDefinition,

@@ -6,6 +6,7 @@ import {
 	setCredentialsCookie,
 } from "@/ai/server/openai-codex-oauth";
 import { ALLOWED_AI_TOOL_WIRE_NAMES } from "@/ai/tool-wire-names";
+import { retryOverload } from "@/ai/server/retry-overload";
 
 const MAX_AI_CHAT_BODY_BYTES = 1_000_000;
 const MAX_AI_INPUT_ITEMS = 40;
@@ -90,9 +91,13 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const responseBody = await forwardCodexResponsesRequest({
-			credentials: oauth.credentials,
-			body: parsed.data,
+		const responseBody = await retryOverload({
+			request: () =>
+				forwardCodexResponsesRequest({
+					credentials: oauth.credentials,
+					body: parsed.data,
+					signal: request.signal,
+				}),
 			signal: request.signal,
 		});
 		const response = NextResponse.json({ response: responseBody });

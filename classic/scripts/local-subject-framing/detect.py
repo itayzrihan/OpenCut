@@ -11,6 +11,7 @@ cv2.setNumThreads(2)
 request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert 3 <= len(request["frames"]) <= 5
 face = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+profile = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
 model = Path(__file__).resolve().parents[2] / ".local/subject-framing/models/pose_landmarker_lite.task"
 options = mp.tasks.vision.PoseLandmarkerOptions(
     base_options=mp.tasks.BaseOptions(model_asset_path=str(model), delegate=mp.tasks.BaseOptions.Delegate.CPU),
@@ -29,5 +30,11 @@ with mp.tasks.vision.PoseLandmarker.create_from_options(options) as detector:
         result = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
         poses = [[{"x":p.x,"y":p.y,"visibility":p.visibility,"presence":p.presence} for p in pose] for pose in result.pose_landmarks]
         faces = [{"x":int(x),"y":int(y),"width":int(w),"height":int(h),"score":float(score)} for (x,y,w,h),score in zip(boxes,weights)]
+        # Podcast guests often face each other. Detect profiles in both directions;
+        # Rust suppresses overlapping frontal/profile rectangles of the same face.
+        for mirrored in (False, True):
+            view = cv2.flip(gray, 1) if mirrored else gray
+            profile_boxes, _, profile_weights = profile.detectMultiScale3(view, scaleFactor=1.05, minNeighbors=6, minSize=(28,28), outputRejectLevels=True)
+            faces.extend({"x":int(width-x-w if mirrored else x),"y":int(y),"width":int(w),"height":int(h),"score":float(score)} for (x,y,w,h),score in zip(profile_boxes,profile_weights))
         frames.append({"width":width,"height":height,"faces":faces,"poses":poses})
 Path(sys.argv[2]).write_text(json.dumps({"frames":frames,"detector":"opencv-4.12-mediapipe-pose-lite-local-cpu"}), encoding="utf-8")

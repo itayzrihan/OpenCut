@@ -1,6 +1,27 @@
 import { expect, test } from "bun:test";
 import { runProcess } from "./run-process";
 
+test("GPU requirement survives split output and later log truncation", async () => {
+	await runProcess({
+		command: process.execPath,
+		args: [
+			"-e",
+			"process.stderr.write('using CU'); setTimeout(() => { process.stderr.write('DA0 backend\\n'); setTimeout(() => process.stderr.write('x'.repeat(10000)), 30); }, 30);",
+		],
+		requiredStderrPattern: /using CUDA\d+ backend/,
+	});
+});
+
+test("GPU-capable build without GPU execution cannot silently succeed", async () => {
+	await expect(
+		runProcess({
+			command: process.execPath,
+			args: ["-e", "process.stderr.write('CUDA = 1; using CPU backend');"],
+			requiredStderrPattern: /using CUDA\d+ backend/,
+		}),
+	).rejects.toThrow("did not confirm an active GPU");
+});
+
 test("drains subprocess output without blocking completion", async () => {
 	await runProcess({
 		command: process.execPath,

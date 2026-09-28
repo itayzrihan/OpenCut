@@ -188,7 +188,7 @@ fn resolve(raw: &str) -> Result<LocalSubjectFramingResult, String> {
             }
         }
     }
-    if tracks.len() != 1 {
+    if tracks.is_empty() || tracks.len() > 2 {
         return Err(if tracks.is_empty() {
             "Not enough consistent local face detections; framing unchanged"
         } else {
@@ -196,25 +196,42 @@ fn resolve(raw: &str) -> Result<LocalSubjectFramingResult, String> {
         }
         .into());
     }
-    for (f, index) in input.frames.iter().zip(&tracks[0]) {
-        let Some(index) = index else { continue };
-        let face = &f.faces[*index];
-        let fx = (face.x + face.width / 2.) / f.width;
-        let bodies: Vec<_> = f
-            .poses
-            .iter()
-            .filter_map(|p| torso_center(p, face, f))
-            .collect();
-        // Missing/ambiguous torso: center the observed face, never invent a body detection.
-        let bx = if bodies.len() == 1 {
-            body_frames += 1;
-            bodies[0]
-        } else {
-            fx
-        };
-        centers.push(fx * 0.8 + bx * 0.2);
-        // confidence=1 is an acceptance flag for the existing crop compiler, not a model probability.
-        samples.push(json!({"faceX":fx,"bodyX":bx,"confidence":1.,"personCount":1}));
+    if tracks.len() == 2 {
+        for (frame_index, f) in input.frames.iter().enumerate() {
+            let (Some(left), Some(right)) = (tracks[0][frame_index], tracks[1][frame_index]) else {
+                continue;
+            };
+            if left == right {
+                continue;
+            }
+            let a = &f.faces[left];
+            let b = &f.faces[right];
+            let midpoint = ((a.x + a.width / 2.) + (b.x + b.width / 2.)) / (2. * f.width);
+            centers.push(midpoint);
+            samples
+                .push(json!({"faceX":midpoint,"bodyX":midpoint,"confidence":1.,"personCount":2}));
+        }
+    } else {
+        for (f, index) in input.frames.iter().zip(&tracks[0]) {
+            let Some(index) = index else { continue };
+            let face = &f.faces[*index];
+            let fx = (face.x + face.width / 2.) / f.width;
+            let bodies: Vec<_> = f
+                .poses
+                .iter()
+                .filter_map(|p| torso_center(p, face, f))
+                .collect();
+            // Missing/ambiguous torso: center the observed face, never invent a body detection.
+            let bx = if bodies.len() == 1 {
+                body_frames += 1;
+                bodies[0]
+            } else {
+                fx
+            };
+            centers.push(fx * 0.8 + bx * 0.2);
+            // confidence=1 is an acceptance flag for the existing crop compiler, not a model probability.
+            samples.push(json!({"faceX":fx,"bodyX":bx,"confidence":1.,"personCount":1}));
+        }
     }
     if samples.len() < 3 || samples.len() * 2 <= count {
         return Err("Not enough reliable local face detections; framing unchanged".into());
@@ -263,13 +280,17 @@ mod tests {
         assert_eq!(s[0]["faceX"], s[0]["bodyX"]);
     }
     #[test]
-    fn multiple_people_and_low_evidence_fail_closed() {
+    fn two_people_use_exact_face_midpoint_and_low_evidence_fails_closed() {
         let mut f = frame(280., 8.);
         f["faces"]
             .as_array_mut()
             .unwrap()
             .push(json!({"x":100,"y":60,"width":60,"height":60,"score":8.}));
-        assert!(!run(json!([f, f, f])).valid);
+        let r = run(json!([f, f, f]));
+        assert!(r.valid, "{}", r.error);
+        let samples: serde_json::Value = serde_json::from_str(&r.samples_json).unwrap();
+        assert_eq!(samples[0]["personCount"], 2);
+        assert_eq!(samples[0]["faceX"], json!(220. / 640.));
         assert!(!run(json!([frame(280., 1.), frame(280., 8.), frame(280., 2.)])).valid);
     }
     #[test]

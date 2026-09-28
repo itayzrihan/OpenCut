@@ -4,6 +4,8 @@ use std::collections::BTreeMap;
 use time::MediaTime;
 
 mod captions;
+mod audio_sync;
+pub use audio_sync::*;
 mod automatic_zoom;
 pub use automatic_zoom::*;
 mod automatic_text_transitions;

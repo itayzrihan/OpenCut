@@ -46,10 +46,12 @@ export async function detectSubjectFraming({
 	editor,
 	signal,
 	onProgress,
+	allowFallback = false,
 }: {
 	editor: EditorCore;
 	signal: AbortSignal;
 	onProgress: (s: string) => void;
+	allowFallback?: boolean;
 }) {
 	const scene = editor.scenes.getActiveScene();
 	const assets = editor.media.getAssets();
@@ -62,13 +64,17 @@ export async function detectSubjectFraming({
 		groups.set(clip.mediaId, group);
 	}
 	const results = [];
-	let faceSamples = 0, bodySamples = 0;
+	let faceSamples = 0,
+		bodySamples = 0;
+	const warnings: string[] = [];
 	for (const [mediaId, clips] of groups) {
 		signal.throwIfAborted();
 		const asset = assets.find((a) => a.id === mediaId);
 		if (!asset || (!asset.file && !asset.url))
 			throw new Error("Original source media unavailable");
-		onProgress(`Local face/body detection in ${asset.name} — no cloud request…`);
+		onProgress(
+			`Local face/body detection in ${asset.name} — no cloud request…`,
+		);
 		const ownedUrl = asset.file ? URL.createObjectURL(asset.file) : null;
 		const video = document.createElement("video");
 		video.muted = true;
@@ -114,7 +120,13 @@ export async function detectSubjectFraming({
 			const resolved = resolveLocalSubjectFraming({
 				detectionsJson: JSON.stringify(data),
 			});
-			if (!resolved.valid) throw new Error(`${asset.name}: ${resolved.error}`);
+			if (!resolved.valid) {
+				if (!allowFallback) throw new Error(`${asset.name}: ${resolved.error}`);
+				warnings.push(
+					`${asset.name}: automatic subject centering unavailable; used centered vertical cover.`,
+				);
+				onProgress(warnings[warnings.length - 1]);
+			}
 			faceSamples += resolved.acceptedFrames;
 			bodySamples += resolved.bodyFrames;
 			onProgress(
@@ -125,7 +137,7 @@ export async function detectSubjectFraming({
 					elementId: clip.id,
 					width: video.videoWidth,
 					height: video.videoHeight,
-					samples: JSON.parse(resolved.samplesJson),
+					samples: resolved.valid ? JSON.parse(resolved.samplesJson) : [],
 				});
 		} finally {
 			video.pause();
@@ -134,7 +146,7 @@ export async function detectSubjectFraming({
 			if (ownedUrl) URL.revokeObjectURL(ownedUrl);
 		}
 	}
-	return { framing: results, faceSamples, bodySamples };
+	return { framing: results, faceSamples, bodySamples, warnings };
 }
 export async function runLocalSubjectFraming({
 	editor,
@@ -151,7 +163,13 @@ export async function runLocalSubjectFraming({
 	const scene = editor.scenes.getActiveScene();
 	const source = buildTimelineDocumentV2({ project, scene });
 	if (!source.valid) throw new Error("Invalid Timeline Source");
-	const { framing, faceSamples, bodySamples } = await detectSubjectFraming({ editor, signal, onProgress });
+	const { framing, faceSamples, bodySamples, warnings } =
+		await detectSubjectFraming({
+			editor,
+			signal,
+			onProgress,
+			allowFallback: mode === "framing",
+		});
 	signal.throwIfAborted();
 	const current = editor.project.getActive(),
 		active = editor.scenes.getActiveScene();
@@ -166,7 +184,7 @@ export async function runLocalSubjectFraming({
 		);
 	const result = compileFullAutoEdit({
 		sourceJson: source.formattedText,
-		stage: mode,
+		stage: mode === "framing" ? "framing-auto" : mode,
 		framingJson: JSON.stringify(framing),
 		fontFamily: "",
 	});
@@ -193,6 +211,7 @@ export async function runLocalSubjectFraming({
 	await editor.save.flush();
 	return {
 		added: true,
+		warnings,
 		message: `Centered ${framing.length} clips using local face/body detection (${faceSamples} face samples, ${bodySamples} matched body samples). Stable crop; no cloud/LLM request. Undo restores the previous framing.`,
 	};
 }

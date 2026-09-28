@@ -2,7 +2,11 @@ import type { EditorCore } from "@/core";
 import { mediaTimeFromSeconds, TICKS_PER_SECOND } from "@/wasm";
 import { clampRetimeRate } from "@/retime/rate";
 import type { AudioClipSource } from "@/media/audio";
-import { createAudioContext, collectAudioClips } from "@/media/audio";
+import {
+	createAudioContext,
+	collectAudioClips,
+	resolveAudioBufferForAsset,
+} from "@/media/audio";
 import {
 	buildAudioGainAutomation,
 	hasVariableAudioGain,
@@ -957,7 +961,17 @@ export class AudioManager {
 				return null;
 			}
 
-			const decodedBuffer = await this.getDecodedBuffer({ clip });
+			// Use the same complete source decoder as export for sync-adjusted
+			// short sources. Independent AAC range seeks can lose boundary samples;
+			// the full buffer keeps the source handles on both sides of every cut.
+			const useFullSource =
+				Number(clip.timelineElement.params.audioSyncOffset ?? 0) !== 0 &&
+				clip.mediaAsset != null &&
+				(clip.mediaAsset.duration ?? Infinity) <= 300 &&
+				(clip.mediaAsset.size ?? Infinity) <= 1024 * 1024 * 1024;
+			const decodedBuffer = useFullSource
+				? await this.getFullSourceBuffer({ clip })
+				: await this.getDecodedBuffer({ clip });
 			if (!decodedBuffer) {
 				return null;
 			}
@@ -965,7 +979,7 @@ export class AudioManager {
 			return await renderRetimedBuffer({
 				audioContext,
 				sourceBuffer: decodedBuffer,
-				trimStart: 0,
+				trimStart: useFullSource ? clip.trimStart : 0,
 				clipDuration: clip.duration,
 				retime: clip.retime,
 				maintainPitch: clip.retime?.maintainPitch === true,
@@ -983,6 +997,34 @@ export class AudioManager {
 				if (this.preparedClipBuffers.get(cacheKey) === promise) {
 					this.preparedClipBuffers.delete(cacheKey);
 				}
+			},
+		);
+		return promise;
+	}
+
+	private async getFullSourceBuffer({
+		clip,
+	}: {
+		clip: AudioClipSource;
+	}): Promise<AudioBuffer | null> {
+		const audioContext = this.ensureAudioContext();
+		if (!audioContext || !clip.mediaAsset) return null;
+		const key = `full:${clip.sourceKey}`;
+		const existing = this.decodedBuffers.get(key);
+		if (existing) return existing;
+		const promise = resolveAudioBufferForAsset({
+			asset: clip.mediaAsset,
+			audioContext,
+		});
+		this.decodedBuffers.set(key, promise);
+		void promise.then(
+			(buffer) => {
+				if (!buffer && this.decodedBuffers.get(key) === promise)
+					this.decodedBuffers.delete(key);
+			},
+			() => {
+				if (this.decodedBuffers.get(key) === promise)
+					this.decodedBuffers.delete(key);
 			},
 		);
 		return promise;
@@ -1067,9 +1109,7 @@ export class AudioManager {
 			const segments = chunks.flatMap((chunk) => {
 				const startSample = Math.max(
 					0,
-					Math.round(
-						(sourceStart - chunk.timestamp) * chunk.buffer.sampleRate,
-					),
+					Math.round((sourceStart - chunk.timestamp) * chunk.buffer.sampleRate),
 				);
 				const endSample = Math.min(
 					chunk.buffer.length,

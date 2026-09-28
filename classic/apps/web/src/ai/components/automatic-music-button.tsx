@@ -58,7 +58,7 @@ export function AutomaticMusicButton({
 				Automatic Music
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Local Music matched to the video, cut to its full length at −28 dB.
+				Local Music matched to the video, cut to its full length at −31 dB.
 			</p>
 			{status && (
 				<p role="status" className="text-xs">

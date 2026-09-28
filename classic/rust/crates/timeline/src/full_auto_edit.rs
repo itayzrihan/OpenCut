@@ -94,7 +94,8 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
         return Err("Invalid Timeline Source".into());
     }
     let mut doc: Value = serde_json::from_str(&c.formatted_json).map_err(|e| e.to_string())?;
-    if o.stage == "framing" || o.stage == "center-subject" {
+    if o.stage == "framing" || o.stage == "framing-auto" || o.stage == "center-subject" {
+        let unattended = o.stage == "framing-auto";
         let center_only = o.stage == "center-subject";
         if center_only
             && (doc["projectSettings"]["canvasSize"]["width"] != 1080
@@ -130,7 +131,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
                 || !f.height.is_finite()
                 || f.width < 1.0
                 || f.height < 1.0
-                || f.samples.len() < 3
+                || (!unattended && f.samples.len() < 3)
             {
                 return Err("Need source dimensions and at least three framing samples".into());
             }
@@ -142,24 +143,33 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
                     || !(0.0..=1.0).contains(&s.face_x)
                     || !(0.0..=1.0).contains(&s.body_x)
                     || !(0.8..=1.0).contains(&s.confidence)
-                    || s.person_count != 1
+                    || !(1..=2).contains(&s.person_count)
                     || (s.face_x - s.body_x).abs() > 0.18
                 {
+                    if unattended {
+                        xs.clear();
+                        break;
+                    }
                     return Err("Face/body framing is uncertain or has multiple people; review the source before Full Auto Edit".into());
                 }
                 xs.push(s.face_x * 0.8 + s.body_x * 0.2);
             }
             xs.sort_by(f64::total_cmp);
             // Stable talking-head crop, not an unsupported claim of continuous tracking.
-            if xs.last().unwrap() - xs[0] > 0.12 {
-                return Err(
+            if xs.len() >= 3 && xs.last().unwrap() - xs[0] > 0.12 {
+                if unattended {
+                    xs.clear();
+                } else {
+                    return Err(
                     "Speaker moves too far for a stable horizontal crop; manual framing required"
                         .into(),
                 );
+                }
             }
             let scale = (1080.0 / f.width).max(1920.0 / f.height);
             let limit = ((f.width * scale - 1080.0) / 2.0).max(0.0);
-            let x = ((0.5 - xs[xs.len() / 2]) * f.width * scale).clamp(-limit, limit);
+            let target = if xs.len() >= 3 { xs[xs.len() / 2] } else { 0.5 };
+            let x = ((0.5 - target) * f.width * scale).clamp(-limit, limit);
             if center_only {
                 if e["fitMode"] != "cover"
                     || ["transform.scaleX", "transform.scaleY"]
@@ -309,6 +319,40 @@ mod tests {
             assert!(offset.abs() <= 1166.667);
             assert_eq!(offset.signum(), (0.5 - x).signum());
             assert_eq!(d["projectSettings"]["canvasSize"]["width"], 1080);
+        }
+    }
+    #[test]
+    fn unattended_missing_faces_completes_vertical_cover_and_two_faces_center_midpoint() {
+        for samples in [
+            json!([]),
+            json!(vec![
+                json!({"faceX":0.4,"bodyX":0.4,"confidence":1.,"personCount":2});
+                3
+            ]),
+        ] {
+            let r = compile_full_auto_edit(CompileFullAutoEditOptions {
+                source_json: source().to_string(),
+                stage: "framing-auto".into(),
+                font_family: String::new(),
+                framing_json:
+                    json!([{"elementId":"v1","width":1920,"height":1080,"samples":samples}])
+                        .to_string(),
+            });
+            assert!(r.valid, "{}", r.error);
+            let d: Value = serde_json::from_str(&r.source_json).unwrap();
+            assert_eq!(
+                d["projectSettings"]["canvasSize"],
+                json!({"width":1080,"height":1920})
+            );
+            assert_eq!(d["scene"]["tracks"][0]["elements"][0]["fitMode"], "cover");
+            let x = d["scene"]["tracks"][0]["elements"][0]["params"]["transform.positionX"]
+                .as_f64()
+                .unwrap();
+            if samples.as_array().unwrap().is_empty() {
+                assert_eq!(x, 0.);
+            } else {
+                assert!(x > 0.);
+            }
         }
     }
     #[test]

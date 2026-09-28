@@ -1,4 +1,6 @@
 import type { ParamDefinition, ParamValue, ParamValues } from "@/params";
+import { resolveAudioSyncRetrim } from "opencut-wasm";
+import { mediaTimeFromSeconds, TICKS_PER_SECOND } from "@/wasm";
 import { MIN_TRANSFORM_SCALE } from "@/animation/transform";
 import type { BlendMode } from "@/rendering";
 import type { ElementType, TimelineElement } from "@/timeline";
@@ -195,6 +197,16 @@ const visualElementParams: ElementParamDefinition[] = [
 ];
 
 const audioElementParams: ElementParamDefinition[] = [
+	{
+		key: "audioSyncOffset",
+		label: "Audio Sync Offset (s; − earlier, + later)",
+		type: "number",
+		default: 0,
+		min: -5,
+		max: 5,
+		step: 0.01,
+		keyframable: false,
+	},
 	{
 		key: "volume",
 		label: "Volume",
@@ -600,6 +612,25 @@ export function writeElementParamValue({
 	param: ElementParamDefinition;
 	value: ParamValue;
 }): TimelineElement {
+	if (param.key === "audioSyncOffset" && element.type === "video") {
+		const retrim = resolveAudioSyncRetrim({
+			trimStart: element.trimStart / TICKS_PER_SECOND,
+			trimEnd: element.trimEnd / TICKS_PER_SECOND,
+			rate: element.retime?.rate ?? 1,
+			requestedOffset: Number(value),
+			appliedOffset: Number(element.params.audioSyncRetrimOffset ?? 0),
+		});
+		return {
+			...element,
+			trimStart: mediaTimeFromSeconds({ seconds: retrim.trimStart }),
+			trimEnd: mediaTimeFromSeconds({ seconds: retrim.trimEnd }),
+			params: {
+				...element.params,
+				audioSyncOffset: retrim.offset,
+				audioSyncRetrimOffset: retrim.offset,
+			},
+		};
+	}
 	if (param.write) {
 		return param.write({ element, value });
 	}
