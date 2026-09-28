@@ -680,8 +680,8 @@ function storedMediaPath(projectId: string, record: StoredMediaRecord): string {
 		throw new Error(`Copied media ${record.id} has no stored path`);
 	}
 	return assertContainedPath({
-		root: projectRoot(projectId),
-		path: join(projectRoot(projectId), record.storedPath),
+		root: mediaRoot(projectId),
+		path: join(projectRoot(projectId), record.storedPath.replaceAll("\\", "/")),
 	});
 }
 
@@ -800,7 +800,7 @@ export async function registerMediaPath({
 		if (resolve(sourcePath) !== resolve(destination)) {
 			await copyFile(sourcePath, destination);
 		}
-		baseRecord.storedPath = relative(projectRoot(projectId), destination);
+		baseRecord.storedPath = relative(projectRoot(projectId), destination).replaceAll("\\", "/");
 		delete baseRecord.sourcePath;
 	}
 
@@ -813,8 +813,8 @@ export async function registerMediaPath({
 		) {
 			await rm(
 				assertContainedPath({
-					root: projectRoot(projectId),
-					path: join(projectRoot(projectId), oldRecord.storedPath),
+					root: mediaRoot(projectId),
+					path: join(projectRoot(projectId), oldRecord.storedPath.replaceAll("\\", "/")),
 				}),
 				{ force: true },
 			).catch(() => undefined);
@@ -883,7 +883,7 @@ export async function storeUploadedMedia({
 			fileName: cleanedName,
 			mimeType: mimeType || mimeTypeForPath(cleanedName),
 			storageKind: "copied",
-			storedPath: relative(projectRoot(projectId), destination),
+			storedPath: relative(projectRoot(projectId), destination).replaceAll("\\", "/"),
 		};
 		await mutateMediaIndex(projectId, (records) => [
 			...records.filter((item) => item.id !== mediaId),
@@ -1026,8 +1026,8 @@ export async function getFontFile(projectId: string, fontId: string) {
 	);
 	if (!record) return null;
 	const path = assertContainedPath({
-		root: projectRoot(projectId),
-		path: join(projectRoot(projectId), record.storedPath),
+		root: fontRoot(projectId),
+		path: join(projectRoot(projectId), record.storedPath.replaceAll("\\", "/")),
 	});
 	const fileStat = await stat(path).catch(() => null);
 	if (!fileStat?.isFile()) return null;
@@ -1063,7 +1063,7 @@ export async function storeUploadedFont({
 			createWriteStream(temporaryPath, { flags: "wx" }),
 		);
 		await rename(temporaryPath, destination);
-		return relative(projectRoot(projectId), destination);
+		return relative(projectRoot(projectId), destination).replaceAll("\\", "/");
 	} catch (error) {
 		await unlink(temporaryPath).catch(() => undefined);
 		throw error;
@@ -1080,6 +1080,7 @@ export async function putFontMetadata(
 		const existing = records.find((item) => item.id === font.id);
 		const path = storedPath ?? existing?.storedPath;
 		if (!path) throw new Error("Font bytes must be stored before metadata");
+		assertContainedPath({ root: fontRoot(projectId), path: join(projectRoot(projectId), path.replaceAll("\\", "/")) });
 		return [
 			...records.filter((item) => item.id !== font.id),
 			{ ...font, storedPath: path },
@@ -1093,8 +1094,8 @@ export async function deleteFont(projectId: string, fontId: string) {
 		if (record) {
 			await rm(
 				assertContainedPath({
-					root: projectRoot(projectId),
-					path: join(projectRoot(projectId), record.storedPath),
+					root: fontRoot(projectId),
+					path: join(projectRoot(projectId), record.storedPath.replaceAll("\\", "/")),
 				}),
 				{ force: true },
 			);

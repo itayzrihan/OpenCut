@@ -32,6 +32,8 @@ pub struct StorageConfiguration {
     pub destination_id: Option<String>,
     #[serde(default)]
     pub devices: Vec<Device>,
+    #[serde(default)]
+    pub automatic_snapshots: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -59,6 +61,7 @@ fn validate_name(value: &str) -> Result<(), String> {
 
 impl StorageConfiguration {
     pub fn validate(&self) -> Result<(), String> {
+        if self.automatic_snapshots && self.mode == StorageMode::LocalOnly { return Err("Automatic snapshots require connected storage".into()); }
         if let Some(destination) = &self.destination_id { validate_id(destination)?; }
         if self.mode == StorageMode::ExternalDrive && self.destination_id.is_none() {
             return Err("Choose an external storage destination first".into());
@@ -117,8 +120,9 @@ mod tests {
     #[test]
     fn external_drive_requires_a_granted_handle() {
         let mut state = account();
-        assert!(state.configure_storage("alice", StorageConfiguration { mode: StorageMode::ExternalDrive, destination_id: None, devices: vec![] }).is_err());
-        assert!(state.configure_storage("alice", StorageConfiguration { mode: StorageMode::ExternalDrive, destination_id: Some("drive_1".into()), devices: vec![] }).is_ok());
+        assert!(state.configure_storage("alice", StorageConfiguration { mode: StorageMode::ExternalDrive, destination_id: None, ..Default::default() }).is_err());
+        assert!(state.configure_storage("alice", StorageConfiguration { mode: StorageMode::ExternalDrive, destination_id: Some("drive_1".into()), automatic_snapshots: true, ..Default::default() }).is_ok());
+        assert!(StorageConfiguration { automatic_snapshots: true, ..Default::default() }.validate().is_err());
     }
     #[test]
     fn rejects_traversal_and_unpaired_device_mode() {

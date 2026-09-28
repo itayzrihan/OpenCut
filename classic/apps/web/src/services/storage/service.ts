@@ -120,7 +120,9 @@ function readProjectMetadata(entry: unknown): TProjectMetadata | null {
 		id,
 		name,
 		...(typeof metadata.thumbnail === "string" && {
-			thumbnail: metadata.thumbnail.startsWith("/") ? accountAssetUrl(metadata.thumbnail) : metadata.thumbnail,
+			thumbnail: metadata.thumbnail.startsWith("/")
+				? accountAssetUrl(metadata.thumbnail)
+				: metadata.thumbnail,
 		}),
 		duration: roundMediaTime({ time: duration }),
 		createdAt,
@@ -269,12 +271,42 @@ export class StorageService {
 
 		const legacyProjects = await this.projectsAdapter.getAll();
 		for (const serializedProject of legacyProjects) {
-			const projectId = readStoredProjectId(serializedProject);
-			if (!projectId) continue;
+			const sourceProjectId = readStoredProjectId(serializedProject);
+			if (!sourceProjectId)
+				throw new Error(
+					"A browser project has no project ID. It was preserved and needs recovery before import can complete.",
+				);
+			let projectId = sourceProjectId;
+			const legacyMedia = this.getLegacyMediaAdapters(sourceProjectId),
+				legacyFonts = this.getLegacyFontAdapters(sourceProjectId);
+			const mediaRecords = await legacyMedia.metadata.getAll(),
+				fontRecords = await legacyFonts.metadata.getAll();
 			const driveProject = await localDriveRequest<SerializedProject | null>({
 				operation: "project.get",
 				payload: { projectId },
 			});
+			let recovering = false;
+			if (driveProject) {
+				// Keep both variants editable. Comparing only the document cannot
+				// establish equality of its history or binary media.
+				const marker = `pocut-local-drive-browser-target:${sourceProjectId}`;
+				const destinationId =
+					localStorage.getItem(marker) || crypto.randomUUID();
+				localStorage.setItem(marker, destinationId);
+				const target = await localDriveRequest<{ projectId: string }>({
+					operation: "project.recoverBrowser",
+					payload: {
+						projectId: sourceProjectId,
+						destinationId,
+						project: serializedProject,
+						history: await this.commandHistoryAdapter.get(sourceProjectId),
+						media: mediaRecords,
+						fonts: fontRecords,
+					},
+				});
+				projectId = target.projectId;
+				recovering = true;
+			}
 			if (!driveProject) {
 				await localDriveRequest({
 					operation: "project.put",
@@ -302,11 +334,15 @@ export class StorageService {
 				payload: { projectId },
 			});
 			const driveMediaIds = new Set(driveMedia.map((item) => item.id));
-			const legacyMedia = this.getLegacyMediaAdapters(projectId);
-			for (const metadata of await legacyMedia.metadata.getAll()) {
-				if (driveMediaIds.has(metadata.id)) continue;
+			for (const metadata of mediaRecords) {
+				if (!recovering && driveMediaIds.has(metadata.id)) continue;
 				const file = await legacyMedia.files.get(metadata.id);
-				if (!file) continue;
+				if (!file) {
+					if (driveMediaIds.has(metadata.id)) continue;
+					throw new Error(
+						`Browser media is missing: ${metadata.name}. Original records and the recovery copy were preserved.`,
+					);
+				}
 				await uploadLocalMedia({
 					projectId,
 					id: metadata.id,
@@ -333,11 +369,15 @@ export class StorageService {
 				payload: { projectId },
 			});
 			const driveFontIds = new Set(driveFonts.map((item) => item.id));
-			const legacyFonts = this.getLegacyFontAdapters(projectId);
-			for (const metadata of await legacyFonts.metadata.getAll()) {
-				if (driveFontIds.has(metadata.id)) continue;
+			for (const metadata of fontRecords) {
+				if (!recovering && driveFontIds.has(metadata.id)) continue;
 				const file = await legacyFonts.files.get(metadata.id);
-				if (!file) continue;
+				if (!file) {
+					if (driveFontIds.has(metadata.id)) continue;
+					throw new Error(
+						`A browser font is missing: ${metadata.id}. Recovery was retained.`,
+					);
+				}
 				const storedPath = await uploadLocalFont({
 					projectId,
 					id: metadata.id,

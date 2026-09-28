@@ -7,16 +7,35 @@ function within(root: string, path: string) {
 	const rel = relative(root, path);
 	return !rel || (!rel.startsWith("..") && !isAbsolute(rel));
 }
-async function canonical(path: string) { return realpath(path).catch((error) => { if (error.code === "ENOENT") return resolve(path); throw error; }); }
+async function canonical(path: string) {
+	return realpath(path).catch((error) => {
+		if (error.code === "ENOENT") return resolve(path);
+		throw error;
+	});
+}
 export async function assertAccountMediaSource(source: string) {
 	const path = await realpath(source);
-	if (!/\.(mp4|mov|mkv|webm|avi|m4v|mp3|wav|aac|flac|ogg|m4a|png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(extname(path))) throw new Error("Only supported media files can be registered");
-	const privateRoot = await canonical(accountsRoot()), ownRoot = await canonical(accountDataRoot());
-	if (within(privateRoot, path) && !within(ownRoot, path)) throw new Error("This media belongs to another account or to private host storage");
+	if (
+		!/\.(mp4|mov|mkv|webm|avi|m4v|mp3|wav|aac|flac|ogg|m4a|png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(
+			extname(path),
+		)
+	)
+		throw new Error("Only supported media files can be registered");
+	const privateRoot = await canonical(accountsRoot()),
+		ownRoot = await canonical(accountDataRoot());
+	if (within(privateRoot, path) && !within(ownRoot, path))
+		throw new Error(
+			"This media belongs to another account or to private host storage",
+		);
 	const legacyRoots = [
-		process.env.POCUT_PROJECTS_DIR || join(homedir(), "Movies", "PoCut Projects"),
-		process.env.OPENCUT_LEGACY_PUBLIC_DIR || join(process.cwd(), "../../../.local/legacy-public"),
+		join(homedir(), "Movies", "OpenCut Legacy Assets"),
+		process.env.POCUT_PROJECTS_DIR ||
+			join(homedir(), "Movies", "PoCut Projects"),
+		process.env.OPENCUT_LEGACY_PUBLIC_DIR ||
+			join(process.cwd(), "../../../.local/legacy-public"),
 	];
-	for (const root of legacyRoots) if (within(await canonical(root), path) && !await canImportLegacy()) throw new Error("The legacy media belongs to the installation owner");
+	for (const root of legacyRoots)
+		if (within(await canonical(root), path) && !(await canImportLegacy()))
+			throw new Error("The legacy media belongs to the installation owner");
 	return path;
 }

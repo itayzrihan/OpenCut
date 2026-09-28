@@ -10,6 +10,9 @@ const actualExports = new Set(
 	WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
 );
 const requiredExports = [
+	"accountConfigureStorage",
+	"accountValidateSnapshot",
+	"browserRecoveryProject",
 	"resolveAudioSyncRetrim",
 	"resolveClipAudioTiming",
 	"analyzeAudioSilence",

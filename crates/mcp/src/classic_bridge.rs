@@ -1133,7 +1133,7 @@ fn write_bridge_config(path: &Path, address: SocketAddr, token: &str) -> std::io
     }
     let temporary = path.with_extension(format!("{}.tmp", std::process::id()));
     let bytes = serde_json::to_vec_pretty(&json!({
-        "version": 1,
+        "version": 2,
         "baseUrl": format!("http://{address}"),
         "token": token,
         "pid": std::process::id(),

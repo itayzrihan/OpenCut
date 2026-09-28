@@ -1,4 +1,7 @@
 import { withAccount } from "@/accounts/server";
+import { prepareBrowserProjectRecovery } from "@/accounts/browser-project-recovery";
+import { browserRecoveryProject } from "opencut-wasm";
+import { readBoundedBody } from "@/accounts/request-body";
 import {
 	assertBatchProjectWrite,
 	assertNoActiveBatch,
@@ -91,7 +94,7 @@ async function GETHandler(request: Request) {
 async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
-		const body = (await request.json()) as Record<string, unknown>;
+		const body = JSON.parse(new TextDecoder().decode(await readBoundedBody(request, 128 * 1024 * 1024))) as Record<string, unknown>;
 		const operation = readString(
 			body.operation,
 			"operation",
@@ -102,6 +105,7 @@ async function POSTHandler(request: Request) {
 
 		const projectWrites = [
 			"project.put",
+			"project.recoverBrowser",
 			"project.delete",
 			"history.put",
 			"history.delete",
@@ -136,6 +140,8 @@ async function POSTHandler(request: Request) {
 				);
 			case "project.get":
 				return NextResponse.json(await getProject(projectId()));
+			case "project.recoverBrowser":
+				return NextResponse.json(await prepareBrowserProjectRecovery(projectId(), readString(body.destinationId, "destinationId"), body.project, body.history, body.media, body.fonts, browserRecoveryProject));
 			case "project.put":
 				await withBatchProjectWrite({
 					projectId: projectId(),

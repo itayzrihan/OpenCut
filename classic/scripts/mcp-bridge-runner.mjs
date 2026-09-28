@@ -71,7 +71,7 @@ async function bridgeIsHealthy() {
 async function configIsHealthy(path) {
 	try {
 		const config = JSON.parse(await readFile(path, "utf8"));
-		if (config?.version !== 1 || typeof config.baseUrl !== "string")
+		if (config?.version !== 2 || typeof config.baseUrl !== "string")
 			return false;
 		const response = await fetch(new URL("/bridge/status", config.baseUrl), {
 			headers: { Authorization: `Bearer ${config.token}` },

@@ -6497,7 +6497,7 @@ mod tests {
         assert_eq!(runtime.snapshot().unwrap().revision, 1);
         manifest["accountId"] = json!("bob");
         assert!(matches!(invoke_error(&runtime, "account.snapshot.validate", json!({"manifest":manifest})).await, CapabilityError::InvalidInput(_)));
-        let configuration = json!({"mode":"externalDrive","destinationId":"folder_1","devices":[]});
+        let configuration = json!({"mode":"externalDrive","destinationId":"folder_1","devices":[],"automaticSnapshots":true});
         let input = json!({"accountId":"alice","configuration":configuration,"expectedRevision":1});
         let preview = runtime.registry().invoke("account.storage.configure", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
         assert_eq!(preview.result.data["committed"], false);

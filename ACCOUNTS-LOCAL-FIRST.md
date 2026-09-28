@@ -68,19 +68,25 @@ and vault key to another host without replacing an existing account.
 Opening a saved version verifies every object in staging, publishes the current
 workspace as another encrypted version, and retains the previous local directory.
 Restore journals retain paths and version IDs for interruption recovery. This is
-explicit version exchange; automatic merge and direct peer discovery are not
-implemented. Mounted shares are the current personal-machine transport.
+explicit version selection; optional background snapshots publish changed work
+every five minutes while the client is open. Automatic merge and direct peer
+discovery are not implemented. Mounted shares are the current personal-machine
+transport. Snapshot publication allows editor saves and rejects a source that
+changes during the transfer. Interrupted activation recovers via its journal.
 
 Classic MCP requests namespace browser sessions by authenticated account.
 Command completions must match their originating session, and disconnecting one
 session no longer cancels another session's work. Legacy unrestricted MCP clients
-need the updated bridge binary before testing these guarantees end to end.
+need the updated bridge binary. Version 2 descriptors are required by account
+clients; older instances are ignored. Packaging includes the updated executable.
 
 English voiceovers run in a browser worker using Kokoro, with cached model files,
 WebGPU/CPU modes and cancellation. GPU and CPU generation, cancellation and import
 into a synthetic project were exercised in the local browser preview. This does
 not establish Hebrew support, offline operation before initial model download,
-or inference inside the packaged Electron runtime. The voiceover feature is classic-only;
+or inference inside the packaged Electron runtime. Its renderer and WebGPU adapter
+were checked; the further GPU/offline test command was blocked by automatic
+approval review. The voiceover feature is classic-only;
 existing media commands import its output. No rewrite parity is claimed.
 
 Hosted authentication, feedback/database and Redis integrations are optional for
@@ -99,8 +105,13 @@ byte-exact project comparison, served its static assets, and started without
 hosted database/auth/Redis services. Version-switch tests recover both competing
 versions, reject corruption, and preserve work after cancellation.
 
-Still required before internal-testing release: resolve the owner's missing linked clip;
-rehearse the full owner restore and browser conflict resolution; finish
-Electron shell/inference verification; verify sync conflicts, interrupted
-transfers, recovery and complete account isolation. Do not describe this
-checkpoint as production-ready or migrate the owner's originals in place.
+The complete pre-account backup was restored into a separate rehearsal directory:
+all 2,763 manifest entries / 29,662,690,232 bytes matched their SHA-256 hashes. The
+154 legacy library/font files also have a verified copy outside the checkout for
+packaged-app discovery. The missing linked source remains an explicit exception.
+Browser imports now archive original structured-clone records, OPFS bytes and
+preferences before copying; same-ID projects retain separate editable variants.
+
+The internal testing flow and outstanding owner migration/inference checks are
+recorded in `INTERNAL-ACCOUNTS-TESTING.md`. Do not describe the owner's migration
+as complete or migrate the originals in place.

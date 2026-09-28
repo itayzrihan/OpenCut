@@ -27,6 +27,7 @@ export type LocalDriveOperation =
 	| "project.listOutdated"
 	| "project.get"
 	| "project.put"
+	| "project.recoverBrowser"
 	| "project.delete"
 	| "history.get"
 	| "history.put"

@@ -45,19 +45,23 @@ export default function RootLayout({
 					<TooltipProvider>
 						<ElectronBackButton />
 						<Toaster />
-						<Script
-							src="https://cdn.databuddy.cc/databuddy.js"
-							strategy="afterInteractive"
-							async
-							data-client-id="UP-Wcoy5arxFeK7oyjMMZ"
-							data-disabled={webEnv.NODE_ENV === "development"}
-							data-track-attributes={false}
-							data-track-errors={true}
-							data-track-outgoing-links={false}
-							data-track-web-vitals={false}
-							data-track-sessions={false}
-						/>
-						<AccountGate><BatchEditRoot>{children}</BatchEditRoot></AccountGate>
+						{webEnv.OPENCUT_ENABLE_TELEMETRY === "true" && (
+							<Script
+								src="https://cdn.databuddy.cc/databuddy.js"
+								strategy="afterInteractive"
+								async
+								data-client-id="UP-Wcoy5arxFeK7oyjMMZ"
+								data-disabled={webEnv.NODE_ENV === "development"}
+								data-track-attributes={false}
+								data-track-errors={true}
+								data-track-outgoing-links={false}
+								data-track-web-vitals={false}
+								data-track-sessions={false}
+							/>
+						)}
+						<AccountGate>
+							<BatchEditRoot>{children}</BatchEditRoot>
+						</AccountGate>
 					</TooltipProvider>
 				</ThemeProvider>
 			</body>

@@ -12,7 +12,9 @@ export const dynamic = "force-dynamic";
 
 const bridgeConfigSchema = z
 	.object({
-		version: z.literal(1),
+		// Version 2 binds command completions and disconnects to their session.
+		// Older bridges cannot provide the isolation required by local accounts.
+		version: z.literal(2),
 		baseUrl: z.url(),
 		token: z.string().min(32),
 		pid: z.number().int().positive(),

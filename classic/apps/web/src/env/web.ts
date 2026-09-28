@@ -11,12 +11,14 @@ const webEnvSchema = z.object({
 	NEXT_PUBLIC_MARBLE_API_URL: z.url().optional(),
 
 	// Server
+	OPENCUT_ENABLE_TELEMETRY: z.enum(["true", "false"]).default("false"),
 	DATABASE_URL: z
 		.string()
 		.refine(
 			(url) => url.startsWith("postgres://") || url.startsWith("postgresql://"),
 			"DATABASE_URL must be a postgres:// or postgresql:// URL",
-		).optional(),
+		)
+		.optional(),
 
 	BETTER_AUTH_SECRET: z.string().optional(),
 	UPSTASH_REDIS_REST_URL: z.url().optional(),
