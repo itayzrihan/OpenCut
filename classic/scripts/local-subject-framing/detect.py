@@ -12,7 +12,9 @@ request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert 3 <= len(request["frames"]) <= 5
 face = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 profile = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
-model = Path(__file__).resolve().parents[2] / ".local/subject-framing/models/pose_landmarker_lite.task"
+model = Path(sys.executable).parent / "models/pose_landmarker_lite.task"
+if not model.exists():
+    model = Path(__file__).resolve().parents[2] / ".local/subject-framing/models/pose_landmarker_lite.task"
 options = mp.tasks.vision.PoseLandmarkerOptions(
     base_options=mp.tasks.BaseOptions(model_asset_path=str(model), delegate=mp.tasks.BaseOptions.Delegate.CPU),
     running_mode=mp.tasks.vision.RunningMode.IMAGE,

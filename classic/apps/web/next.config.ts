@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
 	// be copied into a production standalone bundle (the Whisper cache alone
 	// can be several gigabytes and may exhaust the build disk).
 	outputFileTracingExcludes: {
-		"**/*": [".opencut-data/**/*"],
+		"**/*": [".opencut-data/**/*", "**/.local/**/*", "../../.local/**/*"],
 	},
 	// Bun stores `file:` dependencies as copied packages. A WASM rebuild can
 	// otherwise update the JS glue without replacing the installed binary,

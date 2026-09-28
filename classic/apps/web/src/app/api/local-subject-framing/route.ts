@@ -44,7 +44,8 @@ async function POSTHandler(request: NextRequest) {
 			{ status: 400 },
 		);
 	const root = resolve(process.cwd(), "../..");
-	const python = join(
+	const packagedPython = join(root, "../native/subject-framing/python.exe");
+	const python = existsSync(packagedPython) ? packagedPython : join(
 		root,
 		".local",
 		"subject-framing",

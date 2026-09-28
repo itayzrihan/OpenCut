@@ -7,8 +7,11 @@ this host to a public interface.
 
 ## Build and run
 
-From `classic/apps/electron`, run `bun run pack`. This builds the shared WASM,
-native control plane, and Electron web bundle before producing `dist/win-unpacked`.
+On a Windows build machine, first prepare the pinned native detector environment
+with `python classic/scripts/local-subject-framing/setup.py`. From
+`classic/apps/electron`, run `bun run pack`. This builds the shared WASM,
+native control plane, portable detector runtime and Electron web bundle before
+producing `dist/win-unpacked`.
 Run `OpenCut.exe` from that directory, keeping its resources beside it. For an
 isolated web build, set `OPENCUT_BUILD_DIR=.next-accounts-electron` before building.
 The packaging script accepts that same setting. `OPENCUT_MCP_BINARY` can select a
@@ -17,6 +20,10 @@ current native build when a separate development executable is already running.
 No database, Redis, or hosted authentication service is required. Optional
 hosted integrations retain their existing environment configuration. Analytics
 loads only when `OPENCUT_ENABLE_TELEMETRY=true` is explicitly configured.
+The Windows package includes its own Python, OpenCV, MediaPipe and pose model for
+local subject detection; it does not depend on the developer's Python installation.
+The optional native whisper.cpp acceleration path still requires its separately
+configured binary/model/ffmpeg; browser transcription remains available.
 
 For a clean test installation, set `OPENCUT_ACCOUNTS_DIR` to a new test folder,
 `POCUT_PROJECTS_DIR` to an empty test legacy folder, and
@@ -86,6 +93,9 @@ an explicit internal testing check, not a verified claim.
 ## Acceptance evidence and remaining gates
 
 - Production browser/Electron web builds and Windows unpacked packaging pass.
+- The packaged subject detector processed three frames using its isolated,
+  bundled Python runtime; anonymous requests were rejected. The standalone
+  bundle contains no private `.local` recovery files or `.env` files.
 - Cross-account HTTP access, pinned account URLs, ranges and private library
   delivery pass; anonymous requests cannot access private data.
 - Shared Rust account policy and Editor API revision/dry-run/undo tests pass.

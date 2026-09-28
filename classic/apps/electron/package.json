@@ -7,8 +7,9 @@
     "dev:shell": "node ../../scripts/dev-electron-shell.mjs",
     "build:web": "bun run --cwd ../.. build:wasm && bun run --cwd ../web assets:verify && bun run --cwd ../web build:electron",
     "build:control-plane": "cargo build --manifest-path ../../../Cargo.toml --release -p opencut-mcp-server",
-    "pack": "bun run build:control-plane && bun run build:web && node scripts/package.cjs --dir",
-    "dist": "bun run build:control-plane && bun run build:web && node scripts/package.cjs",
+    "build:detector": "node scripts/prepare-detector.cjs",
+    "pack": "bun run build:control-plane && bun run build:detector && bun run build:web && node scripts/package.cjs --dir",
+    "dist": "bun run build:control-plane && bun run build:detector && bun run build:web && node scripts/package.cjs",
     "test": "bun test test/runtime.test.js"
   },
   "devDependencies": {
