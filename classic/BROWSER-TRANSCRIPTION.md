@@ -72,3 +72,8 @@ This change moves speech recognition to the browser. Account/project storage,
 the authenticated OpenAI relay and the existing subject-framing endpoint remain
 server components. Full Auto Edit can still use those services; it is not an
 entirely offline recipe. No OpenAI login is needed for transcription alone.
+
+When the optional host subject detector is uninstalled (503), Full Auto Edit
+uses its existing Rust centered-cover fallback and reports a warning. The
+explicit Center Subject action still requires detection; authentication, busy,
+network and inference failures are not silently treated as missing detection.
