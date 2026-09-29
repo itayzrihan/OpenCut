@@ -8,7 +8,7 @@ import {
 	type CaptionLayoutSettings,
 } from "@/subtitles/caption-layout";
 import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
-import { transcribeTimelineAudioBlob } from "@/transcription/server-client";
+import { transcribeTimelineAudioBlob } from "@/transcription/browser-client";
 import type {
 	CaptionChunk,
 	TranscriptionLanguage,
@@ -134,6 +134,17 @@ export class TranscriptionManager {
 				audioBlob,
 				language,
 				signal: abortController.signal,
+				onProgress: (progress) => {
+					if (abortController.signal.aborted) return;
+					this.updateProgress({
+						taskId,
+						progressBasisPoints:
+							progress.status === "loading-model"
+								? 1500 + Math.round(progress.progress * 25)
+								: 4500,
+						phase: progress.message || progress.status,
+					});
+				},
 			});
 			this.throwIfCancelled();
 			this.updateProgress({

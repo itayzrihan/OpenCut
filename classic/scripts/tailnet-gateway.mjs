@@ -9,7 +9,7 @@ const apiPaths = new Set([
   '/api/local-drive/shared-file', '/api/local-drive/project-thumbnail',
   '/api/project-fonts', '/api/shared-library', '/api/batch-edit',
   '/api/sounds/search',
-  '/api/local-subject-framing', '/api/transcription/whisper-cpp',
+  '/api/local-subject-framing',
   '/api/ai/chat', '/api/ai/models', '/api/ai/oauth/status',
   '/api/ai/oauth/device', '/api/ai/oauth/logout',
 ]);

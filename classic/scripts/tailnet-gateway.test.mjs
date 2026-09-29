@@ -32,7 +32,7 @@ test('tailnet transport preserves auth, streaming and origin protections; exclud
     assert.equal(valid.body.forwarded, undefined);
     assert.match(valid.headers['set-cookie'][0], /; Secure$/);
     for (const path of ['/api/mcp-bridge/status', '/api/mcp-bridge%2fstatus',
-      '/api/%6dcp-bridge/status', '/api/unknown', '/api/ai/oauth/start', '/api/ai/oauth/complete', '/api/ai/oauth/callback', '/api/x/../mcp-bridge/status'])
+      '/api/%6dcp-bridge/status', '/api/unknown', '/api/transcription/whisper-cpp', '/api/ai/oauth/start', '/api/ai/oauth/complete', '/api/ai/oauth/callback', '/api/x/../mcp-bridge/status'])
       assert.equal((await call(path)).status, 403, path);
     for (const path of ['/api/ai/chat', '/api/ai/models', '/api/ai/oauth/status', '/api/ai/oauth/device', '/api/ai/oauth/logout']) {
       assert.equal((await call(path, { origin, cookie: 'opencut-account=token', 'x-opencut-account': 'alice' }, 'POST')).status, 200);

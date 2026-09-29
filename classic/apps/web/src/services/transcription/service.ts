@@ -1,185 +1,133 @@
+/** Browser execution adapter. Only public weights are cached; audio stays in RAM. */
 import type {
 	TranscriptionLanguage,
 	TranscriptionResult,
 	TranscriptionProgress,
-	TranscriptionModelId,
 } from "@/transcription/types";
-import {
-	DEFAULT_TRANSCRIPTION_MODEL,
-	TRANSCRIPTION_MODELS,
-} from "@/transcription/models";
 import type { WorkerMessage, WorkerResponse } from "./worker";
 
-type ProgressCallback = (progress: TranscriptionProgress) => void;
+export function assertBrowserTranscriptionAvailable() {
+	if (
+		!globalThis.isSecureContext ||
+		typeof Worker === "undefined" ||
+		typeof WebAssembly === "undefined"
+	)
+		throw new Error(
+			"Browser transcription requires HTTPS and a browser with WebAssembly and Web Workers.",
+		);
+}
 
-class TranscriptionService {
-	private worker: Worker | null = null;
-	private currentModelId: TranscriptionModelId | null = null;
-	private isInitialized = false;
-	private isInitializing = false;
-
+export class TranscriptionService {
 	async transcribe({
 		audioData,
 		language = "auto",
-		modelId = DEFAULT_TRANSCRIPTION_MODEL,
+		signal,
 		onProgress,
 	}: {
 		audioData: Float32Array;
 		language?: TranscriptionLanguage;
-		modelId?: TranscriptionModelId;
-		onProgress?: ProgressCallback;
+		signal?: AbortSignal;
+		onProgress?: (progress: TranscriptionProgress) => void;
 	}): Promise<TranscriptionResult> {
-		await this.ensureWorker({ modelId, onProgress });
-
-		return new Promise((resolve, reject) => {
-			if (!this.worker) {
-				reject(new Error("Worker not initialized"));
-				return;
+		assertBrowserTranscriptionAvailable();
+		const account = window.__opencutAccountId;
+		const controller = new AbortController();
+		const aborted = () => controller.abort();
+		const changed = () => {
+			if (window.__opencutAccountId !== account) controller.abort();
+		};
+		signal?.addEventListener("abort", aborted, { once: true });
+		window.addEventListener("pagehide", aborted);
+		window.addEventListener("storage", changed);
+		if (signal?.aborted) controller.abort();
+		const timer = setInterval(changed, 250);
+		try {
+			const run = () =>
+				this.run({
+					audioData,
+					language,
+					signal: controller.signal,
+					onProgress,
+					account,
+				});
+			if (navigator.locks) {
+				onProgress?.({
+					status: "loading-model",
+					progress: 0,
+					message: "Waiting for this browser's transcription worker…",
+				});
+				// Batch frames/tabs share the GPU. Do not load several large models at once.
+				return await navigator.locks.request(
+					"opencut-browser-whisper",
+					{ signal: controller.signal },
+					run,
+				);
 			}
-
-			const handleMessage = (event: MessageEvent<WorkerResponse>) => {
-				const response = event.data;
-
-				switch (response.type) {
-					case "transcribe-progress":
-						onProgress?.({
-							status: "transcribing",
-							progress: response.progress,
-							message: "Transcribing audio...",
-						});
-						break;
-
-					case "transcribe-complete":
-						this.worker?.removeEventListener("message", handleMessage);
-						resolve({
-							text: response.text,
-							segments: response.segments,
-							language,
-						});
-						break;
-
-					case "transcribe-error":
-						this.worker?.removeEventListener("message", handleMessage);
-						reject(new Error(response.error));
-						break;
-
-					case "cancelled":
-						this.worker?.removeEventListener("message", handleMessage);
-						reject(new Error("Transcription cancelled"));
-						break;
-				}
-			};
-
-			this.worker.addEventListener("message", handleMessage);
-
-			this.worker.postMessage({
-				type: "transcribe",
-				audio: audioData,
-				language,
-			} satisfies WorkerMessage);
-		});
+			return await run();
+		} finally {
+			clearInterval(timer);
+			signal?.removeEventListener("abort", aborted);
+			window.removeEventListener("pagehide", aborted);
+			window.removeEventListener("storage", changed);
+		}
 	}
 
-	cancel() {
-		this.worker?.postMessage({ type: "cancel" } satisfies WorkerMessage);
-	}
-
-	private async ensureWorker({
-		modelId,
+	private run({
+		audioData,
+		language,
+		signal,
 		onProgress,
+		account,
 	}: {
-		modelId: TranscriptionModelId;
-		onProgress?: ProgressCallback;
-	}): Promise<void> {
-		const needsNewModel = this.currentModelId !== modelId;
-
-		if (this.worker && this.isInitialized && !needsNewModel) {
-			return;
-		}
-
-		if (this.isInitializing && !needsNewModel) {
-			await this.waitForInit();
-			return;
-		}
-
-		this.terminate();
-		this.isInitializing = true;
-		this.isInitialized = false;
-
-		const model = TRANSCRIPTION_MODELS.find((m) => m.id === modelId);
-		if (!model) {
-			throw new Error(`Unknown model: ${modelId}`);
-		}
-
-		this.worker = new Worker(new URL("./worker.ts", import.meta.url), {
-			type: "module",
-		});
-
+		audioData: Float32Array;
+		language: TranscriptionLanguage;
+		signal: AbortSignal;
+		onProgress?: (progress: TranscriptionProgress) => void;
+		account: string | null;
+	}): Promise<TranscriptionResult> {
+		signal.throwIfAborted();
 		return new Promise((resolve, reject) => {
-			if (!this.worker) {
-				reject(new Error("Failed to create worker"));
-				return;
-			}
-
-			const handleMessage = (event: MessageEvent<WorkerResponse>) => {
-				const response = event.data;
-
-				switch (response.type) {
-					case "init-progress":
-						onProgress?.({
-							status: "loading-model",
-							progress: response.progress,
-							message: `Loading ${model.name} model...`,
-						});
-						break;
-
-					case "init-complete":
-						this.worker?.removeEventListener("message", handleMessage);
-						this.isInitialized = true;
-						this.isInitializing = false;
-						this.currentModelId = modelId;
-						resolve();
-						break;
-
-					case "init-error":
-						this.worker?.removeEventListener("message", handleMessage);
-						this.isInitializing = false;
-						this.terminate();
-						reject(new Error(response.error));
-						break;
-				}
+			const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+				type: "module",
+			});
+			let settled = false;
+			const finish = (error?: Error, result?: TranscriptionResult) => {
+				if (settled) return;
+				settled = true;
+				worker.terminate(); // Interrupts downloads/inference and releases account audio and GPU memory.
+				signal.removeEventListener("abort", abort);
+				if (error) reject(error);
+				else resolve(result!);
 			};
-
-			this.worker.addEventListener("message", handleMessage);
-
-			this.worker.postMessage({
-				type: "init",
-				modelId: model.huggingFaceId,
-			} satisfies WorkerMessage);
-		});
-	}
-
-	private waitForInit(): Promise<void> {
-		return new Promise((resolve) => {
-			const checkInit = () => {
-				if (this.isInitialized) {
-					resolve();
-				} else if (!this.isInitializing) {
-					resolve();
-				} else {
-					setTimeout(checkInit, 100);
+			const abort = () =>
+				finish(new DOMException("Transcription cancelled", "AbortError"));
+			signal.addEventListener("abort", abort, { once: true });
+			worker.onerror = (event) =>
+				finish(
+					new Error(
+						event.message ||
+							"The browser transcription worker could not start.",
+					),
+				);
+			worker.onmessageerror = () =>
+				finish(
+					new Error("The browser could not read the transcription result."),
+				);
+			worker.onmessage = ({ data }: MessageEvent<WorkerResponse>) => {
+				if (signal.aborted || window.__opencutAccountId !== account) {
+					abort();
+					return;
 				}
+				if (settled) return;
+				if (data.type === "progress") onProgress?.(data.progress);
+				else if (data.type === "complete") finish(undefined, data.result);
+				else finish(new Error(data.error));
 			};
-			checkInit();
+			worker.postMessage(
+				{ audio: audioData, language } satisfies WorkerMessage,
+				[audioData.buffer],
+			);
 		});
-	}
-
-	terminate() {
-		this.worker?.terminate();
-		this.worker = null;
-		this.isInitialized = false;
-		this.isInitializing = false;
-		this.currentModelId = null;
 	}
 }
 

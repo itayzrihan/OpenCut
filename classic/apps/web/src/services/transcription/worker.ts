@@ -1,176 +1,153 @@
 import {
+	env,
 	pipeline,
+	TextStreamer,
 	type AutomaticSpeechRecognitionPipeline,
-	type AutomaticSpeechRecognitionOutput,
 } from "@huggingface/transformers";
-import type { TranscriptionSegment } from "@/transcription/types";
+import type {
+	TranscriptionResult,
+	TranscriptionProgress,
+} from "@/transcription/types";
+import {
+	BROWSER_WHISPER_MODEL,
+	BROWSER_WHISPER_REVISION,
+	BROWSER_WHISPER_CPU_MODEL,
+	BROWSER_WHISPER_CPU_REVISION,
+} from "@/transcription/models";
 import {
 	DEFAULT_CHUNK_LENGTH_SECONDS,
 	DEFAULT_STRIDE_SECONDS,
 } from "@/transcription/audio";
 
-export type WorkerMessage =
-	| { type: "init"; modelId: string }
-	| { type: "transcribe"; audio: Float32Array; language: string }
-	| { type: "cancel" };
-
+export type WorkerMessage = { audio: Float32Array; language: string };
 export type WorkerResponse =
-	| { type: "init-progress"; progress: number }
-	| { type: "init-complete" }
-	| { type: "init-error"; error: string }
-	| { type: "transcribe-progress"; progress: number }
-	| {
-			type: "transcribe-complete";
-			text: string;
-			segments: TranscriptionSegment[];
-	  }
-	| { type: "transcribe-error"; error: string }
-	| { type: "cancelled" };
+	| { type: "progress"; progress: TranscriptionProgress }
+	| { type: "complete"; result: TranscriptionResult }
+	| { type: "error"; error: string };
 
-let transcriber: AutomaticSpeechRecognitionPipeline | null = null;
-let cancelled = false;
-let lastReportedProgress = -1;
-const fileBytes = new Map<string, { loaded: number; total: number }>();
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+// Single-thread WASM also works on HTTPS deployments without COOP/COEP.
+if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1;
 
-self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-	const message = event.data;
+const report = (
+	status: TranscriptionProgress["status"],
+	progress: number,
+	message: string,
+) =>
+	self.postMessage({
+		type: "progress",
+		progress: { status, progress, message },
+	} satisfies WorkerResponse);
 
-	switch (message.type) {
-		case "init":
-			await handleInit({ modelId: message.modelId });
-			break;
-		case "transcribe":
-			await handleTranscribe({
-				audio: message.audio,
-				language: message.language,
-			});
-			break;
-		case "cancel":
-			cancelled = true;
-			self.postMessage({ type: "cancelled" } satisfies WorkerResponse);
-			break;
-	}
-};
-
-async function handleInit({ modelId }: { modelId: string }) {
-	lastReportedProgress = -1;
-	fileBytes.clear();
-
+self.onmessage = async ({
+	data: { audio, language },
+}: MessageEvent<WorkerMessage>) => {
+	let transcriber: AutomaticSpeechRecognitionPipeline | undefined;
 	try {
-		transcriber = (await pipeline("automatic-speech-recognition", modelId, {
-			dtype: "q4",
-			device: "auto",
-			progress_callback: (progressInfo: {
-				status?: string;
-				file?: string;
-				loaded?: number;
-				total?: number;
-			}) => {
-				const file = progressInfo.file;
-				if (!file) return;
-
-				const loaded = progressInfo.loaded ?? 0;
-				const total = progressInfo.total ?? 0;
-
-				if (progressInfo.status === "progress" && total > 0) {
-					fileBytes.set(file, { loaded, total });
-				} else if (progressInfo.status === "done") {
-					const existing = fileBytes.get(file);
-					if (existing) {
-						fileBytes.set(file, {
-							loaded: existing.total,
-							total: existing.total,
-						});
+		const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
+		const device = adapter?.features.has("shader-f16") ? "webgpu" : "wasm";
+		const label =
+			device === "webgpu"
+				? "GPU · WebGPU"
+				: "CPU · WebAssembly (WebGPU fp16 unavailable; slower)";
+		report(
+			"loading-model",
+			0,
+			`Loading ivrit-ai Large v3 Turbo on your ${label}. First download is approximately 1.6 GB…`,
+		);
+		const files = new Map<string, { loaded: number; total: number }>();
+		let lastReport = 0;
+		transcriber = (await pipeline<"automatic-speech-recognition">(
+			"automatic-speech-recognition",
+			device === "webgpu" ? BROWSER_WHISPER_MODEL : BROWSER_WHISPER_CPU_MODEL,
+			{
+				revision:
+					device === "webgpu"
+						? BROWSER_WHISPER_REVISION
+						: BROWSER_WHISPER_CPU_REVISION,
+				device,
+				dtype:
+					device === "webgpu"
+						? { encoder_model: "fp16", decoder_model_merged: "q4" }
+						: "q8",
+				progress_callback: (info) => {
+					if (info.status !== "progress") return;
+					files.set(info.file, { loaded: info.loaded, total: info.total });
+					if (Date.now() - lastReport < 250) return;
+					lastReport = Date.now();
+					let loaded = 0,
+						total = 0;
+					for (const value of files.values()) {
+						loaded += value.loaded;
+						total += value.total;
 					}
-				}
-
-				// sum all bytes
-				let totalLoaded = 0;
-				let totalSize = 0;
-				for (const { loaded, total } of fileBytes.values()) {
-					totalLoaded += loaded;
-					totalSize += total;
-				}
-
-				if (totalSize === 0) return;
-
-				const overallProgress = (totalLoaded / totalSize) * 100;
-				const roundedProgress = Math.floor(overallProgress);
-
-				if (roundedProgress !== lastReportedProgress) {
-					lastReportedProgress = roundedProgress;
-					self.postMessage({
-						type: "init-progress",
-						progress: roundedProgress,
-					} satisfies WorkerResponse);
-				}
+					report(
+						"loading-model",
+						total ? (100 * loaded) / total : 0,
+						`Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
+					);
+				},
 			},
-		})) as unknown as AutomaticSpeechRecognitionPipeline;
-
-		self.postMessage({ type: "init-complete" } satisfies WorkerResponse);
-	} catch (error) {
-		self.postMessage({
-			type: "init-error",
-			error: error instanceof Error ? error.message : "Failed to load model",
-		} satisfies WorkerResponse);
-	}
-}
-
-async function handleTranscribe({
-	audio,
-	language,
-}: {
-	audio: Float32Array;
-	language: string;
-}) {
-	if (!transcriber) {
-		self.postMessage({
-			type: "transcribe-error",
-			error: "Model not initialized",
-		} satisfies WorkerResponse);
-		return;
-	}
-
-	cancelled = false;
-
-	try {
-		const rawResult = await transcriber(audio, {
+		)) as AutomaticSpeechRecognitionPipeline;
+		report("transcribing", 0, `Transcribing on your ${label}…`);
+		let tokens = 0;
+		const started = Date.now();
+		const streamer = new TextStreamer(transcriber.tokenizer, {
+			skip_prompt: true,
+			skip_special_tokens: true,
+			callback_function: () => {
+				tokens++;
+				if (Date.now() - lastReport < 500) return;
+				lastReport = Date.now();
+				report(
+					"transcribing",
+					0,
+					`Transcribing on your ${label} · ${Math.round((Date.now() - started) / 1000)}s · ${tokens} text fragments`,
+				);
+			},
+		});
+		const output = await transcriber(audio, {
 			chunk_length_s: DEFAULT_CHUNK_LENGTH_SECONDS,
 			stride_length_s: DEFAULT_STRIDE_SECONDS,
-			language: language === "auto" ? undefined : language,
-			return_timestamps: true,
+			language: language === "auto" ? "he" : language,
+			task: "transcribe",
+			return_timestamps: "word",
+			streamer,
 		});
-
-		if (cancelled) return;
-
-		const result: AutomaticSpeechRecognitionOutput = Array.isArray(rawResult)
-			? rawResult[0]
-			: rawResult;
-
-		const segments: TranscriptionSegment[] = [];
-
-		if (result.chunks) {
-			for (const chunk of result.chunks) {
-				if (chunk.timestamp && chunk.timestamp.length >= 2) {
-					segments.push({
-						text: chunk.text,
-						start: chunk.timestamp[0] ?? 0,
-						end: chunk.timestamp[1] ?? chunk.timestamp[0] ?? 0,
-					});
-				}
-			}
-		}
-
+		const result = Array.isArray(output) ? output[0] : output;
+		const duration = audio.length / 16000;
+		const words = (result.chunks ?? []).flatMap(
+			({ text, timestamp: [start, end] }) => {
+				if (start === null || !text.trim()) return [];
+				return [
+					{
+						text: text.trim(),
+						start: Math.max(0, Math.min(duration, start)),
+						end: Math.max(start, Math.min(duration, end ?? duration)),
+					},
+				];
+			},
+		);
+		if (result.text.trim() && !words.length)
+			throw new Error(
+				"The browser model did not return timed words. Captions were not changed.",
+			);
 		self.postMessage({
-			type: "transcribe-complete",
-			text: result.text,
-			segments,
+			type: "complete",
+			result: {
+				text: result.text,
+				words,
+				segments: words,
+				language: language === "auto" ? "he" : language,
+			},
 		} satisfies WorkerResponse);
 	} catch (error) {
-		if (cancelled) return;
 		self.postMessage({
-			type: "transcribe-error",
-			error: error instanceof Error ? error.message : "Transcription failed",
+			type: "error",
+			error: `Browser transcription failed: ${error instanceof Error ? error.message : "Unknown error"}. Check available memory, model download access and browser GPU support, then retry.`,
 		} satisfies WorkerResponse);
+	} finally {
+		await transcriber?.dispose();
 	}
-}
+};

@@ -1,5 +1,15 @@
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { EditorCore } from "@/core";
+mock.module("@/media/mediabunny", () => ({
+	extractTimelineAudio: () => {
+		throw new Error("Inject extractAudio in manager tests");
+	},
+}));
+mock.module("@/subtitles/insert", () => ({
+	insertCaptionChunksAsTextTrack: () => {
+		throw new Error("Inject insertCaptions in manager tests");
+	},
+}));
 import type {
 	AgentTaskEvent,
 	AgentTaskState,
@@ -64,7 +74,7 @@ function transitionTaskForTest({
 }
 
 mock.module("opencut-wasm", () => ({
-	sampleAutomaticZoom: () => ({scale:1,anchorX:0.5,anchorY:0.5}),
+	sampleAutomaticZoom: () => ({ scale: 1, anchorX: 0.5, anchorY: 0.5 }),
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -172,18 +182,31 @@ function createEditor() {
 }
 
 describe("TranscriptionManager", () => {
-
 	test("rejects a stale transcript when the timeline changed during transcription", async () => {
 		const editor = createEditor();
 		let revision = 0;
 		editor.command.getStateRevision = () => revision;
 		let inserted = false;
-		const manager = new TranscriptionManager({ editor, dependencies: {
-			extractAudio: async () => new Blob(["audio"]),
-			transcribe: async () => { revision += 1; return {text:"hello",segments:[{text:"hello",start:0,end:1}],language:"en"}; },
-			insertCaptions: () => {inserted = true; return ["captions"];},
-			generateId: () => "stale-task", transitionTask: transitionTaskForTest,
-		}});
+		const manager = new TranscriptionManager({
+			editor,
+			dependencies: {
+				extractAudio: async () => new Blob(["audio"]),
+				transcribe: async () => {
+					revision += 1;
+					return {
+						text: "hello",
+						segments: [{ text: "hello", start: 0, end: 1 }],
+						language: "en",
+					};
+				},
+				insertCaptions: () => {
+					inserted = true;
+					return ["captions"];
+				},
+				generateId: () => "stale-task",
+				transitionTask: transitionTaskForTest,
+			},
+		});
 		const state = await manager.start();
 		expect(state.task.status).toBe("failed");
 		expect(state.task.error).toContain("timeline changed");

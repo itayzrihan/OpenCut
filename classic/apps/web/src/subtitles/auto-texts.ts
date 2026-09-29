@@ -36,7 +36,13 @@ export async function runAutoTexts({
 	signal.addEventListener("abort", cancel, { once: true });
 	try {
 		onProgress("Transcribing speech…");
-		const state = await editor.transcription.start({ language, settings });
+		const unsubscribe = editor.transcription.subscribe(() => {
+			const { task } = editor.transcription.getState();
+			if (task.status === "running" && task.phase) onProgress(task.phase);
+		});
+		const state = await editor.transcription
+			.start({ language, settings })
+			.finally(unsubscribe);
 		signal.throwIfAborted();
 		if (state.task.status !== "succeeded")
 			throw new Error(state.task.error || "Transcription did not complete");
