@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 /** Classic host adapter; Rust owns eligibility, timing, volume and replacement. */
 import { automaticMusicCatalog, compileAutomaticMusic } from "opencut-wasm";
 import { z } from "zod";
@@ -193,7 +194,7 @@ export async function runAutomaticMusic({
 			throw new Error(
 				"Music catalog and timeline exceed the AI request limit; nothing changed",
 			);
-		const response = await fetch("/api/ai/chat", {
+		const response = await aiClientFetch("/api/ai/chat", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body,

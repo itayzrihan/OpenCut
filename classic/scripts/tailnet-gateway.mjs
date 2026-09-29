@@ -8,7 +8,7 @@ const apiPaths = new Set([
   '/api/local-drive', '/api/local-drive/media', '/api/local-drive/font',
   '/api/local-drive/shared-file', '/api/local-drive/project-thumbnail',
   '/api/project-fonts', '/api/shared-library', '/api/batch-edit',
-  '/api/ai/chat', '/api/ai/models', '/api/sounds/search',
+  '/api/sounds/search',
   '/api/local-subject-framing', '/api/transcription/whisper-cpp',
 ]);
 const hopHeaders = ['connection', 'keep-alive', 'proxy-authenticate',
@@ -44,6 +44,7 @@ export function createTailnetGateway({ publicOrigin, backendOrigin }) {
       target = new URL(req.url, backend);
       const path = decodeURIComponent(target.pathname);
       if (/[\\%]/.test(path) || path.split('/').some(part => part === '.' || part === '..')) throw Error();
+      if (path.startsWith('/api/ai/')) return reject(403, 'AI runs on your device. Connect the local OpenCut AI app from the AI panel.');
       if (/^\/api(?:\/|$)/i.test(path) && !apiPaths.has(path) && !path.startsWith('/api/account-assets/'))
         return reject(403, 'This endpoint is available only on the local computer');
     } catch { return reject(400, 'Invalid request path'); }

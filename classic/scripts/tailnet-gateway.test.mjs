@@ -32,7 +32,7 @@ test('tailnet transport preserves auth, streaming and origin protections; exclud
     assert.equal(valid.body.forwarded, undefined);
     assert.match(valid.headers['set-cookie'][0], /; Secure$/);
     for (const path of ['/api/mcp-bridge/status', '/api/mcp-bridge%2fstatus',
-      '/api/%6dcp-bridge/status', '/api/unknown', '/api/ai/oauth/start', '/api/x/../mcp-bridge/status'])
+      '/api/%6dcp-bridge/status', '/api/unknown', '/api/ai/oauth/start', '/api/ai/chat', '/api/ai/models', '/api/x/../mcp-bridge/status'])
       assert.equal((await call(path)).status, 403, path);
     assert.equal((await call('/api/accounts', { origin: 'https://evil.test' }, 'POST')).status, 403);
     assert.equal((await call('/api/accounts', {}, 'POST')).status, 403);

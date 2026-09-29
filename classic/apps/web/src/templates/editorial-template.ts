@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { EditorCore } from "@/core";
 import { AddClipEffectCommand, BatchCommand } from "@/commands";
@@ -210,7 +211,7 @@ export async function chooseTemplateAiPlan({
 	context: ReturnType<typeof buildTemplateAiContext>;
 	signal?: AbortSignal;
 }): Promise<TemplateAiPlan> {
-	const response = await fetch("/api/ai/chat", {
+	const response = await aiClientFetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

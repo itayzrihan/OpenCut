@@ -68,7 +68,11 @@ test("browser bootstrap preserves legacy settings and isolates account storage b
 	expect(window.__opencutLegacyPreferences()).toEqual({
 		"panel-sizes": "legacy",
 	});
+	session.setItem(`opencut-client-ai:${alice}`, "alice-private-pairing");
+	session.data.set(`opencut-account:${bob}:opencut-client-ai:${bob}`, "bob-private-pairing");
 	window.__opencutActivateAccount(bob);
+	expect(session.data.has(`opencut-account:${alice}:opencut-client-ai:${alice}`)).toBe(false);
+	expect(session.data.get(`opencut-account:${bob}:opencut-client-ai:${bob}`)).toBe("bob-private-pairing");
 	expect(storage.data.get("opencut-active-account-v1")).toBe(bob);
 	expect(reloads).toBe(1);
 });

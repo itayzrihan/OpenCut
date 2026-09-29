@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import { BACKGROUND_PRESETS } from "@/backgrounds/presets";
 import {
@@ -180,7 +181,7 @@ async function requestPresetJson({
 	system: string;
 	prompt: string;
 }): Promise<unknown> {
-	const response = await fetch("/api/ai/chat", {
+	const response = await aiClientFetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

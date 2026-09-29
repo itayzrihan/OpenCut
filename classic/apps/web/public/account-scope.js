@@ -24,6 +24,11 @@
   proto.clear = function () { var store = this; keys(store).forEach(function (name) { remove.call(store, name); }); };
   Object.defineProperty(proto, "length", { configurable: true, get: function () { return keys(this).length; } });
   window.__opencutActivateAccount = function (next, path) {
+    if (next !== window.__opencutAccountId) {
+      keys(sessionStorage).forEach(function (name) {
+        if (name.slice(prefix.length).startsWith("opencut-client-ai:")) remove.call(sessionStorage, name);
+      });
+    }
     if (next) set.call(localStorage, marker, next); else remove.call(localStorage, marker);
     if (path) location.replace(path); else location.reload();
   };

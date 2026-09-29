@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { TranscriptionWord } from "@/transcription/types";
 
@@ -127,7 +128,7 @@ async function requestCaptionAiJson({
 	words: IndexedTranscriptWord[];
 	signal?: AbortSignal;
 }): Promise<unknown> {
-	const response = await fetch("/api/ai/chat", {
+	const response = await aiClientFetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

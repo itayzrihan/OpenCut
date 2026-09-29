@@ -29,6 +29,7 @@ import {
 } from "@/ai/codex-models";
 import { webEnv } from "@/env/web";
 import { hostCookieSecret } from "@/accounts/host-key";
+import { requireAccount } from "@/accounts/server";
 
 const AUTHORIZE_URL = "https://auth.openai.com/oauth/authorize";
 const TOKEN_URL = "https://auth.openai.com/oauth/token";
@@ -122,7 +123,9 @@ export async function createOpenAIAuthorizationResponse({
 	});
 	const bindingCookieValue =
 		request.cookies.get(OAUTH_BINDING_COOKIE)?.value ?? randomUUID();
-	const sessionBinding = hashSessionBinding(accountBoundOAuthValue(request, bindingCookieValue));
+	const sessionBinding = hashSessionBinding(
+		accountBoundOAuthValue(request, bindingCookieValue),
+	);
 	const statePayload: OAuthState = {
 		state,
 		codeVerifier: verifier,
@@ -328,7 +331,10 @@ export function clearOpenAICredentials({
 }): void {
 	if (request) {
 		const sessionCookie = readSessionCookie({ request });
-		if (sessionCookie) {
+		if (
+			sessionCookie &&
+			sessionCookie.sessionBinding === getSessionBinding({ request })
+		) {
 			getOAuthRuntime().credentialSessions.delete(sessionCookie.sessionId);
 			deletePersistedCredentialSession(sessionCookie.sessionId);
 		}
@@ -1302,7 +1308,10 @@ function readPersistedCredentialSession(
 	sessionId: string,
 ): OAuthCredentialSession | null {
 	const currentPath = getPersistedCredentialSessionPath(sessionId);
-	const paths = [currentPath, getLegacyPersistedCredentialSessionPath(sessionId)];
+	const paths = [
+		currentPath,
+		getLegacyPersistedCredentialSessionPath(sessionId),
+	];
 	for (const path of paths) {
 		try {
 			const value = unsealJson(readFileSync(path, "utf8"));
@@ -1314,7 +1323,8 @@ function readPersistedCredentialSession(
 				rmSync(path, { force: true });
 				continue;
 			}
-			if (path !== currentPath) persistCredentialSession({ sessionId, session: value });
+			if (path !== currentPath)
+				persistCredentialSession({ sessionId, session: value });
 			return value;
 		} catch {
 			// Try the legacy location before reporting an expired session.
@@ -1670,23 +1680,24 @@ function unsealJson(sealed: string): unknown {
 }
 
 function getCookieKey(): Buffer {
-	return webEnv.BETTER_AUTH_SECRET ? createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest() : hostCookieSecret();
+	return webEnv.BETTER_AUTH_SECRET
+		? createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest()
+		: hostCookieSecret();
 }
 
 function getSessionBinding({ request }: { request: NextRequest }): string {
 	const oauthBinding = request.cookies.get(OAUTH_BINDING_COOKIE)?.value;
-	if (oauthBinding) return hashSessionBinding(accountBoundOAuthValue(request, oauthBinding));
-	const sessionCookie =
-		request.cookies.get("better-auth.session_token")?.value ??
-		request.cookies.get("__Secure-better-auth.session_token")?.value ??
-		request.cookies.get("better-auth.session-token")?.value ??
-		"sessionless";
-	return hashSessionBinding(sessionCookie);
+	// Pre-account and sessionless credentials must never become a fallback for
+	// another signed-in workspace. Reauthentication is required after switching.
+	if (!oauthBinding || !request.cookies.get("opencut-account")?.value)
+		return "";
+	return hashSessionBinding(accountBoundOAuthValue(request, oauthBinding));
 }
 
 function accountBoundOAuthValue(request: NextRequest, value: string): string {
 	const accountSession = request.cookies.get("opencut-account")?.value;
-	return accountSession ? `${value}:${accountSession}` : value;
+	if (!accountSession) throw new Error("Sign in to an OpenCut account first");
+	return JSON.stringify([requireAccount().id, accountSession, value]);
 }
 
 function hashSessionBinding(value: string): string {

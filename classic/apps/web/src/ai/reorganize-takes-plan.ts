@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { ReorganizeTakesPlan } from "@/timeline/reorganize-takes/apply-reorganize-takes";
 
@@ -65,7 +66,7 @@ async function requestReorganizeTakesJson({
 	system: string;
 	prompt: string;
 }): Promise<unknown> {
-	const response = await fetch("/api/ai/chat", {
+	const response = await aiClientFetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -197,7 +198,7 @@ export async function requestReorganizeTakesPlan({
 			"",
 			"Only cut a phrase entirely (via `cut`) when it is obviously unusable filler with no",
 			"salvageable content (e.g. a false start with no words, or the speaker explicitly",
-			'asking to redo the line). Do not cut phrases just because they\'re part of a',
+			"asking to redo the line). Do not cut phrases just because they're part of a",
 			"take cluster — the editor picks the best take themselves.",
 			"",
 			"Return one JSON object: order (string[], every kept phrase id exactly once, in the",
