@@ -16,6 +16,11 @@ On Windows with Bun, dereference junctions when copying. Also materialize the
 standalone `node_modules/.bun/node_modules` directory into the deployment's
 root `node_modules`: copying Next's junction alone loses its sibling dependency
 resolution. Verify startup from the deployed directory, outside the checkout.
+Webpack tracing can also put these peers under each `.bun/PACKAGE/node_modules`.
+Materialize those traced peers too. The verified build has one traced version
+per package name; if that changes, preserve each package's versioned dependency
+tree instead of flattening conflicting versions. A build passing in the checkout
+does not replace testing startup from the final deployment directory.
 
 Run `classic/scripts/run-local-deployment.mjs` with the path to a local JSON
 configuration containing `appRoot` (the copied `apps/web` directory),
