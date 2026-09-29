@@ -42,6 +42,29 @@ Only AI chat, models, status, logout, and device-code login are forwarded.
 Native file paths and linked media refer to the host computer. Browser uploads
 come from the device visiting the site. TTS inference runs in that browser.
 
+## Browser speech recognition
+
+Whisper transcription also runs in the visiting browser, including Auto Texts
+and Full Auto Edit. The first use automatically downloads approximately 1.6 GB
+of public ivrit-ai Large v3 Turbo weights and caches them on that device.
+WebGPU uses the client GPU when available; otherwise inference uses local
+WebAssembly/CPU. The gateway blocks the legacy host Whisper endpoint. No host
+Whisper installation or OpenAI connection is required for transcription.
+See [browser transcription](classic/BROWSER-TRANSCRIPTION.md) for pinned models,
+runtime ownership, device requirements and test coverage. Use
+`/transcription-check` to test a device without modifying a project.
+
+The internal deployment verified on 2026-09-29 is at
+`G:\OpenCut-Deployments\e771e4cc-tailnet`, application commit
+`e771e4ccc85842fa714bbfc342e01a021a67b481`, build
+`Rh1daVDEZvvVJ4_OqZb_N`. Its loopback app/gateway ports are 3118/3119;
+Tailscale HTTPS port 8444 targets the gateway. The existing startup task points
+to this version. Account and private AI directories remain unchanged outside
+the deployment. Verification retained all 71 migrated project IDs within the
+72 current projects, 23 preferences, missing-source references and working
+media range requests. Authentication, account isolation, Origin and blocked
+MCP/legacy Whisper routes passed against the HTTPS deployment.
+
 ## Browser OpenAI connection (no client installation)
 
 This classic-only transport uses the official Codex app-server device-code login

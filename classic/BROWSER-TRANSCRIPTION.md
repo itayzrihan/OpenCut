@@ -63,8 +63,26 @@ inference to check worker termination.
 Unit coverage includes worker failure/retry, cancellation during initialization,
 queued cancellation, page departure, account isolation, pinned model/device
 selection, word timing and the canonical transcription manager's stale-timeline
-protection. Model download/inference still needs hardware/browser QA, especially
-long recordings and low-memory devices.
+protection. GPU resource tests cover release between windows and after failure,
+without disposing CPU outputs or session weights. Optional detector transport
+tests distinguish uninstalled detection from authorization/inference errors.
+
+Browser verification on 2026-09-29 used the ivrit-ai model with the synthetic
+English fixture on Windows WebGPU. The 8-second fixture produced 16 words with
+distinct, in-bounds timing. Repeating it across 40 seconds produced 80 words;
+four minutes produced 480 words, all monotonic and within the audio duration.
+The latter exercises overlapping windows and the GPU lifetime adapter. Both
+ONNX weight files were present in the public model cache. This is execution and
+alignment coverage, not a Hebrew accuracy benchmark. macOS/Metal, actual CPU
+inference, natural Hebrew, longer recordings and low-memory devices still need
+hardware/browser QA. Unit coverage verifies CPU fallback selection.
+
+The deployed production webpack build was also exercised through the HTTPS
+Tailscale URL: automatic model download, WebGPU inference and 16 correctly timed
+words from the fixture succeeded. This check used the real production worker
+and authenticated account gate, without changing a project. A second invocation
+also completed with the same timing after the first download; the page reported
+no console errors.
 
 ## Scope of server use
 
