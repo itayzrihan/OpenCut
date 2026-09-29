@@ -39,6 +39,7 @@ mock.module("@huggingface/transformers-v4", () => ({
 			},
 			{
 				tokenizer: {},
+				model: { sessions: {}, generate: async () => undefined },
 				dispose: async () => {
 					disposed++;
 				},

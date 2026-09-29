@@ -19,6 +19,7 @@ import {
 	DEFAULT_CHUNK_LENGTH_SECONDS,
 	DEFAULT_STRIDE_SECONDS,
 } from "@/transcription/audio";
+import { boundWhisperGpuOutputs } from "./gpu-lifetime";
 
 export type WorkerMessage = { audio: Float32Array; language: string };
 export type WorkerResponse =
@@ -91,6 +92,7 @@ self.onmessage = async ({
 				},
 			},
 		)) as AutomaticSpeechRecognitionPipeline;
+		if (device === "webgpu") boundWhisperGpuOutputs(transcriber.model);
 		report("transcribing", 0, `Transcribing on your ${label}…`);
 		let tokens = 0;
 		const started = Date.now();

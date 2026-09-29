@@ -46,6 +46,10 @@ are terminated on completion, failure, cancellation, navigation or account
 change, releasing model/audio memory. Only public weights are cached. No
 transcription audio, transcript or credentials are persisted in the model cache.
 Download/inference status flows through the existing task and batch progress UI.
+An ONNX resource adapter also releases leftover GPU session outputs after each
+generation window, after CPU token/timestamp extraction. This bounds the known
+Transformers 4.3 encoder/attention/KV output retention between windows (upstream
+issue #1739). It never disposes session weights or live generation inputs.
 
 ## Testing
 
