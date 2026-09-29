@@ -25,7 +25,7 @@ const worker = {
 	postMessage: (value: unknown) => messages.push(value),
 	onmessage: null as any,
 };
-mock.module("@huggingface/transformers", () => ({
+mock.module("@huggingface/transformers-v4", () => ({
 	env,
 	TextStreamer: class {},
 	pipeline: async (_: string, model: string, options: any) => {

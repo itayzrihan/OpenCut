@@ -3,7 +3,8 @@ import {
 	pipeline,
 	TextStreamer,
 	type AutomaticSpeechRecognitionPipeline,
-} from "@huggingface/transformers";
+	type AutomaticSpeechRecognitionOutput,
+} from "@huggingface/transformers-v4";
 import type {
 	TranscriptionResult,
 	TranscriptionProgress,
@@ -115,7 +116,9 @@ self.onmessage = async ({
 			return_timestamps: "word",
 			streamer,
 		});
-		const result = Array.isArray(output) ? output[0] : output;
+		const result: AutomaticSpeechRecognitionOutput = Array.isArray(output)
+			? output[0]
+			: output;
 		const duration = audio.length / 16000;
 		const words = (result.chunks ?? []).flatMap(
 			({ text, timestamp: [start, end] }) => {
@@ -140,6 +143,10 @@ self.onmessage = async ({
 		if (result.text.trim() && !words.length)
 			throw new Error(
 				"The browser model did not return timed words. Captions were not changed.",
+			);
+		if (words.length && words.every((word) => word.end <= word.start))
+			throw new Error(
+				"The browser model could not align the words to the audio. Captions were not changed.",
 			);
 		self.postMessage({
 			type: "complete",

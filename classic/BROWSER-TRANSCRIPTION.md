@@ -12,7 +12,11 @@ state store and makes no change to account data or asset migration.
 
 ## Model and runtime
 
-Transformers.js 3.8.1 runs in a dedicated worker. WebGPU with `shader-f16` uses
+Transformers.js 4.3.0 runs in a dedicated worker, installed under a pinned npm
+alias so other model adapters keep their existing 3.x runtime. This includes
+upstream's Whisper word-alignment fixes (PR #1594); the 3.8.1 runtime returned
+collapsed, out-of-bounds word times on the synthetic browser fixture.
+WebGPU with `shader-f16` uses
 `instush/ivrit-whisper-large-v3-turbo-timestamped-onnx`, pinned to
 `c71eadaca74c0923a06632bdaeb7413ff9cff4cf`, with fp16 encoder and q4 decoder.
 Without that capability, single-thread WebAssembly uses
