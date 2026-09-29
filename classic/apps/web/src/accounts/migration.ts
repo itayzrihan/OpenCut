@@ -1,6 +1,11 @@
 /** Copy-only local-host import. Never mutates the pre-account installation. */
 import { createHash, randomUUID } from "node:crypto";
-import { createReadStream, createWriteStream, constants, existsSync } from "node:fs";
+import {
+	createReadStream,
+	createWriteStream,
+	constants,
+	existsSync,
+} from "node:fs";
 import { pipeline } from "node:stream/promises";
 import {
 	copyFile,
@@ -142,15 +147,24 @@ async function inventory() {
 	)) {
 		const records = JSON.parse(await readFile(item.source, "utf8"));
 		for (const record of records)
-			if (record.storageKind === "linked") {
-				const info = await stat(record.sourcePath).catch((error) => {
+			if (!record.unifiedAngles) {
+				const source =
+					record.storageKind === "linked"
+						? record.sourcePath
+						: contained(
+								dirname(dirname(item.source)),
+								record.storedPath ||
+									`media/files/${record.id}--${record.fileName || record.name}`,
+							);
+				const info = await stat(source).catch((error) => {
 					if (error.code === "ENOENT") return null;
 					throw error;
 				});
+				if (record.storageKind !== "linked" && info?.isFile()) continue;
 				linked.push({
 					projectId: item.relativePath.split(/[\\/]/)[1],
 					mediaId: record.id,
-					source: record.sourcePath,
+					source,
 					bytes: info?.size ?? record.size ?? 0,
 					mtimeMs: info?.mtimeMs ?? 0,
 					missing: !info?.isFile(),
@@ -201,10 +215,9 @@ export async function importLegacyAccount(
 ) {
 	const { entries, linked } = await inventory();
 	if (!entries.length) throw new Error("No legacy data found");
-	if (linked.some((item) => item.missing))
-		throw new Error(
-			"Restore the missing linked media before importing. Your originals have not been changed.",
-		);
+	// Offline references are part of the project, not a reason to discard it.
+	const missing = linked.filter((item) => item.missing);
+	const available = linked.filter((item) => !item.missing);
 	const destination = accountDataRoot();
 	if ((await optionalWalk(destination)).length)
 		throw new Error(
@@ -227,9 +240,9 @@ export async function importLegacyAccount(
 				`Source changed during import: ${entry.relativePath}. Staging preserved for recovery.`,
 			);
 		verified.push({ ...entry, sha256: copied.sha256 });
-		onProgress(verified.length, entries.length + linked.length);
+		onProgress(verified.length, entries.length + available.length);
 	}
-	for (const entry of linked) {
+	for (const entry of available) {
 		signal?.throwIfAborted();
 		const target = contained(
 			staging,
@@ -285,7 +298,7 @@ export async function importLegacyAccount(
 			relativePath: relative(staging, target),
 			...copied,
 		});
-		onProgress(verified.length, entries.length + linked.length);
+		onProgress(verified.length, entries.length + available.length);
 	}
 	// Retain exact pre-transform JSON for reversibility; only private URL routing changes.
 	for (const entry of entries.filter((e) => e.relativePath.endsWith(".json"))) {
@@ -327,6 +340,7 @@ export async function importLegacyAccount(
 				importedAt: new Date().toISOString(),
 				verified,
 				activated,
+				missing,
 			},
 			null,
 			2,
@@ -351,6 +365,7 @@ export async function importLegacyAccount(
 	await rename(staging, destination);
 	return {
 		files: verified.length,
+		missing,
 		projects: entries.filter((e) =>
 			/^projects[\\/][^\\/]+[\\/]project\.json$/.test(e.relativePath),
 		).length,

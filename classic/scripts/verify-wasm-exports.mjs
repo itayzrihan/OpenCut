@@ -10,6 +10,8 @@ const actualExports = new Set(
 	WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
 );
 const requiredExports = [
+	"mediaRelinkBinding",
+	"mediaMissingUsed",
 	"accountConfigureStorage",
 	"accountValidateSnapshot",
 	"browserRecoveryProject",

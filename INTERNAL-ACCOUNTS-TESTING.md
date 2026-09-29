@@ -41,9 +41,10 @@ because they do not enforce the new session-completion ownership checks.
    original projects or browser profiles after importing.
 2. Create the owner's account first. Only that account receives the legacy
    import grant. Every subsequent account starts with an isolated workspace.
-3. Open Account & storage. Resolve every missing linked file listed by the
-   inventory before running the drive import. Import copies into an empty
-   account and verifies hashes before activation. Cancellation retains staging.
+3. Open Account & storage and run the drive import. Missing sources stay as
+   offline references; projects, settings, metadata and history still import.
+   All available files are copied into an empty account and hash-verified before
+   activation. Cancellation retains staging. Original files stay untouched.
 4. After drive import completes, run Copy legacy browser data in each browser
    profile and origin previously used. This first archives the original browser
    databases, binary values, OPFS media and preferences into the account, with
@@ -88,6 +89,19 @@ every encrypted object before activation; an interrupted activation has a journa
 and recovers the previous workspace after restart. Keep the recovery file and
 password independently of the encrypted drive.
 
+Select **Open projects without downloading source media** before opening a saved
+version to edit on another machine without the large source files. Timeline cuts,
+effects and history remain editable; the preview and timeline mark offline media.
+Use **Link missing files** above the preview and paste the original file's absolute
+path on that machine. Relinking retains asset IDs, timing and unknown metadata.
+**Undo last relink** remains available after restart. Replacement files must match
+the original type and size. Export requires the referenced source files.
+Opening the full saved version later restores its media and its saved edits; it
+does not merge edits made since that version. Save current work before switching.
+
+Change a temporary password in Account & storage. Other local sessions are
+invalidated; existing encrypted recovery files retain their original password.
+
 ## Client inference
 
 Sounds → Voiceover generates English speech with Kokoro on WebGPU when available,
@@ -121,8 +135,7 @@ an explicit internal testing check, not a verified claim.
 - The pre-account backup restore rehearsal verified 2,763 files / 29,662,690,232
   bytes. A separate 154-file library/font staging copy was also hash-verified.
 
-The owner's original missing linked clip is still unresolved. The actual owner
-account has not been created or migrated, and the owner browser profiles have not
-yet completed the logical import. Those are required before declaring the owner's
-migration complete. Preserve the original data and the recovery tag throughout
-internal testing.
+The owner's original missing linked clip can remain offline during migration.
+Track each actual owner import using its private migration receipt and browser
+archive manifests; no personal data or credentials belong in this repository or
+test package. Preserve original data and the recovery tag throughout testing.

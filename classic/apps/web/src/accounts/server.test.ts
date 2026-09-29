@@ -10,6 +10,7 @@ import {
 	logoutAccount,
 	sessionCookie,
 	assertLocalOrigin,
+	changeAccountPassword,
 } from "./server";
 import { assertAccountMediaSource } from "./media-source";
 mock.module("opencut-wasm", () => ({
@@ -95,6 +96,19 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 		await logoutAccount(request(alice.token));
 		await expect(authenticateAccount(request(alice.token))).rejects.toThrow();
 		expect((await authenticateAccount(request(bob.token))).id).toBe(
+			bob.account.id,
+		);
+		const changed = await accountScope.run(bob.account, () =>
+			changeAccountPassword(
+				"a secure password for Bob",
+				"a new secure password for Bob",
+			),
+		);
+		await expect(
+			loginAccount("bob", "a secure password for Bob"),
+		).rejects.toThrow("Invalid credentials");
+		await expect(authenticateAccount(request(bob.token))).rejects.toThrow();
+		expect((await authenticateAccount(request(changed.token))).id).toBe(
 			bob.account.id,
 		);
 		for (const origin of ["https://evil.test", "http://localhost:3001"]) {

@@ -287,6 +287,41 @@ export async function verifyCurrentAccountPassword(password: string) {
 	)
 		throw new Error("Invalid password");
 }
+export async function changeAccountPassword(
+	currentPassword: string,
+	password: string,
+) {
+	if (password.length < 12 || password.length > 1024)
+		throw new Error("Use a password of 12–1024 characters");
+	await verifyCurrentAccountPassword(currentPassword);
+	const account = requireAccount();
+	const credential: Credential = JSON.parse(
+		await readFile(credentialPath(account.login), "utf8"),
+	);
+	const salt = randomBytes(32).toString("hex");
+	const verifier = Buffer.from(
+		(await derive(password, salt, 64)) as Buffer,
+	).toString("hex");
+	const temporary = `${credentialPath(account.login)}.${randomUUID()}.tmp`;
+	await writeFile(
+		temporary,
+		JSON.stringify({ ...credential, salt, verifier }),
+		{ flag: "wx", mode: 0o600 },
+	);
+	await rename(temporary, credentialPath(account.login));
+	for (const name of await readdir(join(accountsRoot(), "sessions"))) {
+		const path = join(accountsRoot(), "sessions", name);
+		const session = await readFile(path, "utf8")
+			.then(JSON.parse)
+			.catch(() => null);
+		if (session?.accountId === account.id)
+			await unlink(path).catch((error) => {
+				if (error.code !== "ENOENT") throw error;
+			});
+	}
+	return newSession(account);
+}
+
 export async function installRecoveredAccount(
 	account: LocalAccount,
 	key: Buffer,

@@ -41,6 +41,7 @@ export function StorageSettings() {
 	const [error, setError] = useState(""),
 		[busy, setBusy] = useState(false);
 	const [automatic, setAutomatic] = useState(false);
+	const [metadataOnly, setMetadataOnly] = useState(false);
 	const [mode, setMode] = useState<StorageMode>("localOnly"),
 		[deviceName, setDeviceName] = useState("");
 	async function refresh(statusOnly = false) {
@@ -313,6 +314,14 @@ export function StorageSettings() {
 			{state?.snapshots.length ? (
 				<div className="space-y-3">
 					<h3 className="font-medium">Saved versions</h3>
+					<label className="flex gap-2 text-sm">
+						<input
+							type="checkbox"
+							checked={metadataOnly}
+							onChange={(event) => setMetadataOnly(event.target.checked)}
+						/>
+						Open projects without downloading source media (offline editing)
+					</label>
 					<p className="text-xs text-muted-foreground">
 						Versions from every connected machine remain separate. Opening a
 						version first saves your current work as an encrypted version and
@@ -344,6 +353,7 @@ export function StorageSettings() {
 											action: "restore",
 											snapshotId: snapshot.id,
 											preserveExisting: true,
+											metadataOnly,
 										})
 									}
 									className="underline disabled:opacity-50"

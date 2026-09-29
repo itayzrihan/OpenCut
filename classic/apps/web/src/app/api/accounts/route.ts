@@ -6,6 +6,8 @@ import {
 	logoutAccount,
 	registerAccount,
 	sessionCookie,
+	withAccount,
+	changeAccountPassword,
 } from "@/accounts/server";
 import { readBoundedBody } from "@/accounts/request-body";
 import { importAccountIdentity } from "@/accounts/identity-transfer";
@@ -34,6 +36,28 @@ export async function POST(request: Request) {
 			await readBoundedBody(request, 16 * 1024),
 		);
 		const body = JSON.parse(text);
+		if (body.action === "change-password") {
+			return await withAccount(async () => {
+				if (
+					typeof body.currentPassword !== "string" ||
+					typeof body.password !== "string"
+				)
+					throw new Error("Current and new password required");
+				const result = await changeAccountPassword(
+					body.currentPassword,
+					body.password,
+				);
+				return Response.json(
+					{ account: result.account },
+					{
+						headers: {
+							"Set-Cookie": sessionCookie(result.token),
+							"Cache-Control": "no-store",
+						},
+					},
+				);
+			})(request);
+		}
 		if (body.action === "recover" && typeof body.password === "string") {
 			const result = await importAccountIdentity(body.recovery, body.password);
 			return Response.json(

@@ -53,7 +53,8 @@ This document records requirements, not a claim that the release gates pass.
 The complete classic editor now has local account registration/sign-in, an
 authenticated private disk namespace, scoped IndexedDB/OPFS/preferences, and a
 copy-only legacy importer. Import receipts retain original hashes and final
-activated-file hashes; missing linked files block activation. Cancellation and
+activated-file hashes; missing sources retain their complete original references
+and are listed in the receipt without blocking activation. Cancellation and
 interrupted imports preserve staging. Private library and project-font routes
 replace public repository assets; uploads no longer stage Git changes.
 
@@ -118,6 +119,20 @@ packaged-app discovery. The missing linked source remains an explicit exception.
 Browser imports now archive original structured-clone records, OPFS bytes and
 preferences before copying; same-ID projects retain separate editable variants.
 
-The internal testing flow and outstanding owner migration/inference checks are
-recorded in `INTERNAL-ACCOUNTS-TESTING.md`. Do not describe the owner's migration
-as complete or migrate the originals in place.
+Offline media relinking is bridged: native `media.relink` and classic's WASM host
+adapter share the Rust source-binding transaction. Native relinks target a project
+and support revision checks, dry run and canonical undo. Classic stores a binding
+revision and persistent relink undo alongside the original media record, without
+changing the project or its timeline/history. Unknown metadata and old media
+bytes remain intact. The local host checks source ownership, type and original
+file size before accepting a manually selected replacement. This is original-file
+relinking, not arbitrary transcoded replacement or timecode conforming.
+
+Classic previews show MEDIA OFFLINE placeholders and timeline labels. Export
+rejects referenced missing sources instead of silently rendering incomplete media.
+Encrypted versions can be opened without downloading project source media; complete
+versions remain available. Browser imports also retain missing media/font metadata.
+Password rotation preserves the account identity and invalidates other local sessions.
+
+The internal testing flow and outstanding inference checks are recorded in
+`INTERNAL-ACCOUNTS-TESTING.md`. Never migrate originals in place.

@@ -63,6 +63,7 @@ export async function startStorageJob(
 	policy: StoragePolicy,
 	snapshotId?: string,
 	preserveExisting = false,
+	metadataOnly = false,
 ) {
 	const account = requireAccount(),
 		state: Job = { action, status: "running", files: 0, total: 0 },
@@ -94,6 +95,7 @@ export async function startStorageJob(
 						progress,
 						controller.signal,
 						preserveExisting,
+						metadataOnly,
 					));
 		} catch (error) {
 			status = controller.signal.aborted ? "cancelled" : "failed";

@@ -398,6 +398,21 @@ function buildTrackNodes({
 							})
 						: referencedAsset;
 				if (!mediaAsset) continue;
+				if (mediaAsset.missing) {
+					if (isPreview)
+						nodes.push(
+							new ImageNode({
+								url: `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect width="1920" height="1080" fill="#32161c"/><text x="960" y="540" fill="#fecdd3" font-size="80" text-anchor="middle" font-family="sans-serif">MEDIA OFFLINE</text></svg>')}`,
+								duration: element.duration,
+								timeOffset: element.startTime,
+								trimStart: 0,
+								trimEnd: 0,
+								transform: buildTransformFromParams({ params: element.params }),
+								opacity: readOpacityFromParams({ params: element.params }),
+							}),
+						);
+					continue;
+				}
 
 				if (element.type === "video" && mediaAsset.type === "video") {
 					if (!mediaAsset.url && !mediaAsset.file) continue;

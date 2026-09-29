@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { importLegacyBrowserData } from "@/accounts/browser-import";
 import { StorageSettings } from "@/accounts/storage-settings";
+import { PasswordSettings } from "@/accounts/password-settings";
 type State = {
 	allowed: boolean;
 	inventory: {
@@ -88,6 +89,7 @@ export default function AccountPage() {
 				</p>
 			</section>
 			<StorageSettings />
+			<PasswordSettings />
 			{state?.allowed && (
 				<section className="space-y-4 rounded-xl border p-6">
 					<h2 className="text-lg font-medium">Bring your existing work</h2>
@@ -104,7 +106,11 @@ export default function AccountPage() {
 					)}
 					{!!state.inventory?.missing.length && (
 						<div role="alert" className="text-sm text-amber-600">
-							<p>Restore these linked files before importing:</p>
+							<p>
+								These sources are offline. Projects, edits and history will
+								still import. Use Link missing files in the editor to reconnect
+								them later:
+							</p>
 							<ul>
 								{state.inventory.missing.map((file) => (
 									<li key={file.source} className="break-all">
@@ -130,9 +136,7 @@ export default function AccountPage() {
 						<button
 							onClick={() => void migrate("import")}
 							disabled={
-								!state.inventory?.files ||
-								!!state.inventory?.missing.length ||
-								state.job?.status === "complete"
+								!state.inventory?.files || state.job?.status === "complete"
 							}
 							className="rounded bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
 						>

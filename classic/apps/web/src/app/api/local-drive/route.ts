@@ -1,6 +1,6 @@
 import { withAccount } from "@/accounts/server";
 import { prepareBrowserProjectRecovery } from "@/accounts/browser-project-recovery";
-import { browserRecoveryProject } from "opencut-wasm";
+import { browserRecoveryProject, mediaRelinkBinding } from "opencut-wasm";
 import { readBoundedBody } from "@/accounts/request-body";
 import {
 	assertBatchProjectWrite,
@@ -47,6 +47,7 @@ import {
 	putSharedRecord,
 	putPreference,
 	registerMediaPath,
+	relinkMedia,
 } from "@/services/local-drive/server";
 import type { LocalDriveOperation } from "@/services/local-drive/types";
 
@@ -94,7 +95,11 @@ async function GETHandler(request: Request) {
 async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
-		const body = JSON.parse(new TextDecoder().decode(await readBoundedBody(request, 128 * 1024 * 1024))) as Record<string, unknown>;
+		const body = JSON.parse(
+			new TextDecoder().decode(
+				await readBoundedBody(request, 128 * 1024 * 1024),
+			),
+		) as Record<string, unknown>;
 		const operation = readString(
 			body.operation,
 			"operation",
@@ -113,6 +118,8 @@ async function POSTHandler(request: Request) {
 			"media.registerPath",
 			"media.registerPaths",
 			"media.pick",
+			"media.relink",
+			"media.relink.undo",
 			"media.delete",
 			"media.clear",
 			"font.put",
@@ -141,7 +148,17 @@ async function POSTHandler(request: Request) {
 			case "project.get":
 				return NextResponse.json(await getProject(projectId()));
 			case "project.recoverBrowser":
-				return NextResponse.json(await prepareBrowserProjectRecovery(projectId(), readString(body.destinationId, "destinationId"), body.project, body.history, body.media, body.fonts, browserRecoveryProject));
+				return NextResponse.json(
+					await prepareBrowserProjectRecovery(
+						projectId(),
+						readString(body.destinationId, "destinationId"),
+						body.project,
+						body.history,
+						body.media,
+						body.fonts,
+						browserRecoveryProject,
+					),
+				);
 			case "project.put":
 				await withBatchProjectWrite({
 					projectId: projectId(),
@@ -166,6 +183,27 @@ async function POSTHandler(request: Request) {
 				return NextResponse.json({ ok: true });
 			case "media.list":
 				return NextResponse.json(await listMedia(projectId()));
+			case "media.relink":
+			case "media.relink.undo":
+				return NextResponse.json(
+					await withBatchProjectWrite({
+						projectId: projectId(),
+						token: request.headers.get("X-OpenCut-Batch-Token"),
+						write: () =>
+							relinkMedia(
+								projectId(),
+								readString(body.id, "media id"),
+								typeof body.source === "string" ? body.source : "",
+								readNonNegativeInteger(
+									body.expectedRevision,
+									"expectedRevision",
+								),
+								readString(body.requestId, "requestId"),
+								operation === "media.relink.undo",
+								mediaRelinkBinding,
+							),
+					}),
+				);
 			case "media.put":
 				await putMediaMetadata(
 					projectId(),

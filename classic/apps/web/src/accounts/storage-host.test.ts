@@ -36,6 +36,93 @@ const policy: StoragePolicy = {
 			throw new Error("Account mismatch");
 	},
 };
+
+test("offline sources survive encrypted snapshots and metadata-only restore preserves the full version", async () => {
+	const root = await mkdtemp(join(tmpdir(), "opencut-offline-vault-"));
+	const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+	process.env.OPENCUT_ACCOUNTS_DIR = join(root, "host");
+	try {
+		const { account } = await registerAccount(
+			"offline-owner",
+			"Offline Owner",
+			"offline testing password",
+		);
+		await mkdir(join(root, "external"));
+		await accountScope.run(account, async () => {
+			const data = accountDataRoot();
+			await mkdir(join(data, "projects", "one", "media", "files"), {
+				recursive: true,
+			});
+			const index = [
+				{
+					id: "missing",
+					storageKind: "linked",
+					sourcePath: join(root, "missing.mp4"),
+					duration: 20,
+				},
+				{
+					id: "present",
+					storageKind: "copied",
+					storedPath: "media/files/present.wav",
+				},
+			];
+			await writeFile(
+				join(data, "projects", "one", "media", "index.json"),
+				JSON.stringify(index),
+			);
+			await writeFile(
+				join(data, "projects", "one", "project.json"),
+				'{"keep":"all edits"}',
+			);
+			await writeFile(
+				join(data, "projects", "one", "media", "files", "present.wav"),
+				"media bytes",
+			);
+			await configureStorageFolder(join(root, "external"), policy, true);
+			const snapshot = await publishAccountSnapshot(policy);
+			expect(await accountSnapshotNeeded()).toBe(false);
+			const restored = await restoreAccountSnapshot(
+				snapshot.snapshotId,
+				policy,
+				undefined,
+				undefined,
+				true,
+				true,
+			);
+			expect(restored.deferredMedia).toBe(1);
+			expect(
+				JSON.parse(
+					await readFile(
+						join(data, "projects", "one", "media", "index.json"),
+						"utf8",
+					),
+				),
+			).toEqual(index);
+			await expect(
+				readFile(
+					join(data, "projects", "one", "media", "files", "present.wav"),
+				),
+			).rejects.toThrow();
+			await restoreAccountSnapshot(
+				snapshot.snapshotId,
+				policy,
+				undefined,
+				undefined,
+				true,
+			);
+			expect(
+				await readFile(
+					join(data, "projects", "one", "media", "files", "present.wav"),
+					"utf8",
+				),
+			).toBe("media bytes");
+		});
+	} finally {
+		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+		else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+		await rm(root, { recursive: true, force: true });
+	}
+});
 test("encrypted incremental snapshots restore exact bytes and reject damaged objects without replacing local data", async () => {
 	const root = await mkdtemp(join(tmpdir(), "opencut-vault-")),
 		previous = process.env.OPENCUT_ACCOUNTS_DIR;

@@ -19,7 +19,7 @@ import {
 import { importLegacyAccount } from "./migration";
 import { migrationJob } from "./migration-jobs";
 
-test("missing media, cancellation and interrupted jobs never activate a partial import", async () => {
+test("cancellation preserves originals; offline media and interrupted jobs recover completely", async () => {
 	const root = await mkdtemp(join(tmpdir(), "opencut-import-failure-"));
 	const keys = [
 		"OPENCUT_ACCOUNTS_DIR",
@@ -53,13 +53,10 @@ test("missing media, cancellation and interrupted jobs never activate a partial 
 		);
 		const destination = accountScope.run(account, accountDataRoot);
 		await accountScope.run(account, async () => {
-			await expect(importLegacyAccount()).rejects.toThrow(
-				"missing linked media",
-			);
-			await writeFile(index, "[]");
 			const cancellation = new AbortController();
+			cancellation.abort();
 			await expect(
-				importLegacyAccount(() => cancellation.abort(), cancellation.signal),
+				importLegacyAccount(() => {}, cancellation.signal),
 			).rejects.toThrow();
 			expect(await readdir(destination).catch(() => [])).toEqual([]);
 			expect(await readFile(project, "utf8")).toContain('"unknown":"retain"');
@@ -100,6 +97,13 @@ test("missing media, cancellation and interrupted jobs never activate a partial 
 			);
 			expect(receipt.version).toBe(2);
 			expect(receipt.activated).toHaveLength(2);
+			expect(receipt.missing).toHaveLength(1);
+			expect(
+				await readFile(
+					join(destination, "projects", "one", "media", "index.json"),
+					"utf8",
+				),
+			).toBe(await readFile(index, "utf8"));
 		});
 	} finally {
 		keys.forEach((key, index) => {

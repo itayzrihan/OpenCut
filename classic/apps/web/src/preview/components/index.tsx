@@ -48,6 +48,7 @@ import {
 	useCameraManStore,
 } from "@/parallax-story-teller/camera-man-store";
 import { getPreviewRenderSize } from "../render-size";
+import { OfflineMediaPanel } from "./offline-media";
 
 function usePreviewSize() {
 	const canvasSize = useEditorProject(
@@ -110,6 +111,7 @@ export function PreviewPanel({
 			ref={handleContainerRef}
 			className="panel bg-background relative flex size-full min-h-0 min-w-0 flex-col rounded-sm border"
 		>
+			<OfflineMediaPanel />
 			<PreviewCanvas
 				container={container}
 				onToggleFullscreen={toggleFullscreen}
@@ -278,32 +280,35 @@ function PreviewCanvas({
 		};
 	}, [renderer]);
 
-	const scheduleRender = useCallback((reason: string) => {
-		if (isExportingRef.current || editor.renderer.isExporting) {
-			incrementCounter({ name: "preview.renderSkipped.export" });
-			return;
-		}
+	const scheduleRender = useCallback(
+		(reason: string) => {
+			if (isExportingRef.current || editor.renderer.isExporting) {
+				incrementCounter({ name: "preview.renderSkipped.export" });
+				return;
+			}
 
-		incrementCounter({ name: "preview.renderRequest" });
-		incrementCounter({ name: `preview.renderRequest.${reason}` });
+			incrementCounter({ name: "preview.renderRequest" });
+			incrementCounter({ name: `preview.renderRequest.${reason}` });
 
-		if (renderingRef.current) {
-			pendingRenderRef.current = true;
-			incrementCounter({ name: "preview.renderCoalesced" });
-			return;
-		}
+			if (renderingRef.current) {
+				pendingRenderRef.current = true;
+				incrementCounter({ name: "preview.renderCoalesced" });
+				return;
+			}
 
-		if (scheduledRenderRef.current !== null) {
-			pendingRenderRef.current = true;
-			incrementCounter({ name: "preview.renderCoalesced" });
-			return;
-		}
+			if (scheduledRenderRef.current !== null) {
+				pendingRenderRef.current = true;
+				incrementCounter({ name: "preview.renderCoalesced" });
+				return;
+			}
 
-		scheduledRenderRef.current = requestAnimationFrame(() => {
-			scheduledRenderRef.current = null;
-			runRenderRef.current();
-		});
-	}, [editor.renderer]);
+			scheduledRenderRef.current = requestAnimationFrame(() => {
+				scheduledRenderRef.current = null;
+				runRenderRef.current();
+			});
+		},
+		[editor.renderer],
+	);
 
 	const render = useCallback(() => {
 		if (!renderTree || isExportingRef.current || editor.renderer.isExporting) {
@@ -416,12 +421,10 @@ function PreviewCanvas({
 
 	useEffect(
 		() =>
-			backgroundRemovalService.subscribeMaskInvalidation(
-				({ kind }) => {
-					lastFrameRef.current = -1;
-					scheduleRender(`mask.${kind}`);
-				},
-			),
+			backgroundRemovalService.subscribeMaskInvalidation(({ kind }) => {
+				lastFrameRef.current = -1;
+				scheduleRender(`mask.${kind}`);
+			}),
 		[scheduleRender],
 	);
 
@@ -466,7 +469,10 @@ function PreviewCanvas({
 				event.stopPropagation();
 				const nextScale = Math.max(
 					0.05,
-					Math.min(20, cameraMan.current.scale * Math.exp(-normalizedDeltaY / 300)),
+					Math.min(
+						20,
+						cameraMan.current.scale * Math.exp(-normalizedDeltaY / 300),
+					),
 				);
 				recordCameraManSample({
 					time: editor.playback.getCurrentTime(),
@@ -549,7 +555,10 @@ function PreviewCanvas({
 			const deltaY = event.clientY - lastCameraPointer.y;
 			lastCameraPointer = { x: event.clientX, y: event.clientY };
 			const cameraWidth = Math.max(1, activeProject.settings.canvasSize.width);
-			const cameraHeight = Math.max(1, activeProject.settings.canvasSize.height);
+			const cameraHeight = Math.max(
+				1,
+				activeProject.settings.canvasSize.height,
+			);
 			const scale = Math.max(0.0001, viewport.getDisplayScale().x);
 			recordCameraManSample({
 				time: editor.playback.getCurrentTime(),

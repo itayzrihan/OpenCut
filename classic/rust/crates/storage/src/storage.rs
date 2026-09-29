@@ -1,6 +1,37 @@
 use bridge::export;
 use serde::Deserialize;
 
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaMissingOptions { pub project_json: String, pub assets_json: String }
+
+#[export]
+pub fn media_missing_used(options: MediaMissingOptions) -> Result<String, String> {
+    let project = serde_json::from_str(&options.project_json).map_err(|e| e.to_string())?;
+    let assets: Vec<serde_json::Value> = serde_json::from_str(&options.assets_json).map_err(|e| e.to_string())?;
+    serde_json::to_string(&opencut_account_core::media::missing_used(&project, &assets)).map_err(|e| e.to_string())
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaRelinkOptions {
+    pub record_json: String,
+    pub source: String,
+    pub expected_revision: u32,
+    pub undo: bool,
+}
+
+#[export]
+pub fn media_relink_binding(options: MediaRelinkOptions) -> Result<String, String> {
+    let record = serde_json::from_str(&options.record_json).map_err(|e| e.to_string())?;
+    let result = opencut_account_core::media::classic_binding(&record, &options.source, options.expected_revision.into(), options.undo)?;
+    serde_json::to_string(&result).map_err(|e| e.to_string())
+}
+
 /// Host identity and I/O are adapters; the account transaction is shared with
 /// OpenCutRuntime. JSON keeps the projection independent of UI frameworks.
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]

@@ -6,7 +6,7 @@ import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/media/audio";
-import { formatTimecode } from "opencut-wasm";
+import { formatTimecode, mediaMissingUsed } from "opencut-wasm";
 import { downloadBlob } from "@/utils/browser";
 import {
 	addMediaTime,
@@ -321,6 +321,17 @@ export class RendererManager {
 			const tracks = this.editor.scenes.getActiveScene().tracks;
 			const mediaAssets = this.editor.media.getAssets();
 			const activeProject = this.editor.project.getActive();
+			const missing: string[] = JSON.parse(
+				mediaMissingUsed({
+					projectJson: JSON.stringify(this.editor.scenes.getScenes()),
+					assetsJson: JSON.stringify(mediaAssets),
+				}),
+			);
+			if (missing.length)
+				return {
+					success: false,
+					error: `Link missing source files before export: ${missing.join(", ")}. Your edits are saved.`,
+				};
 
 			if (!activeProject) {
 				return { success: false, error: "No active project" };

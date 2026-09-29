@@ -787,23 +787,25 @@ function TimelineElementMenuContent({
 		const cycleTarget = unifiedAngleCycleTarget;
 		const selectedTargets =
 			isCurrentElementSelected &&
-			cycleTarget && cycleTarget.asset.id === mediaAsset?.id
+			cycleTarget &&
+			cycleTarget.asset.id === mediaAsset?.id
 				? cycleTarget.targets
 				: null;
 		editor.timeline.updateElements({
-			updates: selectedTargets && cycleTarget
-				? buildUnifiedAngleSetUpdates({
-						asset: cycleTarget.asset,
-						targets: selectedTargets,
-						angleAssetId,
-					})
-				: [
-						{
-							trackId,
-							elementId: element.id,
-							patch: { unifiedAngleId: angleAssetId },
-						},
-					],
+			updates:
+				selectedTargets && cycleTarget
+					? buildUnifiedAngleSetUpdates({
+							asset: cycleTarget.asset,
+							targets: selectedTargets,
+							angleAssetId,
+						})
+					: [
+							{
+								trackId,
+								elementId: element.id,
+								patch: { unifiedAngleId: angleAssetId },
+							},
+						],
 		});
 		if (selectedTargets) {
 			toast.success("Camera angle changed", {
@@ -2279,6 +2281,15 @@ function MediaElementHeader({
 }
 
 function ElementContent({ element, track, mediaAsset }: ElementContentProps) {
+	if (mediaAsset?.missing)
+		return (
+			<div
+				className="flex size-full items-center gap-2 bg-red-950/70 px-2 text-xs text-red-100"
+				title={mediaAsset.sourcePath}
+			>
+				Media offline · {element.name}
+			</div>
+		);
 	switch (element.type) {
 		case "text":
 			return <TextElementContent element={element} />;

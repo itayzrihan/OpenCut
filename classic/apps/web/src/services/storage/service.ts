@@ -339,9 +339,19 @@ export class StorageService {
 				const file = await legacyMedia.files.get(metadata.id);
 				if (!file) {
 					if (driveMediaIds.has(metadata.id)) continue;
-					throw new Error(
-						`Browser media is missing: ${metadata.name}. Original records and the recovery copy were preserved.`,
-					);
+					await localDriveRequest({
+						operation: "media.put",
+						payload: {
+							projectId,
+							media: {
+								...metadata,
+								missing: true,
+								fileName: metadata.name,
+								mimeType: "application/octet-stream",
+							},
+						},
+					});
+					continue;
 				}
 				await uploadLocalMedia({
 					projectId,
@@ -374,9 +384,15 @@ export class StorageService {
 				const file = await legacyFonts.files.get(metadata.id);
 				if (!file) {
 					if (driveFontIds.has(metadata.id)) continue;
-					throw new Error(
-						`A browser font is missing: ${metadata.id}. Recovery was retained.`,
-					);
+					await localDriveRequest({
+						operation: "font.put",
+						payload: {
+							projectId,
+							font: { ...metadata, missing: true },
+							storedPath: `fonts/files/${metadata.id}--offline-source`,
+						},
+					});
+					continue;
 				}
 				const storedPath = await uploadLocalFont({
 					projectId,
@@ -635,7 +651,12 @@ export class StorageService {
 		projectId: string;
 		record: LocalDriveMediaRecord;
 	}): MediaAsset {
-		return { ...record, url: localMediaUrl({ projectId, id: record.id }) };
+		return {
+			...record,
+			url: record.missing
+				? undefined
+				: `${localMediaUrl({ projectId, id: record.id })}&binding=${record.bindingRevision ?? 0}`,
+		};
 	}
 
 	async loadMediaAsset({ projectId, id }: { projectId: string; id: string }) {

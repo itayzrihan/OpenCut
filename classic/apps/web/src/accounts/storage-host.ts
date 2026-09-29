@@ -298,6 +298,11 @@ export async function publishAccountSnapshot(
 		let changed = false;
 		for (const record of records)
 			if (record.storageKind === "linked") {
+				const exists = await stat(record.sourcePath).catch((error) => {
+					if (error.code === "ENOENT") return null;
+					throw error;
+				});
+				if (!exists?.isFile()) continue; // Keep the exact offline reference in the snapshot.
 				const source = await assertAccountMediaSource(record.sourcePath),
 					info = await stat(source);
 				linkedSources.push({
@@ -433,6 +438,11 @@ export async function accountSnapshotNeeded() {
 	)) {
 		for (const record of JSON.parse(await readFile(entry.path, "utf8")))
 			if (record.storageKind === "linked") {
+				const exists = await stat(record.sourcePath).catch((error) => {
+					if (error.code === "ENOENT") return null;
+					throw error;
+				});
+				if (!exists?.isFile()) continue;
 				const path = await assertAccountMediaSource(record.sourcePath),
 					info = await stat(path);
 				linkedSources.push({ path, bytes: info.size, mtimeMs: info.mtimeMs });
@@ -532,6 +542,7 @@ export async function restoreAccountSnapshot(
 	progress: (done: number, total: number) => void = () => {},
 	signal?: AbortSignal,
 	preserveExisting = false,
+	metadataOnly = false,
 ) {
 	const { root, key, manifest } = await readSnapshot(snapshotId, policy),
 		destination = accountDataRoot();
@@ -546,9 +557,15 @@ export async function restoreAccountSnapshot(
 		`${requireAccount().id}-${randomUUID()}`,
 	);
 	await mkdir(staging, { recursive: true });
+	const deferredMedia = [];
 	for (let index = 0; index < manifest.files.length; index++) {
 		const file = manifest.files[index],
 			target = resolve(staging, file.path);
+		if (metadataOnly && /^projects\/[^/]+\/media\/files\//.test(file.path)) {
+			deferredMedia.push(file);
+			progress(index + 1, manifest.files.length);
+			continue;
+		}
 		if (!inside(staging, target))
 			throw new Error("Snapshot path escapes staging");
 		await mkdir(dirname(target), { recursive: true });
@@ -562,6 +579,11 @@ export async function restoreAccountSnapshot(
 		);
 		progress(index + 1, manifest.files.length);
 	}
+	if (metadataOnly)
+		await atomicJson(join(staging, "offline-restore.json"), {
+			snapshotId,
+			deferredMedia,
+		});
 	signal?.throwIfAborted();
 	if (JSON.stringify(await walk(destination)) !== JSON.stringify(originals))
 		throw new Error(
@@ -613,7 +635,8 @@ export async function restoreAccountSnapshot(
 		savedCurrent: savedCurrent?.snapshotId,
 	});
 	return {
-		files: manifest.files.length,
+		files: manifest.files.length - deferredMedia.length,
+		deferredMedia: deferredMedia.length,
 		snapshotId,
 		savedCurrent: savedCurrent?.snapshotId,
 	};

@@ -101,6 +101,7 @@ export const POST = withAccount(async (request: Request) => {
 						policy,
 						body.snapshotId,
 						body.preserveExisting === true,
+						body.metadataOnly === true,
 					),
 				},
 				{ status: 202 },
