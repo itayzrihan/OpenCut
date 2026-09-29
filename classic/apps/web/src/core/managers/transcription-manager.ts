@@ -138,10 +138,17 @@ export class TranscriptionManager {
 					if (abortController.signal.aborted) return;
 					this.updateProgress({
 						taskId,
-						progressBasisPoints:
+						// Newly discovered download files can lower the byte percentage;
+						// the canonical Rust task requires monotonic overall progress.
+						progressBasisPoints: Math.max(
+							this.state.task.progressBasisPoints,
 							progress.status === "loading-model"
-								? 1500 + Math.round(progress.progress * 25)
+								? 1500 +
+										Math.round(
+											Math.max(0, Math.min(100, progress.progress || 0)) * 25,
+										)
 								: 4500,
+						),
 						phase: progress.message || progress.status,
 					});
 				},

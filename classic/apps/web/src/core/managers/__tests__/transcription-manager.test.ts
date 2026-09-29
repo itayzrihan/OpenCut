@@ -182,6 +182,41 @@ function createEditor() {
 }
 
 describe("TranscriptionManager", () => {
+	test("download file discovery cannot move canonical task progress backwards", async () => {
+		const phases: string[] = [];
+		const manager = new TranscriptionManager({
+			editor: createEditor(),
+			dependencies: {
+				extractAudio: async () => new Blob(["audio"]),
+				transcribe: async ({ onProgress }) => {
+					for (const progress of [100, 1, 55, 100])
+						onProgress?.({
+							status: "loading-model",
+							progress,
+							message: `Downloading ${progress}`,
+						});
+					return {
+						text: "hello",
+						segments: [{ text: "hello", start: 0, end: 1 }],
+						language: "en",
+					};
+				},
+				insertCaptions: () => ["captions"],
+				generateId: () => "download-task",
+				transitionTask: ({ state, event }) => {
+					if (event.type === "progress") {
+						expect(event.progressBasisPoints!).toBeGreaterThanOrEqual(
+							state.progressBasisPoints,
+						);
+						phases.push(event.phase!);
+					}
+					return transitionTaskForTest({ state, event });
+				},
+			},
+		});
+		expect((await manager.start()).task.status).toBe("succeeded");
+		expect(phases).toContain("Downloading 1");
+	});
 	test("rejects a stale transcript when the timeline changed during transcription", async () => {
 		const editor = createEditor();
 		let revision = 0;

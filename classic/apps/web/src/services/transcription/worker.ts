@@ -119,12 +119,20 @@ self.onmessage = async ({
 		const duration = audio.length / 16000;
 		const words = (result.chunks ?? []).flatMap(
 			({ text, timestamp: [start, end] }) => {
-				if (start === null || !text.trim()) return [];
+				if (start === null || !Number.isFinite(start) || !text.trim())
+					return [];
+				const boundedStart = Math.max(0, Math.min(duration, start));
 				return [
 					{
 						text: text.trim(),
-						start: Math.max(0, Math.min(duration, start)),
-						end: Math.max(start, Math.min(duration, end ?? duration)),
+						start: boundedStart,
+						end: Math.max(
+							boundedStart,
+							Math.min(
+								duration,
+								end !== null && Number.isFinite(end) ? end : duration,
+							),
+						),
 					},
 				];
 			},

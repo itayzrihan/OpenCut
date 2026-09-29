@@ -119,8 +119,13 @@ export class TranscriptionService {
 					return;
 				}
 				if (settled) return;
-				if (data.type === "progress") onProgress?.(data.progress);
-				else if (data.type === "complete") finish(undefined, data.result);
+				if (data.type === "progress") {
+					try {
+						onProgress?.(data.progress);
+					} catch (error) {
+						finish(error instanceof Error ? error : new Error(String(error)));
+					}
+				} else if (data.type === "complete") finish(undefined, data.result);
 				else finish(new Error(data.error));
 			};
 			worker.postMessage(
