@@ -25,6 +25,11 @@ function supervise(file, cwd, environment) {
 supervise(join(config.appRoot, 'server.js'), config.appRoot, {
   PORT: String(config.appPort || 3110), HOSTNAME: '127.0.0.1',
   OPENCUT_ACCOUNTS_DIR: config.accountsRoot,
+  ...(config.aiCodexBinary ? {
+    OPENCUT_SERVER_AI_CODEX: config.aiCodexBinary,
+    OPENCUT_SERVER_AI_PRIVATE_DIR: config.aiPrivateRoot,
+    OPENCUT_OPENAI_OAUTH_SESSION_DIR: join(config.aiPrivateRoot, 'sessions'),
+  } : {}),
 });
 supervise(join(dirname(fileURLToPath(import.meta.url)), 'tailnet-gateway.mjs'), config.appRoot, {
   OPENCUT_PUBLIC_ORIGIN: config.publicOrigin,

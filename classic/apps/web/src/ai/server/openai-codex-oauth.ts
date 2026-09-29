@@ -10,6 +10,7 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
@@ -80,6 +81,7 @@ interface OAuthRuntimeState {
 	flows: Map<string, OAuthState>;
 	handoffs: Map<string, OAuthHandoff>;
 	credentialSessions: Map<string, OAuthCredentialSession>;
+	refreshes: Map<string, Promise<OpenAICodexCredentials | null>>;
 }
 
 interface OAuthCredentialSession {
@@ -258,7 +260,22 @@ export async function getOpenAIOAuthStatus({
 	}
 
 	try {
-		const refreshedCredentials = await refreshIfNeeded(credentials);
+		const runtime = getOAuthRuntime();
+		let refresh = runtime.refreshes.get(sessionId);
+		if (!refresh) {
+			refresh = refreshIfNeeded(credentials);
+			runtime.refreshes.set(sessionId, refresh);
+		}
+		let refreshedCredentials: OpenAICodexCredentials | null;
+		try {
+			refreshedCredentials = await refresh;
+		} finally {
+			if (runtime.refreshes.get(sessionId) === refresh)
+				runtime.refreshes.delete(sessionId);
+		}
+		// A logout may have completed while the refresh request was in flight.
+		if (!getOAuthRuntime().credentialSessions.has(sessionId))
+			return { status: { authenticated: false, identity: null } };
 		const activeCredentials = refreshedCredentials ?? credentials;
 		if (refreshedCredentials) {
 			updateCredentialSession({ sessionId, credentials: refreshedCredentials });
@@ -306,7 +323,7 @@ export function setCredentialsCookie({
 	clearCookie({ response, name: LEGACY_OAUTH_TOKEN_COOKIE });
 }
 
-function setOAuthBindingCookie({
+export function setOAuthBindingCookie({
 	response,
 	value,
 }: {
@@ -1091,8 +1108,10 @@ function getOAuthRuntime(): OAuthRuntimeState {
 		flows: new Map(),
 		handoffs: new Map(),
 		credentialSessions: new Map(),
+		refreshes: new Map(),
 	};
 	globalThis.__opencutOpenAIOAuthRuntime.credentialSessions ??= new Map();
+	globalThis.__opencutOpenAIOAuthRuntime.refreshes ??= new Map();
 	return globalThis.__opencutOpenAIOAuthRuntime;
 }
 
@@ -1125,6 +1144,7 @@ function updateCredentialSession({
 }): void {
 	const runtime = getOAuthRuntime();
 	const previous = runtime.credentialSessions.get(sessionId);
+	if (!previous) return;
 	const now = Date.now();
 	const session: OAuthCredentialSession = {
 		credentials,
@@ -1298,10 +1318,12 @@ function persistCredentialSession({
 }): void {
 	const path = getPersistedCredentialSessionPath(sessionId);
 	mkdirSync(getPersistedCredentialSessionDir(), { recursive: true });
-	writeFileSync(path, sealJson(session), {
+	const temporary = `${path}.${randomUUID()}.tmp`;
+	writeFileSync(temporary, sealJson(session), {
 		encoding: "utf8",
 		mode: 0o600,
 	});
+	renameSync(temporary, path);
 }
 
 function readPersistedCredentialSession(
@@ -1511,7 +1533,7 @@ async function postTokenForm(
 	return json;
 }
 
-function normalizeTokenResponse({
+export function normalizeTokenResponse({
 	json,
 	sessionBinding,
 }: {
@@ -1685,7 +1707,11 @@ function getCookieKey(): Buffer {
 		: hostCookieSecret();
 }
 
-function getSessionBinding({ request }: { request: NextRequest }): string {
+export function getSessionBinding({
+	request,
+}: {
+	request: NextRequest;
+}): string {
 	const oauthBinding = request.cookies.get(OAUTH_BINDING_COOKIE)?.value;
 	// Pre-account and sessionless credentials must never become a fallback for
 	// another signed-in workspace. Reauthentication is required after switching.

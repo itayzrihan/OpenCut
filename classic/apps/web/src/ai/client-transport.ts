@@ -1,5 +1,4 @@
-/** AI credentials live on this device; never fall back to the hosting server. */
-const COMPANION = "http://127.0.0.1:43127";
+/** Same-origin AI transport; credentials remain in the authenticated server vault. */
 export interface ClientAiPairing {
 	version: 1;
 	origin: string;
@@ -50,23 +49,10 @@ export async function aiClientFetch(
 	path: string,
 	init: RequestInit = {},
 ): Promise<Response> {
-	if (!/^\/api\/ai\/(chat|models|oauth\/(status|start|logout))$/.test(path))
+	if (!/^\/api\/ai\/(chat|models|oauth\/(status|device|logout))$/.test(path))
 		throw new Error("Unsupported AI operation");
 	const account = window.__opencutAccountId;
 	if (!account) throw new Error("Sign in to OpenCut first");
-	if (!isRemoteAiClient())
-		return fetch(path, {
-			...init,
-			headers: {
-				...Object.fromEntries(new Headers(init.headers)),
-				"X-OpenCut-Account": account,
-			},
-		});
-	const pair = readClientAiPairing();
-	if (!pair)
-		throw new Error(
-			"Connect OpenCut AI on this device. Your OpenAI login stays on your computer.",
-		);
 	const controller = new AbortController();
 	const changed = () => {
 		if (window.__opencutAccountId !== account) controller.abort();
@@ -75,16 +61,15 @@ export async function aiClientFetch(
 	window.addEventListener("storage", changed);
 	window.addEventListener("pagehide", leaving, { once: true });
 	try {
-		const response = await fetch(COMPANION + path, {
+		const response = await fetch(path, {
 			...init,
-			credentials: "omit",
+			credentials: "same-origin",
 			cache: "no-store",
 			signal: init.signal
 				? AbortSignal.any([init.signal, controller.signal])
 				: controller.signal,
 			headers: {
 				...Object.fromEntries(new Headers(init.headers)),
-				Authorization: `Bearer ${pair.token}`,
 				"X-OpenCut-Account": account,
 			},
 		});
@@ -100,7 +85,7 @@ export async function aiClientFetch(
 	} catch (error) {
 		if (error instanceof TypeError)
 			throw new Error(
-				"OpenCut AI is not reachable on this device. Start the local app and allow local-network access if your browser asks.",
+				"Could not reach OpenCut. Check your connection and try again.",
 			);
 		throw error;
 	} finally {

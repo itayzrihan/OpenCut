@@ -10,6 +10,8 @@ const apiPaths = new Set([
   '/api/project-fonts', '/api/shared-library', '/api/batch-edit',
   '/api/sounds/search',
   '/api/local-subject-framing', '/api/transcription/whisper-cpp',
+  '/api/ai/chat', '/api/ai/models', '/api/ai/oauth/status',
+  '/api/ai/oauth/device', '/api/ai/oauth/logout',
 ]);
 const hopHeaders = ['connection', 'keep-alive', 'proxy-authenticate',
   'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'upgrade'];
@@ -28,7 +30,8 @@ export function createTailnetGateway({ publicOrigin, backendOrigin }) {
     throw new Error('The app backend must be an exact IPv4 loopback origin');
   return createServer((req, res) => {
     const reject = (status, error) => {
-      res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      // Do not reuse connections with a rejected, possibly unread request body.
+      res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Connection: 'close' });
       res.end(JSON.stringify({ error }));
     };
     if (req.headers.host !== external.host) return reject(403, 'Unexpected host');
@@ -39,14 +42,16 @@ export function createTailnetGateway({ publicOrigin, backendOrigin }) {
     if (req.headers['sec-fetch-site'] && !['same-origin', 'none'].includes(req.headers['sec-fetch-site']))
       return reject(403, 'Cross-site request rejected');
     let target;
+    let bodyLimit = Infinity;
     try {
       if (!req.url.startsWith('/') || req.url.startsWith('//') || /[\\\x00-\x20]/.test(req.url)) throw Error();
       target = new URL(req.url, backend);
       const path = decodeURIComponent(target.pathname);
       if (/[\\%]/.test(path) || path.split('/').some(part => part === '.' || part === '..')) throw Error();
-      if (path.startsWith('/api/ai/')) return reject(403, 'AI runs on your device. Connect the local OpenCut AI app from the AI panel.');
       if (/^\/api(?:\/|$)/i.test(path) && !apiPaths.has(path) && !path.startsWith('/api/account-assets/'))
         return reject(403, 'This endpoint is available only on the local computer');
+      if (path.startsWith('/api/ai/')) bodyLimit = path === '/api/ai/oauth/device' ? 1000 : 1_000_000;
+      if (Number(req.headers['content-length']) > bodyLimit) return reject(413, 'AI request is too large');
     } catch { return reject(400, 'Invalid request path'); }
     const headers = { ...req.headers };
     stripHopHeaders(headers);
@@ -55,7 +60,8 @@ export function createTailnetGateway({ publicOrigin, backendOrigin }) {
     headers.host = backend.host;
     if (origin) headers.origin = backend.origin;
     // Only after validating the external Host and Origin do we translate the
-    // transport to the existing loopback host. Never forward MCP or OAuth.
+    // transport to the existing loopback host. MCP and local OAuth callbacks
+    // stay blocked; browser device login has a narrow authenticated endpoint.
     const upstream = httpRequest(target, { method: req.method, headers }, response => {
       const outgoing = { ...response.headers };
       stripHopHeaders(outgoing);
@@ -67,9 +73,20 @@ export function createTailnetGateway({ publicOrigin, backendOrigin }) {
       response.pipe(res);
       response.on('error', () => res.destroy());
     });
-    upstream.on('error', () => { if (!res.headersSent) reject(502, 'OpenCut is starting. Try again shortly.'); else res.destroy(); });
+    upstream.on('error', () => { if (oversized) return; if (!res.headersSent) reject(502, 'OpenCut is starting. Try again shortly.'); else res.destroy(); });
     req.on('aborted', () => upstream.destroy());
     res.on('close', () => upstream.destroy());
+    let received = 0, oversized = false;
+    req.on('data', chunk => {
+      received += chunk.length;
+      if (!oversized && received > bodyLimit) {
+        oversized = true;
+        req.unpipe(upstream);
+        upstream.destroy();
+        if (!res.headersSent) reject(413, 'AI request is too large');
+        else res.destroy();
+      }
+    });
     req.pipe(upstream);
   });
 }

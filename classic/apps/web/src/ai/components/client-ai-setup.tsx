@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -8,137 +8,147 @@ import {
 	DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { aiClientFetch, prepareClientAiPairing } from "@/ai/client-transport";
+import { aiClientFetch } from "@/ai/client-transport";
 
+interface Login {
+	verificationUrl: string;
+	userCode: string;
+	expiresAt: number;
+}
 export function ClientAiSetup() {
-	const [open, setOpen] = useState(false),
-		[error, setError] = useState("");
-	const [ready, setReady] = useState(false),
-		[busy, setBusy] = useState(false);
-	const [authorizationUrl, setAuthorizationUrl] = useState("");
+	const [open, setOpen] = useState(false);
+	const [error, setError] = useState("");
+	const [busy, setBusy] = useState(false);
+	const [login, setLogin] = useState<Login | null>(null);
+	const generation = useRef(0);
+	const account = useRef<string | null>(null);
+	async function operation(action: string) {
+		const response = await aiClientFetch("/api/ai/oauth/device", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ action }),
+		});
+		const result = await response.json();
+		if (!response.ok) throw Error(result.error || "OpenAI sign-in failed");
+		return result;
+	}
 	useEffect(() => {
-		const show = () => setOpen(true);
+		const show = () => {
+			account.current = window.__opencutAccountId;
+			setOpen(true);
+			setError("");
+		};
 		window.addEventListener("opencut-ai-connect", show);
-		return () => window.removeEventListener("opencut-ai-connect", show);
+		return () => {
+			generation.current++;
+			window.removeEventListener("opencut-ai-connect", show);
+		};
 	}, []);
 	useEffect(() => {
-		if (!open || !ready) return;
+		if (!open || !login) return;
 		let cancelled = false;
-		const timer = window.setInterval(() => {
-			void aiClientFetch("/api/ai/oauth/status")
-				.then((r) => r.json())
-				.then((status) => {
-					if (!cancelled && status.authenticated) {
-						window.dispatchEvent(new Event("opencut-ai-connected"));
-						setOpen(false);
-					}
-				})
-				.catch(() => {});
-		}, 2500);
+		let timer: ReturnType<typeof setTimeout>;
+		async function poll() {
+			if (cancelled || account.current !== window.__opencutAccountId) return;
+			try {
+				if (Date.now() >= login!.expiresAt)
+					throw Error("This code expired. Start sign-in again.");
+				const result = await operation("poll");
+				if (cancelled) return;
+				if (result.authenticated) {
+					setLogin(null);
+					setOpen(false);
+					window.dispatchEvent(new Event("opencut-ai-connected"));
+					return;
+				}
+				timer = setTimeout(poll, 2500);
+			} catch (e) {
+				if (!cancelled) {
+					setError(e instanceof Error ? e.message : "Sign-in failed");
+					setLogin(null);
+				}
+			}
+		}
+		timer = setTimeout(poll, 2500);
 		return () => {
 			cancelled = true;
-			window.clearInterval(timer);
+			clearTimeout(timer);
 		};
-	}, [open, ready]);
-	function downloadPairing() {
-		const pair = prepareClientAiPairing();
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(pair, null, 2)], { type: "application/json" }),
-		);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "OpenCut-AI-Pairing.json";
-		a.click();
-		window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+	}, [open, login]);
+	function changeOpen(value: boolean) {
+		setOpen(value);
+		if (!value) {
+			generation.current++;
+			setLogin(null);
+			setBusy(false);
+			if (account.current === window.__opencutAccountId)
+				void operation("cancel").catch(() => {});
+		}
 	}
 	async function connect() {
-		setError("");
+		const current = ++generation.current;
 		setBusy(true);
+		setError("");
 		try {
-			const r = await aiClientFetch("/api/ai/oauth/status");
-			const status = await r.json();
-			if (!r.ok) throw Error(status.error || "Could not connect this account");
-			setReady(true);
-			if (status.authenticated) {
-				window.dispatchEvent(new Event("opencut-ai-connected"));
-				setOpen(false);
-				return;
-			}
-			const started = await aiClientFetch("/api/ai/oauth/start", {
-				method: "POST",
-			});
-			const login = await started.json();
-			if (!started.ok)
-				throw Error(login.error || "Could not start OpenAI sign-in");
-			const url = new URL(login.authorizationUrl);
-			if (url.origin !== "https://auth.openai.com")
-				throw Error("Unexpected OpenAI sign-in address");
-			setAuthorizationUrl(url.toString());
+			const result = await operation("start");
+			if (
+				result.verificationUrl !== "https://auth.openai.com/codex/device" ||
+				typeof result.userCode !== "string"
+			)
+				throw Error("Unexpected OpenAI sign-in response");
+			if (current === generation.current) setLogin(result);
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Could not connect");
+			if (current === generation.current)
+				setError(e instanceof Error ? e.message : "Could not start sign-in");
 		} finally {
-			setBusy(false);
+			if (current === generation.current) setBusy(false);
 		}
 	}
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={open} onOpenChange={changeOpen}>
 			<DialogContent className="p-6">
 				<DialogHeader>
-					<DialogTitle>OpenAI on your device</DialogTitle>
+					<DialogTitle>Connect your OpenAI account</DialogTitle>
 					<DialogDescription>
-						Connect your own OpenAI account. Your login and AI requests stay on
-						this computer and go directly to OpenAI. They do not pass through
-						the OpenCut hosting server.
+						Sign in through OpenAI in your browser. No download is needed.
+						OpenCut stores access credentials encrypted on this server,
+						separately for your OpenCut account and this session.
 					</DialogDescription>
 				</DialogHeader>
-				<ol className="list-decimal space-y-3 pl-5 text-sm">
-					<li>
-						<a
-							className="underline"
-							href="/downloads/OpenCut-AI-Windows.zip"
-							download
+				{login ? (
+					<div className="space-y-4 text-sm">
+						<p>Enter this one-time code on OpenAI’s website:</p>
+						<p
+							className="select-all rounded border p-4 text-center font-mono text-2xl tracking-widest"
+							aria-label="OpenAI sign-in code"
 						>
-							Download OpenCut AI for Windows
-						</a>{" "}
-						and extract it.
-					</li>
-					<li>
-						<button
-							type="button"
-							className="underline"
-							onClick={downloadPairing}
-						>
-							Download this account’s pairing file
-						</button>
-						. Place it next to OpenCut-AI.exe.
-					</li>
-					<li>
-						Open Start-OpenCut-AI.cmd, keep it running, then connect below.
-						Allow local-network access if your browser asks.
-					</li>
-				</ol>
-				<p className="text-xs text-muted-foreground">
-					The pairing file grants this browser access to your local AI session.
-					Keep it private. Each account and device needs its own pairing. No
-					OpenAI password is stored in this file.
-				</p>
+							{login.userCode}
+						</p>
+						<Button asChild className="w-full">
+							<a href={login.verificationUrl} target="_blank" rel="noreferrer">
+								Continue to OpenAI
+							</a>
+						</Button>
+						<p role="status">
+							Waiting for approval… Return here after signing in.
+						</p>
+						<p className="text-muted-foreground">
+							If OpenAI asks, enable device-code login in ChatGPT Settings →
+							Security. Keep this code private.
+						</p>
+						<Button variant="outline" onClick={() => changeOpen(false)}>
+							Cancel sign-in
+						</Button>
+					</div>
+				) : (
+					<Button onClick={connect} disabled={busy}>
+						{busy ? "Preparing sign-in…" : "Sign in with OpenAI"}
+					</Button>
+				)}
 				{error && (
 					<p role="alert" className="text-sm text-destructive">
 						{error}
 					</p>
-				)}
-				<Button onClick={connect} disabled={busy}>
-					{busy ? "Connecting…" : "Connect this device"}
-				</Button>
-				{authorizationUrl && (
-					<a
-						className="text-center underline"
-						href={authorizationUrl}
-						target="_blank"
-						rel="noreferrer"
-					>
-						Continue to OpenAI sign-in
-					</a>
 				)}
 			</DialogContent>
 		</Dialog>
