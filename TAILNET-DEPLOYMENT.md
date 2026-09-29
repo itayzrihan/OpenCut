@@ -12,6 +12,11 @@ assets into a versioned deployment directory. Exclude `.env*`, `.local`, and
 runtime user data from the deployment. Never point deployment cleanup at the
 account directory.
 
+On Windows with Bun, dereference junctions when copying. Also materialize the
+standalone `node_modules/.bun/node_modules` directory into the deployment's
+root `node_modules`: copying Next's junction alone loses its sibling dependency
+resolution. Verify startup from the deployed directory, outside the checkout.
+
 Run `classic/scripts/run-local-deployment.mjs` with the path to a local JSON
 configuration containing `appRoot` (the copied `apps/web` directory),
 `accountsRoot`, `publicOrigin` (an exact `https://HOST.ts.net:8444` origin),
