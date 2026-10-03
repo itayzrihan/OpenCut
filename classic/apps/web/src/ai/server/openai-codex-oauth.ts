@@ -714,17 +714,17 @@ function mergeCompletedResponseOutput({
 	output: unknown[];
 	state: CodexStreamState;
 }): void {
+	const completedTexts: string[] = [];
 	output.forEach((item, index) => {
 		const outputItem = normalizeCodexOutputItem(item);
 		if (!outputItem) return;
 		state.outputItemsByIndex.set(index, outputItem);
 		const text = getOutputItemText(outputItem);
-		if (text) {
-			state.outputText = state.outputText
-				? `${state.outputText}\n${text}`
-				: text;
-		}
+		if (text) completedTexts.push(text);
 	});
+	// Completed items repeat the text already delivered by delta/done events.
+	// Replace that provisional text instead of appending a second copy.
+	if (completedTexts.length > 0) state.outputText = completedTexts.join("\n");
 }
 
 function parseCodexResponseText({
@@ -1301,7 +1301,10 @@ function readPersistedCredentialSession(
 	sessionId: string,
 ): OAuthCredentialSession | null {
 	const currentPath = getPersistedCredentialSessionPath(sessionId);
-	const paths = [currentPath, getLegacyPersistedCredentialSessionPath(sessionId)];
+	const paths = [
+		currentPath,
+		getLegacyPersistedCredentialSessionPath(sessionId),
+	];
 	for (const path of paths) {
 		try {
 			const value = unsealJson(readFileSync(path, "utf8"));
@@ -1313,7 +1316,8 @@ function readPersistedCredentialSession(
 				rmSync(path, { force: true });
 				continue;
 			}
-			if (path !== currentPath) persistCredentialSession({ sessionId, session: value });
+			if (path !== currentPath)
+				persistCredentialSession({ sessionId, session: value });
 			return value;
 		} catch {
 			// Try the legacy location before reporting an expired session.

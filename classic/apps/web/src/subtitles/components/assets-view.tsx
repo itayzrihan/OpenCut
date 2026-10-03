@@ -854,7 +854,7 @@ export function Captions() {
 
 	const handleGenerateTranscript = async () => {
 		dispatch({ type: "succeed", warnings: [] });
-		await editor.transcription.start({
+		return editor.transcription.start({
 			language: selectedLanguage,
 			settings: captionSettings,
 		});

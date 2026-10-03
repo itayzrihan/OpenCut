@@ -1,5 +1,8 @@
 import { spawn } from "node:child_process";
 
+export const WHISPER_GPU_BACKEND_PATTERN =
+	/using (?:CUDA\d*|Metal|MTL\d+|Vulkan\d*|SYCL\d*) backend/i;
+
 /** Drain both pipes and terminate the owned child when its request is cancelled. */
 export function runProcess({
 	command,

@@ -239,10 +239,16 @@ fn compile(options: CompileAutomaticZoomOptions) -> Result<AutomaticZoomResult, 
             return Err(fail("event must lie inside the video"));
         }
         let start = quantize(e.start);
-        let stop = quantize(e.end);
+        // Silence cuts may leave a sub-frame tail. Rounding a valid endpoint
+        // to the nearest frame must not extend an effect beyond the video.
+        let last_frame = ((end as f64 / frame).floor() * frame).round() as i64;
+        let stop = quantize(e.end).min(last_frame);
         let duration = stop - start;
         if e.start < 0.0 || duration < quantize(0.6) || duration > quantize(4.5) || stop > end {
-            return Err(fail("duration must be 0.6–4.5 seconds inside the video"));
+            return Err(fail(&format!(
+                "duration must be 0.6–4.5 seconds inside the video; requested {:.4}–{:.4}s, frame-aligned duration {:.4}s, last usable frame {:.4}s",
+                e.start, e.end, duration as f64 / TICKS, last_frame as f64 / TICKS
+            )));
         }
         if start < previous_end + quantize(0.35) {
             return Err(fail(
@@ -449,6 +455,23 @@ mod tests {
             plan_json: json!({"events":events}).to_string(),
         })
     }
+    #[test]
+    fn endpoint_rounding_does_not_extend_past_a_silence_cut_tail() {
+        let mut doc = source();
+        doc["projectSettings"]["fps"]["numerator"] = json!(25);
+        doc["scene"]["tracks"][1]["elements"][0]["duration"] = json!(1183999);
+        let mut e = event();
+        e["start"] = json!(8.0);
+        e["end"] = json!(1183999.0 / 120000.0);
+        let result = run(doc.clone(), vec![e.clone()]);
+        assert!(result.valid, "{}", result.error);
+        let after: Value = serde_json::from_str(&result.source_json).unwrap();
+        let effect = &after["scene"]["tracks"][1]["elements"][0];
+        assert!(effect["startTime"].as_i64().unwrap() + effect["duration"].as_i64().unwrap() <= 1183999);
+        e["end"] = json!(10.5);
+        assert!(!run(doc, vec![e]).valid);
+    }
+
     #[test]
     fn preserves_originals_and_places_effect_below_captions_with_deterministic_sound() {
         let before = source();

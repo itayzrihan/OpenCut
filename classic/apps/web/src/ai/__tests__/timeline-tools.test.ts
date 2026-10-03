@@ -105,6 +105,16 @@ function validateTimelineSourceV2MutationScopeForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	resolveAudioSyncRetrim: () => null,
+	sampleAutomaticZoom: () => null,
+	resolveClipAudioTiming: () => null,
+	restoreSilence: ({ sourceJson }: { sourceJson: string }) => ({
+		valid: true,
+		sourceJson: sourceJson.replace("Inside copy", "Restored copy"),
+		restoredDuration: 120000,
+		restoredGapCount: 1,
+		error: "",
+	}),
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -1011,6 +1021,40 @@ describe("AI timeline tool access", () => {
 		expect(secondPage.baseRevision).toBe(firstPage.baseRevision);
 		expect(secondPage.cursor).toBe(3);
 		expect(secondPage.items[0]?.lineNumber).toBe(4);
+	});
+
+	test("silence restoration dry run is read-only and apply stages a revision-checked transaction", async () => {
+		const runtime = await createTimelineToolRuntime({
+			editor: createFullSourceEditorFixture().editor,
+			options: {},
+			authorizeCapabilities: authorizeForTest,
+		});
+		const args = { trackId: "main", elementIds: ["a", "b"] };
+		const before = await readEntireFullSource(runtime);
+		expect(
+			await runtime.executeTool({
+				id: "preview-restore",
+				name: "timeline.restore_silence",
+				arguments: { ...args, dryRun: true },
+			}),
+		).toMatchObject({
+			success: true,
+			dryRun: true,
+			restoredDuration: 120000,
+			pendingOperations: 0,
+		});
+		expect(runtime.getSourceEditPlan()).toBeNull();
+		expect(await readEntireFullSource(runtime)).toEqual(before);
+		await runtime.executeTool({
+			id: "stage-restore",
+			name: "timeline.restore_silence",
+			arguments: args,
+		});
+		expect(runtime.getSourceEditPlan()?.operations).toHaveLength(1);
+		expect(runtime.getSourceEditPlan()?.operations[0]).toMatchObject({
+			type: "apply_timeline_source_v2",
+			baseRevision: before.baseRevision,
+		});
 	});
 
 	test("stages one exact full-source mutation as a reviewed v2 operation", async () => {

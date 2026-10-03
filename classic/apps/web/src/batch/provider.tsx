@@ -31,6 +31,7 @@ import { setBatchReadOnlyProjects, beginAutomationHandoff } from "./read-only";
 import { AutomationProgress } from "./automation-progress";
 import { AutomationWorkerHost, type AutomationWorkerTask } from "./worker-host";
 type StartProject = (input: {
+	resumeRunId?: string;
 	editor: EditorCore;
 	options: FullAutoOptions;
 }) => Promise<void>;
@@ -153,7 +154,11 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				"Configure ivrit-ai Whisper large-v3 before starting automatic editing",
 			);
 	};
-	const startProject: StartProject = async ({ editor, options }) => {
+	const startProject: StartProject = async ({
+		editor,
+		options,
+		resumeRunId,
+	}) => {
 		if (preparing.current)
 			throw new Error(
 				"Another project is being handed off. Please try again in a moment.",
@@ -171,6 +176,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				throw new Error("Project changed before handoff. Nothing was queued.");
 			const result = await batchRequest<{ run: BatchRun; token: string }>({
 				action: "project",
+				resumeRunId,
 				id: crypto.randomUUID(),
 				projectId,
 				expectedUpdatedAt: project.metadata.updatedAt.toISOString(),

@@ -1,6 +1,10 @@
 "use client";
 
 import {
+	previewRestoreSilence,
+	restoreSelectedSilence,
+} from "@/timeline/restore-silence";
+import {
 	createContext,
 	memo,
 	useCallback,
@@ -658,6 +662,17 @@ function TimelineElementMenuContent({
 			selectedElement.trackId === trackId &&
 			selectedElement.elementId === element.id,
 	);
+	const canRestoreSilence = useMemo(() => {
+		if (!activeScene || !isCurrentElementSelected || element.type !== "video")
+			return false;
+		return previewRestoreSilence(editor, selectedElements) !== null;
+	}, [
+		activeScene,
+		editor,
+		selectedElements,
+		isCurrentElementSelected,
+		element.type,
+	]);
 	const canMergeSelectedTextElements = useMemo(() => {
 		if (selectedElements.length < 2) {
 			return false;
@@ -839,6 +854,26 @@ function TimelineElementMenuContent({
 				Split
 			</ActionMenuItem>
 			<CopyMenuItem />
+			{canRestoreSilence && (
+				<ContextMenuItem
+					onClick={() => {
+						try {
+							const result = restoreSelectedSilence(editor, selectedElements);
+							toast.success("מחיקת הרגעים השקטים בוטלה", {
+								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות. הטיימליין והכתוביות הותאמו.`,
+							});
+						} catch (error) {
+							toast.error(
+								error instanceof Error
+									? error.message
+									: "שחזור הרגעים השקטים נכשל",
+							);
+						}
+					}}
+				>
+					ביטול מחיקת רגעים שקטים
+				</ContextMenuItem>
+			)}
 			{selectedElementCount === 1 && (
 				<ActionMenuItem
 					action="duplicate-selected"

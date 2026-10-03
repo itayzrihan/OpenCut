@@ -175,6 +175,40 @@ describe("OpenAI Codex OAuth helpers", () => {
 		expect(body.tool_choice).toBe("auto");
 	});
 
+	test("completed output replaces streamed caption JSON without duplicating it", async () => {
+		setRequiredEnv();
+		const { testing } = await import("@/ai/server/openai-codex-oauth");
+		const plan = { changes: [{ index: 0, text: "שלום" }] };
+		const text = JSON.stringify(plan);
+		const completed = {
+			type: "response.completed",
+			response: {
+				id: "caption-response",
+				output: [{ type: "message", content: [{ type: "output_text", text }] }],
+			},
+		};
+		for (const prefix of [
+			[],
+			[
+				{ type: "response.output_text.delta", delta: text.slice(0, 12) },
+				{ type: "response.output_text.delta", delta: text.slice(12) },
+				{ type: "response.output_text.done", text },
+			],
+		]) {
+			const stream = [...prefix, completed, completed]
+				.map((event) => `data: ${JSON.stringify(event)}\n\n`)
+				.join("");
+			const buffered = testing.parseCodexResponsesStreamText({ text: stream });
+			const streamed = await testing.parseCodexResponsesStream({
+				response: new Response(stream),
+			});
+			for (const result of [buffered, streamed]) {
+				expect(result.output_text).toBe(text);
+				expect(JSON.parse(result.output_text as string)).toEqual(plan);
+			}
+		}
+	});
+
 	test("parses streamed Codex Responses events into agent response shape", async () => {
 		setRequiredEnv();
 		const { testing } = await import("@/ai/server/openai-codex-oauth");

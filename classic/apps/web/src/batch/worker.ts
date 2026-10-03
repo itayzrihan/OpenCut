@@ -206,6 +206,7 @@ export async function executeBatch({
 						}).catch(() => abort?.abort());
 					},
 					options: run.options,
+					resumeFromStage: job.resumeFromStage,
 				});
 				abort.signal.throwIfAborted();
 				await editor.project.prepareExit();

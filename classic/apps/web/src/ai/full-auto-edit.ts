@@ -35,18 +35,27 @@ export async function runFullAutoEdit({
 	onProgress,
 	onStep,
 	options,
+	resumeFromStage = 0,
 }: {
 	editor: EditorCore;
 	signal: AbortSignal;
 	onProgress: (s: string) => void;
 	onStep?: (progress: FullAutoStepProgress) => void;
 	options: FullAutoOptions;
+	resumeFromStage?: number;
 }) {
 	const projectId = editor.project.getActive().metadata.id;
 	const sceneId = editor.scenes.getActiveScene().id;
 	let fontFamily = "";
 	const notes: string[] = [];
 	const steps = fullAutoEditStages(options);
+	if (
+		resumeFromStage !== 0 &&
+		(!Number.isInteger(resumeFromStage) ||
+			resumeFromStage < 5 ||
+			resumeFromStage >= steps.length)
+	)
+		throw new Error("Invalid finishing checkpoint");
 	const assertContext = () => {
 		signal.throwIfAborted();
 		if (
@@ -94,6 +103,7 @@ export async function runFullAutoEdit({
 		});
 	};
 	for (const [index, stage] of steps.entries()) {
+		if (index < resumeFromStage) continue;
 		assertContext();
 		const progress = (message: string) => {
 			onProgress(`${index + 1}/${steps.length} · ${message}`);

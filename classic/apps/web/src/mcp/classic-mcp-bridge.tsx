@@ -298,7 +298,14 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 				if (plan && command.autoApply) {
 					applyAiEditPlan({ editor, plan });
 					applied = true;
-				} else if (!tool.readOnly && !plan) {
+				} else if (
+					!tool.readOnly &&
+					!plan &&
+					!(
+						command.toolName === "timeline.restore_silence" &&
+						command.arguments?.dryRun === true
+					)
+				) {
 					applied = true;
 				}
 				if (applied) {

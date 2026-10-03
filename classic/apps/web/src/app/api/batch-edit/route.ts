@@ -29,6 +29,7 @@ const schema = z.discriminatedUnion("action", [
 		id: z.string().uuid(),
 		projectId: z.string().uuid(),
 		expectedUpdatedAt: z.string().datetime(),
+		resumeRunId: z.string().uuid().optional(),
 		options,
 	}),
 	z.object({

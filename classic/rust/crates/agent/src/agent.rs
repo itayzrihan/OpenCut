@@ -544,6 +544,7 @@ fn registered_agent_capabilities() -> Vec<AgentCapabilityDescriptor> {
             false,
             &["layers"],
         ),
+        registered_capability("timeline.restore_silence", "edit", false, false, false, &["layers"]),
         registered_capability(
             "timeline.edit_full_source",
             "edit",

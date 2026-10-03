@@ -1,3 +1,4 @@
+import { restoreSilence } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import { getVisibleElementsWithBounds } from "@/preview/element-bounds";
 import { sharedLibraryService } from "@/shared-library";
@@ -67,6 +68,7 @@ const RANGE_PREVIEW_TOTAL_DATA_URL_MAX_CHARS = 500_000;
 const STAGED_REVIEW_TOOL_NAMES = new Set([
 	"timeline.edit_source",
 	"timeline.edit_full_source",
+	"timeline.restore_silence",
 	"timeline.stage_operations",
 ]);
 
@@ -289,6 +291,7 @@ export async function createTimelineToolRuntime({
 					}),
 				};
 			}
+			case "timeline.restore_silence":
 			case "timeline.edit_full_source": {
 				if (sourceEditPlan || typedEditPlan) {
 					throw new Error(
@@ -296,14 +299,29 @@ export async function createTimelineToolRuntime({
 					);
 				}
 				const state = getFullSourceState();
-				const edits = getSourceEditsArg({
-					args: toolCall.arguments,
-					toolName: toolCall.name,
-				});
-				const editedText = applySourceEdits({
-					content: state.currentText,
-					edits,
-				});
+				const restoring = toolCall.name === "timeline.restore_silence";
+				const args = toolCall.arguments;
+				if (
+					restoring &&
+					(typeof args.trackId !== "string" ||
+						!Array.isArray(args.elementIds) ||
+						!args.elementIds.every((id) => typeof id === "string"))
+				)
+					throw new Error("trackId and elementIds are required");
+				const restored = restoring
+					? restoreSilence({
+							sourceJson: state.currentText,
+							trackId: args.trackId as string,
+							elementIds: args.elementIds as string[],
+						})
+					: null;
+				if (restored && !restored.valid) throw new Error(restored.error);
+				const edits = restoring
+					? []
+					: getSourceEditsArg({ args, toolName: "timeline.edit_full_source" });
+				const editedText =
+					restored?.sourceJson ??
+					applySourceEdits({ content: state.currentText, edits });
 				if (editedText.length > FULL_TIMELINE_SOURCE_MAX_CHARS) {
 					throw new Error(
 						`Edited Timeline Source exceeds ${FULL_TIMELINE_SOURCE_MAX_CHARS} characters`,
@@ -375,6 +393,15 @@ export async function createTimelineToolRuntime({
 						`Full Timeline Source edits failed plan validation:\n${validation.errors.join("\n")}`,
 					);
 				}
+				if (restoring && args.dryRun === true)
+					return {
+						success: true,
+						dryRun: true,
+						restoredDuration: restored!.restoredDuration,
+						restoredGapCount: restored!.restoredGapCount,
+						baseRevision: state.baseRevision,
+						pendingOperations: 0,
+					};
 				state.currentText = after.formattedText;
 				fullSourceEditPlan = validation.plan;
 				return {
@@ -1103,6 +1130,23 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 					},
 				},
 				required: ["edits"],
+			}),
+		},
+		{
+			type: "function",
+			name: "timeline.restore_silence",
+			deferLoading: true,
+			category: "timeline edit",
+			keywords: ["restore silence", "undo silence removal", "ripple"],
+			description:
+				"Restore missing source time between adjacent video clips from the same media, rippling every layer and captions. Stages one undoable source transaction for review. dryRun validates without staging. Requires whole-scene edit scope.",
+			parameters: objectSchema({
+				properties: {
+					trackId: { type: "string" },
+					elementIds: { type: "array", minItems: 2, items: { type: "string" } },
+					dryRun: { type: "boolean" },
+				},
+				required: ["trackId", "elementIds"],
 			}),
 		},
 		{

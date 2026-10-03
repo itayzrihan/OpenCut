@@ -12,6 +12,8 @@ mod automatic_text_transitions;
 pub use automatic_text_transitions::*;
 mod edit_provenance;
 mod silence_analysis;
+mod restore_silence;
+pub use restore_silence::*;
 mod source_document;
 
 pub use captions::*;

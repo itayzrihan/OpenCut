@@ -6,7 +6,7 @@ import {
 } from "./whisper-json";
 import { webEnv } from "@/env/web";
 import { type NextRequest, NextResponse } from "next/server";
-import { runProcess } from "./run-process";
+import { runProcess, WHISPER_GPU_BACKEND_PATTERN } from "./run-process";
 import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -353,7 +353,7 @@ export async function POST(request: NextRequest) {
 			signal: request.signal,
 			requiredStderrPattern:
 				webEnv.WHISPER_CPP_DEVICE === "gpu"
-					? /using (?:CUDA\d*|Metal|Vulkan\d*|SYCL\d*) backend/i
+					? WHISPER_GPU_BACKEND_PATTERN
 					: undefined,
 		});
 

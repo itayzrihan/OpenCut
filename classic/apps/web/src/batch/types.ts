@@ -9,6 +9,7 @@ export type BatchJobStatus =
 	| "cancelled"
 	| "interrupted";
 export interface BatchJob {
+	resumeFromStage?: number;
 	source?: "existing" | "import";
 	projectId: string;
 	name: string;

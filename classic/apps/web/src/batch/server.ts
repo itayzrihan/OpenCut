@@ -74,11 +74,13 @@ export async function createProjectEdit({
 	id,
 	projectId,
 	expectedUpdatedAt,
+	resumeRunId,
 	options,
 }: {
 	id: string;
 	projectId: string;
 	expectedUpdatedAt: string;
+	resumeRunId?: string;
 	options: FullAutoOptions;
 }) {
 	return transaction(async (s) => {
@@ -103,6 +105,31 @@ export async function createProjectEdit({
 			);
 		if (project.metadata.updatedAt !== expectedUpdatedAt)
 			throw new Error("Project changed before handoff. Save and try again.");
+		let resumeFromStage = 0;
+		if (resumeRunId) {
+			const previous = s.runs.find((r) =>
+				r.jobs.some((j) => j.projectId === projectId),
+			);
+			const job = previous?.jobs.find((j) => j.projectId === projectId);
+			if (
+				previous?.id !== resumeRunId ||
+				job?.status !== "failed" ||
+				job.completedStages < 5 ||
+				job.completedStages >= fullAutoEditStages(previous.options).length
+			)
+				throw new Error(
+					"Only the latest failed finishing stage can be resumed",
+				);
+			for (const key of [
+				"zoom",
+				"transitions",
+				"wordAnimation",
+				"music",
+			] as const)
+				if (options[key] !== previous.options[key])
+					throw new Error("Resume must preserve the original recipe");
+			resumeFromStage = job.completedStages;
+		}
 		const run: StoredRun = {
 			id,
 			kind: "single",
@@ -121,7 +148,8 @@ export async function createProjectEdit({
 					message: "Queued for background Full Auto Edit",
 					cancelRequested: false,
 					created: true,
-					completedStages: 0,
+					completedStages: resumeFromStage,
+					...(resumeRunId ? { resumeFromStage } : {}),
 				},
 			],
 		};

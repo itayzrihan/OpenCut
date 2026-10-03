@@ -38,3 +38,20 @@ Keep the launching app tab open. Internal app navigation is supported; closing/r
 Long-film performance, every possible visual preset, and export encoding were not exhaustively exercised by this change. Broad unit coverage and real full-pipeline short-video runs do not establish universal absence of regressions.
 
 Raw broad-sweep logs and baseline comparisons are in `%TEMP%\opencut-background-qa`; native output is `%TEMP%\opencut-background-rust-tests.txt`.
+
+## Resume after a failed finishing stage (classic-only)
+
+The AI panel offers **Resume from stage N** for the latest failed run on the
+current project after caption finishing has completed. Handoff saves the current
+project and checks its timestamp, keeps the original recipe, and acquires a new
+worker lease. The worker starts at the recorded completed-stage count on the
+existing project; framing, silence removal and captions are not repeated.
+Concurrent owners and superseded failed runs cannot be resumed. This is a
+classic-only extension of the existing host queue and EditorCore worker; it is
+not a rewrite migration. Earlier-stage and interrupted-run recovery remain
+unsupported.
+
+Validation: batch server tests cover recipe, revision and ownership checks;
+full-auto-edit-resume tests verify only the remaining stages execute. Native zoom
+tests cover frame rounding at a sub-frame video tail, without accepting plans
+outside the source video.

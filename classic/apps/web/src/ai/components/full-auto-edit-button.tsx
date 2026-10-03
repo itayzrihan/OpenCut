@@ -24,7 +24,14 @@ export function FullAutoEditButton({
 	onRunningChange?: (running: boolean) => void;
 }) {
 	const editor = useEditor();
-	const { startProject } = useBatchEdit();
+	const { startProject, state } = useBatchEdit();
+	const projectId = editor.project.getActive().metadata.id;
+	const previous = state.runs.find((r) =>
+		r.jobs.some((j) => j.projectId === projectId),
+	);
+	const previousJob = previous?.jobs.find((j) => j.projectId === projectId);
+	const resumable =
+		previousJob?.status === "failed" && previousJob.completedStages >= 5;
 	const [open, setOpen] = useState(false);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
@@ -34,12 +41,16 @@ export function FullAutoEditButton({
 		wordAnimation: false,
 		music: false,
 	});
-	const run = async () => {
+	const run = async (resume = false) => {
 		if (running) return;
 		setRunning(true);
 		onRunningChange?.(true);
 		try {
-			await startProject({ editor, options });
+			await startProject({
+				editor,
+				options: resume && previous ? previous.options : options,
+				...(resume && previous ? { resumeRunId: previous.id } : {}),
+			});
 			setOpen(false);
 		} catch (e) {
 			const message =
@@ -61,6 +72,16 @@ export function FullAutoEditButton({
 			>
 				<WandSparkles /> Full Auto Edit
 			</Button>
+			{resumable && (
+				<Button
+					className="w-full"
+					variant="outline"
+					disabled={disabled || running}
+					onClick={() => void run(true)}
+				>
+					Resume from stage {previousJob.completedStages + 1}
+				</Button>
+			)}
 			<p className="text-xs text-muted-foreground">
 				Vertical framing, silence removal, complete Hebrew Auto Texts and
 				finishing.
@@ -129,7 +150,7 @@ export function FullAutoEditButton({
 						>
 							Close
 						</Button>
-						<Button disabled={running} onClick={run}>
+						<Button disabled={running} onClick={() => void run()}>
 							{running && <Loader2 className="animate-spin" />}Start Full Auto
 							Edit
 						</Button>

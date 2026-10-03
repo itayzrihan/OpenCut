@@ -1,5 +1,7 @@
-import { beforeAll, describe, expect, mock, test } from "bun:test";
+import { beforeAll, describe, expect, mock, spyOn, test } from "bun:test";
 import type { EditorCore } from "@/core";
+import { getAutoTextsTranscriptionError } from "@/subtitles/components/auto-texts-transcription";
+import { transcribeTimelineAudioBlob } from "@/transcription/server-client";
 import type {
 	AgentTaskEvent,
 	AgentTaskState,
@@ -224,6 +226,38 @@ describe("TranscriptionManager", () => {
 		expect(state.insertedTrackIds).toEqual(["captions-1", "captions-2"]);
 		expect(inserted).toHaveLength(1);
 		expect(JSON.stringify(state)).not.toContain("Hello world");
+		expect(getAutoTextsTranscriptionError(state)).toBeNull();
+	});
+
+	test("retains a service failure for Auto Texts and does not insert captions", async () => {
+		const serviceError =
+			"The local transcription model is unavailable. Install the Whisper model and try again.";
+		const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+			Response.json({ error: serviceError }, { status: 503 }),
+		);
+		const insertCaptions = mock(() => ["unexpected-caption-track"]);
+		try {
+			const manager = new TranscriptionManager({
+				editor: createEditor(),
+				dependencies: {
+					extractAudio: async () => new Blob(["audio"]),
+					transcribe: transcribeTimelineAudioBlob,
+					insertCaptions,
+					generateId: () => "task-failed",
+					transitionTask: transitionTaskForTest,
+				},
+			});
+
+			const state = await manager.start({ language: "en" });
+
+			expect(state.task.status).toBe("failed");
+			expect(getAutoTextsTranscriptionError(state)).toBe(serviceError);
+			expect(state.insertedTrackIds).toEqual([]);
+			expect(insertCaptions).not.toHaveBeenCalled();
+			expect(fetchSpy).toHaveBeenCalledTimes(1);
+		} finally {
+			fetchSpy.mockRestore();
+		}
 	});
 
 	test("cancels during audio extraction before calling transcription", async () => {
@@ -254,6 +288,9 @@ describe("TranscriptionManager", () => {
 
 		const state = await pending;
 		expect(state.task.status).toBe("cancelled");
+		expect(getAutoTextsTranscriptionError(state)).toBe(
+			"Transcription was cancelled.",
+		);
 		expect(transcribeCalls).toBe(0);
 	});
 });

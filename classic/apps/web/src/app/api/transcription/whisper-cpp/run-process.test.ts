@@ -1,5 +1,14 @@
 import { expect, test } from "bun:test";
-import { runProcess } from "./run-process";
+import { runProcess, WHISPER_GPU_BACKEND_PATTERN } from "./run-process";
+
+test("recognizes active Apple Metal backends without accepting CPU fallback", () => {
+	for (const backend of ["Metal", "MTL0", "MTL1", "CUDA0", "Vulkan0", "SYCL0"]) {
+		expect(WHISPER_GPU_BACKEND_PATTERN.test(`whisper_backend_init_gpu: using ${backend} backend`)).toBe(true);
+	}
+	for (const line of ["using CPU backend", "using BLAS backend", "loaded MTL backend", "found GPU device 1: MTL0"]) {
+		expect(WHISPER_GPU_BACKEND_PATTERN.test(line)).toBe(false);
+	}
+});
 
 test("GPU requirement survives split output and later log truncation", async () => {
 	await runProcess({

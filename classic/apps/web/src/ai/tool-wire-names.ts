@@ -24,6 +24,7 @@ export const ALLOWED_AI_TOOL_WIRE_NAMES: ReadonlySet<string> = new Set([
 	"skills_load_resource",
 	"timeline_edit_source",
 	"timeline_edit_full_source",
+	"timeline_restore_silence",
 	"timeline_get_element",
 	"timeline_get_layer",
 	"timeline_get_visible_state",
