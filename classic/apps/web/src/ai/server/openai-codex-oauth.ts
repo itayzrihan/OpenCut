@@ -10,6 +10,7 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
@@ -28,6 +29,8 @@ import {
 	normalizeCodexModelId,
 } from "@/ai/codex-models";
 import { webEnv } from "@/env/web";
+import { hostCookieSecret } from "@/accounts/host-key";
+import { requireAccount } from "@/accounts/server";
 
 const AUTHORIZE_URL = "https://auth.openai.com/oauth/authorize";
 const TOKEN_URL = "https://auth.openai.com/oauth/token";
@@ -78,6 +81,7 @@ interface OAuthRuntimeState {
 	flows: Map<string, OAuthState>;
 	handoffs: Map<string, OAuthHandoff>;
 	credentialSessions: Map<string, OAuthCredentialSession>;
+	refreshes: Map<string, Promise<OpenAICodexCredentials | null>>;
 }
 
 interface OAuthCredentialSession {
@@ -121,7 +125,9 @@ export async function createOpenAIAuthorizationResponse({
 	});
 	const bindingCookieValue =
 		request.cookies.get(OAUTH_BINDING_COOKIE)?.value ?? randomUUID();
-	const sessionBinding = hashSessionBinding(bindingCookieValue);
+	const sessionBinding = hashSessionBinding(
+		accountBoundOAuthValue(request, bindingCookieValue),
+	);
 	const statePayload: OAuthState = {
 		state,
 		codeVerifier: verifier,
@@ -254,7 +260,22 @@ export async function getOpenAIOAuthStatus({
 	}
 
 	try {
-		const refreshedCredentials = await refreshIfNeeded(credentials);
+		const runtime = getOAuthRuntime();
+		let refresh = runtime.refreshes.get(sessionId);
+		if (!refresh) {
+			refresh = refreshIfNeeded(credentials);
+			runtime.refreshes.set(sessionId, refresh);
+		}
+		let refreshedCredentials: OpenAICodexCredentials | null;
+		try {
+			refreshedCredentials = await refresh;
+		} finally {
+			if (runtime.refreshes.get(sessionId) === refresh)
+				runtime.refreshes.delete(sessionId);
+		}
+		// A logout may have completed while the refresh request was in flight.
+		if (!getOAuthRuntime().credentialSessions.has(sessionId))
+			return { status: { authenticated: false, identity: null } };
 		const activeCredentials = refreshedCredentials ?? credentials;
 		if (refreshedCredentials) {
 			updateCredentialSession({ sessionId, credentials: refreshedCredentials });
@@ -302,7 +323,7 @@ export function setCredentialsCookie({
 	clearCookie({ response, name: LEGACY_OAUTH_TOKEN_COOKIE });
 }
 
-function setOAuthBindingCookie({
+export function setOAuthBindingCookie({
 	response,
 	value,
 }: {
@@ -327,7 +348,10 @@ export function clearOpenAICredentials({
 }): void {
 	if (request) {
 		const sessionCookie = readSessionCookie({ request });
-		if (sessionCookie) {
+		if (
+			sessionCookie &&
+			sessionCookie.sessionBinding === getSessionBinding({ request })
+		) {
 			getOAuthRuntime().credentialSessions.delete(sessionCookie.sessionId);
 			deletePersistedCredentialSession(sessionCookie.sessionId);
 		}
@@ -1084,8 +1108,10 @@ function getOAuthRuntime(): OAuthRuntimeState {
 		flows: new Map(),
 		handoffs: new Map(),
 		credentialSessions: new Map(),
+		refreshes: new Map(),
 	};
 	globalThis.__opencutOpenAIOAuthRuntime.credentialSessions ??= new Map();
+	globalThis.__opencutOpenAIOAuthRuntime.refreshes ??= new Map();
 	return globalThis.__opencutOpenAIOAuthRuntime;
 }
 
@@ -1118,6 +1144,7 @@ function updateCredentialSession({
 }): void {
 	const runtime = getOAuthRuntime();
 	const previous = runtime.credentialSessions.get(sessionId);
+	if (!previous) return;
 	const now = Date.now();
 	const session: OAuthCredentialSession = {
 		credentials,
@@ -1291,10 +1318,12 @@ function persistCredentialSession({
 }): void {
 	const path = getPersistedCredentialSessionPath(sessionId);
 	mkdirSync(getPersistedCredentialSessionDir(), { recursive: true });
-	writeFileSync(path, sealJson(session), {
+	const temporary = `${path}.${randomUUID()}.tmp`;
+	writeFileSync(temporary, sealJson(session), {
 		encoding: "utf8",
 		mode: 0o600,
 	});
+	renameSync(temporary, path);
 }
 
 function readPersistedCredentialSession(
@@ -1504,7 +1533,7 @@ async function postTokenForm(
 	return json;
 }
 
-function normalizeTokenResponse({
+export function normalizeTokenResponse({
 	json,
 	sessionBinding,
 }: {
@@ -1673,18 +1702,28 @@ function unsealJson(sealed: string): unknown {
 }
 
 function getCookieKey(): Buffer {
-	return createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest();
+	return webEnv.BETTER_AUTH_SECRET
+		? createHash("sha256").update(webEnv.BETTER_AUTH_SECRET).digest()
+		: hostCookieSecret();
 }
 
-function getSessionBinding({ request }: { request: NextRequest }): string {
+export function getSessionBinding({
+	request,
+}: {
+	request: NextRequest;
+}): string {
 	const oauthBinding = request.cookies.get(OAUTH_BINDING_COOKIE)?.value;
-	if (oauthBinding) return hashSessionBinding(oauthBinding);
-	const sessionCookie =
-		request.cookies.get("better-auth.session_token")?.value ??
-		request.cookies.get("__Secure-better-auth.session_token")?.value ??
-		request.cookies.get("better-auth.session-token")?.value ??
-		"sessionless";
-	return hashSessionBinding(sessionCookie);
+	// Pre-account and sessionless credentials must never become a fallback for
+	// another signed-in workspace. Reauthentication is required after switching.
+	if (!oauthBinding || !request.cookies.get("opencut-account")?.value)
+		return "";
+	return hashSessionBinding(accountBoundOAuthValue(request, oauthBinding));
+}
+
+function accountBoundOAuthValue(request: NextRequest, value: string): string {
+	const accountSession = request.cookies.get("opencut-account")?.value;
+	if (!accountSession) throw new Error("Sign in to an OpenCut account first");
+	return JSON.stringify([requireAccount().id, accountSession, value]);
 }
 
 function hashSessionBinding(value: string): string {

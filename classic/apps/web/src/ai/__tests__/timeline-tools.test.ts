@@ -105,6 +105,8 @@ function validateTimelineSourceV2MutationScopeForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	mediaMissingUsed: () => "[]",
+	mediaStorageDisposition: () => "copy",
 	resolveAudioSyncRetrim: () => null,
 	sampleAutomaticZoom: () => null,
 	resolveClipAudioTiming: () => null,
@@ -363,7 +365,7 @@ describe("AI creative direction capabilities", () => {
 		]) {
 			const prompt = buildAiSystemPrompt({ userRequest: request });
 			expect(prompt).toContain("AUTO-LOADED PREMIUM VIDEO EDITOR SKILL:");
-			expect(prompt).toContain("# OpenCut premium video editor");
+			expect(prompt).toContain("# Paper Grid Editorial");
 			expect(prompt).toContain("skills.load_resource");
 		}
 	});

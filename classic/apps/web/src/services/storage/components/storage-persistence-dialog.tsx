@@ -50,8 +50,8 @@ export function StoragePersistenceDialog() {
 				<DialogBody>
 					<p className="text-base text-muted-foreground">
 						Projects, undo history, media metadata, fonts, and saved sounds are
-						stored in a normal local folder, shared by every browser that opens
-						this local PoCut installation.
+						stored in your account’s private folder on this machine. Sign in to
+						the same account to access them from another local browser.
 					</p>
 					{rootPath ? (
 						<code className="block rounded-md bg-muted px-3 py-2 text-sm break-all">

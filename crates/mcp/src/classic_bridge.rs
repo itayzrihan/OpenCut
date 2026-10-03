@@ -106,7 +106,7 @@ struct CommandBatch {
 #[derive(Default)]
 struct CommandState {
     queue: VecDeque<ClassicCommand>,
-    waiters: HashMap<String, oneshot::Sender<ClassicCommandCompletion>>,
+    waiters: HashMap<String, (String, oneshot::Sender<ClassicCommandCompletion>)>,
 }
 
 struct ClassicBridgeInner {
@@ -381,9 +381,11 @@ impl ClassicBridge {
             commands
                 .queue
                 .retain(|command| command.session_id != session_id);
-            let waiter_ids: Vec<_> = commands.waiters.keys().cloned().collect();
+            let waiter_ids: Vec<_> = commands.waiters.iter()
+                .filter(|(_, (owner, _))| owner == session_id)
+                .map(|(id, _)| id.clone()).collect();
             for command_id in waiter_ids {
-                if let Some(waiter) = commands.waiters.remove(&command_id) {
+                if let Some((_, waiter)) = commands.waiters.remove(&command_id) {
                     let _ = waiter.send(ClassicCommandCompletion {
                         command_id,
                         ok: false,
@@ -686,7 +688,7 @@ impl ClassicBridge {
                 self.inner.command_state.lock().map_err(|_| {
                     CapabilityError::Failed("classic command lock was poisoned".into())
                 })?;
-            state.waiters.insert(command_id.clone(), sender);
+            state.waiters.insert(command_id.clone(), (snapshot.session_id.clone(), sender));
             state.queue.push_back(command);
         }
 
@@ -773,8 +775,12 @@ impl ClassicBridge {
             .command_state
             .lock()
             .ok()
-            .and_then(|mut state| state.waiters.remove(&completion.command_id))
-            .is_some_and(|waiter| waiter.send(completion).is_ok())
+            .and_then(|mut state| {
+                if state.waiters.get(&completion.command_id).is_some_and(|(owner, _)| owner == session_id) {
+                    state.waiters.remove(&completion.command_id)
+                } else { None }
+            })
+            .is_some_and(|(_, waiter)| waiter.send(completion).is_ok())
     }
 }
 
@@ -1127,7 +1133,7 @@ fn write_bridge_config(path: &Path, address: SocketAddr, token: &str) -> std::io
     }
     let temporary = path.with_extension(format!("{}.tmp", std::process::id()));
     let bytes = serde_json::to_vec_pretty(&json!({
-        "version": 1,
+        "version": 2,
         "baseUrl": format!("http://{address}"),
         "token": token,
         "pid": std::process::id(),
@@ -1279,6 +1285,20 @@ mod tests {
         };
         assert_eq!(command.project_id, "classic-project");
         assert_eq!(command.tool_name, "skills.list");
+        let mut other_account = connected_snapshot(Vec::new());
+        other_account.session_id = "other-account-session".into();
+        bridge.update_session(other_account).unwrap();
+        assert!(!bridge.complete_command(
+            "other-account-session",
+            ClassicCommandCompletion {
+                command_id: command.id.clone(),
+                ok: true,
+                output: json!({"forged": true}),
+                error: None,
+                applied: true,
+                revision: Some(999),
+            },
+        ));
         assert!(bridge.complete_command(
             "classic-session",
             ClassicCommandCompletion {

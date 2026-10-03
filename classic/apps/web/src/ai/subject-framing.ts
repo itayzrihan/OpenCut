@@ -6,6 +6,7 @@ import {
 	parseTimelineDocumentV2,
 } from "./timeline-document-v2";
 import { updateSceneInArray } from "@/timeline/scenes";
+import { requestSubjectDetections } from "./subject-detector-client";
 function waitForVideo({
 	video,
 	event,
@@ -109,16 +110,13 @@ export async function detectSubjectFraming({
 				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 				frames.push(canvas.toDataURL("image/jpeg", 0.85).split(",")[1]);
 			}
-			const response = await fetch("/api/local-subject-framing", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ frames }),
-				signal,
-			});
-			const data = await response.json();
-			if (!response.ok) throw new Error(data.error ?? "Local detector failed");
+			const detection = await requestSubjectDetections({ frames, signal });
+			if (!detection.available && !allowFallback)
+				throw new Error(detection.error);
 			const resolved = resolveLocalSubjectFraming({
-				detectionsJson: JSON.stringify(data),
+				detectionsJson: JSON.stringify(
+					detection.available ? detection.data : { frames: [] },
+				),
 			});
 			if (!resolved.valid) {
 				if (!allowFallback) throw new Error(`${asset.name}: ${resolved.error}`);
@@ -212,6 +210,8 @@ export async function runLocalSubjectFraming({
 	return {
 		added: true,
 		warnings,
-		message: `Centered ${framing.length} clips using local face/body detection (${faceSamples} face samples, ${bodySamples} matched body samples). Stable crop; no cloud/LLM request. Undo restores the previous framing.`,
+		message: warnings.length
+			? `Framed ${framing.length} clips; ${warnings.length} sources used centered-cover fallback. Undo restores the previous framing.`
+			: `Centered ${framing.length} clips using local face/body detection (${faceSamples} face samples, ${bodySamples} matched body samples). Stable crop; no cloud/LLM request. Undo restores the previous framing.`,
 	};
 }

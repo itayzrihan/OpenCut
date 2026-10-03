@@ -27,6 +27,8 @@ export interface MediaAssetData {
 	storageKind?: "copied" | "linked";
 	sourcePath?: string;
 	missing?: boolean;
+	bindingRevision?: number;
+	canUndoRelink?: boolean;
 	width?: number;
 	height?: number;
 	duration?: number;

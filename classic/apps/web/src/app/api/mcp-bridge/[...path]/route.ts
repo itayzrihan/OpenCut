@@ -1,3 +1,6 @@
+import { withAccount, requireAccount } from "@/accounts/server";
+import { scopedBridgeSession, accountBridgeCommand } from "@/accounts/bridge-scope";
+import { readBoundedBody } from "@/accounts/request-body";
 import { readdir, readFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,7 +12,9 @@ export const dynamic = "force-dynamic";
 
 const bridgeConfigSchema = z
 	.object({
-		version: z.literal(1),
+		// Version 2 binds command completions and disconnects to their session.
+		// Older bridges cannot provide the isolation required by local accounts.
+		version: z.literal(2),
 		baseUrl: z.url(),
 		token: z.string().min(32),
 		pid: z.number().int().positive(),
@@ -196,17 +201,26 @@ async function proxyBridgeRequest({
 		);
 	}
 
-	const { path } = await context.params;
+	const { path: inputPath } = await context.params;
+	const path = [...inputPath];
 	if (
 		path.length === 0 ||
 		path.some((segment) => !/^[a-zA-Z0-9._-]+$/.test(segment))
 	) {
 		return NextResponse.json({ error: "Invalid bridge path" }, { status: 400 });
 	}
-	const body =
-		request.method === "GET" || request.method === "HEAD"
-			? undefined
-			: await request.arrayBuffer();
+	const permitted = (request.method === "PUT" && path.length === 1 && path[0] === "state") || (request.method === "GET" && path.length === 1 && path[0] === "status") || (path.length === 2 && ((request.method === "GET" && path[0] === "commands") || (request.method === "POST" && path[0] === "results") || (request.method === "DELETE" && path[0] === "session")));
+	if (!permitted) return NextResponse.json({ error: "Unsupported bridge operation" }, { status: 400 });
+	const accountId = requireAccount().id;
+	let body: ArrayBuffer | undefined;
+	try {
+		body = request.method === "GET" ? undefined : await readBoundedBody(request, 32 * 1024 * 1024);
+		if (path[0] === "state" && body) {
+			const snapshot = JSON.parse(new TextDecoder().decode(body));
+			snapshot.sessionId = scopedBridgeSession(accountId, snapshot.sessionId);
+			body = new TextEncoder().encode(JSON.stringify(snapshot)).buffer;
+		} else if (path.length === 2) path[1] = scopedBridgeSession(accountId, path[1]);
+	} catch { return NextResponse.json({ error: "Invalid account bridge request" }, { status: 400 }); }
 	const contentType = request.headers.get("content-type");
 
 	const responses = (
@@ -256,7 +270,7 @@ async function proxyBridgeRequest({
 			}),
 		);
 		return NextResponse.json({
-			commands: batches.flatMap((batch) => batch.commands ?? []),
+			commands: batches.flatMap((batch) => batch.commands ?? []).map((command) => accountBridgeCommand(accountId, command)),
 		});
 	}
 
@@ -313,21 +327,29 @@ async function proxyBridgeRequest({
 
 // Next.js requires positional request/context parameters for route handlers.
 // eslint-disable-next-line opencut/prefer-object-params
-export function GET(request: Request, context: RouteContext) {
+function GETHandler(request: Request, context: RouteContext) {
 	return proxyBridgeRequest({ request, context });
 }
 
 // eslint-disable-next-line opencut/prefer-object-params
-export function PUT(request: Request, context: RouteContext) {
+function PUTHandler(request: Request, context: RouteContext) {
 	return proxyBridgeRequest({ request, context });
 }
 
 // eslint-disable-next-line opencut/prefer-object-params
-export function POST(request: Request, context: RouteContext) {
+function POSTHandler(request: Request, context: RouteContext) {
 	return proxyBridgeRequest({ request, context });
 }
 
 // eslint-disable-next-line opencut/prefer-object-params
-export function DELETE(request: Request, context: RouteContext) {
+function DELETEHandler(request: Request, context: RouteContext) {
 	return proxyBridgeRequest({ request, context });
 }
+
+export const GET = withAccount(GETHandler);
+
+export const PUT = withAccount(PUTHandler);
+
+export const POST = withAccount(POSTHandler);
+
+export const DELETE = withAccount(DELETEHandler);

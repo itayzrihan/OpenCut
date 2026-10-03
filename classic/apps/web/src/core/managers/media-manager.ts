@@ -6,6 +6,7 @@ import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
 import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
+import { localDriveRequest } from "@/services/local-drive/client";
 
 export class MediaManager {
 	private assets: MediaAsset[] = [];
@@ -13,6 +14,44 @@ export class MediaManager {
 	private listeners = new Set<() => void>();
 
 	constructor(private editor: EditorCore) {}
+
+	async relink({
+		projectId,
+		id,
+		source,
+		undo = false,
+	}: {
+		projectId: string;
+		id: string;
+		source: string;
+		undo?: boolean;
+	}) {
+		const asset = this.assets.find((item) => item.id === id);
+		if (!asset || this.editor.project.getActive()?.metadata.id !== projectId)
+			throw new Error("Open the target project before relinking");
+		await localDriveRequest({
+			operation: undo ? "media.relink.undo" : "media.relink",
+			payload: {
+				projectId,
+				id,
+				source,
+				expectedRevision: asset.bindingRevision ?? 0,
+				requestId: generateUUID(),
+			},
+		});
+		videoCache.clearVideo({ mediaId: id });
+		waveformCache.clearAll();
+		const refreshed = await storageService.loadMediaAsset({ projectId, id });
+		if (
+			refreshed &&
+			this.editor.project.getActive()?.metadata.id === projectId
+		) {
+			this.assets = this.assets.map((item) =>
+				item.id === id ? refreshed : item,
+			);
+			this.notify();
+		}
+	}
 
 	async addMediaAsset({
 		projectId,

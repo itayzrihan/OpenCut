@@ -13,7 +13,9 @@ import {
 	unlink,
 	writeFile,
 } from "node:fs/promises";
-import { homedir, platform } from "node:os";
+import { platform } from "node:os";
+import { accountDataRoot } from "@/accounts/server";
+import { assertAccountMediaSource } from "@/accounts/media-source";
 import {
 	basename,
 	extname,
@@ -61,6 +63,9 @@ interface StoredMediaRecord extends MediaAssetData {
 	storageKind: MediaStorageKind;
 	storedPath?: string;
 	sourcePath?: string;
+	bindingRevision?: number;
+	bindingHistory?: StoredMediaRecord[];
+	bindingRequestId?: string;
 }
 
 interface StoredFontRecord extends ProjectFontData {
@@ -76,11 +81,7 @@ interface ProjectLibraryEntry {
 }
 
 function driveRoot(): string {
-	const configured = process.env.POCUT_PROJECTS_DIR?.trim();
-	return resolve(
-		/* turbopackIgnore: true */ configured ||
-			join(homedir(), "Movies", "PoCut Projects"),
-	);
+	return accountDataRoot();
 }
 
 function projectsRoot(): string {
@@ -682,8 +683,8 @@ function storedMediaPath(projectId: string, record: StoredMediaRecord): string {
 		throw new Error(`Copied media ${record.id} has no stored path`);
 	}
 	return assertContainedPath({
-		root: projectRoot(projectId),
-		path: join(projectRoot(projectId), record.storedPath),
+		root: mediaRoot(projectId),
+		path: join(projectRoot(projectId), record.storedPath.replaceAll("\\", "/")),
 	});
 }
 
@@ -695,11 +696,69 @@ function clientMediaRecord(
 		return { ...record, sourcePath: "", missing: false };
 	}
 	const sourcePath = storedMediaPath(projectId, record);
+	const { bindingHistory, ...publicRecord } = record;
 	return {
-		...record,
+		...publicRecord,
 		sourcePath,
 		missing: !existsSync(sourcePath),
+		canUndoRelink: !!bindingHistory?.length,
 	};
+}
+
+export async function relinkMedia(
+	projectId: string,
+	mediaId: string,
+	source: string,
+	expectedRevision: number,
+	requestId: string,
+	undo: boolean,
+	transaction: (options: {
+		recordJson: string;
+		source: string;
+		expectedRevision: number;
+		undo: boolean;
+	}) => string,
+) {
+	assertId(mediaId, "media id");
+	assertId(requestId, "request id");
+	if (!Number.isInteger(expectedRevision) || expectedRevision < 0 || expectedRevision >= 0xffffffff) throw new Error("Invalid media binding revision");
+	if (!(await getProject(projectId))) throw new Error("Project does not exist");
+	let result: StoredMediaRecord | undefined;
+	await mutateMediaIndex(projectId, async (records) => {
+		const index = records.findIndex((record) => record.id === mediaId);
+		if (index < 0) throw new Error("Media does not exist in this project");
+		const record = records[index];
+		if (record.bindingRequestId === requestId) {
+			result = record;
+			return records;
+		}
+		let path = "";
+		if (!undo) {
+			if (!isAbsolute(source))
+				throw new Error("Choose an absolute source path");
+			path = await assertAccountMediaSource(source);
+			const info = await stat(path);
+			if (!info.isFile()) throw new Error("Replacement source is not a file");
+			if (record.size > 0 && info.size !== record.size)
+				throw new Error(
+					"The file size differs from the original. Choose the original source file to preserve all cut timings.",
+				);
+			if (!mimeTypeForPath(path).startsWith(`${record.type}/`))
+				throw new Error("Replacement media type differs from the original");
+		}
+		result = JSON.parse(
+			transaction({
+				recordJson: JSON.stringify(record),
+				source: path,
+				expectedRevision,
+				undo,
+			}),
+		);
+		result!.bindingRequestId = requestId;
+		records[index] = result!;
+		return records;
+	});
+	return clientMediaRecord(projectId, result!);
 }
 
 export async function listMedia(
@@ -718,6 +777,7 @@ export async function getMediaFile(projectId: string, mediaId: string) {
 	if (!record) return null;
 	if (record.unifiedAngles) return null;
 	const path = storedMediaPath(projectId, record);
+	if (record.storageKind === "linked") await assertAccountMediaSource(path);
 	const fileStat = await stat(path).catch(() => null);
 	if (!fileStat?.isFile()) return null;
 	return { path, record, stat: fileStat };
@@ -731,6 +791,15 @@ export async function putMediaMetadata(
 	await mutateMediaIndex(projectId, (records) => {
 		const index = records.findIndex((item) => item.id === metadata.id);
 		if (index < 0) {
+			if (metadata.missing === true) {
+				records.push({
+					...metadata,
+					storageKind: "copied",
+					sourcePath: undefined,
+					storedPath: `media/files/${metadata.id}--offline-source`,
+				});
+				return records;
+			}
 			if (!metadata.unifiedAngles) {
 				throw new Error("Media bytes or source path must be registered first");
 			}
@@ -773,7 +842,7 @@ export async function registerMediaPath({
 	if (!record.sourcePath || !isAbsolute(record.sourcePath)) {
 		throw new Error("A valid absolute source path is required");
 	}
-	const sourcePath = normalize(record.sourcePath);
+	const sourcePath = await assertAccountMediaSource(record.sourcePath);
 	const sourceStat = await stat(sourcePath);
 	if (!sourceStat.isFile()) throw new Error("Media source is not a file");
 	const storageDisposition = disposition({
@@ -801,7 +870,10 @@ export async function registerMediaPath({
 		if (resolve(sourcePath) !== resolve(destination)) {
 			await copyFile(sourcePath, destination);
 		}
-		baseRecord.storedPath = relative(projectRoot(projectId), destination);
+		baseRecord.storedPath = relative(
+			projectRoot(projectId),
+			destination,
+		).replaceAll("\\", "/");
 		delete baseRecord.sourcePath;
 	}
 
@@ -814,8 +886,11 @@ export async function registerMediaPath({
 		) {
 			await rm(
 				assertContainedPath({
-					root: projectRoot(projectId),
-					path: join(projectRoot(projectId), oldRecord.storedPath),
+					root: mediaRoot(projectId),
+					path: join(
+						projectRoot(projectId),
+						oldRecord.storedPath.replaceAll("\\", "/"),
+					),
 				}),
 				{ force: true },
 			).catch(() => undefined);
@@ -884,7 +959,10 @@ export async function storeUploadedMedia({
 			fileName: cleanedName,
 			mimeType: mimeType || mimeTypeForPath(cleanedName),
 			storageKind: "copied",
-			storedPath: relative(projectRoot(projectId), destination),
+			storedPath: relative(projectRoot(projectId), destination).replaceAll(
+				"\\",
+				"/",
+			),
 		};
 		await mutateMediaIndex(projectId, (records) => [
 			...records.filter((item) => item.id !== mediaId),
@@ -1027,8 +1105,8 @@ export async function getFontFile(projectId: string, fontId: string) {
 	);
 	if (!record) return null;
 	const path = assertContainedPath({
-		root: projectRoot(projectId),
-		path: join(projectRoot(projectId), record.storedPath),
+		root: fontRoot(projectId),
+		path: join(projectRoot(projectId), record.storedPath.replaceAll("\\", "/")),
 	});
 	const fileStat = await stat(path).catch(() => null);
 	if (!fileStat?.isFile()) return null;
@@ -1064,7 +1142,7 @@ export async function storeUploadedFont({
 			createWriteStream(temporaryPath, { flags: "wx" }),
 		);
 		await rename(temporaryPath, destination);
-		return relative(projectRoot(projectId), destination);
+		return relative(projectRoot(projectId), destination).replaceAll("\\", "/");
 	} catch (error) {
 		await unlink(temporaryPath).catch(() => undefined);
 		throw error;
@@ -1081,6 +1159,10 @@ export async function putFontMetadata(
 		const existing = records.find((item) => item.id === font.id);
 		const path = storedPath ?? existing?.storedPath;
 		if (!path) throw new Error("Font bytes must be stored before metadata");
+		assertContainedPath({
+			root: fontRoot(projectId),
+			path: join(projectRoot(projectId), path.replaceAll("\\", "/")),
+		});
 		return [
 			...records.filter((item) => item.id !== font.id),
 			{ ...font, storedPath: path },
@@ -1094,8 +1176,11 @@ export async function deleteFont(projectId: string, fontId: string) {
 		if (record) {
 			await rm(
 				assertContainedPath({
-					root: projectRoot(projectId),
-					path: join(projectRoot(projectId), record.storedPath),
+					root: fontRoot(projectId),
+					path: join(
+						projectRoot(projectId),
+						record.storedPath.replaceAll("\\", "/"),
+					),
 				}),
 				{ force: true },
 			);

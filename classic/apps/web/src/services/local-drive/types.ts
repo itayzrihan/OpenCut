@@ -14,6 +14,8 @@ export interface LocalDriveMediaRecord extends MediaAssetData {
 	storageKind: MediaStorageKind;
 	sourcePath: string;
 	missing?: boolean;
+	bindingRevision?: number;
+	canUndoRelink?: boolean;
 }
 
 export interface StoredProjectFontRecord extends ProjectFont {
@@ -27,6 +29,7 @@ export type LocalDriveOperation =
 	| "project.listOutdated"
 	| "project.get"
 	| "project.put"
+	| "project.recoverBrowser"
 	| "project.delete"
 	| "history.get"
 	| "history.put"
@@ -36,6 +39,8 @@ export type LocalDriveOperation =
 	| "media.registerPath"
 	| "media.registerPaths"
 	| "media.pick"
+	| "media.relink"
+	| "media.relink.undo"
 	| "media.delete"
 	| "media.clear"
 	| "font.list"

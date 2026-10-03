@@ -41,7 +41,7 @@ self.onmessage = (event: MessageEvent<WaveformWorkerMessage>) => {
 				type: "build-summary-complete",
 				summary,
 			} satisfies WaveformWorkerResponse,
-			transfer,
+			{ transfer },
 		);
 	} catch (error) {
 		self.postMessage({

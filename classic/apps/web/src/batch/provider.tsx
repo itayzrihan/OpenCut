@@ -1,4 +1,5 @@
 "use client";
+import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 import {
 	createContext,
 	useCallback,
@@ -147,12 +148,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		void refresh().catch(() => {});
 	};
 	const checkModel = async () => {
-		const response = await fetch("/api/transcription/whisper-cpp");
-		const model = await response.json();
-		if (!response.ok || !model.ivritLargeV3)
-			throw new Error(
-				"Configure ivrit-ai Whisper large-v3 before starting automatic editing",
-			);
+		assertBrowserTranscriptionAvailable();
 	};
 	const startProject: StartProject = async ({
 		editor,
@@ -369,9 +365,9 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 						</div>
 						<p className="text-xs text-muted-foreground">
 							Always included: vertical cover, local face/body centering,
-							silence removal at 0.3s, Hebrew ivrit-ai large-v3, 1-row Auto
-							Texts, Assistant bold, centered captions, hidden punctuation, fade
-							60% / 25% and black edge feather.
+							silence removal at 0.3s, Hebrew ivrit-ai Large v3 Turbo in your
+							browser, 1-row Auto Texts, Assistant bold, centered captions,
+							hidden punctuation, fade 60% / 25% and black edge feather.
 						</p>
 						<p className="text-xs text-muted-foreground">
 							You can keep using the app. Automatic edits show live progress and

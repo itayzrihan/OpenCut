@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { basename } from "node:path";
@@ -63,7 +64,7 @@ const schema = z.discriminatedUnion("action", [
 		projectId: z.string().uuid().optional(),
 	}),
 ]);
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		return NextResponse.json(await getBatchState());
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
 		);
 	}
 }
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const raw = await request.text();
@@ -110,3 +111,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

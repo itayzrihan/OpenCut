@@ -1,3 +1,5 @@
+import { withAccount } from "@/accounts/server";
+import { readBoundedBody } from "@/accounts/request-body";
 import { NextRequest, NextResponse } from "next/server";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -20,17 +22,7 @@ const schema = z
 	})
 	.strict();
 let running = 0;
-export async function POST(request: NextRequest) {
-	const host = request.nextUrl.hostname;
-	if (
-		!["localhost", "127.0.0.1", "[::1]"].includes(host) ||
-		(request.headers.get("origin") &&
-			request.headers.get("origin") !== request.nextUrl.origin)
-	)
-		return NextResponse.json(
-			{ error: "Local same-origin detector only" },
-			{ status: 403 },
-		);
+async function POSTHandler(request: NextRequest) {
 	if (running >= 2)
 		return NextResponse.json(
 			{ error: "Local detector is busy; try again" },
@@ -38,7 +30,7 @@ export async function POST(request: NextRequest) {
 		);
 	if (Number(request.headers.get("content-length")) > 1400000)
 		return NextResponse.json({ error: "Frames too large" }, { status: 413 });
-	const raw = await request.text();
+	const raw = new TextDecoder().decode(await readBoundedBody(request, 1400000));
 	if (raw.length > 1400000)
 		return NextResponse.json({ error: "Frames too large" }, { status: 413 });
 	const parsed = schema.safeParse(
@@ -52,7 +44,8 @@ export async function POST(request: NextRequest) {
 			{ status: 400 },
 		);
 	const root = resolve(process.cwd(), "../..");
-	const python = join(
+	const packagedPython = join(root, "../native/subject-framing/python.exe");
+	const python = existsSync(packagedPython) ? packagedPython : join(
 		root,
 		".local",
 		"subject-framing",
@@ -99,3 +92,5 @@ export async function POST(request: NextRequest) {
 		await rm(work, { recursive: true, force: true });
 	}
 }
+
+export const POST = withAccount(POSTHandler);

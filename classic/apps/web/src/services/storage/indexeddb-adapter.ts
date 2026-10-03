@@ -1,4 +1,5 @@
 import type { StorageAdapter } from "./types";
+import { accountNamespace } from "@/accounts/browser";
 
 const DELETE_DATABASE_BLOCKED_TIMEOUT_MS = 5_000;
 
@@ -33,7 +34,7 @@ export class IndexedDBAdapter<T> implements StorageAdapter<T> {
 
 	private async getDB(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
-			const request = indexedDB.open(this.dbName, this.version);
+			const request = indexedDB.open(accountNamespace(this.dbName), this.version);
 
 			request.onerror = () => reject(request.error);
 			request.onsuccess = () => {
@@ -201,7 +202,7 @@ export async function deleteDatabase({
 	blockedTimeoutMs?: number;
 }): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.deleteDatabase(dbName);
+		const request = indexedDB.deleteDatabase(accountNamespace(dbName));
 		const blockedWaitMs = Number.isFinite(blockedTimeoutMs)
 			? Math.max(0, blockedTimeoutMs)
 			: DELETE_DATABASE_BLOCKED_TIMEOUT_MS;

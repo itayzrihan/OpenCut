@@ -268,7 +268,7 @@ function getTranscriptionStep({ phase }: { phase?: string }): string {
 		case "cancelling":
 			return "Cancelling...";
 		default:
-			return "Processing transcript...";
+			return phase || "Processing transcript...";
 	}
 }
 
@@ -1477,11 +1477,13 @@ export function Captions() {
 							{isTranscriptionProcessing
 								? transcriptionState.task.status === "cancelling"
 									? "Cancelling..."
-									: `Cancel · ${getTranscriptionStep({ phase: transcriptionState.task.phase })}`
+									: "Cancel transcription"
 								: isLocalProcessing
 									? processing.step
 									: "Generate transcript"}
 						</Button>
+						{isTranscriptionProcessing && <p role="status" className="text-xs text-muted-foreground break-words">{getTranscriptionStep({ phase: transcriptionState.task.phase })}</p>}
+						<p className="text-xs text-muted-foreground">ivrit-ai Large v3 Turbo runs in this browser. First use downloads approximately 1.6 GB, then reuses cached weights. <a className="underline" href="/transcription-check" target="_blank" rel="noreferrer">Test this device</a></p>
 						<Button
 							type="button"
 							variant="outline"

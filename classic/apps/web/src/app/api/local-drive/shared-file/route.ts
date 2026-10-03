@@ -1,3 +1,4 @@
+import { withAccount } from "@/accounts/server";
 /* eslint-disable opencut/prefer-object-params -- Route helpers mirror URL parameter access. */
 import { createReadStream } from "node:fs";
 import { Readable } from "node:stream";
@@ -17,7 +18,7 @@ function required(params: URLSearchParams, key: string): string {
 	return value;
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const params = new URL(request.url).searchParams;
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		if (!request.body) throw new Error("File request body is required");
@@ -70,3 +71,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

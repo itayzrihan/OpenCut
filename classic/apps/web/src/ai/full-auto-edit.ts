@@ -14,6 +14,7 @@ import { runAutomaticZoom } from "./automatic-zoom";
 import { runAutomaticTextTransitions } from "./automatic-text-transitions";
 import { runAutomaticWordAnimation } from "./automatic-word-animation";
 import { loadProjectFont, isProjectFontLoaded } from "@/fonts/custom-fonts";
+import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
 	zoom: boolean;
@@ -149,14 +150,7 @@ export async function runFullAutoEdit({
 					if (!isProjectFontLoaded({ family: font.family }))
 						throw new Error("The custom Assistant font file is unavailable");
 					fontFamily = font.family;
-					const response = await fetch("/api/transcription/whisper-cpp", {
-						signal,
-					});
-					const model = await response.json();
-					if (!response.ok || !model.ivritLargeV3)
-						throw new Error(
-							"Full Auto Edit requires the configured ivrit-ai Whisper large-v3 model",
-						);
+					assertBrowserTranscriptionAvailable();
 					break;
 				}
 				case "framing": {

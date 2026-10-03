@@ -203,7 +203,8 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		if (isMissingFreesoundKey()) {
+		const apiKey = webEnv.FREESOUND_API_KEY;
+		if (!apiKey || isMissingFreesoundKey()) {
 			return NextResponse.json({
 				count: 0,
 				next: null,
@@ -224,7 +225,7 @@ export async function GET(request: NextRequest) {
 
 		const params = new URLSearchParams({
 			query: query || "",
-			token: webEnv.FREESOUND_API_KEY,
+			token: apiKey,
 			page: page.toString(),
 			page_size: pageSize.toString(),
 			sort: sortParam,

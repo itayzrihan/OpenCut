@@ -1,4 +1,5 @@
 import { BatchEditRoot } from "@/batch/root";
+import { AccountGate } from "@/accounts/gate";
 import { ThemeProvider } from "next-themes";
 import Script from "next/script";
 import "./globals.css";
@@ -31,6 +32,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<script src="/account-scope.js" />
 				<BotIdClient protect={protectedRoutes} />
 				<link rel="stylesheet" href={TYPEKIT_STYLESHEET_URL} />
 			</head>
@@ -43,19 +45,23 @@ export default function RootLayout({
 					<TooltipProvider>
 						<ElectronBackButton />
 						<Toaster />
-						<Script
-							src="https://cdn.databuddy.cc/databuddy.js"
-							strategy="afterInteractive"
-							async
-							data-client-id="UP-Wcoy5arxFeK7oyjMMZ"
-							data-disabled={webEnv.NODE_ENV === "development"}
-							data-track-attributes={false}
-							data-track-errors={true}
-							data-track-outgoing-links={false}
-							data-track-web-vitals={false}
-							data-track-sessions={false}
-						/>
-						<BatchEditRoot>{children}</BatchEditRoot>
+						{webEnv.OPENCUT_ENABLE_TELEMETRY === "true" && (
+							<Script
+								src="https://cdn.databuddy.cc/databuddy.js"
+								strategy="afterInteractive"
+								async
+								data-client-id="UP-Wcoy5arxFeK7oyjMMZ"
+								data-disabled={webEnv.NODE_ENV === "development"}
+								data-track-attributes={false}
+								data-track-errors={true}
+								data-track-outgoing-links={false}
+								data-track-web-vitals={false}
+								data-track-sessions={false}
+							/>
+						)}
+						<AccountGate>
+							<BatchEditRoot>{children}</BatchEditRoot>
+						</AccountGate>
 					</TooltipProvider>
 				</ThemeProvider>
 			</body>

@@ -1,3 +1,7 @@
+import { withAccount } from "@/accounts/server";
+import { prepareBrowserProjectRecovery } from "@/accounts/browser-project-recovery";
+import { browserRecoveryProject, mediaRelinkBinding } from "opencut-wasm";
+import { readBoundedBody } from "@/accounts/request-body";
 import {
 	assertBatchProjectWrite,
 	assertNoActiveBatch,
@@ -43,6 +47,7 @@ import {
 	putSharedRecord,
 	putPreference,
 	registerMediaPath,
+	relinkMedia,
 } from "@/services/local-drive/server";
 import type { LocalDriveOperation } from "@/services/local-drive/types";
 
@@ -73,7 +78,7 @@ function readNonNegativeInteger(value: unknown, label: string): number {
 	return value;
 }
 
-export async function GET(request: Request) {
+async function GETHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		return NextResponse.json(await getLocalDriveStatus(), {
@@ -87,10 +92,14 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
-		const body = (await request.json()) as Record<string, unknown>;
+		const body = JSON.parse(
+			new TextDecoder().decode(
+				await readBoundedBody(request, 128 * 1024 * 1024),
+			),
+		) as Record<string, unknown>;
 		const operation = readString(
 			body.operation,
 			"operation",
@@ -101,6 +110,7 @@ export async function POST(request: Request) {
 
 		const projectWrites = [
 			"project.put",
+			"project.recoverBrowser",
 			"project.delete",
 			"history.put",
 			"history.delete",
@@ -108,6 +118,8 @@ export async function POST(request: Request) {
 			"media.registerPath",
 			"media.registerPaths",
 			"media.pick",
+			"media.relink",
+			"media.relink.undo",
 			"media.delete",
 			"media.clear",
 			"font.put",
@@ -135,6 +147,18 @@ export async function POST(request: Request) {
 				);
 			case "project.get":
 				return NextResponse.json(await getProject(projectId()));
+			case "project.recoverBrowser":
+				return NextResponse.json(
+					await prepareBrowserProjectRecovery(
+						projectId(),
+						readString(body.destinationId, "destinationId"),
+						body.project,
+						body.history,
+						body.media,
+						body.fonts,
+						browserRecoveryProject,
+					),
+				);
 			case "project.put":
 				await withBatchProjectWrite({
 					projectId: projectId(),
@@ -159,6 +183,27 @@ export async function POST(request: Request) {
 				return NextResponse.json({ ok: true });
 			case "media.list":
 				return NextResponse.json(await listMedia(projectId()));
+			case "media.relink":
+			case "media.relink.undo":
+				return NextResponse.json(
+					await withBatchProjectWrite({
+						projectId: projectId(),
+						token: request.headers.get("X-OpenCut-Batch-Token"),
+						write: () =>
+							relinkMedia(
+								projectId(),
+								readString(body.id, "media id"),
+								typeof body.source === "string" ? body.source : "",
+								readNonNegativeInteger(
+									body.expectedRevision,
+									"expectedRevision",
+								),
+								readString(body.requestId, "requestId"),
+								operation === "media.relink.undo",
+								mediaRelinkBinding,
+							),
+					}),
+				);
 			case "media.put":
 				await putMediaMetadata(
 					projectId(),
@@ -271,3 +316,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

@@ -14,7 +14,7 @@ export interface SharedAudioAsset {
 	duration?: number;
 	sourceUrl?: string;
 	repositoryPath?: string;
-	storageKind?: "repo" | "browser";
+	storageKind?: "repo" | "browser" | "account";
 	fileName?: string;
 	createdAt: string;
 	updatedAt: string;
@@ -30,7 +30,7 @@ export interface SharedStickerAsset {
 	dataUrl?: string;
 	sourceUrl?: string;
 	repositoryPath?: string;
-	storageKind?: "repo" | "browser";
+	storageKind?: "repo" | "browser" | "account";
 	fileName?: string;
 	createdAt: string;
 	updatedAt: string;

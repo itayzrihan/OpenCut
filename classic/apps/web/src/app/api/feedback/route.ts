@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/auth/rate-limit";
 import { submitFeedback, MAX_MESSAGE_LENGTH } from "@/feedback";
+import { webEnv } from "@/env/web";
 
 const submitSchema = z.object({
 	message: z
@@ -11,6 +12,7 @@ const submitSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+	if (!webEnv.DATABASE_URL) return NextResponse.json({ error: "Hosted feedback is not configured on this local installation." }, { status: 503 });
 	const { limited } = await checkRateLimit({ request });
 	if (limited) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });

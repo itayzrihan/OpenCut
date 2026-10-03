@@ -8,7 +8,7 @@ import {
 	type CaptionLayoutSettings,
 } from "@/subtitles/caption-layout";
 import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
-import { transcribeTimelineAudioBlob } from "@/transcription/server-client";
+import { transcribeTimelineAudioBlob } from "@/transcription/browser-client";
 import type {
 	CaptionChunk,
 	TranscriptionLanguage,
@@ -134,6 +134,24 @@ export class TranscriptionManager {
 				audioBlob,
 				language,
 				signal: abortController.signal,
+				onProgress: (progress) => {
+					if (abortController.signal.aborted) return;
+					this.updateProgress({
+						taskId,
+						// Newly discovered download files can lower the byte percentage;
+						// the canonical Rust task requires monotonic overall progress.
+						progressBasisPoints: Math.max(
+							this.state.task.progressBasisPoints,
+							progress.status === "loading-model"
+								? 1500 +
+										Math.round(
+											Math.max(0, Math.min(100, progress.progress || 0)) * 25,
+										)
+								: 4500,
+						),
+						phase: progress.message || progress.status,
+					});
+				},
 			});
 			this.throwIfCancelled();
 			this.updateProgress({

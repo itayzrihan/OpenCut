@@ -131,10 +131,11 @@ export function FullAutoEditButton({
 							</label>
 						))}
 						<p className="text-xs text-muted-foreground">
-							Hebrew · ivrit-ai large-v3 · 1 row · silence 0.3s · Assistant bold
-							· fade 60% / 25%. Local face/body framing uses five source samples
-							per source; no cloud AI is used for centering. Uncertain subjects
-							use centered vertical cover automatically; editing continues.
+							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · silence
+							0.3s · Assistant bold · fade 60% / 25%. Local face/body framing
+							uses five source samples per source; no cloud AI is used for
+							centering. Uncertain subjects use centered vertical cover
+							automatically; editing continues.
 						</p>
 						{status && (
 							<p role="status" className="text-sm whitespace-pre-wrap">

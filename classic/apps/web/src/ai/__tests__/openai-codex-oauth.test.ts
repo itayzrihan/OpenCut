@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import { accountScope } from "@/accounts/server";
 
 const oauthSessionDir = mkdtempSync(join(tmpdir(), "opencut-oauth-test-"));
 
@@ -84,7 +85,7 @@ describe("OpenAI Codex OAuth helpers", () => {
 		const { getOpenAIOAuthStatus, setCredentialsCookie, testing } =
 			await import("@/ai/server/openai-codex-oauth");
 		const sessionBinding = createHash("sha256")
-			.update("sessionless")
+			.update(JSON.stringify(["alice", "alice-session", "browser-binding"]))
 			.digest("base64url");
 		const response = NextResponse.json({ ok: true });
 
@@ -113,15 +114,59 @@ describe("OpenAI Codex OAuth helpers", () => {
 			"http://localhost:3000/api/ai/oauth/status",
 			{
 				headers: {
-					cookie: `opencut_openai_oauth_session=${sessionCookie}`,
+					cookie: `opencut_openai_oauth_session=${sessionCookie}; opencut-account=alice-session; opencut_openai_oauth_binding=browser-binding`,
 				},
 			},
 		);
-		const result = await getOpenAIOAuthStatus({ request });
+		const result = await accountScope.run(
+			{ id: "alice", login: "alice", displayName: "Alice" },
+			() => getOpenAIOAuthStatus({ request }),
+		);
 
 		expect(result.status.authenticated).toBe(true);
 		expect(result.status.identity?.accountId).toBe("acct-large-token");
 		expect(result.credentials?.access.startsWith("access-")).toBe(true);
+
+		const { clearOpenAICredentials } = await import(
+			"@/ai/server/openai-codex-oauth"
+		);
+		const bob = { id: "bob", login: "bob", displayName: "Bob" };
+		const stolenCookieRequest = new NextRequest(request.url, {
+			headers: { cookie: request.headers.get("cookie")! },
+		});
+		const other = await accountScope.run(bob, () =>
+			getOpenAIOAuthStatus({ request: stolenCookieRequest }),
+		);
+		expect(other.status.authenticated).toBe(false);
+		expect(other.credentials).toBeUndefined();
+		accountScope.run(bob, () =>
+			clearOpenAICredentials({
+				request: stolenCookieRequest,
+				response: NextResponse.json({}),
+			}),
+		);
+		expect(
+			(
+				await accountScope.run(
+					{ id: "alice", login: "alice", displayName: "Alice" },
+					() => getOpenAIOAuthStatus({ request }),
+				)
+			).status.authenticated,
+		).toBe(true);
+		for (const cookie of [
+			`opencut_openai_oauth_session=${sessionCookie}`,
+			`opencut_openai_oauth_session=${sessionCookie}; opencut-account=rotated-session; opencut_openai_oauth_binding=browser-binding`,
+		]) {
+			const changed = new NextRequest(request.url, { headers: { cookie } });
+			expect(
+				(
+					await accountScope.run(
+						{ id: "alice", login: "alice", displayName: "Alice" },
+						() => getOpenAIOAuthStatus({ request: changed }),
+					)
+				).status.authenticated,
+			).toBe(false);
+		}
 	});
 
 	test("normalizes Codex request bodies for the ChatGPT backend", async () => {

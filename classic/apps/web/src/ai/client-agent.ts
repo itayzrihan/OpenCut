@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 import type {
 	AiAgentMessage,
 	AiAgentResult,
@@ -440,7 +441,7 @@ async function callAiChatRoute({
 	signal?: AbortSignal;
 	webSearch?: boolean;
 }): Promise<ResponsesApiResult> {
-	const response = await fetch("/api/ai/chat", {
+	const response = await aiClientFetch("/api/ai/chat", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

@@ -1239,9 +1239,8 @@ function EmptyState() {
 				</div>
 				<h3 className="text-lg font-medium">No projects yet</h3>
 				<p className="text-muted-foreground max-w-md">
-					Projects are stored locally in this browser profile for this exact
-					site address. If you edited in another browser or profile, import a
-					project ZIP here.
+					This account has no projects yet. Create a project, import a project
+					ZIP, or bring your existing work from Account &amp; storage.
 				</p>
 			</div>
 			<div className="flex flex-wrap justify-center gap-3">

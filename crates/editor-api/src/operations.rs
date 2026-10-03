@@ -40,6 +40,8 @@ pub(crate) fn register_all(
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;
+    register_account_storage(registry, state.clone(), events.clone())?;
+    register_account_snapshot_validation(registry, state.clone())?;
     register_application_operations(registry, state.clone(), events.clone())?;
     register_observation_operations(registry, state.clone())?;
     register_project_operations(registry, state.clone(), events.clone())?;
@@ -137,8 +139,8 @@ where
     descriptor.access = access;
     descriptor.idempotent = idempotent;
     descriptor.open_world = open_world;
-    descriptor.transactional = access <= AccessLevel::Write
-        && !open_world
+    descriptor.transactional = (access <= AccessLevel::Write || id == "account.storage.configure")
+        && (!open_world || id == "media.relink")
         && !id.starts_with("history.")
         && !id.starts_with("job.")
         && !matches!(
@@ -329,6 +331,78 @@ struct StatePatchInput {
     expected_revision: Option<u64>,
     #[serde(default = "default_patch_label")]
     label: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AccountStorageInput {
+    account_id: String,
+    configuration: opencut_account_core::StorageConfiguration,
+    expected_revision: u64,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AccountSnapshotInput {
+    manifest: opencut_account_core::snapshot::SnapshotManifest,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct AccountSnapshotValidation {
+    valid: bool,
+    files: usize,
+}
+
+fn register_account_snapshot_validation(registry: &CapabilityRegistry, state: Arc<RwLock<EditorStore>>) -> Result<(), RegistryError> {
+    register::<AccountSnapshotInput, AccountSnapshotValidation, _, _>(
+        registry,
+        "account.snapshot.validate",
+        "Validate an account snapshot manifest",
+        "Validates the supplied portable manifest against the loaded account's identity, path rules and checksum format. This is a pure contract check; it does not read external storage, verify file bytes, transfer data or restore files.",
+        "account", AccessLevel::Read, true, false,
+        &["account", "storage", "snapshot", "validation"],
+        move |_, input| {
+            let state = state.clone();
+            async move {
+                let store = state.read().map_err(|_| CapabilityError::Failed("editor state lock was poisoned".into()))?;
+                let account = store.document.account.as_ref().ok_or_else(|| CapabilityError::InvalidInput("No authenticated account document is loaded".into()))?;
+                input.manifest.validate(&account.id).map_err(CapabilityError::InvalidInput)?;
+                Ok(OperationSuccess::new(AccountSnapshotValidation { valid: true, files: input.manifest.files.len() }))
+            }
+        },
+    )
+}
+
+fn register_account_storage(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+    events: broadcast::Sender<u64>,
+) -> Result<(), RegistryError> {
+    register::<AccountStorageInput, MutationOutput, _, _>(
+        registry,
+        "account.storage.configure",
+        "Configure account storage",
+        "Changes the current account's storage policy using the shared canonical transaction. The host must authenticate the account before loading its document. This operation records policy only; it does not grant filesystem access, pair devices, or transfer data.",
+        "account",
+        AccessLevel::Admin,
+        false,
+        false,
+        &["account", "storage", "local-first", "settings"],
+        move |context, input| {
+            let state = state.clone();
+            let events = events.clone();
+            async move {
+                let output = mutate(&state, &events, &context, "Configure account storage", Some(input.expected_revision), |document| {
+                    let account = document.account.as_mut().ok_or_else(|| CapabilityError::InvalidInput("No authenticated account document is loaded".into()))?;
+                    account.configure_storage(&input.account_id, input.configuration)
+                        .map_err(CapabilityError::InvalidInput)?;
+                    Ok(vec![account.id.clone()])
+                })?;
+                Ok(OperationSuccess::new(output).summary("Configured account storage policy").changed([STATE_RESOURCE]))
+            }
+        },
+    )
 }
 
 fn default_patch_label() -> String {
@@ -1771,6 +1845,7 @@ struct MediaDependenciesOutput {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct MediaRelinkInput {
+    project_id: String,
     asset_id: String,
     new_source: String,
     expected_revision: Option<u64>,
@@ -1881,13 +1956,17 @@ fn register_media_observation_operations(
                     "Relink media",
                     input.expected_revision,
                     |document| {
+                        ensure_project_target(document, &input.project_id)?;
                         let asset = project_mut(document)?
                             .assets
                             .iter_mut()
                             .find(|asset| asset.id == asset_id)
                             .ok_or_else(|| unknown("asset", &asset_id))?;
-                        asset.source = input.new_source;
-                        asset.offline = false;
+                        let updated = opencut_account_core::media::relink(
+                            &serde_json::to_value(&*asset).map_err(|e| CapabilityError::InvalidInput(e.to_string()))?,
+                            &input.new_source,
+                        ).map_err(CapabilityError::InvalidInput)?;
+                        *asset = serde_json::from_value(updated).map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
                         Ok(vec![asset_id.clone()])
                     },
                 )?;
@@ -6410,6 +6489,67 @@ mod tests {
         AccessLevel, CapabilityError, EditorDocument, InvocationContext, OpenCutRuntime, Project,
         ProjectSettings, RegistryError, Timeline, TrackKind,
     };
+
+    #[tokio::test]
+    async fn offline_relink_preserves_timeline_and_roundtrips_through_state_and_undo() {
+        let runtime = OpenCutRuntime::full_access().unwrap();
+        invoke(&runtime, "project.create", json!({"name":"Offline edit"})).await;
+        let imported = invoke(&runtime, "media.import", json!({"name":"Offline clip","source":"missing.mp4","mediaType":"video","durationSeconds":30.0})).await;
+        let id = imported["changedIds"][0].as_str().unwrap();
+        let project = runtime.snapshot().unwrap().project.unwrap();
+        let track = &project.timeline.tracks.iter().find(|t| t.kind == TrackKind::Video).unwrap().id;
+        invoke(&runtime, "timeline.item.add", json!({"trackId":track,"assetId":id,"name":"Retained cut","kind":"video","startSeconds":2.0,"durationSeconds":5.0})).await;
+        invoke(&runtime, "media.update", json!({"id":id,"patch":{"offline":true}})).await;
+        let before = runtime.snapshot().unwrap();
+        let path = std::env::temp_dir().join(format!("opencut-relink-{}-{}.mp4", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::write(&path, b"fixture").unwrap();
+        let input = json!({"projectId":project.id,"assetId":id,"newSource":path.to_string_lossy(),"expectedRevision":before.revision});
+        let preview = runtime.registry().invoke("media.relink", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
+        assert_eq!(preview.result.data["committed"], false);
+        assert_eq!(runtime.snapshot().unwrap().revision, before.revision);
+        invoke(&runtime, "media.relink", input.clone()).await;
+        let state = invoke(&runtime, "app.state.read", json!({})).await;
+        assert_eq!(state["value"]["project"]["assets"][0]["offline"], false);
+        assert_eq!(state["value"]["project"]["timeline"], serde_json::to_value(&before.project.as_ref().unwrap().timeline).unwrap());
+        assert!(matches!(invoke_error(&runtime, "media.relink", input).await, CapabilityError::Conflict(_)));
+        invoke(&runtime, "history.undo", json!({})).await;
+        assert_eq!(runtime.snapshot().unwrap().project.unwrap().assets[0].source, "missing.mp4");
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[tokio::test]
+    async fn account_storage_roundtrips_through_registry_with_revision_and_undo() {
+        let runtime = OpenCutRuntime::full_access().unwrap();
+        invoke(&runtime, "app.state.patch", json!({"patch":[{"op":"add","path":"/account","value":{
+            "id":"alice","displayName":"Alice","storage":{"mode":"localOnly","destinationId":null,"devices":[]}
+        }}],"expectedRevision":0})).await;
+        let mut manifest = json!({"version":1,"accountId":"alice","snapshotId":"snapshot-1","deviceId":"desktop","createdAt":"2026-09-28T00:00:00Z","files":[{"path":"projects/one.json","bytes":12,"sha256":"a".repeat(64)}]});
+        let validation = invoke(&runtime, "account.snapshot.validate", json!({"manifest":manifest})).await;
+        assert_eq!(validation["valid"], true);
+        assert_eq!(runtime.snapshot().unwrap().revision, 1);
+        manifest["accountId"] = json!("bob");
+        assert!(matches!(invoke_error(&runtime, "account.snapshot.validate", json!({"manifest":manifest})).await, CapabilityError::InvalidInput(_)));
+        let configuration = json!({"mode":"externalDrive","destinationId":"folder_1","devices":[],"automaticSnapshots":true});
+        let input = json!({"accountId":"alice","configuration":configuration,"expectedRevision":1});
+        let preview = runtime.registry().invoke("account.storage.configure", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
+        assert_eq!(preview.result.data["committed"], false);
+        assert_eq!(runtime.snapshot().unwrap().revision, 1);
+        invoke(&runtime, "account.storage.configure", input.clone()).await;
+        let state = invoke(&runtime, "app.state.read", json!({})).await;
+        assert_eq!(state["value"]["account"]["storage"], configuration);
+        assert!(matches!(invoke_error(&runtime, "account.storage.configure", input).await, CapabilityError::Conflict(_)));
+        let wrong = json!({"accountId":"bob","configuration":{"mode":"localOnly","destinationId":null,"devices":[]},"expectedRevision":2});
+        assert!(matches!(invoke_error(&runtime, "account.storage.configure", wrong).await, CapabilityError::InvalidInput(_)));
+        invoke(&runtime, "history.undo", json!({})).await;
+        assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
+        let machines = json!({"mode":"personalDevices","destinationId":"shared_folder","devices":[{"id":"desktop","name":"Editing desktop","fingerprint":"b".repeat(64),"enabled":true}],"automaticSnapshots":true});
+        let revision = runtime.snapshot().unwrap().revision;
+        invoke(&runtime, "account.storage.configure", json!({"accountId":"alice","configuration":machines,"expectedRevision":revision})).await;
+        let state = invoke(&runtime, "app.state.read", json!({})).await;
+        assert_eq!(state["value"]["account"]["storage"], machines);
+        invoke(&runtime, "history.undo", json!({})).await;
+        assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
+    }
 
     async fn invoke(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {
         runtime

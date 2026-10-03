@@ -6,6 +6,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+opencut-account-core = { path = "../account-core" }
 async-trait = { workspace = true }
 jsonschema = { workspace = true }
 json-patch = { workspace = true }

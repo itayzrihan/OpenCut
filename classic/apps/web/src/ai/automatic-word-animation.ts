@@ -1,3 +1,4 @@
+import { aiClientFetch } from "@/ai/client-transport";
 /** Browser adapter: AI transport, preview capture and one canonical source transaction.
  * All plan validation, timing, layer construction and sound policy live in Rust.
  */
@@ -133,7 +134,7 @@ export async function runAutomaticWordAnimation({
 			throw new Error(
 				"This timeline exceeds the AI request limit. Use a shorter scene.",
 			);
-		const response = await fetch("/api/ai/chat", {
+		const response = await aiClientFetch("/api/ai/chat", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body,

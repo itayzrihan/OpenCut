@@ -1,7 +1,8 @@
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { stageRepositoryAssetPaths } from "@/git/repository-assets";
+import { accountDataRoot, withAccount } from "@/accounts/server";
 import type {
 	GeneratedBackgroundPreset,
 	GeneratedEffectPreset,
@@ -101,30 +102,7 @@ async function pathExists({ target }: { target: string }): Promise<boolean> {
 	}
 }
 
-async function resolvePublicRoot(): Promise<{
-	publicRoot: string;
-	repositoryRoot: string;
-}> {
-	const cwd = process.cwd();
-	const candidates = [
-		{
-			publicRoot: path.join(cwd, "public"),
-			repositoryRoot: "public",
-		},
-		{
-			publicRoot: path.join(cwd, "apps", "web", "public"),
-			repositoryRoot: path.join("apps", "web", "public"),
-		},
-	];
-
-	for (const candidate of candidates) {
-		if (await pathExists({ target: candidate.publicRoot })) {
-			return candidate;
-		}
-	}
-
-	return candidates[0];
-}
+async function resolvePublicRoot() { return { publicRoot: accountDataRoot(), repositoryRoot: "" }; }
 
 function toRepositoryPath({ parts }: { parts: string[] }): string {
 	return path.posix.join(...parts.flatMap((part) => part.split(path.sep)));
@@ -173,8 +151,9 @@ async function readManifest(): Promise<SharedLibraryManifest> {
 				? parsed.captionPresets
 				: [],
 		};
-	} catch {
-		return emptyManifest();
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return emptyManifest();
+		throw error;
 	}
 }
 
@@ -185,8 +164,9 @@ async function writeManifest({
 }): Promise<void> {
 	const { libraryRoot, manifestPath } = await getSharedLibraryPaths();
 	await mkdir(libraryRoot, { recursive: true });
+	const temporaryPath = `${manifestPath}.${randomUUID()}.tmp`;
 	await writeFile(
-		manifestPath,
+		temporaryPath,
 		`${JSON.stringify(
 			{
 				...manifest,
@@ -198,6 +178,7 @@ async function writeManifest({
 		)}\n`,
 		"utf8",
 	);
+	await rename(temporaryPath, manifestPath);
 }
 
 function sanitizeId({ value }: { value: unknown }): string | null {
@@ -379,7 +360,7 @@ async function handleAudioImport({
 		await writeFile(storedPath, Buffer.from(await file.arrayBuffer()));
 		stagedPaths.push(storedPath);
 
-		const sourceUrl = `/shared-library/audio/${folder}/${storedFileName}`;
+		const sourceUrl = `/api/account-assets/shared-library/audio/${folder}/${storedFileName}`;
 		const asset: SharedAudioAsset = {
 			id,
 			name: readString({ value: input.name, fallback: file.name }),
@@ -402,7 +383,7 @@ async function handleAudioImport({
 					storedFileName,
 				],
 			}),
-			storageKind: "repo",
+			storageKind: "account",
 			fileName: storedFileName,
 			createdAt: readString({
 				value: input.createdAt,
@@ -418,7 +399,6 @@ async function handleAudioImport({
 	}
 
 	await writeManifest({ manifest });
-	await stageRepositoryAssetPaths({ paths: stagedPaths });
 	return NextResponse.json({
 		assets: imported,
 		manifest: await readManifest(),
@@ -471,7 +451,7 @@ async function handleStickerImport({
 		await writeFile(storedPath, Buffer.from(await file.arrayBuffer()));
 		stagedPaths.push(storedPath);
 
-		const sourceUrl = `/shared-library/stickers/${storedFileName}`;
+		const sourceUrl = `/api/account-assets/shared-library/stickers/${storedFileName}`;
 		const asset: SharedStickerAsset = {
 			id,
 			name: readString({ value: input.name, fallback: file.name }),
@@ -490,7 +470,7 @@ async function handleStickerImport({
 			repositoryPath: toRepositoryPath({
 				parts: [repositoryRoot, "shared-library", "stickers", storedFileName],
 			}),
-			storageKind: "repo",
+			storageKind: "account",
 			fileName: storedFileName,
 			createdAt: readString({
 				value: input.createdAt,
@@ -506,7 +486,6 @@ async function handleStickerImport({
 	}
 
 	await writeManifest({ manifest });
-	await stageRepositoryAssetPaths({ paths: stagedPaths });
 	return NextResponse.json({
 		assets: imported,
 		manifest: await readManifest(),
@@ -558,7 +537,7 @@ async function handlePatch({
 				stagedPaths.push(previousPath, nextPath);
 				updated = {
 					...updated,
-					sourceUrl: `/shared-library/audio/${nextFolder}/${current.fileName}`,
+					sourceUrl: `/api/account-assets/shared-library/audio/${nextFolder}/${current.fileName}`,
 					repositoryPath: toRepositoryPath({
 						parts: [
 							repositoryRoot,
@@ -647,15 +626,14 @@ async function handlePatch({
 	}
 
 	await writeManifest({ manifest });
-	await stageRepositoryAssetPaths({ paths: stagedPaths });
 	return NextResponse.json({ manifest: await readManifest() });
 }
 
-export async function GET() {
+async function GETHandler() {
 	return NextResponse.json({ manifest: await readManifest() });
 }
 
-export async function POST(request: Request) {
+async function POSTHandler(request: Request) {
 	try {
 		const contentType = request.headers.get("content-type") ?? "";
 		if (contentType.includes("multipart/form-data")) {
@@ -686,3 +664,7 @@ export async function POST(request: Request) {
 		);
 	}
 }
+
+export const GET = withAccount(GETHandler);
+
+export const POST = withAccount(POSTHandler);

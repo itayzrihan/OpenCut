@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { aiClientFetch, isRemoteAiClient } from "@/ai/client-transport";
 
 export interface AiOAuthStatus {
 	authenticated: boolean;
@@ -24,7 +25,7 @@ export function useAiOAuthStatus() {
 	const refresh = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/ai/oauth/status");
+			const response = await aiClientFetch("/api/ai/oauth/status");
 			const data: unknown = await response.json();
 			const nextStatus = normalizeAiOAuthStatus(data);
 			if (nextStatus.authenticated) {
@@ -50,16 +51,27 @@ export function useAiOAuthStatus() {
 			setRedirectError(readAndClearOAuthRedirectError());
 			void refresh();
 		}, 0);
-		return () => window.clearTimeout(timeoutId);
+		const changed = () => {
+			void refresh();
+		};
+		window.addEventListener("opencut-ai-connected", changed);
+		return () => {
+			window.clearTimeout(timeoutId);
+			window.removeEventListener("opencut-ai-connected", changed);
+		};
 	}, [refresh]);
 
 	const login = useCallback(() => {
+		if (isRemoteAiClient()) {
+			window.dispatchEvent(new Event("opencut-ai-connect"));
+			return;
+		}
 		const returnTo = encodeURIComponent(window.location.href);
 		window.location.href = `/api/ai/oauth/start?returnTo=${returnTo}`;
 	}, []);
 
 	const logout = useCallback(async () => {
-		await fetch("/api/ai/oauth/logout", { method: "POST" });
+		await aiClientFetch("/api/ai/oauth/logout", { method: "POST" });
 		await refresh();
 	}, [refresh]);
 
