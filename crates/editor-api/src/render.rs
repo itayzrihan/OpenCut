@@ -221,6 +221,9 @@ fn build_ffmpeg_plan(
             let referenced_asset = assets
                 .get(asset_id)
                 .ok_or_else(|| format!("item `{}` references missing asset", item.id))?;
+            if referenced_asset.hyperframes.is_some() {
+                return Err(format!("HyperFrames clip `{}` requires the HyperFrames renderer; source packages cannot be decoded as video files", item.name));
+            }
             let (visual_asset, audio_asset) =
                 if let Some(unified) = &referenced_asset.unified_angles {
                     let visual_id = item

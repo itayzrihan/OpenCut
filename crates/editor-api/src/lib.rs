@@ -7,6 +7,7 @@
 mod artifact;
 mod capability;
 mod job;
+mod hyperframes;
 mod model;
 mod operations;
 mod policy;
@@ -22,6 +23,7 @@ pub use capability::{
     CapabilityResult, FnCapability, InvocationContext, InvocationReceipt,
 };
 pub use job::{JobManager, JobRecord, JobStatus};
+pub use hyperframes::*;
 pub use model::*;
 pub use policy::{AccessPolicy, PolicyDecision};
 pub use registry::{

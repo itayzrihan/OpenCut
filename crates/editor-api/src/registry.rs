@@ -297,10 +297,11 @@ impl CapabilityRegistry {
             .and_then(Value::as_str)
             .map(|key| {
                 format!(
-                    "{}|{}|{}",
+                    "{}|{}|{}|dryRun={}",
                     context.actor.as_deref().unwrap_or("anonymous"),
                     descriptor.id,
-                    key
+                    key,
+                    context.dry_run
                 )
             });
         if let Some(key) = &idempotency_key

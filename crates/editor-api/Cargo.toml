@@ -11,13 +11,15 @@ async-trait = { workspace = true }
 jsonschema = { workspace = true }
 json-patch = { workspace = true }
 schemars = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["rc"] }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
+scraper = { version = "0.24.0", default-features = false }
+percent-encoding = "2.3"
 
 [dev-dependencies]
 tokio = { workspace = true }

@@ -7,14 +7,14 @@ import {
 } from "@/timeline/audio-silence-analysis";
 
 describe("compact audio silence features", () => {
-	test("keeps the one-click audio mode at a true 0.1-second no-padding cut", () => {
+	test("keeps the one-click audio mode at a 0.3-second no-padding cut", () => {
 		expect(AUDIO_BASED_AUDIO_FRAME_SECONDS).toBe(0.01);
-		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.minSilenceSeconds).toBe(0.1);
+		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.minSilenceSeconds).toBe(0.3);
 		expect(AUDIO_BASED_SILENCE_ANALYSIS_SETTINGS.speechPaddingSeconds).toBe(0);
 	});
 
 	test("clamps the configurable minimum silence duration to safe bounds", () => {
-		expect(clampAudioMinSilenceSeconds(Number.NaN)).toBe(0.1);
+		expect(clampAudioMinSilenceSeconds(Number.NaN)).toBe(0.3);
 		expect(clampAudioMinSilenceSeconds(0)).toBe(0.01);
 		expect(clampAudioMinSilenceSeconds(90)).toBe(60);
 		expect(clampAudioMinSilenceSeconds(0.25)).toBe(0.25);

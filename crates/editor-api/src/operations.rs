@@ -30,6 +30,8 @@ const STATE_RESOURCE: &str = "opencut://state";
 const PROJECT_RESOURCE: &str = "opencut://project";
 const TIMELINE_RESOURCE: &str = "opencut://timeline";
 
+mod hyperframes;
+
 pub(crate) fn register_all(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
@@ -55,6 +57,7 @@ pub(crate) fn register_all(
     )?;
     register_track_operations(registry, state.clone(), events.clone())?;
     register_item_operations(registry, state.clone(), events.clone())?;
+    hyperframes::register_hyperframes_operations(registry, state.clone(), events.clone())?;
     register_speaker_frame_breakout_operations(
         registry,
         state.clone(),
@@ -155,6 +158,9 @@ where
         || id.starts_with("media.waveform.")
         || id.starts_with("caption.transcribe");
     descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
+    descriptor.cancellable |= matches!(
+        id, "hyperframes.project.inspect" | "timeline.hyperframes.import"
+    );
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);
     registry.register(Arc::new(FnCapability::new(
@@ -1578,6 +1584,7 @@ fn register_media_operations(
                             proxy_source: None,
                             offline: false,
                             unified_angles: None,
+                            hyperframes: None,
                             metadata: input.metadata,
                             extensions: Map::new(),
                         };
@@ -1704,6 +1711,7 @@ fn register_media_operations(
                                 default_angle_asset_id,
                                 audio_asset_id,
                             }),
+                            hyperframes: None,
                             metadata: Default::default(),
                             extensions: Map::new(),
                         });
