@@ -365,7 +365,7 @@ fn import_classic(
         "id":item_id, "name":name, "type":"graphic", "definitionId":"hyperframes",
         "startTime":start_ticks, "duration":duration_ticks, "trimStart":0, "trimEnd":0,
         "sourceDuration":duration_ticks,
-        "params":{"hyperframesAssetId":asset_id}, "hidden":false
+        "params":{"hyperframesAssetId":asset_id,"sourceWidth":composition.width,"sourceHeight":composition.height}, "hidden":false
     }));
     classic
         .document

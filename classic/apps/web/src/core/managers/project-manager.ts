@@ -1210,6 +1210,7 @@ export class ProjectManager {
 		const { canvasSize, background } = this.active.settings;
 
 		const scene = buildScene({
+			hyperframes: this.editor.renderer.getHyperframesRenderContext(),
 			tracks,
 			mediaAssets,
 			duration: duration || 1,

@@ -47,6 +47,7 @@ export class HyperframesCaptureSession {
 	readonly inspection: HyperframesInspection;
 	private engine: CaptureSession | null = null;
 	private previewId: string | null = null;
+	private sourceUrl: string | null = null;
 	private scratchDirectory: string | null = null;
 	private closing: Promise<void> | null = null;
 	private closed = false;
@@ -120,6 +121,23 @@ export class HyperframesCaptureSession {
 		return this.resolvedDuration;
 	}
 
+	get previewUrl(): string {
+		if (this.closed || !this.sourceUrl)
+			throw new Error("The HyperFrames capture is closed");
+		return this.sourceUrl;
+	}
+
+	keepAlive(): boolean {
+		if (
+			this.closed ||
+			!this.previewId ||
+			!this.host.keepAlive({ id: this.previewId })
+		)
+			return false;
+		this.lastUsed = Date.now();
+		return true;
+	}
+
 	get isClosed(): boolean {
 		return this.closed;
 	}
@@ -148,6 +166,7 @@ export class HyperframesCaptureSession {
 			);
 		const preview = await this.host.add({ source, resources, html });
 		this.previewId = preview.id;
+		this.sourceUrl = preview.url;
 		signal?.throwIfAborted();
 		// The official engine requires an output directory even for its buffer
 		// API. No frames are written here; rmdir removes only an empty directory.

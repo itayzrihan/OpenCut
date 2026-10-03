@@ -14,6 +14,18 @@ export interface HyperframesComposition {
 	durationSeconds: number;
 }
 
+/** Rendering dependencies projected from a canonical Classic project. */
+export interface HyperframesRenderContext {
+	compositions: Readonly<Record<string, HyperframesComposition>>;
+	/** Changes when a bound resource is replaced, even at the same source time. */
+	getResourceRevision: () => number;
+	renderTo: (input: {
+		composition: HyperframesComposition;
+		timeSeconds: number;
+		target: OffscreenCanvas;
+	}) => Promise<void>;
+}
+
 export interface HyperframesPackagePlan {
 	entryFile: string | null;
 	entryCandidates: string[];

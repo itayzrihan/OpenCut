@@ -76,6 +76,7 @@ export class EditorCore {
 	}
 
 	static reset(): void {
+		EditorCore.instance?.renderer.dispose();
 		EditorCore.instance = null;
 	}
 }

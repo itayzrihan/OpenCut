@@ -902,13 +902,16 @@ async function resolveGraphicNode({
 	const definition = getGraphicDefinition({
 		definitionId: node.params.definitionId,
 	});
-	await definition.prepare?.({
-		params: resolvedParams,
-		width: sourceWidth,
-		height: sourceHeight,
-		localTime: visualState.localTime,
-		duration: node.params.duration,
-	});
+	if (node.params.definitionId === "hyperframes") {
+		await node.prepareFrame({ localTime: visualState.localTime });
+	} else
+		await definition.prepare?.({
+			params: resolvedParams,
+			width: sourceWidth,
+			height: sourceHeight,
+			localTime: visualState.localTime,
+			duration: node.params.duration,
+		});
 
 	return {
 		...visualState,

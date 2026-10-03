@@ -116,6 +116,19 @@ async fn existing_classic_timeline_import_is_lossless_and_undoable() {
     );
     let after = state(&runtime).await;
     let actual = &after["project"]["classic"];
+    let imported_clip = &actual["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0];
+    let imported_composition = &actual["document"]["hyperframesCompositions"]
+        [imported_clip["params"]["hyperframesAssetId"]
+            .as_str()
+            .unwrap()];
+    assert_eq!(
+        imported_clip["params"]["sourceWidth"],
+        imported_composition["width"]
+    );
+    assert_eq!(
+        imported_clip["params"]["sourceHeight"],
+        imported_composition["height"]
+    );
     let expected = &original["document"];
     assert_eq!(actual["mediaAssets"], original["mediaAssets"]);
     for field in [
@@ -246,6 +259,48 @@ async fn import_uses_the_active_scene_and_keeps_main_project_duration() {
         60_000
     );
     assert_eq!(actual["metadata"]["duration"], 1_200_000);
+}
+
+#[tokio::test]
+async fn imported_dimensions_are_validated_and_older_clips_remain_readable() {
+    let runtime = OpenCutRuntime::default();
+    attach(&runtime, classic()).await;
+    call(
+        &runtime,
+        "timeline.hyperframes.import",
+        json!({
+            "projectId":"classic-project", "expectedRevision":1,
+            "name":"Dimensions", "source":source()
+        }),
+    )
+    .await;
+    let before = state(&runtime).await;
+    for dimensions in [json!({"sourceWidth":1}), json!({"sourceHeight":"1280"})] {
+        let mut invalid = before["project"]["classic"].clone();
+        invalid["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0]["params"]
+            .as_object_mut()
+            .unwrap()
+            .extend(dimensions.as_object().unwrap().clone());
+        assert!(runtime.registry().invoke("project.classic.commit", InvocationContext::default(), json!({
+            "projectId":"classic-project", "expectedRevision":before["revision"], "classic":invalid
+        })).await.is_err());
+        assert_eq!(state(&runtime).await, before);
+    }
+    let mut legacy = before["project"]["classic"].clone();
+    let params = legacy["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0]["params"]
+        .as_object_mut()
+        .unwrap();
+    params.remove("sourceWidth");
+    params.remove("sourceHeight");
+    call(
+        &runtime,
+        "project.classic.commit",
+        json!({
+            "projectId":"classic-project", "expectedRevision":before["revision"], "classic":legacy
+        }),
+    )
+    .await;
+    assert_eq!(state(&runtime).await["project"]["classic"], legacy);
 }
 
 #[tokio::test]

@@ -22,6 +22,8 @@ import { ParallaxSceneNode } from "@/services/renderer/nodes/parallax-scene-node
 import { videoCache } from "@/services/video-cache/service";
 import { getSourceTimeAtClipTime } from "@/retime";
 import { mapParallaxParentTimeToSourceTime } from "@/parallax-story-teller/camera-geometry";
+import { HyperframesRenderClient } from "@/hyperframes/render-client";
+import type { HyperframesRenderContext } from "@/hyperframes/types";
 
 export type SnapshotResult =
 	| { success: true; blob: Blob; filename: string }
@@ -35,8 +37,26 @@ export class RendererManager {
 	private _isDegraded = false;
 	private _isExporting = false;
 	private listeners = new Set<() => void>();
+	private hyperframesClient: HyperframesRenderClient | null = null;
+	private hyperframesProjectId: string | null = null;
+	private hyperframesResourceRevision = 0;
+	private hyperframesScopeDisposers: Array<() => void> = [];
 
 	constructor(private editor: EditorCore) {
+		this.hyperframesScopeDisposers.push(
+			this.editor.project.subscribe(() => {
+				if (
+					this.editor.project.getActiveOrNull()?.metadata.id !==
+					this.hyperframesProjectId
+				)
+					this.resetHyperframesRendering();
+			}),
+			this.editor.media.subscribe(() => {
+				this.resetHyperframesRendering();
+				this.hyperframesResourceRevision++;
+				this.notify();
+			}),
+		);
 		const invalidateRenderTree = () => {
 			this.invalidatedRenderTreeRevision = this.renderTreeRevision;
 		};
@@ -46,6 +66,51 @@ export class RendererManager {
 			id: "preview-video-frames",
 			prepare: this.preparePlaybackFrames,
 		});
+	}
+
+	getHyperframesRenderContext(): HyperframesRenderContext | undefined {
+		const project = this.editor.project.getActiveOrNull();
+		if (
+			!project?.hyperframesCompositions ||
+			Object.keys(project.hyperframesCompositions).length === 0
+		)
+			return undefined;
+		const projectId = project.metadata.id;
+		return {
+			compositions: project.hyperframesCompositions,
+			getResourceRevision: () => this.hyperframesResourceRevision,
+			renderTo: async (input) => {
+				if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+					throw new Error(
+						"The HyperFrames render belongs to a previous project",
+					);
+				if (
+					!this.hyperframesClient ||
+					this.hyperframesProjectId !== projectId
+				) {
+					this.resetHyperframesRendering();
+					this.hyperframesProjectId = projectId;
+					this.hyperframesClient = new HyperframesRenderClient(projectId);
+				}
+				await this.hyperframesClient.renderTo(input);
+			},
+		};
+	}
+
+	getHyperframesResourceRevision(): number {
+		return this.hyperframesResourceRevision;
+	}
+
+	resetHyperframesRendering(): void {
+		this.hyperframesClient?.dispose();
+		this.hyperframesClient = null;
+		this.hyperframesProjectId = null;
+	}
+
+	dispose(): void {
+		this.resetHyperframesRendering();
+		for (const dispose of this.hyperframesScopeDisposers) dispose();
+		this.hyperframesScopeDisposers = [];
 	}
 
 	private preparePlaybackFrames = async ({
@@ -356,6 +421,7 @@ export class RendererManager {
 			}
 
 			const scene = buildScene({
+				hyperframes: this.getHyperframesRenderContext(),
 				tracks,
 				mediaAssets,
 				duration,
@@ -387,6 +453,7 @@ export class RendererManager {
 				if (onCancel?.()) {
 					cancelled = true;
 					exporter.cancel();
+					this.resetHyperframesRendering();
 				}
 			};
 

@@ -133,6 +133,9 @@ function RenderTreeController() {
 	]);
 	const mediaAssets = useEditorMedia((e) => e.media.getAssets());
 	const activeProject = useEditorProject((e) => e.project.getActive());
+	const hyperframesResourceRevision = useEditorRenderer((e) =>
+		e.renderer.getHyperframesResourceRevision(),
+	);
 
 	const { width, height } = usePreviewSize();
 
@@ -141,6 +144,7 @@ function RenderTreeController() {
 
 		const duration = editor.timeline.getTotalDuration();
 		const renderTree = buildScene({
+			hyperframes: editor.renderer.getHyperframesRenderContext(),
 			tracks,
 			mediaAssets,
 			duration,
@@ -157,6 +161,8 @@ function RenderTreeController() {
 		tracks,
 		mediaAssets,
 		activeProject?.settings.background,
+		activeProject?.hyperframesCompositions,
+		hyperframesResourceRevision,
 		width,
 		height,
 		scenes,

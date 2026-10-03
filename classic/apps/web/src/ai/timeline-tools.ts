@@ -2749,12 +2749,16 @@ async function getAppCatalog({
 			}));
 		case "graphics":
 			registerDefaultGraphics();
-			return graphicsRegistry.getAll().map((definition) => ({
-				id: definition.id,
-				name: definition.name,
-				keywords: definition.keywords,
-				parameters: summarizeCatalogParams(definition.params),
-			}));
+			// Full compositions require a validated source package through
+			// timeline.hyperframes.import, rather than a procedural preset.
+			return graphicsRegistry.getAll()
+				.filter((definition) => definition.id !== "hyperframes")
+				.map((definition) => ({
+					id: definition.id,
+					name: definition.name,
+					keywords: definition.keywords,
+					parameters: summarizeCatalogParams(definition.params),
+				}));
 		case "transitions":
 			return TRANSITION_PRESETS.map((preset) => ({
 				id: preset.id,

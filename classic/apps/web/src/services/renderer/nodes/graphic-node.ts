@@ -1,4 +1,5 @@
 import { createCanvasSurface } from "../canvas-utils";
+import { markCanvasSourceVersion } from "../canvas-source-version";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
 	getGraphicLayoutSize,
@@ -15,6 +16,16 @@ import {
 export interface GraphicNodeParams extends VisualNodeParams {
 	definitionId: string;
 	params: ParamValues;
+	/** Host rendering dependency, never serialized in the editor document. */
+	frameSource?: {
+		width: number;
+		height: number;
+		getResourceRevision: () => number;
+		renderTo: (input: {
+			localTime: number;
+			target: OffscreenCanvas;
+		}) => Promise<void>;
+	};
 }
 
 export interface ResolvedGraphicNodeState extends ResolvedVisualNodeState {
@@ -30,6 +41,8 @@ export class GraphicNode extends VisualNode<
 > {
 	private cachedKey: string | null = null;
 	private cachedSource: OffscreenCanvas | null = null;
+	private externalTime: number | null = null;
+	private externalRevision: number | null = null;
 
 	constructor(params: GraphicNodeParams) {
 		super(params);
@@ -41,6 +54,11 @@ export class GraphicNode extends VisualNode<
 	}: {
 		resolvedParams?: ParamValues;
 	} = {}): { width: number; height: number } {
+		if (this.params.frameSource)
+			return {
+				width: this.params.frameSource.width,
+				height: this.params.frameSource.height,
+			};
 		const definition = getGraphicDefinition({
 			definitionId: this.params.definitionId,
 		});
@@ -90,6 +108,18 @@ export class GraphicNode extends VisualNode<
 		resolvedParams: ParamValues;
 		localTime?: number;
 	}): OffscreenCanvas {
+		if (this.params.definitionId === "hyperframes") {
+			if (
+				!this.params.frameSource ||
+				!this.cachedSource ||
+				this.externalTime !== localTime ||
+				this.externalRevision !== this.params.frameSource.getResourceRevision()
+			)
+				throw new Error(
+					"HyperFrames frame was not prepared for the current project and time",
+				);
+			return this.cachedSource;
+		}
 		const definition = getGraphicDefinition({
 			definitionId: this.params.definitionId,
 		});
@@ -122,5 +152,29 @@ export class GraphicNode extends VisualNode<
 		this.cachedKey = cacheKey;
 		this.cachedSource = canvas;
 		return canvas;
+	}
+
+	async prepareFrame({ localTime }: { localTime: number }): Promise<void> {
+		const source = this.params.frameSource;
+		if (!source)
+			throw new Error("HyperFrames composition source is unavailable");
+		const revision = source.getResourceRevision();
+		if (
+			this.cachedSource &&
+			this.externalTime === localTime &&
+			this.externalRevision === revision
+		)
+			return;
+		this.cachedSource ??= createCanvasSurface({
+			width: source.width,
+			height: source.height,
+		}).canvas;
+		await source.renderTo({ localTime, target: this.cachedSource });
+		markCanvasSourceVersion({
+			source: this.cachedSource,
+			version: `${revision}:${localTime}`,
+		});
+		this.externalTime = localTime;
+		this.externalRevision = revision;
 	}
 }

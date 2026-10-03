@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
 		],
 	},
 	output: "standalone",
+	serverExternalPackages: ["@hyperframes/engine"],
 	// Runtime transcription caches are local, mutable user data. They must not
 	// be copied into a production standalone bundle (the Whisper cache alone
 	// can be several gigabytes and may exhaust the build disk).

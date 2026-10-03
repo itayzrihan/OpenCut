@@ -2,6 +2,8 @@ import type { SceneTracks, TimelineTrack, TScene } from "@/timeline";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
 import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
+import type { HyperframesRenderContext } from "@/hyperframes/types";
+import { TICKS_PER_SECOND } from "@/wasm";
 import { resolveUnifiedAnglesVideoAsset } from "@/media/unified-angles";
 import type { ParamValues } from "@/params";
 import { RootNode } from "./nodes/root-node";
@@ -78,6 +80,7 @@ function buildTrackNodes({
 	scenes,
 	visitedSceneIds,
 	isParallaxCanvasScene,
+	hyperframes,
 }: {
 	tracks: TimelineTrack[];
 	sceneTracks: SceneTracks;
@@ -89,6 +92,7 @@ function buildTrackNodes({
 	scenes: TScene[];
 	visitedSceneIds: ReadonlySet<string>;
 	isParallaxCanvasScene: boolean;
+	hyperframes?: HyperframesRenderContext;
 }): AnyBaseNode[] {
 	const nodes: AnyBaseNode[] = [];
 	const parallaxAssignments = isParallaxCanvasScene
@@ -164,6 +168,7 @@ function buildTrackNodes({
 							scenes,
 							visitedSceneIds: nextVisited,
 							isParallaxCanvasScene: Boolean(nestedScene.parallax),
+							hyperframes,
 						})) {
 							nestedNode.add(child);
 						}
@@ -546,6 +551,11 @@ function buildTrackNodes({
 			}
 
 			if (element.type === "graphic") {
+				const sourceId = element.params.hyperframesAssetId;
+				const composition =
+					element.definitionId === "hyperframes" && typeof sourceId === "string"
+						? hyperframes?.compositions[sourceId]
+						: undefined;
 				const camera = isParallaxCanvasScene
 					? {
 							depth: 1,
@@ -558,7 +568,33 @@ function buildTrackNodes({
 				nodes.push(
 					new GraphicNode({
 						definitionId: element.definitionId,
-						params: element.params,
+						params: composition
+							? {
+									...element.params,
+									sourceWidth: composition.width,
+									sourceHeight: composition.height,
+								}
+							: element.params,
+						frameSource:
+							composition && hyperframes
+								? {
+										width: composition.width,
+										height: composition.height,
+										getResourceRevision: hyperframes.getResourceRevision,
+										renderTo: ({ localTime, target }) =>
+											hyperframes.renderTo({
+												composition,
+												target,
+												timeSeconds: Math.max(
+													0,
+													Math.min(
+														(element.trimStart + localTime) / TICKS_PER_SECOND,
+														composition.durationSeconds - 1 / TICKS_PER_SECOND,
+													),
+												),
+											}),
+									}
+								: undefined,
 						duration: element.duration,
 						timeOffset: element.startTime,
 						trimStart: element.trimStart,
@@ -662,6 +698,7 @@ function buildBlurBackgroundNodes({
 }
 
 export type BuildSceneParams = {
+	hyperframes?: HyperframesRenderContext;
 	canvasSize: TCanvasSize;
 	cameraCanvasSize?: TCanvasSize;
 	tracks: SceneTracks;
@@ -676,6 +713,7 @@ export type BuildSceneParams = {
 };
 
 export function buildScene({
+	hyperframes,
 	canvasSize,
 	cameraCanvasSize = canvasSize,
 	tracks,
@@ -698,6 +736,7 @@ export function buildScene({
 	const mainTrack = tracks.main.hidden ? undefined : tracks.main;
 
 	const allNodes = buildTrackNodes({
+		hyperframes,
 		tracks: orderedTracksBottomToTop,
 		sceneTracks: tracks,
 		mediaMap,

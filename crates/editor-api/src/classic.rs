@@ -243,6 +243,19 @@ impl ClassicProject {
                                 "HyperFrames clip must reference an existing composition",
                             ));
                         }
+                        let composition = &compositions[id];
+                        for (key, expected) in [
+                            ("sourceWidth", composition.width),
+                            ("sourceHeight", composition.height),
+                        ] {
+                            if let Some(value) = element["params"].get(key)
+                                && value.as_f64() != Some(f64::from(expected))
+                            {
+                                return Err(invalid(
+                                    "HyperFrames intrinsic dimensions must match its composition",
+                                ));
+                            }
+                        }
                     }
                 }
             }

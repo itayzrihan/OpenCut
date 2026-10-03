@@ -17,10 +17,10 @@ is implemented; the product integration is not complete.
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; CommandManager adoption and real WASM integration tests pass; browser flow pending |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Canonical folder planner, browser file reader and binary asset storage tested; importer UI and end-to-end reopen pending |
-| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Pending |
+| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; real-project combinations pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Isolated official runtime tested on all eight Brag projects; Classic compositor, trim/speed/audio/export integration pending |
-| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Persistent frame capture verified on eight Brag projects; compositor/audio integration and reference export comparison pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; fast live preview, speed and audio pending |
+| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Classic MP4 compositor verified with a synthetic trimmed overlay; Brag export comparison and audio integration pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
@@ -94,9 +94,9 @@ reference project or its version pin.
 
 ## Implemented contract and migration status
 
-**Canonical source contract, Classic command/view adoption and isolated runtime
-preview are implemented; importer UI and Classic compositor integration remain
-pending.** No alternate timeline was added. The lazy browser binding runs the same
+**Canonical source contract, Classic command/view adoption, isolated runtime and
+the Classic compositor frame adapter are implemented. Importer UI, fast live
+preview and media/audio fidelity remain pending.** No alternate timeline was added. The lazy browser binding runs the same
 `OpenCutRuntime` and owns adopted Classic history and validated document changes.
 Projects without an adopted session retain the existing Classic path.
 
@@ -136,10 +136,10 @@ Projects without an adopted session retain the existing Classic path.
   and report are `.local/hyperframes-runtime-probe*` and
   `.local/hyperframes-player-probe.ts`.
 
-These adapters are tested independently. They still need authenticated host
-lifecycle routing, importer UI, attachment to the existing Classic compositor,
-transport/audio synchronization and deterministic export. Do not enable an
-import button that creates a clip the current Classic renderer cannot display.
+The authenticated host and existing Classic compositor now use these adapters.
+Importer UI, live DOM preview, media/audio synchronization and real-project export
+parity remain pending. Do not expose the importer before its supported behavior
+and failure reporting are complete.
 
 ### Persistent frame capture (2026-10-04)
 
@@ -178,8 +178,42 @@ import button that creates a clip the current Classic renderer cannot display.
 - The ignored probe and report are `.local/hyperframes-capture-probe.ts` and
   `.local/hyperframes-capture-probe-results.json`. Audio mixing, decoded video
   injection, arbitrary author timer virtualization, comparison with original
-  HyperFrames exports and authenticated Classic lifecycle integration remain
-  unverified or unimplemented. This adapter is not exposed as an import feature.
+  HyperFrames exports remain unverified or unimplemented. This adapter is not
+  yet exposed as an import feature.
+
+### Classic compositor and authenticated host (2026-10-04)
+
+- `/api/hyperframes` uses the existing loopback/account authentication and exact
+  account/project ownership for every session and artifact. It resolves only
+  registered project media. A separate host runtime validates source and owns
+  the bounded ArtifactStore; it never attaches an editor document or history.
+- Preview, thumbnails and export supply the canonical composition map to the
+  existing scene builder. HyperFrames frames enter `GraphicNode`, so native
+  ordering, transforms, opacity, masks and effects use the existing compositor.
+  Source time includes the clip's trim offset. Imported intrinsic dimensions
+  are stored and validated; older clips without those dimensions still load.
+- Browser clients keep at most two capture sessions, evict old sources, close on
+  project/reset/export cancellation, and invalidate when media bindings change.
+  Failed captures discard their session so a later render can open a fresh one.
+  Each clip owns its canvas; bitmap handles close after each draw. Canvas version
+  stamps refresh GPU textures after seeks and resource changes.
+- A separate local test account on port 3165 used a 640×360, 30 fps, four-second
+  project: a native blue image, a moving HyperFrames square at 50% opacity with a
+  one-second source trim, and a native green image above it. The ordinary Classic
+  timeline and inspector rendered the result. Seeking to 0, 2 and 3.5 seconds,
+  a 40-pixel position edit, and Undo were checked through the editor UI.
+- The normal MP4 export produced 120 H.264 frames, 640×360, 30 fps and exactly
+  four seconds. Decoded frames confirm purple at the square's expected source
+  positions (150 px initially and 250 px at two seconds), opaque green above it,
+  and only native layers after the three-second trimmed clip ends. Sampled pixel values
+  differ by at most two levels from the fixture colors after H.264 encoding.
+  The generated file and extracted frames are in ignored
+  `.local/hyperframes-mixed-render-proof/`. The reference folders and user
+  projects were not modified.
+- This is the capture fallback. It does not establish smooth playback, embedded
+  audio/video fidelity, speed support, all effect combinations, or Brag export
+  parity. More than two distinct visible sources may require repeated browser
+  initialization; that path needs the planned live preview and measured caching.
 
 - `hyperframes.project.inspect`: pure bounded source inspection, no script
   execution, filesystem reads or URL fetching. Reports authored elements,
@@ -348,21 +382,21 @@ measurements, not browser playback measurements. Probes are in ignored
 1. Static inspection and isolated runtime loading have passed on all eight Brag
    project folders, including the generated duration. Finish durable import
    orchestration, runtime error reporting and live child manifests.
-2. Exercise the connected CommandManager in a real browser after adding the
-   importer and renderer. Source sharing, compact persistence, history adoption,
+2. Exercise folder import and reopen in a real browser. The compositor fixture
+   has verified inspector edits and Undo. Source sharing, compact persistence, history adoption,
    media callbacks and canonical view projection are implemented and covered by
    real-WASM tests. The native MCP process still reaches the live editor through
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
-3. Add user-selected folder import, durable asset bindings and a persistent
-   isolated HyperFrames preview adapter to the Classic renderer. Route all
+3. Add user-selected folder import, durable asset bindings and a fast live
+   preview path beside the connected capture adapter. Route all
    transport and edits through canonical transactions. Resource serving must be
    scoped to the imported package; keep local control endpoints authenticated
    and loopback-only.
 4. Project runtime-generated child manifests into expandable rows of the existing
    timeline, retain host occurrence identity, and connect selection/inspector.
-5. Connect the persistent frame capture adapter and bounded artifact output to
-   the existing compositor; resolve the 3D repeatability case, video injection,
+5. The frame capture adapter is connected to the existing compositor. Resolve
+   the 3D repeatability case, video injection,
    author timers, audio export and cache invalidation. Verify Brag references and
    mixed compositions against actual exports.
 6. Implement measured UI/performance improvements; run the full preservation and
@@ -387,6 +421,16 @@ The example is a read-only static source probe; it skips generated output, hidde
 directories, dependencies and symlinks, and reports binary references as unbound.
 
 ### Current verification and outstanding baseline failures
+
+- Compositor/host additions: eight capture/host tests passed with 80 assertions,
+  including three real Chrome tests; client lifecycle/account tests passed with
+  50 assertions and frame/GPU invalidation tests with 12 assertions. Twelve Rust
+  Classic import/history/archive/atomic tests passed, including intrinsic size
+  validation and older clips. The browser and decoded MP4 evidence is above.
+  Scoped TypeScript passed. ESLint passed for the new adapter and changed render
+  paths, with two existing assertion warnings in the AI catalog file. Six
+  real-WASM CommandManager tests (73 assertions) and the two folder tests also
+  passed after the integration.
 
 - Capture additions: nine folder/preview/capture tests passed with 72 assertions,
   including two real Chrome tests; six browser-binding WASM tests, scoped web
@@ -434,7 +478,6 @@ directories, dependencies and symlinks, and reports binary references as unbound
   the audio timing code. The real WASM was rebuilt and all 37 required exports,
   including this one, passed `verify-wasm-exports.mjs`. This is an outstanding
   test-harness issue, not evidence of successful full regression coverage.
-- Local Next.js returned HTTP 200 for `/projects` on loopback port 3100. Browser
-  inspection reached the account setup gate on that separate origin; live
-  playhead behavior and end-to-end import remain unverified. No user account or
-  existing project was changed for this probe.
+- Folder import and full playback/performance coverage remain unverified. The
+  compositor check used an isolated test account and canonical fixture import;
+  it did not exercise a user-facing folder importer.
