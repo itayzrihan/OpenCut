@@ -29,6 +29,48 @@ async fn state(runtime: &OpenCutRuntime) -> Value {
 }
 
 #[tokio::test]
+async fn composition_binary_assets_roundtrip_through_canonical_state_and_history() {
+    let runtime = OpenCutRuntime::default();
+    let mut original = classic();
+    original["mediaAssets"].as_array_mut().unwrap().push(json!({
+        "id":"package-font", "name":"assets/עברית.woff2", "type":"file",
+        "mimeType":"font/woff2", "size":1024, "lastModified":100, "storageKind":"copied"
+    }));
+    attach(&runtime, original.clone()).await;
+    let mut package = source();
+    package["resourceAssetIds"]["assets/עברית.woff2"] = json!("package-font");
+    let before = state(&runtime).await;
+    let imported = call(
+        &runtime,
+        "timeline.hyperframes.import",
+        json!({
+            "projectId":"classic-project", "expectedRevision":before["revision"],
+            "name":"Composition with a local font", "source":package
+        }),
+    )
+    .await;
+    let after = state(&runtime).await;
+    let asset_id = imported["assetId"].as_str().unwrap();
+    assert_eq!(
+        after["project"]["classic"]["document"]["hyperframesCompositions"][asset_id]["source"],
+        package
+    );
+    assert_eq!(
+        after["project"]["classic"]["mediaAssets"],
+        original["mediaAssets"]
+    );
+    let restored = OpenCutRuntime::default();
+    restored
+        .restore_application_state_from_bytes(&runtime.serialize_application_state().unwrap())
+        .unwrap();
+    assert_eq!(state(&restored).await["project"], after["project"]);
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"]["classic"], original);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"], after["project"]);
+}
+
+#[tokio::test]
 async fn existing_classic_timeline_import_is_lossless_and_undoable() {
     let runtime = OpenCutRuntime::default();
     let original = classic();

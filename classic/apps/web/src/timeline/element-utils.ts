@@ -334,6 +334,10 @@ export function buildElementFromMedia({
 			return buildVideoElement({ mediaId, name, duration, startTime });
 		case "image":
 			return buildImageElement({ mediaId, name, duration, startTime });
+		case "file":
+			throw new Error(
+				"This file belongs to a composition and cannot be added as a media clip",
+			);
 	}
 }
 

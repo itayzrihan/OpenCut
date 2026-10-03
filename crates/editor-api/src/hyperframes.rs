@@ -16,8 +16,8 @@ use sha2::{Digest, Sha256};
 
 use crate::ModelError;
 
-const MAX_SOURCE_BYTES: usize = 16 * 1024 * 1024;
-const MAX_FILES: usize = 512;
+pub(crate) const MAX_SOURCE_BYTES: usize = 16 * 1024 * 1024;
+pub(crate) const MAX_FILES: usize = 512;
 const MAX_ELEMENTS: usize = 20_000;
 const MAX_DEPTH: usize = 32;
 
@@ -176,7 +176,7 @@ pub fn inspect_hyperframes(
         .files
         .get("hyperframes.json")
         .map(|text| {
-            serde_json::from_str::<serde_json::Value>(text)
+            serde_json::from_str::<serde_json::Value>(text.strip_prefix('\u{feff}').unwrap_or(text))
                 .map_err(|error| ModelError::Invalid(format!("invalid hyperframes.json: {error}")))
         })
         .transpose()?
@@ -355,7 +355,7 @@ fn numeric_attribute(element: ElementRef<'_>, attribute: &str) -> Result<Option<
         .transpose()
 }
 
-fn validate_package_path(path: &str) -> Result<(), ModelError> {
+pub(crate) fn validate_package_path(path: &str) -> Result<(), ModelError> {
     if path.is_empty()
         || path.starts_with('/')
         || path.contains(['\\', ':', '?', '#'])

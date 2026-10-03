@@ -82,6 +82,7 @@ impl CanonicalEditorRuntime {
                 | "project.classic.commit"
                 | "project.classic.synchronize"
                 | "hyperframes.project.inspect"
+                | "hyperframes.package.plan"
                 | "timeline.hyperframes.import"
                 | "app.state.read"
                 | "history.undo"

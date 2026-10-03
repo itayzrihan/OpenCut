@@ -484,6 +484,7 @@ function mimeTypeForPath(path: string): string {
 		".otf": "font/otf",
 		".woff": "font/woff",
 		".woff2": "font/woff2",
+		".wasm": "application/wasm",
 	};
 	return mimeTypes[extension] ?? "application/octet-stream";
 }
@@ -721,7 +722,12 @@ export async function relinkMedia(
 ) {
 	assertId(mediaId, "media id");
 	assertId(requestId, "request id");
-	if (!Number.isInteger(expectedRevision) || expectedRevision < 0 || expectedRevision >= 0xffffffff) throw new Error("Invalid media binding revision");
+	if (
+		!Number.isInteger(expectedRevision) ||
+		expectedRevision < 0 ||
+		expectedRevision >= 0xffffffff
+	)
+		throw new Error("Invalid media binding revision");
 	if (!(await getProject(projectId))) throw new Error("Project does not exist");
 	let result: StoredMediaRecord | undefined;
 	await mutateMediaIndex(projectId, async (records) => {
@@ -946,18 +952,24 @@ export async function storeUploadedMedia({
 			throw new Error("Uploaded media size did not match the file metadata");
 		}
 		await rename(temporaryPath, destination);
+		const resolvedMimeType =
+			mimeType && mimeType !== "application/octet-stream"
+				? mimeType
+				: mimeTypeForPath(cleanedName);
 		const base: StoredMediaRecord = {
 			id: mediaId,
 			name: cleanedName,
-			type: mimeType.startsWith("image/")
+			type: resolvedMimeType.startsWith("image/")
 				? "image"
-				: mimeType.startsWith("audio/")
+				: resolvedMimeType.startsWith("audio/")
 					? "audio"
-					: "video",
+					: resolvedMimeType.startsWith("video/")
+						? "video"
+						: "file",
 			size: written.size,
 			lastModified,
 			fileName: cleanedName,
-			mimeType: mimeType || mimeTypeForPath(cleanedName),
+			mimeType: resolvedMimeType,
 			storageKind: "copied",
 			storedPath: relative(projectRoot(projectId), destination).replaceAll(
 				"\\",

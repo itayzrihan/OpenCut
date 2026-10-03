@@ -1,7 +1,15 @@
 use super::*;
 use crate::{
-    HyperframesComposition, HyperframesInspection, HyperframesSource, inspect_hyperframes,
+    HyperframesComposition, HyperframesInspection, HyperframesPackageFile, HyperframesPackagePlan,
+    HyperframesSource, inspect_hyperframes, plan_hyperframes_package,
 };
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PackagePlanInput {
+    files: Vec<HyperframesPackageFile>,
+    entry_file: Option<String>,
+}
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -39,6 +47,24 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<PackagePlanInput, HyperframesPackagePlan, _, _>(
+        registry,
+        "hyperframes.package.plan",
+        "Plan HyperFrames folder import",
+        "Validates supplied relative paths and byte sizes, identifies HTML entry candidates and separates UTF-8 source from durable binary resources. Excludes node_modules and .git. Does not read or execute files.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "package", "import"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let plan =
+                plan_hyperframes_package(input.files, input.entry_file).map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(plan))
+        },
+    )?;
     register::<InspectInput, HyperframesInspection, _, _>(
         registry,
         "hyperframes.project.inspect",

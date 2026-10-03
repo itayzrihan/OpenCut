@@ -261,7 +261,9 @@ export function MediaView() {
 	);
 
 	const filteredMediaItems = useMemo(() => {
-		const filtered = mediaFiles.filter((item) => !item.ephemeral);
+		const filtered = mediaFiles.filter(
+			(item) => !item.ephemeral && item.type !== "file",
+		);
 
 		filtered.sort((a, b) => {
 			let valueA: string | number;
@@ -306,13 +308,20 @@ export function MediaView() {
 	const handleCreatePodcastSync = useCallback(
 		({ ids }: { ids: string[] }) => {
 			if (ids.length === 0) {
-				setPodcastSyncAssets(mediaFiles.filter((asset) => !asset.ephemeral));
+				setPodcastSyncAssets(
+					mediaFiles.filter(
+						(asset) => !asset.ephemeral && asset.type !== "file",
+					),
+				);
 				return;
 			}
 			const selectedIdSet = new Set(ids);
 			setPodcastSyncAssets(
 				mediaFiles.filter(
-					(asset) => !asset.ephemeral && selectedIdSet.has(asset.id),
+					(asset) =>
+						!asset.ephemeral &&
+						asset.type !== "file" &&
+						selectedIdSet.has(asset.id),
 				),
 			);
 		},
@@ -506,6 +515,7 @@ function MediaAssetDraggable({
 	isRounded?: boolean;
 }) {
 	const editor = useEditor();
+	if (item.type === "file") return null;
 
 	const addElementAtTime = ({
 		asset,

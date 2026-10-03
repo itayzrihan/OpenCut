@@ -16,10 +16,10 @@ is implemented; the product integration is not complete.
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; CommandManager adoption and real WASM integration tests pass; browser flow pending |
-| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Pending |
+| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Canonical folder planner, browser file reader and binary asset storage tested; importer UI and end-to-end reopen pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Isolated official runtime tested on all eight Brag projects; Classic compositor, trim/speed/audio/export integration pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
@@ -94,10 +94,52 @@ reference project or its version pin.
 
 ## Implemented contract and migration status
 
-**Canonical contract, serialized Classic document bridge and browser binding
-implemented; live Classic project/UI integration pending.** No alternate timeline
-was added. No Classic feature was removed. The browser binding runs the same
-`OpenCutRuntime`; it is not yet the owner of the existing Classic project managers.
+**Canonical source contract, Classic command/view adoption and isolated runtime
+preview are implemented; importer UI and Classic compositor integration remain
+pending.** No alternate timeline was added. The lazy browser binding runs the same
+`OpenCutRuntime` and owns adopted Classic history and validated document changes.
+Projects without an adopted session retain the existing Classic path.
+
+### Folder ingestion and isolated runtime (2026-10-04)
+
+- `hyperframes.package.plan` is a pure registry capability shared by native and
+  browser hosts. It validates relative paths and byte counts, identifies HTML
+  entry candidates, excludes `.git`/`node_modules`, and classifies source versus
+  binary resources. Other folders are preserved, including assets referenced
+  only by scripts. Duplicate paths and paths outside the package are rejected.
+  Package paths stay in a case-sensitive URL namespace; they are not copied to
+  matching Windows paths. Binary bytes use existing asset IDs in the media store.
+- The browser adapter preserves UTF-8 source, including BOMs, Hebrew and CRLF,
+  and rejects malformed UTF-8. Fonts, WASM and other binary data use the existing
+  project media store with type `file`; they cannot be inserted as ordinary
+  video clips. Existing audio, video and image types remain available.
+- `@hyperframes/core` and `@hyperframes/player` are pinned to 0.8.115. The preview
+  document uses their runtime injection helper and the original entry URL.
+  Runtime composition loading retains author script order, module URLs, nested
+  hosts and dynamic fetches. It does not write staging files or alter source.
+- The loopback preview host exposes only package members on a random 192-bit
+  `<token>.localhost` origin. It has no editor controls or account cookies.
+  Hostnames must match exactly; CSP isolates scripts from the app, and media
+  responses support byte ranges. Each host caps cached text at 64 MiB and eight
+  previews, expires idle entries after 30 minutes, and supports explicit close.
+  This is derived rendering state, not another editor document store.
+- All eight Brag folders loaded in the in-app browser through the official player
+  and accepted a seek to two seconds. Durations were 20, 15.5333, 15.5333, 20, 6,
+  96.9, 6 and 6 seconds; the last was resolved by executing its generated scene.
+  A separate fixture verified nested HTML loading and a JSON fetch relative to
+  an entry below the package root. The reference files and version pins were
+  unchanged. Audio was muted during this probe, so this does not establish audio
+  output parity or smooth playback performance.
+- Preparing and registering these previews took approximately 6–90 ms per
+  project in this local probe, after loading the WASM runtime and reading files.
+  This is not an end-to-end import or frame-rate benchmark. The ignored scripts
+  and report are `.local/hyperframes-runtime-probe*` and
+  `.local/hyperframes-player-probe.ts`.
+
+These adapters are tested independently. They still need authenticated host
+lifecycle routing, importer UI, attachment to the existing Classic compositor,
+transport/audio synchronization and deterministic export. Do not enable an
+import button that creates a clip the current Classic renderer cannot display.
 
 - `hyperframes.project.inspect`: pure bounded source inspection, no script
   execution, filesystem reads or URL fetching. Reports authored elements,
@@ -263,10 +305,9 @@ measurements, not browser playback measurements. Probes are in ignored
 
 ## Next implementation sequence
 
-1. Static inspection has now passed on all eight supplied Brag project folders.
-   The 96.9-second reconstruction contains 52 authored inventory elements; one
-   generated project has no authored root duration. Encoded UTF-8 and root-relative
-   package references are covered. Finish dependency resolution and live manifests.
+1. Static inspection and isolated runtime loading have passed on all eight Brag
+   project folders, including the generated duration. Finish durable import
+   orchestration, runtime error reporting and live child manifests.
 2. Exercise the connected CommandManager in a real browser after adding the
    importer and renderer. Source sharing, compact persistence, history adoption,
    media callbacks and canonical view projection are implemented and covered by
@@ -289,6 +330,7 @@ measurements, not browser playback measurements. Probes are in ignored
 
 ```powershell
 cargo test -p opencut-editor-api --test hyperframes
+cargo test -p opencut-editor-api --test hyperframes_package
 cargo test -p opencut-editor-api --test classic_hyperframes
 cargo test -p opencut-editor-api --test classic_history
 cargo test -p opencut-editor-api --test classic_archive --test classic_atomic
@@ -304,7 +346,11 @@ directories, dependencies and symlinks, and reports binary references as unbound
 
 ### Current verification and outstanding baseline failures
 
-- Editor API: 20 existing tests, 8 HyperFrames source tests, 4 Classic import
+- Folder/runtime additions: four native package-planning tests, five real-WASM
+  folder/preview tests (38 assertions) and four local-drive tests (20 assertions)
+  passed. The browser check above also covered nested HTML and dynamic JSON.
+
+- Editor API: 20 existing tests, 8 HyperFrames source tests, 5 Classic import
   tests, 3 Classic history tests, 2 compact archive tests and 1 atomic transaction
   test passed.
 - MCP: all 13 tests passed, including registry projection, atomic rollback and

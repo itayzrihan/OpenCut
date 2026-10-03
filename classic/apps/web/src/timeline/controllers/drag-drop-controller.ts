@@ -34,11 +34,7 @@ import type { ProcessedMediaAsset } from "@/media/processing";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects";
 import { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "@/simple-advanced-layers/speaker-frame-breakout";
 import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person-cutout-layer";
-import {
-	addMediaTime,
-	roundFrameTime,
-	type MediaTime,
-} from "@/wasm";
+import { addMediaTime, roundFrameTime, type MediaTime } from "@/wasm";
 import {
 	buildPersonCutoutLayerElement,
 	buildSpeakerFrameBreakoutLayerElement,
@@ -622,10 +618,7 @@ export class DragDropController {
 		target: DropTarget;
 		dragData: Extract<TimelineDragData, { type: "effect" }>;
 	}): void {
-		if (
-			dragData.placement === "layer-above-target" &&
-			!target.targetElement
-		) {
+		if (dragData.placement === "layer-above-target" && !target.targetElement) {
 			return;
 		}
 		if (
@@ -790,7 +783,7 @@ export class DragDropController {
 						projectId,
 						asset,
 					});
-					if (!createdAsset) continue;
+					if (!createdAsset || createdAsset.type === "file") continue;
 
 					const duration = toElementDurationTicks({
 						seconds: createdAsset.duration,
