@@ -1,7 +1,6 @@
 use std::{
     collections::{BTreeMap, VecDeque},
     sync::{Arc, RwLock},
-    time::{SystemTime, UNIX_EPOCH},
 };
 
 use jsonschema::Validator;
@@ -13,7 +12,7 @@ use tokio::sync::broadcast;
 
 use crate::{
     AccessPolicy, Capability, CapabilityDescriptor, CapabilityError, InvocationContext,
-    InvocationReceipt, PolicyDecision,
+    InvocationReceipt, PolicyDecision, runtime::now_ms,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -126,6 +125,12 @@ impl CapabilityRegistry {
             .policy
             .write()
             .map_err(|_| RegistryError::LockPoisoned)? = policy;
+        Ok(())
+    }
+
+    pub(crate) fn clear_idempotency(&self) -> Result<(), RegistryError> {
+        *self.idempotency.write().map_err(|_| RegistryError::LockPoisoned)? =
+            IdempotencyState::default();
         Ok(())
     }
 
@@ -423,10 +428,7 @@ impl CapabilityRegistry {
         let sequence = audit.next_sequence;
         audit.entries.push_back(InvocationAudit {
             sequence,
-            timestamp_ms: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_millis() as u64,
+            timestamp_ms: now_ms(),
             capability_id: capability_id.into(),
             actor: context.actor.clone(),
             request_id: context.request_id.clone(),

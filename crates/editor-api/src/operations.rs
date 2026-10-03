@@ -142,6 +142,17 @@ where
     descriptor.access = access;
     descriptor.idempotent = idempotent;
     descriptor.open_world = open_world;
+    // Browser hosts use the same document and registry, but cannot execute the
+    // native filesystem/process implementations. Keep their contracts visible
+    // for discovery and fail before invoking a handler that could panic in WASM.
+    // media.import only registers host-provided metadata and resource handles;
+    // it deliberately does not open the source or probe it.
+    if cfg!(target_arch = "wasm32") && open_world && id != "media.import" {
+        descriptor.available = false;
+        descriptor.unavailable_reason = Some(
+            "This capability requires a native OpenCut host; it is unavailable in the browser runtime".into(),
+        );
+    }
     descriptor.transactional = (access <= AccessLevel::Write || id == "account.storage.configure")
         && (!open_world || id == "media.relink")
         && !id.starts_with("history.")

@@ -1,14 +1,5 @@
 import { readFile } from "node:fs/promises";
 
-const wasmUrl = new URL(
-	"../rust/wasm/pkg/opencut_wasm_bg.wasm",
-	import.meta.url,
-);
-const wasmBytes = await readFile(wasmUrl);
-const wasmModule = await WebAssembly.compile(wasmBytes);
-const actualExports = new Set(
-	WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
-);
 const requiredExports = [
 	"mediaRelinkBinding",
 	"mediaMissingUsed",
@@ -25,14 +16,14 @@ const requiredExports = [
 	"sampleAutomaticZoom",
 	"classicZoomPresets",
 	"compileAutomaticTextTransitions",
-"compileAutomaticWordAnimation",
-"compileFullAutoEdit",
-"fullAutoEditStages",
-"automaticMusicCatalog",
-"compileAutomaticMusic",
-"resolveLocalSubjectFraming",
-"batchEditTransition",
-"batchEditIsLocked",
+	"compileAutomaticWordAnimation",
+	"compileFullAutoEdit",
+	"fullAutoEditStages",
+	"automaticMusicCatalog",
+	"compileAutomaticMusic",
+	"resolveLocalSubjectFraming",
+	"batchEditTransition",
+	"batchEditIsLocked",
 	"detectFastAudioSilence",
 	"normalizeTimelineTimeRanges",
 	"planAgentRangePreviewFrames",
@@ -48,14 +39,37 @@ const requiredExports = [
 	"transitionAgentTask",
 	"validateTimelineSourceV2MutationScope",
 ];
-const missingExports = requiredExports.filter(
-	(name) => !actualExports.has(name),
-);
-
-if (missingExports.length > 0) {
-	throw new Error(
-		`Generated opencut-wasm is missing required exports: ${missingExports.join(", ")}`,
+async function verifyExports(relativePath, required, label) {
+	const wasmBytes = await readFile(new URL(relativePath, import.meta.url));
+	const wasmModule = await WebAssembly.compile(wasmBytes);
+	const actualExports = new Set(
+		WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
 	);
+	const missingExports = required.filter((name) => !actualExports.has(name));
+
+	if (missingExports.length > 0) {
+		throw new Error(
+			`Generated ${label} is missing required exports: ${missingExports.join(", ")}`,
+		);
+	}
+	console.log(`Verified ${required.length} required ${label} exports`);
 }
 
-console.log(`Verified ${requiredExports.length} required opencut-wasm exports`);
+await verifyExports(
+	"../rust/wasm/pkg/opencut_wasm_bg.wasm",
+	requiredExports,
+	"opencut-wasm",
+);
+await verifyExports(
+	"../rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+	[
+		"canonicaleditorruntime_new",
+		"canonicaleditorruntime_invoke",
+		"canonicaleditorruntime_snapshot",
+		"canonicaleditorruntime_capabilities",
+		"canonicaleditorruntime_serialize",
+		"canonicaleditorruntime_restore",
+		"canonicaleditorruntime_readArtifact",
+	],
+	"opencut-editor-runtime-wasm",
+);

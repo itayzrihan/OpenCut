@@ -34,7 +34,12 @@ for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
 	});
 }
 
-if (!existsSync(resolve(classicRoot, "rust/wasm/pkg/opencut_wasm_bg.wasm"))) {
+if (
+	[
+		"rust/wasm/pkg/opencut_wasm_bg.wasm",
+		"rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+	].some((file) => !existsSync(resolve(classicRoot, file)))
+) {
 	const wasm = start(bun, ["run", "build:wasm"], classicRoot);
 	const wasmCode = await new Promise((resolvePromise) =>
 		wasm.once("exit", (code) => resolvePromise(code ?? 1)),

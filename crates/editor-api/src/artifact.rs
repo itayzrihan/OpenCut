@@ -1,13 +1,15 @@
 use std::{
     collections::BTreeMap,
     sync::{Arc, Mutex},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
+
+use crate::runtime::now_ms;
 
 pub const ARTIFACT_URI_PREFIX: &str = "opencut://artifacts/";
 
@@ -216,13 +218,6 @@ fn remove_entry(state: &mut ArtifactState, id: &str) -> bool {
         .total_bytes
         .saturating_sub(entry.artifact.metadata.byte_size);
     true
-}
-
-fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
 }
 
 #[cfg(test)]

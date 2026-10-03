@@ -58,6 +58,10 @@ const nextConfig: NextConfig = {
 		config.resolve.alias = {
 			...config.resolve.alias,
 			"opencut-wasm": localWasmEntry,
+			"opencut-editor-runtime-wasm": resolve(
+				workspaceRootDirectory,
+				"rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm.js",
+			),
 		};
 		config.experiments = {
 			...config.experiments,

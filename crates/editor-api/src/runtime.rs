@@ -3,7 +3,6 @@ use std::{
     io::Write,
     path::Path,
     sync::{Arc, RwLock},
-    time::{SystemTime, UNIX_EPOCH},
 };
 
 use schemars::JsonSchema;
@@ -351,6 +350,13 @@ impl OpenCutRuntime {
     }
 
     pub fn save_application_state(&self, path: impl AsRef<Path>) -> Result<(), RuntimeError> {
+        atomic_write(path.as_ref(), &self.serialize_application_state()?)?;
+        Ok(())
+    }
+
+    /// Portable session bytes for host-owned storage (IndexedDB, files, etc.).
+    /// Storage handles and implementation stay outside the editor runtime.
+    pub fn serialize_application_state(&self) -> Result<Vec<u8>, RuntimeError> {
         let store = self.state.read().map_err(|_| RuntimeError::LockPoisoned)?;
         let persisted = PersistedApplicationState {
             version: 1,
@@ -375,9 +381,7 @@ impl OpenCutRuntime {
             recent_projects: store.recent_projects.clone(),
         };
         drop(store);
-        let bytes = serde_json::to_vec_pretty(&persisted)?;
-        atomic_write(path.as_ref(), &bytes)?;
-        Ok(())
+        Ok(serde_json::to_vec_pretty(&persisted)?)
     }
 
     pub fn restore_application_state(&self, path: impl AsRef<Path>) -> Result<bool, RuntimeError> {
@@ -386,7 +390,13 @@ impl OpenCutRuntime {
             return Ok(false);
         }
         let bytes = std::fs::read(path)?;
-        let mut persisted: PersistedApplicationState = serde_json::from_slice(&bytes)?;
+        self.restore_application_state_from_bytes(&bytes)?;
+        Ok(true)
+    }
+
+    /// Validate and migrate the entire session before replacing live state.
+    pub fn restore_application_state_from_bytes(&self, bytes: &[u8]) -> Result<(), RuntimeError> {
+        let mut persisted: PersistedApplicationState = serde_json::from_slice(bytes)?;
         if persisted.version != 1 {
             return Err(RuntimeError::UnsupportedSessionVersion(persisted.version));
         }
@@ -420,6 +430,9 @@ impl OpenCutRuntime {
             );
         }
         let mut store = self.state.write().map_err(|_| RuntimeError::LockPoisoned)?;
+        // A receipt from the previous live session must not swallow a write
+        // after restoring an older saved revision into this same runtime.
+        self.registry.clear_idempotency()?;
         store.document = persisted.active.document;
         store.undo.clear();
         store.redo.clear();
@@ -431,7 +444,7 @@ impl OpenCutRuntime {
         let revision = store.document.revision;
         drop(store);
         let _ = self.state_events.send(revision);
-        Ok(true)
+        Ok(())
     }
 
     pub fn begin_atomic(&self) -> Result<RuntimeCheckpoint, RuntimeError> {
@@ -507,10 +520,17 @@ pub enum RuntimeError {
 }
 
 pub(crate) fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
+    #[cfg(target_arch = "wasm32")]
+    {
+        js_sys::Date::now() as u64
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64
+    }
 }
 
 pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), std::io::Error> {

@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build:tools": "turbo run build --filter=@opencut/tools",
-    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
+    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
     "build:web": "turbo run build --filter=@opencut/web",
     "build:browser": "turbo run build --filter=@opencut/web",
     "start:mcp": "node scripts/mcp-bridge-runner.mjs",
@@ -16,7 +16,7 @@
     "dist:electron": "bun run --cwd apps/electron dist",
     "deploy:web": "turbo run deploy --filter=@opencut/web",
     "dev:tools": "turbo run dev --filter=@opencut/tools",
-    "dev:wasm": "cargo watch -w rust/crates -w rust/wasm/src -s 'wasm-pack build rust/wasm --target bundler --out-dir pkg'",
+    "dev:wasm": "cargo watch -w rust/crates -w rust/wasm/src -w rust/editor-runtime-wasm/src -w ../crates/editor-api/src -w ../crates/account-core/src -s 'bun run build:wasm'",
     "dev:web": "turbo run dev --filter=@opencut/web",
     "format:web": "prettier apps/web/src/services/renderer --write",
     "generate:fonts": "npx tsx apps/web/scripts/generate-font-sprites.ts",

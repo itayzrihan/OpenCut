@@ -94,8 +94,10 @@ reference project or its version pin.
 
 ## Implemented contract and migration status
 
-**Rewrite-only foundation; Classic integration pending.** No duplicate editor
-state or alternate timeline was added. No Classic feature was removed.
+**Canonical contract and browser binding implemented; Classic project/UI
+integration pending.** No alternate timeline was added. No Classic feature was
+removed. The browser binding runs the same `OpenCutRuntime`; it is not yet the
+owner of the existing Classic project managers.
 
 - `hyperframes.project.inspect`: pure bounded source inspection, no script
   execution, filesystem reads or URL fetching. Reports authored elements,
@@ -120,6 +122,41 @@ state or alternate timeline was added. No Classic feature was removed.
 - The FFmpeg-only renderer rejects a HyperFrames source asset explicitly until
   its composition renderer is installed; it must never silently omit it.
 
+### Canonical runtime in the browser
+
+- `classic/rust/editor-runtime-wasm` exposes the live capability registry,
+  read-only snapshots, portable session bytes and bounded artifact reads. It
+  depends directly on `crates/editor-api`; it has no independent editor model.
+- `loadCanonicalRuntime()` is an asynchronous import. The registry and JSON
+  Schema validators live in their own WASM module. An initial combined build
+  increased the main Classic binary from 3,919,268 to 10,021,797 bytes; the
+  separate build restores the main binary to exactly 3,919,268 bytes; the lazy
+  runtime module is 6,304,295 bytes. This is a size check, not a playback speed
+  measurement. Build and export checks cover both packages. The dev launcher
+  checks for both generated binaries, and Webpack/TypeScript resolve their
+  local generated packages together to avoid stale Bun package copies.
+- Platform clocks, random initialization and Tokio features now support
+  `wasm32-unknown-unknown`. Native filesystem/process capabilities remain
+  discoverable with an explicit unavailable reason in a browser. Metadata-only
+  media registration, source inspection and canonical editing remain available.
+- Session persistence now separates serialization/validated restoration from
+  native filesystem access. A failed restore leaves the document unchanged.
+  A successful restore clears old retry receipts so an earlier receipt cannot
+  falsely claim that an edit exists after loading an older saved revision.
+- Actual WASM execution under Node verifies mixed import, byte-for-byte source
+  preservation, dry run followed by commit with the same retry key, stale
+  revision rejection, undo/redo, session restore, invalid-restore rollback,
+  native capability rejection and bounded artifact access. These are runtime
+  tests, not an end-to-end Classic UI or rendering test.
+- A read-only WASM probe inspected all eight Brag packages and imported the
+  seven with authored numeric durations into one canonical timeline. Restoring
+  the serialized session reproduced the document. The eighth package needs
+  live duration resolution; no duration was guessed. Media remained unbound
+  in this source-only probe. Local probe: `.local/hyperframes-wasm-probe.mjs`.
+  The final release probe took 445 ms to initialize the registry and about
+  4–18 ms per import on this machine under Node. This excludes resource copying,
+  browser UI work, script execution and rendering; those still need measurement.
+
 ## Next implementation sequence
 
 1. Static inspection has now passed on all eight supplied Brag project folders.
@@ -128,8 +165,13 @@ state or alternate timeline was added. No Classic feature was removed.
    package references are covered. Finish dependency resolution and live manifests.
 2. Establish Classic-to-canonical transactions for composition import and edits.
    The Classic bridge currently advertises Classic tools but does not synchronize
-   the full Classic document with `OpenCutRuntime`. Specify and test this boundary
-   before adding a UI-only import path.
+   the full Classic document with `OpenCutRuntime`. The lazy WASM binding is now
+   available. The remaining boundary must preserve every Classic scene, feature
+   field and durable resource binding and return a view of the committed state.
+   Classic commands are synchronous; the registry binding is asynchronous. Align
+   that transaction boundary and the existing undo stack before exposing import,
+   so the two histories cannot drift. Do not hydrate an empty parallel project
+   and call it integration with the existing editor.
 3. Add user-selected folder import, durable asset bindings and a persistent
    isolated HyperFrames preview adapter to the Classic renderer. Route all
    transport and edits through canonical transactions. Resource serving must be
@@ -148,6 +190,9 @@ state or alternate timeline was added. No Classic feature was removed.
 cargo test -p opencut-editor-api --test hyperframes
 cargo test -p opencut-editor-api
 cargo run -p opencut-editor-api --example inspect_hyperframes -- <project-directory>
+cd classic
+wasm-pack test --node rust/editor-runtime-wasm
+bun run build:wasm
 ```
 
 The example is a read-only static source probe; it skips generated output, hidden
@@ -159,6 +204,13 @@ directories, dependencies and symlinks, and reports binary references as unbound
 - MCP: all 12 tests passed, including registry projection and atomic rollback.
 - Editor API Clippy with `-D warnings` passed, including the final source-sharing
   change. Editor API and MCP tests were rerun successfully after that change.
+- Canonical browser binding: all three WASM integration tests passed after the
+  separate-module change, including retry behavior after restoration. The 28
+  Editor API and 12 MCP tests passed again after adding portable persistence.
+- Both release WASM packages built successfully; 37 existing Classic exports
+  and 7 canonical runtime exports passed the binary contract check. Clippy with
+  `-D warnings` passed for the native Editor API and the WASM binding, including
+  tests. The loader passed ESLint.
 - Classic: 36 tests passed for timeline components, playhead geometry and audio
   silence defaults. Two stale audio assertions were corrected to the intentional
   0.3-second default from commit `b2b7d03e`; product behavior was preserved.
