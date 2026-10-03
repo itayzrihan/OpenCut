@@ -66,6 +66,8 @@ impl CanonicalEditorRuntime {
         if !matches!(
             capability_id.as_str(),
             "project.classic.attach"
+                | "project.classic.session.attach"
+                | "project.classic.session.read"
                 | "project.classic.commit"
                 | "hyperframes.project.inspect"
                 | "timeline.hyperframes.import"
@@ -177,6 +179,46 @@ mod tests {
             .unwrap()
             .as_string()
             .unwrap()
+    }
+
+    #[wasm_bindgen_test]
+    fn existing_history_crosses_the_synchronous_browser_boundary() {
+        let runtime = CanonicalEditorRuntime::new().unwrap();
+        let classic: Value = serde_json::from_str(include_str!(
+            "../../../../crates/editor-api/tests/fixtures/classic-project.json"
+        ))
+        .unwrap();
+        let mut previous = classic.clone();
+        previous["document"]["metadata"]["name"] = json!("Before edit");
+        let call = |id: &str, input: Value| {
+            from_js(
+                runtime
+                    .invoke_sync(id.into(), to_js(&input).unwrap(), JsValue::UNDEFINED)
+                    .unwrap(),
+            )["result"]["data"]
+                .clone()
+        };
+        call(
+            "project.classic.session.attach",
+            json!({"projectId":"classic-project", "expectedRevision":0, "classic":classic,
+            "undoStack":[{"label":"Existing edit", "classic":previous, "hostContext":{"callbackId":"browser-command"}}]}),
+        );
+        let history = call(
+            "project.classic.session.read",
+            json!({"projectId":"classic-project"}),
+        );
+        assert_eq!(history["undoStack"][0]["classic"], previous);
+        let undo = call("history.undo", json!({}));
+        assert_eq!(undo["hostContext"]["callbackId"], "browser-command");
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"]["classic"],
+            previous
+        );
+        call("history.redo", json!({}));
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"]["classic"],
+            classic
+        );
     }
 
     #[wasm_bindgen_test]

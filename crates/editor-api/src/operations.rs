@@ -32,6 +32,7 @@ const TIMELINE_RESOURCE: &str = "opencut://timeline";
 
 mod hyperframes;
 mod classic;
+mod classic_session;
 
 pub(crate) fn register_all(
     registry: &CapabilityRegistry,
@@ -49,6 +50,7 @@ pub(crate) fn register_all(
     register_observation_operations(registry, state.clone())?;
     register_project_operations(registry, state.clone(), events.clone())?;
     classic::register_classic_operations(registry, state.clone(), events.clone())?;
+    classic_session::register_classic_session_operations(registry, state.clone(), events.clone())?;
     register_media_probe(registry)?;
     register_media_operations(registry, state.clone(), events.clone())?;
     register_media_observation_operations(
@@ -161,9 +163,15 @@ where
         && !id.starts_with("job.")
         && !matches!(
             id,
-            "project.create" | "project.open" | "project.close" | "project.activate" | "project.classic.attach"
+            "project.create"
+                | "project.open"
+                | "project.close"
+                | "project.activate"
+                | "project.classic.attach"
+                | "project.classic.session.attach"
         );
-    descriptor.supports_dry_run = descriptor.transactional || id == "project.classic.attach";
+    descriptor.supports_dry_run = descriptor.transactional
+        || matches!(id, "project.classic.attach" | "project.classic.session.attach");
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
         || id.starts_with("media.probe")
@@ -1311,6 +1319,7 @@ fn register_project_operations(
                         store.undo.push(HistoryEntry {
                             label: "Set project save path".into(),
                             document: before,
+                            host_context: Map::new(),
                         });
                         store.redo.clear();
                         trim_history(&mut store.undo);
@@ -5741,6 +5750,7 @@ struct HistoryOutput {
     action: String,
     can_undo: bool,
     can_redo: bool,
+    host_context: Map<String, Value>,
 }
 
 fn register_history_operations(
@@ -5772,6 +5782,7 @@ fn register_history_operations(
                 let mut store = state.write().map_err(|_| {
                     CapabilityError::Failed("editor state lock was poisoned".into())
                 })?;
+                check_history_target(&store, &context)?;
                 let entry = store
                     .undo
                     .pop()
@@ -5780,6 +5791,7 @@ fn register_history_operations(
                 let current = HistoryEntry {
                     label: entry.label.clone(),
                     document: store.document.clone(),
+                    host_context: entry.host_context.clone(),
                 };
                 store.redo.push(current);
                 store.document = entry.document;
@@ -5789,6 +5801,7 @@ fn register_history_operations(
                     action: entry.label,
                     can_undo: !store.undo.is_empty(),
                     can_redo: !store.redo.is_empty(),
+                    host_context: entry.host_context,
                 };
                 drop(store);
                 let _ = events.send(output.revision);
@@ -5821,6 +5834,7 @@ fn register_history_operations(
                 let mut store = state.write().map_err(|_| {
                     CapabilityError::Failed("editor state lock was poisoned".into())
                 })?;
+                check_history_target(&store, &context)?;
                 let entry = store
                     .redo
                     .pop()
@@ -5829,6 +5843,7 @@ fn register_history_operations(
                 let current = HistoryEntry {
                     label: entry.label.clone(),
                     document: store.document.clone(),
+                    host_context: entry.host_context.clone(),
                 };
                 store.undo.push(current);
                 store.document = entry.document;
@@ -5838,6 +5853,7 @@ fn register_history_operations(
                     action: entry.label,
                     can_undo: !store.undo.is_empty(),
                     can_redo: !store.redo.is_empty(),
+                    host_context: entry.host_context,
                 };
                 drop(store);
                 let _ = events.send(output.revision);
@@ -5847,6 +5863,34 @@ fn register_history_operations(
             }
         },
     )
+}
+
+fn check_history_target(
+    store: &EditorStore,
+    context: &InvocationContext,
+) -> Result<(), CapabilityError> {
+    if context.cancellation.is_cancelled() {
+        return Err(CapabilityError::Failed("operation was cancelled".into()));
+    }
+    if let Some(target) = requested_project_id(context)
+        && store.active_project_id() != Some(target)
+    {
+        return Err(CapabilityError::Conflict(
+            "history target project is not active".into(),
+        ));
+    }
+    if let Some(expected) = context
+        .metadata
+        .get("opencut/expectedRevision")
+        .and_then(Value::as_u64)
+        && expected != store.document.revision
+    {
+        return Err(CapabilityError::Conflict(format!(
+            "revision conflict: expected {expected}, current revision is {}",
+            store.document.revision
+        )));
+    }
+    Ok(())
 }
 
 const JOBS_RESOURCE: &str = "opencut://jobs";
@@ -6242,6 +6286,12 @@ where
         store.undo.push(HistoryEntry {
             label: label.into(),
             document: before,
+            host_context: context
+                .metadata
+                .get("opencut/historyContext")
+                .and_then(Value::as_object)
+                .cloned()
+                .unwrap_or_default(),
         });
         store.redo.clear();
     }

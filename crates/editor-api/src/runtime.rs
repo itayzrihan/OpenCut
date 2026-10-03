@@ -20,6 +20,10 @@ use crate::{
 pub(crate) struct HistoryEntry {
     pub label: String,
     pub document: EditorDocument,
+    /// Host presentation state (selection, side-effect callback ID), never a
+    /// second copy of the editor document or executable code.
+    #[serde(default, skip_serializing_if = "serde_json::Map::is_empty")]
+    pub host_context: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone)]
@@ -478,6 +482,7 @@ impl OpenCutRuntime {
         store.undo.push(HistoryEntry {
             label: label.into(),
             document: checkpoint.store.document,
+            host_context: Default::default(),
         });
         super::operations::trim_history(&mut store.undo);
         store.redo.clear();

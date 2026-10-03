@@ -275,6 +275,7 @@ impl OpenCutMcp {
             || matches!(
                 descriptor.id.as_str(),
                 "project.create" | "project.open" | "project.activate" | "project.close"
+                    | "project.classic.attach" | "project.classic.session.attach"
             )
         {
             return Ok(());
@@ -1518,6 +1519,41 @@ mod tests {
             .find(|item| item.id == title_id)
             .expect("MCP-edited title");
         assert_eq!(title.text.as_ref().expect("text").content, "Visible live");
+    }
+
+    #[tokio::test]
+    async fn classic_adoption_is_project_creation_not_activation() {
+        let classic: Value = serde_json::from_str(include_str!(
+            "../../editor-api/tests/fixtures/classic-project.json"
+        ))
+        .unwrap();
+        for capability in ["project.classic.attach", "project.classic.session.attach"] {
+            let runtime = OpenCutRuntime::default();
+            let server = OpenCutMcp::from_runtime(&runtime);
+            let input = json!({"projectId":"classic-project", "expectedRevision":0,
+                "classic":classic, "idempotencyKey":"adopt-once"});
+            let first = server
+                .call_generated_capability(
+                    capability,
+                    input.as_object().unwrap().clone(),
+                    InvocationContext::default(),
+                )
+                .await;
+            assert_ne!(first.is_error, Some(true), "{capability}: {first:?}");
+            assert_eq!(
+                runtime.snapshot().unwrap().project.unwrap().classic.unwrap().document,
+                classic["document"].as_object().unwrap().clone()
+            );
+            let retry = server
+                .call_generated_capability(
+                    capability,
+                    input.as_object().unwrap().clone(),
+                    InvocationContext::default(),
+                )
+                .await;
+            assert_eq!(retry.structured_content, first.structured_content);
+            assert_eq!(runtime.snapshot().unwrap().revision, 1);
+        }
     }
 
     #[tokio::test]

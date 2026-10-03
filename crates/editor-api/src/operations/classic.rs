@@ -38,10 +38,20 @@ pub(super) fn register_classic_operations(
             false,
             false,
             &["classic", "project", "bridge", "timeline"],
-            move |context, input| {
+            move |mut context, input| {
                 let state = state.clone();
                 let events = events.clone();
                 async move {
+                    if attach {
+                        if requested_project_id(&context).is_some_and(|id| id != input.project_id) {
+                            return Err(CapabilityError::Conflict(
+                                "Classic target project mismatch".into(),
+                            ));
+                        }
+                        // An attach names the incoming project. It need not be
+                        // active yet; identity is checked inside the mutation.
+                        context.metadata.remove("opencut/projectId");
+                    }
                     let mutation = mutate(
                         &state,
                         &events,
