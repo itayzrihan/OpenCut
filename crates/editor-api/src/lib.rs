@@ -6,6 +6,7 @@
 
 mod artifact;
 mod capability;
+mod classic;
 mod job;
 mod hyperframes;
 mod model;
@@ -23,6 +24,7 @@ pub use capability::{
     CapabilityResult, FnCapability, InvocationContext, InvocationReceipt,
 };
 pub use job::{JobManager, JobRecord, JobStatus};
+pub use classic::{ClassicProject, CLASSIC_TICKS_PER_SECOND};
 pub use hyperframes::*;
 pub use model::*;
 pub use policy::{AccessPolicy, PolicyDecision};

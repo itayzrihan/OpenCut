@@ -2,6 +2,7 @@ import type { FrameRate } from "opencut-wasm";
 import type { ProjectFont } from "@/fonts/types";
 import type { TScene } from "@/timeline/types";
 import type { MediaTime } from "@/wasm";
+import type { HyperframesComposition } from "@/hyperframes/types";
 
 export type TBackground =
 	| {
@@ -82,6 +83,7 @@ export interface AiEditPlanRecord {
 }
 
 export interface TProject {
+	hyperframesCompositions?: Record<string, HyperframesComposition>;
 	metadata: TProjectMetadata;
 	scenes: TScene[];
 	currentSceneId: string;

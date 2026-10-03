@@ -133,6 +133,7 @@ function readProjectMetadata(entry: unknown): TProjectMetadata | null {
 function deserializeProject(serializedProject: SerializedProject): TProject {
 	const scenes =
 		serializedProject.scenes?.map((scene) => ({
+			...scene,
 			id: scene.id,
 			name: scene.name,
 			isMain: scene.isMain,
@@ -144,7 +145,9 @@ function deserializeProject(serializedProject: SerializedProject): TProject {
 		})) ?? [];
 
 	return {
+		...serializedProject,
 		metadata: {
+			...serializedProject.metadata,
 			id: serializedProject.metadata.id,
 			name: serializedProject.metadata.name,
 			thumbnail: serializedProject.metadata.thumbnail,
@@ -461,6 +464,7 @@ export class StorageService {
 			project.metadata.duration ??
 			getProjectDurationFromScenes({ scenes: project.scenes });
 		const scenes: SerializedScene[] = project.scenes.map((scene) => ({
+			...scene,
 			id: scene.id,
 			name: scene.name,
 			isMain: scene.isMain,
@@ -471,6 +475,7 @@ export class StorageService {
 			updatedAt: scene.updatedAt.toISOString(),
 		}));
 		return {
+			...project,
 			metadata: {
 				...project.metadata,
 				duration,

@@ -7,7 +7,7 @@ use thiserror::Error;
 
 use crate::artifact::{ARTIFACT_URI_PREFIX, ArtifactRef};
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 4;
+pub const CURRENT_SCHEMA_VERSION: u32 = 5;
 pub const SMART_LAYER_MASK_ARTIFACT_MIME_TYPE: &str =
     "application/vnd.opencut.background-mask-cache";
 
@@ -121,7 +121,7 @@ impl EditorDocument {
     pub fn timeline_duration(&self) -> f64 {
         self.project
             .as_ref()
-            .map(|project| project.timeline.duration())
+            .map(|project| project.classic.as_ref().map_or_else(|| project.timeline.duration(), |classic| classic.duration()))
             .unwrap_or(0.0)
     }
 
@@ -238,8 +238,12 @@ impl EditorDocument {
 
     pub fn sync_exact_from_seconds(&mut self) -> Result<(), ModelError> {
         if let Some(project) = &mut self.project {
-            project.settings.frame_rate_rational =
-                Rational::from_decimal(project.settings.frame_rate);
+            // Classic already stores an exact rational rate. Rebuilding NTSC
+            // 30000/1001 from a rounded decimal would change its source clock.
+            if project.classic.is_none() {
+                project.settings.frame_rate_rational =
+                    Rational::from_decimal(project.settings.frame_rate);
+            }
             let time_base = project.settings.time_base;
             project.timeline.sync_exact(time_base, true);
             self.playback.sync_exact(time_base, true);
@@ -266,6 +270,8 @@ pub struct Project {
     #[serde(default)]
     pub assets: Vec<MediaAsset>,
     pub timeline: Timeline,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub classic: Option<crate::ClassicProject>,
     #[serde(default)]
     pub metadata: BTreeMap<String, Value>,
     #[serde(default)]
@@ -282,6 +288,16 @@ impl Project {
             ));
         }
         self.settings.validate()?;
+        if let Some(classic) = &self.classic {
+            classic.validate()?;
+            if classic.id()? != self.id || classic.name()? != self.name || classic.settings()? != self.settings {
+                return Err(ModelError::Invalid("Classic project identity and settings must match the canonical project".into()));
+            }
+            if !self.timeline.tracks.is_empty() || !self.timeline.markers.is_empty()
+                || !self.timeline.transitions.is_empty() || !self.assets.is_empty() {
+                return Err(ModelError::Invalid("Classic projects own their existing scene timelines and media bindings; a parallel native timeline is not allowed".into()));
+            }
+        }
         ensure_unique(self.assets.iter().map(|asset| asset.id.as_str()), "asset")?;
         for asset in &self.assets {
             asset.validate()?;

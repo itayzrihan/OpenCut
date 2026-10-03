@@ -15,7 +15,7 @@ is implemented; the product integration is not complete.
 | --- | --- | --- |
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
-| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented in Editor API; Classic bridge pending |
+| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and serialized Classic documents; live Classic command adoption pending |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
@@ -94,10 +94,10 @@ reference project or its version pin.
 
 ## Implemented contract and migration status
 
-**Canonical contract and browser binding implemented; Classic project/UI
-integration pending.** No alternate timeline was added. No Classic feature was
-removed. The browser binding runs the same `OpenCutRuntime`; it is not yet the
-owner of the existing Classic project managers.
+**Canonical contract, serialized Classic document bridge and browser binding
+implemented; live Classic project/UI integration pending.** No alternate timeline
+was added. No Classic feature was removed. The browser binding runs the same
+`OpenCutRuntime`; it is not yet the owner of the existing Classic project managers.
 
 - `hyperframes.project.inspect`: pure bounded source inspection, no script
   execution, filesystem reads or URL fetching. Reports authored elements,
@@ -157,6 +157,40 @@ owner of the existing Classic project managers.
   4–18 ms per import on this machine under Node. This excludes resource copying,
   browser UI work, script execution and rendering; those still need measurement.
 
+### Existing Classic document boundary
+
+- Schema 5 adds optional `Project.classic`: the original serialized Classic
+  project plus durable media records. Unknown project, scene and feature fields
+  remain in that document. Validation checks identity, rational frame rate,
+  canvas, scene/track/element IDs, integer timing and composition/resource links.
+  File, URL and buffer handles are rejected in durable media bindings.
+- `project.classic.attach` loads that document; `project.classic.commit` accepts
+  a validated whole-project edit. Both require project ID and expected revision,
+  support dry run and use the existing registry. Commits use canonical history.
+  A Classic project cannot also contain a native timeline or native media list.
+- `timeline.hyperframes.import` now branches on the document representation.
+  For Classic it inserts a `graphic` element with definition `hyperframes` into
+  the active scene's existing graphic lanes, using the 120,000-tick clock.
+  The source lives once in `hyperframesCompositions` in the same Classic project.
+  Omitted position appends to the active scene; explicit position overlays.
+  Other scenes and the main project's duration are handled independently.
+- The existing Classic timeline element, effect, mask, caption and Parallax data
+  remains intact. Root/native FFmpeg rendering explicitly rejects Classic
+  documents until routed to their renderer. The graphic definition, live preview
+  adapter and import UI are not installed yet; this is not a usable import flow.
+- The WASM `invokeSync` entry point uses the same live registry for an explicit
+  list of immediate transactions. Async/native operations are rejected through
+  this entry point. The tests exercise attach, import, read, commit, undo and redo
+  through the real JS/WASM boundary, without an asynchronous gap in a command.
+- Classic's history snapshot codec now preserves the complete project and scene
+  fields while stripping transient audio buffers and excluding thumbnails from
+  history. Storage serialization/deserialization likewise retains additional
+  project and scene fields. A shared Classic fixture checks Parallax, captions,
+  masks, effects, retiming, fonts, agent history, future fields and exact source
+  text through registry edits, undo, redo, serialization and reopen.
+- The bridge preserves exact `30000/1001` frame rates. Converting that value back
+  from rounded decimal seconds would otherwise change the Classic clock.
+
 ## Next implementation sequence
 
 1. Static inspection has now passed on all eight supplied Brag project folders.
@@ -165,13 +199,12 @@ owner of the existing Classic project managers.
    package references are covered. Finish dependency resolution and live manifests.
 2. Establish Classic-to-canonical transactions for composition import and edits.
    The Classic bridge currently advertises Classic tools but does not synchronize
-   the full Classic document with `OpenCutRuntime`. The lazy WASM binding is now
-   available. The remaining boundary must preserve every Classic scene, feature
-   field and durable resource binding and return a view of the committed state.
-   Classic commands are synchronous; the registry binding is asynchronous. Align
-   that transaction boundary and the existing undo stack before exposing import,
-   so the two histories cannot drift. Do not hydrate an empty parallel project
-   and call it integration with the existing editor.
+   the full Classic document with `OpenCutRuntime`. The serialized document bridge
+   and synchronous registry transactions now exist and are tested. Adopt the live
+   Classic project's existing history and route CommandManager edits/undo through
+   those transactions, then project the committed document back into the UI.
+   Preserve the pre-import undo history; do not maintain independent authorities
+   for the live project or hydrate an empty parallel project.
 3. Add user-selected folder import, durable asset bindings and a persistent
    isolated HyperFrames preview adapter to the Classic renderer. Route all
    transport and edits through canonical transactions. Resource serving must be
@@ -188,6 +221,7 @@ owner of the existing Classic project managers.
 
 ```powershell
 cargo test -p opencut-editor-api --test hyperframes
+cargo test -p opencut-editor-api --test classic_hyperframes
 cargo test -p opencut-editor-api
 cargo run -p opencut-editor-api --example inspect_hyperframes -- <project-directory>
 cd classic
@@ -200,17 +234,25 @@ directories, dependencies and symlinks, and reports binary references as unbound
 
 ### Current verification and outstanding baseline failures
 
-- Editor API: 20 existing tests and 8 HyperFrames integration tests passed.
+- Editor API: 20 existing tests, 8 HyperFrames source tests and 4 Classic
+  integration tests passed after the serialized Classic bridge change.
 - MCP: all 12 tests passed, including registry projection and atomic rollback.
 - Editor API Clippy with `-D warnings` passed, including the final source-sharing
   change. Editor API and MCP tests were rerun successfully after that change.
-- Canonical browser binding: all three WASM integration tests passed after the
-  separate-module change, including retry behavior after restoration. The 28
-  Editor API and 12 MCP tests passed again after adding portable persistence.
+- Canonical browser binding: all four WASM integration tests passed, including
+  synchronous Classic edits and retry behavior after restoration.
 - Both release WASM packages built successfully; 37 existing Classic exports
-  and 7 canonical runtime exports passed the binary contract check. Clippy with
+  and 8 canonical runtime exports passed the binary contract check. Clippy with
   `-D warnings` passed for the native Editor API and the WASM binding, including
   tests. The loader passed ESLint.
+- The current lazy runtime binary is 6,401,165 bytes; the original Classic WASM
+  remains 3,919,268 bytes. Earlier load timings above predate the Classic bridge.
+- The two CommandManager tests and the separate storage round-trip test passed.
+  They check complete project/scene preservation, including source text and
+  undo/redo. ESLint passed for the changed Classic files. The full web TypeScript
+  check reports errors in other test files (fetch mocks, branded time values and
+  test fixtures); it reported none in the files changed for this bridge. A full
+  web type-check pass remains outstanding.
 - Classic: 36 tests passed for timeline components, playhead geometry and audio
   silence defaults. Two stale audio assertions were corrected to the intentional
   0.3-second default from commit `b2b7d03e`; product behavior was preserved.

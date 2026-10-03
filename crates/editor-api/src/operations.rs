@@ -31,6 +31,7 @@ const PROJECT_RESOURCE: &str = "opencut://project";
 const TIMELINE_RESOURCE: &str = "opencut://timeline";
 
 mod hyperframes;
+mod classic;
 
 pub(crate) fn register_all(
     registry: &CapabilityRegistry,
@@ -47,6 +48,7 @@ pub(crate) fn register_all(
     register_application_operations(registry, state.clone(), events.clone())?;
     register_observation_operations(registry, state.clone())?;
     register_project_operations(registry, state.clone(), events.clone())?;
+    classic::register_classic_operations(registry, state.clone(), events.clone())?;
     register_media_probe(registry)?;
     register_media_operations(registry, state.clone(), events.clone())?;
     register_media_observation_operations(
@@ -159,9 +161,9 @@ where
         && !id.starts_with("job.")
         && !matches!(
             id,
-            "project.create" | "project.open" | "project.close" | "project.activate"
+            "project.create" | "project.open" | "project.close" | "project.activate" | "project.classic.attach"
         );
-    descriptor.supports_dry_run = descriptor.transactional;
+    descriptor.supports_dry_run = descriptor.transactional || id == "project.classic.attach";
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
         || id.starts_with("media.probe")
@@ -1130,6 +1132,7 @@ fn register_project_operations(
                             id: project_id.clone(),
                             name: input.name,
                             file_path: None,
+                            classic: None,
                             settings: input.settings.unwrap_or_default(),
                             assets: Vec::new(),
                             timeline: Timeline {
@@ -6782,6 +6785,7 @@ mod tests {
                 id: "project-1".into(),
                 name: "Exact timing".into(),
                 file_path: None,
+                classic: None,
                 settings: ProjectSettings {
                     frame_rate: 29.97,
                     frame_rate_rational: exact_frame_rate,
@@ -6823,6 +6827,7 @@ mod tests {
                 id: "project-1".into(),
                 name: "Timing".into(),
                 file_path: None,
+                classic: None,
                 settings: ProjectSettings {
                     frame_rate: 29.97,
                     ..Default::default()

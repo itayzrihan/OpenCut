@@ -295,37 +295,24 @@ export class CommandManager {
 		const duration =
 			project.metadata.duration ?? getProjectDurationFromScenes({ scenes });
 		this.activeProjectId = project.metadata.id;
+		const { thumbnail: _thumbnail, ...metadata } = project.metadata;
 
-		return {
+		return this.cloneData({
+			...project,
 			metadata: {
-				id: project.metadata.id,
-				name: project.metadata.name,
+				...metadata,
 				duration,
 				createdAt: project.metadata.createdAt.toISOString(),
 				updatedAt: project.metadata.updatedAt.toISOString(),
 			},
 			scenes: scenes.map((scene) => ({
-				id: scene.id,
-				name: scene.name,
-				isMain: scene.isMain,
+				...scene,
 				tracks: this.stripAudioBuffers({ tracks: scene.tracks }),
-				bookmarks: this.cloneData(scene.bookmarks),
 				createdAt: scene.createdAt.toISOString(),
 				updatedAt: scene.updatedAt.toISOString(),
 			})),
-			currentSceneId: project.currentSceneId,
-			settings: this.cloneData(project.settings),
-			customFonts: project.customFonts
-				? this.cloneData(project.customFonts)
-				: undefined,
-			aiEditHistory: project.aiEditHistory
-				? this.cloneData(project.aiEditHistory)
-				: [],
-			version: project.version,
-			timelineViewState: project.timelineViewState
-				? this.cloneData(project.timelineViewState)
-				: undefined,
-		};
+			aiEditHistory: project.aiEditHistory ?? [],
+		});
 	}
 
 	private getSelectionSnapshot(): EditorSelectionSnapshot {
@@ -423,11 +410,11 @@ export class CommandManager {
 		snapshot: SerializedProjectHistorySnapshot;
 	}): void {
 		const currentProject = this.editor.project.getActiveOrNull();
+		const copy = this.cloneData(snapshot);
 		const project: TProject = {
+			...copy,
 			metadata: {
-				id: snapshot.metadata.id,
-				name: snapshot.metadata.name,
-				duration: snapshot.metadata.duration,
+				...copy.metadata,
 				thumbnail:
 					currentProject?.metadata.id === snapshot.metadata.id
 						? currentProject.metadata.thumbnail
@@ -435,27 +422,12 @@ export class CommandManager {
 				createdAt: new Date(snapshot.metadata.createdAt),
 				updatedAt: new Date(snapshot.metadata.updatedAt),
 			},
-			scenes: snapshot.scenes.map((scene) => ({
-				id: scene.id,
-				name: scene.name,
-				isMain: scene.isMain,
-				tracks: this.cloneData(scene.tracks),
-				bookmarks: this.cloneData(scene.bookmarks),
+			scenes: copy.scenes.map((scene) => ({
+				...scene,
 				createdAt: new Date(scene.createdAt),
 				updatedAt: new Date(scene.updatedAt),
 			})),
-			currentSceneId: snapshot.currentSceneId,
-			settings: this.cloneData(snapshot.settings),
-			customFonts: snapshot.customFonts
-				? this.cloneData(snapshot.customFonts)
-				: undefined,
-			aiEditHistory: snapshot.aiEditHistory
-				? this.cloneData(snapshot.aiEditHistory)
-				: [],
-			version: snapshot.version,
-			timelineViewState: snapshot.timelineViewState
-				? this.cloneData(snapshot.timelineViewState)
-				: undefined,
+			aiEditHistory: copy.aiEditHistory ?? [],
 		};
 
 		this.editor.save.pause();
@@ -472,7 +444,7 @@ export class CommandManager {
 	}
 
 	private stripAudioBuffers({ tracks }: { tracks: SceneTracks }): SceneTracks {
-		return this.cloneData({
+		return {
 			...tracks,
 			audio: tracks.audio.map((track) => ({
 				...track,
@@ -480,7 +452,7 @@ export class CommandManager {
 					({ buffer: _buffer, ...element }) => element,
 				),
 			})),
-		});
+		};
 	}
 
 	private cloneData<T>(value: T): T {

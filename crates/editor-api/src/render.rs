@@ -42,6 +42,9 @@ pub(crate) fn render(
         .project
         .as_ref()
         .ok_or_else(|| "no project is open".to_owned())?;
+    if project.classic.is_some() {
+        return Err("Classic projects require the Classic renderer".into());
+    }
     if Path::new(output_path).exists() && !overwrite {
         return Err(format!(
             "output `{output_path}` already exists; set overwrite to true to replace it"

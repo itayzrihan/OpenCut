@@ -65,6 +65,7 @@ await verifyExports(
 	[
 		"canonicaleditorruntime_new",
 		"canonicaleditorruntime_invoke",
+		"canonicaleditorruntime_invokeSync",
 		"canonicaleditorruntime_snapshot",
 		"canonicaleditorruntime_capabilities",
 		"canonicaleditorruntime_serialize",

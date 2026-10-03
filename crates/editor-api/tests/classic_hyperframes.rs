@@ -1,0 +1,230 @@
+use opencut_editor_api::{InvocationContext, OpenCutRuntime};
+use serde_json::{Value, json};
+
+fn classic() -> Value {
+    serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap()
+}
+fn source() -> Value {
+    json!({"entryFile":"index.html","files":{"index.html":"<div data-composition-id='main' data-duration='6' data-width='720' data-height='1280'><script>throw new Error('must not run during import')</script></div>"},"resourceAssetIds":{}})
+}
+async fn call(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {
+    runtime
+        .registry()
+        .invoke(id, InvocationContext::default(), input)
+        .await
+        .unwrap()
+        .result
+        .data
+}
+async fn attach(runtime: &OpenCutRuntime, snapshot: Value) {
+    call(
+        runtime,
+        "project.classic.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":snapshot}),
+    )
+    .await;
+}
+async fn state(runtime: &OpenCutRuntime) -> Value {
+    call(runtime, "app.state.read", json!({})).await["value"].clone()
+}
+
+#[tokio::test]
+async fn existing_classic_timeline_import_is_lossless_and_undoable() {
+    let runtime = OpenCutRuntime::default();
+    let original = classic();
+    attach(&runtime, original.clone()).await;
+    let before = state(&runtime).await;
+    assert_eq!(before["project"]["classic"], original);
+    let input = json!({"projectId":"classic-project","expectedRevision":before["revision"],"name":"Imported Brag","source":source()});
+    let mut context = InvocationContext {
+        dry_run: true,
+        ..Default::default()
+    };
+    context
+        .metadata
+        .insert("opencut/idempotencyKey".into(), json!("classic-import"));
+    let preview = runtime
+        .registry()
+        .invoke(
+            "timeline.hyperframes.import",
+            context.clone(),
+            input.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(preview.result.data["mutation"]["committed"], false);
+    assert_eq!(state(&runtime).await, before);
+    context.dry_run = false;
+    let imported = runtime
+        .registry()
+        .invoke(
+            "timeline.hyperframes.import",
+            context.clone(),
+            input.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        runtime
+            .registry()
+            .invoke("timeline.hyperframes.import", context, input)
+            .await
+            .unwrap(),
+        imported
+    );
+    let after = state(&runtime).await;
+    let actual = &after["project"]["classic"];
+    let expected = &original["document"];
+    assert_eq!(actual["mediaAssets"], original["mediaAssets"]);
+    for field in [
+        "settings",
+        "customFonts",
+        "aiEditHistory",
+        "futureFeature",
+        "version",
+    ] {
+        assert_eq!(actual["document"][field], expected[field]);
+    }
+    assert_eq!(actual["document"]["scenes"][1], expected["scenes"][1]);
+    for field in ["main", "audio", "futureTrackLayout"] {
+        assert_eq!(
+            actual["document"]["scenes"][0]["tracks"][field],
+            expected["scenes"][0]["tracks"][field]
+        );
+    }
+    assert_eq!(
+        actual["document"]["scenes"][0]["tracks"]["overlay"][1],
+        expected["scenes"][0]["tracks"]["overlay"][0]
+    );
+    assert_eq!(
+        actual["document"]["scenes"][0]["parallax"],
+        expected["scenes"][0]["parallax"]
+    );
+    let clip = &actual["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0];
+    assert_eq!(clip["startTime"], 1_200_000);
+    assert_eq!(clip["duration"], 720_000);
+    assert_ne!(clip["id"], "item-2", "must avoid imported Classic IDs");
+    assert_eq!(actual["document"]["metadata"]["duration"], 1_920_000);
+    let asset_id = imported.result.data["assetId"].as_str().unwrap();
+    assert_eq!(
+        actual["document"]["hyperframesCompositions"][asset_id]["source"],
+        source()
+    );
+    assert!(
+        after["project"]["timeline"]["tracks"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"], before["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"], after["project"]);
+    let saved = runtime.serialize_application_state().unwrap();
+    let reopened = OpenCutRuntime::default();
+    reopened
+        .restore_application_state_from_bytes(&saved)
+        .unwrap();
+    assert_eq!(state(&reopened).await, state(&runtime).await);
+}
+
+#[tokio::test]
+async fn classic_commit_and_import_reject_stale_or_invalid_changes_atomically() {
+    let runtime = OpenCutRuntime::default();
+    attach(&runtime, classic()).await;
+    let before = state(&runtime).await;
+    for overrides in [
+        json!({"trackId":"video-track"}),
+        json!({"trackId":"titles"}),
+        json!({"projectId":"wrong"}),
+        json!({"expectedRevision":0}),
+        json!({"startSeconds":-0.000001}),
+        json!({"startSeconds":1e15}),
+    ] {
+        let mut input = json!({"projectId":"classic-project","expectedRevision":1,"name":"Invalid","source":source()});
+        input
+            .as_object_mut()
+            .unwrap()
+            .extend(overrides.as_object().unwrap().clone());
+        assert!(
+            runtime
+                .registry()
+                .invoke(
+                    "timeline.hyperframes.import",
+                    InvocationContext::default(),
+                    input
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(state(&runtime).await, before);
+    }
+    let mut missing_resource = source();
+    missing_resource["resourceAssetIds"] = json!({"audio.wav":"missing"});
+    assert!(runtime.registry().invoke("timeline.hyperframes.import", InvocationContext::default(), json!({"projectId":"classic-project","expectedRevision":1,"name":"Invalid resource","source":missing_resource})).await.is_err());
+    assert_eq!(state(&runtime).await, before);
+    // Native actions cannot create a second timeline beside the Classic scene.
+    assert!(
+        runtime
+            .registry()
+            .invoke(
+                "timeline.track.add",
+                InvocationContext::default(),
+                json!({"name":"Parallel","kind":"video"})
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(state(&runtime).await, before);
+    let mut updated = classic();
+    updated["document"]["scenes"][0]["tracks"]["main"]["elements"][0]["params"]["transform.scaleX"] =
+        json!(1.7);
+    call(
+        &runtime,
+        "project.classic.commit",
+        json!({"projectId":"classic-project","expectedRevision":1,"classic":updated}),
+    )
+    .await;
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"]["classic"], classic());
+}
+
+#[tokio::test]
+async fn import_uses_the_active_scene_and_keeps_main_project_duration() {
+    let runtime = OpenCutRuntime::default();
+    let mut original = classic();
+    original["document"]["currentSceneId"] = json!("other-scene");
+    attach(&runtime, original.clone()).await;
+    call(&runtime, "timeline.hyperframes.import", json!({"projectId":"classic-project","expectedRevision":1,"name":"Other scene","source":source(),"startSeconds":0.5})).await;
+    let after = state(&runtime).await;
+    let actual = &after["project"]["classic"]["document"];
+    assert_eq!(actual["scenes"][0], original["document"]["scenes"][0]);
+    assert_eq!(
+        actual["scenes"][1]["tracks"]["overlay"][0]["elements"][0]["startTime"],
+        60_000
+    );
+    assert_eq!(actual["metadata"]["duration"], 1_200_000);
+}
+
+#[tokio::test]
+async fn malformed_classic_snapshots_fail_without_panicking_or_replacing_state() {
+    let runtime = OpenCutRuntime::default();
+    for snapshot in [json!({"document":{},"mediaAssets":[]}), {
+        let mut invalid = classic();
+        invalid["document"]["scenes"][0]["tracks"]["main"]["elements"][0]["duration"] = json!(0.5);
+        invalid
+    }] {
+        assert!(
+            runtime
+                .registry()
+                .invoke(
+                    "project.classic.attach",
+                    InvocationContext::default(),
+                    json!({"projectId":"classic-project","expectedRevision":0,"classic":snapshot})
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(runtime.snapshot().unwrap().revision, 0);
+    }
+}

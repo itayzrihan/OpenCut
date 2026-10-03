@@ -39,18 +39,7 @@ impl CanonicalEditorRuntime {
         context: JsValue,
     ) -> Result<JsValue, JsValue> {
         let input: Value = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
-        let options: InvocationOptions = if context.is_null() || context.is_undefined() {
-            InvocationOptions::default()
-        } else {
-            serde_wasm_bindgen::from_value(context).map_err(js_error)?
-        };
-        let context = InvocationContext {
-            source: "classic.web".into(),
-            dry_run: options.dry_run,
-            request_id: options.request_id,
-            metadata: options.metadata,
-            ..InvocationContext::default()
-        };
+        let context = invocation_context(context)?;
         let receipt = self
             .runtime
             .registry()
@@ -58,6 +47,50 @@ impl CanonicalEditorRuntime {
             .await
             .map_err(js_error)?;
         to_js(&receipt)
+    }
+
+    /// Classic's command stack is synchronous. These built-in handlers perform
+    /// only in-memory work and do not suspend; all validation/history still runs
+    /// through the same registry. Async/native/plugin work must use invoke().
+    #[wasm_bindgen(js_name = invokeSync)]
+    pub fn invoke_sync(
+        &self,
+        capability_id: String,
+        input: JsValue,
+        context: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        use std::{
+            future::Future,
+            task::{Context, Poll, Waker},
+        };
+        if !matches!(
+            capability_id.as_str(),
+            "project.classic.attach"
+                | "project.classic.commit"
+                | "hyperframes.project.inspect"
+                | "timeline.hyperframes.import"
+                | "app.state.read"
+                | "history.undo"
+                | "history.redo"
+        ) {
+            return Err(js_error(
+                "This capability is not an immediate Classic transaction; use invoke()",
+            ));
+        }
+        let input = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
+        let context = invocation_context(context)?;
+        let mut future = std::pin::pin!(self.runtime.registry().invoke(
+            &capability_id,
+            context,
+            input
+        ));
+        match future
+            .as_mut()
+            .poll(&mut Context::from_waker(Waker::noop()))
+        {
+            Poll::Ready(result) => to_js(&result.map_err(js_error)?),
+            Poll::Pending => Err(js_error("Immediate capability unexpectedly suspended")),
+        }
     }
 
     /// Read-only projection of the exact document returned by app.state.read.
@@ -104,6 +137,21 @@ fn js_error(error: impl std::fmt::Display) -> JsValue {
     js_sys::Error::new(&error.to_string()).into()
 }
 
+fn invocation_context(value: JsValue) -> Result<InvocationContext, JsValue> {
+    let options: InvocationOptions = if value.is_null() || value.is_undefined() {
+        InvocationOptions::default()
+    } else {
+        serde_wasm_bindgen::from_value(value).map_err(js_error)?
+    };
+    Ok(InvocationContext {
+        source: "classic.web".into(),
+        dry_run: options.dry_run,
+        request_id: options.request_id,
+        metadata: options.metadata,
+        ..InvocationContext::default()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -129,6 +177,64 @@ mod tests {
             .unwrap()
             .as_string()
             .unwrap()
+    }
+
+    #[wasm_bindgen_test]
+    fn synchronous_classic_transactions_keep_existing_scene_data() {
+        let runtime = CanonicalEditorRuntime::new().unwrap();
+        let classic: Value = serde_json::from_str(include_str!(
+            "../../../../crates/editor-api/tests/fixtures/classic-project.json"
+        ))
+        .unwrap();
+        let call = |id: &str, input: Value| {
+            from_js(
+                runtime
+                    .invoke_sync(id.into(), to_js(&input).unwrap(), JsValue::UNDEFINED)
+                    .unwrap(),
+            )["result"]["data"]
+                .clone()
+        };
+        call(
+            "project.classic.attach",
+            json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+        );
+        call(
+            "timeline.hyperframes.import",
+            json!({"projectId":"classic-project","expectedRevision":1,"name":"Composition","source":{"entryFile":"index.html","files":{"index.html":"<div data-composition-id='main' data-duration='6'></div>"},"resourceAssetIds":{}}}),
+        );
+        let read = call("app.state.read", json!({}));
+        assert_eq!(
+            read["value"]["project"]["classic"]["document"]["scenes"][0]["tracks"]["main"],
+            classic["document"]["scenes"][0]["tracks"]["main"]
+        );
+        call("history.undo", json!({}));
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"]["classic"],
+            classic
+        );
+        call("history.redo", json!({}));
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"],
+            read["value"]["project"]
+        );
+        let updated = from_js(runtime.snapshot().unwrap());
+        call(
+            "project.classic.commit",
+            json!({"projectId":"classic-project","expectedRevision":updated["revision"],"classic":classic}),
+        );
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"]["classic"],
+            classic
+        );
+        assert!(
+            runtime
+                .invoke_sync(
+                    "job.start".into(),
+                    to_js(&json!({})).unwrap(),
+                    JsValue::UNDEFINED
+                )
+                .is_err()
+        );
     }
 
     #[wasm_bindgen_test]

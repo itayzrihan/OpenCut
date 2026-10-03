@@ -108,6 +108,17 @@ pub(super) fn register_hyperframes_operations(
                                 "HyperFrames target project is not active".into(),
                             ));
                         }
+                        if project.classic.is_some() {
+                            (asset_id, item_id, track_id) = import_classic(
+                                document,
+                                input.name,
+                                input.start_seconds,
+                                input.track_id,
+                                composition,
+                            )?;
+                            check_cancelled(&context)?;
+                            return Ok(vec![asset_id.clone(), item_id.clone(), track_id.clone()]);
+                        }
                         let start = input
                             .start_seconds
                             .unwrap_or_else(|| project.timeline.duration());
@@ -231,4 +242,125 @@ fn check_cancelled(context: &InvocationContext) -> Result<(), CapabilityError> {
     } else {
         Ok(())
     }
+}
+
+fn import_classic(
+    document: &mut EditorDocument,
+    name: String,
+    start_seconds: Option<f64>,
+    target_track_id: Option<String>,
+    composition: HyperframesComposition,
+) -> Result<(String, String, String), CapabilityError> {
+    use crate::CLASSIC_TICKS_PER_SECOND;
+    use serde_json::json;
+    let classic = document.project.as_ref().unwrap().classic.as_ref().unwrap();
+    let start = start_seconds.unwrap_or_else(|| classic.duration());
+    let to_ticks = |seconds: f64| {
+        let ticks = (seconds * CLASSIC_TICKS_PER_SECOND as f64).round();
+        if seconds < 0.0 || !ticks.is_finite() || !(0.0..=9_007_199_254_740_991.0).contains(&ticks)
+        {
+            return Err(CapabilityError::InvalidInput(
+                "HyperFrames timing exceeds Classic's safe integer clock".into(),
+            ));
+        }
+        Ok(ticks as i64)
+    };
+    let start_ticks = to_ticks(start)?;
+    let duration_ticks = to_ticks(composition.duration_seconds)?;
+    if duration_ticks == 0 {
+        return Err(CapabilityError::InvalidInput(
+            "HyperFrames duration is shorter than one Classic tick".into(),
+        ));
+    }
+    let mut occupied = HashSet::new();
+    for scene in classic.scenes().map_err(model_error)? {
+        occupied.insert(scene["id"].as_str().unwrap_or_default().to_owned());
+        for track in crate::classic::tracks(scene).map_err(model_error)? {
+            occupied.insert(track["id"].as_str().unwrap_or_default().to_owned());
+            for element in track["elements"].as_array().unwrap() {
+                occupied.insert(element["id"].as_str().unwrap_or_default().to_owned());
+            }
+        }
+    }
+    occupied.extend(classic.compositions().map_err(model_error)?.into_keys());
+    occupied.extend(
+        classic
+            .media_assets
+            .iter()
+            .filter_map(|asset| asset.get("id").and_then(Value::as_str).map(str::to_owned)),
+    );
+    let mut allocate = |prefix| loop {
+        let id = document.allocate_id(prefix);
+        if occupied.insert(id.clone()) {
+            break id;
+        }
+    };
+    let asset_id = allocate("hyperframes");
+    let item_id = allocate("item");
+    let track_id = target_track_id.clone().unwrap_or_else(|| allocate("track"));
+    let classic = document.project.as_mut().unwrap().classic.as_mut().unwrap();
+    let active = classic.document["currentSceneId"].clone();
+    let scene = classic
+        .document
+        .get_mut("scenes")
+        .and_then(Value::as_array_mut)
+        .unwrap()
+        .iter_mut()
+        .find(|scene| scene["id"] == active)
+        .unwrap();
+    let tracks = scene["tracks"].as_object_mut().unwrap();
+    // A composition is a graphic element, so use the existing graphic lanes.
+    // Main video and other layer kinds retain their established element types.
+    if target_track_id.is_none() {
+        tracks.get_mut("overlay").and_then(Value::as_array_mut).unwrap().insert(0, json!({
+            "id":track_id, "name":"HyperFrames", "type":"graphic", "hidden":false, "elements":[]
+        }));
+        if let Some(order) = tracks.get_mut("order").and_then(Value::as_array_mut) {
+            order.insert(0, json!(track_id));
+        }
+    }
+    let track = tracks
+        .get_mut("overlay")
+        .and_then(Value::as_array_mut)
+        .unwrap()
+        .iter_mut()
+        .find(|track| track["id"] == track_id)
+        .ok_or_else(|| {
+            CapabilityError::InvalidInput(
+                "HyperFrames requires an existing Classic graphic overlay track".into(),
+            )
+        })?;
+    if track["type"] != "graphic" || track["locked"] == true {
+        return Err(CapabilityError::InvalidInput(
+            "HyperFrames target must be an unlocked graphic track".into(),
+        ));
+    }
+    track["elements"].as_array_mut().unwrap().push(json!({
+        "id":item_id, "name":name, "type":"graphic", "definitionId":"hyperframes",
+        "startTime":start_ticks, "duration":duration_ticks, "trimStart":0, "trimEnd":0,
+        "sourceDuration":duration_ticks,
+        "params":{"hyperframesAssetId":asset_id}, "hidden":false
+    }));
+    let compositions = classic
+        .document
+        .entry("hyperframesCompositions")
+        .or_insert_with(|| json!({}));
+    compositions
+        .as_object_mut()
+        .ok_or_else(|| {
+            CapabilityError::InvalidInput("Classic composition collection must be an object".into())
+        })?
+        .insert(
+            asset_id.clone(),
+            serde_json::to_value(composition)
+                .map_err(|e| CapabilityError::Failed(e.to_string()))?,
+        );
+    let duration = (classic.main_scene_duration() * CLASSIC_TICKS_PER_SECOND as f64).round() as i64;
+    classic
+        .document
+        .get_mut("metadata")
+        .and_then(Value::as_object_mut)
+        .unwrap()
+        .insert("duration".into(), json!(duration));
+    Ok((asset_id, item_id, track_id))
 }
