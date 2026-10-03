@@ -275,7 +275,7 @@ impl OpenCutMcp {
             || matches!(
                 descriptor.id.as_str(),
                 "project.create" | "project.open" | "project.activate" | "project.close"
-                    | "project.classic.attach" | "project.classic.session.attach"
+                    | "project.classic.attach" | "project.classic.session.attach" | "project.classic.session.restore"
             )
         {
             return Ok(());
@@ -1541,8 +1541,8 @@ mod tests {
                 .await;
             assert_ne!(first.is_error, Some(true), "{capability}: {first:?}");
             assert_eq!(
-                runtime.snapshot().unwrap().project.unwrap().classic.unwrap().document,
-                classic["document"].as_object().unwrap().clone()
+                serde_json::to_value(runtime.snapshot().unwrap().project.unwrap().classic.unwrap().document).unwrap(),
+                classic["document"]
             );
             let retry = server
                 .call_generated_capability(

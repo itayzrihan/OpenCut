@@ -114,7 +114,10 @@ async fn adoption_preserves_stack_order_selection_context_and_reopen() {
     )
     .await;
     let mut actual = session(&reopened).await;
-    assert_eq!(reopened.snapshot().unwrap().project, runtime.snapshot().unwrap().project);
+    assert_eq!(
+        reopened.snapshot().unwrap().project,
+        runtime.snapshot().unwrap().project
+    );
     actual["revision"] = saved["revision"].clone();
     assert_eq!(actual, saved);
     call(&reopened, "history.redo", json!({})).await;
@@ -156,20 +159,6 @@ async fn invalid_adoption_and_stale_history_requests_are_atomic() {
         );
         assert_eq!(runtime.snapshot().unwrap(), empty);
     }
-    let mut input = attach_input();
-    input["undoStack"] = Value::Array(vec![input["undoStack"][0].clone(); 201]);
-    assert!(
-        runtime
-            .registry()
-            .invoke(
-                "project.classic.session.attach",
-                InvocationContext::default(),
-                input
-            )
-            .await
-            .is_err()
-    );
-    assert_eq!(runtime.snapshot().unwrap(), empty);
     call(&runtime, "project.classic.session.attach", attach_input()).await;
     let before = session(&runtime).await;
     assert!(
@@ -202,4 +191,60 @@ async fn invalid_adoption_and_stale_history_requests_are_atomic() {
             assert_eq!(session(&runtime).await, before);
         }
     }
+}
+
+#[tokio::test]
+async fn adoption_and_new_edits_keep_classics_complete_live_history() {
+    let runtime = OpenCutRuntime::default();
+    let mut input = attach_input();
+    input["undoStack"] = json!(
+        (0..205)
+            .map(|index| json!({
+                "label":format!("Edit {index}"), "classic":classic(&format!("Before {index}"))
+            }))
+            .collect::<Vec<_>>()
+    );
+    input["redoStack"] = json!([]);
+    call(&runtime, "project.classic.session.attach", input).await;
+    let checkpoint = runtime.begin_atomic().unwrap();
+    let context = InvocationContext {
+        metadata: json!({"opencut/transaction":true})
+            .as_object()
+            .unwrap()
+            .clone(),
+        ..Default::default()
+    };
+    runtime
+        .registry()
+        .invoke(
+            "project.classic.commit",
+            context,
+            json!({
+                "projectId":"classic-project", "expectedRevision":1, "classic":classic("New edit")
+            }),
+        )
+        .await
+        .unwrap();
+    runtime.commit_atomic(checkpoint, "New edit").unwrap();
+    assert_eq!(
+        session(&runtime).await["undoStack"]
+            .as_array()
+            .unwrap()
+            .len(),
+        206
+    );
+    let archive = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project","persistableOnly":true}),
+    )
+    .await;
+    assert_eq!(archive["undoStack"].as_array().unwrap().len(), 100);
+    for _ in 0..206 {
+        call(&runtime, "history.undo", json!({})).await;
+    }
+    let state = session(&runtime).await;
+    assert_eq!(state["classic"], classic("Before 0"));
+    assert_eq!(state["undoStack"], json!([]));
+    assert_eq!(state["redoStack"].as_array().unwrap().len(), 206);
 }

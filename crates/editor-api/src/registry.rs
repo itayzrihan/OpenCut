@@ -71,10 +71,10 @@ struct AuditState {
     entries: VecDeque<InvocationAudit>,
 }
 
-#[derive(Default)]
-struct IdempotencyState {
+#[derive(Default, Clone)]
+pub(crate) struct IdempotencyState {
     order: VecDeque<String>,
-    entries: BTreeMap<String, IdempotencyEntry>,
+    entries: BTreeMap<String, Arc<IdempotencyEntry>>,
 }
 
 #[derive(Clone)]
@@ -129,8 +129,26 @@ impl CapabilityRegistry {
     }
 
     pub(crate) fn clear_idempotency(&self) -> Result<(), RegistryError> {
-        *self.idempotency.write().map_err(|_| RegistryError::LockPoisoned)? =
-            IdempotencyState::default();
+        *self
+            .idempotency
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = IdempotencyState::default();
+        Ok(())
+    }
+
+    pub(crate) fn checkpoint_idempotency(&self) -> Result<IdempotencyState, RegistryError> {
+        Ok(self
+            .idempotency
+            .read()
+            .map_err(|_| RegistryError::LockPoisoned)?
+            .clone())
+    }
+
+    pub(crate) fn restore_idempotency(&self, state: IdempotencyState) -> Result<(), RegistryError> {
+        *self
+            .idempotency
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = state;
         Ok(())
     }
 
@@ -324,7 +342,7 @@ impl CapabilityRegistry {
                     details: "idempotencyKey was already used with different input".into(),
                 });
             }
-            return Ok(cached.receipt);
+            return Ok(cached.receipt.clone());
         }
 
         let audit_context = context.clone();
@@ -366,7 +384,13 @@ impl CapabilityRegistry {
             }
         }
 
-        if !result.changed_resources.is_empty() {
+        if !result.changed_resources.is_empty()
+            && audit_context
+                .metadata
+                .get("opencut/transaction")
+                .and_then(Value::as_bool)
+                != Some(true)
+        {
             let _ = self.events.send(RegistryEvent::ResourcesChanged {
                 uris: result.changed_resources.clone(),
                 revision,
@@ -397,10 +421,10 @@ impl CapabilityRegistry {
             }
             state.entries.insert(
                 key,
-                IdempotencyEntry {
+                Arc::new(IdempotencyEntry {
                     input,
                     receipt: receipt.clone(),
-                },
+                }),
             );
             while state.order.len() > 1000 {
                 if let Some(oldest) = state.order.pop_front() {

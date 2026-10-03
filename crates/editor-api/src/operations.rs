@@ -169,9 +169,13 @@ where
                 | "project.activate"
                 | "project.classic.attach"
                 | "project.classic.session.attach"
+                | "project.classic.session.restore"
         );
     descriptor.supports_dry_run = descriptor.transactional
-        || matches!(id, "project.classic.attach" | "project.classic.session.attach");
+        || matches!(
+            id,
+            "project.classic.attach" | "project.classic.session.attach" | "project.classic.session.restore"
+        );
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
         || id.starts_with("media.probe")
@@ -5835,10 +5839,17 @@ fn register_history_operations(
                     CapabilityError::Failed("editor state lock was poisoned".into())
                 })?;
                 check_history_target(&store, &context)?;
-                let entry = store
+                let mut entry = store
                     .redo
                     .pop()
                     .ok_or_else(|| CapabilityError::Unavailable("nothing to redo".into()))?;
+                if let Some(patch) = context
+                    .metadata
+                    .get("opencut/historyContext")
+                    .and_then(Value::as_object)
+                {
+                    entry.host_context.extend(patch.clone());
+                }
                 let current_revision = store.document.revision;
                 let current = HistoryEntry {
                     label: entry.label.clone(),
@@ -6240,6 +6251,12 @@ where
     let before = store.document.clone();
     let mut working = before.clone();
     let changed_ids = mutation(&mut working)?;
+    if let (Some(previous), Some(current)) = (&before.project, &mut working.project)
+        && previous.id == current.id
+        && let (Some(previous), Some(current)) = (&previous.classic, &mut current.classic)
+    {
+        current.share_sources_from(previous);
+    }
     working
         .sync_exact_from_seconds()
         .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
@@ -6354,6 +6371,18 @@ fn check_target(
 }
 
 pub(crate) fn trim_history(history: &mut Vec<HistoryEntry>) {
+    // Classic keeps its complete live command history. Adopting the canonical
+    // runtime must not remove older undo actions. Its durable archive retains
+    // the existing host limit separately.
+    if history.last().is_some_and(|entry| {
+        entry
+            .document
+            .project
+            .as_ref()
+            .is_some_and(|project| project.classic.is_some())
+    }) {
+        return;
+    }
     const MAX_HISTORY: usize = 200;
     if history.len() > MAX_HISTORY {
         history.drain(..history.len() - MAX_HISTORY);

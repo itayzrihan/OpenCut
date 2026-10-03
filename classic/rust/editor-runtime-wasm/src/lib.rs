@@ -2,9 +2,10 @@
 
 #![cfg(target_arch = "wasm32")]
 
-use opencut_editor_api::{InvocationContext, OpenCutRuntime};
+use opencut_editor_api::{InvocationContext, OpenCutRuntime, RuntimeCheckpoint};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
 #[derive(Default, Deserialize)]
@@ -19,6 +20,7 @@ struct InvocationOptions {
 #[wasm_bindgen]
 pub struct CanonicalEditorRuntime {
     runtime: OpenCutRuntime,
+    transaction: RefCell<Option<RuntimeCheckpoint>>,
 }
 
 #[wasm_bindgen]
@@ -27,6 +29,7 @@ impl CanonicalEditorRuntime {
     pub fn new() -> Result<CanonicalEditorRuntime, JsValue> {
         Ok(Self {
             runtime: OpenCutRuntime::full_access().map_err(js_error)?,
+            transaction: RefCell::new(None),
         })
     }
 
@@ -38,6 +41,11 @@ impl CanonicalEditorRuntime {
         input: JsValue,
         context: JsValue,
     ) -> Result<JsValue, JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error(
+                "Use synchronous capabilities inside a Classic transaction",
+            ));
+        }
         let input: Value = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
         let context = invocation_context(context)?;
         let receipt = self
@@ -68,7 +76,11 @@ impl CanonicalEditorRuntime {
             "project.classic.attach"
                 | "project.classic.session.attach"
                 | "project.classic.session.read"
+                | "project.classic.session.status"
+                | "project.classic.session.archive"
+                | "project.classic.session.restore"
                 | "project.classic.commit"
+                | "project.classic.synchronize"
                 | "hyperframes.project.inspect"
                 | "timeline.hyperframes.import"
                 | "app.state.read"
@@ -80,7 +92,22 @@ impl CanonicalEditorRuntime {
             ));
         }
         let input = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
-        let context = invocation_context(context)?;
+        let mut context = invocation_context(context)?;
+        if self.transaction.borrow().is_some() {
+            let descriptor = self
+                .runtime
+                .registry()
+                .descriptor(&capability_id)
+                .map_err(js_error)?;
+            if !descriptor.is_some_and(|descriptor| descriptor.transactional) {
+                return Err(js_error(
+                    "This capability cannot run inside an atomic transaction",
+                ));
+            }
+            context
+                .metadata
+                .insert("opencut/transaction".into(), Value::Bool(true));
+        }
         let mut future = std::pin::pin!(self.runtime.registry().invoke(
             &capability_id,
             context,
@@ -95,6 +122,73 @@ impl CanonicalEditorRuntime {
         }
     }
 
+    /// Groups synchronous Classic mutations into one canonical undo entry.
+    /// The host must commit or roll back before yielding to its event loop.
+    #[wasm_bindgen(js_name = beginTransaction)]
+    pub fn begin_transaction(
+        &self,
+        project_id: &str,
+        expected_revision: JsValue,
+    ) -> Result<(), JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error("A Classic transaction is already active"));
+        }
+        let expected_revision: u64 =
+            serde_wasm_bindgen::from_value(expected_revision).map_err(js_error)?;
+        let current = self.runtime.snapshot().map_err(js_error)?;
+        if current.revision != expected_revision {
+            return Err(js_error("Classic transaction revision conflict"));
+        }
+        if !current
+            .project
+            .as_ref()
+            .is_some_and(|project| project.id == project_id && project.classic.is_some())
+        {
+            return Err(js_error("Classic target project is not active"));
+        }
+        *self.transaction.borrow_mut() = Some(self.runtime.begin_atomic().map_err(js_error)?);
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = commitTransaction)]
+    pub fn commit_transaction(
+        &self,
+        label: &str,
+        host_context: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        if label.trim().is_empty() {
+            return Err(js_error("Transaction label must not be empty"));
+        }
+        let host_context = if host_context.is_null() || host_context.is_undefined() {
+            Map::new()
+        } else {
+            serde_wasm_bindgen::from_value(host_context).map_err(js_error)?
+        };
+        let checkpoint = self
+            .transaction
+            .borrow()
+            .clone()
+            .ok_or_else(|| js_error("No Classic transaction is active"))?;
+        let revision = self
+            .runtime
+            .commit_atomic_with_context(checkpoint, label, host_context)
+            .map_err(js_error)?;
+        self.transaction.borrow_mut().take();
+        to_js(&revision)
+    }
+
+    #[wasm_bindgen(js_name = rollbackTransaction)]
+    pub fn rollback_transaction(&self) -> Result<(), JsValue> {
+        let checkpoint = self
+            .transaction
+            .borrow()
+            .clone()
+            .ok_or_else(|| js_error("No Classic transaction is active"))?;
+        self.runtime.rollback_atomic(checkpoint).map_err(js_error)?;
+        self.transaction.borrow_mut().take();
+        Ok(())
+    }
+
     /// Read-only projection of the exact document returned by app.state.read.
     pub fn snapshot(&self) -> Result<JsValue, JsValue> {
         to_js(&self.runtime.snapshot().map_err(js_error)?)
@@ -106,11 +200,17 @@ impl CanonicalEditorRuntime {
 
     /// The host persists these bytes through its existing storage service.
     pub fn serialize(&self) -> Result<Vec<u8>, JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error("Finish the Classic transaction before persisting"));
+        }
         self.runtime.serialize_application_state().map_err(js_error)
     }
 
     /// Restores a previously serialized session after full model validation.
     pub fn restore(&self, bytes: &[u8]) -> Result<(), JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error("Finish the Classic transaction before restoring"));
+        }
         self.runtime
             .restore_application_state_from_bytes(bytes)
             .map_err(js_error)
@@ -179,6 +279,107 @@ mod tests {
             .unwrap()
             .as_string()
             .unwrap()
+    }
+
+    #[wasm_bindgen_test]
+    fn browser_transaction_groups_edits_and_rolls_back_failed_commands() {
+        let runtime = CanonicalEditorRuntime::new().unwrap();
+        let mut classic: Value = serde_json::from_str(include_str!(
+            "../../../../crates/editor-api/tests/fixtures/classic-project.json"
+        ))
+        .unwrap();
+        let call = |id: &str, input: Value| {
+            from_js(
+                runtime
+                    .invoke_sync(id.into(), to_js(&input).unwrap(), JsValue::UNDEFINED)
+                    .unwrap(),
+            )["result"]["data"]
+                .clone()
+        };
+        call(
+            "project.classic.attach",
+            json!({"projectId":"classic-project", "expectedRevision":0, "classic":classic}),
+        );
+        let before = from_js(runtime.snapshot().unwrap());
+        assert!(
+            runtime
+                .begin_transaction("wrong-project", to_js(&1).unwrap())
+                .is_err()
+        );
+        runtime
+            .begin_transaction("classic-project", to_js(&1).unwrap())
+            .unwrap();
+        assert!(
+            runtime
+                .begin_transaction("classic-project", to_js(&1).unwrap())
+                .is_err()
+        );
+        assert!(runtime.serialize().is_err());
+        assert!(
+            runtime
+                .invoke_sync(
+                    "history.undo".into(),
+                    to_js(&json!({})).unwrap(),
+                    JsValue::UNDEFINED
+                )
+                .is_err()
+        );
+        classic["document"]["metadata"]["name"] = json!("First part");
+        call(
+            "project.classic.commit",
+            json!({"projectId":"classic-project", "expectedRevision":1, "classic":classic}),
+        );
+        classic["document"]["metadata"]["name"] = json!("Second part");
+        call(
+            "project.classic.commit",
+            json!({"projectId":"classic-project", "expectedRevision":2, "classic":classic}),
+        );
+        runtime
+            .commit_transaction(
+                "Compound command",
+                to_js(&json!({"callbackId":"compound"})).unwrap(),
+            )
+            .unwrap();
+        let undo = call("history.undo", json!({}));
+        assert_eq!(undo["canUndo"], false);
+        assert_eq!(undo["hostContext"]["callbackId"], "compound");
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"],
+            before["project"]
+        );
+        let revision = from_js(runtime.snapshot().unwrap())["revision"].clone();
+        runtime
+            .begin_transaction("classic-project", to_js(&revision).unwrap())
+            .unwrap();
+        call(
+            "project.classic.commit",
+            json!({"projectId":"classic-project", "expectedRevision":revision, "classic":classic}),
+        );
+        runtime.rollback_transaction().unwrap();
+        assert_eq!(
+            from_js(runtime.snapshot().unwrap())["project"],
+            before["project"]
+        );
+        assert_eq!(
+            call(
+                "project.classic.session.read",
+                json!({"projectId":"classic-project"})
+            )["redoStack"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        let archive = call(
+            "project.classic.session.archive",
+            json!({"projectId":"classic-project"}),
+        );
+        let restored = CanonicalEditorRuntime::new().unwrap();
+        restored.invoke_sync("project.classic.session.restore".into(), to_js(&json!({"projectId":"classic-project", "expectedRevision":0, "archive":archive})).unwrap(), JsValue::UNDEFINED).unwrap();
+        assert_eq!(
+            from_js(restored.snapshot().unwrap())["project"],
+            before["project"]
+        );
     }
 
     #[wasm_bindgen_test]

@@ -1,13 +1,17 @@
 //! Lossless Classic document boundary. Presentation-specific fields remain in
 //! the document; this module validates identity, timing and composition links.
 
-use std::collections::{BTreeMap, HashSet};
+use std::{
+    collections::{BTreeMap, HashSet},
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::{HyperframesComposition, ModelError, ProjectSettings, Rational};
+use crate::{HyperframesComposition, HyperframesSource, ModelError, ProjectSettings, Rational};
 
 // The established Classic media clock (classic/rust/crates/time).
 pub const CLASSIC_TICKS_PER_SECOND: i64 = 120_000;
@@ -17,10 +21,93 @@ const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClassicProject {
     /// Serialized TProject, including fields not understood by this bridge.
-    pub document: Map<String, Value>,
+    #[schemars(with = "Map<String, Value>")]
+    pub document: ClassicDocument,
     /// Host-owned durable media records. File/Blob/AudioBuffer/URL objects are
     /// excluded by the host; resource bytes stay in existing media storage.
     pub media_assets: Vec<Map<String, Value>>,
+}
+
+/// Keep the established JSON shape while sharing immutable source text across
+/// snapshots. Unknown Classic and composition properties remain lossless.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ClassicDocument {
+    #[serde(flatten)]
+    pub fields: Map<String, Value>,
+    #[serde(
+        rename = "hyperframesCompositions",
+        default,
+        deserialize_with = "deserialize_compositions",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub compositions: Option<BTreeMap<String, ClassicComposition>>,
+}
+
+impl Deref for ClassicDocument {
+    type Target = Map<String, Value>;
+    fn deref(&self) -> &Self::Target {
+        &self.fields
+    }
+}
+impl DerefMut for ClassicDocument {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.fields
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ClassicComposition {
+    pub source: Arc<HyperframesSource>,
+    #[serde(flatten)]
+    pub properties: Map<String, Value>,
+}
+
+fn deserialize_compositions<'de, D>(
+    deserializer: D,
+) -> Result<Option<BTreeMap<String, ClassicComposition>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    BTreeMap::deserialize(deserializer).map(Some)
+}
+
+impl ClassicComposition {
+    fn typed(&self) -> Result<HyperframesComposition, ModelError> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Properties {
+            composition_id: String,
+            width: u32,
+            height: u32,
+            fps: f64,
+            duration_seconds: f64,
+        }
+        let p: Properties = serde_json::from_value(Value::Object(self.properties.clone()))
+            .map_err(|e| invalid(&format!("invalid composition: {e}")))?;
+        Ok(HyperframesComposition {
+            source: self.source.clone(),
+            composition_id: p.composition_id,
+            width: p.width,
+            height: p.height,
+            fps: p.fps,
+            duration_seconds: p.duration_seconds,
+        })
+    }
+}
+
+impl From<HyperframesComposition> for ClassicComposition {
+    fn from(value: HyperframesComposition) -> Self {
+        let properties = serde_json::json!({"compositionId":value.composition_id,
+            "width":value.width, "height":value.height, "fps":value.fps,
+            "durationSeconds":value.duration_seconds})
+        .as_object()
+        .unwrap()
+        .clone();
+        Self {
+            source: value.source,
+            properties,
+        }
+    }
 }
 
 impl ClassicProject {
@@ -167,10 +254,29 @@ impl ClassicProject {
     }
 
     pub fn compositions(&self) -> Result<BTreeMap<String, HyperframesComposition>, ModelError> {
-        match self.document.get("hyperframesCompositions") {
-            None => Ok(BTreeMap::new()),
-            Some(value) => serde_json::from_value(value.clone())
-                .map_err(|e| invalid(&format!("invalid composition collection: {e}"))),
+        self.document
+            .compositions
+            .iter()
+            .flat_map(|items| items.iter())
+            .map(|(id, composition)| Ok((id.clone(), composition.typed()?)))
+            .collect()
+    }
+
+    /// Whole-document host commits usually keep the same source. Reuse the
+    /// previous immutable allocation instead of copying it into every undo entry.
+    pub(crate) fn share_sources_from(&mut self, previous: &Self) {
+        let Some(previous) = &previous.document.compositions else {
+            return;
+        };
+        let Some(current) = &mut self.document.compositions else {
+            return;
+        };
+        for (id, composition) in current {
+            if let Some(old) = previous.get(id)
+                && composition.source == old.source
+            {
+                composition.source = old.source.clone();
+            }
         }
     }
 

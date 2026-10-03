@@ -341,20 +341,11 @@ fn import_classic(
         "sourceDuration":duration_ticks,
         "params":{"hyperframesAssetId":asset_id}, "hidden":false
     }));
-    let compositions = classic
+    classic
         .document
-        .entry("hyperframesCompositions")
-        .or_insert_with(|| json!({}));
-    compositions
-        .as_object_mut()
-        .ok_or_else(|| {
-            CapabilityError::InvalidInput("Classic composition collection must be an object".into())
-        })?
-        .insert(
-            asset_id.clone(),
-            serde_json::to_value(composition)
-                .map_err(|e| CapabilityError::Failed(e.to_string()))?,
-        );
+        .compositions
+        .get_or_insert_default()
+        .insert(asset_id.clone(), composition.into());
     let duration = (classic.main_scene_duration() * CLASSIC_TICKS_PER_SECOND as f64).round() as i64;
     classic
         .document

@@ -281,6 +281,7 @@ pub struct OpenCutRuntime {
 #[derive(Clone)]
 pub struct RuntimeCheckpoint {
     store: EditorStore,
+    idempotency: crate::registry::IdempotencyState,
 }
 
 impl OpenCutRuntime {
@@ -458,11 +459,14 @@ impl OpenCutRuntime {
                 .read()
                 .map_err(|_| RuntimeError::LockPoisoned)?
                 .clone(),
+            idempotency: self.registry.checkpoint_idempotency()?,
         })
     }
 
     pub fn rollback_atomic(&self, checkpoint: RuntimeCheckpoint) -> Result<(), RuntimeError> {
-        *self.state.write().map_err(|_| RuntimeError::LockPoisoned)? = checkpoint.store;
+        let mut store = self.state.write().map_err(|_| RuntimeError::LockPoisoned)?;
+        self.registry.restore_idempotency(checkpoint.idempotency)?;
+        *store = checkpoint.store;
         Ok(())
     }
 
@@ -470,6 +474,16 @@ impl OpenCutRuntime {
         &self,
         checkpoint: RuntimeCheckpoint,
         label: impl Into<String>,
+    ) -> Result<u64, RuntimeError> {
+        self.commit_atomic_with_context(checkpoint, label, Default::default())
+    }
+
+    /// Presentation context follows the same canonical undo entry as the edit.
+    pub fn commit_atomic_with_context(
+        &self,
+        checkpoint: RuntimeCheckpoint,
+        label: impl Into<String>,
+        host_context: serde_json::Map<String, serde_json::Value>,
     ) -> Result<u64, RuntimeError> {
         let mut store = self.state.write().map_err(|_| RuntimeError::LockPoisoned)?;
         if store.active_project_id() != checkpoint.store.active_project_id() {
@@ -482,13 +496,18 @@ impl OpenCutRuntime {
         store.undo.push(HistoryEntry {
             label: label.into(),
             document: checkpoint.store.document,
-            host_context: Default::default(),
+            host_context,
         });
         super::operations::trim_history(&mut store.undo);
         store.redo.clear();
         let revision = store.document.revision;
         drop(store);
         let _ = self.state_events.send(revision);
+        self.registry.notify_resources_changed(vec![
+            "opencut://state".into(),
+            "opencut://project".into(),
+            "opencut://timeline".into(),
+        ])?;
         Ok(revision)
     }
 

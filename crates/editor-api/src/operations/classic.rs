@@ -14,15 +14,23 @@ pub(super) fn register_classic_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
-    for (id, title, attach) in [
+    for (id, title, attach, record_history) in [
         (
             "project.classic.attach",
             "Attach existing Classic project",
+            true,
             true,
         ),
         (
             "project.classic.commit",
             "Commit Classic project edit",
+            false,
+            true,
+        ),
+        (
+            "project.classic.synchronize",
+            "Synchronize Classic host metadata",
+            false,
             false,
         ),
     ] {
@@ -32,7 +40,11 @@ pub(super) fn register_classic_operations(
             registry,
             id,
             title,
-            "Validates and commits the complete serialized Classic project and durable media bindings without translating or dropping feature fields. The existing scenes remain the only timeline. Requires explicit project identity and revision; supports undo, dry run and registry retry keys.",
+            if record_history {
+                "Validates and commits the complete serialized Classic project and durable media bindings without dropping feature fields. Requires explicit project identity and revision; records undo and supports dry run and registry retry keys."
+            } else {
+                "Validates and refreshes the complete serialized Classic project and durable media bindings while retaining existing undo and redo boundaries. Requires explicit project identity and revision; supports dry run and registry retry keys. Use inside an editor transaction to group host changes into one undo entry."
+            },
             "project",
             AccessLevel::Write,
             false,
@@ -42,6 +54,16 @@ pub(super) fn register_classic_operations(
                 let state = state.clone();
                 let events = events.clone();
                 async move {
+                    let grouped = context
+                        .metadata
+                        .get("opencut/transaction")
+                        .and_then(Value::as_bool)
+                        == Some(true);
+                    if !record_history {
+                        context
+                            .metadata
+                            .insert("opencut/transaction".into(), Value::Bool(true));
+                    }
                     if attach {
                         if requested_project_id(&context).is_some_and(|id| id != input.project_id) {
                             return Err(CapabilityError::Conflict(
@@ -115,6 +137,9 @@ pub(super) fn register_classic_operations(
                             Ok(vec![input.project_id])
                         },
                     )?;
+                    if !record_history && !grouped && mutation.committed {
+                        let _ = events.send(mutation.revision);
+                    }
                     Ok(OperationSuccess::new(mutation).summary(title).changed([
                         STATE_RESOURCE,
                         PROJECT_RESOURCE,
