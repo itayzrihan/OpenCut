@@ -20,7 +20,7 @@ is implemented; the product integration is not complete.
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Isolated official runtime tested on all eight Brag projects; Classic compositor, trim/speed/audio/export integration pending |
-| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Pending |
+| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Persistent frame capture verified on eight Brag projects; compositor/audio integration and reference export comparison pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
@@ -140,6 +140,46 @@ These adapters are tested independently. They still need authenticated host
 lifecycle routing, importer UI, attachment to the existing Classic compositor,
 transport/audio synchronization and deterministic export. Do not enable an
 import button that creates a clip the current Classic renderer cannot display.
+
+### Persistent frame capture (2026-10-04)
+
+- The Classic host adapter now uses `@hyperframes/engine` 0.8.115 for persistent
+  capture sessions. An isolated page stays loaded across seeks. The adapter
+  connects the official runtime's `__player.renderSeek`/`getDuration` to the
+  engine's `__hf` protocol; timing and animation remain in HyperFrames.
+- A small, tracked Bun patch lets the engine navigate the exact original entry
+  URL and keeps Chrome's sandbox enabled, including its GPU probe. There is no
+  general browser automation or filesystem endpoint. The adapter accepts only
+  the validated package and explicitly resolved resource bindings.
+- Each page has a private browser, package origin and read-only request policy.
+  There are at most four sessions, two queued frames per session and a
+  16-megapixel frame limit. Capture cancellation closes the browser, failed
+  initialization releases the slot, and idle sessions expire after two minutes.
+  The engine's required scratch directory stays empty and is removed on close.
+- `storeArtifact` and `removeArtifact` expose the existing Rust ArtifactStore to
+  the renderer host. PNG bytes receive canonical IDs, checksums, expiry and
+  capacity eviction. Closing a capture leaves already returned artifacts valid
+  in that store; no agent needs a temporary frame path.
+- Browser tests verify nested entry paths, dynamic JSON, nested HTML, CSS seek
+  positions, transparent pixels, authored body backgrounds, queue ordering,
+  failed preparation, cancellation and close. The synthetic fixture produces
+  identical PNGs when seeking 0.5 → 2 → 0.5 seconds.
+- All eight real Brag projects produced three frames with these same seek
+  checkpoints. Seven produced identical repeated PNGs. In
+  `brag-reference-recreation/composition`, 79 of 921,600 pixels differed around
+  the 3D phone edges (maximum channel difference 55; mean absolute channel
+  difference 0.000360). Exact repeatability for this case remains unresolved.
+  No original source was modified. Probe artifacts were first read from the
+  canonical store and then saved by the ignored inspection script.
+- On this machine, initialization took 1.14–1.68 seconds per project and frame
+  capture plus artifact read/write took 85–414 ms. This was software-GPU PNG
+  capture, not a playback benchmark. The adapter provides an export/compositor
+  fallback; a live DOM preview path is still required for fluid playback.
+- The ignored probe and report are `.local/hyperframes-capture-probe.ts` and
+  `.local/hyperframes-capture-probe-results.json`. Audio mixing, decoded video
+  injection, arbitrary author timer virtualization, comparison with original
+  HyperFrames exports and authenticated Classic lifecycle integration remain
+  unverified or unimplemented. This adapter is not exposed as an import feature.
 
 - `hyperframes.project.inspect`: pure bounded source inspection, no script
   execution, filesystem reads or URL fetching. Reports authored elements,
@@ -321,8 +361,10 @@ measurements, not browser playback measurements. Probes are in ignored
    and loopback-only.
 4. Project runtime-generated child manifests into expandable rows of the existing
    timeline, retain host occurrence identity, and connect selection/inspector.
-5. Add deterministic frame and audio export, bounded artifact output, cancellation
-   and cache invalidation. Verify actual Brag projects and mixed compositions.
+5. Connect the persistent frame capture adapter and bounded artifact output to
+   the existing compositor; resolve the 3D repeatability case, video injection,
+   author timers, audio export and cache invalidation. Verify Brag references and
+   mixed compositions against actual exports.
 6. Implement measured UI/performance improvements; run the full preservation and
    completion audit above. Do not equate green source-import tests with completion.
 
@@ -345,6 +387,13 @@ The example is a read-only static source probe; it skips generated output, hidde
 directories, dependencies and symlinks, and reports binary references as unbound.
 
 ### Current verification and outstanding baseline failures
+
+- Capture additions: nine folder/preview/capture tests passed with 72 assertions,
+  including two real Chrome tests; six browser-binding WASM tests, scoped web
+  TypeScript and capture ESLint passed. WASM binding Clippy passed with
+  `-D warnings`. The export-table check now covers 13 canonical and 37 existing
+  Classic exports. The actual Brag probe captured all eight compositions, with
+  the 3D repeatability limitation recorded above.
 
 - Folder/runtime additions: four native package-planning tests, five real-WASM
   folder/preview tests (38 assertions) and four local-drive tests (20 assertions)

@@ -218,6 +218,30 @@ impl CanonicalEditorRuntime {
     }
 
     /// Binary results are accessed by bounded ArtifactStore ID/URI, never a path.
+    /// This host-only adapter publishes renderer output; it does not mutate the
+    /// editor document or register a transport-specific editor capability.
+    #[wasm_bindgen(js_name = storeArtifact)]
+    pub fn store_artifact(
+        &self,
+        bytes: &[u8],
+        mime_type: &str,
+        width: Option<u32>,
+        height: Option<u32>,
+        duration_ms: Option<u64>,
+    ) -> Result<JsValue, JsValue> {
+        let artifact = self
+            .runtime
+            .artifacts()
+            .put(bytes.to_vec(), mime_type, width, height, duration_ms)
+            .map_err(js_error)?;
+        to_js(&artifact)
+    }
+
+    #[wasm_bindgen(js_name = removeArtifact)]
+    pub fn remove_artifact(&self, id_or_uri: &str) -> Result<bool, JsValue> {
+        self.runtime.artifacts().remove(id_or_uri).map_err(js_error)
+    }
+
     #[wasm_bindgen(js_name = readArtifact)]
     pub fn read_artifact(&self, id_or_uri: &str) -> Result<Vec<u8>, JsValue> {
         Ok(self
@@ -666,13 +690,20 @@ mod tests {
     fn browser_artifacts_use_the_bounded_store_and_real_clock() {
         let runtime = CanonicalEditorRuntime::new().unwrap();
         let artifact = runtime
-            .runtime
-            .artifacts()
-            .put(vec![1, 2, 3], "application/octet-stream", None, None, None)
+            .store_artifact(&[1, 2, 3], "image/png", Some(2), Some(3), None)
+            .map(from_js)
             .unwrap();
-        assert!(artifact.created_at_ms > 1_700_000_000_000);
-        assert!(artifact.expires_at_ms > artifact.created_at_ms);
-        assert_eq!(runtime.read_artifact(&artifact.uri).unwrap(), vec![1, 2, 3]);
+        assert!(artifact["createdAtMs"].as_u64().unwrap() > 1_700_000_000_000);
+        assert!(artifact["expiresAtMs"].as_u64() > artifact["createdAtMs"].as_u64());
+        assert_eq!(artifact["mimeType"], "image/png");
+        assert_eq!(artifact["width"], 2);
+        assert_eq!(artifact["height"], 3);
+        let uri = artifact["uri"].as_str().unwrap();
+        assert_eq!(runtime.read_artifact(uri).unwrap(), vec![1, 2, 3]);
         assert!(runtime.read_artifact("C:/arbitrary/path").is_err());
+        assert!(runtime.remove_artifact(uri).unwrap());
+        assert!(!runtime.remove_artifact(uri).unwrap());
+        assert!(runtime.read_artifact(uri).is_err());
+        assert_eq!(from_js(runtime.snapshot().unwrap())["revision"], 0);
     }
 }

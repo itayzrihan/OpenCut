@@ -52,5 +52,8 @@
   },
   "trustedDependencies": [
     "@tailwindcss/oxide"
-  ]
+  ],
+  "patchedDependencies": {
+    "@hyperframes/engine@0.8.115": "patches/@hyperframes%2Fengine@0.8.115.patch"
+  }
 }

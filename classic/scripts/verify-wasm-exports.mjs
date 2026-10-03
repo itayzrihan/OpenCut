@@ -74,6 +74,8 @@ await verifyExports(
 		"canonicaleditorruntime_serialize",
 		"canonicaleditorruntime_restore",
 		"canonicaleditorruntime_readArtifact",
+		"canonicaleditorruntime_storeArtifact",
+		"canonicaleditorruntime_removeArtifact",
 	],
 	"opencut-editor-runtime-wasm",
 );
