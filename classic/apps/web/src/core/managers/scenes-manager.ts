@@ -206,18 +206,13 @@ export class ScenesManager {
 		const ensuredScenes = ensureMainScene({ scenes });
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes: ensuredScenes,
-			cameraCanvasSize:
-				this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
 		});
 		const currentScene = currentSceneId
 			? normalizedScenes.find((s) => s.id === currentSceneId)
 			: null;
 
 		const fallbackScene = getMainScene({ scenes: normalizedScenes });
-
-		this.list = normalizedScenes;
-		this.active = currentScene || fallbackScene;
-		this.notify();
 
 		const hasAddedMainScene = normalizedScenes.length > scenes.length;
 		const hasRestoredParallaxMetadata = normalizedScenes.some(
@@ -240,6 +235,9 @@ export class ScenesManager {
 				this.editor.save.markDirty({ force: true });
 			}
 		}
+		this.list = normalizedScenes;
+		this.active = currentScene || fallbackScene;
+		this.notify();
 	}
 
 	clearScenes(): void {
@@ -272,21 +270,20 @@ export class ScenesManager {
 	}): void {
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes,
-			cameraCanvasSize:
-				this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
 		});
-		this.list = normalizedScenes;
 		const nextActiveSceneId = activeSceneId ?? this.active?.id ?? null;
-		this.active = nextActiveSceneId
-			? (normalizedScenes.find((scene) => scene.id === nextActiveSceneId) ?? null)
-			: null;
-		this.notify();
+		const nextActive = nextActiveSceneId
+			? (normalizedScenes.find((scene) => scene.id === nextActiveSceneId) ??
+				getMainScene({ scenes: normalizedScenes }))
+			: getMainScene({ scenes: normalizedScenes });
 
 		const activeProject = this.editor.project.getActive();
 		if (activeProject) {
 			const updatedProject = {
 				...activeProject,
 				scenes: normalizedScenes,
+				...(nextActive && { currentSceneId: nextActive.id }),
 				metadata: {
 					...activeProject.metadata,
 					updatedAt: new Date(),
@@ -294,6 +291,9 @@ export class ScenesManager {
 			};
 			this.editor.project.setActiveProject({ project: updatedProject });
 		}
+		this.list = normalizedScenes;
+		this.active = nextActive;
+		this.notify();
 	}
 
 	subscribe(listener: () => void): () => void {
@@ -316,17 +316,15 @@ export class ScenesManager {
 			updatedAt: new Date(),
 		};
 
-		this.list = this.list.map((s) =>
+		const nextScenes = this.list.map((s) =>
 			s.id === this.active?.id ? updatedScene : s,
 		);
-		this.active = updatedScene;
-		this.notify();
 
 		const activeProject = this.editor.project.getActive();
 		if (activeProject) {
 			const updatedProject = {
 				...activeProject,
-				scenes: this.list,
+				scenes: nextScenes,
 				metadata: {
 					...activeProject.metadata,
 					updatedAt: new Date(),
@@ -334,5 +332,8 @@ export class ScenesManager {
 			};
 			this.editor.project.setActiveProject({ project: updatedProject });
 		}
+		this.list = nextScenes;
+		this.active = updatedScene;
+		this.notify();
 	}
 }

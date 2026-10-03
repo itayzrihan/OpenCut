@@ -40,6 +40,12 @@ export class RemoveMediaAssetCommand extends Command {
 			console.error("Media asset not found:", this.assetId);
 			return;
 		}
+		// Validate composition resource links before revoking handles or deleting
+		// a durable file. A rejected command must leave the existing media usable.
+		editor.command.synchronizeMedia({
+			assets: assets.filter((asset) => asset.id !== this.assetId),
+			dryRun: true,
+		});
 
 		if (this.removedAsset.url) {
 			URL.revokeObjectURL(this.removedAsset.url);

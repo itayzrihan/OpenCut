@@ -107,7 +107,14 @@ export function filterAndSortProjectMetadata({
 }
 
 export class ProjectManager {
-	private active: TProject | null = null;
+	private activeValue: TProject | null = null;
+	private get active(): TProject | null {
+		return this.activeValue;
+	}
+	private set active(project: TProject | null) {
+		this.editor.command.synchronizeProject(project);
+		this.activeValue = project;
+	}
 	private savedProjects: TProjectMetadata[] = [];
 	private isLoading = true;
 	private projectLoad: { id: string; promise: Promise<boolean> } | undefined;
@@ -296,6 +303,8 @@ export class ProjectManager {
 					`This project could not be upgraded safely: ${migrationFailure.message}. Its original stored record was preserved in recovery storage.`,
 				);
 			}
+			await this.editor.command.flushHistory();
+			this.editor.command.detachCanonical();
 			this.editor.media.clearAllAssets();
 			this.editor.scenes.clearScenes();
 
@@ -344,6 +353,12 @@ export class ProjectManager {
 			}
 
 			await Promise.all([mediaPromise, historyPromise, fontFamiliesPromise]);
+			if (
+				this.editor.command.hasCanonicalHistory() ||
+				Object.keys(projectWithFonts.hyperframesCompositions ?? {}).length > 0
+			) {
+				await this.editor.command.enableCanonical();
+			}
 			this.editor.save.discardPending();
 			acknowledgeAutomationReload({
 				projectId: id,

@@ -2147,12 +2147,14 @@ export class TimelineManager {
 			before: committedTracks,
 			after: afterTracks,
 		});
-		const beforeSnapshot = this.editor.command.captureProjectSnapshot();
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
 		this.previewTracks = null;
-		this.updateTracks(afterTracks);
-		this.editor.command.push({ command, beforeSnapshot });
+		this.editor.command.execute({
+			command,
+			applyRipple: false,
+			runReactors: false,
+		});
 	}
 
 	discardPreview(): void {

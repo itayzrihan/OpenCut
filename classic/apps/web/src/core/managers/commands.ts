@@ -11,6 +11,17 @@ import type {
 import type { TProject } from "@/project/types";
 import { getProjectDurationFromScenes } from "@/timeline/scenes";
 import type { SceneTracks } from "@/timeline/types";
+import type { MediaAsset } from "@/media/types";
+import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
+import { loadCanonicalRuntime } from "@/core/load-canonical-runtime";
+import { generateUUID } from "@/utils/id";
+import {
+	CanonicalClassicSession,
+	canonicalMediaBindings,
+	type CanonicalClassicSnapshot,
+	type CanonicalHistoryArchive,
+	type CanonicalHistoryBoundary,
+} from "@/core/canonical-classic-session";
 
 const COMMAND_HISTORY_SCHEMA_VERSION = 1;
 const MAX_PERSISTED_HISTORY_ENTRIES = 100;
@@ -21,6 +32,16 @@ interface CommandHistoryEntry {
 	selectionOverride?: EditorSelectionSnapshot;
 	beforeSnapshot?: SerializedProjectHistorySnapshot;
 	afterSnapshot?: SerializedProjectHistorySnapshot;
+	beforeMedia?: CanonicalClassicSnapshot["mediaAssets"];
+	afterMedia?: CanonicalClassicSnapshot["mediaAssets"];
+}
+
+interface CanonicalCallback {
+	undo: () => void;
+	redo: () => CommandResult | undefined;
+	effectsOnly?: boolean;
+	applyRipple?: boolean;
+	runReactors?: boolean;
 }
 
 export class CommandManager {
@@ -32,41 +53,103 @@ export class CommandManager {
 	private historySaveQueue: Promise<void> = Promise.resolve();
 	private transactionDepth = 0;
 	private stateRevision = 0;
+	private canonical: CanonicalClassicSession | null = null;
+	private canonicalArchive: CanonicalHistoryArchive | null = null;
+	private canonicalCallbacks = new Map<string, CanonicalCallback>();
+	private canonicalFrameCommands: Command[] = [];
+	private isProjectingCanonical = false;
 
 	constructor(private editor: EditorCore) {}
 
-	execute({ command }: { command: Command }): Command {
+	execute({
+		command,
+		applyRipple = true,
+		runReactors = true,
+	}: {
+		command: Command;
+		applyRipple?: boolean;
+		runReactors?: boolean;
+	}): Command {
 		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		const shouldRecordHistory = this.transactionDepth === 0;
 		const beforeSnapshot =
-			shouldRecordHistory && command.canPersistHistory
+			shouldRecordHistory && !this.canonical
 				? this.captureProjectSnapshot()
 				: null;
 		const beforeTracks = this.isRippleEnabled
 			? (this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null)
 			: null;
 		const previousSelection = this.getSelectionSnapshot();
-		const result = command.execute();
-		this.stateRevision += 1;
-		this.applyRippleIfEnabled({ beforeTracks });
-		const selectionOverride = this.applySelectionOverride(result);
-		this.runReactors();
-		if (!shouldRecordHistory) {
-			return command;
+		const beforeMedia = beforeSnapshot
+			? this.captureMediaBindings()
+			: undefined;
+		const canonicalOuter = shouldRecordHistory && this.canonical !== null;
+		let transactionOpen = false;
+		if (canonicalOuter) {
+			this.canonical?.begin();
+			transactionOpen = true;
+			this.canonicalFrameCommands = [];
+			this.transactionDepth += 1;
 		}
-		const afterSnapshot = command.canPersistHistory
-			? this.captureProjectSnapshot()
-			: null;
-		this.history.push({
-			command,
-			previousSelection,
-			selectionOverride,
-			beforeSnapshot: beforeSnapshot ?? undefined,
-			afterSnapshot: afterSnapshot ?? undefined,
-		});
-		this.redoStack = [];
-		this.persistHistory();
-		return command;
+		try {
+			const result = command.execute();
+			this.stateRevision += 1;
+			if (applyRipple) this.applyRippleIfEnabled({ beforeTracks });
+			const selectionOverride = this.applySelectionOverride(result);
+			if (runReactors) this.runReactors();
+			if (!shouldRecordHistory) {
+				if (this.canonical && !this.isProjectingCanonical)
+					this.canonicalFrameCommands.push(command);
+				return command;
+			}
+			if (this.canonical) {
+				this.synchronizeCanonicalViews();
+				const callbackId = generateUUID();
+				this.canonical.commit({
+					label: command.constructor.name || "Editor command",
+					hostContext: {
+						callbackId,
+						persistable: command.canPersistHistory,
+						previousSelection,
+						...(selectionOverride !== undefined && { selectionOverride }),
+					},
+				});
+				transactionOpen = false;
+				this.canonicalCallbacks.set(callbackId, {
+					undo: () => command.undo(),
+					redo: () => command.redo(),
+					applyRipple,
+					runReactors,
+				});
+				this.persistHistory();
+				return command;
+			}
+			const afterSnapshot = this.captureProjectSnapshot();
+			this.history.push({
+				command,
+				previousSelection,
+				selectionOverride,
+				beforeSnapshot: beforeSnapshot ?? undefined,
+				afterSnapshot: afterSnapshot ?? undefined,
+				beforeMedia,
+				afterMedia: afterSnapshot ? this.captureMediaBindings() : undefined,
+			});
+			this.redoStack = [];
+			this.persistHistory();
+			return command;
+		} catch (error) {
+			if (transactionOpen && this.canonical) {
+				this.canonical.rollback();
+				this.publishCanonical();
+				this.editor.selection.restoreSnapshot({ snapshot: previousSelection });
+			}
+			throw error;
+		} finally {
+			if (canonicalOuter) {
+				this.transactionDepth -= 1;
+				this.canonicalFrameCommands = [];
+			}
+		}
 	}
 
 	/** Execute several editor commands as one atomic, persisted undo entry. */
@@ -76,11 +159,47 @@ export class CommandManager {
 			return execute();
 		}
 
-		const beforeSnapshot = this.captureProjectSnapshot();
+		const beforeSnapshot = this.canonical
+			? null
+			: this.captureProjectSnapshot();
 		const previousSelection = this.getSelectionSnapshot();
+		this.canonical?.begin();
+		let transactionOpen = this.canonical !== null;
+		this.canonicalFrameCommands = [];
 		this.transactionDepth += 1;
 		try {
 			const result = execute();
+			if (this.canonical) {
+				this.synchronizeCanonicalViews();
+				const effects = this.canonicalFrameCommands.filter(
+					(command) => !command.canPersistHistory,
+				);
+				const callbackId = effects.length ? generateUUID() : undefined;
+				this.canonical.commit({
+					label: "Editor transaction",
+					hostContext: {
+						previousSelection,
+						selectionOverride: this.getSelectionSnapshot(),
+						persistable: effects.length === 0,
+						...(callbackId && { callbackId }),
+					},
+				});
+				transactionOpen = false;
+				if (callbackId)
+					this.canonicalCallbacks.set(callbackId, {
+						effectsOnly: true,
+						undo: () => {
+							for (const command of [...effects].reverse()) command.undo();
+						},
+						redo: () => {
+							for (const command of effects) command.redo();
+							return undefined;
+						},
+					});
+				this.stateRevision += 1;
+				this.persistHistory();
+				return result;
+			}
 			const afterSnapshot = this.captureProjectSnapshot();
 			if (beforeSnapshot && afterSnapshot) {
 				this.history.push({
@@ -95,13 +214,19 @@ export class CommandManager {
 			}
 			return result;
 		} catch (error) {
+			if (transactionOpen && this.canonical) {
+				this.canonical.rollback();
+				this.publishCanonical();
+			}
 			if (beforeSnapshot) {
 				this.restoreProjectSnapshot({ snapshot: beforeSnapshot });
 			}
-			this.editor.selection.restoreSnapshot({ snapshot: previousSelection });
+			if (transactionOpen || beforeSnapshot)
+				this.editor.selection.restoreSnapshot({ snapshot: previousSelection });
 			throw error;
 		} finally {
 			this.transactionDepth -= 1;
+			this.canonicalFrameCommands = [];
 		}
 	}
 
@@ -112,6 +237,19 @@ export class CommandManager {
 		command: Command;
 		beforeSnapshot?: SerializedProjectHistorySnapshot | null;
 	}): void {
+		if (this.canonical) {
+			if (beforeSnapshot) {
+				this.canonical.synchronize({
+					classic: {
+						document: beforeSnapshot,
+						mediaAssets: this.captureMediaBindings(),
+					},
+				});
+				this.publishCanonical();
+			}
+			this.execute({ command, applyRipple: false, runReactors: false });
+			return;
+		}
 		this.history.push({
 			command,
 			previousSelection: this.getSelectionSnapshot(),
@@ -132,11 +270,23 @@ export class CommandManager {
 	}
 
 	async loadHistory({ projectId }: { projectId: string }): Promise<void> {
+		this.releaseCanonical();
 		this.activeProjectId = projectId;
 
 		try {
 			const persisted = await storageService.loadCommandHistory({ projectId });
 			if (this.activeProjectId !== projectId) {
+				return;
+			}
+			if (
+				persisted?.projectId === projectId &&
+				persisted.schemaVersion === 2 &&
+				persisted.canonicalArchive
+			) {
+				this.canonicalArchive = persisted.canonicalArchive;
+				this.history = [];
+				this.redoStack = [];
+				this.stateRevision += 1;
 				return;
 			}
 			if (
@@ -170,6 +320,7 @@ export class CommandManager {
 	}: {
 		projectId: string;
 	}): Promise<void> {
+		this.releaseCanonical();
 		this.activeProjectId = projectId;
 		this.history = [];
 		this.redoStack = [];
@@ -185,6 +336,10 @@ export class CommandManager {
 
 	undo(): void {
 		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
+		if (this.canonical) {
+			this.moveCanonicalHistory("undo");
+			return;
+		}
 		if (this.history.length === 0) return;
 		const entry = this.history.pop();
 		if (!entry) {
@@ -214,6 +369,10 @@ export class CommandManager {
 
 	redo(): void {
 		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
+		if (this.canonical) {
+			this.moveCanonicalHistory("redo");
+			return;
+		}
 		if (this.redoStack.length === 0) return;
 		const entry = this.redoStack.pop();
 		if (!entry) {
@@ -232,9 +391,7 @@ export class CommandManager {
 			this.applyRippleIfEnabled({ beforeTracks });
 			selectionOverride = this.applySelectionOverride(result);
 			this.runReactors();
-			afterSnapshot = entry.command.canPersistHistory
-				? (this.captureProjectSnapshot() ?? afterSnapshot)
-				: undefined;
+			afterSnapshot = this.captureProjectSnapshot() ?? afterSnapshot;
 		} else if (entry.afterSnapshot) {
 			this.restoreProjectSnapshot({ snapshot: entry.afterSnapshot });
 			if (entry.selectionOverride !== undefined) {
@@ -250,16 +407,20 @@ export class CommandManager {
 			selectionOverride,
 			beforeSnapshot: entry.beforeSnapshot,
 			afterSnapshot,
+			beforeMedia: entry.beforeMedia,
+			afterMedia: this.captureMediaBindings(),
 		});
 		this.stateRevision += 1;
 		this.persistHistory();
 	}
 
 	canUndo(): boolean {
+		if (this.canonical) return this.canonical.status().canUndo;
 		return this.history.length > 0;
 	}
 
 	canRedo(): boolean {
+		if (this.canonical) return this.canonical.status().canRedo;
 		return this.redoStack.length > 0;
 	}
 
@@ -268,6 +429,8 @@ export class CommandManager {
 	}
 
 	clear({ persist = true }: { persist?: boolean } = {}): void {
+		this.canonical?.clearHistory();
+		this.canonicalCallbacks.clear();
 		this.history = [];
 		this.redoStack = [];
 		this.stateRevision += 1;
@@ -277,6 +440,7 @@ export class CommandManager {
 	}
 
 	clearLoadedProject(): void {
+		this.releaseCanonical();
 		this.activeProjectId = null;
 		this.clear({ persist: false });
 	}
@@ -285,19 +449,333 @@ export class CommandManager {
 		await this.historySaveQueue;
 	}
 
+	hasCanonicalHistory(): boolean {
+		return this.canonical !== null || this.canonicalArchive !== null;
+	}
+	detachCanonical(): void {
+		this.releaseCanonical();
+	}
+
+	async enableCanonical({
+		runtime,
+	}: { runtime?: CanonicalEditorRuntime } = {}): Promise<void> {
+		if (this.canonical) return;
+		const projectId = this.editor.project.getActiveOrNull()?.metadata.id;
+		if (!projectId)
+			throw new Error("Open a project before attaching its runtime");
+		const binding = runtime ?? (await loadCanonicalRuntime());
+		if (this.canonical) {
+			binding.free();
+			return;
+		}
+		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId) {
+			binding.free();
+			throw new Error("The active project changed while loading its runtime");
+		}
+		const session = new CanonicalClassicSession({
+			runtime: binding,
+			projectId,
+		});
+		try {
+			const classic = this.canonicalView();
+			if (this.canonicalArchive) {
+				session.restore(this.canonicalArchive);
+				// Project and history use separate durable records. The loaded project
+				// remains current while the saved undo boundaries are retained.
+				session.synchronize({ classic });
+			} else {
+				const convert = ({
+					entry,
+					direction,
+				}: {
+					entry: CommandHistoryEntry;
+					direction: "undo" | "redo";
+				}): CanonicalHistoryBoundary => {
+					const document =
+						direction === "undo" ? entry.beforeSnapshot : entry.afterSnapshot;
+					if (!document)
+						throw new Error(
+							"An existing undo action has no project snapshot; its history was preserved",
+						);
+					const callbackId = entry.command ? generateUUID() : undefined;
+					const command = entry.command;
+					if (callbackId && command)
+						this.canonicalCallbacks.set(callbackId, {
+							undo: () => command.undo(),
+							redo: () => command.redo(),
+						});
+					return {
+						label: command?.constructor.name || "Existing edit",
+						classic: {
+							document,
+							mediaAssets:
+								(direction === "undo" ? entry.beforeMedia : entry.afterMedia) ??
+								classic.mediaAssets,
+						},
+						hostContext: {
+							previousSelection: entry.previousSelection,
+							persistable: command?.canPersistHistory ?? true,
+							...(callbackId && { callbackId }),
+							...(entry.selectionOverride !== undefined && {
+								selectionOverride: entry.selectionOverride,
+							}),
+						},
+					};
+				};
+				session.attach({
+					classic,
+					undoStack: this.history.map((entry) =>
+						convert({ entry, direction: "undo" }),
+					),
+					redoStack: this.redoStack.map((entry) =>
+						convert({ entry, direction: "redo" }),
+					),
+				});
+			}
+			this.canonical = session;
+			this.canonicalArchive = null;
+			this.history = [];
+			this.redoStack = [];
+			this.stateRevision += 1;
+		} catch (error) {
+			session.dispose();
+			this.canonicalCallbacks.clear();
+			throw error;
+		}
+		this.persistHistory();
+	}
+
+	/** ProjectManager publishes this view only after canonical validation succeeds. */
+	synchronizeProject(project: TProject | null): void {
+		if (!this.canonical || this.isProjectingCanonical) return;
+		if (!project || project.metadata.id !== this.canonical.projectId) {
+			this.releaseCanonical();
+			return;
+		}
+		this.canonical.synchronize({
+			classic: {
+				document: this.snapshotOfProject({ project, scenes: project.scenes }),
+				mediaAssets: this.captureMediaBindings(),
+			},
+		});
+		this.stateRevision += 1;
+	}
+
+	synchronizeMedia({
+		assets,
+		dryRun = false,
+	}: {
+		assets: MediaAsset[];
+		dryRun?: boolean;
+	}): void {
+		if (!this.canonical || this.isProjectingCanonical) return;
+		this.canonical.synchronize({
+			classic: {
+				...this.canonical.read(),
+				mediaAssets: canonicalMediaBindings(assets),
+			},
+			dryRun,
+		});
+		if (!dryRun) this.stateRevision += 1;
+	}
+
+	async importHyperframes(
+		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0],
+	) {
+		const projectId = this.editor.project.getActiveOrNull()?.metadata.id;
+		assertBatchEditable(projectId);
+		await this.enableCanonical();
+		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+			throw new Error("The active project changed while preparing the import");
+		return this.executeTransaction({
+			execute: () => {
+				if (!this.canonical)
+					throw new Error("The canonical project was closed");
+				const imported = this.canonical.importHyperframes(input);
+				this.publishCanonical();
+				this.editor.selection.applySelectionPatch({
+					patch: {
+						selectedElements: [
+							{ trackId: imported.trackId, elementId: imported.itemId },
+						],
+						selectedTextWords: [],
+						selectedKeyframes: [],
+						keyframeSelectionAnchor: null,
+						selectedMaskPoints: null,
+					},
+				});
+				return imported;
+			},
+		});
+	}
+
+	private releaseCanonical(): void {
+		this.canonical?.dispose();
+		this.canonical = null;
+		this.canonicalArchive = null;
+		this.canonicalCallbacks.clear();
+	}
+
+	private captureMediaBindings() {
+		return canonicalMediaBindings(this.editor.media?.getAssets() ?? []);
+	}
+
+	private canonicalView(): CanonicalClassicSnapshot {
+		const project = this.editor.project.getActiveOrNull();
+		if (!project) throw new Error("No active Classic project");
+		return {
+			document: this.snapshotOfProject({
+				project,
+				scenes: this.editor.scenes.getScenes(),
+			}),
+			mediaAssets: this.captureMediaBindings(),
+		};
+	}
+
+	private synchronizeCanonicalViews(): void {
+		this.canonical?.synchronize({ classic: this.canonicalView() });
+	}
+
+	private publishCanonical(): void {
+		if (!this.canonical) return;
+		const state = this.canonical.read();
+		this.isProjectingCanonical = true;
+		try {
+			this.restoreProjectSnapshot({ snapshot: state.document });
+			const handles = new Map(
+				this.editor.media.getAssets().map((asset) => [asset.id, asset]),
+			);
+			this.editor.media.setAssets({
+				assets: state.mediaAssets.map((asset) => ({
+					...asset,
+					file: handles.get(asset.id)?.file,
+					url: handles.get(asset.id)?.url,
+					thumbnailUrl: handles.get(asset.id)?.thumbnailUrl,
+				})),
+			});
+		} finally {
+			this.isProjectingCanonical = false;
+		}
+	}
+
+	private moveCanonicalHistory(direction: "undo" | "redo"): void {
+		const session = this.canonical;
+		if (!session) return;
+		const status = session.status();
+		if (!(direction === "undo" ? status.canUndo : status.canRedo)) return;
+		const context =
+			(direction === "undo" ? status.undoContext : status.redoContext) ?? {};
+		const callback =
+			typeof context.callbackId === "string"
+				? this.canonicalCallbacks.get(context.callbackId)
+				: undefined;
+		const previousSelection = this.getSelectionSnapshot();
+		let selectionOverride: EditorSelectionSnapshot | undefined;
+		let draft: CanonicalClassicSnapshot | undefined;
+		this.isProjectingCanonical = true;
+		this.transactionDepth += 1;
+		try {
+			if (callback) {
+				if (direction === "undo") callback.undo();
+				else {
+					const beforeTracks = this.isRippleEnabled
+						? (this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null)
+						: null;
+					selectionOverride = this.applySelectionOverride(callback.redo());
+					if (!callback.effectsOnly) {
+						if (callback.applyRipple !== false)
+							this.applyRippleIfEnabled({ beforeTracks });
+						if (callback.runReactors !== false) this.runReactors();
+					}
+				}
+				if (!callback.effectsOnly) draft = this.canonicalView();
+			}
+			if (draft) session.synchronize({ classic: draft, dryRun: true });
+		} catch (error) {
+			this.publishCanonical();
+			this.editor.selection.restoreSnapshot({ snapshot: previousSelection });
+			throw error;
+		} finally {
+			this.isProjectingCanonical = false;
+			this.transactionDepth -= 1;
+		}
+		const action =
+			direction === "undo"
+				? session.undo()
+				: session.redo({
+						previousSelection,
+						...(callback &&
+							!callback.effectsOnly && {
+								selectionOverride: selectionOverride ?? null,
+							}),
+					});
+		// Live commands keep their existing selective undo behavior. Persisted
+		// boundaries restore the document and leave live media handles in the host.
+		if (draft) session.synchronize({ classic: draft });
+		else
+			session.synchronize({
+				classic: {
+					...session.read(),
+					mediaAssets: this.captureMediaBindings(),
+				},
+			});
+		this.publishCanonical();
+		const restoreSelection =
+			direction === "undo"
+				? action.hostContext.previousSelection
+				: action.hostContext.selectionOverride;
+		if (
+			action.hostContext.selectionOverride &&
+			this.isSelectionSnapshot(restoreSelection)
+		)
+			this.editor.selection.restoreSnapshot({ snapshot: restoreSelection });
+		this.stateRevision += 1;
+		this.persistHistory();
+	}
+
+	private isSelectionSnapshot(
+		value: unknown,
+	): value is EditorSelectionSnapshot {
+		if (!value || typeof value !== "object") return false;
+		return (
+			"selectedElements" in value &&
+			Array.isArray(value.selectedElements) &&
+			"selectedTextWords" in value &&
+			Array.isArray(value.selectedTextWords) &&
+			"selectedKeyframes" in value &&
+			Array.isArray(value.selectedKeyframes) &&
+			"keyframeSelectionAnchor" in value &&
+			"selectedMaskPoints" in value
+		);
+	}
+
 	captureProjectSnapshot(): SerializedProjectHistorySnapshot | null {
 		const project = this.editor.project.getActiveOrNull();
 		if (!project) {
 			return null;
 		}
 
-		const scenes = this.editor.scenes.getScenes();
+		return this.cloneData(
+			this.snapshotOfProject({
+				project,
+				scenes: this.editor.scenes.getScenes(),
+			}),
+		);
+	}
+
+	private snapshotOfProject({
+		project,
+		scenes,
+	}: {
+		project: TProject;
+		scenes: TProject["scenes"];
+	}): SerializedProjectHistorySnapshot {
 		const duration =
 			project.metadata.duration ?? getProjectDurationFromScenes({ scenes });
 		this.activeProjectId = project.metadata.id;
 		const { thumbnail: _thumbnail, ...metadata } = project.metadata;
 
-		return this.cloneData({
+		return {
 			...project,
 			metadata: {
 				...metadata,
@@ -312,7 +790,7 @@ export class CommandManager {
 				updatedAt: scene.updatedAt.toISOString(),
 			})),
 			aiEditHistory: project.aiEditHistory ?? [],
-		});
+		};
 	}
 
 	private getSelectionSnapshot(): EditorSelectionSnapshot {
@@ -354,6 +832,15 @@ export class CommandManager {
 	}
 
 	private serializeHistory({ projectId }: { projectId: string }) {
+		if (this.canonical)
+			return {
+				projectId,
+				schemaVersion: 2,
+				undoStack: [],
+				redoStack: [],
+				canonicalArchive: this.canonical.archive(),
+				updatedAt: new Date().toISOString(),
+			};
 		return {
 			projectId,
 			schemaVersion: COMMAND_HISTORY_SCHEMA_VERSION,
@@ -390,7 +877,11 @@ export class CommandManager {
 	}
 
 	private canSerializeEntry(entry: CommandHistoryEntry): boolean {
-		return Boolean(entry.beforeSnapshot && entry.afterSnapshot);
+		return Boolean(
+			entry.beforeSnapshot &&
+			entry.afterSnapshot &&
+			(entry.command?.canPersistHistory ?? true),
+		);
 	}
 
 	private fromSerializedEntry(

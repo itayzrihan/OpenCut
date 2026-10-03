@@ -15,7 +15,7 @@ is implemented; the product integration is not complete.
 | --- | --- | --- |
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
-| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and serialized Classic documents; live Classic command adoption pending |
+| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; CommandManager adoption and real WASM integration tests pass; browser flow pending |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
@@ -197,10 +197,46 @@ was added. No Classic feature was removed. The browser binding runs the same
   `project.classic.session.read` returns the canonical session for persistence.
   Inert host context travels with each undo/redo action so the UI can restore
   selection or identify a media side-effect callback. Rust never executes that
-  context. The host still needs to reconnect those effects and its live views.
+  context. The host now reconnects live command callbacks and its project/media
+  views when it adopts that session.
 - History undo/redo now checks explicit project and revision context before
   changing either stack. MCP treats Classic attachment as a lifecycle action,
   so it does not try to activate a project that has not been adopted yet.
+
+### Classic CommandManager integration
+
+- `CommandManager.enableCanonical()` lazily adopts the current project and both
+  history stacks. New imports call `timeline.hyperframes.import` inside a
+  canonical transaction, then publish the resulting scenes into the existing
+  managers. No additional timeline or history stack is retained in JavaScript.
+- Ordinary project and media setters validate their durable state in Rust before
+  publishing it. Scene track/list updates publish only after project validation;
+  deleting the active scene selects a surviving main scene. Preview commits also
+  enter CommandManager before changing committed tracks.
+- Nested commands share one transaction. Failed edits restore the canonical
+  document, views, selection and redo history. Registry change notifications wait
+  until commit, and rollback removes canceled retry receipts while retaining
+  earlier successful receipts.
+- Live callbacks preserve Classic's selective undo behavior and media add/remove
+  side effects. Redo updates the previous-selection context, so its next undo
+  returns to the selection made immediately before redo. Existing asynchronous
+  media-file persistence still has its original failure handling; this bridge
+  does not make those external writes transactional.
+- Classic keeps its full live history, including more than 200 actions. Compact
+  persistence retains the existing 100-entry limit and stops at commands with
+  nonpersistent media side effects. Reopened history uses canonical snapshots.
+  Media file/URL handles stay in the host and are excluded from the archive.
+- `project.classic.session.archive`/`restore` store immutable source packages once
+  per SHA-256 fingerprint. Both in-memory history and restored boundaries share
+  source references. Corrupt, missing or mismatched source references reject the
+  entire restore. Unknown composition properties remain intact.
+- `project.classic.session.status` reads revisions, availability and inert
+  selection/callback context without serializing source packages.
+  `project.classic.synchronize` preserves existing history for host refreshes.
+- Real-WASM CommandManager tests cover adoption, mixed import, selective undo,
+  selection, nested commands, rollback, media callbacks and compact reopen. The
+  import chooser, graphic definition, preview, export and browser verification
+  remain pending. Ordinary Classic sessions load this module only when needed.
 
 ### Classic reference probe and history cost
 
@@ -215,9 +251,15 @@ the median full-document commit took 9.1 ms (maximum 17.1 ms). These measurement
 exclude media copying, rendering and browser UI work; they do not establish
 playback performance. The source document was 2,190,960 bytes, but serializing
 history produced 51,791,348 bytes. Process RSS reached 601 MB while holding two
-WASM runtimes, JS snapshots and the round-trip archive. Source duplication across
-history must be addressed before enabling this bridge in the live editor. The
-probe and measurements are in ignored `.local/hyperframes-classic-probe*` files.
+WASM runtimes, JS snapshots and the round-trip archive.
+
+After source sharing and compact persistence, the same source document and 20
+edits produced a 2,343,201-byte archive. Process RSS was 151 MB with the same
+two-runtime round trip. Setup took 580 ms, imports 1.6–21.9 ms, and full-document
+commits a median 6.5 ms (maximum 9.0 ms). Source, both history stacks and existing
+Classic tracks matched after restoration. These are Node/WASM storage and edit
+measurements, not browser playback measurements. Probes are in ignored
+`.local/hyperframes-classic-probe*` and `hyperframes-classic-compact-probe*` files.
 
 ## Next implementation sequence
 
@@ -225,17 +267,12 @@ probe and measurements are in ignored `.local/hyperframes-classic-probe*` files.
    The 96.9-second reconstruction contains 52 authored inventory elements; one
    generated project has no authored root duration. Encoded UTF-8 and root-relative
    package references are covered. Finish dependency resolution and live manifests.
-2. Establish Classic-to-canonical transactions for composition import and edits.
-   The Classic bridge currently advertises Classic tools but does not synchronize
-   the full Classic document with `OpenCutRuntime`. The serialized document bridge
-   and synchronous registry transactions now exist and are tested, including
-   session/history adoption and reopen. Connect those operations to the live
-   CommandManager, preserve existing media side effects on undo/redo, and project
-   the committed document back into the UI.
-   Preserve the pre-import undo history; do not maintain independent authorities
-   for the live project or hydrate an empty parallel project.
-   Deduplicate immutable composition source across history and its persisted
-   representation; the measured full-snapshot archive currently grows too fast.
+2. Exercise the connected CommandManager in a real browser after adding the
+   importer and renderer. Source sharing, compact persistence, history adoption,
+   media callbacks and canonical view projection are implemented and covered by
+   real-WASM tests. The native MCP process still reaches the live editor through
+   the existing Classic bridge; forwarding newly registered capabilities to that
+   browser runtime needs a transport contract and tests.
 3. Add user-selected folder import, durable asset bindings and a persistent
    isolated HyperFrames preview adapter to the Classic renderer. Route all
    transport and edits through canonical transactions. Resource serving must be
@@ -254,6 +291,7 @@ probe and measurements are in ignored `.local/hyperframes-classic-probe*` files.
 cargo test -p opencut-editor-api --test hyperframes
 cargo test -p opencut-editor-api --test classic_hyperframes
 cargo test -p opencut-editor-api --test classic_history
+cargo test -p opencut-editor-api --test classic_archive --test classic_atomic
 cargo test -p opencut-editor-api
 cargo run -p opencut-editor-api --example inspect_hyperframes -- <project-directory>
 cd classic
@@ -267,24 +305,28 @@ directories, dependencies and symlinks, and reports binary references as unbound
 ### Current verification and outstanding baseline failures
 
 - Editor API: 20 existing tests, 8 HyperFrames source tests, 4 Classic import
-  tests and 2 Classic history adoption tests passed.
+  tests, 3 Classic history tests, 2 compact archive tests and 1 atomic transaction
+  test passed.
 - MCP: all 13 tests passed, including registry projection, atomic rollback and
   Classic attachment through the generated tools.
 - Editor API and MCP Clippy with `-D warnings` passed after the session adoption
   and history target changes.
-- Canonical browser binding: all five WASM integration tests passed, including
+- Canonical browser binding: all six WASM integration tests passed, including
   synchronous Classic edits, adoption of existing history and retry behavior
-  after restoration.
+  after restoration and grouped host transactions.
 - Both release WASM packages built successfully; 37 existing Classic exports
-  and 8 canonical runtime exports passed the binary contract check. Clippy with
+  and 11 canonical runtime exports passed the binary contract check. Clippy with
   `-D warnings` passed for the native Editor API and the WASM binding, including
   tests. The loader passed ESLint.
-- The lazy runtime binary after session adoption is 6,299,962 bytes;
+- The lazy runtime binary after compact archives and transaction APIs is about 6.7 MB;
   the original Classic WASM remains 3,919,268 bytes. Earlier load timings above
   predate the Classic bridge.
-- The two CommandManager tests and the separate storage round-trip test passed.
+- Six real-WASM CommandManager/ScenesManager tests (73 assertions), three session adapter
+  tests (16 assertions), the two legacy CommandManager tests and the separate
+  storage round-trip test passed. The existing preview-overlay test also passed.
   They check complete project/scene preservation, including source text and
-  undo/redo. ESLint passed for the changed Classic files. The full web TypeScript
+  undo/redo. ESLint and a scoped TypeScript check passed for the changed Classic
+  code and its integration tests. The full web TypeScript
   check reports errors in other test files (fetch mocks, branded time values and
   test fixtures); it reported none in the files changed for this bridge. A full
   web type-check pass remains outstanding.

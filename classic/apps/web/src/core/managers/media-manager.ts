@@ -9,7 +9,14 @@ import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
 import { localDriveRequest } from "@/services/local-drive/client";
 
 export class MediaManager {
-	private assets: MediaAsset[] = [];
+	private assetViews: MediaAsset[] = [];
+	private get assets(): MediaAsset[] {
+		return this.assetViews;
+	}
+	private set assets(assets: MediaAsset[]) {
+		this.editor.command.synchronizeMedia({ assets });
+		this.assetViews = assets;
+	}
 	private isLoading = false;
 	private listeners = new Set<() => void>();
 
@@ -143,6 +150,7 @@ export class MediaManager {
 	}
 
 	async clearProjectMedia({ projectId }: { projectId: string }): Promise<void> {
+		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		waveformCache.clearAll();
 
 		this.assets.forEach((asset) => {
@@ -170,6 +178,7 @@ export class MediaManager {
 	}
 
 	clearAllAssets(): void {
+		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		videoCache.clearAll();
 		waveformCache.clearAll();
 

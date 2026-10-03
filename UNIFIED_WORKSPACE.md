@@ -30,7 +30,7 @@ no submodule initialization step.
 | Current project/local-drive persistence                                | `classic/apps/web/src/services/local-drive`                                                              |
 | Rewrite desktop UI                                                     | `apps/desktop`                                                                                           |
 | Typed Editor API                                                       | `crates/editor-api`                                                                                      |
-| HyperFrames project source import                                    | Typed import in `crates/editor-api` for native and serialized Classic projects, with a lazy WASM binding; live Classic command/history adoption, UI, playback and export integration pending; see `HYPERFRAMES-INTEGRATION.md` |
+| HyperFrames project source import                                    | Typed import in `crates/editor-api` for native and Classic projects, with lazy WASM, CommandManager transactions, history adoption and compact source archives; import UI, playback, export and native MCP forwarding remain pending; see `HYPERFRAMES-INTEGRATION.md` |
 | MCP server and projection                                              | `apps/mcp` and `crates/mcp`                                                                              |
 
 The local Classic editor connects to the stdio MCP through an authenticated

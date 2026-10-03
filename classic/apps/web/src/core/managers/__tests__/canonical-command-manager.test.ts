@@ -1,0 +1,499 @@
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- host views are minimal test doubles; all document and history operations run through the generated Rust WASM. */
+import { beforeAll, beforeEach, expect, mock, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { Command, type CommandResult } from "@/commands/base-command";
+import type { EditorCore } from "@/core";
+import type { TProject } from "@/project/types";
+import type { MediaAsset } from "@/media/types";
+import type { TScene } from "@/timeline/types";
+import type {
+	EditorSelectionPatch,
+	EditorSelectionSnapshot,
+} from "@/selection/editor-selection";
+import type { SerializedCommandHistory } from "@/services/storage/types";
+import {
+	canonicalMediaBindings,
+	type CanonicalClassicSnapshot,
+} from "@/core/canonical-classic-session";
+import { createCanonicalTestRuntime } from "../../__tests__/canonical-runtime-fixture";
+
+let saved: SerializedCommandHistory | null = null;
+mock.module("@/services/storage/service", () => ({
+	storageService: {
+		saveCommandHistory: async ({
+			history,
+		}: {
+			history: SerializedCommandHistory;
+		}) => {
+			saved = structuredClone(history);
+		},
+		loadCommandHistory: async () => structuredClone(saved),
+	},
+}));
+mock.module("@/ripple", () => ({
+	computeRippleAdjustments: () => {
+		throw new Error("Ripple should be disabled");
+	},
+	applyRippleAdjustments: () => {
+		throw new Error("Ripple should be disabled");
+	},
+}));
+mock.module("@/timeline/scenes", () => ({
+	getMainScene: ({ scenes }: { scenes: TScene[] }) =>
+		scenes.find((scene) => scene.isMain) ?? null,
+	ensureMainScene: ({ scenes }: { scenes: TScene[] }) => scenes,
+	canDeleteScene: () => ({ canDelete: true }),
+	findCurrentScene: ({
+		scenes,
+		currentSceneId,
+	}: {
+		scenes: TScene[];
+		currentSceneId: string;
+	}) => scenes.find((scene) => scene.id === currentSceneId),
+	getProjectDurationFromScenes: () => {
+		throw new Error("Fixture supplies duration");
+	},
+}));
+mock.module("@/parallax-story-teller/model", () => ({
+	restoreParallaxSceneMetadataForScenes: ({ scenes }: { scenes: TScene[] }) =>
+		scenes,
+}));
+mock.module("@/timeline/bookmarks/index", () => ({
+	getBookmarkAtTime: () => null,
+	getFrameTime: () => 0,
+	isBookmarkAtTime: () => false,
+}));
+mock.module("@/commands/scene", () =>
+	Object.fromEntries(
+		[
+			"CreateSceneCommand",
+			"DeleteSceneCommand",
+			"MoveBookmarkCommand",
+			"RemoveBookmarkCommand",
+			"RenameSceneCommand",
+			"ToggleBookmarkCommand",
+			"UpdateBookmarkCommand",
+		].map((name) => [name, class {}]),
+	),
+);
+
+let CommandManager: typeof import("@/core/managers/commands").CommandManager;
+let ScenesManager: typeof import("@/core/managers/scenes-manager").ScenesManager;
+beforeAll(async () => {
+	({ CommandManager } = await import("@/core/managers/commands"));
+	({ ScenesManager } = await import("@/core/managers/scenes-manager"));
+});
+beforeEach(() => {
+	saved = null;
+});
+
+function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
+	const fixture = JSON.parse(
+		readFileSync(
+			new URL(
+				"../../../../../../../crates/editor-api/tests/fixtures/classic-project.json",
+				import.meta.url,
+			),
+			"utf8",
+		),
+	) as CanonicalClassicSnapshot;
+	let project: TProject = initial?.project ?? {
+		...fixture.document,
+		metadata: {
+			...fixture.document.metadata,
+			createdAt: new Date(fixture.document.metadata.createdAt),
+			updatedAt: new Date(fixture.document.metadata.updatedAt),
+		},
+		scenes: fixture.document.scenes.map((scene) => ({
+			...scene,
+			createdAt: new Date(scene.createdAt),
+			updatedAt: new Date(scene.updatedAt),
+		})),
+	};
+	let media: MediaAsset[] = initial?.media ?? fixture.mediaAssets;
+	let scenes: InstanceType<typeof ScenesManager>;
+	let selection: EditorSelectionSnapshot = {
+		selectedElements: [],
+		selectedTextWords: [],
+		selectedKeyframes: [],
+		keyframeSelectionAnchor: null,
+		selectedMaskPoints: null,
+	};
+	const editor = {
+		get scenes() {
+			return scenes;
+		},
+		project: {
+			getActiveOrNull: () => project,
+			getActive: () => project,
+			setActiveProject: ({ project: next }: { project: TProject }) => {
+				manager.synchronizeProject(next);
+				project = next;
+			},
+		},
+		media: {
+			getAssets: () => media,
+			setAssets: ({ assets }: { assets: MediaAsset[] }) => {
+				manager.synchronizeMedia({ assets });
+				media = assets;
+			},
+		},
+		selection: {
+			getSnapshot: () => structuredClone(selection),
+			restoreSnapshot: ({
+				snapshot,
+			}: {
+				snapshot: EditorSelectionSnapshot;
+			}) => {
+				selection = structuredClone(snapshot);
+			},
+			applySelectionPatch: ({ patch }: { patch: EditorSelectionPatch }) => {
+				selection = { ...selection, ...patch };
+				return structuredClone(selection);
+			},
+		},
+		save: {
+			pause: () => undefined,
+			resume: () => undefined,
+			markDirty: () => undefined,
+		},
+	} as unknown as EditorCore;
+	const manager = new CommandManager(editor);
+	scenes = new ScenesManager(editor);
+	editor.scenes.initializeScenes({
+		scenes: project.scenes,
+		currentSceneId: project.currentSceneId,
+	});
+	return {
+		manager,
+		editor,
+		project: () => project,
+		media: () => media,
+		selection: () => selection,
+	};
+}
+
+class Rename extends Command {
+	private before = "";
+	private host: ReturnType<typeof createHost>;
+	private name: string;
+	private select: boolean;
+	constructor({
+		host,
+		name,
+		select = false,
+	}: {
+		host: ReturnType<typeof createHost>;
+		name: string;
+		select?: boolean;
+	}) {
+		super();
+		this.host = host;
+		this.name = name;
+		this.select = select;
+	}
+	execute(): CommandResult | undefined {
+		this.before = this.host.project().metadata.name;
+		this.rename(this.name);
+		return this.select
+			? {
+					selection: {
+						selectedElements: [{ trackId: "video-track", elementId: "item-2" }],
+					},
+				}
+			: undefined;
+	}
+	undo() {
+		this.rename(this.before);
+	}
+	private rename(name: string) {
+		const project = this.host.project();
+		this.host.editor.project.setActiveProject({
+			project: { ...project, metadata: { ...project.metadata, name } },
+		});
+	}
+}
+
+const source = {
+	entryFile: "index.html",
+	files: {
+		"index.html":
+			"<div data-composition-id='main' data-duration='6'>שלום</div>",
+	},
+	resourceAssetIds: {},
+};
+
+function assertCoherent({
+	host,
+	runtime,
+}: {
+	host: ReturnType<typeof createHost>;
+	runtime: Awaited<ReturnType<typeof createCanonicalTestRuntime>>;
+}) {
+	const state = runtime.snapshot() as {
+		project: { classic: CanonicalClassicSnapshot };
+	};
+	expect(state.project.classic.document).toEqual(
+		host.manager.captureProjectSnapshot()!,
+	);
+	expect(state.project.classic.mediaAssets).toEqual(
+		canonicalMediaBindings(host.media()),
+	);
+}
+
+test("adopts live Classic undo, imports into existing scenes and retains selective command behavior", async () => {
+	const host = createHost();
+	const originalScenes = structuredClone(host.project().scenes);
+	host.manager.execute({ command: new Rename({ host, name: "Renamed" }) });
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	assertCoherent({ host, runtime });
+	const imported = await host.manager.importHyperframes({
+		name: "Overlay",
+		source,
+	});
+	expect(host.project().scenes).toHaveLength(2);
+	expect(host.project().scenes[0].tracks.main).toEqual(
+		originalScenes[0].tracks.main,
+	);
+	expect(host.project().scenes[1]).toEqual(originalScenes[1]);
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId].source,
+	).toEqual(source);
+	assertCoherent({ host, runtime });
+	host.manager.undo();
+	expect(host.project().scenes).toEqual(originalScenes);
+	const addedFont = {
+		...host.project().customFonts![0],
+		id: "font-after-import",
+	};
+	host.editor.project.setActiveProject({
+		project: {
+			...host.project(),
+			customFonts: [...host.project().customFonts!, addedFont],
+		},
+	});
+	host.manager.undo();
+	expect(host.project().metadata.name).toBe("Existing edit");
+	expect(host.project().customFonts).toContainEqual(addedFont);
+	assertCoherent({ host, runtime });
+	host.manager.redo();
+	expect(host.project().metadata.name).toBe("Renamed");
+	expect(host.project().customFonts).toContainEqual(addedFont);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
+test("scene views publish after validation and keep a valid active scene after deletion", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	const before = host.editor.scenes.getScenes();
+	let notifications = 0;
+	host.editor.scenes.subscribe(() => {
+		notifications += 1;
+		assertCoherent({ host, runtime });
+	});
+	expect(() =>
+		host.editor.scenes.setScenes({ scenes: [...before, before[0]] }),
+	).toThrow();
+	expect(host.editor.scenes.getScenes()).toBe(before);
+	expect(notifications).toBe(0);
+	const active = host.editor.scenes.getActiveScene();
+	expect(() =>
+		host.editor.scenes.updateSceneTracks({
+			tracks: {
+				...active.tracks,
+				main: { ...active.tracks.main, id: "titles" },
+			},
+		}),
+	).toThrow();
+	expect(host.editor.scenes.getActiveScene()).toBe(active);
+	expect(notifications).toBe(0);
+	await host.editor.scenes.switchToScene({ sceneId: "other-scene" });
+	host.editor.scenes.setScenes({ scenes: [before[0]] });
+	expect(host.project().currentSceneId).toBe("main-scene");
+	expect(host.editor.scenes.getActiveScene().id).toBe("main-scene");
+	expect(notifications).toBe(2);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
+test("redo retains current selection as its next undo target", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	host.manager.execute({
+		command: new Rename({ host, name: "Selected edit", select: true }),
+	});
+	host.manager.undo();
+	expect(host.selection().selectedElements).toEqual([]);
+	const click = { trackId: "titles", elementId: "text-1" };
+	host.editor.selection.applySelectionPatch({
+		patch: { selectedElements: [click] },
+	});
+	host.manager.redo();
+	expect(host.selection().selectedElements[0].elementId).toBe("item-2");
+	host.manager.undo();
+	expect(host.selection().selectedElements).toEqual([click]);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
+test("nested commands form one undo step and retain preview ripple and reactor options", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	let reactorCalls = 0;
+	host.manager.registerReactor(() => {
+		reactorCalls += 1;
+	});
+	const first = new Rename({ host, name: "First" });
+	const second = new Rename({ host, name: "Second" });
+	class Nested extends Command {
+		execute(): undefined {
+			host.manager.execute({
+				command: first,
+				applyRipple: false,
+				runReactors: false,
+			});
+			host.manager.execute({
+				command: second,
+				applyRipple: false,
+				runReactors: false,
+			});
+		}
+		undo() {
+			second.undo();
+			first.undo();
+		}
+	}
+	host.manager.execute({
+		command: new Nested(),
+		applyRipple: false,
+		runReactors: false,
+	});
+	expect(host.project().metadata.name).toBe("Second");
+	host.manager.undo();
+	expect(host.project().metadata.name).toBe("Existing edit");
+	expect(host.manager.canUndo()).toBe(false);
+	host.manager.redo();
+	expect(host.project().metadata.name).toBe("Second");
+	expect(reactorCalls).toBe(0);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	expect(saved!.canonicalArchive!.undoStack).toHaveLength(1);
+	host.manager.detachCanonical();
+});
+
+test("validation failure rolls back earlier changes and preserves redo", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	await host.manager.importHyperframes({ name: "Source", source });
+	host.manager.undo();
+	const before = host.manager.captureProjectSnapshot();
+	expect(() =>
+		host.manager.executeTransaction({
+			execute: () => {
+				host.manager.execute({
+					command: new Rename({ host, name: "Partial edit" }),
+				});
+				host.editor.project.setActiveProject({
+					project: { ...host.project(), currentSceneId: "missing-scene" },
+				});
+			},
+		}),
+	).toThrow();
+	expect(host.manager.captureProjectSnapshot()).toEqual(before);
+	expect(host.manager.canUndo()).toBe(false);
+	expect(host.manager.canRedo()).toBe(true);
+	assertCoherent({ host, runtime });
+	host.manager.redo();
+	expect(
+		Object.keys(host.project().hyperframesCompositions ?? {}),
+	).toHaveLength(1);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
+test("media callbacks and handles survive live history; compact persisted history reopens", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	await host.manager.importHyperframes({ name: "Source", source });
+	const file = new File(["pixels"], "image.png", { lastModified: 1 });
+	const asset: MediaAsset = {
+		id: "added-image",
+		name: "Image",
+		type: "image",
+		file,
+		url: "blob:retained",
+	};
+	let saves = 0;
+	let deletes = 0;
+	class AddMedia extends Command {
+		override get canPersistHistory() {
+			return false;
+		}
+		execute(): undefined {
+			saves += 1;
+			host.editor.media.setAssets({ assets: [...host.media(), asset] });
+		}
+		undo() {
+			deletes += 1;
+			host.editor.media.setAssets({
+				assets: host.media().filter((media) => media.id !== asset.id),
+			});
+		}
+	}
+	host.manager.executeTransaction({
+		execute: () => {
+			host.manager.execute({ command: new AddMedia() });
+			host.manager.execute({
+				command: new Rename({ host, name: "Added media" }),
+			});
+		},
+	});
+	host.manager.undo();
+	expect(deletes).toBe(1);
+	expect(host.media()).toHaveLength(1);
+	expect(host.project().metadata.name).toBe("Existing edit");
+	host.manager.redo();
+	expect(saves).toBe(2);
+	expect(host.media().find((media) => media.id === asset.id)?.file).toBe(file);
+	expect(host.project().metadata.name).toBe("Added media");
+	assertCoherent({ host, runtime });
+	host.manager.execute({ command: new Rename({ host, name: "After media" }) });
+	await host.manager.flushHistory();
+	expect(saved!.schemaVersion).toBe(2);
+	expect(saved!.canonicalArchive!.undoStack).toHaveLength(1);
+	expect(Object.keys(saved!.canonicalArchive!.sources)).toHaveLength(1);
+	expect(JSON.stringify(saved)).not.toContain("blob:retained");
+	const reloaded = createHost({
+		project: structuredClone(host.project()),
+		media: host.media(),
+	});
+	const reopenedRuntime = await createCanonicalTestRuntime();
+	await reloaded.manager.loadHistory({ projectId: "classic-project" });
+	await reloaded.manager.enableCanonical({ runtime: reopenedRuntime });
+	reloaded.manager.undo();
+	expect(reloaded.project().metadata.name).toBe("Added media");
+	expect(reloaded.manager.canUndo()).toBe(false);
+	expect(reloaded.media().find((media) => media.id === asset.id)?.file).toBe(
+		file,
+	);
+	reloaded.manager.redo();
+	expect(reloaded.project().metadata.name).toBe("After media");
+	expect(reloaded.project().hyperframesCompositions).toEqual(
+		host.project().hyperframesCompositions,
+	);
+	assertCoherent({ host: reloaded, runtime: reopenedRuntime });
+	await reloaded.manager.flushHistory();
+	host.manager.detachCanonical();
+	reloaded.manager.detachCanonical();
+});

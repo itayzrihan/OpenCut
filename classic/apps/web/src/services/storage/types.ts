@@ -7,6 +7,7 @@ import type {
 } from "@/project/types";
 import type { EditorSelectionSnapshot } from "@/selection/editor-selection";
 import type { TScene } from "@/timeline";
+import type { CanonicalHistoryArchive } from "@/core/canonical-classic-session";
 
 export interface StorageAdapter<T> {
 	get(key: string): Promise<T | null>;
@@ -87,6 +88,7 @@ export interface SerializedCommandHistory {
 	undoStack: SerializedCommandHistoryEntry[];
 	redoStack: SerializedCommandHistoryEntry[];
 	updatedAt: string;
+	canonicalArchive?: CanonicalHistoryArchive;
 }
 
 export interface StorageConfig {
