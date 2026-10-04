@@ -2,6 +2,7 @@
 import { expect, spyOn, test } from "bun:test";
 import { HyperframesRenderClient } from "../render-client";
 import type { HyperframesComposition } from "../types";
+import { composition, renderFixture } from "./render-client-fixture";
 
 test("render cache bounds sessions, recovers closed captures and pins account/project", async () => {
 	const savedWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
@@ -127,5 +128,71 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 		if (savedBitmap)
 			Object.defineProperty(globalThis, "createImageBitmap", savedBitmap);
 		else Reflect.deleteProperty(globalThis, "createImageBitmap");
+	}
+});
+
+test("independent occurrence leases retain four sources while captures use a bounded spare slot", async () => {
+	const fixture = renderFixture();
+	const client = new HyperframesRenderClient("project-a");
+	try {
+		const sources = ["one", "two", "three", "four"].map((name) =>
+			composition(name),
+		);
+		const handles = [];
+		for (const source of sources)
+			handles.push(await client.openLivePreview(source));
+		expect(fixture.live.size).toBe(4);
+		const duplicate = await client.openLivePreview(composition("one"));
+		expect(duplicate.url).toBe(handles[0].url);
+		expect(fixture.count("open")).toBe(4);
+		const beforeMixed = fixture.calls.length;
+		for (const source of sources) {
+			await client.renderTo({
+				composition: source,
+				timeSeconds: 2,
+				target: fixture.target,
+			});
+		}
+		expect(
+			fixture.calls.slice(beforeMixed).map((call) => [call.action, call.id]),
+		).toEqual([
+			["capture", "1"],
+			["live", "1"],
+			["capture", "2"],
+			["live", "2"],
+			["capture", "3"],
+			["live", "3"],
+			["capture", "4"],
+		]);
+		handles[0].release?.();
+		handles[0].release?.();
+		await expect(client.openLivePreview(composition("five"))).rejects.toThrow(
+			"limit",
+		);
+		for (const name of ["capture-a", "capture-b", "capture-c"]) {
+			await client.renderTo({
+				composition: composition(name),
+				timeSeconds: 1,
+				target: fixture.target,
+			});
+			expect(fixture.live.size).toBe(5);
+			for (const id of ["1", "2", "3", "4"])
+				expect(fixture.live.has(id)).toBe(true);
+		}
+		duplicate.release?.();
+		const fifth = await client.openLivePreview(composition("five"));
+		expect(fixture.live.has("1")).toBe(false);
+		expect(fixture.live.size).toBeLessThanOrEqual(5);
+		for (const handle of handles) handle.release?.();
+		fifth.release?.();
+		// Preparing an existing source drains release cleanup without a frame.
+		await client.prepareSource(composition("five").source);
+		expect(fixture.live.size).toBeLessThanOrEqual(2);
+		client.dispose();
+		await Promise.resolve();
+		expect(fixture.live.size).toBe(0);
+	} finally {
+		client.dispose();
+		fixture.restore();
 	}
 });

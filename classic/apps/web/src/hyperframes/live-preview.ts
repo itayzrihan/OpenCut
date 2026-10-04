@@ -7,47 +7,53 @@ import { TextNode } from "@/services/renderer/nodes/text-node";
 import { resolveGraphicNodeLayout } from "@/services/renderer/resolve";
 import { incrementCounter } from "@/diagnostics/render-perf";
 
-/** Native source-over layers can be isolated above a live composition. Effects
- * on the whole scene and blend modes that read the backdrop require capture. */
-export function findHyperframesLiveLayer({
+const MAX_LIVE_OCCURRENCES = 4;
+type ResolvedLayout = NonNullable<ReturnType<typeof resolveGraphicNodeLayout>>;
+
+/** Split only across source-over leaves. Backdrop-dependent blend modes and
+ * scene wrappers stay in the opaque base, below any eligible live surfaces. */
+export function findHyperframesLiveLayers({
 	node,
 	time,
 }: {
 	node: RootNode;
 	time: number;
-}): GraphicNode | null {
-	for (const child of [...node.children].reverse()) {
-		if (child instanceof VisualNode || child instanceof TextNode) {
-			const start =
-				child instanceof TextNode
-					? child.params.startTime
-					: child.params.timeOffset;
-			if (time < start || time >= start + child.params.duration) continue;
-		}
+}): GraphicNode[] {
+	const candidates: GraphicNode[] = [];
+	for (let index = node.children.length - 1; index >= 0; index--) {
+		const child = node.children[index];
+		if (!(child instanceof VisualNode || child instanceof TextNode)) break;
+		const start =
+			child instanceof TextNode
+				? child.params.startTime
+				: child.params.timeOffset;
+		if (time < start || time >= start + child.params.duration) continue;
+		if (
+			(child.params.blendMode && child.params.blendMode !== "normal") ||
+			child.children.length
+		)
+			break;
 		if (
 			child instanceof GraphicNode &&
 			child.params.definitionId === "hyperframes" &&
 			child.params.isPreview &&
 			child.params.frameSource?.live &&
 			!child.params.effects?.length &&
-			!child.params.masks?.length &&
-			(!child.params.blendMode || child.params.blendMode === "normal") &&
-			child.children.length === 0
-		)
-			return child;
-		if (
-			(child instanceof VisualNode || child instanceof TextNode) &&
-			!(
-				child instanceof GraphicNode &&
-				child.params.definitionId === "hyperframes"
-			) &&
-			(!child.params.blendMode || child.params.blendMode === "normal") &&
-			child.children.length === 0
-		)
-			continue;
-		return null;
+			!child.params.masks?.length
+		) {
+			candidates.unshift(child);
+			if (candidates.length === MAX_LIVE_OCCURRENCES) break;
+		}
 	}
-	return null;
+	return candidates;
+}
+
+/** Highest eligible layer, retained for callers that inspect a single target. */
+export function findHyperframesLiveLayer(input: {
+	node: RootNode;
+	time: number;
+}): GraphicNode | null {
+	return findHyperframesLiveLayers(input).at(-1) ?? null;
 }
 
 type Surface = {
@@ -67,34 +73,35 @@ type Surface = {
 	failed: boolean;
 };
 
-/** Derived browser rendering resources only; time and layout come from the
- * existing render tree on every frame. No separate player or editor state. */
+type Candidate = {
+	node: GraphicNode;
+	resolved: ResolvedLayout;
+	occurrenceId: string;
+};
+type Options = {
+	mount: HTMLElement;
+	width: number;
+	height: number;
+	onFallback: () => void;
+};
+
+/** Derived display resources only. Every occurrence reads its canonical clip's
+ * time/layout and shares source delivery through independently released leases. */
 export class HyperframesLivePreview {
-	private surface: Surface | null = null;
-	private sourceKey: object | null = null;
-	private sourceRevision = -1;
-	private releaseSource: (() => void) | null = null;
+	private readonly occurrences = new Map<string, LiveOccurrence>();
+	private readonly overlays = new Map<string, HTMLCanvasElement>();
 	private readonly failedSources = new WeakMap<object, number>();
 	private readonly failedUrls = new Set<string>();
-	private overlayCanvas: HTMLCanvasElement | null = null;
 	private baseTree: {
 		original: RootNode;
-		omitted: GraphicNode;
+		omitted: GraphicNode[];
 		tree: RootNode;
-		overlay: RootNode;
+		groups: Array<{ node: RootNode; occurrenceId: string }>;
 	} | null = null;
 	private disposed = false;
 
-	constructor(
-		private readonly options: {
-			mount: HTMLElement;
-			width: number;
-			height: number;
-			onFallback: () => void;
-		},
-	) {
-		window.addEventListener("message", this.onMessage);
-		Object.assign(options.mount.style, { visibility: "hidden" });
+	constructor(private readonly options: Options) {
+		this.hide();
 	}
 
 	async render({
@@ -106,93 +113,230 @@ export class HyperframesLivePreview {
 		time: number;
 		renderer: CanvasRenderer;
 	}): Promise<void> {
-		const candidate = findHyperframesLiveLayer({ node, time });
-		const resolved = candidate
-			? resolveGraphicNodeLayout({
-					node: candidate,
-					renderer: this.options,
-					time,
-				})
-			: null;
-		let live = false;
-		if (
-			candidate &&
-			resolved &&
-			resolved.effectPasses.length === 0 &&
-			resolved.transform.perspectiveX === 0 &&
-			resolved.transform.perspectiveY === 0
-		) {
-			const source = candidate.params.frameSource!;
-			const revision = source.getResourceRevision();
-			if (this.failedSources.get(source.live!.key) !== revision) {
-				try {
-					await this.prepareSurface({ source, revision });
-					await this.seek(source.live!.getSourceTime(resolved.localTime));
-					if (source.getResourceRevision() !== revision)
-						throw new Error("Live preview resources changed");
-					live = !this.disposed;
-				} catch (error) {
-					this.failedSources.set(source.live!.key, revision);
-					this.hide();
-					if (!this.disposed)
-						console.info(
-							"HyperFrames live preview is using capture:",
-							error instanceof Error ? error.message : "Preview unavailable",
-						);
-					incrementCounter({ name: "preview.hyperframesLiveFallback" });
-				}
-			}
-		}
 		if (this.disposed) return;
-		if (!live || !candidate || !resolved) {
-			this.removeSurface();
+		const candidates: Candidate[] = [];
+		for (const candidate of findHyperframesLiveLayers({ node, time })) {
+			const source = candidate.params.frameSource!;
+			if (
+				this.failedSources.get(source.live!.key) ===
+				source.getResourceRevision()
+			)
+				continue;
+			const resolved = resolveGraphicNodeLayout({
+				node: candidate,
+				renderer: this.options,
+				time,
+			});
+			if (
+				!resolved ||
+				resolved.effectPasses.length ||
+				resolved.transform.perspectiveX ||
+				resolved.transform.perspectiveY
+			)
+				continue;
+			candidates.push({
+				node: candidate,
+				resolved,
+				occurrenceId: source.live!.occurrenceId,
+			});
+		}
+		// Release departed occurrences before acquiring new sources at the limit.
+		this.retainOccurrences(
+			new Set(candidates.map((candidate) => candidate.occurrenceId)),
+		);
+		const prepared = await Promise.all(
+			candidates.map(async (candidate) => {
+				let occurrence = this.occurrences.get(candidate.occurrenceId);
+				if (!occurrence) {
+					occurrence = new LiveOccurrence({
+						...this.options,
+						failedSources: this.failedSources,
+						failedUrls: this.failedUrls,
+						onFallback: () => {
+							if (this.disposed) return;
+							this.hide();
+							this.options.onFallback();
+						},
+					});
+					this.occurrences.set(candidate.occurrenceId, occurrence);
+				}
+				return (await occurrence.prepare(candidate)) ? candidate : null;
+			}),
+		);
+		if (this.disposed) return;
+		const live = prepared.filter(
+			(candidate): candidate is Candidate => candidate !== null,
+		);
+		this.retainOccurrences(
+			new Set(live.map((candidate) => candidate.occurrenceId)),
+		);
+		if (!live.length) {
+			this.hide();
+			this.clearOverlays();
+			this.baseTree = null;
 			await renderer.render({ node, time });
 			return;
 		}
+		const omitted = live.map((candidate) => candidate.node);
 		if (
 			this.baseTree?.original !== node ||
-			this.baseTree.omitted !== candidate
+			this.baseTree.omitted.length !== omitted.length ||
+			this.baseTree.omitted.some(
+				(candidate, index) => candidate !== omitted[index],
+			)
 		) {
-			const index = node.children.indexOf(candidate);
-			const tree = new RootNode(node.params);
-			tree.children = node.children.slice(0, index);
-			const overlay = new RootNode(node.params);
-			overlay.children = node.children.slice(index + 1);
-			this.baseTree = { original: node, omitted: candidate, tree, overlay };
+			const roots: RootNode[] = [];
+			let start = 0;
+			for (const candidate of omitted) {
+				const end = node.children.indexOf(candidate);
+				const root = new RootNode(node.params);
+				root.children = node.children.slice(start, end);
+				roots.push(root);
+				start = end + 1;
+			}
+			const tail = new RootNode(node.params);
+			tail.children = node.children.slice(start);
+			roots.push(tail);
+			this.baseTree = {
+				original: node,
+				omitted,
+				tree: roots[0],
+				groups: live.map((candidate, index) => ({
+					node: roots[index + 1],
+					occurrenceId: candidate.occurrenceId,
+				})),
+			};
+		}
+		const overlays = [];
+		const used = new Set<string>();
+		for (const [index, group] of this.baseTree.groups.entries()) {
+			if (!group.node.children.length) continue;
+			let canvas = this.overlays.get(group.occurrenceId);
+			if (!canvas) {
+				canvas = document.createElement("canvas");
+				canvas.setAttribute("aria-hidden", "true");
+				Object.assign(canvas.style, {
+					position: "absolute",
+					inset: "0",
+					pointerEvents: "none",
+					width: `${this.options.width}px`,
+					height: `${this.options.height}px`,
+				});
+				this.overlays.set(group.occurrenceId, canvas);
+				this.options.mount.appendChild(canvas);
+			}
+			if (canvas.width !== renderer.width) canvas.width = renderer.width;
+			if (canvas.height !== renderer.height) canvas.height = renderer.height;
+			canvas.style.zIndex = String(index * 2 + 2);
+			used.add(group.occurrenceId);
+			overlays.push({ node: group.node, targetCanvas: canvas });
+		}
+		for (const [id, canvas] of this.overlays) {
+			if (!used.has(id)) {
+				canvas.remove();
+				this.overlays.delete(id);
+			}
 		}
 		try {
-			if (this.baseTree.overlay.children.length) {
-				if (!this.overlayCanvas) {
-					this.overlayCanvas = document.createElement("canvas");
-					this.overlayCanvas.setAttribute("aria-hidden", "true");
-					Object.assign(this.overlayCanvas.style, {
-						position: "absolute",
-						inset: "0",
-						pointerEvents: "none",
-						width: `${this.options.width}px`,
-						height: `${this.options.height}px`,
-					});
-				}
-				const canvas = this.overlayCanvas;
-				if (canvas.width !== renderer.width) canvas.width = renderer.width;
-				if (canvas.height !== renderer.height) canvas.height = renderer.height;
-				if (canvas.parentElement !== this.options.mount)
-					this.options.mount.appendChild(canvas);
-				await renderer.renderWithOverlay({
+			if (overlays.length)
+				await renderer.renderWithOverlays({
 					node: this.baseTree.tree,
-					overlay: this.baseTree.overlay,
+					overlays,
 					time,
-					targetCanvas: canvas,
 				});
-			} else {
-				this.removeOverlay();
-				await renderer.render({ node: this.baseTree.tree, time });
-			}
+			else await renderer.render({ node: this.baseTree.tree, time });
 		} catch (error) {
 			this.hide();
 			throw error;
 		}
-		if (this.disposed || !this.surface || this.surface.failed) return;
+		if (this.disposed) return;
+		for (const [index, candidate] of live.entries()) {
+			if (
+				!this.occurrences
+					.get(candidate.occurrenceId)
+					?.present({ ...candidate, zIndex: index * 2 + 1 })
+			) {
+				this.hide();
+				await renderer.render({ node, time });
+				return;
+			}
+		}
+		this.options.mount.style.visibility = "visible";
+	}
+
+	dispose(): void {
+		this.disposed = true;
+		this.hide();
+		this.retainOccurrences(new Set());
+		this.clearOverlays();
+		this.baseTree = null;
+	}
+
+	private hide(): void {
+		this.options.mount.style.visibility = "hidden";
+	}
+	private clearOverlays(): void {
+		for (const canvas of this.overlays.values()) canvas.remove();
+		this.overlays.clear();
+	}
+	private retainOccurrences(ids: ReadonlySet<string>): void {
+		for (const [id, occurrence] of this.occurrences) {
+			if (!ids.has(id)) {
+				occurrence.dispose();
+				this.occurrences.delete(id);
+			}
+		}
+	}
+}
+
+class LiveOccurrence {
+	private surface: Surface | null = null;
+	private sourceKey: object | null = null;
+	private sourceRevision = -1;
+	private releaseSource: (() => void) | null = null;
+	private disposed = false;
+	private readonly failedSources: WeakMap<object, number>;
+	private readonly failedUrls: Set<string>;
+
+	constructor(
+		private readonly options: Options & {
+			failedSources: WeakMap<object, number>;
+			failedUrls: Set<string>;
+		},
+	) {
+		this.failedSources = options.failedSources;
+		this.failedUrls = options.failedUrls;
+		window.addEventListener("message", this.onMessage);
+	}
+
+	async prepare({ node: candidate, resolved }: Candidate): Promise<boolean> {
+		const source = candidate.params.frameSource!;
+		const revision = source.getResourceRevision();
+		try {
+			await this.prepareSurface({ source, revision });
+			await this.seek(source.live!.getSourceTime(resolved.localTime));
+			if (source.getResourceRevision() !== revision)
+				throw new Error("Live preview resources changed");
+			return !this.disposed;
+		} catch (error) {
+			this.failedSources.set(source.live!.key, revision);
+			this.hide();
+			if (!this.disposed)
+				console.info(
+					"HyperFrames live preview is using capture:",
+					error instanceof Error ? error.message : "Preview unavailable",
+				);
+			incrementCounter({ name: "preview.hyperframesLiveFallback" });
+			return false;
+		}
+	}
+
+	present({
+		node: candidate,
+		resolved,
+		zIndex,
+	}: Candidate & { zIndex: number }): boolean {
+		if (this.disposed || !this.surface || this.surface.failed) return false;
 		const quad = computeVisualTransform({
 			renderer: this.options,
 			resolved,
@@ -203,7 +347,7 @@ export class HyperframesLivePreview {
 			fitMode: "contain",
 		});
 		// Preserve the authored viewport; scale its pixels as the canvas does.
-		Object.assign(this.surface.frame.style, {
+		Object.assign(this.surface!.frame.style, {
 			width: `${resolved.sourceWidth}px`,
 			height: `${resolved.sourceHeight}px`,
 			left: `${quad.centerX}px`,
@@ -211,24 +355,19 @@ export class HyperframesLivePreview {
 			opacity: String(resolved.opacity),
 			transform: `translate(-50%, -50%) rotate(${quad.rotationDegrees}deg) scale(${((quad.flipX ? -1 : 1) * quad.width) / resolved.sourceWidth}, ${((quad.flipY ? -1 : 1) * quad.height) / resolved.sourceHeight})`,
 		});
-		this.options.mount.style.visibility = "visible";
+		this.surface!.frame.style.visibility = "visible";
+		this.surface!.frame.style.zIndex = String(zIndex);
 		incrementCounter({ name: "preview.hyperframesLiveFrame" });
+		return true;
 	}
 
 	dispose(): void {
 		this.disposed = true;
 		window.removeEventListener("message", this.onMessage);
 		this.removeSurface();
-		this.baseTree = null;
 	}
-
 	private hide(): void {
-		this.options.mount.style.visibility = "hidden";
-	}
-
-	private removeOverlay(): void {
-		this.overlayCanvas?.remove();
-		this.overlayCanvas = null;
+		if (this.surface) this.surface.frame.style.visibility = "hidden";
 	}
 
 	private async prepareSurface({
@@ -246,14 +385,22 @@ export class HyperframesLivePreview {
 			if (this.surface.failed) throw new Error("Live preview is unavailable");
 			return this.surface.ready;
 		}
+		this.releaseSource?.();
+		this.releaseSource = null;
 		const handle = await source.live!.open();
+		let released = false;
+		const release = () => {
+			if (released) return;
+			released = true;
+			handle.release?.();
+		};
 		const { url } = handle;
 		if (this.disposed) {
-			handle.release?.();
+			release();
 			throw new Error("Live preview was disposed");
 		}
 		if (this.failedUrls.has(url)) {
-			handle.release?.();
+			release();
 			throw new Error("Live preview needs the capture adapter");
 		}
 		try {
@@ -268,7 +415,7 @@ export class HyperframesLivePreview {
 					address.username ||
 					address.password
 				) {
-					handle.release?.();
+					release();
 					throw new Error("Invalid live preview origin");
 				}
 				const frame = document.createElement("iframe");
@@ -282,6 +429,7 @@ export class HyperframesLivePreview {
 				frame.tabIndex = -1;
 				frame.referrerPolicy = "no-referrer";
 				Object.assign(frame.style, {
+					visibility: "hidden",
 					position: "absolute",
 					border: "0",
 					pointerEvents: "none",
@@ -308,15 +456,14 @@ export class HyperframesLivePreview {
 				};
 				this.surface = surface;
 				frame.src = url;
-				this.options.mount.replaceChildren(frame);
+				this.options.mount.appendChild(frame);
 			}
 			this.sourceKey = source.live!.key;
 			this.sourceRevision = revision;
-			this.releaseSource?.();
-			this.releaseSource = handle.release ?? null;
+			this.releaseSource = release;
 			await this.surface!.ready;
 		} catch (error) {
-			handle.release?.();
+			release();
 			throw error;
 		}
 	}
@@ -395,7 +542,6 @@ export class HyperframesLivePreview {
 
 	private removeSurface(): void {
 		this.hide();
-		this.removeOverlay();
 		this.releaseSource?.();
 		this.releaseSource = null;
 		const surface = this.surface;

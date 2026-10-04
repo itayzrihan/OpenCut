@@ -113,9 +113,10 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	});
 	const mount = {
 		style: {},
-		appendChild() {},
-		replaceChildren: (frame: HTMLIFrameElement) =>
-			queueMicrotask(() => message({ frame, data: { type: "ready" } })),
+		appendChild: (frame: HTMLIFrameElement) => {
+			if (frame.contentWindow)
+				queueMicrotask(() => message({ frame, data: { type: "ready" } }));
+		},
 	} as unknown as HTMLElement;
 	const live = new liveModule.HyperframesLivePreview({
 		mount,
@@ -149,6 +150,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 				throw new Error("Unexpected raster capture");
 			},
 			live: {
+				occurrenceId: "clip",
 				key: sourceKey,
 				open: async () => {
 					openCount++;
@@ -189,19 +191,19 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		render: async ({ node }: { node: typeof root }) => {
 			rendered.push(node);
 		},
-		renderWithOverlay: async ({
+		renderWithOverlays: async ({
 			node,
-			overlay,
-			targetCanvas,
+			overlays: groups,
 		}: {
 			node: typeof root;
-			overlay: typeof root;
-			targetCanvas: HTMLCanvasElement;
+			overlays: Array<{ node: typeof root; targetCanvas: HTMLCanvasElement }>;
 		}) => {
 			rendered.push(node);
-			overlays.push(overlay);
-			expect(targetCanvas.width).toBe(320);
-			expect(targetCanvas.height).toBe(180);
+			for (const { node: overlay, targetCanvas } of groups) {
+				overlays.push(overlay);
+				expect(targetCanvas.width).toBe(320);
+				expect(targetCanvas.height).toBe(180);
+			}
 		},
 	} as unknown as import("@/services/renderer/canvas-renderer").CanvasRenderer;
 	try {
@@ -238,20 +240,79 @@ test("live preview preserves the authored viewport, source trim and layer order,
 			height: "360px",
 		});
 		expect(openCount).toBe(1);
+		const bounded = new RootNode(root.params);
+		const boundedClips = Array.from(
+			{ length: 5 },
+			() => new GraphicNode({ ...clip.params }),
+		);
+		bounded.children = boundedClips;
+		expect(
+			liveModule.findHyperframesLiveLayers({ node: bounded, time: 9 * 120000 }),
+		).toEqual(boundedClips.slice(1));
+		const second = new GraphicNode({
+			...clip.params,
+			frameSource: {
+				...clip.params.frameSource!,
+				live: {
+					...clip.params.frameSource!.live!,
+					occurrenceId: "second",
+					getSourceTime: (localTime) => (240000 + localTime) / 120000,
+				},
+			},
+		});
+		const middle = new GraphicNode({ ...native.params });
+		const foreground = new GraphicNode({ ...native.params });
+		const multiple = new RootNode(root.params);
+		multiple.children = [native, clip, middle, second, foreground];
+		expect(
+			liveModule.findHyperframesLiveLayers({
+				node: multiple,
+				time: 9 * 120000,
+			}),
+		).toEqual([clip, second]);
+		await live.render({ node: multiple, time: 9 * 120000, renderer });
+		expect(openCount).toBe(2);
+		expect(frames).toHaveLength(2);
+		expect(frames[0].src).toBe(frames[1].src);
+		expect(seeks.slice(-2)).toEqual([2, 3]);
+		expect(rendered.at(-1)?.children).toEqual([native]);
+		expect(overlays.slice(-2).map((group) => group.children)).toEqual([
+			[middle],
+			[foreground],
+		]);
+		expect(frames.map((frame) => frame.style.zIndex)).toEqual(["1", "3"]);
+		const swapped = new RootNode(root.params);
+		swapped.children = [native, second, middle, clip, foreground];
+		await live.render({ node: swapped, time: 10 * 120000, renderer });
+		expect(openCount).toBe(2); // Moving a clip never reparents/reloads its iframe.
+		expect(frames.map((frame) => frame.style.zIndex)).toEqual(["3", "1"]);
+		expect(seeks.slice(-2)).toEqual([4, 3]);
+		middle.params.blendMode = "multiply";
+		expect(
+			liveModule.findHyperframesLiveLayers({
+				node: swapped,
+				time: 10 * 120000,
+			}),
+		).toEqual([clip]);
+		await live.render({ node: swapped, time: 10 * 120000, renderer });
+		expect(rendered.at(-1)?.children).toEqual([native, second, middle]);
+		expect(overlays.at(-1)?.children).toEqual([foreground]);
+		expect(releaseCount).toBe(1);
+		const previousSeeks = [...seeks];
 		clip.params.transform.perspectiveX = 20;
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)).toBe(root);
 		expect(mount.style.visibility).toBe("hidden");
-		expect(releaseCount).toBe(1);
+		expect(releaseCount).toBe(2);
 		clip.params.transform.perspectiveX = 0;
 		failSeek = true;
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)).toBe(root);
 		expect(fallbackCount).toBe(1);
 		await live.render({ node: root, time: 11 * 120000, renderer });
-		expect(seeks).toEqual([2, 3, 3, 3]);
-		expect(openCount).toBe(2);
-		expect(releaseCount).toBe(2);
+		expect(seeks).toEqual([...previousSeeks, 3]);
+		expect(openCount).toBe(3);
+		expect(releaseCount).toBe(3);
 		clip.params.isPreview = false;
 		expect(
 			liveModule.findHyperframesLiveLayer({ node: root, time: 9 * 120000 }),
@@ -284,6 +345,9 @@ test("the scene builder and resolver pass preview pixels while preserving trim, 
 			},
 		},
 		getResourceRevision: () => 0,
+		openLivePreview: async () => ({
+			url: `http://${"a".repeat(48)}.localhost:1234/live.html`,
+		}),
 		renderTo: async (input) => {
 			rendered.push(input);
 		},
@@ -367,6 +431,18 @@ test("the scene builder and resolver pass preview pixels while preserving trim, 
 	tracks.overlay[0].elements[0].params["transform.perspectiveX"] = 20;
 	await resolve({ outputWidth: 640, target: build(true) });
 	expect(rendered.at(-1)).toMatchObject({ timeSeconds: 2, previewScale: 1 });
+	const graphicTrack = tracks.overlay[0];
+	if (graphicTrack.type !== "graphic")
+		throw new Error("Expected graphic fixture track");
+	const repeated = structuredClone(graphicTrack.elements[0]);
+	repeated.id = "second-occurrence";
+	graphicTrack.elements.push(repeated);
+	expect(
+		build(true)
+			.children.filter((child) => child instanceof GraphicNode)
+			.map((child) => child.params.frameSource?.live?.occurrenceId)
+			.sort(),
+	).toEqual(["clip", "second-occurrence"]);
 });
 
 test("native base and foreground keep disjoint texture IDs when frame fragments are reused", async () => {

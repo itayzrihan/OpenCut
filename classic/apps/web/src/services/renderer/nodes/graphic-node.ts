@@ -25,6 +25,8 @@ export interface GraphicNodeParams extends VisualNodeParams {
 		height: number;
 		getResourceRevision: () => number;
 		live?: {
+			/** Canonical clip identity keeps repeated uses independently seekable. */
+			occurrenceId: string;
 			/** Stable source identity across canonical clip/transform edits. */
 			key: object;
 			open: () => Promise<HyperframesLiveHandle>;

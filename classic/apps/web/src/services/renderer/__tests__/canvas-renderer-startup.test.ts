@@ -182,4 +182,27 @@ test("native overlay preparation precedes an uninterrupted transparent copy and 
 		"overlay-copy",
 		"render",
 	]);
+	failCopy = false;
+	events.length = 0;
+	await renderer.renderWithOverlays({
+		node,
+		time: 0,
+		overlays: [
+			{ node: new BaseNode(), targetCanvas },
+			{
+				node: new BaseNode(),
+				targetCanvas: { ...targetCanvas } as HTMLCanvasElement,
+			},
+		],
+	});
+	expect(events).toEqual([
+		"resolve",
+		"resolve",
+		"resolve",
+		"transparent-render",
+		"overlay-copy",
+		"transparent-render",
+		"overlay-copy",
+		"render",
+	]);
 });

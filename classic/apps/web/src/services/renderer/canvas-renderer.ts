@@ -155,44 +155,74 @@ export class CanvasRenderer {
 		time: number;
 		targetCanvas: HTMLCanvasElement;
 	}): Promise<void> {
-		const ctx = targetCanvas.getContext("2d");
-		if (!ctx) throw new Error("Failed to get overlay canvas context");
+		return this.renderWithOverlays({
+			node,
+			time,
+			overlays: [{ node: overlay, targetCanvas }],
+		});
+	}
+
+	/** Prepare every native segment before synchronously publishing their
+	 * transparent canvases and restoring the shared opaque base. */
+	async renderWithOverlays({
+		node,
+		overlays,
+		time,
+	}: {
+		node: AnyBaseNode;
+		overlays: Array<{ node: AnyBaseNode; targetCanvas: HTMLCanvasElement }>;
+		time: number;
+	}): Promise<void> {
+		const targets = overlays.map(({ node, targetCanvas }) => {
+			const ctx = targetCanvas.getContext("2d");
+			if (!ctx) throw new Error("Failed to get overlay canvas context");
+			return { node, targetCanvas, ctx };
+		});
 		await compositorRenderQueue.run(async () => {
 			await initializeGpuRenderer();
 			const base = await this.prepareFrame({ node, time });
-			const foreground = await this.prepareFrame({
-				node: overlay,
-				time,
-				rootPath: "root:overlay",
-			});
-			foreground.frame = {
-				...foreground.frame,
-				clear: { color: [0, 0, 0, 0] },
-			};
+			const foregrounds = [];
+			for (const [index, target] of targets.entries()) {
+				const foreground = await this.prepareFrame({
+					node: target.node,
+					time,
+					rootPath: index === 0 ? "root:overlay" : `root:overlay:${index}`,
+				});
+				foreground.frame = {
+					...foreground.frame,
+					clear: { color: [0, 0, 0, 0] },
+				};
+				foregrounds.push({ ...foreground, ...target });
+			}
 			this.staticSceneNode = null;
 			this.staticSceneRendered = false;
 			this.staticSceneGeneration = null;
-			// Keep both groups' textures resident, with distinct IDs. Alternating
-			// two syncTextures calls would evict and re-upload each group per frame.
-			this.syncFrameTextures([...base.textures, ...foreground.textures]);
+			// Keep every group's textures resident with distinct IDs. Separate
+			// syncTextures calls would evict and re-upload each group per frame.
+			this.syncFrameTextures([
+				...base.textures,
+				...foregrounds.flatMap((group) => group.textures),
+			]);
 			try {
-				this.renderFrame(foreground.frame);
-				ctx.save();
-				try {
-					ctx.resetTransform();
-					ctx.globalAlpha = 1;
-					// Replace transparent pixels too, so moving or ending clips
-					// cannot leave old content behind in the presentation canvas.
-					ctx.globalCompositeOperation = "copy";
-					ctx.drawImage(
-						wasmCompositor.getCanvas(),
-						0,
-						0,
-						targetCanvas.width,
-						targetCanvas.height,
-					);
-				} finally {
-					ctx.restore();
+				for (const { frame, ctx, targetCanvas } of foregrounds) {
+					this.renderFrame(frame);
+					ctx.save();
+					try {
+						ctx.resetTransform();
+						ctx.globalAlpha = 1;
+						// Replace transparent pixels too, so moving or ending clips
+						// cannot leave old content behind in the presentation canvas.
+						ctx.globalCompositeOperation = "copy";
+						ctx.drawImage(
+							wasmCompositor.getCanvas(),
+							0,
+							0,
+							targetCanvas.width,
+							targetCanvas.height,
+						);
+					} finally {
+						ctx.restore();
+					}
 				}
 			} finally {
 				this.renderFrame(base.frame);

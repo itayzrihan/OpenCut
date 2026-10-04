@@ -11,6 +11,7 @@ const MAX_FRAME_BYTES = 64 * 1024 * 1024;
 const MAX_FRAMES = 24;
 const MAX_AUDIO_BYTES = 64 * 1024 * 1024;
 const MAX_AUDIO_FILES = 8;
+const MAX_LIVE_SOURCES = 4;
 
 /** Derived rendering cache scoped to one active account/project. Original
  * source stays in the canonical document; decoded frames have a bounded LRU.
@@ -20,9 +21,10 @@ export class HyperframesRenderClient {
 	// Capture is already sequential in each browser. Bound this client's live
 	// browsers as well, including when source edits create new fingerprints.
 	private renderQueue: Promise<void> = Promise.resolve();
-	/** Reserve one of the existing two slots for the displayed DOM surface. */
-	private liveSourceKey: string | null = null;
-	private liveLease: object | null = null;
+	/** Each displayed occurrence owns a lease, including repeated sources. */
+	private readonly liveLeases = new Map<string, Set<object>>();
+	/** A live source can also have an effectful occurrence requiring capture. */
+	private capturedLiveSourceKey: string | null = null;
 	private readonly sessions = new Map<
 		string,
 		Promise<HyperframesRenderSession>
@@ -104,6 +106,8 @@ export class HyperframesRenderClient {
 	): Promise<HyperframesLiveHandle> {
 		const key = await this.sourceKey(composition.source);
 		const ready = this.renderQueue.then(async () => {
+			if (!this.liveLeases.has(key) && this.liveLeases.size >= MAX_LIVE_SOURCES)
+				throw new Error("The HyperFrames live preview limit is reached");
 			const session = await this.getSession({
 				key,
 				source: composition.source,
@@ -112,15 +116,27 @@ export class HyperframesRenderClient {
 				action: "live",
 				id: session.id,
 			});
-			this.liveSourceKey = key;
+			this.pending.signal.throwIfAborted();
+			if (this.capturedLiveSourceKey === key) this.capturedLiveSourceKey = null;
 			const lease = {};
-			this.liveLease = lease;
+			const leases = this.liveLeases.get(key) ?? new Set<object>();
+			leases.add(lease);
+			this.liveLeases.set(key, leases);
 			return {
 				...preview,
 				release: () => {
-					if (this.liveLease !== lease) return;
-					this.liveSourceKey = null;
-					this.liveLease = null;
+					leases.delete(lease);
+					if (!leases.size && this.liveLeases.get(key) === leases) {
+						this.liveLeases.delete(key);
+						if (!this.closed) {
+							const trim = this.renderQueue.then(() =>
+								this.trimSessions({
+									limit: Math.max(2, this.liveLeases.size + 1),
+								}),
+							);
+							this.renderQueue = trim.catch(() => {});
+						}
+					}
 				},
 			};
 		});
@@ -232,7 +248,9 @@ export class HyperframesRenderClient {
 			this.frames.set(frameKey, cached);
 			return;
 		}
+		await this.releaseOtherLiveCapture(key);
 		const session = await this.getSession({ key, source: composition.source });
+		if (this.liveLeases.has(key)) this.capturedLiveSourceKey = key;
 		let artifact: HyperframesFrameArtifact;
 		try {
 			artifact = await this.request<HyperframesFrameArtifact>({
@@ -310,8 +328,8 @@ export class HyperframesRenderClient {
 				() => {},
 			);
 		this.sessions.clear();
-		this.liveSourceKey = null;
-		this.liveLease = null;
+		this.liveLeases.clear();
+		this.capturedLiveSourceKey = null;
 		for (const bitmap of this.frames.values()) bitmap.close();
 		this.frames.clear();
 		this.frameBytes = 0;
@@ -348,17 +366,12 @@ export class HyperframesRenderClient {
 			this.sessions.set(key, session);
 		}
 		if (!session) {
-			while (this.sessions.size >= 2) {
-				const oldest = [...this.sessions.entries()].find(
-					([sourceKey]) => sourceKey !== this.liveSourceKey,
-				);
-				if (!oldest) break;
-				this.sessions.delete(oldest[0]);
-				await oldest[1].then(
-					({ id }) => this.closeRemote(id),
-					() => {},
-				);
-			}
+			// One capture slot alongside displayed sources; native-only/export
+			// rendering retains its existing two-entry LRU. Live entries hold no
+			// headless browser after host promotion.
+			await this.trimSessions({
+				limit: Math.max(2, this.liveLeases.size + 1) - 1,
+			});
 			this.pending.signal.throwIfAborted();
 			session = this.request<HyperframesRenderSession>({
 				action: "open",
@@ -377,6 +390,33 @@ export class HyperframesRenderClient {
 			});
 		}
 		return session;
+	}
+
+	private async trimSessions({ limit }: { limit: number }): Promise<void> {
+		while (this.sessions.size > limit) {
+			const oldest = [...this.sessions.entries()].find(
+				([key]) => !this.liveLeases.has(key),
+			);
+			if (!oldest) break;
+			this.sessions.delete(oldest[0]);
+			await oldest[1].then(
+				({ id }) => this.closeRemote(id),
+				() => {},
+			);
+		}
+	}
+
+	/** Retain one warm screenshot browser among pinned live sources. Without
+	 * this, effectful copies of four live sources could occupy every browser
+	 * and prevent an audio probe or another capture from starting. Delivery
+	 * URLs and existing iframes survive the host's promotion unchanged. */
+	private async releaseOtherLiveCapture(nextKey: string): Promise<void> {
+		const previous = this.capturedLiveSourceKey;
+		if (!previous || previous === nextKey) return;
+		this.capturedLiveSourceKey = null;
+		if (!this.liveLeases.has(previous)) return;
+		const session = this.sessions.get(previous);
+		if (session) await this.request({ action: "live", id: (await session).id });
 	}
 
 	private headers(): Record<string, string> {

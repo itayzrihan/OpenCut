@@ -605,6 +605,7 @@ function buildTrackNodes({
 										getResourceRevision: hyperframes.getResourceRevision,
 										live: hyperframes.openLivePreview
 											? {
+													occurrenceId: element.id,
 													key: composition.source,
 													open: () => hyperframes.openLivePreview!(composition),
 													getSourceTime,

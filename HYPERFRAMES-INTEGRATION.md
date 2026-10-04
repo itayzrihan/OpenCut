@@ -922,8 +922,8 @@ This does not establish performance for different source packages.
 - These measurements identified the need for multiple live occurrences and
   explicit session lifetimes. At that checkpoint, one live surface pinned one
   of two client sessions and retained a headless capture browser. The host
-  separation below removes the retained browser; multiple client leases and
-  multiple visible surfaces still need implementation.
+  separation below removes the retained browser; the subsequent multiple-live
+  implementation also removes the measured extra screenshot from this case.
 - Probe tests passed three tests (nine assertions), covering disabled and paused
   collection, duplicate frames, late completion after seek/pause, bounded
   windows and failure counts. Scoped TypeScript including the new tests and
@@ -973,7 +973,69 @@ live delivery closes that capture and reuses the existing live URL.
   `.local/hf-after-capture-release-playback.json`.
 - This changes derived rendering resources only. Canonical state, timeline
   behavior and capabilities are unchanged. Multiple client leases, occurrence
-  identity and multiple native/live segments remain the next performance work.
+  identity and multiple native/live segments were the next performance work,
+  implemented and measured below.
+
+### Multiple live compositions in the existing timeline (2026-10-04)
+
+Classic now displays up to four eligible HyperFrames occurrences as independent
+live surfaces. The scene builder supplies each canonical clip ID alongside its
+source identity. Repeated source packages share delivery resources while each
+iframe seeks its own trimmed source time and uses the clip's placement, opacity
+and layer order. Reordering changes CSS stacking without reparenting iframes.
+
+Native layers below, between and above these surfaces remain in the existing
+GPU compositor. Each native segment above the base uses a transparent canvas.
+All segments are prepared first, their textures are synchronized together under
+distinct IDs, and their canvases are copied before the opaque base is restored
+without an asynchronous gap. Ended native layers clear their previous pixels.
+
+- The client reserves sources through independent, idempotent occurrence
+  leases. Releasing one occurrence cannot evict another occurrence using the
+  same package. Four source reservations leave one ordinary capture cache slot;
+  releasing them trims back to the original two-session LRU.
+- Effectful copies can still require screenshots while another occurrence of
+  their source is live. Only one such pinned source keeps a warm capture browser;
+  switching capture sources releases the previous browser through the existing
+  host promotion while preserving its live URL. This leaves capacity for the
+  ordinary capture slot and disposable audio probe.
+- Backdrop-dependent blends and scene wrappers stay below the selected live
+  surfaces. Masks, unsupported perspective, canvas/video content and runtime
+  failures continue through the full capture path. Export retains that path.
+  These limits remain part of the incomplete broader integration.
+
+Actual playback of the unchanged two-occurrence Brag benchmark at 451x253
+compositor pixels in the same development browser improved from **9.84 / 9.84
+fps** to **28.37 / 28.85 fps**. The new runs completed 170 / 173 distinct frames
+with zero render errors; median render time was 3.9 / 3.5 ms and p95 was 26.1 /
+23.8 ms. This measures completed preview renders against the existing transport,
+not physical display refresh. Production, full-screen and broader-project
+measurements remain outstanding. Reports: `.local/hf-multiple-live-playback.json`.
+
+The two-occurrence project exported both from live preview and from the capture
+override. Both files are 528,101 bytes. All decoded video frames match
+(`118e1939b029bff83bf52b6696b2ee023de8629ca5d4a04d2fbc787573abad12`)
+and decoded float PCM matches
+(`54b3d756f534a52c8aa4ccb7555c40b3d92f8ad656c9bfdfdc4e9692fe399f20`).
+Evidence: `.local/hf-multiple-live-export.mp4` and
+`.local/hf-multiple-capture-export.mp4`.
+
+A separate isolated project (`fa29717a-140f-40e2-a2be-32f24aa601f6`) verified
+overlapping occurrences with a one-second source offset, a native text layer
+between them and another in front. At 1.5 s the compositions showed different
+source states and correctly occluded the middle text. At 2.5 s that text had
+ended and no yellow pixels remained visible. At 5.5 s the trimmed occurrence
+had ended: only one iframe and one foreground canvas remained. Evidence:
+`.local/hf-interleaved-fixture.ts`, `.local/hf-interleaved-live-1_5.png`,
+`.local/hf-interleaved-live-2_5.png`, `.local/hf-interleaved-live-5_5.png`.
+
+Verification: three real-WASM render-tree tests passed (62 assertions), seven
+client/cache tests passed (236 assertions), and two renderer queue tests passed
+(30 assertions). Coverage includes shared-source timing, canonical occurrence
+IDs, native segments, reordering, blending fallback, the four-surface bound,
+lease release, capture browser rotation, and uninterrupted GPU copy order.
+Scoped TypeScript and changed-file ESLint passed. No editor state, capabilities,
+source packages or saved production projects were changed by this adapter work.
 
 ## Next implementation sequence
 
@@ -986,10 +1048,10 @@ live delivery closes that capture and reuses the existing live URL.
    real-WASM tests. The native MCP process still reaches the live editor through
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
-3. Extend the implemented native/live/native preview to multiple live surfaces,
-   video/canvas and dynamic resource cases after fidelity tests. Use the measured
-   two-occurrence bottleneck and the probe above to verify improvements, then
-   broaden playback measurements to the remaining projects and large timelines.
+3. The measured two-occurrence bottleneck is resolved for eligible live content.
+   Verify four distinct packages and mixed live/captured occurrences in the UI;
+   extend video/canvas and dynamic resource support after fidelity tests. Broaden
+   playback measurements to the remaining projects and large timelines.
    Keep transport and edits canonical and local
    control endpoints authenticated and loopback-only.
 4. Extend the implemented expandable timeline rows with child selection and canonical edits;
