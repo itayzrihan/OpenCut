@@ -25,6 +25,67 @@ is implemented; the product integration is not complete.
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
 
+## Opening a layer's authored source (2026-10-04)
+
+The expanded layer inspector now offers **Edit layer source**. It opens the
+existing source dialog at the matching file and selects its opening tag. The
+dialog reports when multiple runtime layers share that tag and explains that
+file edits affect all uses within the selected compound clip. Other compound
+occurrences still detach through the existing source-edit transaction.
+
+This is **Classic-only UI, bridged to the canonical Rust runtime** through
+`hyperframes.layer.source.read`, also projected to MCP. The read is pure and
+requires a manifest bound to the supplied source fingerprint. It returns both
+raw byte offsets and normalized textarea offsets, with one-based line/column.
+It does not add a second layer state store or grant permission to retime a layer.
+
+The resolver uses the pinned `html5gum` 0.8.4 tokenizer for original source spans
+and the existing HTML tree parser to cross-check identity. It handles quoted
+angle brackets, entities, Unicode, CRLF, SVG and composition templates. Duplicate
+identities, plain clone templates, generated nodes, missing source identity and
+stale manifests never produce a guessed edit range. The UI still permits manual
+file editing when a unique tag cannot be found.
+
+A read-only audit of the saved seven-folder Brag project resolves 124 of 172
+reported layers. The remaining 48 comprise 40 layers without source identity
+and eight script-created layers in the two Advanced compositions. All returned
+byte and textarea ranges agree; the persisted project remains byte-identical.
+The final WASM run takes a median 9.5 ms per lookup (p95 28.0 ms), including
+input validation. This measures source navigation, not playback performance.
+Report and reproduction: `.local/hf-layer-source-brag-audit-20261004.json` and
+the matching `.mjs` script.
+
+The real-browser variable fixture verifies that two mounted instances of one
+template resolve to the same source tag and report two uses. Its existing
+variable, opacity, live/capture parity and history assertions also pass. The
+source-edit and opacity browser suites pass, together with 16 manager/session
+tests. Reports: `.local/hf-layer-source-checks-20261004/summary.json` and
+`.local/hf-layer-source-manager-20261004/summary.json`. Native resolver tests
+cover raw/textarea offsets, inert markup, nested templates, SVG, duplicate IDs,
+aliases, shared sources, stale manifests, cancellation and unchanged editor state.
+Across the full run and focused rechecks, 76 Editor API tests and 13 MCP tests
+pass. Product TypeScript, changed-file ESLint, Clippy with `-D warnings`, focused
+Rust formatting and the 37 + 13 WASM export checks pass. The final browser
+resolver recheck is recorded in `.local/hf-layer-source-final-20261004/summary.json`.
+The full-editor manual UI check remains pending for the browser-policy reason
+recorded below.
+
+### What direct child timing still requires
+
+The upstream Studio rewrites GSAP positions when moving a timed clip and scales
+both positions and tween durations when resizing. Its source edits are folded
+into the same history entry. Merely rewriting a manifest range or HTML duration
+would leave our preview and export animations inconsistent. Source references:
+`packages/studio/src/hooks/timelineTimingSync.ts`,
+`packages/studio/src/hooks/useTimelineEditing.ts`, and
+`packages/sdk/src/engine/mutate.ts` in the read-only upstream checkout.
+
+Before exposing child drag/trim, the canonical edit must account for nested
+composition clocks, shared source instances and GSAP ownership. Relative GSAP
+positions and implicit sequencing also need a defined contract; upstream skips
+some of those forms. Brag's script-created layers require a source adapter or
+another verified instance-level strategy. These requirements remain open.
+
 ## Editing imported source files (2026-10-04)
 
 The Classic Graphic inspector now includes **Source files → Edit source**.

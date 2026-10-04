@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+	HyperframesSourceEditor,
+	type HyperframesSourceDraft,
+} from "./source-section";
+import {
 	Section,
 	SectionContent,
 	SectionHeader,
@@ -80,6 +84,9 @@ function HyperframesLayersInspector({
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [query, setQuery] = useState("");
+	const [sourceDraft, setSourceDraft] = useState<HyperframesSourceDraft | null>(
+		null,
+	);
 	const [limit, setLimit] = useState(100);
 	useEffect(
 		() => () => {
@@ -282,6 +289,17 @@ function HyperframesLayersInspector({
 								<LayerRow
 									key={layer.key}
 									layer={layer}
+									onSource={() => {
+										if (projectId && scene && composition)
+											setSourceDraft({
+												projectId,
+												sceneId: scene.id,
+												elementId,
+												accountId: window.__opencutAccountId,
+												source: composition.source,
+												layerTarget: { manifest, layerKey: layer.key },
+											});
+									}}
 									depth={depth}
 									control={controlMap.get(layer.key)}
 									disabled={busy || saving}
@@ -327,6 +345,16 @@ function HyperframesLayersInspector({
 						)}
 					</>
 				)}
+				{sourceDraft &&
+					sourceDraft.projectId === projectId &&
+					sourceDraft.sceneId === scene?.id &&
+					sourceDraft.elementId === elementId && (
+						<HyperframesSourceEditor
+							key={`${projectId}:${scene.id}:${elementId}:${sourceDraft.layerTarget?.layerKey}`}
+							{...sourceDraft}
+							onClose={() => setSourceDraft(null)}
+						/>
+					)}
 			</SectionContent>
 		</Section>
 	);
@@ -338,12 +366,14 @@ function LayerRow({
 	control,
 	disabled,
 	onOpacity,
+	onSource,
 }: {
 	layer: HyperframesRuntimeLayer;
 	depth: number;
 	control?: HyperframesTimelineClip["controls"][number];
 	disabled: boolean;
 	onOpacity: (opacity: number) => void;
+	onSource: () => void;
 }) {
 	const Icon = LAYER_ICONS[layer.kind];
 	const opacity = control?.opacity ?? 1;
@@ -459,6 +489,17 @@ function LayerRow({
 					</>
 				)}
 			</dl>
+			<div className="px-3 pb-3">
+				<Button
+					variant="outline"
+					size="sm"
+					disabled={disabled}
+					onClick={onSource}
+					aria-label={`Edit source for layer ${label}`}
+				>
+					Edit layer source
+				</Button>
+			</div>
 		</details>
 	);
 }

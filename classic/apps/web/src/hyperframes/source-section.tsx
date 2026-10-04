@@ -23,14 +23,20 @@ import {
 	useEditorProject,
 	useEditorTimelineScenes,
 } from "@/editor/use-editor";
-import type { HyperframesSource } from "./types";
+import { loadCanonicalRuntime } from "@/core/load-canonical-runtime";
+import type {
+	HyperframesLayerSource,
+	HyperframesRuntimeManifest,
+	HyperframesSource,
+} from "./types";
 
-interface SourceDraft {
+export interface HyperframesSourceDraft {
 	projectId: string;
 	sceneId: string;
 	elementId: string;
 	accountId: string | null;
 	source: HyperframesSource;
+	layerTarget?: { manifest: HyperframesRuntimeManifest; layerKey: string };
 }
 
 export function HyperframesSourceSection({
@@ -50,7 +56,7 @@ export function HyperframesSourceSection({
 	const sceneId = useEditorTimelineScenes(
 		(core) => core.scenes.getActiveSceneOrNull()?.id,
 	);
-	const [draft, setDraft] = useState<SourceDraft | null>(null);
+	const [draft, setDraft] = useState<HyperframesSourceDraft | null>(null);
 	if (!state.projectId || !state.source || !sceneId) return null;
 	return (
 		<Section collapsible sectionKey="hyperframes-source">
@@ -78,7 +84,7 @@ export function HyperframesSourceSection({
 					draft.projectId === state.projectId &&
 					draft.sceneId === sceneId &&
 					draft.elementId === elementId && (
-						<SourceEditor
+						<HyperframesSourceEditor
 							key={`${state.projectId}:${sceneId}:${elementId}`}
 							{...draft}
 							onClose={() => setDraft(null)}
@@ -89,14 +95,15 @@ export function HyperframesSourceSection({
 	);
 }
 
-function SourceEditor({
+export function HyperframesSourceEditor({
 	projectId,
 	sceneId,
 	elementId,
 	accountId,
 	source,
+	layerTarget,
 	onClose,
-}: SourceDraft & {
+}: HyperframesSourceDraft & {
 	onClose: () => void;
 }) {
 	const editor = useEditor();
@@ -104,9 +111,68 @@ function SourceEditor({
 	const [file, setFile] = useState(source.entryFile);
 	const [drafts, setDrafts] = useState<Record<string, string>>({});
 	const [busy, setBusy] = useState(false);
+	const [locating, setLocating] = useState(!!layerTarget);
+	const [target, setTarget] = useState<HyperframesLayerSource | null>(null);
+	const code = useRef<HTMLTextAreaElement | null>(null);
+	const highlighted = useRef(false);
 	const [error, setError] = useState<string | null>(null);
 	const operation = useRef<AbortController | null>(null);
 	useEffect(() => () => operation.current?.abort(), []);
+	useEffect(() => {
+		if (!layerTarget) return;
+		let active = true;
+		void loadCanonicalRuntime()
+			.then((runtime) => {
+				try {
+					if (!active || window.__opencutAccountId !== accountId) return;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- The Rust capability validates both input and output schemas.
+					const result = runtime.invokeSync(
+						"hyperframes.layer.source.read",
+						{
+							source,
+							...layerTarget,
+						},
+						undefined,
+					) as { result: { data: HyperframesLayerSource } };
+					setTarget(result.result.data);
+					if (result.result.data.file) setFile(result.result.data.file);
+				} finally {
+					runtime.free();
+				}
+			})
+			.catch((cause: unknown) => {
+				if (active)
+					setError(cause instanceof Error ? cause.message : String(cause));
+			})
+			.finally(() => {
+				if (active) setLocating(false);
+			});
+		return () => {
+			active = false;
+		};
+	}, [source, layerTarget, accountId]);
+	useEffect(() => {
+		if (
+			locating ||
+			highlighted.current ||
+			!code.current ||
+			!target?.location ||
+			target.file !== file
+		)
+			return;
+		highlighted.current = true;
+		code.current.focus();
+		code.current.setSelectionRange(
+			target.location.startTextarea,
+			target.location.endTextarea,
+		);
+		const lineHeight =
+			Number.parseFloat(getComputedStyle(code.current).lineHeight) || 20;
+		code.current.scrollTop = Math.max(
+			0,
+			(target.location.line - 3) * lineHeight,
+		);
+	}, [locating, target, file]);
 	const changes = Object.fromEntries(
 		Object.entries(drafts).filter(
 			([path, text]) => source.files[path] !== text,
@@ -154,13 +220,32 @@ function SourceEditor({
 		>
 			<DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
 				<DialogHeader>
-					<DialogTitle>Edit composition source</DialogTitle>
+					<DialogTitle>
+						{layerTarget ? "Edit layer source" : "Edit composition source"}
+					</DialogTitle>
 					<DialogDescription>
 						Change this clip’s HTML, styles or animation code. Changes are
 						checked before applying and can be undone.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="min-h-0 overflow-auto">
+					{layerTarget && (
+						<div className="text-sm text-muted-foreground" role="status">
+							{locating
+								? "Finding the layer’s source…"
+								: target?.location
+									? `${target.file}: opening tag at line ${target.location.line}, column ${target.location.column}.`
+									: "No unique opening tag was found for this layer. You can still edit the source files."}
+							{!locating && (
+								<p>
+									File edits affect every use of that file within this clip.
+									{target && target.reportedOccurrences > 1
+										? ` This tag appears in ${target.reportedOccurrences} reported layers.`
+										: ""}
+								</p>
+							)}
+						</div>
+					)}
 					<label htmlFor={`${id}-file`} className="text-sm font-medium">
 						Source file
 					</label>
@@ -168,7 +253,7 @@ function SourceEditor({
 						id={`${id}-file`}
 						className="h-9 rounded-md border bg-background px-3 text-sm"
 						value={file}
-						disabled={busy}
+						disabled={busy || locating}
 						onChange={(event) => setFile(event.target.value)}
 					>
 						{Object.keys(source.files)
@@ -181,6 +266,7 @@ function SourceEditor({
 							))}
 					</select>
 					<Textarea
+						ref={code}
 						aria-label={`Source code: ${file}`}
 						value={drafts[file] ?? source.files[file]}
 						onChange={(event) =>
@@ -189,7 +275,7 @@ function SourceEditor({
 								[file]: event.target.value,
 							}))
 						}
-						disabled={busy}
+						disabled={busy || locating}
 						spellCheck={false}
 						wrap="off"
 						className="h-[45vh] min-h-40 font-mono text-xs md:text-xs leading-5"
@@ -212,7 +298,10 @@ function SourceEditor({
 					<Button variant="outline" onClick={close}>
 						{busy ? "Cancel check" : "Cancel"}
 					</Button>
-					<Button disabled={busy || !changedCount} onClick={() => void apply()}>
+					<Button
+						disabled={busy || locating || !changedCount}
+						onClick={() => void apply()}
+					>
 						Apply changes{changedCount ? ` (${changedCount})` : ""}
 					</Button>
 				</DialogFooter>

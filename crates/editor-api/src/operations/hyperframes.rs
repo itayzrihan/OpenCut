@@ -78,6 +78,14 @@ struct ValidateManifestInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReadLayerSourceInput {
+    source: HyperframesSource,
+    manifest: crate::HyperframesRuntimeManifest,
+    layer_key: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct PrepareAudioInput {
     source: HyperframesSource,
     plan: crate::HyperframesAudioPlan,
@@ -222,6 +230,28 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<ReadLayerSourceInput, crate::HyperframesLayerSource, _, _>(
+        registry,
+        "hyperframes.layer.source.read",
+        "Locate the authored source of a HyperFrames layer",
+        "Finds an unambiguous HTML opening tag for a runtime layer in the supplied, fingerprint-matched package. Reports source and textarea offsets and known shared occurrences. This is source navigation, not authorization to retime or mutate a runtime occurrence. Does not execute scripts, access files or change editor state.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "source", "layers"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let output = crate::read_hyperframes_layer_source(
+                &input.source,
+                &input.manifest,
+                &input.layer_key,
+            )
+            .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(output))
+        },
+    )?;
     let library_state = state.clone();
     register::<ReadLibraryInput, ReadLibraryOutput, _, _>(
         registry,

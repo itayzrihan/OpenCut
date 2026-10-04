@@ -17,7 +17,7 @@ import {
 } from "@/core/canonical-classic-session";
 import { HyperframesRenderHost } from "../render-host";
 import type { TimelineElement } from "@/timeline";
-import type { HyperframesSource } from "../types";
+import type { HyperframesLayerSource, HyperframesSource } from "../types";
 
 const source: HyperframesSource = {
 	entryFile: "index.html",
@@ -87,6 +87,37 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 				source,
 				runtimeManifest: original.runtimeManifest,
 			});
+			const beforeSourceRead = session.read();
+			const nestedText = original.runtimeManifest.layers.filter(
+				(layer) => layer.elementId === "nested-text",
+			);
+			expect(nestedText).toHaveLength(2);
+			const locations = nestedText.map((layer) => {
+				const result = runtime.invokeSync(
+					"hyperframes.layer.source.read",
+					{
+						source,
+						manifest: original.runtimeManifest,
+						layerKey: layer.key,
+					},
+					undefined,
+				) as { result: { data: HyperframesLayerSource } };
+				const target = result.result.data;
+				expect(target.file).toBe("tile.html");
+				expect(target.resolution).toBe("located");
+				expect(target.reportedOccurrences).toBe(2);
+				expect(target.location).not.toBeNull();
+				const opening = source.files[target.file!].slice(
+					target.location!.startTextarea,
+					target.location!.endTextarea,
+				);
+				expect(opening).toBe(
+					'<span id="nested-text" style="color:white" data-start="0" data-duration="4">',
+				);
+				return target.location;
+			});
+			expect(locations[0]).toEqual(locations[1]);
+			expect(session.read()).toEqual(beforeSourceRead);
 			const sceneId = classic.document.currentSceneId;
 			const paint = original.runtimeManifest.layers.find(
 				(layer) => layer.elementId === "paint",

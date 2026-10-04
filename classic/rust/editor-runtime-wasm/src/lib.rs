@@ -95,6 +95,7 @@ impl CanonicalEditorRuntime {
                 | "hyperframes.variables.prepare"
                 | "hyperframes.variables.set"
                 | "hyperframes.source.prepare"
+                | "hyperframes.layer.source.read"
                 | "hyperframes.source.set"
                 | "timeline.hyperframes.import"
                 | "timeline.hyperframes.insert"

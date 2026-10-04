@@ -85,6 +85,25 @@ export interface HyperframesRuntimeManifest {
 	diagnostics: string[];
 }
 
+/** Source navigation projected by Rust; a located tag can have multiple uses. */
+export interface HyperframesLayerSource {
+	sourceFingerprint: string;
+	layerKey: string;
+	file: string | null;
+	elementId: string | null;
+	resolution: "located" | "ambiguous" | "unresolved";
+	location: {
+		startByte: number;
+		endByte: number;
+		startTextarea: number;
+		endTextarea: number;
+		line: number;
+		column: number;
+	} | null;
+	tag: string | null;
+	reportedOccurrences: number;
+}
+
 export interface HyperframesRuntimeLayer {
 	key: string;
 	parentKey: string | null;
