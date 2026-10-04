@@ -919,11 +919,11 @@ This does not establish performance for different source packages.
   submissions, and about 0.4 ms to texture synchronization. The existing generic
   `preview.frame.interval` statistic includes pauses between runs; use the new
   playback-only reports for throughput. Capture remains the dominant cost.
-- Next performance work should support multiple live occurrences and manage
-  their session lifetimes explicitly. Currently one live surface pins one of
-  two client sessions, and each host session keeps a headless capture browser
-  even while its DOM surface is displayed. Simply adding more iframes would
-  conflict with these leases and the host's four-capture/eight-preview bounds.
+- These measurements identified the need for multiple live occurrences and
+  explicit session lifetimes. At that checkpoint, one live surface pinned one
+  of two client sessions and retained a headless capture browser. The host
+  separation below removes the retained browser; multiple client leases and
+  multiple visible surfaces still need implementation.
 - Probe tests passed three tests (nine assertions), covering disabled and paused
   collection, duplicate frames, late completion after seek/pause, bounded
   windows and failure counts. Scoped TypeScript including the new tests and
@@ -934,6 +934,46 @@ This does not establish performance for different source packages.
   `.local/hf-playback-two-compositions.png`. Benchmark project IDs are
   `e8b3c007-9ed8-4cd1-a75f-c04c394814e9` and
   `28760c93-3b7d-4ff2-98b9-026ae72e0597` in the isolated integration account.
+
+### Release capture browsers while live previews are displayed (2026-10-04)
+
+The Classic render host now retains validated metadata, source resources and
+live delivery independently of its headless capture browser. Promotion to a
+live preview closes Chrome and revokes its original capture URL. A subsequent
+screenshot or export opens a new sandboxed capture on demand. Returning to
+live delivery closes that capture and reuses the existing live URL.
+
+- Each scoped entry serializes screenshots and promotion. An active capture
+  finishes before its browser closes; queued capture cancellation does not
+  interrupt an earlier frame. Closing the entry aborts loading and queued work.
+- The host retains at most six scoped entries. The existing four-browser and
+  eight-origin bounds remain. Six live delivery origins leave two origins for
+  one screenshot session and one disposable audio probe. This is a bounded
+  resource budget, not a promise of six simultaneously displayed UI surfaces.
+- Heartbeats retain metadata and live resources without launching Chrome.
+  Entries idle for two minutes expire even after their capture browser has
+  closed. Completed artifacts retain their normal scoped ArtifactStore lifetime.
+- Two real-browser tests passed with 61 assertions: exact account/project
+  isolation, original URL revocation, identical PNG after reopen, reduced-size
+  capture, stable live URL, six retained live sources, audio probe capacity,
+  entry limits and slot reuse. Four controlled lifecycle tests passed with 24
+  assertions, including overlapping promotion/capture, lazy-open cancellation,
+  queued cancellation and idle expiration. Scoped TypeScript and changed-file
+  ESLint passed.
+- Actual Classic UI verification used the existing six-second Brag benchmark:
+  playback completed 169 distinct frames at 28.21 fps with zero render errors
+  (development build, same 451x253 compositor viewport). MP4 export then
+  reopened capture successfully: 180 H.264 frames at 640x360 plus AAC audio,
+  420,573 bytes. FFmpeg decoded both streams without errors. Seeking to 2.5 s
+  after export restored the live composition and native foreground text; the
+  development server had no remaining Chrome child. This is a lifecycle
+  regression check, not evidence of a throughput improvement over the previous
+  single-live measurement. Evidence: `.local/hf-after-capture-release.mp4`,
+  `.local/hf-after-capture-release.png` and
+  `.local/hf-after-capture-release-playback.json`.
+- This changes derived rendering resources only. Canonical state, timeline
+  behavior and capabilities are unchanged. Multiple client leases, occurrence
+  identity and multiple native/live segments remain the next performance work.
 
 ## Next implementation sequence
 

@@ -24,6 +24,7 @@ export interface HyperframesRenderScope {
 }
 export interface HyperframesRenderSession {
 	id: string;
+	/** Initial capture origin; promotion to a live preview revokes this URL. */
 	previewUrl: string;
 	fingerprint: string;
 	width: number;
@@ -34,14 +35,25 @@ export interface HyperframesRenderSession {
 interface Entry {
 	scope: HyperframesRenderScope;
 	abort: AbortController;
-	capture: Promise<HyperframesCaptureSession>;
+	ready: Promise<HyperframesRenderSession>;
+	capture: Promise<HyperframesCaptureSession> | null;
+	queue: Promise<void>;
+	pending: number;
+	pendingFrames: number;
+	lastUsed: number;
 	source: HyperframesSource;
 	resources: ReadonlyMap<string, HyperframesPreviewResource>;
 	audio?: Promise<HyperframesAudioArtifact | null>;
-	livePreview?: Promise<{ id: string; url: string }>;
+	livePreview?: { id: string; url: string };
+	liveRequest?: Promise<{ url: string }>;
 }
 type RenderArtifact = HyperframesFrameArtifact | HyperframesAudioArtifact;
 const MAX_ARTIFACT_HANDLES = 2048;
+// Leave two of the preview host's eight origins available for a reopened
+// capture and a disposable audio probe alongside retained live deliveries.
+const MAX_SESSIONS = 6;
+const MAX_PENDING_FRAMES = 2;
+const IDLE_MS = 2 * 60_000;
 
 export class HyperframesRenderHost {
 	private readonly previews = new HyperframesPreviewHost();
@@ -87,6 +99,10 @@ export class HyperframesRenderHost {
 			resources.set(path, resource);
 		}
 		if (this.closed) throw new Error("The HyperFrames render host is closed");
+		if (this.sessions.size >= MAX_SESSIONS)
+			throw new Error(
+				"Close an existing HyperFrames render before opening another",
+			);
 		const id = randomUUID();
 		const abort = new AbortController();
 		const capture = HyperframesCaptureSession.open({
@@ -96,28 +112,37 @@ export class HyperframesRenderHost {
 			host: this.previews,
 			signal: signal ? AbortSignal.any([signal, abort.signal]) : abort.signal,
 		});
+		const ready = capture.then((session) => ({
+			id,
+			previewUrl: session.previewUrl,
+			fingerprint: session.inspection.fingerprint,
+			width: session.inspection.width,
+			height: session.inspection.height,
+			durationSeconds: session.durationSeconds,
+			runtimeManifest: session.runtimeManifest,
+		}));
 		const entry: Entry = {
 			scope: { ...scope },
 			abort,
 			capture,
+			ready,
+			queue: ready.then(
+				() => {},
+				() => {},
+			),
+			pending: 1,
+			pendingFrames: 0,
+			lastUsed: Date.now(),
 			source: structuredClone(source),
 			resources,
 		};
 		this.sessions.set(id, entry);
 		try {
-			const ready = await capture;
+			const result = await ready;
 			signal?.throwIfAborted();
 			if (this.closed || abort.signal.aborted)
 				throw new Error("The HyperFrames render was closed while loading");
-			return {
-				id,
-				previewUrl: ready.previewUrl,
-				fingerprint: ready.inspection.fingerprint,
-				width: ready.inspection.width,
-				height: ready.inspection.height,
-				durationSeconds: ready.durationSeconds,
-				runtimeManifest: ready.runtimeManifest,
-			};
+			return structuredClone(result);
 		} catch (error) {
 			this.sessions.delete(id);
 			await capture.then(
@@ -125,6 +150,9 @@ export class HyperframesRenderHost {
 				() => {},
 			);
 			throw error;
+		} finally {
+			entry.pending--;
+			entry.lastUsed = Date.now();
 		}
 	}
 
@@ -141,19 +169,40 @@ export class HyperframesRenderHost {
 		previewScale?: number;
 		signal?: AbortSignal;
 	}): Promise<HyperframesFrameArtifact> {
+		signal?.throwIfAborted();
 		const entry = this.getEntry({ scope, id });
-		const session = await entry.capture;
-		const artifact = await session.capture({
-			timeSeconds,
-			previewScale,
-			signal,
-		});
-		if (this.closed || this.sessions.get(id) !== entry) {
-			this.runtime.removeArtifact(artifact.uri);
-			throw new Error("The HyperFrames render was closed during capture");
+		if (entry.pendingFrames >= MAX_PENDING_FRAMES)
+			throw new Error("The HyperFrames capture queue is full");
+		entry.pendingFrames++;
+		const cancellation = signal
+			? AbortSignal.any([signal, entry.abort.signal])
+			: entry.abort.signal;
+		try {
+			return await this.enqueue(entry, async () => {
+				cancellation.throwIfAborted();
+				entry.capture ??= HyperframesCaptureSession.open({
+					source: entry.source,
+					resources: entry.resources,
+					runtime: this.runtime,
+					host: this.previews,
+					signal: cancellation,
+				});
+				const session = await entry.capture;
+				const artifact = await session.capture({
+					timeSeconds,
+					previewScale,
+					signal: cancellation,
+				});
+				if (this.closed || this.sessions.get(id) !== entry) {
+					this.runtime.removeArtifact(artifact.uri);
+					throw new Error("The HyperFrames render was closed during capture");
+				}
+				this.retainArtifact({ scope, artifact });
+				return artifact;
+			});
+		} finally {
+			entry.pendingFrames--;
 		}
-		this.retainArtifact({ scope, artifact });
-		return artifact;
 	}
 
 	async livePreview({
@@ -164,11 +213,20 @@ export class HyperframesRenderHost {
 		id: string;
 	}): Promise<{ url: string }> {
 		const entry = this.getEntry({ scope, id });
-		entry.livePreview ??= (async () => {
-			const ready = await entry.capture;
+		if (entry.liveRequest) return entry.liveRequest;
+		const task = this.enqueue(entry, async () => {
+			const ready = await entry.ready;
 			entry.abort.signal.throwIfAborted();
-			if (!ready.keepAlive())
-				throw new Error("HyperFrames render session expired");
+			// Wait for earlier captures, then release Chrome and its source origin.
+			// The immutable manifest and scoped resources outlive that browser. A
+			// later screenshot/export lazily reopens it on this same queue.
+			await this.releaseCapture(entry);
+			entry.abort.signal.throwIfAborted();
+			if (
+				entry.livePreview &&
+				this.previews.keepAlive({ id: entry.livePreview.id })
+			)
+				return { url: entry.livePreview.url };
 			const prepared = prepareHyperframesPreview({
 				source: entry.source,
 				runtime: this.runtime,
@@ -191,13 +249,14 @@ export class HyperframesRenderHost {
 					"The HyperFrames live preview was closed while loading",
 				);
 			}
-			return preview;
-		})();
+			entry.livePreview = preview;
+			return { url: preview.url };
+		});
+		entry.liveRequest = task;
 		try {
-			return { url: (await entry.livePreview).url };
-		} catch (error) {
-			entry.livePreview = undefined;
-			throw error;
+			return await task;
+		} finally {
+			if (entry.liveRequest === task) entry.liveRequest = undefined;
 		}
 	}
 
@@ -233,10 +292,12 @@ export class HyperframesRenderHost {
 			cancellation.throwIfAborted();
 			if (this.getEntry({ scope, id }) !== entry)
 				throw new Error("HyperFrames audio session changed");
-			const ready = await entry.capture;
-			if (!ready.keepAlive())
+			await entry.ready;
+			if (!(await this.keepAlive({ scope, id })))
 				throw new Error("HyperFrames render session expired");
-			const keepAlive = setInterval(() => ready.keepAlive(), 30_000);
+			const keepAlive = setInterval(() => {
+				void this.keepAlive({ scope, id }).catch(() => {});
+			}, 30_000);
 			keepAlive.unref();
 			try {
 				const probe = await HyperframesCaptureSession.open({
@@ -326,11 +387,16 @@ export class HyperframesRenderHost {
 		id: string;
 	}): Promise<boolean> {
 		const entry = this.getEntry({ scope, id });
-		const alive = (await entry.capture).keepAlive();
-		const live = await entry.livePreview?.catch(() => undefined);
+		await entry.ready;
+		const capture = entry.capture;
+		if (capture && !(await capture).keepAlive() && entry.capture === capture)
+			return false;
+		if (this.closed || this.sessions.get(id) !== entry) return false;
+		entry.lastUsed = Date.now();
+		const live = entry.livePreview;
 		if (live && !this.previews.keepAlive({ id: live.id }))
 			entry.livePreview = undefined;
-		return alive;
+		return true;
 	}
 
 	async closeSession({
@@ -343,11 +409,7 @@ export class HyperframesRenderHost {
 		const entry = this.getEntry({ scope, id });
 		this.sessions.delete(id);
 		entry.abort.abort();
-		await this.removeLivePreview(entry);
-		await entry.capture.then(
-			(session) => session.close(),
-			() => {},
-		);
+		await this.disposeEntry(entry);
 		await entry.audio?.catch(() => {});
 	}
 
@@ -357,14 +419,7 @@ export class HyperframesRenderHost {
 		const pending = [...this.sessions.values()];
 		this.sessions.clear();
 		for (const entry of pending) entry.abort.abort();
-		await Promise.all(
-			pending.map((entry) =>
-				entry.capture.then(
-					(session) => session.close(),
-					() => {},
-				),
-			),
-		);
+		await Promise.all(pending.map((entry) => this.disposeEntry(entry)));
 		await this.audioQueue;
 		await this.previews.close();
 		for (const id of this.artifacts.keys()) this.runtime.removeArtifact(id);
@@ -389,24 +444,71 @@ export class HyperframesRenderHost {
 			if (entry.artifact.expiresAtMs <= Date.now()) this.artifacts.delete(id);
 		}
 		for (const [id, entry] of this.sessions) {
-			void entry.capture.then(
+			if (!entry.pending && Date.now() - entry.lastUsed > IDLE_MS) {
+				this.sessions.delete(id);
+				entry.abort.abort();
+				void this.disposeEntry(entry).catch(() => {});
+				continue;
+			}
+			const capture = entry.capture;
+			void capture?.then(
 				(session) => {
-					if (session.isClosed && this.sessions.get(id) === entry) {
+					if (
+						session.isClosed &&
+						entry.capture === capture &&
+						this.sessions.get(id) === entry
+					) {
 						this.sessions.delete(id);
-						void this.removeLivePreview(entry);
+						entry.abort.abort();
+						void this.disposeEntry(entry).catch(() => {});
 					}
 				},
 				() => {
-					if (this.sessions.get(id) === entry) this.sessions.delete(id);
+					if (entry.capture === capture && this.sessions.get(id) === entry) {
+						this.sessions.delete(id);
+						entry.abort.abort();
+						void this.disposeEntry(entry).catch(() => {});
+					}
 				},
 			);
 		}
 	}
 
-	private async removeLivePreview(entry: Entry): Promise<void> {
-		const preview = await entry.livePreview?.catch(() => undefined);
-		if (preview) this.previews.remove({ id: preview.id });
+	/** Lifecycle changes and screenshots share one queue; a promotion cannot
+	 * close a browser in the middle of a frame or race a lazy reopen. */
+	// eslint-disable-next-line opencut/prefer-object-params -- Internal queue helper pairs the entry with its operation.
+	private enqueue<T>(entry: Entry, operation: () => Promise<T>): Promise<T> {
+		entry.pending++;
+		const task = entry.queue
+			.then(async () => {
+				entry.abort.signal.throwIfAborted();
+				return operation();
+			})
+			.finally(() => {
+				entry.pending--;
+				entry.lastUsed = Date.now();
+			});
+		entry.queue = task.then(
+			() => {},
+			() => {},
+		);
+		return task;
+	}
+
+	private async releaseCapture(entry: Entry): Promise<void> {
+		const capture = entry.capture;
+		entry.capture = null;
+		await capture?.then(
+			(session) => session.close(),
+			() => {},
+		);
+	}
+
+	private async disposeEntry(entry: Entry): Promise<void> {
+		await entry.queue;
+		if (entry.livePreview) this.previews.remove({ id: entry.livePreview.id });
 		entry.livePreview = undefined;
+		await this.releaseCapture(entry);
 	}
 }
 
