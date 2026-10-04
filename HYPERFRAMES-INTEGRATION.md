@@ -19,7 +19,7 @@ is implemented; the product integration is not complete.
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated runtime inventory and read-only Classic inspector implemented; timeline rows and child editing pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; fast live preview, speed and audio pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; audio host verified on all eight, timeline audio connection, fast live preview and speed pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Classic MP4 compositor verified with a synthetic trimmed overlay; Brag export comparison and audio integration pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
@@ -543,17 +543,83 @@ media invalidates rendering, but stored natural durations require another read.
   improvement; reliable recovery from the separate intermittent black preview
   remains unproven.
 
-### Audio integration findings
+### Audio rendering adapter (2026-10-04)
 
 The pinned engine exports `parseAudioElements` and `processCompositionAudio`.
 Its mixer owns fades, rate changes, effects, groups and automation, and writes
 `audio.m4a` to preserve AAC priming metadata. The producer first resolves nested
 media occurrences and then probes timeline volume changes before calling that
 mixer. Reading only `<audio>` tags or copying the layer manifest is insufficient
-for parity. A future host adapter should reuse this path, restrict input files
-to registered package resources, support cancellation and return its mix through
-the bounded ArtifactStore. Existing preview/export audio collectors still accept
-only native audio/video elements; no HyperFrames audio playback is claimed.
+for parity. The Classic host now uses these public engine APIs, the public core
+media occurrence/group stamping helper and its volume-envelope probe. Timing
+comes from the validated runtime manifest. A disposable page samples volume,
+so future GSAP state cannot leak into the page used for visual capture.
+
+- `hyperframes.audio.prepare` is a pure, cancellable Read capability in the
+  canonical registry and WASM wrapper. It binds observations to the exact source
+  fingerprint and pinned runtime, validates registered resource references,
+  bounds timing/gain/rate/envelopes/effect JSON and checks consistent group
+  settings. It replaces author-controlled mixer filenames with ordinal IDs.
+  This derived plan does not alter the project, history or original source.
+- The authenticated Classic render host exposes an `audio` action on an existing
+  account/project-scoped session. It serializes audio work, shares concurrent
+  requests, caches the artifact, checks expiry/eviction, supports cancellation,
+  and keeps the visual session alive during mixing. Output uses the existing
+  bounded ArtifactStore and scoped artifact reader. This is a Classic-only host
+  adapter; native rendering and playback are not migrated by this change.
+- Resource staging copies only registered inputs under generated filenames in
+  a host-created scratch directory. FFmpeg/FFprobe paths are host configuration.
+  The official media probe discovers audio in videos without authored metadata
+  and skips silent videos. Authored mute, hidden ancestors and hidden buses are
+  retained. Mixer failures and degraded automation fail explicitly.
+- Work limits: 30-minute composition, 32 media nodes in the browser probe,
+  32 planned tracks, one hour combined track duration, 100,000 envelope samples,
+  4 MiB plan, 512 MiB staged resources and 64 MiB output. Audible looping media,
+  unresolved source identity, media outside the imported package and clip windows
+  outside root or nested composition bounds are rejected explicitly. Silent looping videos
+  are skipped. These cases need further support before full parity is claimed.
+- `classic/scripts/build-hyperframes-audio-probe.ts` regenerates the browser
+  helper from pinned core implementations. Its Apache license and attribution
+  are included under `classic/licenses` and `classic/THIRD-PARTY-NOTICES.md`.
+
+Verification:
+
+- 29 Rust import/package/manifest/audio tests passed. Five audio tests cover
+  invalid plans, source/resource boundaries, cancellation, safe IDs, repeated
+  preparation of 12 independent buses, nested-window preflight and unchanged
+  canonical state. A real Chrome probe of nested audio extending past its host
+  timed out; the canonical manifest check now rejects that unsupported window
+  before evaluating the audio probe in the page. Cleanup of that fixture still
+  reaches the engine timeout and forces browser shutdown; faster cleanup remains
+  a follow-up.
+- Nine real Chrome capture/audio/host tests passed (119 assertions), including
+  repeated nested audio, timing, rate, fades, separate group gain, authored mute,
+  GSAP volume above unity, video stream discovery, audio artifact ownership,
+  concurrent cache reuse and continued visual capture after audio probing.
+  Decoded PCM verifies the expected silent gaps and per-channel RMS amplitude.
+- All eight Brag references rendered audio through the host. The six-second
+  `advanced-audio-test-final` narration has zero sample offset against its source
+  at 8 kHz, correlation 0.9999189 and gain 0.998223 after AAC encoding. Decoded
+  output includes 16 ms trailing codec padding; timeline playback must use the
+  canonical six-second clip window. This is audio-source comparison, not a
+  downloaded mixed Classic export comparison.
+- Local evidence: `.local/hyperframes-audio-probe-results.json`,
+  `.local/hyperframes-audio-correlation.json` and
+  `.local/hyperframes-brag-audio-0.m4a` through `-7.m4a`.
+- The actual authenticated `/api/hyperframes` route also rendered narration from
+  the imported mixed Classic project. Artifact checksum matched the standalone
+  probe, a repeated request reused the same handle and another project received
+  HTTP 404. Evidence: `.local/hyperframes-audio-api-proof.json` and
+  `.local/hyperframes-brag-audio-api.m4a`. The isolated test server was restarted
+  after rebuilding WASM so its process held the new runtime and host class.
+- Scoped TypeScript, changed-file ESLint, editor-api Clippy, WASM export checks
+  and nine real-WASM CommandManager tests (129 assertions) passed.
+
+Existing preview/export audio collectors still accept only native audio/video
+elements. The next step is a canonical projection of compound-clip audio into
+those collectors, reusing their trim, gain, retime and mastering behavior without
+adding persistent duplicate clips. No HyperFrames timeline audio playback is
+claimed yet.
 
 ## Next implementation sequence
 

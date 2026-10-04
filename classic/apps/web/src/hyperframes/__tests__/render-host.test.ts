@@ -38,6 +38,9 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 				await expect(
 					host.keepAlive({ scope: wrong, id: opened.id }),
 				).rejects.toThrow("unavailable");
+				await expect(
+					host.audio({ scope: wrong, id: opened.id }),
+				).rejects.toThrow("unavailable");
 			}
 			const artifact = await host.capture({
 				scope,
@@ -64,6 +67,9 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 			expect(() =>
 				host.readArtifact({ scope, id: "C:/must-not-read.png" }),
 			).toThrow("unavailable");
+			expect(await host.keepAlive({ scope, id: opened.id })).toBe(true);
+			expect(await host.audio({ scope, id: opened.id })).toBeNull();
+			expect(await host.audio({ scope, id: opened.id })).toBeNull();
 			expect(await host.keepAlive({ scope, id: opened.id })).toBe(true);
 			await host.closeSession({ scope, id: opened.id });
 			await expect(

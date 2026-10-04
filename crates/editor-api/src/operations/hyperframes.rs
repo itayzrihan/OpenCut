@@ -26,6 +26,14 @@ struct ValidateManifestInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrepareAudioInput {
+    source: HyperframesSource,
+    plan: crate::HyperframesAudioPlan,
+    manifest: Option<crate::HyperframesRuntimeManifest>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SetManifestInput {
     project_id: String,
     expected_revision: u64,
@@ -125,6 +133,32 @@ pub(super) fn register_hyperframes_operations(
         },
     )?;
     let manifest_state = state.clone();
+    register::<PrepareAudioInput, crate::HyperframesAudioPlan, _, _>(
+        registry,
+        "hyperframes.audio.prepare",
+        "Validate HyperFrames audio render plan",
+        "Validates a bounded, derived audio plan against its source fingerprint and registered resources. Normalizes temporary track and group IDs. Does not read files, execute scripts or render audio.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "audio", "render"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            if let Some(manifest) = &input.manifest {
+                manifest.validate(&input.source).map_err(model_error)?;
+                if manifest.duration_seconds != input.plan.duration_seconds
+                    || manifest.runtime_version != input.plan.runtime_version
+                {
+                    return Err(CapabilityError::InvalidInput("audio plan and runtime manifest disagree".into()));
+                }
+                crate::validate_hyperframes_audio_windows(manifest).map_err(model_error)?;
+            }
+            let plan = input.plan.prepare(&input.source).map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(plan))
+        },
+    )?;
     let manifest_events = events.clone();
     register::<SetManifestInput, MutationOutput, _, _>(
         registry,

@@ -22,7 +22,11 @@ const requestSchema = z.discriminatedUnion("action", [
 		})
 		.strict(),
 	z
-		.object({ action: z.enum(["close", "keepAlive"]), projectId: id, id })
+		.object({
+			action: z.enum(["close", "keepAlive", "audio"]),
+			projectId: id,
+			id,
+		})
 		.strict(),
 ]);
 const cache = globalThis as typeof globalThis & {
@@ -87,6 +91,10 @@ export const POST = withAccount(async (request) => {
 			return Response.json({
 				alive: await host.keepAlive({ ...input, scope }),
 			});
+		if (input.action === "audio")
+			return Response.json(
+				await host.audio({ ...input, scope, signal: request.signal }),
+			);
 		await host.closeSession({ ...input, scope });
 		return Response.json({ closed: true });
 	} catch (error) {

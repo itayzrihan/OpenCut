@@ -9,6 +9,7 @@ mod capability;
 mod classic;
 mod classic_archive;
 mod hyperframes;
+mod hyperframes_audio;
 mod hyperframes_manifest;
 mod hyperframes_package;
 mod job;
@@ -28,6 +29,7 @@ pub use capability::{
 };
 pub use classic::{CLASSIC_TICKS_PER_SECOND, ClassicComposition, ClassicDocument, ClassicProject};
 pub use hyperframes::*;
+pub use hyperframes_audio::*;
 pub use hyperframes_manifest::*;
 pub use hyperframes_package::*;
 pub use job::{JobManager, JobRecord, JobStatus};

@@ -85,6 +85,7 @@ impl CanonicalEditorRuntime {
                 | "hyperframes.package.plan"
                 | "hyperframes.manifest.validate"
                 | "hyperframes.manifest.set"
+                | "hyperframes.audio.prepare"
                 | "timeline.hyperframes.import"
                 | "app.state.read"
                 | "history.undo"

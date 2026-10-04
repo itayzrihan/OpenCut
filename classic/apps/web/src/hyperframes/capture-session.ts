@@ -28,6 +28,10 @@ import type {
 	HyperframesRuntimeManifest,
 } from "./types";
 import { readHyperframesRuntimeManifest } from "./runtime-manifest";
+import {
+	readHyperframesAudioPlan,
+	type HyperframesAudioPlan,
+} from "./audio-plan";
 
 export interface HyperframesFrameArtifact {
 	id: string;
@@ -58,6 +62,7 @@ export class HyperframesCaptureSession {
 	private closed = false;
 	private queue: Promise<void> = Promise.resolve();
 	private pending = 0;
+	private consumingAudio = false;
 	private lastUsed = Date.now();
 	private timer: ReturnType<typeof setInterval> | null = null;
 	private resolvedDuration = 0;
@@ -340,6 +345,10 @@ export class HyperframesCaptureSession {
 		signal?: AbortSignal;
 	}): Promise<HyperframesFrameArtifact> {
 		signal?.throwIfAborted();
+		if (this.consumingAudio)
+			throw new Error(
+				"The HyperFrames audio probe cannot capture visual frames",
+			);
 		if (this.closed || !this.engine)
 			throw new Error("The HyperFrames capture is closed");
 		if (
@@ -403,6 +412,45 @@ export class HyperframesCaptureSession {
 			return await task;
 		} finally {
 			this.pending--;
+		}
+	}
+
+	/** A dedicated probe consumes its page, protecting normal frame sessions
+	 * from volume sampling that materializes future animation state. */
+	async consumeAudioPlan({
+		source,
+		signal,
+	}: {
+		source: HyperframesSource;
+		signal?: AbortSignal;
+	}): Promise<HyperframesAudioPlan> {
+		if (this.closed || !this.engine || this.pending)
+			throw new Error("HyperFrames audio requires an idle disposable capture");
+		this.consumingAudio = true;
+		this.pending++;
+		const cancellation = AbortSignal.any([
+			...(signal ? [signal] : []),
+			AbortSignal.timeout(30_000),
+		]);
+		const abort = () => {
+			void this.close();
+		};
+		cancellation.addEventListener("abort", abort, { once: true });
+		try {
+			cancellation.throwIfAborted();
+			const plan = await readHyperframesAudioPlan({
+				page: this.engine.page,
+				source,
+				manifest: this.runtimeManifest,
+				fps: this.inspection.fps,
+				runtime: this.runtime,
+			});
+			cancellation.throwIfAborted();
+			return plan;
+		} finally {
+			cancellation.removeEventListener("abort", abort);
+			this.pending--;
+			await this.close();
 		}
 	}
 
