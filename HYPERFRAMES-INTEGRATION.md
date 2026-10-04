@@ -18,12 +18,63 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared variables and source-file edits use runtime preflight and canonical history. Source editing passes Rust, WASM and isolated browser pixel checks; its full-editor UI check and direct child timing controls remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay, a 14-second mixed Brag/native MP4 and the full seven-folder sequence exported; 30 sampled full-sequence frames preserve the references within compressed-video error. Full export exposed a 6 ms mastering delay; compensation now passes browser sample tests and a short two-composition MP4 with zero measured offset. A new full-sequence export with that audio correction remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Editing imported source files (2026-10-04)
+
+The Classic Graphic inspector now includes **Source files → Edit source**.
+The dialog edits an imported composition's existing text files and keeps drafts
+until Apply. It checks the derived package in the isolated render host before
+changing the selected occurrence. Cancel aborts that check. The original import
+directory is never written.
+
+This is **Classic-only UI, bridged to the canonical Rust runtime**. The registry
+exposes `hyperframes.source.prepare` (pure, bounded package validation) and
+`hyperframes.source.set` (one undoable transaction). Preparation also supports
+adding a text file or removing one with `null`; the current UI edits existing
+files. Entry-file and resource bindings are preserved. Commit requires an exact
+project revision, the original source fingerprint and a manifest bound to the
+updated source. Both capabilities are projected through MCP automatically.
+
+Editing a shared source detaches the selected timeline occurrence. Other
+occurrences retain their original source. An unshared source retains its import
+recovery identity. Changes update intrinsic dimensions and measured duration
+together with the source, preserving placement and the used source range.
+Sources shorter than that range are rejected. Existing layer opacity edits are
+preserved only when the runtime layer identities still match. Locks, stale
+drafts, account/scene changes, cancellation and failed preflight cannot commit.
+
+This adds source editing alongside the existing variable and opacity controls.
+Direct child timing, drag and trim controls remain outstanding.
+
+Verification: all 69 Editor API tests and 13 MCP tests pass, including automatic
+capability discovery and canonical state access. Eight targeted web suites pass
+45 tests with no skips, including the existing variable, opacity, folder-import,
+recovery and render-client suites. The first run exposed missing synchronous
+WASM capability bindings; both affected suites pass after adding them and
+rebuilding. The source browser test changes linked CSS, external JavaScript and
+HTML dimensions, checks exact pixels and verifies byte-identical frames after
+Undo. Manager tests cover saved history, reopening, variable edits after source
+edits, cancellation, account/scene changes, concurrent revisions and render
+failure. Product TypeScript, changed-file ESLint, Editor API Clippy with
+`-D warnings`, Rust formatting and the WASM
+export contract pass. Reports: `.local/hf-source-edits-checks-20261004/summary.json`
+and `.local/hf-source-edits-recheck-20261004/summary.json`. The combined latest
+results are `.local/hf-source-edits-verified-20261004.json`.
+
+The full-editor manual check is pending: the in-app tab remained on an internal
+`data:` connection-error page after the development server was stopped for
+compilation. Browser policy rejected reload and navigation from that tab. The
+server is running again on loopback port 3167; the user was asked to reopen the
+HTTP editor manually. No manual UI or Brag source-edit export success is claimed.
+The independent source audit still matches all 72 original source files and 265
+resources to the pre-edit persisted imports:
+`.local/hf-original-brag-source-check-20261004.json`.
 
 ## Full Brag export and Studio comparison (2026-10-04)
 

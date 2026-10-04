@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- host views are minimal test doubles; all document and history operations run through the generated Rust WASM. */
-import { beforeAll, beforeEach, expect, mock, test } from "bun:test";
+import { beforeAll, beforeEach, expect, mock, spyOn, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { Command, type CommandResult } from "@/commands/base-command";
 import type { EditorCore } from "@/core";
@@ -230,6 +230,220 @@ const source = {
 	},
 	resourceAssetIds: {},
 };
+
+test("source and variable preflight commit through canonical history and survive reopening", async () => {
+	const browser = renderFixture();
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	const { HyperframesRenderClient } =
+		await import("@/hyperframes/render-client");
+	const checkedSources: unknown[] = [];
+	const prepare = spyOn(
+		HyperframesRenderClient.prototype,
+		"prepareSource",
+	).mockImplementation(async (prepared) => {
+		checkedSources.push(structuredClone(prepared));
+		const inspection = runtime.invokeSync(
+			"hyperframes.project.inspect",
+			{ source: prepared },
+			undefined,
+		) as { result: { data: { fingerprint: string } } };
+		return {
+			id: "checked",
+			previewUrl: "http://localhost/checked",
+			fingerprint: inspection.result.data.fingerprint,
+			width: 1920,
+			height: 1080,
+			durationSeconds: 6,
+			runtimeManifest: {
+				sourceFingerprint: inspection.result.data.fingerprint,
+				runtimeVersion: "0.8.115",
+				durationSeconds: 6,
+				layers: [],
+				diagnostics: [],
+			},
+		};
+	});
+	let reopened: ReturnType<typeof createHost> | undefined;
+	try {
+		await host.manager.enableCanonical({ runtime });
+		const originalSource = {
+			...source,
+			files: { ...source.files, "unused.css": "/* retained */" },
+		};
+		const imported = await host.manager.importHyperframes({
+			name: "Editable",
+			source: originalSource,
+			importId: "edit-import",
+		});
+		const before = structuredClone(host.project());
+		const html = `<html data-composition-variables='[{"id":"title","type":"string","default":"Original"}]'>${source.files["index.html"].replace("שלום", "Changed")}</html>`;
+		const request = {
+			projectId: "classic-project",
+			sceneId: host.project().currentSceneId,
+			elementId: imported.itemId,
+			signal: new AbortController().signal,
+		};
+		await host.manager.setHyperframesSource({
+			...request,
+			source: originalSource,
+			changes: { "index.html": html, "motion.js": "// שלום\r\n" },
+		});
+		const afterSource = structuredClone(host.project());
+		const updatedSource =
+			afterSource.hyperframesCompositions![imported.assetId].source;
+		expect(updatedSource.files).toEqual({
+			"index.html": html,
+			"motion.js": "// שלום\r\n",
+			"unused.css": "/* retained */",
+		});
+		expect(checkedSources).toEqual([updatedSource]);
+		expect(
+			afterSource.hyperframesCompositions![imported.assetId].importId,
+		).toBe("edit-import");
+		expect(originalSource.files["index.html"]).toBe(source.files["index.html"]);
+		await host.manager.setHyperframesVariables({
+			...request,
+			source: updatedSource,
+			values: { title: "Updated variable" },
+		});
+		const afterVariables = structuredClone(host.project());
+		expect(
+			afterVariables.hyperframesCompositions![imported.assetId].source
+				.variables,
+		).toEqual({ title: "Updated variable" });
+		expect(checkedSources).toHaveLength(2);
+		assertCoherent({ host, runtime });
+		host.manager.undo();
+		expect(host.project()).toEqual(afterSource);
+		host.manager.undo();
+		expect(host.project()).toEqual(before);
+		host.manager.redo();
+		host.manager.redo();
+		await host.manager.flushHistory();
+		reopened = createHost({
+			project: structuredClone(host.project()),
+			media: host.media(),
+		});
+		await reopened.manager.loadHistory({ projectId: "classic-project" });
+		await reopened.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+		});
+		expect(reopened.project()).toEqual(afterVariables);
+		reopened.manager.undo();
+		expect(reopened.project()).toEqual(afterSource);
+		reopened.manager.undo();
+		expect(reopened.project()).toEqual(before);
+		reopened.manager.redo();
+		reopened.manager.redo();
+		expect(reopened.project()).toEqual(afterVariables);
+	} finally {
+		await host.manager.flushHistory();
+		host.manager.detachCanonical();
+		if (reopened) {
+			await reopened.manager.flushHistory();
+			reopened.manager.detachCanonical();
+		}
+		prepare.mockRestore();
+		browser.restore();
+	}
+});
+
+test("source preflight rejects cancellation, account or scene switches, stale revisions and render failures", async () => {
+	const browser = renderFixture();
+	const { HyperframesRenderClient } =
+		await import("@/hyperframes/render-client");
+	try {
+		for (const failure of [
+			"cancel",
+			"account",
+			"scene",
+			"revision",
+			"render",
+		]) {
+			const host = createHost();
+			const runtime = await createCanonicalTestRuntime();
+			await host.manager.enableCanonical({ runtime });
+			const imported = await host.manager.importHyperframes({
+				name: "Editable",
+				source,
+			});
+			const entered = Promise.withResolvers<void>();
+			const resume = Promise.withResolvers<void>();
+			const prepare = spyOn(
+				HyperframesRenderClient.prototype,
+				"prepareSource",
+			).mockImplementation(async (prepared) => {
+				entered.resolve();
+				await resume.promise;
+				if (failure === "render") throw new Error("Broken animation");
+				const inspection = runtime.invokeSync(
+					"hyperframes.project.inspect",
+					{ source: prepared },
+					undefined,
+				) as { result: { data: { fingerprint: string } } };
+				return {
+					id: "checked",
+					previewUrl: "http://localhost/checked",
+					fingerprint: inspection.result.data.fingerprint,
+					width: 1920,
+					height: 1080,
+					durationSeconds: 6,
+					runtimeManifest: {
+						sourceFingerprint: inspection.result.data.fingerprint,
+						runtimeVersion: "0.8.115",
+						durationSeconds: 6,
+						layers: [],
+						diagnostics: [],
+					},
+				};
+			});
+			const dispose = spyOn(HyperframesRenderClient.prototype, "dispose");
+			try {
+				const controller = new AbortController();
+				const pending = host.manager.setHyperframesSource({
+					projectId: "classic-project",
+					sceneId: host.project().currentSceneId,
+					elementId: imported.itemId,
+					source,
+					changes: {
+						"index.html": source.files["index.html"].replace("שלום", "Changed"),
+					},
+					signal: controller.signal,
+				});
+				await entered.promise;
+				if (failure === "cancel") controller.abort();
+				if (failure === "account")
+					browser.browser.__opencutAccountId = "account-b";
+				if (failure === "scene")
+					host.editor.scenes.initializeScenes({
+						scenes: host.project().scenes,
+						currentSceneId: host.project().scenes[1].id,
+					});
+				if (failure === "revision")
+					host.manager.execute({
+						command: new Rename({ host, name: "Concurrent rename" }),
+					});
+				const before = structuredClone(host.project());
+				resume.resolve();
+				await expect(pending).rejects.toThrow();
+				expect(host.project()).toEqual(before);
+				expect(
+					host.project().hyperframesCompositions![imported.assetId].source,
+				).toEqual(source);
+				expect(dispose).toHaveBeenCalled();
+			} finally {
+				await host.manager.flushHistory();
+				host.manager.detachCanonical();
+				prepare.mockRestore();
+				dispose.mockRestore();
+				browser.browser.__opencutAccountId = "account-a";
+			}
+		}
+	} finally {
+		browser.restore();
+	}
+});
 
 test("composition library reuses its canonical source with selection and persistent undo", async () => {
 	const host = createHost();

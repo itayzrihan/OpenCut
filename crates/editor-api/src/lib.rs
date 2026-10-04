@@ -16,6 +16,7 @@ mod hyperframes_audio;
 mod hyperframes_layer_edits;
 mod hyperframes_manifest;
 mod hyperframes_package;
+mod hyperframes_source_edits;
 mod hyperframes_variables;
 mod job;
 mod model;

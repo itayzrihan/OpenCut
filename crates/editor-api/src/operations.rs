@@ -194,6 +194,8 @@ where
             | "hyperframes.variables.read"
             | "hyperframes.variables.prepare"
             | "hyperframes.variables.set"
+            | "hyperframes.source.prepare"
+            | "hyperframes.source.set"
             | "hyperframes.library.read"
             | "timeline.hyperframes.insert"
     );

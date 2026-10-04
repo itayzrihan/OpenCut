@@ -216,9 +216,21 @@ impl ClassicProject {
         variables: BTreeMap<String, Value>,
         manifest: HyperframesRuntimeManifest,
     ) -> Result<(), ModelError> {
+        let (_, composition, _) = self.hyperframes_clip_composition(scene_id, element_id)?;
+        let source = composition.source.with_variables(variables)?;
+        self.replace_hyperframes_clip_source(scene_id, element_id, source, manifest)
+    }
+
+    pub(crate) fn replace_hyperframes_clip_source(
+        &mut self,
+        scene_id: &str,
+        element_id: &str,
+        source: HyperframesSource,
+        manifest: HyperframesRuntimeManifest,
+    ) -> Result<(), ModelError> {
         let (old_id, mut composition, mut element) =
             self.hyperframes_clip_composition(scene_id, element_id)?;
-        let source = composition.source.with_variables(variables)?;
+        let inspection = crate::inspect_hyperframes(&source)?;
         manifest.validate(&source)?;
         // Opacity targets may survive a text/color change, but never a changed DOM identity.
         if let Some(value) = element.get_mut("hyperframesLayerEdits") {
@@ -245,7 +257,7 @@ impl ClassicProject {
             };
             if identities(old) != identities(&manifest) {
                 return Err(invalid(
-                    "layer structure changed; reset layer opacity edits before changing these variables",
+                    "layer structure changed; reset layer opacity edits before changing this source",
                 ));
             }
             edits.source_fingerprint = manifest.source_fingerprint.clone();
@@ -259,11 +271,13 @@ impl ClassicProject {
             + element["duration"].as_f64().unwrap_or(0.0);
         if source_ticks > 9_007_199_254_740_991.0 || source_ticks < used_ticks {
             return Err(invalid(
-                "new duration does not cover this clip; shorten the clip before applying these variables",
+                "new duration does not cover this clip; shorten the clip before applying this source",
             ));
         }
         element["sourceDuration"] = json!(source_ticks as i64);
         element["trimEnd"] = json!((source_ticks - used_ticks).round() as i64);
+        element["params"]["sourceWidth"] = json!(inspection.width);
+        element["params"]["sourceHeight"] = json!(inspection.height);
         let shared = self.scenes()?.iter().any(|scene| {
             crate::classic::tracks(scene).is_ok_and(|tracks| {
                 tracks.iter().any(|track| {
@@ -294,6 +308,10 @@ impl ClassicProject {
             old_id
         };
         element["params"]["hyperframesAssetId"] = json!(id);
+        composition.composition_id = inspection.composition_id;
+        composition.width = inspection.width;
+        composition.height = inspection.height;
+        composition.fps = inspection.fps;
         composition.source = source.into();
         composition.duration_seconds = manifest.duration_seconds;
         composition.runtime_manifest = Some(manifest);

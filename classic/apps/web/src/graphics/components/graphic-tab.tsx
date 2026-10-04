@@ -30,6 +30,7 @@ import { cn } from "@/utils/ui";
 import type { MediaTime } from "@/wasm";
 import { HyperframesLayersSection } from "@/hyperframes/layers-section";
 import { HyperframesVariablesSection } from "@/hyperframes/variables-section";
+import { HyperframesSourceSection } from "@/hyperframes/source-section";
 
 registerDefaultGraphics();
 
@@ -76,6 +77,14 @@ export function GraphicTab({
 				typeof element.params.hyperframesAssetId === "string" && (
 					<HyperframesLayersSection
 						key={element.id}
+						assetId={element.params.hyperframesAssetId}
+						elementId={element.id}
+					/>
+				)}
+			{element.definitionId === "hyperframes" &&
+				typeof element.params.hyperframesAssetId === "string" && (
+					<HyperframesSourceSection
+						key={`source:${element.id}`}
 						assetId={element.params.hyperframesAssetId}
 						elementId={element.id}
 					/>

@@ -759,7 +759,33 @@ export class CommandManager {
 		values: Record<string, unknown>;
 		signal: AbortSignal;
 	}): Promise<void> {
-		const { projectId, sceneId, elementId, source, values, signal } = input;
+		return this.applyHyperframesSourceEdit({ ...input, kind: "variables" });
+	}
+
+	async setHyperframesSource(input: {
+		projectId: string;
+		sceneId: string;
+		elementId: string;
+		source: import("@/hyperframes/types").HyperframesSource;
+		changes: Record<string, string | null>;
+		signal: AbortSignal;
+	}): Promise<void> {
+		return this.applyHyperframesSourceEdit({ ...input, kind: "files" });
+	}
+
+	private async applyHyperframesSourceEdit(
+		input: {
+			projectId: string;
+			sceneId: string;
+			elementId: string;
+			source: import("@/hyperframes/types").HyperframesSource;
+			signal: AbortSignal;
+		} & (
+			| { kind: "variables"; values: Record<string, unknown> }
+			| { kind: "files"; changes: Record<string, string | null> }
+		),
+	): Promise<void> {
+		const { projectId, sceneId, elementId, source, signal } = input;
 		const accountId = window.__opencutAccountId;
 		const checkTarget = () => {
 			signal.throwIfAborted();
@@ -777,10 +803,19 @@ export class CommandManager {
 		if (!this.canonical || this.canonical.projectId !== projectId)
 			throw new Error("The canonical project was closed");
 		const expectedRevision = this.canonical.status().revision;
-		const prepared = this.canonical.prepareHyperframesVariables({
-			source,
-			values,
-		});
+		const prepared =
+			input.kind === "variables"
+				? {
+						source: this.canonical.prepareHyperframesVariables({
+							source,
+							values: input.values,
+						}),
+						sourceFingerprint: "",
+					}
+				: this.canonical.prepareHyperframesSource({
+						source,
+						changes: input.changes,
+					});
 		const { HyperframesRenderClient } =
 			await import("@/hyperframes/render-client");
 		checkTarget();
@@ -788,19 +823,29 @@ export class CommandManager {
 		const abort = () => client.dispose();
 		signal.addEventListener("abort", abort, { once: true });
 		try {
-			const ready = await client.prepareSource(prepared);
+			const ready = await client.prepareSource(prepared.source);
 			checkTarget();
 			this.executeTransaction({
 				execute: () => {
 					if (!this.canonical || this.canonical.projectId !== projectId)
 						throw new Error("The canonical project was closed");
-					this.canonical.setHyperframesVariables({
+					const target = {
 						sceneId,
 						elementId,
-						values,
 						manifest: ready.runtimeManifest,
 						expectedRevision,
-					});
+					};
+					if (input.kind === "variables")
+						this.canonical.setHyperframesVariables({
+							...target,
+							values: input.values,
+						});
+					else
+						this.canonical.setHyperframesSource({
+							...target,
+							changes: input.changes,
+							sourceFingerprint: prepared.sourceFingerprint,
+						});
 					this.publishCanonical();
 				},
 			});

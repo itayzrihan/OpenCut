@@ -25,6 +25,32 @@ struct PrepareVariablesInput {
     values: BTreeMap<String, Value>,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrepareSourceInput {
+    source: HyperframesSource,
+    changes: BTreeMap<String, Option<String>>,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct PrepareSourceOutput {
+    source: HyperframesSource,
+    source_fingerprint: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SetSourceInput {
+    project_id: String,
+    scene_id: String,
+    element_id: String,
+    source_fingerprint: String,
+    changes: BTreeMap<String, Option<String>>,
+    manifest: crate::HyperframesRuntimeManifest,
+    expected_revision: u64,
+}
+
 #[derive(Debug, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct ReadVariablesOutput {
@@ -396,6 +422,82 @@ pub(super) fn register_hyperframes_operations(
                                 &input.scene_id,
                                 &input.element_id,
                                 input.values,
+                                input.manifest,
+                            )
+                            .map_err(model_error)?;
+                        check_cancelled(&context)?;
+                        Ok(vec![input.element_id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output))
+            }
+        },
+    )?;
+    register::<PrepareSourceInput, PrepareSourceOutput, _, _>(
+        registry,
+        "hyperframes.source.prepare",
+        "Prepare HyperFrames source edits",
+        "Applies bounded text file changes to a supplied source package without executing scripts or reading files. A string adds or replaces a file; null removes it. Preserves entry and resource bindings, validates the resulting package, and returns its original fingerprint for a later commit.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "source", "render"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let source_fingerprint = input.source.fingerprint();
+            let source = input
+                .source
+                .with_file_changes(input.changes)
+                .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(PrepareSourceOutput {
+                source,
+                source_fingerprint,
+            }))
+        },
+    )?;
+    let source_state = state.clone();
+    let source_events = events.clone();
+    register::<SetSourceInput, MutationOutput, _, _>(
+        registry,
+        "hyperframes.source.set",
+        "Edit a HyperFrames composition's source",
+        "Commits preflighted source file changes to one Classic timeline occurrence. Requires its original source fingerprint, new runtime manifest, explicit project and exact revision. Shared occurrences detach, locked clips and incompatible layer overrides are rejected, and placement and used duration are preserved. Does not execute scripts or access files or the network. Supports undo, dry run, cancellation and idempotency.",
+        "hyperframes",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "source", "classic", "timeline"],
+        move |context, input| {
+            let state = source_state.clone();
+            let events = source_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Edit HyperFrames source",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        let classic = project.classic.as_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "Source edits currently require a Classic project".into(),
+                            )
+                        })?;
+                        classic
+                            .set_hyperframes_source(
+                                &input.scene_id,
+                                &input.element_id,
+                                &input.source_fingerprint,
+                                input.changes,
                                 input.manifest,
                             )
                             .map_err(model_error)?;
