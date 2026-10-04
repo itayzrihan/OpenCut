@@ -53,6 +53,12 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	const frames: Array<HTMLIFrameElement> = [];
 	const canvases: Array<HTMLCanvasElement> = [];
 	const seeks: number[] = [];
+	const controls: Array<{
+		type: string;
+		playing?: boolean;
+		endTimeSeconds?: number;
+		sampledAt?: number;
+	}> = [];
 	let failSeek = false;
 	let openCount = 0;
 	let fallbackCount = 0;
@@ -93,7 +99,16 @@ test("live preview preserves the authored viewport, source trim and layer order,
 					setAttribute() {},
 					remove() {},
 					contentWindow: {
-						postMessage: (data: { sequence: number; timeSeconds: number }) => {
+						postMessage: (data: {
+							type: string;
+							sequence: number;
+							timeSeconds: number;
+							playing: boolean;
+							endTimeSeconds: number;
+							sampledAt: number;
+						}) => {
+							controls.push(data);
+							if (data.type === "pause") return;
 							seeks.push(data.timeSeconds);
 							queueMicrotask(() =>
 								message({
@@ -216,7 +231,19 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		expect(
 			liveModule.findHyperframesLiveLayer({ node: root, time: 9 * 120000 }),
 		).toBe(clip);
-		await live.render({ node: root, time: 9 * 120000, renderer });
+		const opening = live.render({
+			node: root,
+			time: 9 * 120000,
+			renderer,
+			playing: true,
+		});
+		// Pausing while the isolated surface is opening must cancel its pending play.
+		live.pause();
+		await opening;
+		expect(controls.at(-1)).toMatchObject({
+			playing: false,
+			endTimeSeconds: 5,
+		});
 		expect(seeks).toEqual([2]);
 		expect(root.children).toEqual([native, clip]);
 		expect(rendered[0].children).toEqual([native]);
@@ -230,7 +257,18 @@ test("live preview preserves the authored viewport, source trim and layer order,
 			opacity: "0.75",
 			transform: "translate(-50%, -50%) rotate(15deg) scale(-0.09375, 0.09375)",
 		});
-		await live.render({ node: root, time: 10 * 120000, renderer });
+		await live.render({
+			node: root,
+			time: 10 * 120000,
+			clockTime: 10.25 * 120000,
+			playing: true,
+			renderer,
+		});
+		expect(seeks.at(-1)).toBe(3.25);
+		expect(controls.at(-1)).toMatchObject({ playing: true, endTimeSeconds: 5 });
+		expect(Number.isFinite(controls.at(-1)?.sampledAt)).toBe(true);
+		live.pause();
+		expect(controls.at(-1)?.type).toBe("pause");
 		expect(openCount).toBe(1);
 		expect(rendered[0]).toBe(rendered[1]);
 		const reordered = new RootNode(root.params);

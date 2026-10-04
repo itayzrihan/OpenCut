@@ -20,7 +20,10 @@ import {
 import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
-import { HyperframesLivePreview } from "@/hyperframes/live-preview";
+import {
+	HyperframesLivePreview,
+	findHyperframesLiveLayers,
+} from "@/hyperframes/live-preview";
 import {
 	PreviewPlaybackProbe,
 	forceHyperframesCaptureForDiagnostics,
@@ -201,6 +204,7 @@ function PreviewCanvas({
 	const lastFrameRef = useRef(-1);
 	const lastSceneRef = useRef<RootNode | null>(null);
 	const renderingRef = useRef(false);
+	const renderPromiseRef = useRef<Promise<void>>(Promise.resolve());
 	const pendingRenderRef = useRef(false);
 	const scheduledRenderRef = useRef<number | null>(null);
 	const isExportingRef = useRef(false);
@@ -368,7 +372,7 @@ function PreviewCanvas({
 		if (renderingRef.current) {
 			pendingRenderRef.current = true;
 			incrementCounter({ name: "preview.renderCoalesced" });
-			return;
+			return renderPromiseRef.current;
 		}
 
 		const renderTime = Math.min(
@@ -402,9 +406,11 @@ function PreviewCanvas({
 					node: renderTree,
 					time: renderTime,
 					renderer,
+					playing: editor.playback.getIsPlaying(),
+					clockTime: editor.playback.getClockTime(),
 				})
 			: renderer.render({ node: renderTree, time: renderTime });
-		void rendered
+		const completion = rendered
 			.then(() => {
 				if (ticket) {
 					playbackProbe.completeFrame({
@@ -451,6 +457,8 @@ function PreviewCanvas({
 					scheduleRender("queued");
 				}
 			});
+		renderPromiseRef.current = completion;
+		return completion;
 	}, [
 		renderer,
 		renderTree,
@@ -460,6 +468,32 @@ function PreviewCanvas({
 		scheduleRender,
 		playbackProbe,
 	]);
+
+	useEffect(() => {
+		let active = true;
+		const unregister = editor.playback.registerPlaybackPreparer({
+			id: "hyperframes-live-preview",
+			prepare: async ({ time, signal }) => {
+				if (
+					!livePreviewRef.current ||
+					!renderTree ||
+					!findHyperframesLiveLayers({ node: renderTree, time }).length
+				)
+					return;
+				// A replay can seek from the final scene back to undecoded video.
+				// Finish the paused frame before the shared transport and mixer start.
+				await renderPromiseRef.current;
+				signal.throwIfAborted();
+				if (!active) return;
+				lastFrameRef.current = -1;
+				await render();
+			},
+		});
+		return () => {
+			active = false;
+			unregister();
+		};
+	}, [editor.playback, render, renderTree]);
 
 	useEffect(() => {
 		const sync = () =>
@@ -507,9 +541,13 @@ function PreviewCanvas({
 			scheduleRender("playback");
 		});
 		const unsubscribeSeek = editor.playback.onSeek(() => {
+			livePreviewRef.current?.pause();
+			lastFrameRef.current = -1;
 			scheduleRender("seek");
 		});
 		const unsubscribeState = editor.playback.subscribe(() => {
+			if (!editor.playback.getIsPlaying()) livePreviewRef.current?.pause();
+			lastFrameRef.current = -1;
 			scheduleRender("playbackState");
 		});
 		scheduleRender("mount");

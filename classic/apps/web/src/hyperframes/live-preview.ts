@@ -110,12 +110,18 @@ export class HyperframesLivePreview {
 		node,
 		time,
 		renderer,
+		playing = false,
+		clockTime = time,
 	}: {
 		node: RootNode;
 		time: number;
 		renderer: CanvasRenderer;
+		playing?: boolean;
+		/** Current canonical transport sample, in timeline ticks. */
+		clockTime?: number;
 	}): Promise<void> {
 		if (this.disposed) return;
+		const sampledAt = performance.timeOrigin + performance.now();
 		const candidates: Candidate[] = [];
 		for (const candidate of findHyperframesLiveLayers({ node, time })) {
 			const source = candidate.params.frameSource!;
@@ -156,7 +162,14 @@ export class HyperframesLivePreview {
 					});
 					this.occurrences.set(candidate.occurrenceId, occurrence);
 				}
-				return (await occurrence.prepare(candidate)) ? candidate : null;
+				return (await occurrence.prepare({
+					...candidate,
+					playing,
+					sampledAt,
+					clockOffset: clockTime - time,
+				}))
+					? candidate
+					: null;
 			}),
 		);
 		if (this.disposed) return;
@@ -261,6 +274,10 @@ export class HyperframesLivePreview {
 		this.options.mount.style.opacity = "1";
 	}
 
+	pause(): void {
+		for (const occurrence of this.occurrences.values()) occurrence.pause();
+	}
+
 	dispose(): void {
 		this.disposed = true;
 		this.hide();
@@ -295,6 +312,7 @@ class LiveOccurrence {
 	private sourceRevision = -1;
 	private releaseSource: (() => void) | null = null;
 	private disposed = false;
+	private playbackEpoch = 0;
 	private readonly failedSources: WeakMap<object, number>;
 	private readonly failedUrls: Set<string>;
 
@@ -309,12 +327,30 @@ class LiveOccurrence {
 		window.addEventListener("message", this.onMessage);
 	}
 
-	async prepare({ node: candidate, resolved }: Candidate): Promise<boolean> {
+	async prepare({
+		node: candidate,
+		resolved,
+		playing,
+		sampledAt,
+		clockOffset,
+	}: Candidate & {
+		playing: boolean;
+		sampledAt: number;
+		clockOffset: number;
+	}): Promise<boolean> {
 		const source = candidate.params.frameSource!;
 		const revision = source.getResourceRevision();
+		const epoch = this.playbackEpoch;
 		try {
 			await this.prepareSurface({ source, revision });
-			await this.seek(source.live!.getSourceTime(resolved.localTime));
+			await this.seek({
+				timeSeconds: source.live!.getSourceTime(
+					resolved.localTime + (playing ? clockOffset : 0),
+				),
+				endTimeSeconds: source.live!.getSourceTime(candidate.params.duration),
+				playing: playing && epoch === this.playbackEpoch,
+				sampledAt,
+			});
 			if (source.getResourceRevision() !== revision)
 				throw new Error("Live preview resources changed");
 			return !this.disposed;
@@ -481,7 +517,20 @@ class LiveOccurrence {
 		}
 	}
 
-	private async seek(timeSeconds: number): Promise<void> {
+	pause(): void {
+		this.playbackEpoch++;
+		this.surface?.frame.contentWindow?.postMessage(
+			{ source: "opencut-hf-live", type: "pause" },
+			"*",
+		);
+	}
+
+	private async seek(input: {
+		timeSeconds: number;
+		endTimeSeconds: number;
+		playing: boolean;
+		sampledAt: number;
+	}): Promise<void> {
 		const surface = this.surface;
 		if (!surface || surface.failed)
 			throw new Error("Live preview is unavailable");
@@ -502,7 +551,7 @@ class LiveOccurrence {
 				),
 			};
 			surface.frame.contentWindow?.postMessage(
-				{ source: "opencut-hf-live", type: "seek", sequence, timeSeconds },
+				{ source: "opencut-hf-live", type: "seek", sequence, ...input },
 				"*",
 			);
 		});

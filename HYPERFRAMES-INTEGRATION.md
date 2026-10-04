@@ -23,7 +23,87 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,010 web tests pass across 219 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,012 web tests pass across 221 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Continuous native video preview (2026-10-04)
+
+Classic's live surfaces now receive the existing transport's sampled time and
+play state. Eligible video compositions use the pinned player's ordinary native
+playback between updates. A drift larger than 1.5 source frames triggers a seek;
+paused frames still use the exact render path. Each occurrence stops on an
+explicit pause, at its trimmed source end, or after 200 ms without parent
+updates. An epoch check prevents an asynchronous start from resuming after a
+pause. The existing preparation phase also waits for the initial live frame
+before starting the shared transport and mixer.
+
+The first seek must finish decoding before native playback starts. A generated
+video exposed a failure where the clock advanced but the decoder stayed on its
+initial frame if playback began earlier. Starting from an already prepared
+frame avoids another seek. Documents with Canvas or internal layer edits retain
+the exact per-frame drawing/edit hooks. Native Classic layers, composition
+placement and opacity still render through the existing compositor. The child
+runtime remains silent; Classic owns audible output.
+
+This is **Classic-only rendering integration**. Playback resources follow the
+canonical document and existing transport; no user state, capability or MCP
+store is added. Source files and media remain unchanged.
+
+### Paused frame precision
+
+The pinned 0.8.115 runtime tolerates up to 20 ms of native-media drift even in a
+forced paused render. After continuous playback, a video could remain just
+before an output-frame boundary. The regression reproduces this at source time
+0.995 when requesting 1.000 seconds. `runtime-script.ts` tightens the paused
+video tolerance to 0.1 microseconds while preserving the runtime's own
+trim/rate/loop calculation and its playing-media/audio tolerances. The published
+bundle exposes no threshold hook, so this compatibility adapter replaces one
+complete pinned statement and rejects missing or duplicate matches. A runtime
+upgrade must explicitly revalidate this adapter. Both live and capture prepared
+documents use it.
+
+### Verification and measured limits
+
+- The real-browser regression covers a cold start, continuous presentation,
+  source trim and 1.5× media rate, lost parent updates, prepared-frame reuse,
+  pause during an asynchronous seek, a trimmed end, Canvas/layer-edit barriers,
+  reverse seeking and an independently FFmpeg-decoded paused frame. The close
+  boundary regression fails before the precision correction and passes after.
+  Reports: `.local/hf-continuous-pause-boundary-before-20261004/summary.json`
+  and `.local/hf-continuous-pause-boundary-after-20261004/summary.json`.
+- Parent-side tests verify cancellation while an occurrence opens, sampled
+  transport time, source trim, occurrence bounds and immediate pause messages.
+- All 1,012 web tests pass across 221 isolated suites, with browser coverage
+  enabled, zero failures and zero skips. Product TypeScript and changed-file
+  ESLint pass. Report:
+  `.local/hf-continuous-final-regression-20261004/summary.json`.
+- A same-machine comparison uses the original twelve Brag portfolio videos,
+  parent animation-frame updates and identical three-second playback windows:
+
+  | Live protocol | Presented frames per video | Native seeks per video | Median / p95 acknowledgement |
+  | --- | --- | --- | --- |
+  | Exact seek on every update | 49 over 3.026 s | 48 | 50.8 / 78.7 ms |
+  | Continuous decoding | 90 over 3.008 s | 3 | 11.7 / 16.8 ms |
+
+  These are native presentation observations in software Chrome 152, including
+  the stop transition. Acknowledgements measure control completion. Both runs
+  remain frozen after pause and match capture pixels exactly on a subsequent
+  seek to source time 5. Reports:
+  `.local/hf-video-parent-clock-compare-exact-20261004.json` and
+  `.local/hf-video-parent-clock-compare-continuous-20261004.json`.
+- The existing six-second editor fixture mixes the full 131-resource Brag
+  package between a native image and title. UI checks verify native videos
+  advance together and stop when Pause is clicked. After the precision fix,
+  pausing at `00:00:01:07` leaves all twelve videos at source time 1.233333,
+  matching the timeline's frame; they remain paused. Evidence:
+  `.local/hf-continuous-ui-paused-20261004.json`. Final six-second UI runs,
+  after the automated suites finished, complete 20.88 and 16.02 parent renders
+  per second with zero errors. Median render time is 7.9 / 11.6 ms; p95 is
+  33.7 / 135.2 ms. Report: `.local/hf-continuous-final-ui-playback-20261004.json`.
+  Earlier development runs ranged from about 8 to 27, so performance is still
+  variable. A decoder reset can lead to repeated synchronization under
+  load. Stable 30 fps in the complete editor, long timelines and seeks during
+  playback remain open performance requirements. These observations are not
+  replaced by the faster isolated result.
 
 ## Cold video capture and seek-performance experiments (2026-10-04)
 
@@ -81,8 +161,8 @@ the source storage. Original/proxy captures are pixel-identical at 4.2, 5 and
 Broader quality, bounded storage, cancellation and actual editor playback
 measurements are still needed before integration. Seek acknowledgement is not
 editor playback FPS.
-Native continuous playback driven by the parent timeline remains a separate
-unresolved performance option; the pinned runtime's seek API restarts media
+The continuous preview section above records the subsequent integration and
+its remaining performance limits. The pinned runtime's seek API restarts media
 decoders and does not expose an external-clock tick.
 
 ## Native video and asynchronous drawing in live preview (2026-10-04)

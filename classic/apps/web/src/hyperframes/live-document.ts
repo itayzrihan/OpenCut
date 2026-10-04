@@ -50,13 +50,19 @@ function installLiveShell(entryPath: string): void {
 	window.addEventListener("message", (event) => {
 		const data = event.data;
 		if (!data || data.source !== "opencut-hf-live") return;
-		if (event.source === window.parent && data.type === "seek") {
+		if (
+			event.source === window.parent &&
+			(data.type === "seek" || data.type === "pause")
+		) {
 			frame.contentWindow?.postMessage(
 				{
 					source: "opencut-hf-live",
-					type: "seek",
+					type: data.type,
 					sequence: data.sequence,
 					timeSeconds: data.timeSeconds,
+					playing: data.playing,
+					sampledAt: data.sampledAt,
+					endTimeSeconds: data.endTimeSeconds,
 				},
 				"*",
 			);
@@ -131,7 +137,11 @@ function installLiveBridge({
 		__hf_page_composite_pending?: boolean;
 		__player?: {
 			renderSeek: (time: number, options?: object) => void;
+			seek: (time: number) => void | Promise<void>;
+			play: () => void;
 			pause: () => void;
+			getTime: () => number;
+			isPlaying: () => boolean;
 		};
 	};
 	const options = {
@@ -148,12 +158,20 @@ function installLiveBridge({
 	let failed = false;
 	let lastSequence = 0;
 	let seeking = false;
+	let playbackEpoch = 0;
+	let playbackLease: ReturnType<typeof setTimeout> | undefined;
+	const pausePlayback = () => {
+		playbackEpoch++;
+		clearTimeout(playbackLease);
+		page.__player?.pause();
+	};
 	const post = (data: object) =>
 		window.parent.postMessage({ source: "opencut-hf-live", ...data }, "*");
 	post({ type: "loading", stage: "runtime" });
 	const fail = (message: string) => {
 		if (failed) return;
 		failed = true;
+		pausePlayback();
 		post({ type: "error", message: message.slice(0, 200) });
 	};
 	const mute = () => {
@@ -241,11 +259,15 @@ function installLiveBridge({
 			event.source !== window.parent ||
 			!data ||
 			data.source !== "opencut-hf-live" ||
-			data.type !== "seek" ||
 			failed ||
 			!ready
 		)
 			return;
+		if (data.type === "pause") {
+			pausePlayback();
+			return;
+		}
+		if (data.type !== "seek") return;
 		if (
 			!Number.isSafeInteger(data.sequence) ||
 			data.sequence <= lastSequence ||
@@ -260,16 +282,63 @@ function installLiveBridge({
 			return;
 		}
 		seeking = true;
+		const epoch = playbackEpoch;
 		void (async () => {
 			mute();
-			page.__opencutLayerEdits?.beforeSeek();
-			page.__player!.renderSeek(
-				// Match the pinned engine's quantizeTimeToFrame before renderSeek.
-				Math.floor(data.timeSeconds * fps + 1e-9) / fps,
-				options,
-			);
-			page.__opencutLayerEdits?.afterSeek();
-			await page.__opencutMedia.finishSeek();
+			// Continuous native decoding is driven by the parent's sampled clock.
+			// Edited layers and Canvas draws still use the exact seek barrier:
+			// their before/after hooks must cover every evaluated animation frame.
+			const continuous =
+				data.playing === true &&
+				Number.isFinite(data.sampledAt) &&
+				Number.isFinite(data.endTimeSeconds) &&
+				data.endTimeSeconds > data.timeSeconds &&
+				data.endTimeSeconds <= durationSeconds &&
+				!page.__opencutLayerEdits &&
+				!!document.querySelector("video") &&
+				!document.querySelector("canvas");
+			if (continuous) {
+				const end = Math.min(data.endTimeSeconds, durationSeconds);
+				const elapsed = Math.max(
+					0,
+					Math.min(
+						30,
+						(performance.timeOrigin + performance.now() - data.sampledAt) /
+							1000,
+					),
+				);
+				const target = Math.min(end - 1 / fps, data.timeSeconds + elapsed);
+				const player = page.__player!;
+				if (Math.abs(player.getTime() - target) > 1.5 / fps) {
+					await player.seek(Math.max(0, target));
+				}
+				if (!player.isPlaying()) {
+					// Starting before the first seek decodes can strand a cold native
+					// video on its initial frame while the runtime clock advances.
+					await page.__opencutMedia.finishSeek();
+				}
+				if (epoch === playbackEpoch && !failed && !player.isPlaying()) {
+					player.play();
+				}
+				if (epoch === playbackEpoch && !failed) {
+					clearTimeout(playbackLease);
+					// Stop when the parent stops supplying frames, or at the clip's end.
+					playbackLease = setTimeout(
+						pausePlayback,
+						Math.max(0, Math.min(200, (end - player.getTime()) * 1000)),
+					);
+				}
+			} else {
+				pausePlayback();
+				page.__opencutLayerEdits?.beforeSeek();
+				page.__player!.renderSeek(
+					// Match the pinned engine's quantizeTimeToFrame before renderSeek.
+					Math.floor(data.timeSeconds * fps + 1e-9) / fps,
+					options,
+				);
+				page.__opencutLayerEdits?.afterSeek();
+				await page.__opencutMedia.finishSeek();
+			}
 			if (page.__hf_page_composite_pending)
 				throw new Error(
 					"Live preview requires capture for this page compositor",

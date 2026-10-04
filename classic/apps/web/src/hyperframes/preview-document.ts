@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Inspection is validated and returned by the canonical Rust registry. */
-import { getHyperframeRuntimeScript } from "@hyperframes/core/runtime-script";
+import { getOpenCutHyperframesRuntimeScript } from "./runtime-script";
 import { injectScriptsIntoHtml } from "@hyperframes/core/compiler/html-document";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import type { HyperframesInspection, HyperframesSource } from "./types";
@@ -52,7 +52,7 @@ export function prepareHyperframesPreview({
 							durationSeconds: liveDurationSeconds,
 						}),
 					]),
-			getHyperframeRuntimeScript(),
+			getOpenCutHyperframesRuntimeScript(),
 		],
 		[],
 		true,
