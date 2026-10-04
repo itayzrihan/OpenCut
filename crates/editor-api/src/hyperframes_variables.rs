@@ -273,6 +273,13 @@ impl ClassicProject {
                 })
             })
         });
+        let import_id = self
+            .document
+            .compositions
+            .as_ref()
+            .and_then(|items| items.get(&old_id))
+            .and_then(|item| item.properties.get("importId"))
+            .cloned();
         let id = if shared {
             let base = format!("hyperframes-{}", source.fingerprint());
             let existing = self.compositions()?;
@@ -291,10 +298,16 @@ impl ClassicProject {
         composition.duration_seconds = manifest.duration_seconds;
         composition.runtime_manifest = Some(manifest);
         composition.validate()?;
+        let mut stored: crate::classic::ClassicComposition = composition.into();
+        // A replacement retains its import identity. A detached occurrence is a
+        // new source; the original shared composition still owns that identity.
+        if !shared && let Some(import_id) = import_id {
+            stored.properties.insert("importId".into(), import_id);
+        }
         self.document
             .compositions
             .get_or_insert_default()
-            .insert(id, composition.into());
+            .insert(id, stored);
         let scene = self
             .document
             .get_mut("scenes")

@@ -24,7 +24,7 @@ async fn fixture() -> (OpenCutRuntime, Value) {
     )
     .await;
     let imported = call(&runtime, "timeline.hyperframes.import", json!({
-        "projectId":"classic-project", "expectedRevision":1, "name":"Brag project", "startSeconds":0,
+        "projectId":"classic-project", "expectedRevision":1, "name":"Brag project", "startSeconds":0, "importId":"fixture-import",
         "source":{"entryFile":"index.html","files":{"index.html":"<div data-composition-id='brag' data-duration='6' data-width='720' data-height='1280'><script>throw new Error('never execute source')</script></div>"},
         "resourceAssetIds":{"first.mp4":"video-asset","alias.mp4":"video-asset"}}
     })).await;
@@ -54,6 +54,11 @@ async fn library_is_a_read_only_projection_and_reuse_preserves_one_source_and_me
     assert_eq!(item["name"], "Brag project");
     assert_eq!(item["resourceAssetIds"], json!(["video-asset"]));
     assert_eq!(item["sourceFileCount"], 1);
+    assert_eq!(
+        item["sourceFingerprint"],
+        imported["inspection"]["fingerprint"]
+    );
+    assert_eq!(item["importId"], "fixture-import");
     assert_eq!(item["width"], 720);
     assert_eq!(item["durationSeconds"], 6.0);
     assert_eq!(item["occurrences"][0]["sceneId"], "main-scene");
@@ -102,6 +107,43 @@ async fn library_is_a_read_only_projection_and_reuse_preserves_one_source_and_me
     assert_eq!(state(&runtime).await["project"], before["project"]);
     call(&runtime, "history.redo", json!({})).await;
     assert_eq!(state(&runtime).await["project"], after["project"]);
+}
+
+#[tokio::test]
+async fn import_identity_survives_reopen_and_rejects_duplicate_attempts_atomically() {
+    let (runtime, imported) = fixture().await;
+    let saved = state(&runtime).await;
+    let classic = saved["project"]["classic"].clone();
+    let reopened = OpenCutRuntime::default();
+    call(
+        &reopened,
+        "project.classic.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = state(&reopened).await;
+    let source = &before["project"]["classic"]["document"]["hyperframesCompositions"]
+        [imported["assetId"].as_str().unwrap()]["source"];
+    for import_id in ["fixture-import", "", "../../invalid"] {
+        assert!(reopened.registry().invoke("timeline.hyperframes.import",InvocationContext::default(),json!({
+            "projectId":"classic-project","expectedRevision":before["revision"],"name":"Repeated", "source":source,"importId":import_id
+        })).await.is_err());
+        assert_eq!(state(&reopened).await, before);
+    }
+    // A distinct user request may import the same source again.
+    let added=call(&reopened,"timeline.hyperframes.import",json!({
+        "projectId":"classic-project","expectedRevision":before["revision"],"name":"Intentional second import","source":source,"importId":"different-attempt"
+    })).await;
+    let after = state(&reopened).await;
+    assert_eq!(
+        after["project"]["classic"]["document"]["hyperframesCompositions"]
+            [added["assetId"].as_str().unwrap()]["importId"],
+        "different-attempt"
+    );
+    call(&reopened, "history.undo", json!({})).await;
+    assert_eq!(state(&reopened).await["project"], before["project"]);
+    call(&reopened, "history.redo", json!({})).await;
+    assert_eq!(state(&reopened).await["project"], after["project"]);
 }
 
 #[tokio::test]

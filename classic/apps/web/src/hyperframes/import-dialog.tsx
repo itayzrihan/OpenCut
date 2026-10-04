@@ -16,6 +16,12 @@ import {
 import { useEditor } from "@/editor/use-editor";
 import { loadCanonicalRuntime } from "@/core/load-canonical-runtime";
 import { mediaTimeToSeconds } from "@/wasm";
+import { storageService } from "@/services/storage/service";
+import { prepareRecoveredFolder } from "./import-recovery";
+import type {
+	HyperframesImportRecovery,
+	HyperframesImportRecoverySummary,
+} from "./import-recovery-types";
 import {
 	planHyperframesFolder,
 	readHyperframesFolder,
@@ -49,7 +55,70 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 		null,
 	);
 	const [error, setError] = useState<string | null>(null);
+	const [pending, setPending] = useState<HyperframesImportRecoverySummary[]>(
+		[],
+	);
+	const [recovery, setRecovery] = useState<HyperframesImportRecovery | null>(
+		null,
+	);
+	const [recoveryError, setRecoveryError] = useState<string | null>(null);
 	useEffect(() => () => operation.current?.abort(), []);
+	useEffect(() => {
+		if (busy) return;
+		const projectId = editor.project.getActiveOrNull()?.metadata.id;
+		const accountId = window.__opencutAccountId;
+		if (!projectId || !accountId) return;
+		const controller = new AbortController();
+		void storageService
+			.listMediaUploads({
+				projectId,
+				scope: { accountId, signal: controller.signal },
+			})
+			.then(
+				(items) => {
+					if (!controller.signal.aborted) {
+						setPending(items);
+						setRecoveryError(null);
+					}
+				},
+				(cause: unknown) => {
+					if (!controller.signal.aborted)
+						setRecoveryError(
+							cause instanceof Error ? cause.message : String(cause),
+						);
+				},
+			);
+		return () => controller.abort();
+	}, [editor, busy]);
+	const chooseRecovery = async (uploadToken: string) => {
+		if (operation.current) return;
+		const projectId = editor.project.getActiveOrNull()?.metadata.id;
+		const accountId = window.__opencutAccountId;
+		if (!projectId || !accountId) return;
+		const controller = new AbortController();
+		operation.current = controller;
+		setBusy(true);
+		setError(null);
+		setFolder(null);
+		try {
+			const saved = await storageService.readMediaUpload({
+				projectId,
+				uploadToken,
+				scope: { accountId, signal: controller.signal },
+			});
+			controller.signal.throwIfAborted();
+			setRecovery(saved);
+			setEntryFile(saved.draft.source.entryFile);
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				setError(cause instanceof Error ? cause.message : String(cause));
+		} finally {
+			operation.current = null;
+			setBusy(false);
+			setCanceling(false);
+			if (controller.signal.aborted) onClose();
+		}
+	};
 
 	const chooseFolder = async (files: File[]) => {
 		if (!files.length || operation.current) return;
@@ -80,7 +149,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 	};
 
 	const importFolder = async () => {
-		if (!folder || !entryFile || operation.current) return;
+		if ((!folder && !recovery) || !entryFile || operation.current) return;
 		const controller = new AbortController();
 		operation.current = controller;
 		const projectId = editor.project.getActive().metadata.id;
@@ -96,8 +165,15 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 		setError(null);
 		setProgress({ phase: "checking", completed: 0, total: 0 });
 		try {
-			const runtime = await loadCanonicalRuntime();
 			const prepared = await (async () => {
+				if (recovery)
+					return prepareRecoveredFolder({
+						recovery,
+						selected: folder,
+						signal: controller.signal,
+					});
+				if (!folder) throw new Error("Choose the project folder");
+				const runtime = await loadCanonicalRuntime();
 				try {
 					controller.signal.throwIfAborted();
 					const selected = planHyperframesFolder({
@@ -129,10 +205,13 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 				startSeconds,
 				signal: controller.signal,
 				onProgress: setProgress,
+				recovery: recovery ?? undefined,
 			});
 			if (
 				editor.project.getActiveOrNull()?.metadata.id === projectId &&
-				editor.scenes.getActiveSceneOrNull()?.id === sceneId
+				editor.scenes.getActiveSceneOrNull()?.id === sceneId &&
+				result.itemId &&
+				result.trackId
 			) {
 				const [imported] = editor.timeline.getElementsWithTracks({
 					elements: [{ trackId: result.trackId, elementId: result.itemId }],
@@ -145,7 +224,11 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 					description: result.saveError,
 				});
 			} else {
-				toast.success(`${folder.name} added to the timeline`);
+				toast.success(
+					recovery
+						? "Import recovered and saved"
+						: `${prepared.name} added to the timeline`,
+				);
 			}
 			onClose();
 		} catch (cause) {
@@ -187,6 +270,75 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
+					{!recovery && pending.length > 0 && (
+						<section className="space-y-2" aria-label="Interrupted imports">
+							<p className="text-sm font-medium">
+								Continue an interrupted import
+							</p>
+							{pending.map((item) => {
+								const scene = editor.scenes
+									.getScenes()
+									.find((scene) => scene.id === item.sceneId);
+								const wrongScene =
+									item.sceneId !== editor.scenes.getActiveSceneOrNull()?.id;
+								return (
+									<div
+										key={item.uploadToken}
+										className="flex items-center gap-3 rounded-md border p-3"
+									>
+										<div className="min-w-0 flex-1">
+											<p className="truncate text-sm">{item.name}</p>
+											<p className="text-xs text-muted-foreground">
+												{item.completed}/{item.total} files copied
+												{wrongScene
+													? ` · Open ${scene?.name ?? "the original scene"}`
+													: ""}
+											</p>
+										</div>
+										<Button
+											variant="outline"
+											disabled={busy || wrongScene}
+											aria-label={`Continue ${item.name}`}
+											onClick={() => void chooseRecovery(item.uploadToken)}
+										>
+											Continue
+										</Button>
+									</div>
+								);
+							})}
+						</section>
+					)}
+					{recovery && (
+						<div className="space-y-2 rounded-md border p-3">
+							<p className="text-sm font-medium">
+								Continue {recovery.draft.name}
+							</p>
+							<p className="text-xs text-muted-foreground">
+								{recovery.readyAssetIds.length}/
+								{recovery.draft.resources.length} files already copied.{" "}
+								{recovery.readyAssetIds.length < recovery.draft.resources.length
+									? "Choose the original folder to copy the remaining files."
+									: "The saved files are ready. Continue to finish the import."}
+							</p>
+							<Button
+								variant="ghost"
+								disabled={busy}
+								onClick={() => {
+									setRecovery(null);
+									setFolder(null);
+									setEntryFile("");
+									setError(null);
+								}}
+							>
+								Start a different import
+							</Button>
+						</div>
+					)}
+					{recoveryError && (
+						<p className="text-xs text-destructive">
+							Could not check interrupted imports: {recoveryError}
+						</p>
+					)}
 					<input
 						ref={(node) => {
 							picker.current = node;
@@ -224,7 +376,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 							)}
 						</span>
 					</Button>
-					{folder && (
+					{folder && !recovery && (
 						<>
 							<div className="space-y-2">
 								<label htmlFor={`${id}-entry`} className="text-sm font-medium">
@@ -278,7 +430,9 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						<div role="status" className="flex items-center gap-2 text-sm">
 							<Loader2 className="size-4 animate-spin" />
 							{canceling
-								? "Canceling and removing uploaded files…"
+								? recovery
+									? "Stopping the import…"
+									: "Canceling and removing uploaded files…"
 								: progress
 									? PHASE_LABELS[progress.phase]
 									: "Reading the folder…"}
@@ -307,10 +461,17 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						Cancel
 					</Button>
 					<Button
-						disabled={busy || !folder || !entryFile}
+						disabled={
+							busy ||
+							!entryFile ||
+							(!folder &&
+								(!recovery ||
+									recovery.readyAssetIds.length <
+										recovery.draft.resources.length))
+						}
 						onClick={() => void importFolder()}
 					>
-						Add composition
+						{recovery ? "Continue import" : "Add composition"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

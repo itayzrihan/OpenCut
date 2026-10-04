@@ -729,6 +729,54 @@ export class StorageService {
 		});
 	}
 
+	async beginMediaUpload({
+		projectId,
+		uploadToken,
+		draft,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		draft: import("@/hyperframes/import-recovery-types").HyperframesImportDraft;
+		scope: LocalDriveRequestScope;
+	}) {
+		await localDriveRequest({
+			operation: "media.beginUpload",
+			payload: { projectId, uploadToken, draft },
+			scope,
+		});
+	}
+
+	async readMediaUpload({
+		projectId,
+		uploadToken,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		scope: LocalDriveRequestScope;
+	}) {
+		return localDriveRequest<
+			import("@/hyperframes/import-recovery-types").HyperframesImportRecovery
+		>({
+			operation: "media.readUpload",
+			payload: { projectId, uploadToken },
+			scope,
+		});
+	}
+
+	async listMediaUploads({
+		projectId,
+		scope,
+	}: {
+		projectId: string;
+		scope: LocalDriveRequestScope;
+	}) {
+		return localDriveRequest<
+			import("@/hyperframes/import-recovery-types").HyperframesImportRecoverySummary[]
+		>({ operation: "media.listUploads", payload: { projectId }, scope });
+	}
+
 	async deleteProjectMedia({ projectId }: { projectId: string }) {
 		await localDriveRequest({
 			operation: "media.clear",

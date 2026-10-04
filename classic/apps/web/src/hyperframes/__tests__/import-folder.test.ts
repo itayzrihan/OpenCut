@@ -4,6 +4,11 @@ import type { EditorCore } from "@/core";
 import type { PreparedHyperframesFolder } from "../folder";
 import type { MediaAsset } from "@/media/types";
 import type { LocalDriveRequestScope } from "@/services/local-drive/client";
+import type {
+	HyperframesImportRecovery,
+	HyperframesImportDraft,
+} from "../import-recovery-types";
+import type { HyperframesLibraryItem } from "../types";
 
 let events: string[];
 let mode:
@@ -22,6 +27,9 @@ let closed: number;
 let failCleanup = false;
 let activeUploadToken = "";
 let windowDescriptor: PropertyDescriptor | undefined;
+let savedRecovery: HyperframesImportRecovery;
+let libraryItems: HyperframesLibraryItem[];
+let uploadedFiles: string[];
 const runtimeManifest = {
 	sourceFingerprint: "observed",
 	runtimeVersion: "0.8.115",
@@ -32,6 +40,24 @@ const runtimeManifest = {
 
 mock.module("@/services/storage/service", () => ({
 	storageService: {
+		beginMediaUpload: async ({
+			uploadToken,
+			draft,
+		}: {
+			uploadToken: string;
+			draft: HyperframesImportDraft;
+		}) => {
+			activeUploadToken ||= uploadToken;
+			expect(uploadToken).toBe(activeUploadToken);
+			expect(draft.resources.every((resource) => !("file" in resource))).toBe(
+				true,
+			);
+			events.push("begin");
+		},
+		readMediaUpload: async () => {
+			events.push("recover");
+			return savedRecovery;
+		},
 		saveMediaAsset: async ({
 			projectId,
 			mediaAsset,
@@ -48,6 +74,7 @@ mock.module("@/services/storage/service", () => ({
 			activeUploadToken ||= scope.uploadToken ?? "";
 			expect(scope.uploadToken).toBe(activeUploadToken);
 			events.push(`upload:${mediaAsset.id}`);
+			if (mediaAsset.file) uploadedFiles.push(mediaAsset.id);
 			if (mode === "upload" && mediaAsset.id === "b")
 				throw new Error("Upload failed");
 			if (mode === "cancel") abort.abort();
@@ -75,6 +102,9 @@ mock.module("@/services/storage/service", () => ({
 		},
 	},
 }));
+mock.module("../import-recovery", () => ({
+	withImportLock: ({ run }: { run: () => Promise<unknown> }) => run(),
+}));
 mock.module("../render-client", () => ({
 	HyperframesRenderClient: class {
 		async prepareSource() {
@@ -97,6 +127,8 @@ beforeEach(() => {
 	closed = 0;
 	failCleanup = false;
 	activeUploadToken = "";
+	libraryItems = [];
+	uploadedFiles = [];
 	windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
 	Object.defineProperty(globalThis, "window", {
 		configurable: true,
@@ -141,13 +173,24 @@ function fixture() {
 		project: { getActiveOrNull: () => ({ metadata: { id: "project" } }) },
 		scenes: { getActiveSceneOrNull: () => ({ id: sceneId }) },
 		command: {
+			readHyperframesLibrary: async () => {
+				events.push("library");
+				return { items: libraryItems };
+			},
 			importHyperframes: async (input: {
+				importId: string;
+				startSeconds?: number;
 				dryRun?: boolean;
 				resolvedDurationSeconds: number;
 				runtimeManifest?: typeof runtimeManifest;
 				classicResourceAssets: Array<Record<string, unknown>>;
 			}) => {
 				events.push(input.dryRun ? "preflight" : "commit");
+				expect(input.importId).toBeString();
+				if (savedRecovery) {
+					expect(input.importId).toBe(savedRecovery.uploadToken);
+					expect(input.startSeconds).toBe(savedRecovery.draft.startSeconds);
+				}
 				expect(input.resolvedDurationSeconds).toBe(input.dryRun ? 1 : 4);
 				expect(input.runtimeManifest).toEqual(
 					input.dryRun ? undefined : runtimeManifest,
@@ -181,6 +224,7 @@ test("imports only after durable resources and measured runtime are ready", asyn
 	expect(result.saveError).toBeUndefined();
 	expect(events).toEqual([
 		"preflight",
+		"begin",
 		"upload:a",
 		"upload:b",
 		"runtime",
@@ -214,7 +258,7 @@ for (const interruption of ["cancel", "account", "scene"] as const)
 	test(`${interruption} during upload cannot import into another target`, async () => {
 		mode = interruption;
 		await expect(importHyperframesFolder(fixture())).rejects.toThrow();
-		expect(events).toEqual(["preflight", "upload:a", "discard"]);
+		expect(events).toEqual(["preflight", "begin", "upload:a", "discard"]);
 		expect(closed).toBeGreaterThanOrEqual(1);
 	});
 
@@ -242,6 +286,84 @@ test("a cancelled upload reports incomplete cleanup instead of hiding it", async
 	await expect(importHyperframesFolder(fixture())).rejects.toBeInstanceOf(
 		AggregateError,
 	);
-	expect(events).toEqual(["preflight", "upload:a", "discard"]);
+	expect(events).toEqual(["preflight", "begin", "upload:a", "discard"]);
 	expect(closed).toBeGreaterThanOrEqual(1);
+});
+
+function recoveryFixture() {
+	const input = fixture();
+	savedRecovery = {
+		uploadToken: "original-attempt",
+		createdAt: new Date(0).toISOString(),
+		draft: {
+			kind: "hyperframes",
+			name: input.folder.name,
+			sceneId: "scene",
+			startSeconds: 3,
+			source: input.folder.source,
+			resources: input.folder.resources.map(
+				({ file: _file, ...resource }) => resource,
+			),
+		},
+		readyAssetIds: ["a"],
+	};
+	activeUploadToken = savedRecovery.uploadToken;
+	return { ...input, recovery: savedRecovery };
+}
+
+test("resuming reuses copied resources and the original attempt and placement", async () => {
+	const result = await importHyperframesFolder(recoveryFixture());
+	expect(result.itemId).toBe("clip");
+	expect(uploadedFiles).toEqual(["b"]);
+	expect(events).toEqual([
+		"recover",
+		"library",
+		"preflight",
+		"begin",
+		"upload:a",
+		"upload:b",
+		"runtime",
+		"commit",
+		"save",
+		"finalize",
+	]);
+});
+
+test("resuming a committed attempt saves it without another import", async () => {
+	const input = recoveryFixture();
+	libraryItems = [
+		{
+			importId: "original-attempt",
+			assetId: "existing",
+			occurrences: [
+				{
+					sceneId: "scene",
+					elementId: "existing-clip",
+					trackId: "existing-track",
+				},
+			],
+		} as HyperframesLibraryItem,
+	];
+	const result = await importHyperframesFolder(input);
+	expect(result.itemId).toBe("existing-clip");
+	expect(events).toEqual(["recover", "library", "save", "finalize"]);
+	expect(uploadedFiles).toEqual([]);
+});
+
+test("resuming failure preserves the attempt for another retry", async () => {
+	mode = "runtime";
+	await expect(importHyperframesFolder(recoveryFixture())).rejects.toThrow(
+		"Runtime failed",
+	);
+	expect(events).not.toContain("discard");
+	expect(events).not.toContain("commit");
+});
+
+test("resuming cannot move the import into a different scene", async () => {
+	const input = recoveryFixture();
+	sceneId = "other";
+	await expect(importHyperframesFolder(input)).rejects.toThrow(
+		"original scene",
+	);
+	expect(events).toEqual(["recover"]);
 });

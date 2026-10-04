@@ -198,11 +198,33 @@ impl ClassicProject {
                 return Err(invalid("duplicate media id"));
             }
         }
+        let mut import_ids = HashSet::new();
         for (id, composition) in &compositions {
             if id.trim().is_empty() {
                 return Err(invalid("composition id must not be empty"));
             }
             composition.validate()?;
+            if let Some(value) = self
+                .document
+                .compositions
+                .as_ref()
+                .and_then(|items| items.get(id))
+                .and_then(|item| item.properties.get("importId"))
+            {
+                let import_id = value
+                    .as_str()
+                    .filter(|value| {
+                        !value.is_empty()
+                            && value.len() <= 160
+                            && value.bytes().all(|byte| {
+                                byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_'
+                            })
+                    })
+                    .ok_or_else(|| invalid("invalid HyperFrames import id"))?;
+                if !import_ids.insert(import_id) {
+                    return Err(invalid("duplicate HyperFrames import id"));
+                }
+            }
             for resource in composition.source.resource_asset_ids.values() {
                 if !asset_ids.contains(resource.as_str())
                     || self.media_assets.iter().any(|asset| {

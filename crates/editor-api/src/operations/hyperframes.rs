@@ -129,6 +129,8 @@ struct ImportInput {
     project_id: String,
     expected_revision: u64,
     name: String,
+    /// Durable Classic import-attempt identity for interrupted folder recovery.
+    import_id: Option<String>,
     source: HyperframesSource,
     /// Omit to append at the end of the existing timeline.
     start_seconds: Option<f64>,
@@ -791,6 +793,20 @@ pub(super) fn register_hyperframes_operations(
                                 composition,
                                 None,
                             )?;
+                            if let Some(import_id) = input.import_id {
+                                project_mut(document)?
+                                    .classic
+                                    .as_mut()
+                                    .unwrap()
+                                    .document
+                                    .compositions
+                                    .as_mut()
+                                    .unwrap()
+                                    .get_mut(&asset_id)
+                                    .unwrap()
+                                    .properties
+                                    .insert("importId".into(), Value::String(import_id));
+                            }
                             check_cancelled(&context)?;
                             let mut affected =
                                 vec![asset_id.clone(), item_id.clone(), track_id.clone()];
@@ -800,6 +816,11 @@ pub(super) fn register_hyperframes_operations(
                         if !input.classic_resource_assets.is_empty() {
                             return Err(CapabilityError::InvalidInput(
                                 "classicResourceAssets requires a Classic project".into(),
+                            ));
+                        }
+                        if input.import_id.is_some() {
+                            return Err(CapabilityError::InvalidInput(
+                                "importId requires a Classic project".into(),
                             ));
                         }
                         let start = input

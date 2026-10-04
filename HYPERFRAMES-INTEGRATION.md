@@ -16,14 +16,90 @@ is implemented; the product integration is not complete.
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit and three-package capture benchmarks recorded; full interface and live playback comparison pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
-| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources; crash recovery for interrupted staging remains pending |
+| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 994 web tests have passing results across 217 isolated suites, including four reruns, with browser coverage enabled and zero skips. The library checkpoint also passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,007 web tests have passing results across 218 isolated suites, including two reruns, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Continue interrupted imports in the full editor (2026-10-04)
+
+The existing Import HyperFrames dialog now lists interrupted imports for the
+active project, with the source name and completed resource count. Continuing
+uses the original scene, placement, source text and resource identities. If all
+copies are complete, no folder selection is needed. Otherwise the user chooses
+the original folder and only missing resources are uploaded. A stopped recovery
+keeps the plan available for another attempt.
+
+Before copying files, the storage adapter journals an immutable plan alongside
+the upload ownership record. A retry can replace its own unindexed partial copy.
+Successful retention removes the plan's duplicate source text while keeping the
+closed-attempt record. The plan is filesystem transaction metadata; canonical
+source, composition state, history and import validation remain in OpenCutRuntime.
+
+The existing `timeline.hyperframes.import` capability accepts an optional Classic
+`importId`. Canonical validation rejects invalid or duplicate attempt IDs, and
+the library projection exposes that identity. A recovered attempt already in the
+document finishes saving and retaining its files without another timeline edit.
+A separate intentional import of identical source remains allowed. Variable edits
+retain the identity when replacing a source; detaching one shared occurrence
+leaves the identity with the original composition. This is a **Classic-only import
+recovery flow**, extending the canonical capability rather than duplicating it in
+MCP. Browser Web Locks reject concurrent use of the same attempt in another tab.
+
+### Verification
+
+- Four isolated import/storage/manager suites pass 44 tests. Coverage includes
+  partial-copy reuse, original placement, a committed attempt, failed recovery,
+  account/scene containment, byte-preserving UTF-8 recovery, immutable plans,
+  closed attempts, concurrent tabs and a fresh process resuming files after its
+  upload worker was killed. The full regression includes these cases.
+- Five targeted Rust suites pass 25 tests, including import identity persistence,
+  duplicate rejection through the registry and `app.state.read`, intentional
+  repeated imports, variable edits, source detachment, history and existing
+  Classic/native HyperFrames import behavior. A parallel build exhausted Windows
+  paging-file capacity; the serial build and tests passed.
+- The canonical WASM bundle was rebuilt after the variable-edit identity fix.
+  All 37 Classic and 13 canonical required exports pass verification; all 11
+  canonical manager tests pass against the final bundle. Report:
+  `.local/hf-recovery-final-wasm-20261004/summary.json`.
+- Product TypeScript and changed-file ESLint pass (17 pre-existing assertion
+  warnings in the storage/API files). The complete isolated web run passed 929
+  tests and encountered startup-hook timeouts in two AI suites. Both passed in a
+  serial rerun (78 tests), giving **1,007 passing tests, 218 suites, no remaining
+  failures and no skips**. Reports:
+  `.local/hf-recovery-flow-full-regression-20261004/summary.json`,
+  `.local/hf-recovery-flow-regression-recheck-20261004/summary.json` and
+  `.local/hf-recovery-flow-regression-verified-20261004.json`.
+- A pending `advanced-audio-test-final` import was seeded through the actual
+  authenticated local API with only one of three resources copied. The real
+  dialog continued it from the original folder. All ten text files and three
+  binary files match the Brag originals by SHA-256; the seven existing elements,
+  four source packages and project settings are unchanged. Placement is the
+  saved 2.5 seconds, although the playhead was at zero before recovery.
+- In the owned local fixture, the journal/index were restored to the explicit
+  crash boundary after project save and before retention. After reloading the
+  editor, Continue required no folder and produced no additional clip, source or
+  upload. Resource modification times and journal file identities stayed equal.
+  Undo after reopen restores the original scenes, sources and settings exactly;
+  Redo restores the recovered import. A final Undo restored the test fixture.
+  Evidence: `.local/hf-recovery-ui-evidence-20261004.json`,
+  `.local/hf-recovery-pending-ui-20261004.jpg`,
+  `.local/hf-recovery-ready-ui-20261004.jpg` and
+  `.local/hf-recovery-result-ui-20261004.jpg`.
+
+### Remaining limits
+
+Old journals without a saved plan cannot resume through this dialog. Reselected
+text must match exactly; missing binary files are checked by size and modification
+time, not by a previously saved hash. Web Locks cover the same origin/browser
+profile, and server locks cover one process. This does not solve stale-tab project
+save conflicts or multiple servers sharing an account directory. Open plans have
+no automatic expiry or garbage collection because an unsaved edit may still be
+active elsewhere. Recovery requires the original scene to remain available.
 
 ## Durable ownership for interrupted folder uploads (2026-10-04)
 
@@ -82,8 +158,8 @@ capability, MCP endpoint or second editor state store was added.
   Evidence: `.local/hf-upload-journal-ui-evidence-20261004.json` and
   `.local/hf-upload-journal-ui-20261004.jpg`.
 
-This establishes durable intent and replay-safe completion/cleanup. Automatic
-discovery and a user-facing recovery flow for **open** attempts are still needed.
+This establishes durable intent and replay-safe completion/cleanup. The recovery
+flow above now discovers and continues **open** attempts with saved plans.
 Open journals are deliberately retained: an unsaved canonical edit may still be
 alive in another tab, so elapsed time alone cannot authorize deleting its files.
 The current in-process locks also do not establish support for multiple server
@@ -1676,9 +1752,9 @@ the final generated composition once resource preparation finishes.
 
 ## Next implementation sequence
 
-1. All eight Brag UI imports and durable resources are verified. Verify downloaded
-   exports across the remaining references and add recovery for a crash during
-   staging. Improve imported clip naming and generated-resource visibility.
+1. All eight Brag UI imports, durable resources and interrupted import continuation
+   are verified. Verify downloaded exports across the remaining references.
+   Improve imported clip naming and generated-resource visibility.
 2. The synthetic folder flow now covers import, Undo/Redo and reopen. Source sharing, compact persistence, history adoption,
    media callbacks and canonical view projection are implemented and covered by
    real-WASM tests. The native MCP process still reaches the live editor through

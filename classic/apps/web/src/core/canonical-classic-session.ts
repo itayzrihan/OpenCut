@@ -166,6 +166,7 @@ export class CanonicalClassicSession {
 
 	importHyperframes(input: {
 		name: string;
+		importId?: string;
 		source: HyperframesSource;
 		startSeconds?: number;
 		trackId?: string;

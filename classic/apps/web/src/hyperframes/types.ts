@@ -24,6 +24,7 @@ export interface HyperframesVariable {
 }
 
 export interface HyperframesComposition {
+	importId?: string;
 	source: HyperframesSource;
 	compositionId: string;
 	width: number;
@@ -43,6 +44,8 @@ export interface HyperframesLibraryItem {
 	fps: number;
 	durationSeconds: number;
 	sourceFileCount: number;
+	sourceFingerprint: string;
+	importId?: string;
 	resourceAssetIds: string[];
 	occurrences: Array<{
 		sceneId: string;

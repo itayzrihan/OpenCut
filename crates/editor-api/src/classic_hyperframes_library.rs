@@ -17,6 +17,9 @@ pub struct ClassicHyperframesLibraryItem {
     pub fps: f64,
     pub duration_seconds: f64,
     pub source_file_count: usize,
+    pub source_fingerprint: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub import_id: Option<String>,
     pub resource_asset_ids: Vec<String>,
     pub occurrences: Vec<ClassicHyperframesLibraryOccurrence>,
 }
@@ -63,6 +66,14 @@ impl ClassicProject {
             .map(|(asset_id, composition)| {
                 let occurrences = occurrences.remove(&asset_id).unwrap_or_default();
                 Ok(ClassicHyperframesLibraryItem {
+                    import_id: self
+                        .document
+                        .compositions
+                        .as_ref()
+                        .and_then(|items| items.get(&asset_id))
+                        .and_then(|item| item.properties.get("importId"))
+                        .and_then(serde_json::Value::as_str)
+                        .map(str::to_owned),
                     name: occurrences
                         .iter()
                         .find(|item| !item.name.trim().is_empty())
@@ -75,6 +86,7 @@ impl ClassicProject {
                     fps: composition.fps,
                     duration_seconds: composition.duration_seconds,
                     source_file_count: composition.source.files.len(),
+                    source_fingerprint: composition.source.fingerprint(),
                     resource_asset_ids: composition
                         .source
                         .resource_asset_ids

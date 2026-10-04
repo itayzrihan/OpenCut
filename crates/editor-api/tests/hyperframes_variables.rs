@@ -21,6 +21,56 @@ fn manifest(source: &HyperframesSource) -> Value {
 }
 
 #[tokio::test]
+async fn editing_an_unshared_source_preserves_its_recovery_identity() {
+    let runtime = OpenCutRuntime::default();
+    let classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    let scene = classic["document"]["currentSceneId"].clone();
+    call(
+        &runtime,
+        "project.classic.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let source = source();
+    let imported = call(&runtime, "timeline.hyperframes.import", json!({"projectId":"classic-project","expectedRevision":1,"name":"Variables","importId":"recover-after-edit","source":source,"runtimeManifest":manifest(&source)})).await;
+    let before = read(&runtime).await;
+    let values = json!({"title":"Edited before retention"});
+    let prepared: HyperframesSource = serde_json::from_value(
+        call(
+            &runtime,
+            "hyperframes.variables.prepare",
+            json!({"source":source,"values":values}),
+        )
+        .await,
+    )
+    .unwrap();
+    call(&runtime, "hyperframes.variables.set", json!({"projectId":"classic-project","expectedRevision":before["revision"],"sceneId":scene,"elementId":imported["itemId"],"values":values,"manifest":manifest(&prepared)})).await;
+    let after = read(&runtime).await;
+    let composition = &after["project"]["classic"]["document"]["hyperframesCompositions"]
+        [imported["assetId"].as_str().unwrap()];
+    assert_eq!(composition["importId"], "recover-after-edit");
+    assert_eq!(composition["source"]["variables"], values);
+    let library = call(
+        &runtime,
+        "hyperframes.library.read",
+        json!({"projectId":"classic-project","expectedRevision":after["revision"]}),
+    )
+    .await;
+    assert!(
+        library["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["importId"] == "recover-after-edit")
+    );
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], before["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], after["project"]);
+}
+
+#[tokio::test]
 async fn declared_values_are_bounded_and_do_not_change_legacy_fingerprints() {
     let runtime = OpenCutRuntime::default();
     let source = source();
@@ -89,7 +139,7 @@ async fn variable_edit_is_independent_preflighted_atomic_and_undoable() {
     )
     .await;
     let source = source();
-    let imported = call(&runtime,"timeline.hyperframes.import",json!({"projectId":"classic-project","expectedRevision":1,"name":"Variables","source":source,"runtimeManifest":manifest(&source)})).await;
+    let imported = call(&runtime,"timeline.hyperframes.import",json!({"projectId":"classic-project","expectedRevision":1,"name":"Variables","importId":"variables-import","source":source,"runtimeManifest":manifest(&source)})).await;
     let mut classic = read(&runtime).await["project"]["classic"].clone();
     let track = classic["document"]["scenes"]
         .as_array_mut()
@@ -171,6 +221,11 @@ async fn variable_edit_is_independent_preflighted_atomic_and_undoable() {
         .values()
         .find(|c| c["source"]["variables"] == values)
         .unwrap();
+    assert_eq!(
+        compositions[imported["assetId"].as_str().unwrap()]["importId"],
+        "variables-import"
+    );
+    assert!(changed.get("importId").is_none());
     assert_eq!(
         changed["source"]["files"],
         serde_json::to_value(&source).unwrap()["files"]

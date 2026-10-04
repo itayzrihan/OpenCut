@@ -19,8 +19,16 @@ mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
 }));
-const { storeUploadedMedia, finishMediaUpload, getMediaFile, listMedia } =
-	await import("../server");
+const {
+	storeUploadedMedia,
+	finishMediaUpload,
+	getMediaFile,
+	listMedia,
+	beginMediaUpload,
+	readMediaUpload,
+	listMediaUploads,
+	putProject,
+} = await import("../server");
 const account = { id: "recovery-account", login: "test", displayName: "Test" };
 const webRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -78,6 +86,115 @@ function upload(
 		body,
 	});
 }
+
+function draft(ids = ["one", "two"]) {
+	return {
+		kind: "hyperframes",
+		name: "Recover me",
+		sceneId: "scene",
+		startSeconds: 3,
+		source: {
+			entryFile: "index.html",
+			files: {
+				"index.html":
+					"<div data-composition-id='test' data-duration='1'></div>",
+			},
+			resourceAssetIds: Object.fromEntries(ids.map((id) => [`${id}.bin`, id])),
+		},
+		resources: ids.map((id) => ({
+			id,
+			name: `${id}.bin`,
+			fileName: "resource.bin",
+			mimeType: "application/octet-stream",
+			type: "file",
+			size: 5,
+			lastModified: 1,
+		})),
+	};
+}
+
+test("pending plans survive reload, count complete files and cannot be changed or reopened", async (directory) => {
+	await putProject("project", {
+		metadata: { id: "project", name: "Project" },
+		version: 33,
+	});
+	const plan = draft();
+	await beginMediaUpload("project", "resumable", plan);
+	await beginMediaUpload("project", "resumable", plan);
+	expect(await listMediaUploads("project")).toMatchObject([
+		{ uploadToken: "resumable", name: "Recover me", completed: 0, total: 2 },
+	]);
+	await upload("one", "resumable");
+	expect((await readMediaUpload("project", "resumable")).readyAssetIds).toEqual(
+		["one"],
+	);
+	expect((await readMediaUpload("project", "resumable")).draft).toEqual(plan);
+	await expect(
+		beginMediaUpload("project", "resumable", { ...plan, startSeconds: 4 }),
+	).rejects.toThrow("does not match");
+	await accountScope.run({ ...account, id: "other-account" }, async () =>
+		expect(await listMediaUploads("project")).toEqual([]),
+	);
+	await finishMediaUpload("project", "resumable", false);
+	expect(await listMediaUploads("project")).toEqual([]);
+	expect(
+		await readFile(journalPath(directory, "resumable"), "utf8"),
+	).not.toContain("Recover me");
+	await expect(beginMediaUpload("project", "resumable", plan)).rejects.toThrow(
+		"closed",
+	);
+});
+
+test("a new process resumes an unindexed partial file using the original attempt", async (directory) => {
+	await putProject("project", {
+		metadata: { id: "project", name: "Project" },
+		version: 33,
+	});
+	const plan = draft(["interrupted"]);
+	plan.resources[0].size = 6;
+	await beginMediaUpload("project", "crashed-attempt", plan);
+	const { temporaryPath, destination } = await crashDuringUpload(directory);
+	await rename(temporaryPath, destination);
+	expect(
+		(await readMediaUpload("project", "crashed-attempt")).readyAssetIds,
+	).toEqual([]);
+	await storeUploadedMedia({
+		projectId: "project",
+		mediaId: "interrupted",
+		fileName: "resource.bin",
+		mimeType: "application/octet-stream",
+		lastModified: 1,
+		size: 6,
+		allowLargeCopy: false,
+		uploadToken: "crashed-attempt",
+		body: new Blob(["finish"]).stream(),
+	});
+	expect(
+		(await readMediaUpload("project", "crashed-attempt")).readyAssetIds,
+	).toEqual(["interrupted"]);
+	expect(await readFile(destination, "utf8")).toBe("finish");
+	expect(await stat(temporaryPath).catch(() => null)).toBeNull();
+});
+
+test("missing or truncated files remain incomplete and metadata cannot name external paths", async () => {
+	await putProject("project", {
+		metadata: { id: "project", name: "Project" },
+		version: 33,
+	});
+	await beginMediaUpload("project", "resumable", draft());
+	await upload("one", "resumable");
+	const file = (await getMediaFile("project", "one"))!;
+	await writeFile(file.path, "shorter than expected");
+	expect((await readMediaUpload("project", "resumable")).readyAssetIds).toEqual(
+		[],
+	);
+	const invalid = draft();
+	Object.assign(invalid.resources[0], { sourcePath: "C:/private" });
+	await expect(
+		beginMediaUpload("project", "invalid", invalid),
+	).rejects.toThrow();
+	expect(await listMediaUploads("project")).toHaveLength(1);
+});
 
 async function crashDuringUpload(directory: string) {
 	const worker = spawn(

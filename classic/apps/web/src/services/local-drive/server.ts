@@ -16,6 +16,11 @@ import {
 import { platform } from "node:os";
 import { accountDataRoot } from "@/accounts/server";
 import { assertAccountMediaSource } from "@/accounts/media-source";
+import { hyperframesImportDraftSchema } from "@/hyperframes/import-recovery-schema";
+import type {
+	HyperframesImportRecovery,
+	HyperframesImportRecoverySummary,
+} from "@/hyperframes/import-recovery-types";
 import {
 	basename,
 	extname,
@@ -80,6 +85,8 @@ interface MediaUploadJournal {
 	version: 1;
 	state: "open" | "retained" | "discarding" | "discarded";
 	files: Array<{ mediaId: string; fileName: string; temporaryId: string }>;
+	createdAt?: string;
+	draft?: HyperframesImportRecovery["draft"];
 }
 
 interface ProjectLibraryEntry {
@@ -450,6 +457,87 @@ async function readMediaUploadJournal(projectId: string, uploadToken: string) {
 
 function fontIndexPath(projectId: string): string {
 	return join(fontRoot(projectId), FONT_INDEX_FILE);
+}
+
+export async function beginMediaUpload(
+	projectId: string,
+	uploadToken: string,
+	input: unknown,
+) {
+	const draft = hyperframesImportDraftSchema.parse(input);
+	if (!(await getProject(projectId)))
+		throw new Error("The import project is unavailable");
+	const path = mediaUploadJournalPath(projectId, uploadToken);
+	await withMutationLock(path, async () => {
+		const journal = await readMediaUploadJournal(projectId, uploadToken);
+		if (journal.state !== "open")
+			throw new Error("This import attempt is already closed");
+		if (journal.draft) {
+			if (JSON.stringify(journal.draft) !== JSON.stringify(draft))
+				throw new Error("The saved import does not match this request");
+			return;
+		}
+		if (journal.files.length)
+			throw new Error("This upload has no recoverable import plan");
+		await writeJsonAtomic({
+			path,
+			value: { ...journal, createdAt: new Date().toISOString(), draft },
+		});
+	});
+}
+
+export async function readMediaUpload(
+	projectId: string,
+	uploadToken: string,
+): Promise<HyperframesImportRecovery> {
+	const journal = await readMediaUploadJournal(projectId, uploadToken);
+	if (journal.state !== "open" || !journal.draft || !journal.createdAt)
+		throw new Error("This import is no longer pending");
+	const draft = hyperframesImportDraftSchema.parse(journal.draft);
+	const records = await readMediaIndex(projectId);
+	const readyAssetIds: string[] = [];
+	for (const asset of draft.resources) {
+		const record = records.find(
+			(record) =>
+				record.id === asset.id &&
+				record.uploadToken === uploadToken &&
+				record.storageKind === "copied",
+		);
+		if (!record) continue;
+		const bytes = await stat(storedMediaPath(projectId, record)).catch(
+			() => null,
+		);
+		if (bytes?.isFile() && bytes.size === asset.size)
+			readyAssetIds.push(asset.id);
+	}
+	return { uploadToken, createdAt: journal.createdAt, draft, readyAssetIds };
+}
+
+export async function listMediaUploads(
+	projectId: string,
+): Promise<HyperframesImportRecoverySummary[]> {
+	const directory = join(mediaRoot(projectId), "uploads");
+	const entries = await readdir(directory).catch((error: unknown) => {
+		if (isRecord(error) && error.code === "ENOENT") return [];
+		throw error;
+	});
+	const summaries: HyperframesImportRecoverySummary[] = [];
+	for (const entry of entries) {
+		if (!entry.endsWith(".json") || !SAFE_ID.test(entry.slice(0, -5))) continue;
+		const uploadToken = entry.slice(0, -5);
+		const journal = await readMediaUploadJournal(projectId, uploadToken);
+		if (journal.state !== "open" || !journal.draft) continue;
+		const pending = await readMediaUpload(projectId, uploadToken);
+		summaries.push({
+			uploadToken,
+			createdAt: pending.createdAt,
+			name: pending.draft.name,
+			sceneId: pending.draft.sceneId,
+			completed: pending.readyAssetIds.length,
+			total: pending.draft.resources.length,
+		});
+	}
+	return summaries.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 async function readMediaIndex(projectId: string): Promise<StoredMediaRecord[]> {
@@ -1020,6 +1108,15 @@ export async function storeUploadedMedia({
 				)
 			)
 				throw new Error("A staged upload cannot replace existing media");
+			// A retry may replace only this attempt's unindexed partial copy.
+			for (const previous of journal.files.filter(
+				(file) => file.mediaId === mediaId,
+			)) {
+				const paths = mediaUploadPaths(projectId, uploadToken, previous);
+				await rm(paths.temporaryPath, { force: true });
+				await rm(paths.destination, { force: true });
+			}
+			journal.files = journal.files.filter((file) => file.mediaId !== mediaId);
 			// Deleted media keeps its bytes for Undo, even without an index record.
 			if (
 				(await readdir(join(mediaRoot(projectId), "files"))).some((name) =>
@@ -1143,12 +1240,14 @@ export async function finishMediaUpload(
 				);
 				journal.state = "discarded";
 				journal.files = [];
+				delete journal.draft;
 				await writeJsonAtomic({ path, value: journal });
 				return;
 			}
 			// Record retention before clearing index ownership. A crash between the
 			// two writes must not let a delayed discard erase saved project media.
 			journal.state = "retained";
+			delete journal.draft;
 			await writeJsonAtomic({ path, value: journal });
 			for (const record of owned) delete record.uploadToken;
 			await writeMediaIndex(projectId, records);
