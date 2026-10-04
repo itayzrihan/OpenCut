@@ -773,6 +773,19 @@ export class CommandManager {
 		return this.applyHyperframesSourceEdit({ ...input, kind: "files" });
 	}
 
+	async moveHyperframesLayer(input: {
+		projectId: string;
+		sceneId: string;
+		elementId: string;
+		source: import("@/hyperframes/types").HyperframesSource;
+		manifest: import("@/hyperframes/types").HyperframesRuntimeManifest;
+		layerKey: string;
+		startSeconds: number;
+		signal: AbortSignal;
+	}): Promise<void> {
+		return this.applyHyperframesSourceEdit({ ...input, kind: "layerMove" });
+	}
+
 	private async applyHyperframesSourceEdit(
 		input: {
 			projectId: string;
@@ -783,6 +796,12 @@ export class CommandManager {
 		} & (
 			| { kind: "variables"; values: Record<string, unknown> }
 			| { kind: "files"; changes: Record<string, string | null> }
+			| {
+					kind: "layerMove";
+					manifest: import("@/hyperframes/types").HyperframesRuntimeManifest;
+					layerKey: string;
+					startSeconds: number;
+			  }
 		),
 	): Promise<void> {
 		const { projectId, sceneId, elementId, source, signal } = input;
@@ -803,19 +822,46 @@ export class CommandManager {
 		if (!this.canonical || this.canonical.projectId !== projectId)
 			throw new Error("The canonical project was closed");
 		const expectedRevision = this.canonical.status().revision;
+		let moveScripts: Record<string, string> | undefined;
+		let movedSource:
+			| import("@/hyperframes/types").HyperframesSource
+			| undefined;
+		let moveFingerprint = "";
+		if (input.kind === "layerMove") {
+			const moveInput = {
+				source,
+				manifest: input.manifest,
+				layerKey: input.layerKey,
+				startSeconds: input.startSeconds,
+			};
+			const plan = this.canonical.planHyperframesLayerMove(moveInput);
+			const { compileHyperframesLayerMove } =
+				await import("@/hyperframes/layer-move-compiler");
+			checkTarget();
+			moveScripts = compileHyperframesLayerMove({ plan });
+			if (!this.canonical || this.canonical.projectId !== projectId)
+				throw new Error("The canonical project was closed");
+			movedSource = this.canonical.prepareHyperframesLayerMove({
+				...moveInput,
+				scripts: moveScripts,
+			});
+			moveFingerprint = plan.sourceFingerprint;
+		}
 		const prepared =
-			input.kind === "variables"
-				? {
-						source: this.canonical.prepareHyperframesVariables({
+			input.kind === "layerMove"
+				? { source: movedSource!, sourceFingerprint: moveFingerprint }
+				: input.kind === "variables"
+					? {
+							source: this.canonical.prepareHyperframesVariables({
+								source,
+								values: input.values,
+							}),
+							sourceFingerprint: "",
+						}
+					: this.canonical.prepareHyperframesSource({
 							source,
-							values: input.values,
-						}),
-						sourceFingerprint: "",
-					}
-				: this.canonical.prepareHyperframesSource({
-						source,
-						changes: input.changes,
-					});
+							changes: input.changes,
+						});
 		const { HyperframesRenderClient } =
 			await import("@/hyperframes/render-client");
 		checkTarget();
@@ -839,6 +885,14 @@ export class CommandManager {
 						this.canonical.setHyperframesVariables({
 							...target,
 							values: input.values,
+						});
+					else if (input.kind === "layerMove")
+						this.canonical.moveHyperframesLayer({
+							...target,
+							layerKey: input.layerKey,
+							startSeconds: input.startSeconds,
+							sourceFingerprint: prepared.sourceFingerprint,
+							scripts: moveScripts!,
 						});
 					else
 						this.canonical.setHyperframesSource({

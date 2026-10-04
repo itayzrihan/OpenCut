@@ -156,10 +156,8 @@ function HyperframesLayersInspector({
 			if (!controller.signal.aborted)
 				setError(cause instanceof Error ? cause.message : String(cause));
 		} finally {
-			if (operation.current === controller) {
-				operation.current = null;
-				setSaving(false);
-			}
+			if (operation.current === controller) operation.current = null;
+			if (!operation.current) setSaving(false);
 		}
 	};
 	const rows = useMemo(() => {
@@ -185,6 +183,40 @@ function HyperframesLayersInspector({
 		visit({ parent: null, depth: 0 });
 		return result;
 	}, [manifest]);
+	const moveLayer = async ({
+		layerKey,
+		startSeconds,
+	}: {
+		layerKey: string;
+		startSeconds: number;
+	}) => {
+		if (!projectId || !scene || !composition || !manifest || operation.current)
+			return;
+		const controller = new AbortController();
+		operation.current = controller;
+		setSaving(true);
+		setError(null);
+		try {
+			await editor.command.moveHyperframesLayer({
+				projectId,
+				sceneId: scene.id,
+				elementId,
+				source: composition.source,
+				manifest,
+				layerKey,
+				startSeconds,
+				signal: controller.signal,
+			});
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				setError(cause instanceof Error ? cause.message : String(cause));
+		} finally {
+			if (operation.current === controller) operation.current = null;
+			// Detaching a shared source changes assetId and releases the old
+			// controller. Clear its feedback unless a new edit has started.
+			if (!operation.current) setSaving(false);
+		}
+	};
 	const matches = rows.filter(({ layer }) =>
 		[
 			layer.label,
@@ -269,6 +301,18 @@ function HyperframesLayersInspector({
 						{error}
 					</p>
 				)}
+				{saving && (
+					<p role="status" className="text-muted-foreground text-xs">
+						Checking layer changes…{" "}
+						<button
+							type="button"
+							className="underline"
+							onClick={() => operation.current?.abort()}
+						>
+							Cancel
+						</button>
+					</p>
+				)}
 				{manifest && (
 					<>
 						<input
@@ -289,6 +333,9 @@ function HyperframesLayersInspector({
 								<LayerRow
 									key={layer.key}
 									layer={layer}
+									onMove={(start) =>
+										void moveLayer({ layerKey: layer.key, startSeconds: start })
+									}
 									onSource={() => {
 										if (projectId && scene && composition)
 											setSourceDraft({
@@ -367,6 +414,7 @@ function LayerRow({
 	disabled,
 	onOpacity,
 	onSource,
+	onMove,
 }: {
 	layer: HyperframesRuntimeLayer;
 	depth: number;
@@ -374,6 +422,7 @@ function LayerRow({
 	disabled: boolean;
 	onOpacity: (opacity: number) => void;
 	onSource: () => void;
+	onMove: (startSeconds: number) => void;
 }) {
 	const Icon = LAYER_ICONS[layer.kind];
 	const opacity = control?.opacity ?? 1;
@@ -413,6 +462,32 @@ function LayerRow({
 					</Button>
 				)}
 			</summary>
+			<label className="flex items-center gap-2 px-3 pb-3 text-xs">
+				Start in source (s)
+				<input
+					key={layer.startSeconds}
+					type="number"
+					min={0}
+					step={0.001}
+					defaultValue={layer.startSeconds}
+					disabled={disabled}
+					aria-label={`Layer start: ${label}`}
+					className="border-input bg-background h-7 w-24 rounded border px-2 tabular-nums"
+					onBlur={(event) => {
+						const value = event.currentTarget.valueAsNumber;
+						if (
+							Number.isFinite(value) &&
+							value >= 0 &&
+							value !== layer.startSeconds
+						)
+							onMove(value);
+						event.currentTarget.value = String(layer.startSeconds);
+					}}
+					onKeyDown={(event) => {
+						if (event.key === "Enter") event.currentTarget.blur();
+					}}
+				/>
+			</label>
 			{control?.editable && (
 				<div className="flex items-center gap-2 px-3 pb-3 text-xs">
 					<label className="flex items-center gap-2">

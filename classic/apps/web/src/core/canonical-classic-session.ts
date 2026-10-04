@@ -241,6 +241,41 @@ export class CanonicalClassicSession {
 		return this.call({ capability: "hyperframes.source.prepare", input });
 	}
 
+	planHyperframesLayerMove(input: {
+		source: HyperframesSource;
+		manifest: HyperframesRuntimeManifest;
+		layerKey: string;
+		startSeconds: number;
+	}): import("@/hyperframes/types").HyperframesLayerMovePlan {
+		return this.call({ capability: "hyperframes.layer.move.plan", input });
+	}
+
+	prepareHyperframesLayerMove(input: {
+		source: HyperframesSource;
+		manifest: HyperframesRuntimeManifest;
+		layerKey: string;
+		startSeconds: number;
+		scripts: Record<string, string>;
+	}): HyperframesSource {
+		return this.call({ capability: "hyperframes.layer.move.prepare", input });
+	}
+
+	moveHyperframesLayer(input: {
+		sceneId: string;
+		elementId: string;
+		expectedRevision: number;
+		sourceFingerprint: string;
+		layerKey: string;
+		startSeconds: number;
+		scripts: Record<string, string>;
+		manifest: HyperframesRuntimeManifest;
+	}): void {
+		this.call({
+			capability: "hyperframes.layer.move",
+			input: { ...input, projectId: this.projectId },
+		});
+	}
+
 	setHyperframesSource(input: {
 		sceneId: string;
 		elementId: string;

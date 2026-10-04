@@ -242,7 +242,8 @@ impl ClassicProject {
                 serde_json::from_value(value.clone()).map_err(|e| invalid(&e.to_string()))?;
             edits.prepare(&composition.source, old)?;
             let identities = |m: &HyperframesRuntimeManifest| {
-                m.layers
+                let mut identities = m
+                    .layers
                     .iter()
                     .map(|l| {
                         (
@@ -253,7 +254,9 @@ impl ClassicProject {
                             l.kind,
                         )
                     })
-                    .collect::<Vec<_>>()
+                    .collect::<Vec<_>>();
+                identities.sort_by(|left, right| left.0.cmp(&right.0));
+                identities
             };
             if identities(old) != identities(&manifest) {
                 return Err(invalid(

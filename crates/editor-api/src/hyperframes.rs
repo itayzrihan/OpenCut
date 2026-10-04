@@ -385,7 +385,7 @@ pub(crate) fn validate_package_path(path: &str) -> Result<(), ModelError> {
     Ok(())
 }
 
-fn resolve_reference(file: &str, reference: &str) -> Result<Option<String>, ModelError> {
+pub(crate) fn resolve_reference(file: &str, reference: &str) -> Result<Option<String>, ModelError> {
     if reference.starts_with("//") || reference.split('/').next().unwrap_or("").contains(':') {
         return Ok(None);
     }

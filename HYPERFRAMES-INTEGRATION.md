@@ -18,12 +18,66 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared variables and source-file edits use runtime preflight and canonical history. Source editing passes Rust, WASM and isolated browser pixel checks; its full-editor UI check and direct child timing controls remain pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. A restricted source-level leaf move now shifts HTML/GSAP timing, with GSAP/CSS pixel checks and audio metadata checks. None of the 172 saved Brag layers passes the current 100 ms move audit; group clocks, generated animation, trim/drag and the full-editor UI checks remain open |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay, a 14-second mixed Brag/native MP4 and the full seven-folder sequence exported; 30 sampled full-sequence frames preserve the references within compressed-video error. Full export exposed a 6 ms mastering delay; compensation now passes browser sample tests and a short two-composition MP4 with zero measured offset. A new full-sequence export with that audio correction remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Moving a uniquely authored leaf (2026-10-05)
+
+The expanded Classic layer inspector now has **Start in source (s)**. A supported
+move changes the imported HTML timing and its owned GSAP tween positions, then
+preflights the resulting package before committing one history entry. Other
+compound occurrences retain their source. Existing layer opacity follows the
+updated source fingerprint; manifest order alone does not change layer identity.
+
+This is **Classic-only UI, bridged to the canonical Rust runtime**. The registry
+exposes `hyperframes.layer.move.plan`, `hyperframes.layer.move.prepare` and
+`hyperframes.layer.move`; MCP projects the same contracts. Rust owns source
+identity, HTML edits, package bounds, script ownership, revisions and history.
+The browser adapter uses the pinned 0.8.115 GSAP parser and writer without
+executing author code. It returns script bodies for the canonical preparation;
+the mutating capability requires host compilation and an isolated runtime
+manifest. It does not independently verify arbitrary JavaScript behavior.
+
+The supported contract is deliberately narrow: a unique authored leaf in the
+entry composition, numeric start/duration, fixed source and parent windows,
+and independently addressed GSAP tweens with explicit millisecond positions.
+Groups, templates, nested source files, generated/shared targets, module scripts,
+shared modified JS, relative/computed starts, functions/loops, tween callbacks,
+extra timeline operations and off-timeline animation require source editing.
+Sub-millisecond tween positions are rejected because the upstream shift writer
+rounds to milliseconds. CSS animation on the leaf and its untimed descendants
+uses the runtime's local clip clock and passes the frame comparison.
+
+The isolated browser test compares original and shifted GSAP/CSS pixels at
+several times, including reverse seeks, opacity and another unchanged compound
+occurrence. Authored audio preserves playback offset, rate, volume, fade and the
+outer compound's timeline placement through Undo/Redo. Audio with only `data-end`
+can have a different runtime duration in 0.8.115; that mismatch is rejected.
+This audio check covers timing metadata, not a decoded audio export after moving.
+
+The read-only seven-folder Brag audit tried a 100 ms move of each of 172 layers:
+**zero passed preparation**. Of the first rejection reasons, 99 concern available
+source/parent windows, 12 concern groups, six concern source identity and 55
+concern unsupported script behavior. The source file editor remains available.
+Report: `.local/hf-layer-move-brag-audit-20261005.json`, with reproduction in the
+matching `.ts` file. The saved project is byte-identical after the audit.
+This result does not establish direct timing support for Brag; extending the
+contract to its groups and generated animation is still required.
+
+Validation: 79 Editor API tests, 13 MCP tests and 21 distinct web tests pass
+across the run and focused repairs. The web tests include the real-WASM command
+path, cancellation and stale revision rollback, source edits and variables.
+Product TypeScript, changed-file ESLint, Clippy with warnings denied, focused
+Rust formatting and the 37 + 13 WASM export checks pass. The compiler adapter
+also bundles for a browser target (nine modules, about 0.34 MB). The final web
+report is `.local/hf-layer-move-verified-20261005/summary.json`. The original Brag
+directory was only read. The full-editor UI check remains pending because the
+existing connection-error tab rejects navigation under the browser URL policy;
+manual reopening is still pending.
 
 ## Opening a layer's authored source (2026-10-04)
 

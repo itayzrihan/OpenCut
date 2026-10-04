@@ -18,6 +18,11 @@ import {
 import { createCanonicalTestRuntime } from "../../__tests__/canonical-runtime-fixture";
 import { HyperframesRenderCache } from "@/hyperframes/render-cache";
 import { renderFixture } from "@/hyperframes/__tests__/render-client-fixture";
+import { parseHTML } from "@/hyperframes/__tests__/layer-move-fixture";
+import type {
+	HyperframesRuntimeManifest,
+	HyperframesSource,
+} from "@/hyperframes/types";
 
 let saved: SerializedCommandHistory | null = null;
 mock.module("@/services/storage/service", () => ({
@@ -441,6 +446,155 @@ test("source preflight rejects cancellation, account or scene switches, stale re
 			}
 		}
 	} finally {
+		browser.restore();
+	}
+});
+
+test("layer move compiles source and commits history, while cancellation and concurrent edits discard preflight", async () => {
+	const browser = renderFixture();
+	const savedParser = Object.getOwnPropertyDescriptor(globalThis, "DOMParser");
+	Object.defineProperty(globalThis, "DOMParser", {
+		configurable: true,
+		value: class {
+			parseFromString(html: string) {
+				return parseHTML(html).document;
+			}
+		},
+	});
+	const { HyperframesRenderClient } =
+		await import("@/hyperframes/render-client");
+	try {
+		for (const outcome of ["commit", "cancel", "revision"]) {
+			const host = createHost();
+			const runtime = await createCanonicalTestRuntime();
+			await host.manager.enableCanonical({ runtime });
+			const source: HyperframesSource = {
+				entryFile: "index.html",
+				resourceAssetIds: {},
+				files: {
+					"index.html": `<div data-composition-id="main" data-width="320" data-height="180" data-duration="6"><div id="paint" data-start="1" data-duration="2"></div></div><script>const tl=gsap.timeline({paused:true});tl.to('#paint',{x:100,duration:2},1);window.__timelines={main:tl};</script>`,
+				},
+			};
+			const manifestFor = (
+				prepared: HyperframesSource,
+			): HyperframesRuntimeManifest => {
+				const inspection = runtime.invokeSync(
+					"hyperframes.project.inspect",
+					{ source: prepared },
+					undefined,
+				) as { result: { data: { fingerprint: string } } };
+				return {
+					sourceFingerprint: inspection.result.data.fingerprint,
+					runtimeVersion: "0.8.115",
+					durationSeconds: 6,
+					diagnostics: [],
+					layers: [
+						{
+							key: "dom/1/0/0",
+							parentKey: null,
+							file: "index.html",
+							elementId: "paint",
+							label: "paint",
+							kind: "element",
+							startSeconds: Number(
+								parseHTML(prepared.files["index.html"])
+									.document.getElementById("paint")!
+									.getAttribute("data-start"),
+							),
+							durationSeconds: 2,
+							trackIndex: 0,
+							resourcePath: null,
+							playbackStartSeconds: 0,
+							playbackRate: 1,
+							media: null,
+						},
+					],
+				};
+			};
+			const manifest = manifestFor(source);
+			const imported = await host.manager.importHyperframes({
+				name: "Layer move",
+				source,
+				runtimeManifest: manifest,
+			});
+			const entered = Promise.withResolvers<void>();
+			const resume = Promise.withResolvers<void>();
+			const checked: HyperframesSource[] = [];
+			const prepare = spyOn(
+				HyperframesRenderClient.prototype,
+				"prepareSource",
+			).mockImplementation(async (prepared) => {
+				checked.push(structuredClone(prepared));
+				entered.resolve();
+				await resume.promise;
+				const runtimeManifest = manifestFor(prepared);
+				return {
+					id: "checked",
+					previewUrl: "http://localhost/checked",
+					fingerprint: runtimeManifest.sourceFingerprint,
+					width: 320,
+					height: 180,
+					durationSeconds: 6,
+					runtimeManifest,
+				};
+			});
+			const dispose = spyOn(HyperframesRenderClient.prototype, "dispose");
+			try {
+				const before = structuredClone(host.project());
+				const controller = new AbortController();
+				const pending = host.manager.moveHyperframesLayer({
+					projectId: "classic-project",
+					sceneId: before.currentSceneId,
+					elementId: imported.itemId,
+					source,
+					manifest,
+					layerKey: manifest.layers[0].key,
+					startSeconds: 3,
+					signal: controller.signal,
+				});
+				await Promise.race([entered.promise, pending]);
+				expect(checked).toHaveLength(1);
+				expect(checked[0].files["index.html"]).toContain("duration:2},3)");
+				expect(host.project()).toEqual(before);
+				if (outcome === "cancel") controller.abort();
+				if (outcome === "revision")
+					host.manager.execute({
+						command: new Rename({ host, name: "Concurrent rename" }),
+					});
+				const current = structuredClone(host.project());
+				resume.resolve();
+				if (outcome === "commit") {
+					await pending;
+					const after = structuredClone(host.project());
+					expect(
+						after.hyperframesCompositions![imported.assetId].source,
+					).toEqual(checked[0]);
+					expect(
+						after.hyperframesCompositions![imported.assetId].runtimeManifest!
+							.layers[0].startSeconds,
+					).toBe(3);
+					assertCoherent({ host, runtime });
+					host.manager.undo();
+					expect(host.project()).toEqual(before);
+					host.manager.redo();
+					expect(host.project()).toEqual(after);
+				} else {
+					await expect(pending).rejects.toThrow();
+					expect(host.project()).toEqual(current);
+				}
+				expect(dispose).toHaveBeenCalled();
+			} finally {
+				resume.resolve();
+				await host.manager.flushHistory();
+				host.manager.detachCanonical();
+				prepare.mockRestore();
+				dispose.mockRestore();
+			}
+		}
+	} finally {
+		if (savedParser)
+			Object.defineProperty(globalThis, "DOMParser", savedParser);
+		else Reflect.deleteProperty(globalThis, "DOMParser");
 		browser.restore();
 	}
 });

@@ -86,6 +86,39 @@ struct ReadLayerSourceInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PlanLayerMoveInput {
+    source: HyperframesSource,
+    manifest: crate::HyperframesRuntimeManifest,
+    layer_key: String,
+    start_seconds: f64,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrepareLayerMoveInput {
+    source: HyperframesSource,
+    manifest: crate::HyperframesRuntimeManifest,
+    layer_key: String,
+    start_seconds: f64,
+    scripts: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct MoveLayerInput {
+    project_id: String,
+    scene_id: String,
+    element_id: String,
+    expected_revision: u64,
+    source_fingerprint: String,
+    layer_key: String,
+    start_seconds: f64,
+    scripts: BTreeMap<String, String>,
+    manifest: crate::HyperframesRuntimeManifest,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct PrepareAudioInput {
     source: HyperframesSource,
     plan: crate::HyperframesAudioPlan,
@@ -230,6 +263,106 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<PlanLayerMoveInput, crate::HyperframesLayerMovePlan, _, _>(
+        registry,
+        "hyperframes.layer.move.plan",
+        "Plan a HyperFrames layer move",
+        "Plans source HTML and script compilation for one uniquely authored timed leaf. Keeps source duration fixed and validates parent windows. Shared or generated targets and nested groups require source editing. Pure source analysis; does not execute scripts.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "layers", "timing"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let plan = crate::plan_hyperframes_layer_move(
+                &input.source,
+                &input.manifest,
+                &input.layer_key,
+                input.start_seconds,
+            )
+            .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(plan))
+        },
+    )?;
+    register::<PrepareLayerMoveInput, HyperframesSource, _, _>(
+        registry,
+        "hyperframes.layer.move.prepare",
+        "Prepare a compiled HyperFrames layer move",
+        "Combines canonical timing HTML with the pinned host compiler's script-body results. Requires every planned script and rejects unknown scripts and changes to shared linked scripts. Returns source for isolated runtime preflight without executing it.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "layers", "timing"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let source = crate::prepare_hyperframes_layer_move(
+                &input.source,
+                &input.manifest,
+                &input.layer_key,
+                input.start_seconds,
+                &input.scripts,
+            )
+            .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(source))
+        },
+    )?;
+    let move_state = state.clone();
+    let move_events = events.clone();
+    register::<MoveLayerInput, MutationOutput, _, _>(
+        registry,
+        "hyperframes.layer.move",
+        "Move a HyperFrames layer",
+        "Commits a compiled, runtime-preflighted source move for one Classic timeline occurrence. Requires explicit project, scene, revision and original source fingerprint. Recomputes HTML and script ownership, verifies resulting manifest timing, preserves other layers and supports undo, dry run, cancellation and idempotency. Compiler results are supplied by the host; no script execution or filesystem access occurs here.",
+        "hyperframes",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "layers", "timing", "classic"],
+        move |context, input| {
+            let state = move_state.clone();
+            let events = move_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let result = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Move HyperFrames layer",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        let classic = project.classic.as_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "Layer moves require a Classic project".into(),
+                            )
+                        })?;
+                        classic
+                            .move_hyperframes_layer(
+                                (&input.scene_id, &input.element_id),
+                                &input.layer_key,
+                                input.start_seconds,
+                                &input.source_fingerprint,
+                                &input.scripts,
+                                input.manifest,
+                            )
+                            .map_err(model_error)?;
+                        check_cancelled(&context)?;
+                        Ok(vec![input.element_id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(result))
+            }
+        },
+    )?;
     register::<ReadLayerSourceInput, crate::HyperframesLayerSource, _, _>(
         registry,
         "hyperframes.layer.source.read",

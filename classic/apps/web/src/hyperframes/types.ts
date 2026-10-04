@@ -104,6 +104,27 @@ export interface HyperframesLayerSource {
 	reportedOccurrences: number;
 }
 
+/** Canonical plan consumed by the pinned GSAP compiler adapter. */
+export interface HyperframesLayerMovePlan {
+	sourceFingerprint: string;
+	layerKey: string;
+	file: string;
+	elementId: string;
+	startSeconds: number;
+	durationSeconds: number;
+	deltaSeconds: number;
+	localStartSeconds: number;
+	localEndSeconds: number | null;
+	html: string;
+	scripts: Array<{
+		key: string;
+		file: string;
+		content: string;
+		startByte: number | null;
+		endByte: number | null;
+	}>;
+}
+
 export interface HyperframesRuntimeLayer {
 	key: string;
 	parentKey: string | null;
