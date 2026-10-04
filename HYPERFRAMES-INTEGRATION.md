@@ -20,8 +20,8 @@ is implemented; the product integration is not complete.
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
-| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
-| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
+| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay, a 14-second mixed Brag/native MP4 and the full seven-folder sequence exported; 30 sampled full-sequence frames preserve the references within compressed-video error. Full export exposed a 6 ms mastering delay; compensation now passes browser sample tests and a short two-composition MP4 with zero measured offset. A new full-sequence export with that audio correction remains pending |
+| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
 
@@ -47,8 +47,10 @@ but lag by approximately 6 ms and have gain ratios of 1.041–1.044. The existin
 OpenCut mastering compressor is applied when any mixed sample exceeds 0.98.
 An isolated browser probe of that production function reproduces the 6 ms
 delay at 22.05, 44.1, 48 and 96 kHz and shows that the final impulse is lost.
-This is an existing export-mastering issue, shared by native and HyperFrames
-audio; it remains open. Probe: `.local/hf-mastering-probe-20261004.json`.
+This was an existing export-mastering issue, shared by native and HyperFrames
+audio. Probe: `.local/hf-mastering-probe-20261004.json`. The correction and its
+separate verification are recorded below; the original full MP4 still contains
+the measured delay.
 
 The pinned HyperFrames 0.8.115 Studio was also inspected with a separate copy
 of the 96.9-second reconstruction. The original Brag folder was not modified.
@@ -74,6 +76,44 @@ Brag audio project was imported as `Brag · קריינות ועריכה`; the li
 timeline clip, expandable rows and saved project retain the name. Original
 source paths remain unchanged. Existing folder/import/recovery suites pass
 23 tests; product TypeScript and changed-file ESLint pass.
+
+## Compensating Web Audio mastering latency (2026-10-04)
+
+The platform audio adapter now measures the browser's compressor latency with
+a small impulse through the same mastering chain. The result is cached per
+sample rate. Export renders the extra delayed tail, removes the leading delay,
+and returns exactly the original number of samples. The existing compressor
+settings, peak clamp and bypass for quiet mixes remain unchanged. This is
+**Classic-only Web Audio integration**, with no document or capability changes.
+
+A real-browser regression fails against the old implementation (the first
+impulse arrives 132 samples late at 22.05 kHz) and passes after the correction.
+At 22.05, 44.1, 48 and 96 kHz, the first and last impulses now remain at their
+original sample positions. Output length, stereo channels, peak protection,
+unchanged source buffers, quiet-buffer bypass and repeated rendering are also
+checked. Before/after measurements:
+`.local/hf-mastering-probe-20261004.json` and
+`.local/hf-mastering-probe-fixed-20261004.json`.
+
+The full editor then exported two overlapping occurrences of the real six-second
+Brag audio composition. The doubled signal exercises mastering. The resulting
+MP4 has 180 H.264 frames and AAC audio, with **zero measured sample offset**
+against the original narration at an 8 kHz comparison rate. Correlation is
+0.9867; the compressor changes dynamics on the doubled signal, so this is a
+timing check rather than waveform equality. Browser errors since export began:
+zero. File: `E:/Users/etiez/Downloads/HyperFrames import names · Brag.mp4`.
+Report: `.local/hf-mastering-export-compare-20261004.json`.
+
+Six audio tests across four isolated suites pass with no skips, including GSAP
+volume automation, nested media, authored mute and derived audio collection.
+Product TypeScript and changed-file ESLint pass. Evidence:
+`.local/hf-mastering-before-20261004/summary.json` and
+`.local/hf-mastering-verified-20261004/summary.json`. An intermediate rerun failed
+because drive C was full. The generated standalone webpack cache was preserved
+at `D:/dev/OpenCut-generated-cache-20261004/hyperframes-export-stable`, freeing
+about 1.2 GB; the unchanged suites then passed. The standalone runtime and all
+source/media files remain in place. Preview's real-time compressor latency and
+a fresh full-sequence MP4 after this correction remain follow-up checks.
 
 ## MCP publication during export (2026-10-04)
 
