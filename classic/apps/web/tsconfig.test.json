@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "types": ["bun", "node"],
+    "incremental": false
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test-support/**/*.ts", "next-env.d.ts"],
+  "exclude": ["node_modules"]
+}

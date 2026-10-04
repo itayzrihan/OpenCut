@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
 import type { CaptionLayoutSettings } from "@/subtitles/caption-layout";
 import type {
@@ -17,6 +18,7 @@ mock.module("@/commands/timeline/tracks-snapshot", () => ({
 }));
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	preserveAudioDuringTimeRemoval: (options: { clips: unknown[] }) => ({
 		clips: options.clips,
 		timelineDuration: 0,

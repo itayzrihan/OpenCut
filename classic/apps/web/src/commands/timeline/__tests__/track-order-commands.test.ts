@@ -1,3 +1,4 @@
+import { wasm } from "../../../../test-support/wasm";
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 import type { ElementClipboardItem } from "@/clipboard";
 import type {
@@ -32,6 +33,7 @@ mock.module("@/core", () => ({
 }));
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	normalizeTextLayerWordIds: <T extends { wordRuns: Array<{ id: string }> }>(
 		options: T,
 	) =>

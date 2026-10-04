@@ -1,6 +1,8 @@
-import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+import { wasm } from "../../../test-support/wasm";
+import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -73,6 +75,20 @@ beforeAll(async () => {
 });
 
 const originalFetch = globalThis.fetch;
+const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+const events = new EventTarget();
+Object.defineProperty(globalThis, "window", {
+	configurable: true,
+	value: {
+		__opencutAccountId: "client-agent-test-account",
+		addEventListener: events.addEventListener.bind(events),
+		removeEventListener: events.removeEventListener.bind(events),
+	},
+});
+afterAll(() => {
+	if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
+	else Reflect.deleteProperty(globalThis, "window");
+});
 
 interface RequestInputItem {
 	type?: string;

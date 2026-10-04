@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import { createCanvas } from "@napi-rs/canvas";
 import {

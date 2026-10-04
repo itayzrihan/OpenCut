@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import type { ImageElement, SceneTracks, VideoTrack } from "@/timeline";
 import { buildMoveGroup, resolveGroupMove } from "@/timeline/group-move";

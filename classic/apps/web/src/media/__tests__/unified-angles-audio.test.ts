@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { MediaAsset } from "@/media/types";
 import { createUnifiedAnglesAsset } from "@/media/unified-angles";
@@ -5,6 +6,7 @@ import type { SceneTracks } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	TICKS_PER_SECOND: 120_000,
 	mediaTimeToSeconds: ({ time }: { time: number }) => time / 120_000,
 	formatTimecode: () => "00:00:00:00",

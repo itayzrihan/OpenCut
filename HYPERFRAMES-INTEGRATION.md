@@ -23,7 +23,92 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites (968 passing tests) and 232 Rust tests pass; real browser coverage recorded below; invalid nested-audio cleanup, test-fixture typing and full interactive workflow coverage remain open |
+
+## Feature preservation regression audit (2026-10-04)
+
+The web suite now runs through `bun run test:web` from `classic/`, one Bun
+process per file. This prevents process-wide module mocks from changing other
+suites. Tests requiring real Classic Rust exports explicitly declare the
+`@opencut-test-wasm: real` preload. Tests with partial mocks merge the generated
+WASM exports before their own overrides. A universal preload was rejected:
+it made renderer startup, AI tools and caption timing tests bind real functions
+where those tests deliberately needed mocks.
+
+The audit repaired missing WASM setup/exports, initialized a signed-in browser
+fixture for the AI client, updated the AI skill inventory, and corrected a
+preview-frame mock that incorrectly expected a third `Array.from` callback
+argument. No production editor behavior changed in this checkpoint.
+
+### Results
+
+- **215 web suites: 968 tests pass, zero failures, 11 optional browser tests
+  skipped**, in 44.7 seconds with two workers on this machine. Coverage includes
+  timeline editing, ripple/cut/trim and ordering (135 tests), AI (179), storage
+  and renderer services (177), subtitles (61), editor managers and canonical
+  commands (41), text (37), plus accounts, batch editing, backgrounds, masks,
+  effects, transitions, retiming, templates and UI element bundles. Full report:
+  `.local/hf-regression-final-20261004/summary.json`.
+- Four suites were rerun after the final mock/precision cleanup: **75 tests
+  pass** (`.local/hf-regression-postreview-20261004/summary.json`).
+- **74 root Rust tests pass** across `opencut-editor-api` and `opencut-mcp`,
+  including registry projection, transaction rollback, scope, authentication
+  and loopback transport. **158 Classic Rust tests pass** across `agent`,
+  `background-removal`, `time`, `bridge`, `effects`, `masks`, `podcast`,
+  `premiere`, `storage` and `timeline`. Native GPUI/GPU/compositor tests were not
+  included in that command. Logs: `.local/hf-native-regression.log` and
+  `.local/hf-classic-rust-regression.log`.
+- Product TypeScript (`tsconfig.build.json`) passes. The full test-fixture type
+  audit still has errors, including fetch mock signatures, branded media times
+  and incomplete fixture types. `tsconfig.test.json` makes this audit explicit
+  with Bun types and ES2020; it is not a passing gate yet. The product build
+  configuration remains separate. Diagnostics: `.local/hf-test-typecheck.log`.
+- Real Chrome tests for capture, live document isolation, internal layer edits,
+  host scope/capacity and declared variables all pass: five suites, ten tests
+  (including two capture tests already counted in the default run). GSAP volume
+  envelope sampling passes separately with the local Brag GSAP fixture.
+  Reports: `.local/hf-regression-browser-20261004/summary.json` and
+  `.local/hf-gsap-volume-regression.log`.
+
+### Private audio migration coverage
+
+Four preset tests previously required the removed public shared library.
+Commit `023cc9db` intentionally moved that user-owned data into authenticated
+account storage. The revised tests create synthetic private audio at the
+presets' stable IDs, run the real legacy migration, and read both the manifest
+and bytes through the actual authenticated routes. Renamed metadata preserves
+IDs and exact source bytes; another account receives no library entries and
+404 for the asset, while an anonymous request receives 401. Existing preset
+clip timing assertions remain.
+
+These tests prove the migration/routing contract. They do not verify that the
+owner's real media has been imported on this installation, or make those sounds
+available to fresh accounts. Presets still reference account library IDs;
+missing-library feedback and the fresh-account preset experience need review.
+Private media was not restored to `public/` or added to Git.
+
+### Remaining browser failure
+
+The optional nested-audio test exposes a cleanup problem with Bun 1.3.5 on
+Windows and the pinned HyperFrames engine. Its invalid fixture extends an audio
+clip 0.1 seconds beyond a nested composition. The canonical preflight rejects
+that window correctly, but closing its browser page times out. Three runs
+crashed Bun with a segmentation fault after forced browser shutdown. A
+trace-instrumented run completed all 38 assertions in 45.56 seconds but still
+logged the close timeout, so it does not establish a fix. The trace statements
+were removed; the original test remains enabled.
+
+The valid nested mix, independent occurrences, gains/fades and decoded PCM
+assertions completed before that cleanup, and undeclared-video-audio detection
+passed in the failed suite. Keep the entire audio browser suite marked **not
+reliably passing** until shutdown is fixed or isolated from the Bun failure.
+Logs: `.local/hf-audio-overhang-trace.log`,
+`.local/hf-regression-audio-recheck-20261004/`, and
+`.local/hf-regression-browser-20261004/`.
+
+This regression audit is partial preservation evidence. The broader UI review,
+full interactive workflows, remaining Brag exports, child timing editing and
+four-package playback benchmark are still required before completion.
 
 ## Declared composition variables (2026-10-04)
 

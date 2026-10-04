@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { SceneTracks, TScene } from "@/timeline";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects/custom-ai-effect";
@@ -312,6 +313,7 @@ mock.module("../edit-provenance-builder", () => ({
 }));
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,

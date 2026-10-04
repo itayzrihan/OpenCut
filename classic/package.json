@@ -26,7 +26,8 @@
     "publish:wasm": "bun run build:wasm && npm publish rust/wasm/pkg --access public",
     "skills:check": "bun run --cwd apps/web skills:check",
     "start:tools": "turbo run start --filter=@opencut/tools",
-    "test": "bun test"
+    "test": "bun test",
+    "test:web": "node scripts/test-web.mjs"
   },
   "dependencies": {
     "@types/react": "^19.2.10",

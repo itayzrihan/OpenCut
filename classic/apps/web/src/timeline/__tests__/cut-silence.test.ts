@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { afterAll, beforeAll, beforeEach, expect, mock, test } from "bun:test";
 import type {
 	FitTextLayerWordsToSpanOptions,
@@ -61,6 +62,7 @@ mock.module("@/timeline/cut-silence-wasm", () => ({
 }));
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	fitTextLayerWordsToSpan: (options: FitTextLayerWordsToSpanOptions) =>
 		options.wordRuns.flatMap((word, previousWordIndex) => {
 			if (word.startTime == null || word.endTime == null) {

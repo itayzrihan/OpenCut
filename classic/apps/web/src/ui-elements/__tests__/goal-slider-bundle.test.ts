@@ -1,7 +1,5 @@
+import { expectMigratedBundleAudio } from "../../../test-support/private-bundle-audio";
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import type { SharedLibraryManifest } from "@/shared-library/types";
 import {
 	GOAL_SLIDER_IN_SFX_ASSET_ID,
 	GOAL_SLIDER_OUT_SFX_ASSET_ID,
@@ -11,13 +9,6 @@ import {
 const preset = UI_ELEMENT_PRESETS.find(
 	(candidate) => candidate.id === "product-goal",
 );
-
-function readManifest(): SharedLibraryManifest {
-	const manifestPath = fileURLToPath(
-		new URL("../../../public/shared-library/manifest.json", import.meta.url),
-	);
-	return JSON.parse(readFileSync(manifestPath, "utf8"));
-}
 
 describe("Goal Slider UI element bundle", () => {
 	test("recreates the live in/out sound timing and trims by stable asset id", () => {
@@ -44,19 +35,7 @@ describe("Goal Slider UI element bundle", () => {
 		});
 	});
 
-	test("both referenced sound files remain resolvable after metadata renames", () => {
-		const manifest = readManifest();
-		for (const assetId of [
-			GOAL_SLIDER_IN_SFX_ASSET_ID,
-			GOAL_SLIDER_OUT_SFX_ASSET_ID,
-		]) {
-			const asset = manifest.audioAssets.find((item) => item.id === assetId);
-			expect(asset?.repositoryPath).toBeTruthy();
-			if (!asset?.repositoryPath) continue;
-			const audioPath = fileURLToPath(
-				new URL(`../../../${asset.repositoryPath}`, import.meta.url),
-			);
-			expect(existsSync(audioPath)).toBe(true);
-		}
+	test("resolves both migrated private sounds after metadata renames", async () => {
+		await expectMigratedBundleAudio([GOAL_SLIDER_IN_SFX_ASSET_ID, GOAL_SLIDER_OUT_SFX_ASSET_ID]);
 	});
 });

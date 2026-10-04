@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import type { ScalarAnimationChannel } from "@/animation/types";
 import { GraphicNode } from "@/services/renderer/nodes/graphic-node";

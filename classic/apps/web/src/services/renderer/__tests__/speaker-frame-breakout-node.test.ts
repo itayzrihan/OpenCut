@@ -1,3 +1,4 @@
+import { wasm } from "../../../../test-support/wasm";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- inert canvas stand-ins are never drawn in this descriptor-only test */
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import {
@@ -6,6 +7,7 @@ import {
 } from "@/wasm/media-time";
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
