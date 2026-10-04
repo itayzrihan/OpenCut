@@ -49,6 +49,7 @@ import {
 } from "@/parallax-story-teller/camera-man-store";
 import { getPreviewRenderSize } from "../render-size";
 import { OfflineMediaPanel } from "./offline-media";
+import { Button } from "@/components/ui/button";
 
 function usePreviewSize() {
 	const canvasSize = useEditorProject(
@@ -197,6 +198,11 @@ function PreviewCanvas({
 	const scheduledRenderRef = useRef<number | null>(null);
 	const isExportingRef = useRef(false);
 	const runRenderRef = useRef<() => void>(() => {});
+	const renderAttemptRef = useRef<object | null>(null);
+	const preparingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [isPreparing, setIsPreparing] = useState(false);
+	const [previewFailed, setPreviewFailed] = useState(false);
+	const [previewRetry, setPreviewRetry] = useState(0);
 	const { width: nativeWidth, height: nativeHeight } = usePreviewSize();
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
@@ -275,6 +281,7 @@ function PreviewCanvas({
 				mount.appendChild(canvas);
 			})
 			.catch((error: unknown) => {
+				if (!disposed) setPreviewFailed(true);
 				console.error("Failed to mount preview canvas:", error);
 			});
 
@@ -284,7 +291,7 @@ function PreviewCanvas({
 				mount.removeChild(outputCanvas);
 			}
 		};
-	}, [renderer]);
+	}, [renderer, previewRetry]);
 
 	const scheduleRender = useCallback(
 		(reason: string) => {
@@ -342,6 +349,12 @@ function PreviewCanvas({
 
 		renderingRef.current = true;
 		pendingRenderRef.current = false;
+		const attempt = {};
+		renderAttemptRef.current = attempt;
+		setPreviewFailed(false);
+		preparingTimerRef.current = setTimeout(() => {
+			if (renderAttemptRef.current === attempt) setIsPreparing(true);
+		}, 250);
 		lastSceneRef.current = renderTree;
 		lastFrameRef.current = frame;
 		const start = performance.now();
@@ -357,9 +370,17 @@ function PreviewCanvas({
 			})
 			.catch((error: unknown) => {
 				lastFrameRef.current = -1;
+				if (renderAttemptRef.current === attempt) setPreviewFailed(true);
 				console.error("Preview render failed:", error);
 			})
 			.finally(() => {
+				if (renderAttemptRef.current === attempt) {
+					if (preparingTimerRef.current !== null) {
+						clearTimeout(preparingTimerRef.current);
+						preparingTimerRef.current = null;
+					}
+					setIsPreparing(false);
+				}
 				const hasQueuedRender = pendingRenderRef.current;
 				if (hasQueuedRender) {
 					incrementCounter({ name: "preview.renderStale" });
@@ -436,6 +457,11 @@ function PreviewCanvas({
 
 	useEffect(() => {
 		return () => {
+			renderAttemptRef.current = null;
+			if (preparingTimerRef.current !== null) {
+				clearTimeout(preparingTimerRef.current);
+				preparingTimerRef.current = null;
+			}
 			if (scheduledRenderRef.current !== null) {
 				cancelAnimationFrame(scheduledRenderRef.current);
 				scheduledRenderRef.current = null;
@@ -662,6 +688,32 @@ function PreviewCanvas({
 										instances={overlayInstances}
 										plane="over-interaction"
 									/>
+									{!isExporting && (isPreparing || previewFailed) && (
+										<div
+											role={previewFailed ? "alert" : "status"}
+											className="absolute bottom-3 left-1/2 z-10 flex max-w-full -translate-x-1/2 items-center gap-2 rounded-md border bg-background/95 px-3 py-2 text-xs text-foreground shadow-sm"
+										>
+											<span>
+												{previewFailed
+													? "Preview could not be rendered."
+													: "Preparing preview…"}
+											</span>
+											{previewFailed && (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => {
+														setPreviewRetry((value) => value + 1);
+														lastFrameRef.current = -1;
+														lastSceneRef.current = null;
+														scheduleRender("retry");
+													}}
+												>
+													Retry preview
+												</Button>
+											)}
+										</div>
+									)}
 								</div>
 							</ContextMenuTrigger>
 							<PreviewContextMenu

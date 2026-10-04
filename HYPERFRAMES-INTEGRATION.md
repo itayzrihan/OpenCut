@@ -21,7 +21,7 @@ is implemented; the product integration is not complete.
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated runtime inventory and read-only Classic inspector implemented; timeline rows and child editing pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; fast live preview, speed and audio pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Classic MP4 compositor verified with a synthetic trimmed overlay; Brag export comparison and audio integration pending |
-| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Pending |
+| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
 
@@ -515,6 +515,45 @@ child edits, variable editing, audio mixing/export and fast playback remain
 outstanding. A manifest records observations; it does not implement audio
 playback or guarantee identity for generated anonymous elements. Replacing bound
 media invalidates rendering, but stored natural durations require another read.
+
+## Preview startup and recovery (2026-10-04)
+
+- A native-only control project rendered its blue image and green overlay after
+  reload. The mixed project also rendered correctly during later reloads and
+  seeks. Temporary pixel probes observed valid source and compositor pixels;
+  they changed timing and do not identify the intermittent black-preview cause.
+- A separate startup race was reproduced: project loading can request its
+  thumbnail before the concurrently started GPU is ready. `CanvasRenderer` now
+  waits for the shared GPU initialization before mounting or rendering output.
+  Failed initialization can be retried. This applies to native and HyperFrames
+  projects, preview, thumbnails and export consumers of that renderer.
+- Preview renders lasting more than 250 ms show “Preparing preview…”. A failed
+  render or canvas mount shows an error and a “Retry preview” button. Retrying
+  also retries the canvas mount; it preserves the timeline and current time.
+  Timers are cleared on completion and unmount. Fast frames do not display the
+  preparation notice.
+- Browser verification injected one temporary capture failure at project time
+  9.5 s (Brag source time 1.5 s) in the isolated test account. The error appeared;
+  clicking Retry preview reopened capture and displayed the correct Brag frame
+  at the same time. The temporary server fault and pixel probes were removed.
+- One regression test (13 assertions) covers delayed shared GPU startup,
+  initialization failure, retry, thumbnail consumption and preview mounting.
+  Four queue/output-scaling tests (11 assertions), scoped TypeScript and changed
+  file ESLint also passed. This is a verified startup fix and failure-recovery
+  improvement; reliable recovery from the separate intermittent black preview
+  remains unproven.
+
+### Audio integration findings
+
+The pinned engine exports `parseAudioElements` and `processCompositionAudio`.
+Its mixer owns fades, rate changes, effects, groups and automation, and writes
+`audio.m4a` to preserve AAC priming metadata. The producer first resolves nested
+media occurrences and then probes timeline volume changes before calling that
+mixer. Reading only `<audio>` tags or copying the layer manifest is insufficient
+for parity. A future host adapter should reuse this path, restrict input files
+to registered package resources, support cancellation and return its mix through
+the bounded ArtifactStore. Existing preview/export audio collectors still accept
+only native audio/video elements; no HyperFrames audio playback is claimed.
 
 ## Next implementation sequence
 

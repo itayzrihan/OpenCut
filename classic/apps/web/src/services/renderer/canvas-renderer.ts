@@ -6,6 +6,7 @@ import { scaleFrameOutput } from "./compositor/scale-frame-output";
 import { compositorRenderQueue } from "./compositor/render-queue";
 import { wasmCompositor } from "./compositor/wasm-compositor";
 import { resolveRenderTree } from "./resolve";
+import { initializeGpuRenderer } from "./gpu-renderer";
 import { isStaticRenderTree } from "./static-node-cache";
 import {
 	incrementCounter,
@@ -53,7 +54,8 @@ export class CanvasRenderer {
 	}
 
 	async getOutputCanvas(): Promise<HTMLCanvasElement> {
-		return compositorRenderQueue.run(() => {
+		return compositorRenderQueue.run(async () => {
+			await initializeGpuRenderer();
 			wasmCompositor.ensureInitialized({
 				width: this.width,
 				height: this.height,
@@ -103,6 +105,9 @@ export class CanvasRenderer {
 		completePerfFrame?: boolean;
 	}): Promise<T> {
 		return compositorRenderQueue.run(async () => {
+			// Thumbnails and background exports can run before EditorProvider has
+			// finished starting the GPU. Every compositor consumer shares this wait.
+			await initializeGpuRenderer();
 			const staticScene = isStaticRenderTree(node);
 			if (
 				staticScene &&
