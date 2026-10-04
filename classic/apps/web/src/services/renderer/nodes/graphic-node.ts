@@ -7,6 +7,7 @@ import {
 	registerDefaultGraphics,
 } from "@/graphics";
 import type { ParamValues } from "@/params";
+import type { HyperframesLiveHandle } from "@/hyperframes/types";
 import {
 	VisualNode,
 	type ResolvedVisualNodeState,
@@ -23,6 +24,12 @@ export interface GraphicNodeParams extends VisualNodeParams {
 		width: number;
 		height: number;
 		getResourceRevision: () => number;
+		live?: {
+			/** Stable source identity across canonical clip/transform edits. */
+			key: object;
+			open: () => Promise<HyperframesLiveHandle>;
+			getSourceTime: (localTime: number) => number;
+		};
 		renderTo: (input: {
 			localTime: number;
 			target: OffscreenCanvas;

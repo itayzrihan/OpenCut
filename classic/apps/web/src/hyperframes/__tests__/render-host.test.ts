@@ -41,7 +41,26 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 				await expect(
 					host.audio({ scope: wrong, id: opened.id }),
 				).rejects.toThrow("unavailable");
+				await expect(
+					host.livePreview({ scope: wrong, id: opened.id }),
+				).rejects.toThrow("unavailable");
 			}
+			const live = await host.livePreview({ scope, id: opened.id });
+			expect(live.url).toMatch(
+				/^http:\/\/[a-f0-9]{48}\.localhost:\d+\/\.opencut-live-[a-f0-9]{48}\.html$/,
+			);
+			expect(await host.livePreview({ scope, id: opened.id })).toEqual(live);
+			// Node does not resolve random .localhost labels on every platform.
+			const liveAddress = new URL(live.url);
+			const shell = await fetch(
+				`http://127.0.0.1:${liveAddress.port}${liveAddress.pathname}`,
+				{ headers: { Host: liveAddress.host } },
+			);
+			expect(shell.status).toBe(200);
+			expect(shell.headers.get("Content-Security-Policy")).toContain(
+				`frame-src ${liveAddress.origin}`,
+			);
+			expect(shell.headers.get("Permissions-Policy")).toContain("autoplay=()");
 			const artifact = await host.capture({
 				scope,
 				id: opened.id,
@@ -79,6 +98,17 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 			expect(await host.audio({ scope, id: opened.id })).toBeNull();
 			expect(await host.keepAlive({ scope, id: opened.id })).toBe(true);
 			await host.closeSession({ scope, id: opened.id });
+			expect(
+				(
+					await fetch(
+						`http://127.0.0.1:${liveAddress.port}${liveAddress.pathname}`,
+						{ headers: { Host: liveAddress.host } },
+					)
+				).status,
+			).toBe(404);
+			await expect(host.livePreview({ scope, id: opened.id })).rejects.toThrow(
+				"unavailable",
+			);
 			await expect(
 				host.capture({ scope, id: opened.id, timeSeconds: 0 }),
 			).rejects.toThrow("unavailable");

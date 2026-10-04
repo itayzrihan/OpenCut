@@ -3,6 +3,7 @@ import { getHyperframeRuntimeScript } from "@hyperframes/core/runtime-script";
 import { injectScriptsIntoHtml } from "@hyperframes/core/compiler/html-document";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import type { HyperframesInspection, HyperframesSource } from "./types";
+import { hyperframesLiveBridgeScript } from "./live-document";
 
 /** Version is pinned with the player in package.json and bun.lock. */
 export const HYPERFRAMES_RUNTIME_VERSION = "0.8.115";
@@ -18,10 +19,12 @@ export function prepareHyperframesPreview({
 	source,
 	runtime,
 	signal,
+	liveDurationSeconds,
 }: {
 	source: HyperframesSource;
 	runtime: CanonicalEditorRuntime;
 	signal?: AbortSignal;
+	liveDurationSeconds?: number;
 }): { html: string; inspection: HyperframesInspection } {
 	signal?.throwIfAborted();
 	const receipt = runtime.invokeSync(
@@ -31,7 +34,17 @@ export function prepareHyperframesPreview({
 	) as { result: { data: HyperframesInspection } };
 	const html = injectScriptsIntoHtml(
 		source.files[source.entryFile],
-		[getHyperframeRuntimeScript()],
+		[
+			...(liveDurationSeconds === undefined
+				? []
+				: [
+						hyperframesLiveBridgeScript({
+							fps: receipt.result.data.fps,
+							durationSeconds: liveDurationSeconds,
+						}),
+					]),
+			getHyperframeRuntimeScript(),
+		],
 		[],
 		true,
 	);

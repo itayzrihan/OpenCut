@@ -19,10 +19,10 @@ is implemented; the product integration is not complete.
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; audio host verified on all eight and connected to Classic playback/export; fast live preview and speed pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; isolated live preview works for an eligible topmost DOM composition, with two real Brag packages matching sampled full captures; general live layer ordering, video/canvas and speed pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; two-package seek acknowledgement measurements recorded; end-to-end frame rate and large mixed timelines pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
 
 ## Inspected evidence (2026-10-03)
@@ -758,6 +758,71 @@ Verification:
   `.local/hf-encoding-benchmark.json`. Sampling decisions and capture caches are
   platform rendering resources, so this adds no editor state or MCP mutation.
 
+### Isolated live DOM preview (2026-10-04)
+
+- The existing Classic preview now places an eligible topmost HyperFrames DOM
+  layer over the compositor canvas. It uses the same render-tree timing, source
+  trim, animation resolution, fit, rotation, scale, flips and opacity as the
+  capture path. The authored viewport stays at its intrinsic dimensions and the
+  surface scales to the existing preview. Native layers below it still render
+  through the shared compositor. Selection handles and timeline navigation stay
+  in the existing editor. Export always uses the complete capture/compositor path.
+- Eligibility is deliberately limited to an unmasked, normally blended topmost
+  compound without clip/scene effects, perspective, parallax or nested scene
+  rendering. The isolated bridge rejects video/canvas layers, external resources,
+  runtime failures and unsupported navigation. These cases automatically use
+  the existing capture adapter; they remain supported by that adapter. General
+  interleaving of native and multiple DOM surfaces is still pending.
+- Live delivery is opened through the account/project-scoped render session. A
+  trusted outer shell constrains the authored inner frame to its random package
+  origin, including after attempted navigation. Both frames have opaque sandbox
+  origins. Their only accepted commands are sequenced seeks; acknowledgements
+  never invoke editor actions. CSP limits live resources to the registered
+  package. Closing the session revokes delivery. The existing preview byte/count
+  limits include the generated shell.
+- Classic remains the audio owner. The bridge mutes media elements and runtime
+  output, and prevents Web Audio nodes from connecting to the physical output
+  destination while leaving analysis graphs usable. A browser test explicitly
+  enables autoplay, starts authored audio and an oscillator, and verifies muted
+  media plus zero connections to the output device. This avoids relying solely
+  on the browser's autoplay permission policy.
+- One of the client's existing two session slots is reserved for the current
+  live surface. Preparing audio, thumbnails or captures for other compositions
+  cannot evict its resources. Export, disposal and a return to capture release
+  that reservation; both slots remain available to mixed-frame rendering.
+  A replaced handle cannot release the new reservation. Switching project/account or replacing a resource
+  still invalidates the derived resources. No additional editor state, timeline,
+  document migration or mutation capability was introduced.
+- Two real Brag packages were compared at source times 0.5, 2.5 and 5 seconds:
+  `advanced-audio-test-final` (720x1280) and `brag-vertical/composition`
+  (1080x1920). All six full-resolution RGBA comparisons were exact. In the latest
+  software-Chrome run, 90 sequential seeks per package (first five excluded)
+  had median acknowledgement times of 1.5 and 1.9 ms, with p95 of 2.6 and 8.2 ms.
+  These timings measure the isolated live seek/relay, excluding paint, native
+  composition and editor scheduling; they are not end-to-end playback FPS.
+  The 96.9-second reconstruction correctly chose capture because it has canvas
+  content. Its later 3D repeatability remains unverified.
+- Tests cover fractional-frame flooring, repeated/reverse seeks, partial alpha,
+  navigation blocking, media/Web Audio silence, exact account/project ownership,
+  session close revocation, source revision invalidation, bounded session
+  retention during other renders, canonical trim/transform projection, layer
+  order, export exclusion, reservation release and runtime fallback. The real capture/live/host suite
+  passed seven tests (102 assertions); the scoped cache/host/client and real-WASM
+  renderer suites also passed. Actual UI playback reached the mixed project's
+  end with the live surface still present after audio preparation.
+- The actual 14-second mixed-project export after this change is identical to
+  the previous capture-only preview export after decoding: video SHA-256
+  `b76a85a1dc793e6618def4ebf34a1a458ae1e3871433b8fcc04eb1a112b73631`,
+  float PCM SHA-256
+  `ec8789f5357f8901da85d1f8f44a17fc872ef80e745bec7f875d4b9fdf397e43`.
+  The DOM surface was removed during export and restored afterward. Scoped
+  TypeScript, changed-file ESLint and eight existing transform/static-cache/
+  output-scaling checks (with the local real-WASM preload) passed.
+- Local evidence: `.local/hf-live-benchmark.json`,
+  `.local/hyperframes-live-benchmark.ts`, `.local/hf-live-*-*.png`,
+  `.local/hyperframes-after-live-preview.mp4` and
+  `.local/hyperframes-live-preview.png`.
+
 ## Next implementation sequence
 
 1. The GPU startup/recovery fix above covers the observed black preview. Exercise
@@ -769,10 +834,10 @@ Verification:
    real-WASM tests. The native MCP process still reaches the live editor through
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
-3. Add a fast live preview path beside the connected capture adapter. Route all
-   transport and edits through canonical transactions. Resource serving must be
-   scoped to the imported package; keep local control endpoints authenticated
-   and loopback-only.
+3. Extend the implemented topmost live DOM preview to mixed layer ordering,
+   video/canvas and dynamic resource cases after fidelity tests. Measure actual
+   editor playback frame rate. Keep transport and edits canonical and local
+   control endpoints authenticated and loopback-only.
 4. Extend the implemented expandable timeline rows with child selection and canonical edits;
    resolve anonymous/generated source identity before offering source edits.
 5. The frame capture adapter is connected to the existing compositor. Resolve

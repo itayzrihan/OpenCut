@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Internal authenticated transport returns canonical metadata. */
-import type { HyperframesComposition, HyperframesSource } from "./types";
+import type {
+	HyperframesComposition,
+	HyperframesSource,
+	HyperframesLiveHandle,
+} from "./types";
 import type { HyperframesRenderSession } from "./render-host";
 import type { HyperframesFrameArtifact } from "./capture-session";
 
@@ -16,6 +20,9 @@ export class HyperframesRenderClient {
 	// Capture is already sequential in each browser. Bound this client's live
 	// browsers as well, including when source edits create new fingerprints.
 	private renderQueue: Promise<void> = Promise.resolve();
+	/** Reserve one of the existing two slots for the displayed DOM surface. */
+	private liveSourceKey: string | null = null;
+	private liveLease: object | null = null;
 	private readonly sessions = new Map<
 		string,
 		Promise<HyperframesRenderSession>
@@ -84,6 +91,39 @@ export class HyperframesRenderClient {
 		this.pending.signal.throwIfAborted();
 		const key = await this.sourceKey(source);
 		const ready = this.renderQueue.then(() => this.getSession({ key, source }));
+		this.renderQueue = ready.then(
+			() => {},
+			() => {},
+		);
+		return ready;
+	}
+
+	/** Live DOM delivery shares the scoped session and its resource lifetime. */
+	async openLivePreview(
+		composition: HyperframesComposition,
+	): Promise<HyperframesLiveHandle> {
+		const key = await this.sourceKey(composition.source);
+		const ready = this.renderQueue.then(async () => {
+			const session = await this.getSession({
+				key,
+				source: composition.source,
+			});
+			const preview = await this.request<{ url: string }>({
+				action: "live",
+				id: session.id,
+			});
+			this.liveSourceKey = key;
+			const lease = {};
+			this.liveLease = lease;
+			return {
+				...preview,
+				release: () => {
+					if (this.liveLease !== lease) return;
+					this.liveSourceKey = null;
+					this.liveLease = null;
+				},
+			};
+		});
 		this.renderQueue = ready.then(
 			() => {},
 			() => {},
@@ -270,6 +310,8 @@ export class HyperframesRenderClient {
 				() => {},
 			);
 		this.sessions.clear();
+		this.liveSourceKey = null;
+		this.liveLease = null;
 		for (const bitmap of this.frames.values()) bitmap.close();
 		this.frames.clear();
 		this.frameBytes = 0;
@@ -307,7 +349,9 @@ export class HyperframesRenderClient {
 		}
 		if (!session) {
 			while (this.sessions.size >= 2) {
-				const oldest = this.sessions.entries().next().value;
+				const oldest = [...this.sessions.entries()].find(
+					([sourceKey]) => sourceKey !== this.liveSourceKey,
+				);
 				if (!oldest) break;
 				this.sessions.delete(oldest[0]);
 				await oldest[1].then(

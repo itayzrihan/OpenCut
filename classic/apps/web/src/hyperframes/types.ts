@@ -64,10 +64,20 @@ export interface HyperframesRuntimeLayer {
 }
 
 /** Rendering dependencies projected from a canonical Classic project. */
+export interface HyperframesLiveHandle {
+	url: string;
+	/** Release the browser client's reserved cache slot; never changes a project. */
+	release?: () => void;
+}
+
 export interface HyperframesRenderContext {
 	compositions: Readonly<Record<string, HyperframesComposition>>;
 	/** Changes when a bound resource is replaced, even at the same source time. */
 	getResourceRevision: () => number;
+	/** Silent, isolated DOM surface. The full capture renderer remains the fallback. */
+	openLivePreview?: (
+		composition: HyperframesComposition,
+	) => Promise<HyperframesLiveHandle>;
 	renderTo: (input: {
 		composition: HyperframesComposition;
 		timeSeconds: number;

@@ -20,6 +20,7 @@ import {
 import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
+import { HyperframesLivePreview } from "@/hyperframes/live-preview";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
@@ -190,6 +191,8 @@ function PreviewCanvas({
 	}) => void;
 }) {
 	const canvasMountRef = useRef<HTMLDivElement>(null);
+	const liveMountRef = useRef<HTMLDivElement>(null);
+	const livePreviewRef = useRef<HyperframesLivePreview | null>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const lastFrameRef = useRef(-1);
 	const lastSceneRef = useRef<RootNode | null>(null);
@@ -323,6 +326,31 @@ function PreviewCanvas({
 		[editor.renderer],
 	);
 
+	useEffect(() => {
+		if (!liveMountRef.current || isExporting) return;
+		const live = new HyperframesLivePreview({
+			mount: liveMountRef.current,
+			width: nativeWidth,
+			height: nativeHeight,
+			onFallback: () => {
+				lastFrameRef.current = -1;
+				scheduleRender("hyperframesFallback");
+			},
+		});
+		livePreviewRef.current = live;
+		return () => {
+			live.dispose();
+			if (livePreviewRef.current === live) livePreviewRef.current = null;
+		};
+	}, [
+		renderer,
+		nativeWidth,
+		nativeHeight,
+		previewRetry,
+		scheduleRender,
+		isExporting,
+	]);
+
 	const render = useCallback(() => {
 		if (!renderTree || isExportingRef.current || editor.renderer.isExporting) {
 			return;
@@ -358,8 +386,14 @@ function PreviewCanvas({
 		lastSceneRef.current = renderTree;
 		lastFrameRef.current = frame;
 		const start = performance.now();
-		void renderer
-			.render({ node: renderTree, time: renderTime })
+		const rendered = livePreviewRef.current
+			? livePreviewRef.current.render({
+					node: renderTree,
+					time: renderTime,
+					renderer,
+				})
+			: renderer.render({ node: renderTree, time: renderTime });
+		void rendered
 			.then(() => {
 				incrementCounter({ name: "preview.rendered" });
 				recordSpan({
@@ -665,7 +699,22 @@ function PreviewCanvas({
 													: activeProject?.settings.background.color,
 											visibility: isExporting ? "hidden" : "visible",
 										}}
-									/>
+									>
+										<div
+											className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+											style={{ display: isExporting ? "none" : undefined }}
+										>
+											<div
+												ref={liveMountRef}
+												style={{
+													width: nativeWidth,
+													height: nativeHeight,
+													transformOrigin: "0 0",
+													transform: `scale(${Math.max(0, viewport.sceneWidth - 2) / nativeWidth}, ${Math.max(0, viewport.sceneHeight - 2) / nativeHeight})`,
+												}}
+											/>
+										</div>
+									</div>
 									{isExporting && (
 										<div
 											className="absolute flex items-center justify-center border bg-background/85 text-xs text-muted-foreground backdrop-blur-sm"

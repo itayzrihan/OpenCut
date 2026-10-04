@@ -78,9 +78,33 @@ export class HyperframesRenderCache {
 			return undefined;
 		const projectId = project.metadata.id;
 		const scopeRevision = this.scopeRevision;
+		const revision = this.resourceRevision;
+		const checkScope = () => {
+			if (
+				this.projectId !== projectId ||
+				this.scopeRevision !== scopeRevision ||
+				this.resourceRevision !== revision ||
+				this.accountId !== currentAccountId()
+			)
+				throw new Error(
+					"The HyperFrames render belongs to a previous project or account",
+				);
+		};
 		return {
 			compositions: project.hyperframesCompositions,
 			getResourceRevision: () => this.resourceRevision,
+			openLivePreview: async (composition) => {
+				checkScope();
+				this.client ??= new HyperframesRenderClient(projectId);
+				const preview = await this.client.openLivePreview(composition);
+				try {
+					checkScope();
+				} catch (error) {
+					preview.release?.();
+					throw error;
+				}
+				return preview;
+			},
 			renderTo: async (input) => {
 				if (
 					this.projectId !== projectId ||

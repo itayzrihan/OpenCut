@@ -2,6 +2,7 @@
  * assets. This cache contains derived rendering resources, never editor state.
  */
 import { randomUUID } from "node:crypto";
+import { prepareHyperframesPreview } from "./preview-document";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import {
 	HyperframesCaptureSession,
@@ -37,6 +38,7 @@ interface Entry {
 	source: HyperframesSource;
 	resources: ReadonlyMap<string, HyperframesPreviewResource>;
 	audio?: Promise<HyperframesAudioArtifact | null>;
+	livePreview?: Promise<{ id: string; url: string }>;
 }
 type RenderArtifact = HyperframesFrameArtifact | HyperframesAudioArtifact;
 const MAX_ARTIFACT_HANDLES = 2048;
@@ -152,6 +154,51 @@ export class HyperframesRenderHost {
 		}
 		this.retainArtifact({ scope, artifact });
 		return artifact;
+	}
+
+	async livePreview({
+		scope,
+		id,
+	}: {
+		scope: HyperframesRenderScope;
+		id: string;
+	}): Promise<{ url: string }> {
+		const entry = this.getEntry({ scope, id });
+		entry.livePreview ??= (async () => {
+			const ready = await entry.capture;
+			entry.abort.signal.throwIfAborted();
+			if (!ready.keepAlive())
+				throw new Error("HyperFrames render session expired");
+			const prepared = prepareHyperframesPreview({
+				source: entry.source,
+				runtime: this.runtime,
+				signal: entry.abort.signal,
+				liveDurationSeconds: ready.durationSeconds,
+			});
+			const preview = await this.previews.add({
+				source: entry.source,
+				resources: entry.resources,
+				html: prepared.html,
+				live: true,
+			});
+			if (
+				this.closed ||
+				this.sessions.get(id) !== entry ||
+				entry.abort.signal.aborted
+			) {
+				this.previews.remove({ id: preview.id });
+				throw new Error(
+					"The HyperFrames live preview was closed while loading",
+				);
+			}
+			return preview;
+		})();
+		try {
+			return { url: (await entry.livePreview).url };
+		} catch (error) {
+			entry.livePreview = undefined;
+			throw error;
+		}
 	}
 
 	async audio({
@@ -278,7 +325,12 @@ export class HyperframesRenderHost {
 		scope: HyperframesRenderScope;
 		id: string;
 	}): Promise<boolean> {
-		return (await this.getEntry({ scope, id }).capture).keepAlive();
+		const entry = this.getEntry({ scope, id });
+		const alive = (await entry.capture).keepAlive();
+		const live = await entry.livePreview?.catch(() => undefined);
+		if (live && !this.previews.keepAlive({ id: live.id }))
+			entry.livePreview = undefined;
+		return alive;
 	}
 
 	async closeSession({
@@ -291,6 +343,7 @@ export class HyperframesRenderHost {
 		const entry = this.getEntry({ scope, id });
 		this.sessions.delete(id);
 		entry.abort.abort();
+		await this.removeLivePreview(entry);
 		await entry.capture.then(
 			(session) => session.close(),
 			() => {},
@@ -338,14 +391,22 @@ export class HyperframesRenderHost {
 		for (const [id, entry] of this.sessions) {
 			void entry.capture.then(
 				(session) => {
-					if (session.isClosed && this.sessions.get(id) === entry)
+					if (session.isClosed && this.sessions.get(id) === entry) {
 						this.sessions.delete(id);
+						void this.removeLivePreview(entry);
+					}
 				},
 				() => {
 					if (this.sessions.get(id) === entry) this.sessions.delete(id);
 				},
 			);
 		}
+	}
+
+	private async removeLivePreview(entry: Entry): Promise<void> {
+		const preview = await entry.livePreview?.catch(() => undefined);
+		if (preview) this.previews.remove({ id: preview.id });
+		entry.livePreview = undefined;
 	}
 }
 

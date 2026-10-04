@@ -889,21 +889,13 @@ async function resolveGraphicNode({
 	node: GraphicNode;
 	context: ResolveContext;
 }): Promise<ResolvedGraphicNodeState | null> {
-	const { width: sourceWidth, height: sourceHeight } = node.getSourceSize();
-	const visualState = resolveVisualState({
-		params: node.params,
-		context,
-		sourceWidth,
-		sourceHeight,
+	const state = resolveGraphicNodeLayout({
+		node,
+		renderer: context.renderer,
+		time: context.time,
 	});
-	if (!visualState) {
-		return null;
-	}
-
-	const resolvedParams = resolveGraphicElementParamsAtTime({
-		element: node.params,
-		localTime: visualState.localTime,
-	});
+	if (!state) return null;
+	const { sourceWidth, sourceHeight, resolvedParams, ...visualState } = state;
 	const definition = getGraphicDefinition({
 		definitionId: node.params.definitionId,
 	});
@@ -935,7 +927,34 @@ async function resolveGraphicNode({
 			localTime: visualState.localTime,
 			duration: node.params.duration,
 		});
+	return state;
+}
 
+/** Shared visual projection for raster capture and an isolated DOM preview. */
+export function resolveGraphicNodeLayout({
+	node,
+	renderer,
+	time,
+}: {
+	node: GraphicNode;
+	renderer: Pick<CanvasRenderer, "width" | "height">;
+	time: number;
+}): ResolvedGraphicNodeState | null {
+	const { width: sourceWidth, height: sourceHeight } = node.getSourceSize();
+	const visualState = resolveVisualState({
+		params: node.params,
+		context: { renderer, outputSize: renderer, time },
+		sourceWidth,
+		sourceHeight,
+	});
+	if (!visualState) {
+		return null;
+	}
+
+	const resolvedParams = resolveGraphicElementParamsAtTime({
+		element: node.params,
+		localTime: visualState.localTime,
+	});
 	return {
 		...visualState,
 		resolvedParams,

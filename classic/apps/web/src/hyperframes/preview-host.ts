@@ -12,6 +12,7 @@ import {
 } from "node:http";
 import { pipeline } from "node:stream/promises";
 import type { HyperframesSource } from "./types";
+import { hyperframesLiveShellHtml } from "./live-document";
 
 export interface HyperframesPreviewResource {
 	path: string;
@@ -21,6 +22,7 @@ export interface HyperframesPreviewResource {
 
 interface Preview {
 	html: Buffer;
+	liveShell?: { path: string; html: Buffer };
 	source: HyperframesSource;
 	resources: ReadonlyMap<string, HyperframesPreviewResource>;
 	lastUsed: number;
@@ -52,10 +54,12 @@ export class HyperframesPreviewHost {
 		html,
 		source,
 		resources,
+		live = false,
 	}: {
 		html: string;
 		source: HyperframesSource;
 		resources: ReadonlyMap<string, HyperframesPreviewResource>;
+		live?: boolean;
 	}): Promise<{ id: string; url: string }> {
 		if (this.closed) throw new Error("The HyperFrames preview host is closed");
 		// Caller has prepared and validated the source through OpenCutRuntime.
@@ -64,8 +68,18 @@ export class HyperframesPreviewHost {
 				throw new Error(`Missing HyperFrames resource: ${path}`);
 		}
 		const body = Buffer.from(html);
+		const id = randomBytes(24).toString("hex");
+		const entryPath = `/${source.entryFile.split("/").map(encodeURIComponent).join("/")}`;
+		const shellPath = `/.opencut-live-${id}.html`;
+		const liveShell = live
+			? {
+					path: shellPath.slice(1),
+					html: Buffer.from(hyperframesLiveShellHtml({ entryPath })),
+				}
+			: undefined;
 		const bytes =
 			body.byteLength +
+			(liveShell?.html.byteLength ?? 0) +
 			Object.values(source.files).reduce(
 				(sum, text) => sum + Buffer.byteLength(text),
 				0,
@@ -84,9 +98,9 @@ export class HyperframesPreviewHost {
 			throw new Error(
 				"Close an existing HyperFrames preview before opening another",
 			);
-		const id = randomBytes(24).toString("hex");
 		this.previews.set(id, {
 			html: body,
+			liveShell,
 			source: structuredClone(source),
 			resources: new Map(
 				Object.keys(source.resourceAssetIds).map((path) => [
@@ -99,7 +113,7 @@ export class HyperframesPreviewHost {
 		});
 		return {
 			id,
-			url: `http://${id}.localhost:${this.port}/${source.entryFile.split("/").map(encodeURIComponent).join("/")}`,
+			url: `http://${id}.localhost:${this.port}${live ? shellPath : entryPath}`,
 		};
 	}
 
@@ -115,6 +129,44 @@ export class HyperframesPreviewHost {
 		}
 		preview.lastUsed = Date.now();
 		return true;
+	}
+
+	private serveLiveShell({
+		preview,
+		request,
+		response,
+		path,
+	}: {
+		preview: Preview;
+		request: IncomingMessage;
+		response: ServerResponse;
+		path: string;
+	}): boolean {
+		if (preview.liveShell) {
+			const origin = `http://${request.headers.host}`;
+			const shell = path === preview.liveShell.path;
+			response.setHeader(
+				"Content-Security-Policy",
+				shell
+					? `sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src ${origin}; object-src 'none'; form-action 'none'; base-uri 'none'`
+					: `sandbox allow-scripts; default-src ${origin} data: blob:; script-src ${origin} 'unsafe-inline' 'unsafe-eval' blob:; style-src ${origin} 'unsafe-inline'; connect-src ${origin}; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri ${origin}`,
+			);
+			response.setHeader(
+				"Permissions-Policy",
+				"autoplay=(), camera=(), microphone=(), geolocation=(), display-capture=()",
+			);
+			if (shell) {
+				response.writeHead(200, {
+					"Content-Type": "text/html; charset=utf-8",
+					"Content-Length": preview.liveShell.html.byteLength,
+				});
+				response.end(
+					request.method === "HEAD" ? undefined : preview.liveShell.html,
+				);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	async close(): Promise<void> {
@@ -209,6 +261,7 @@ export class HyperframesPreviewHost {
 			return;
 		}
 		preview.lastUsed = Date.now();
+		if (this.serveLiveShell({ preview, request, response, path })) return;
 		let bytes: Buffer | undefined;
 		let mimeType: string;
 		if (path === preview.source.entryFile) {

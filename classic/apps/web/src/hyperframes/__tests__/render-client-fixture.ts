@@ -90,6 +90,10 @@ export function renderFixture({
 				});
 			}
 			if (input.action === "close") live.delete(input.id!);
+			if (input.action === "live")
+				return Response.json({
+					url: `http://${"a".repeat(48)}.localhost:1234/live-${input.id}.html`,
+				});
 			if (input.action === "audio" && audio)
 				return Response.json(audio.artifact());
 			return Response.json({ id: "artifact" });

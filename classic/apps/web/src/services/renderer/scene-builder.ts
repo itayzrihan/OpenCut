@@ -567,6 +567,14 @@ function buildTrackNodes({
 					element.definitionId === "hyperframes" && typeof sourceId === "string"
 						? hyperframes?.compositions[sourceId]
 						: undefined;
+				const getSourceTime = (localTime: number) =>
+					Math.max(
+						0,
+						Math.min(
+							(element.trimStart + localTime) / TICKS_PER_SECOND,
+							(composition?.durationSeconds ?? 0) - 1 / TICKS_PER_SECOND,
+						),
+					);
 				const camera = isParallaxCanvasScene
 					? {
 							depth: 1,
@@ -595,18 +603,19 @@ function buildTrackNodes({
 										width: composition.width,
 										height: composition.height,
 										getResourceRevision: hyperframes.getResourceRevision,
+										live: hyperframes.openLivePreview
+											? {
+													key: composition.source,
+													open: () => hyperframes.openLivePreview!(composition),
+													getSourceTime,
+												}
+											: undefined,
 										renderTo: ({ localTime, target, previewScale }) =>
 											hyperframes.renderTo({
 												composition,
 												target,
 												previewScale,
-												timeSeconds: Math.max(
-													0,
-													Math.min(
-														(element.trimStart + localTime) / TICKS_PER_SECOND,
-														composition.durationSeconds - 1 / TICKS_PER_SECOND,
-													),
-												),
+												timeSeconds: getSourceTime(localTime),
 											}),
 									}
 								: undefined,

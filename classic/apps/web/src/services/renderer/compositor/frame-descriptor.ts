@@ -1524,7 +1524,7 @@ function getCameraLayerMetadata(
 	);
 }
 
-function computeVisualTransform({
+export function computeVisualTransform({
 	renderer,
 	resolved,
 	sourceWidth,

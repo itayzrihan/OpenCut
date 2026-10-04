@@ -24,13 +24,11 @@ test("layer inspection reuses the preview session and honors cancellation and sc
 	const current = project();
 	try {
 		cache.update({ project: current, mediaAssets: [] });
-		await cache
-			.getContext(current)!
-			.renderTo({
-				composition: current.hyperframesCompositions!.main,
-				timeSeconds: 1,
-				target: fixture.target,
-			});
+		await cache.getContext(current)!.renderTo({
+			composition: current.hyperframesCompositions!.main,
+			timeSeconds: 1,
+			target: fixture.target,
+		});
 		const input = { project: current, assetId: "main" };
 		const manifest = await cache.readManifest(input);
 		expect(manifest.sourceFingerprint).toBe("fixture");
@@ -45,6 +43,68 @@ test("layer inspection reuses the preview session and honors cancellation and sc
 		cache.update({ project: null, mediaAssets: [] });
 		await expect(pending).rejects.toThrow();
 		await expect(cache.readManifest(input)).rejects.toThrow();
+	} finally {
+		cache.dispose();
+		fixture.restore();
+	}
+});
+
+test("live delivery shares the capture session and rejects stale account, project and resource contexts", async () => {
+	const fixture = renderFixture();
+	const cache = new HyperframesRenderCache();
+	const current = project();
+	try {
+		cache.update({ project: current, mediaAssets: [] });
+		const context = cache.getContext(current)!;
+		const source = current.hyperframesCompositions!.main;
+		await context.renderTo({
+			composition: source,
+			timeSeconds: 1,
+			target: fixture.target,
+		});
+		const live = await context.openLivePreview!(source);
+		expect(live.url).toContain("live-1.html");
+		expect(fixture.count("open")).toBe(1);
+		expect(fixture.calls.find((call) => call.action === "live")).toMatchObject({
+			projectId: "project-a",
+			account: "account-a",
+			id: "1",
+		});
+		for (const name of ["two", "three", "four"]) {
+			await context.renderTo({
+				composition: composition(name),
+				timeSeconds: 1,
+				target: fixture.target,
+			});
+			expect(fixture.live.size).toBeLessThanOrEqual(2);
+			expect(fixture.live.has("1")).toBe(true);
+		}
+		const currentLive = await context.openLivePreview!(source);
+		expect(currentLive.url).toEqual(live.url);
+		expect(fixture.count("open")).toBe(4);
+		live.release?.(); // Releasing an older handle must not unpin its replacement.
+		await context.renderTo({
+			composition: composition("five"),
+			timeSeconds: 1,
+			target: fixture.target,
+		});
+		expect(fixture.live.has("1")).toBe(true);
+		currentLive.release?.(); // Export/native-only preview can use both cache slots.
+		await context.renderTo({
+			composition: composition("six"),
+			timeSeconds: 1,
+			target: fixture.target,
+		});
+		expect(fixture.live.has("1")).toBe(false);
+		cache.reset();
+		await expect(context.openLivePreview!(source)).rejects.toThrow("previous");
+		const fresh = cache.getContext(current)!;
+		fixture.browser.__opencutAccountId = "account-b";
+		await expect(fresh.openLivePreview!(source)).rejects.toThrow("previous");
+		fixture.browser.__opencutAccountId = "account-a";
+		const pending = fresh.openLivePreview!(source);
+		cache.update({ project: null, mediaAssets: [] });
+		await expect(pending).rejects.toThrow();
 	} finally {
 		cache.dispose();
 		fixture.restore();

@@ -24,7 +24,7 @@ const requestSchema = z.discriminatedUnion("action", [
 		.strict(),
 	z
 		.object({
-			action: z.enum(["close", "keepAlive", "audio"]),
+			action: z.enum(["close", "keepAlive", "audio", "live"]),
 			projectId: id,
 			id,
 		})
@@ -96,6 +96,8 @@ export const POST = withAccount(async (request) => {
 			return Response.json(
 				await host.audio({ ...input, scope, signal: request.signal }),
 			);
+		if (input.action === "live")
+			return Response.json(await host.livePreview({ ...input, scope }));
 		await host.closeSession({ ...input, scope });
 		return Response.json({ closed: true });
 	} catch (error) {
