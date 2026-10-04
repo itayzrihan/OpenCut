@@ -11,7 +11,7 @@ import {
 	HyperframesPreviewHost,
 	type HyperframesPreviewResource,
 } from "./preview-host";
-import type { HyperframesSource } from "./types";
+import type { HyperframesSource, HyperframesRuntimeManifest } from "./types";
 
 export interface HyperframesRenderScope {
 	accountId: string;
@@ -24,6 +24,7 @@ export interface HyperframesRenderSession {
 	width: number;
 	height: number;
 	durationSeconds: number;
+	runtimeManifest: HyperframesRuntimeManifest;
 }
 interface Entry {
 	scope: HyperframesRenderScope;
@@ -98,6 +99,7 @@ export class HyperframesRenderHost {
 				width: ready.inspection.width,
 				height: ready.inspection.height,
 				durationSeconds: ready.durationSeconds,
+				runtimeManifest: ready.runtimeManifest,
 			};
 		} catch (error) {
 			this.sessions.delete(id);

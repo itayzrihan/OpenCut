@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import sharp from "sharp";
 import { buildChromeArgs } from "@hyperframes/engine";
 import { createCanonicalTestRuntime } from "@/core/__tests__/canonical-runtime-fixture";
@@ -67,6 +70,97 @@ test("failed preparation releases its capture slot without starting Chrome", asy
 describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 	"real HyperFrames capture",
 	() => {
+		test("reads generated layers and repeated nested media with resolved timing and package identity", async () => {
+			const folder = await mkdtemp(join(tmpdir(), "opencut-hf-manifest-"));
+			const wav = Buffer.alloc(44 + 6 * 8000 * 2);
+			wav.write("RIFF", 0);
+			wav.writeUInt32LE(wav.length - 8, 4);
+			wav.write("WAVEfmt ", 8);
+			wav.writeUInt32LE(16, 16);
+			wav.writeUInt16LE(1, 20);
+			wav.writeUInt16LE(1, 22);
+			wav.writeUInt32LE(8000, 24);
+			wav.writeUInt32LE(16000, 28);
+			wav.writeUInt16LE(2, 32);
+			wav.writeUInt16LE(16, 34);
+			wav.write("data", 36);
+			wav.writeUInt32LE(wav.length - 44, 40);
+			const path = join(folder, "voice.wav");
+			await writeFile(path, wav);
+			const runtime = await createCanonicalTestRuntime();
+			const host = new HyperframesPreviewHost();
+			let session: HyperframesCaptureSession | undefined;
+			const source: HyperframesSource = {
+				entryFile: "scenes/main.html",
+				files: {
+					"scenes/main.html": `<!doctype html><html><body><div data-composition-id="main" data-no-timeline data-width="320" data-height="180" data-duration="6">
+					<div id="first" data-composition-id="first" data-no-timeline data-composition-src="child.html" data-start="0" data-duration="3"></div>
+					<div id="second" data-composition-id="second" data-no-timeline data-composition-src="child.html" data-start="3" data-duration="3"></div>
+					</div><script>const layer=document.createElement("div"); layer.id="generated"; layer.dataset.start="1"; layer.dataset.duration="2"; layer.dataset.trackIndex="2"; layer.textContent="Generated title"; document.querySelector('[data-composition-id="main"]').append(layer);</script></body></html>`,
+					"scenes/child.html": `<template><div data-composition-id="child" data-no-timeline data-duration="3"><audio id="voice" src="/voice.wav" data-start="0.5" data-duration="2" data-media-start="0.25" data-playback-rate="2" data-volume="0.5" data-fade-in="0.2" muted></audio></div></template>`,
+				},
+				resourceAssetIds: { "voice.wav": "voice" },
+			};
+			try {
+				session = await HyperframesCaptureSession.open({
+					source,
+					resources: new Map([
+						["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
+					]),
+					runtime,
+					host,
+				});
+				const manifest = session.runtimeManifest;
+				const generated = manifest.layers.find(
+					(layer) => layer.elementId === "generated",
+				)!;
+				expect(generated).toMatchObject({
+					kind: "element",
+					file: "scenes/main.html",
+					startSeconds: 1,
+					durationSeconds: 2,
+					trackIndex: 2,
+				});
+				const voices = manifest.layers.filter(
+					(layer) => layer.kind === "audio",
+				);
+				expect(
+					manifest.layers.find((layer) => layer.elementId === "first")?.file,
+				).toBe("scenes/main.html");
+				expect(voices).toHaveLength(2);
+				expect(new Set(voices.map((layer) => layer.key)).size).toBe(2);
+				expect(new Set(voices.map((layer) => layer.parentKey)).size).toBe(2);
+				expect(voices.map((layer) => layer.startSeconds).sort()).toEqual([
+					0.5, 3.5,
+				]);
+				for (const voice of voices) {
+					expect(voice).toMatchObject({
+						file: "scenes/child.html",
+						resourcePath: "voice.wav",
+						playbackStartSeconds: 0.25,
+						playbackRate: 2,
+						media: {
+							sourceDurationSeconds: 6,
+							muted: true,
+							looping: false,
+							attributes: { "data-volume": "0.5", "data-fade-in": "0.2" },
+						},
+					});
+					expect(voice.parentKey).not.toBeNull();
+				}
+				expect(JSON.stringify(manifest)).not.toContain(".localhost:");
+				expect(JSON.stringify(manifest)).not.toContain(folder);
+				expect(manifest.diagnostics).toEqual([]);
+				manifest.layers.length = 0;
+				expect(session.runtimeManifest.layers.length).toBeGreaterThan(0);
+			} finally {
+				await session?.close();
+				await host.close();
+				runtime.free();
+				await rm(folder, { recursive: true, force: true });
+			}
+		}, 90_000);
+
 		test("captures nested entry paths, CSS time, dynamic data and alpha through the ArtifactStore", async () => {
 			const runtime = await createCanonicalTestRuntime();
 			const host = new HyperframesPreviewHost();

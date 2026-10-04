@@ -1,7 +1,10 @@
 import type { MediaAsset } from "@/media/types";
 import type { TProject } from "@/project/types";
 import { HyperframesRenderClient } from "./render-client";
-import type { HyperframesRenderContext } from "./types";
+import type {
+	HyperframesRenderContext,
+	HyperframesRuntimeManifest,
+} from "./types";
 
 type RenderProject = Pick<TProject, "metadata" | "hyperframesCompositions">;
 
@@ -91,6 +94,39 @@ export class HyperframesRenderCache {
 				await this.client.renderTo(input);
 			},
 		};
+	}
+
+	async readManifest({
+		project,
+		assetId,
+		signal,
+	}: {
+		project: RenderProject;
+		assetId: string;
+		signal?: AbortSignal;
+	}): Promise<HyperframesRuntimeManifest> {
+		const projectId = project.metadata.id;
+		const composition = project.hyperframesCompositions?.[assetId];
+		const scopeRevision = this.scopeRevision;
+		const revision = this.resourceRevision;
+		const checkScope = () => {
+			signal?.throwIfAborted();
+			if (
+				this.projectId !== projectId ||
+				this.scopeRevision !== scopeRevision ||
+				this.accountId !== currentAccountId() ||
+				this.resourceRevision !== revision
+			)
+				throw new Error(
+					"The HyperFrames project, account or media changed while reading layers",
+				);
+		};
+		checkScope();
+		if (!composition) throw new Error("HyperFrames composition is missing");
+		this.client ??= new HyperframesRenderClient(projectId);
+		const ready = await this.client.prepareSource(composition.source);
+		checkScope();
+		return structuredClone(ready.runtimeManifest);
 	}
 
 	reset(): void {

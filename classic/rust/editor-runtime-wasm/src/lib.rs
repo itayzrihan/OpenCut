@@ -83,6 +83,8 @@ impl CanonicalEditorRuntime {
                 | "project.classic.synchronize"
                 | "hyperframes.project.inspect"
                 | "hyperframes.package.plan"
+                | "hyperframes.manifest.validate"
+                | "hyperframes.manifest.set"
                 | "timeline.hyperframes.import"
                 | "app.state.read"
                 | "history.undo"

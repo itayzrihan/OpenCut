@@ -185,6 +185,7 @@ where
     descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
     descriptor.cancellable |= matches!(
         id, "hyperframes.project.inspect" | "timeline.hyperframes.import"
+            | "hyperframes.manifest.validate" | "hyperframes.manifest.set"
     );
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);

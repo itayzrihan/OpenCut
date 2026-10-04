@@ -94,6 +94,7 @@ export async function importHyperframesFolder({
 			...input,
 			classicResourceAssets: canonicalMediaBindings(resources),
 			resolvedDurationSeconds: ready.durationSeconds,
+			runtimeManifest: ready.runtimeManifest,
 		});
 		committed = true;
 		report({ phase: "saving", completed: resources.length });

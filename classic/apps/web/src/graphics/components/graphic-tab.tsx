@@ -28,6 +28,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/utils/ui";
 import type { MediaTime } from "@/wasm";
+import { HyperframesLayersSection } from "@/hyperframes/layers-section";
 
 registerDefaultGraphics();
 
@@ -62,6 +63,13 @@ export function GraphicTab({
 
 	return (
 		<div className="flex flex-col">
+			{element.definitionId === "hyperframes" &&
+				typeof element.params.hyperframesAssetId === "string" && (
+					<HyperframesLayersSection
+						key={element.params.hyperframesAssetId}
+						assetId={element.params.hyperframesAssetId}
+					/>
+				)}
 			<Section collapsible sectionKey={`${element.id}:graphic`}>
 				<SectionHeader>
 					<SectionTitle>{definition.name}</SectionTitle>

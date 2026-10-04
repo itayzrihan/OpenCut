@@ -23,10 +23,10 @@ export function renderFixture() {
 		globalThis,
 		"createImageBitmap",
 	);
-	const browser = {
+	const browser = Object.assign(new EventTarget(), {
 		__opencutAccountId: "account-a",
 		location: { origin: "http://127.0.0.1:3165" },
-	};
+	});
 	Object.defineProperty(globalThis, "window", {
 		configurable: true,
 		value: browser,
@@ -74,7 +74,17 @@ export function renderFixture() {
 			if (input.action === "open") {
 				const id = String(++nextId);
 				live.add(id);
-				return Response.json({ id, durationSeconds: 4 });
+				return Response.json({
+					id,
+					durationSeconds: 4,
+					runtimeManifest: {
+						sourceFingerprint: "fixture",
+						runtimeVersion: "0.8.115",
+						durationSeconds: 4,
+						layers: [],
+						diagnostics: [],
+					},
+				});
 			}
 			if (input.action === "close") live.delete(input.id!);
 			return Response.json({ id: "artifact" });

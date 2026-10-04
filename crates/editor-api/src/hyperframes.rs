@@ -75,11 +75,21 @@ pub struct HyperframesComposition {
     pub height: u32,
     pub fps: f64,
     pub duration_seconds: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub runtime_manifest: Option<crate::HyperframesRuntimeManifest>,
 }
 
 impl HyperframesComposition {
     pub fn validate(&self) -> Result<(), ModelError> {
         self.source.validate()?;
+        if let Some(manifest) = &self.runtime_manifest {
+            manifest.validate(&self.source)?;
+            if (manifest.duration_seconds - self.duration_seconds).abs() > 0.000_001 {
+                return invalid(
+                    "HyperFrames runtime manifest duration differs from its composition",
+                );
+            }
+        }
         if self.composition_id.trim().is_empty()
             || self.width == 0
             || self.height == 0

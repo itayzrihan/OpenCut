@@ -16,9 +16,9 @@ is implemented; the product integration is not complete.
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
-| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; Brag folder UI coverage pending |
-| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; real-project combinations pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
+| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
+| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated runtime inventory and read-only Classic inspector implemented; timeline rows and child editing pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; fast live preview, speed and audio pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Classic MP4 compositor verified with a synthetic trimmed overlay; Brag export comparison and audio integration pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Pending |
@@ -269,9 +269,9 @@ and failure reporting are complete.
 - A deliberately unresolved composition exercised runtime failure after upload.
   With staged cleanup enabled, both the file count and media-index count were
   unchanged after rejection. The successful import's upload token was removed.
-- This completes the synthetic folder flow, not the full integration. Embedded
-  audio is explicitly marked unsupported in the dialog. Brag UI import coverage,
-  generated children, fast preview, video fidelity and crash recovery for staged
+- Embedded audio is explicitly marked unsupported in the dialog. The actual
+  Brag folder verification below extends the synthetic flow. The other seven Brag
+  UI imports, generated children, fast preview, video fidelity and crash recovery for staged
   uploads remain pending. The new folder export was invoked through the UI, but
   its downloaded MP4 could not yet be recovered for frame verification; the
   earlier synthetic compositor MP4 remains the verified export evidence.
@@ -450,9 +450,76 @@ plus Undo/Redo: media objects are republished while one open and one capture ser
 all rendered requests. Fresh-frame capture, audio, multiple-composition browser
 churn and the fast live preview remain outstanding.
 
+## Runtime layers and Classic inspector (2026-10-04)
+
+The isolated capture host now reads the official `__clipManifest` after runtime
+readiness. Rust validates and persists its source fingerprint, runtime version,
+resolved duration, bounded layer list, parent occurrence keys, package paths,
+timing, media offsets/rates, natural durations and authored audio attributes.
+Temporary preview URLs and host filesystem paths are not stored in the manifest.
+Original source bytes remain the editing authority.
+
+- `hyperframes.manifest.validate` is a closed-world Read capability.
+  `hyperframes.manifest.set` updates an existing composition through a closed-world
+  Write transaction with project/revision checks, idempotency, cancellation,
+  dry run and undo. Folder import can commit the manifest with its resources and
+  clip in the same transaction. Native and Classic documents use the same model;
+  the browser UI is Classic-only. Live desktop MCP forwarding remains pending.
+- The Graphic inspector shows a searchable, indented list of layers and their
+  source times. Each row expands to show its file, media reference and timing.
+  Rendering starts with 100 rows and offers more on demand. Existing imports can
+  read their layers without reimporting. This operation reuses the project preview
+  client, checks its scope and resource revision, and publishes through the
+  canonical CommandManager. Local component state is limited to search, progress
+  and disclosure controls.
+- Preview clients release their sessions and decoded frames on a non-persisted
+  `pagehide`, including reload/navigation. A page retained in the browser's
+  back/forward cache keeps its client. This avoids consuming capture slots until
+  idle expiry when the old document is already gone.
+- Identity uses runtime IDs and composition ancestry, with a distinct DOM path
+  for each occurrence. Repeated nested hosts are tested. Anonymous or ambiguous
+  nodes retain observed timing and diagnostics without guessed source identity.
+  The runtime list is not a complete inventory of every untimed decorative node.
+- All eight Brag references loaded and yielded 176 layers, including 12 audio
+  occurrences and 13 videos. The v2 recreation has 10 layers with unresolved DOM
+  identity; the full reconstruction has 30. All media occurrences were observed.
+  Narration, music and impact paths, timing and authored volumes were retained.
+  Evidence: `.local/hyperframes-manifest-probe.ts` and its results JSON. This probe
+  does not modify the Brag folders.
+- The existing mixed Classic project displayed the image layer, package media
+  path and 0–4s range. Reading layers on older imports persisted to the project;
+  UI Undo/Redo removed/restored the manifest while keeping the clip and native
+  tracks. A source containing only untimed CSS decoration can report zero layers.
+- The actual Brag `advanced-audio-test-final` folder imported through the directory
+  picker and appended at 8–14s, keeping the existing native and HyperFrames clips.
+  Its four layers (Narration, Opening, Claim and Proof) appeared immediately with
+  their resolved source times; the preview displayed its opening at project time
+  9s. Reload preserved all four layers, the imported media and timeline placement.
+  Layer search and source-file details worked after reopen. Hashes of all source
+  strings and three copied binary resources match the originals, and all uploads
+  were finalized. Evidence: `.local/verify-hyperframes-brag-proof.ts` and
+  `.local/hyperframes-brag-import-proof.json`.
+- Reload testing exposed intermittent black previews in the in-app browser.
+  The same saved project rendered correctly in a fresh tab and on some reloads;
+  other reloads kept the canvas black while seeking and playback time advanced.
+  The capture endpoint still returned the correct Brag frame (saved as
+  `.local/hyperframes-brag-reopen-frame.png`). Temporary diagnostics also recorded
+  completed compositor renders during a black-preview run, without a console
+  error. A later reload showed the correct frame and selection handles. The
+  cause is unresolved; no speculative rendering fix or diagnostic code is
+  included in this change. Reopen data preservation is verified, but reliable
+  preview restoration needs a regression fix and repeatable browser coverage.
+
+The inspector is read-only. Expandable child rows in the existing timeline,
+child edits, variable editing, audio mixing/export and fast playback remain
+outstanding. A manifest records observations; it does not implement audio
+playback or guarantee identity for generated anonymous elements. Replacing bound
+media invalidates rendering, but stored natural durations require another read.
+
 ## Next implementation sequence
 
-1. Exercise the completed folder importer on the eight Brag references, including
+1. Diagnose the intermittent black preview after reload described above. Then
+   exercise the folder importer on the remaining seven Brag references, including
    generated duration and durable resources. Verify downloaded exports and add
    recovery for a crash during staging.
 2. The synthetic folder flow now covers import, Undo/Redo and reopen. Source sharing, compact persistence, history adoption,
@@ -464,8 +531,9 @@ churn and the fast live preview remain outstanding.
    transport and edits through canonical transactions. Resource serving must be
    scoped to the imported package; keep local control endpoints authenticated
    and loopback-only.
-4. Project runtime-generated child manifests into expandable rows of the existing
-   timeline, retain host occurrence identity, and connect selection/inspector.
+4. Extend the implemented runtime manifest and read-only inspector into expandable
+   rows of the existing timeline. Connect child selection and canonical edits;
+   resolve anonymous/generated source identity before offering source edits.
 5. The frame capture adapter is connected to the existing compositor. Resolve
    the 3D repeatability case, video injection,
    author timers, audio export and multi-composition cache behavior. Verify Brag references and
@@ -492,6 +560,17 @@ The example is a read-only static source probe; it skips generated output, hidde
 directories, dependencies and symlinks, and reports binary references as unbound.
 
 ### Current verification and outstanding baseline failures
+
+- Runtime manifest: 20 Rust HyperFrames/import/manifest tests passed. Four cover
+  validation limits, stale sources, repeated host identity, Classic/native state
+  reads, revision checks, dry run, cancellation, idempotency and history. Nine
+  real-WASM CommandManager tests passed (129 assertions); ten folder orchestrator
+  tests passed (180 assertions). Six capture/host tests passed (64 assertions),
+  including real Chrome generated DOM, repeated nested audio, authored mute,
+  offsets/rate, package paths and capture regression coverage. Ten cache/client/
+  graphic-frame tests passed (272 assertions), including page lifecycle cleanup,
+  reuse for inspection and project/account/cancellation boundaries. Scoped TypeScript, changed-file ESLint
+  and Editor API Clippy passed. Full web baseline failures below remain open.
 
 - Preview caching: 26 tests passed with 538 assertions across rendering/cache,
   real-WASM CommandManager and folder-import orchestration. Scoped TypeScript and
@@ -566,5 +645,7 @@ directories, dependencies and symlinks, and reports binary references as unbound
   the audio timing code. The real WASM was rebuilt and all 37 required exports,
   including this one, passed `verify-wasm-exports.mjs`. This is an outstanding
   test-harness issue, not evidence of successful full regression coverage.
-- Full playback/performance and Brag folder-import coverage remain unverified.
-  The folder UI proof used a synthetic GSAP project in the isolated test account.
+- Full playback/performance and complete Brag folder-import coverage remain
+  unverified. The folder UI proof covers a synthetic GSAP project and Brag's
+  `advanced-audio-test-final` in the isolated test account; seven Brag UI imports
+  and Brag export parity remain outstanding.

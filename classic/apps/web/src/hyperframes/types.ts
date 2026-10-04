@@ -12,6 +12,36 @@ export interface HyperframesComposition {
 	height: number;
 	fps: number;
 	durationSeconds: number;
+	runtimeManifest?: HyperframesRuntimeManifest;
+}
+
+export interface HyperframesRuntimeManifest {
+	sourceFingerprint: string;
+	runtimeVersion: string;
+	durationSeconds: number;
+	layers: HyperframesRuntimeLayer[];
+	diagnostics: string[];
+}
+
+export interface HyperframesRuntimeLayer {
+	key: string;
+	parentKey: string | null;
+	file: string | null;
+	elementId: string | null;
+	label: string;
+	kind: "composition" | "element" | "image" | "video" | "audio";
+	startSeconds: number;
+	durationSeconds: number;
+	trackIndex: number;
+	resourcePath: string | null;
+	playbackStartSeconds: number;
+	playbackRate: number;
+	media: {
+		sourceDurationSeconds: number | null;
+		muted: boolean;
+		looping: boolean;
+		attributes: Record<string, string>;
+	} | null;
 }
 
 /** Rendering dependencies projected from a canonical Classic project. */

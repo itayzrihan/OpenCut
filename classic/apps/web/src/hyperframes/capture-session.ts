@@ -22,7 +22,12 @@ import {
 	HyperframesPreviewHost,
 	type HyperframesPreviewResource,
 } from "./preview-host";
-import type { HyperframesInspection, HyperframesSource } from "./types";
+import type {
+	HyperframesInspection,
+	HyperframesSource,
+	HyperframesRuntimeManifest,
+} from "./types";
+import { readHyperframesRuntimeManifest } from "./runtime-manifest";
 
 export interface HyperframesFrameArtifact {
 	id: string;
@@ -56,6 +61,7 @@ export class HyperframesCaptureSession {
 	private lastUsed = Date.now();
 	private timer: ReturnType<typeof setInterval> | null = null;
 	private resolvedDuration = 0;
+	private resolvedManifest: HyperframesRuntimeManifest | null = null;
 	private capturedWarnings: CaptureWarning[] = [];
 	private readonly runtime: CanonicalEditorRuntime;
 	private readonly host: HyperframesPreviewHost;
@@ -119,6 +125,12 @@ export class HyperframesCaptureSession {
 
 	get durationSeconds(): number {
 		return this.resolvedDuration;
+	}
+
+	get runtimeManifest(): HyperframesRuntimeManifest {
+		if (!this.resolvedManifest)
+			throw new Error("HyperFrames runtime manifest is unavailable");
+		return structuredClone(this.resolvedManifest);
 	}
 
 	get previewUrl(): string {
@@ -300,6 +312,13 @@ export class HyperframesCaptureSession {
 				throw new Error(
 					"HyperFrames did not resolve a finite positive duration",
 				);
+			this.resolvedManifest = await readHyperframesRuntimeManifest({
+				page: engine.page,
+				source,
+				fingerprint: this.inspection.fingerprint,
+				durationSeconds: this.resolvedDuration,
+				runtime: this.runtime,
+			});
 			signal?.throwIfAborted();
 			if (this.closed)
 				throw new Error("The HyperFrames capture was closed while loading");

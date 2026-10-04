@@ -66,6 +66,21 @@ export class RendererManager {
 		);
 	}
 
+	async readHyperframesManifest({
+		assetId,
+		signal,
+	}: {
+		assetId: string;
+		signal?: AbortSignal;
+	}) {
+		this.updateHyperframesCache();
+		return this.hyperframesCache.readManifest({
+			project: this.editor.project.getActive(),
+			assetId,
+			signal,
+		});
+	}
+
 	private updateHyperframesCache(): boolean {
 		return this.hyperframesCache.update({
 			project: this.editor.project.getActiveOrNull(),

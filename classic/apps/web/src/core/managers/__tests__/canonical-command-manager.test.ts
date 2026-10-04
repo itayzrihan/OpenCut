@@ -231,6 +231,85 @@ const source = {
 	resourceAssetIds: {},
 };
 
+test("runtime layers publish through canonical state, undo and persisted history", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	const imported = await host.manager.importHyperframes({
+		name: "Layers",
+		source,
+	});
+	const inspection = runtime.invokeSync(
+		"hyperframes.project.inspect",
+		{ source },
+		undefined,
+	) as { result: { data: { fingerprint: string } } };
+	const manifest = {
+		sourceFingerprint: inspection.result.data.fingerprint,
+		runtimeVersion: "0.8.115",
+		durationSeconds: 6,
+		layers: [],
+		diagnostics: [],
+	};
+	const request = {
+		projectId: "classic-project",
+		assetId: imported.assetId,
+		manifest,
+	};
+	const before = structuredClone(host.project());
+	await expect(
+		host.manager.setHyperframesManifest({
+			...request,
+			signal: AbortSignal.abort(),
+		}),
+	).rejects.toThrow();
+	await expect(
+		host.manager.setHyperframesManifest({ ...request, projectId: "other" }),
+	).rejects.toThrow();
+	await expect(
+		host.manager.setHyperframesManifest({
+			...request,
+			manifest: { ...manifest, sourceFingerprint: "stale" },
+		}),
+	).rejects.toThrow();
+	expect(host.project()).toEqual(before);
+	await host.manager.setHyperframesManifest(request);
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId].runtimeManifest,
+	).toEqual(manifest);
+	assertCoherent({ host, runtime });
+	host.manager.undo();
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId].runtimeManifest,
+	).toBeUndefined();
+	host.manager.redo();
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId].runtimeManifest,
+	).toEqual(manifest);
+	await host.manager.flushHistory();
+	const reloaded = createHost({
+		project: structuredClone(host.project()),
+		media: host.media(),
+	});
+	const reopenedRuntime = await createCanonicalTestRuntime();
+	await reloaded.manager.loadHistory({ projectId: "classic-project" });
+	await reloaded.manager.enableCanonical({ runtime: reopenedRuntime });
+	reloaded.manager.undo();
+	expect(
+		reloaded.project().hyperframesCompositions?.[imported.assetId]
+			.runtimeManifest,
+	).toBeUndefined();
+	reloaded.manager.redo();
+	expect(
+		reloaded.project().hyperframesCompositions?.[imported.assetId]
+			.runtimeManifest,
+	).toEqual(manifest);
+	assertCoherent({ host: reloaded, runtime: reopenedRuntime });
+	await reloaded.manager.flushHistory();
+	host.manager.detachCanonical();
+	reloaded.manager.detachCanonical();
+});
+
 function assertCoherent({
 	host,
 	runtime,

@@ -628,6 +628,32 @@ export class CommandManager {
 		});
 	}
 
+	async setHyperframesManifest(
+		input: Parameters<CanonicalClassicSession["setHyperframesManifest"]>[0] & {
+			projectId: string;
+			signal?: AbortSignal;
+		},
+	): Promise<void> {
+		const { projectId, signal, ...request } = input;
+		const checkTarget = () => {
+			signal?.throwIfAborted();
+			assertBatchEditable(projectId);
+			if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+				throw new Error("The target project is no longer active");
+		};
+		checkTarget();
+		await this.enableCanonical();
+		checkTarget();
+		this.executeTransaction({
+			execute: () => {
+				if (!this.canonical)
+					throw new Error("The canonical project was closed");
+				this.canonical.setHyperframesManifest(request);
+				this.publishCanonical();
+			},
+		});
+	}
+
 	private releaseCanonical(): void {
 		this.canonical?.dispose();
 		this.canonical = null;

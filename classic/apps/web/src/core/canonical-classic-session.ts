@@ -2,7 +2,10 @@
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import type { MediaAsset } from "@/media/types";
 import type { SerializedProjectHistorySnapshot } from "@/services/storage/types";
-import type { HyperframesSource } from "@/hyperframes/types";
+import type {
+	HyperframesSource,
+	HyperframesRuntimeManifest,
+} from "@/hyperframes/types";
 
 export interface CanonicalClassicSnapshot {
 	document: SerializedProjectHistorySnapshot;
@@ -167,6 +170,7 @@ export class CanonicalClassicSession {
 		startSeconds?: number;
 		trackId?: string;
 		resolvedDurationSeconds?: number;
+		runtimeManifest?: HyperframesRuntimeManifest;
 		classicResourceAssets?: CanonicalClassicSnapshot["mediaAssets"];
 	}): { assetId: string; itemId: string; trackId: string } {
 		return this.call({
@@ -190,6 +194,20 @@ export class CanonicalClassicSession {
 				expectedRevision: this.status().revision,
 			},
 			context: { dryRun: true },
+		});
+	}
+
+	setHyperframesManifest(input: {
+		assetId: string;
+		manifest: HyperframesRuntimeManifest;
+	}): void {
+		this.call({
+			capability: "hyperframes.manifest.set",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
 		});
 	}
 

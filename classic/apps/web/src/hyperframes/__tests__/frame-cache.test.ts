@@ -2,6 +2,32 @@ import { expect, test } from "bun:test";
 import { HyperframesRenderClient } from "../render-client";
 import { composition, renderFixture } from "./render-client-fixture";
 
+test("leaving the page releases cached browsers and frames while back/forward cache preserves them", async () => {
+	const fixture = renderFixture();
+	const client = new HyperframesRenderClient("project-a");
+	try {
+		const input = {
+			composition: composition(),
+			timeSeconds: 1,
+			target: fixture.target,
+		};
+		await client.renderTo(input);
+		const cached = new Event("pagehide");
+		Object.defineProperty(cached, "persisted", { value: true });
+		fixture.browser.dispatchEvent(cached);
+		await client.renderTo(input);
+		expect(fixture.count("open")).toBe(1);
+		expect(fixture.count("close")).toBe(0);
+		fixture.browser.dispatchEvent(new Event("pagehide"));
+		await expect(client.renderTo(input)).rejects.toThrow();
+		expect(fixture.bitmaps[0].closed).toBe(true);
+		expect(fixture.count("close")).toBe(1);
+	} finally {
+		client.dispose();
+		fixture.restore();
+	}
+});
+
 test("reuses decoded frames across cloned sources and fresh targets, with a 24-frame LRU", async () => {
 	const fixture = renderFixture();
 	const client = new HyperframesRenderClient("project-a");

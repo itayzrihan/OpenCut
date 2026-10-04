@@ -19,6 +19,22 @@ struct InspectInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ValidateManifestInput {
+    source: HyperframesSource,
+    manifest: crate::HyperframesRuntimeManifest,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SetManifestInput {
+    project_id: String,
+    expected_revision: u64,
+    asset_id: String,
+    manifest: crate::HyperframesRuntimeManifest,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ImportInput {
     project_id: String,
     expected_revision: u64,
@@ -30,6 +46,8 @@ struct ImportInput {
     track_id: Option<String>,
     /// Runtime-measured duration when the root has no authored data-duration.
     resolved_duration_seconds: Option<f64>,
+    /// Observations from the isolated runtime, bound to this exact source.
+    runtime_manifest: Option<crate::HyperframesRuntimeManifest>,
     /// Newly persisted Classic resource metadata. Bytes stay in project storage.
     /// Attach these bindings and the composition in one undoable transaction.
     #[serde(default)]
@@ -86,6 +104,101 @@ pub(super) fn register_hyperframes_operations(
             Ok(OperationSuccess::new(inspection))
         },
     )?;
+    register::<ValidateManifestInput, crate::HyperframesRuntimeManifest, _, _>(
+        registry,
+        "hyperframes.manifest.validate",
+        "Validate HyperFrames runtime manifest",
+        "Validates bounded runtime layer and media observations against their exact source fingerprint. Checks package references, occurrence identity, parent hierarchy and timing without executing scripts or reading files.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "runtime", "layers", "media"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            input
+                .manifest
+                .validate(&input.source)
+                .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(input.manifest))
+        },
+    )?;
+    let manifest_state = state.clone();
+    let manifest_events = events.clone();
+    register::<SetManifestInput, MutationOutput, _, _>(
+        registry,
+        "hyperframes.manifest.set",
+        "Update HyperFrames runtime layers",
+        "Stores validated runtime layer and media observations on an existing composition. Requires the exact source fingerprint, project and revision. Supports undo, dry run, cancellation and registry idempotency keys.",
+        "hyperframes",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "runtime", "layers", "media"],
+        move |context, input| {
+            let state = manifest_state.clone();
+            let events = manifest_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Update HyperFrames layers",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        if let Some(classic) = &mut project.classic {
+                            let composition = classic
+                                .document
+                                .compositions
+                                .as_mut()
+                                .and_then(|items| items.get_mut(&input.asset_id))
+                                .ok_or_else(|| {
+                                    CapabilityError::InvalidInput(
+                                        "HyperFrames composition is missing".into(),
+                                    )
+                                })?;
+                            input
+                                .manifest
+                                .validate(&composition.source)
+                                .map_err(model_error)?;
+                            composition.properties.insert(
+                                "runtimeManifest".into(),
+                                serde_json::to_value(&input.manifest)
+                                    .map_err(|error| CapabilityError::Failed(error.to_string()))?,
+                            );
+                        } else {
+                            let composition = project
+                                .assets
+                                .iter_mut()
+                                .find(|asset| asset.id == input.asset_id)
+                                .and_then(|asset| asset.hyperframes.as_mut())
+                                .ok_or_else(|| {
+                                    CapabilityError::InvalidInput(
+                                        "HyperFrames composition is missing".into(),
+                                    )
+                                })?;
+                            input
+                                .manifest
+                                .validate(&composition.source)
+                                .map_err(model_error)?;
+                            composition.runtime_manifest = Some(input.manifest);
+                        }
+                        check_cancelled(&context)?;
+                        Ok(vec![input.asset_id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output))
+            }
+        },
+    )?;
     register::<ImportInput, ImportOutput, _, _>(
         registry,
         "timeline.hyperframes.import",
@@ -120,6 +233,7 @@ pub(super) fn register_hyperframes_operations(
                     height: inspection.height,
                     fps: inspection.fps,
                     duration_seconds: duration,
+                    runtime_manifest: input.runtime_manifest,
                 };
                 composition.validate().map_err(model_error)?;
                 let mut asset_id = String::new();
@@ -138,9 +252,9 @@ pub(super) fn register_hyperframes_operations(
                                 "HyperFrames target project is not active".into(),
                             ));
                         }
-                        if project.classic.is_some() {
+                        if let Some(classic) = &mut project.classic {
                             let resource_ids = attach_classic_resources(
-                                project.classic.as_mut().unwrap(),
+                                classic,
                                 &composition.source,
                                 input.classic_resource_assets,
                             )?;

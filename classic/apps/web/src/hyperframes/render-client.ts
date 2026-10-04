@@ -27,10 +27,17 @@ export class HyperframesRenderClient {
 	private readonly timer: ReturnType<typeof setInterval>;
 	private closed = false;
 	private readonly accountId: string | null;
+	private readonly onPageHide = (event: PageTransitionEvent) => {
+		// A restored back/forward-cache page keeps its live client. A departing
+		// document releases browser slots instead of waiting for server expiry.
+		if (!event.persisted) this.dispose();
+	};
 
 	constructor(private readonly projectId: string) {
 		this.accountId =
 			typeof window === "undefined" ? null : window.__opencutAccountId;
+		if (typeof window !== "undefined")
+			window.addEventListener?.("pagehide", this.onPageHide);
 		this.timer = setInterval(() => {
 			for (const [key, session] of this.sessions)
 				void session
@@ -164,6 +171,8 @@ export class HyperframesRenderClient {
 	dispose(): void {
 		if (this.closed) return;
 		this.closed = true;
+		if (typeof window !== "undefined")
+			window.removeEventListener?.("pagehide", this.onPageHide);
 		clearInterval(this.timer);
 		this.pending.abort();
 		for (const session of this.sessions.values())

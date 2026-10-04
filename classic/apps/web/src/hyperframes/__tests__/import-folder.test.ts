@@ -22,6 +22,13 @@ let closed: number;
 let failCleanup = false;
 let activeUploadToken = "";
 let windowDescriptor: PropertyDescriptor | undefined;
+const runtimeManifest = {
+	sourceFingerprint: "observed",
+	runtimeVersion: "0.8.115",
+	durationSeconds: 4,
+	layers: [],
+	diagnostics: [],
+};
 
 mock.module("@/services/storage/service", () => ({
 	storageService: {
@@ -73,7 +80,7 @@ mock.module("../render-client", () => ({
 		async prepareSource() {
 			events.push("runtime");
 			if (mode === "runtime") throw new Error("Runtime failed");
-			return { durationSeconds: 4 };
+			return { durationSeconds: 4, runtimeManifest };
 		}
 		dispose() {
 			closed++;
@@ -137,10 +144,14 @@ function fixture() {
 			importHyperframes: async (input: {
 				dryRun?: boolean;
 				resolvedDurationSeconds: number;
+				runtimeManifest?: typeof runtimeManifest;
 				classicResourceAssets: Array<Record<string, unknown>>;
 			}) => {
 				events.push(input.dryRun ? "preflight" : "commit");
 				expect(input.resolvedDurationSeconds).toBe(input.dryRun ? 1 : 4);
+				expect(input.runtimeManifest).toEqual(
+					input.dryRun ? undefined : runtimeManifest,
+				);
 				expect(
 					input.classicResourceAssets.every(
 						(asset) => !("file" in asset) && !("url" in asset),

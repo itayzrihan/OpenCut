@@ -18,6 +18,39 @@ function project(): Pick<TProject, "metadata" | "hyperframesCompositions"> {
 	};
 }
 
+test("layer inspection reuses the preview session and honors cancellation and scope", async () => {
+	const fixture = renderFixture();
+	const cache = new HyperframesRenderCache();
+	const current = project();
+	try {
+		cache.update({ project: current, mediaAssets: [] });
+		await cache
+			.getContext(current)!
+			.renderTo({
+				composition: current.hyperframesCompositions!.main,
+				timeSeconds: 1,
+				target: fixture.target,
+			});
+		const input = { project: current, assetId: "main" };
+		const manifest = await cache.readManifest(input);
+		expect(manifest.sourceFingerprint).toBe("fixture");
+		manifest.diagnostics.push("local mutation");
+		expect((await cache.readManifest(input)).diagnostics).toEqual([]);
+		expect(fixture.count("open")).toBe(1);
+		expect(fixture.count("close")).toBe(0);
+		await expect(
+			cache.readManifest({ ...input, signal: AbortSignal.abort() }),
+		).rejects.toThrow();
+		const pending = cache.readManifest(input);
+		cache.update({ project: null, mediaAssets: [] });
+		await expect(pending).rejects.toThrow();
+		await expect(cache.readManifest(input)).rejects.toThrow();
+	} finally {
+		cache.dispose();
+		fixture.restore();
+	}
+});
+
 test("canonical media republishing, loading, names and unrelated media keep frames and browsers warm", async () => {
 	const fixture = renderFixture();
 	const cache = new HyperframesRenderCache();

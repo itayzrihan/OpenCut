@@ -81,6 +81,8 @@ impl ClassicComposition {
             height: u32,
             fps: f64,
             duration_seconds: f64,
+            #[serde(default)]
+            runtime_manifest: Option<crate::HyperframesRuntimeManifest>,
         }
         let p: Properties = serde_json::from_value(Value::Object(self.properties.clone()))
             .map_err(|e| invalid(&format!("invalid composition: {e}")))?;
@@ -91,18 +93,25 @@ impl ClassicComposition {
             height: p.height,
             fps: p.fps,
             duration_seconds: p.duration_seconds,
+            runtime_manifest: p.runtime_manifest,
         })
     }
 }
 
 impl From<HyperframesComposition> for ClassicComposition {
     fn from(value: HyperframesComposition) -> Self {
-        let properties = serde_json::json!({"compositionId":value.composition_id,
+        let mut properties = serde_json::json!({"compositionId":value.composition_id,
             "width":value.width, "height":value.height, "fps":value.fps,
             "durationSeconds":value.duration_seconds})
         .as_object()
         .unwrap()
         .clone();
+        if let Some(manifest) = value.runtime_manifest {
+            properties.insert(
+                "runtimeManifest".into(),
+                serde_json::to_value(manifest).unwrap(),
+            );
+        }
         Self {
             source: value.source,
             properties,
