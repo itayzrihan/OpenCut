@@ -17,12 +17,12 @@ is implemented; the product integration is not complete.
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit and three-package capture benchmarks recorded; full interface and live playback comparison pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
-| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
+| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; isolated live preview supports native layers above and below one eligible DOM composition, with two real Brag packages matching sampled full captures; multiple live surfaces, video/canvas and speed pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; two-package seek acknowledgement measurements recorded; end-to-end frame rate and large mixed timelines pending |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; actual six-second Classic playback measured at 29.2 completed preview frames/s for one live compound versus 9.2–10 with capture; a second compound still reduces throughput to 9.8; multiple live surfaces and large-timeline coverage pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
 
 ## Inspected evidence (2026-10-03)
@@ -875,6 +875,66 @@ Verification:
   `.local/hf-overlay-gpu-probe.html`, `.local/hf-overlay-webgpu-result.json`
   and `.local/hf-overlay-webgl-result.json`.
 
+### Measured Classic playback and remaining capture bottleneck (2026-10-04)
+
+The editor now has an opt-in playback probe at `?renderPerf=1`. It records
+completed preview frames, distinct timeline frames, gaps between those frames,
+render duration, lag behind the existing playback clock and failed renders.
+Preparation and paused editing are excluded. Seek, stop and disposal delimit
+measurement windows, and stale in-flight frames cannot contaminate a later run.
+Windows contain at most 240 completed samples. Console output stays local and
+contains numeric diagnostics rather than source content. The existing pipeline
+profiler also emits a JSON summary for inspection.
+
+For controlled comparisons, adding `&hyperframesPreview=capture` disables live
+surfaces for that document while retaining the same project, source, audio,
+native renderer and preview resolution. This override requires diagnostics to
+be enabled and does not change the saved project or export behavior.
+
+Two six-second benchmark projects were prepared through the existing scoped
+project/media APIs using the imported `advanced-audio-test-final` source. Both
+use a native blue image, native translucent text and the compound's audio. The
+second places two occurrences of the **same source and time** side by side.
+This does not establish performance for different source packages.
+
+| Actual editor scenario | First / repeated completed frames per second | First / repeated median render time | First / repeated p95 render time |
+| --- | --- | --- | --- |
+| One live compound between native layers | 29.24 / 29.21 | 3.1 / 3.0 ms | 7.0 / 6.5 ms |
+| Same project, capture override | 10.00 / 9.17 | 75.6 / 82.7 ms | 127.4 / 154.1 ms |
+| Two occurrences, current one-live/one-captured path | 9.84 / 9.84 | 79.0 / 81.4 ms | 139.3 / 129.9 ms |
+
+- Target: 30 fps. Each run lasted approximately six seconds and reported zero
+  render errors. The live runs completed 175 distinct frames each. The capture
+  runs completed 60 and 55; the two-occurrence runs completed 59 each. The latter
+  had mean transport lag around 80 ms. These are render-completion rates in the
+  actual Classic UI, including source resolution and native composition, not
+  physical display-refresh measurements or isolated seek acknowledgements.
+- Environment: the same local Next.js webpack development server and Codex
+  in-app browser, a 1280x720 browser viewport, DPR 1, a 640x360 logical scene and
+  a 451x253 compositor output. The browser panel was hidden and the document
+  reported `visibilityState: visible`. Production builds, visible-panel timing,
+  full-screen playback and other devices remain unmeasured.
+- The repeated two-occurrence pipeline summary attributes about 81.5 ms per
+  frame to source resolution (two measured groups), about 1 ms to the two GPU
+  submissions, and about 0.4 ms to texture synchronization. The existing generic
+  `preview.frame.interval` statistic includes pauses between runs; use the new
+  playback-only reports for throughput. Capture remains the dominant cost.
+- Next performance work should support multiple live occurrences and manage
+  their session lifetimes explicitly. Currently one live surface pins one of
+  two client sessions, and each host session keeps a headless capture browser
+  even while its DOM surface is displayed. Simply adding more iframes would
+  conflict with these leases and the host's four-capture/eight-preview bounds.
+- Probe tests passed three tests (nine assertions), covering disabled and paused
+  collection, duplicate frames, late completion after seek/pause, bounded
+  windows and failure counts. Scoped TypeScript including the new tests and
+  changed-file ESLint passed. No canonical state or capabilities were added.
+- Local evidence: `.local/hf-editor-playback-benchmark.json` (six raw reports
+  and pipeline summaries), `.local/hf-playback-fixtures.json`,
+  `.local/hf-playback-fixtures.ts`, and
+  `.local/hf-playback-two-compositions.png`. Benchmark project IDs are
+  `e8b3c007-9ed8-4cd1-a75f-c04c394814e9` and
+  `28760c93-3b7d-4ff2-98b9-026ae72e0597` in the isolated integration account.
+
 ## Next implementation sequence
 
 1. The GPU startup/recovery fix above covers the observed black preview. Exercise
@@ -887,8 +947,10 @@ Verification:
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
 3. Extend the implemented native/live/native preview to multiple live surfaces,
-   video/canvas and dynamic resource cases after fidelity tests. Measure actual
-   editor playback frame rate. Keep transport and edits canonical and local
+   video/canvas and dynamic resource cases after fidelity tests. Use the measured
+   two-occurrence bottleneck and the probe above to verify improvements, then
+   broaden playback measurements to the remaining projects and large timelines.
+   Keep transport and edits canonical and local
    control endpoints authenticated and loopback-only.
 4. Extend the implemented expandable timeline rows with child selection and canonical edits;
    resolve anonymous/generated source identity before offering source edits.

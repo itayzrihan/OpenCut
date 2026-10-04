@@ -3,13 +3,15 @@
  *
  * Toggle at runtime from the devtools console:
  *   window.__renderPerf = true
+ * Or load the editor with ?renderPerf=1. Summaries include a JSON console line
+ * for reproducible local comparisons.
  *
  * Every FLUSH_EVERY frames the aggregator dumps:
  *   - per-span timing summary (count / mean / p50 / p95 / max, in ms)
  *   - per-counter totals (uploads, canvas allocations by kind, etc.)
  *
- * Zero overhead when disabled: `isRenderPerfEnabled()` short-circuits before
- * any recording happens, so call sites only pay for a global read.
+ * When disabled, `isRenderPerfEnabled()` short-circuits before recording.
+ * The URL switch is read once per document; frame calls use cached flags.
  */
 
 type SpanSample = number;
@@ -31,6 +33,7 @@ const pendingCountersThisFrame = new Map<string, number>();
 const frameMarkers = new Map<string, number>();
 
 let framesSinceFlush = 0;
+let enabledByQuery: boolean | undefined;
 
 declare global {
 	interface Window {
@@ -39,7 +42,11 @@ declare global {
 }
 
 export function isRenderPerfEnabled(): boolean {
-	return typeof window !== "undefined" && window.__renderPerf === true;
+	if (typeof window === "undefined") return false;
+	enabledByQuery ??=
+		new URLSearchParams(window.location?.search ?? "").get("renderPerf") ===
+		"1";
+	return window.__renderPerf === true || enabledByQuery;
 }
 
 export function recordSpan({
@@ -186,6 +193,9 @@ function flush(): void {
 	if (spanRows.length > 0) console.table(spanRows);
 	if (counterRows.length > 0) console.table(counterRows);
 	console.groupEnd();
+	console.info(
+		`[render-perf-json] ${JSON.stringify({ frames: framesSinceFlush, spans: spanRows, counters: counterRows })}`,
+	);
 
 	spans.clear();
 	counters.clear();

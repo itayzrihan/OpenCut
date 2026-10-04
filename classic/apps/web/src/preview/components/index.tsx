@@ -21,6 +21,10 @@ import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { HyperframesLivePreview } from "@/hyperframes/live-preview";
+import {
+	PreviewPlaybackProbe,
+	forceHyperframesCaptureForDiagnostics,
+} from "@/diagnostics/preview-playback";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
@@ -209,6 +213,7 @@ function PreviewCanvas({
 	const { width: nativeWidth, height: nativeHeight } = usePreviewSize();
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
+	const playbackProbe = useMemo(() => new PreviewPlaybackProbe(), []);
 	const activeProject = useEditorProject((e) => e.project.getActive());
 	const renderTree = useEditorRenderer((e) => e.renderer.getRenderTree());
 	const isExporting = useEditorRenderer((e) => e.renderer.isExporting);
@@ -327,7 +332,12 @@ function PreviewCanvas({
 	);
 
 	useEffect(() => {
-		if (!liveMountRef.current || isExporting) return;
+		if (
+			!liveMountRef.current ||
+			isExporting ||
+			forceHyperframesCaptureForDiagnostics()
+		)
+			return;
 		const live = new HyperframesLivePreview({
 			mount: liveMountRef.current,
 			width: nativeWidth,
@@ -386,6 +396,7 @@ function PreviewCanvas({
 		lastSceneRef.current = renderTree;
 		lastFrameRef.current = frame;
 		const start = performance.now();
+		const ticket = playbackProbe.beginFrame({ frame });
 		const rendered = livePreviewRef.current
 			? livePreviewRef.current.render({
 					node: renderTree,
@@ -395,6 +406,15 @@ function PreviewCanvas({
 			: renderer.render({ node: renderTree, time: renderTime });
 		void rendered
 			.then(() => {
+				if (ticket) {
+					playbackProbe.completeFrame({
+						ticket,
+						transportLagMs:
+							(Math.max(0, editor.playback.getCurrentTime() - renderTime) *
+								1000) /
+							TICKS_PER_SECOND,
+					});
+				}
 				incrementCounter({ name: "preview.rendered" });
 				recordSpan({
 					name: "preview.renderTotal",
@@ -403,6 +423,7 @@ function PreviewCanvas({
 				recordFrameInterval({ name: "preview.frame" });
 			})
 			.catch((error: unknown) => {
+				playbackProbe.failFrame({ ticket });
 				lastFrameRef.current = -1;
 				if (renderAttemptRef.current === attempt) setPreviewFailed(true);
 				console.error("Preview render failed:", error);
@@ -437,7 +458,26 @@ function PreviewCanvas({
 		editor.renderer,
 		editor.timeline,
 		scheduleRender,
+		playbackProbe,
 	]);
+
+	useEffect(() => {
+		const sync = () =>
+			playbackProbe.setPlaying({
+				playing: editor.playback.getIsPlaying() && !isExporting,
+				fps: renderer.fps.numerator / renderer.fps.denominator,
+			});
+		sync();
+		const unsubscribe = editor.playback.subscribe(sync);
+		const unsubscribeSeek = editor.playback.onSeek(() =>
+			playbackProbe.restartForSeek(),
+		);
+		return () => {
+			unsubscribe();
+			unsubscribeSeek();
+			playbackProbe.stop({ reason: "dispose" });
+		};
+	}, [editor.playback, isExporting, playbackProbe, renderer]);
 
 	useEffect(() => {
 		runRenderRef.current = render;
