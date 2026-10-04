@@ -20,7 +20,7 @@ type Node = {
 	[key: string]: unknown;
 };
 
-// A generated clip may use helpers, loops, computed starts and DOM references.
+// Generated and authored clips may use helpers, loops, computed starts and DOM references.
 // Only a GSAP clock is supported. A custom seek hook must delegate to that
 // timeline without changing DOM or using a second author-defined clock.
 function delegatesSeek({
@@ -78,7 +78,7 @@ export function compileGeneratedHyperframesLayerMove(
 	);
 	if (!timelines.size)
 		throw new Error(
-			"Generated layer timing requires a registered GSAP timeline.",
+			"Runtime layer timing requires a registered GSAP timeline.",
 		);
 	for (const ast of parsed) {
 		const pending: unknown[] = [ast.ast];
@@ -97,7 +97,7 @@ export function compileGeneratedHyperframesLayerMove(
 				!delegatesSeek({ node: node.right, timelines })
 			)
 				throw new Error(
-					"This generated layer uses a custom seek clock. Edit its source timing instead.",
+					"This layer uses a custom seek clock. Edit its source timing instead.",
 				);
 			if (
 				node.type === "AssignmentExpression" &&
@@ -129,7 +129,7 @@ export function compileGeneratedHyperframesLayerMove(
 					(method === "add" && node.callee?.object?.property?.name === "ticker")
 				)
 					throw new Error(
-						"Generated layer timing cannot move asynchronous or non-GSAP animation. Edit its source instead.",
+						"Runtime layer timing cannot move asynchronous or non-GSAP animation. Edit its source instead.",
 					);
 			}
 			for (const [key, child] of Object.entries(node))
@@ -141,9 +141,7 @@ export function compileGeneratedHyperframesLayerMove(
 	);
 	const tail = plan.scripts.at(-1);
 	if (!tail || tail.content !== "" || tail.startByte === null)
-		throw new Error(
-			"The generated layer move is missing its canonical script slot.",
-		);
+		throw new Error("The layer move is missing its canonical script slot.");
 	const input = {
 		key: plan.layerKey,
 		id: plan.elementId,
@@ -202,9 +200,10 @@ function applyGeneratedLayerMove(input: {
 				(node) => (node.id || node.getAttribute("data-hf-id")) === input.id,
 			).length !== 1
 		)
-			throw new Error("The generated layer identity changed.");
+			throw new Error("The layer identity changed.");
 		const startAttribute = target.getAttribute("data-start");
 		const durationAttribute = target.getAttribute("data-duration");
+		const endAttribute = target.getAttribute("data-end");
 		const start = Number(startAttribute),
 			duration = Number(durationAttribute);
 		if (
@@ -212,10 +211,14 @@ function applyGeneratedLayerMove(input: {
 			!durationAttribute?.trim() ||
 			!Number.isFinite(start) ||
 			!Number.isFinite(duration) ||
+			(endAttribute !== null &&
+				(!endAttribute.trim() ||
+					!Number.isFinite(Number(endAttribute)) ||
+					Math.abs(Number(endAttribute) - start - duration) > 1e-6)) ||
 			Math.abs(start - input.from) > 1e-6 ||
 			Math.abs(duration - input.duration) > 1e-6
 		)
-			throw new Error("The generated layer timing changed.");
+			throw new Error("The layer timing changed.");
 		const composition = target.closest("[data-composition-id]");
 		if (
 			!composition ||
@@ -224,16 +227,14 @@ function applyGeneratedLayerMove(input: {
 			throw new Error("Nested composition clocks require source editing.");
 		if (
 			target.querySelector(
-				"[data-start], [data-duration], [data-composition-id], animate, animateMotion, animateTransform, set, video, audio, canvas",
+				"[data-start], [data-duration], [data-end], [data-composition-id], [data-composition-src], animate, animateMotion, animateTransform, set, video, audio, canvas, iframe, template",
 			)
 		)
-			throw new Error(
-				"This generated layer contains another timing or media clock.",
-			);
+			throw new Error("This layer contains another timing or media clock.");
 		const timelines = [...new Set(Object.values(page.__timelines ?? {}))];
 		if (timelines.length !== 1)
 			throw new Error(
-				"Generated layer timing requires one registered GSAP timeline.",
+				"Runtime layer timing requires one registered GSAP timeline.",
 			);
 		const timeline = timelines[0];
 		if (timeline.timeScale() !== 1 || timeline.repeat() !== 0)
@@ -315,9 +316,7 @@ function applyGeneratedLayerMove(input: {
 				throw new Error("Off-timeline animation requires source editing.");
 		}
 		if (!changes.length)
-			throw new Error(
-				"No owned GSAP animation was found for this generated layer.",
-			);
+			throw new Error("No owned GSAP animation was found for this layer.");
 		// All ownership and clock checks finish before the first mutation.
 		for (const change of changes) change.tween.startTime(change.start);
 		target.setAttribute("data-start", String(input.to));

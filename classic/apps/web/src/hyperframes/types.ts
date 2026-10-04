@@ -105,8 +105,11 @@ export interface HyperframesLayerSource {
 }
 
 /** Canonical plan consumed by the pinned GSAP compiler adapter. */
+export type HyperframesLayerMoveStrategy = "auto" | "source" | "runtime";
+
 export interface HyperframesLayerMovePlan {
 	generated: boolean;
+	strategy: Exclude<HyperframesLayerMoveStrategy, "auto">;
 	sourceFingerprint: string;
 	layerKey: string;
 	file: string;

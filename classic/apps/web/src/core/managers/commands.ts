@@ -827,6 +827,8 @@ export class CommandManager {
 			| import("@/hyperframes/types").HyperframesSource
 			| undefined;
 		let moveFingerprint = "";
+		let moveStrategy: import("@/hyperframes/types").HyperframesLayerMoveStrategy =
+			"auto";
 		if (input.kind === "layerMove") {
 			const moveInput = {
 				source,
@@ -834,15 +836,28 @@ export class CommandManager {
 				layerKey: input.layerKey,
 				startSeconds: input.startSeconds,
 			};
-			const plan = this.canonical.planHyperframesLayerMove(moveInput);
+			let plan = this.canonical.planHyperframesLayerMove(moveInput);
 			const { compileHyperframesLayerMove } =
 				await import("@/hyperframes/layer-move-compiler");
 			checkTarget();
-			moveScripts = compileHyperframesLayerMove({ plan });
+			try {
+				moveScripts = compileHyperframesLayerMove({ plan });
+			} catch (error) {
+				if (plan.strategy !== "source") throw error;
+				// Rust revalidates eligibility. The runtime adapter handles helper
+				// functions only after checking actual GSAP target ownership.
+				plan = this.canonical.planHyperframesLayerMove({
+					...moveInput,
+					strategy: "runtime",
+				});
+				moveScripts = compileHyperframesLayerMove({ plan });
+			}
+			moveStrategy = plan.strategy;
 			if (!this.canonical || this.canonical.projectId !== projectId)
 				throw new Error("The canonical project was closed");
 			movedSource = this.canonical.prepareHyperframesLayerMove({
 				...moveInput,
+				strategy: moveStrategy,
 				scripts: moveScripts,
 			});
 			moveFingerprint = plan.sourceFingerprint;
@@ -891,6 +906,7 @@ export class CommandManager {
 							...target,
 							layerKey: input.layerKey,
 							startSeconds: input.startSeconds,
+							strategy: moveStrategy,
 							sourceFingerprint: prepared.sourceFingerprint,
 							scripts: moveScripts!,
 						});

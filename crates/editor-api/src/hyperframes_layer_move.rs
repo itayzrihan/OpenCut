@@ -11,6 +11,30 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum HyperframesLayerMoveStrategy {
+    #[default]
+    Auto,
+    Source,
+    Runtime,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct HyperframesLayerMoveTiming {
+    pub start_seconds: f64,
+    pub strategy: HyperframesLayerMoveStrategy,
+}
+
+impl From<f64> for HyperframesLayerMoveTiming {
+    fn from(start_seconds: f64) -> Self {
+        Self {
+            start_seconds,
+            strategy: HyperframesLayerMoveStrategy::Auto,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HyperframesMoveScript {
@@ -27,8 +51,10 @@ pub struct HyperframesMoveScript {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HyperframesLayerMovePlan {
-    /// No authored tag exists; the compiler emits a checked GSAP runtime edit.
+    /// Whether the target has no authored tag. Independent of compiler strategy.
     pub generated: bool,
+    /// Resolved compiler strategy, never Auto.
+    pub strategy: HyperframesLayerMoveStrategy,
     pub source_fingerprint: String,
     pub layer_key: String,
     pub file: String,
@@ -57,19 +83,24 @@ pub fn plan_hyperframes_layer_move(
     source: &HyperframesSource,
     manifest: &HyperframesRuntimeManifest,
     layer_key: &str,
-    start_seconds: f64,
+    timing: impl Into<HyperframesLayerMoveTiming>,
 ) -> Result<HyperframesLayerMovePlan, ModelError> {
+    let HyperframesLayerMoveTiming {
+        start_seconds,
+        strategy,
+    } = timing.into();
     let location = read_hyperframes_layer_source(source, manifest, layer_key)?;
     let layer = manifest
         .layers
         .iter()
         .find(|layer| layer.key == layer_key)
         .unwrap();
+    let grouped = manifest
+        .layers
+        .iter()
+        .any(|other| other.parent_key.as_deref() == Some(layer_key));
     if layer.kind == HyperframesLayerKind::Composition
-        || manifest
-            .layers
-            .iter()
-            .any(|other| other.parent_key.as_deref() == Some(layer_key))
+        || (grouped && strategy == HyperframesLayerMoveStrategy::Source)
     {
         return Err(invalid(
             "moving a group requires its nested timing to be handled together",
@@ -97,6 +128,8 @@ pub fn plan_hyperframes_layer_move(
         parent = ancestor.parent_key.as_deref();
     }
     if location.resolution == HyperframesSourceResolution::Unresolved
+        && strategy != HyperframesLayerMoveStrategy::Source
+        && !grouped
         && layer.kind == HyperframesLayerKind::Element
         && layer.parent_key.is_none()
         && layer.file.as_deref() == Some(&source.entry_file)
@@ -108,31 +141,10 @@ pub fn plan_hyperframes_layer_move(
             .count()
             == 1
     {
-        let mut html = source.files[&source.entry_file].clone();
-        let mut emitter = DefaultEmitter::<usize>::new_with_span();
-        emitter.naively_switch_states(true);
-        let insertion = Tokenizer::new_with_emitter(html.as_str(), emitter)
-            .find_map(|token| match token.unwrap() {
-                Token::EndTag(tag) if tag.name.as_ref() == b"body" => Some(tag.span.start),
-                _ => None,
-            })
-            .unwrap_or(html.len());
-        // A new tail script runs after synchronous authored construction and
-        // before the player's DOMContentLoaded inventory. Its position cannot
-        // change an existing layer's DOM path.
-        const OPENING: &str = "<script data-opencut-generated-layer-move>";
-        html.insert_str(insertion, &format!("{OPENING}</script>"));
-        let scripts = source_scripts(source, &source.entry_file, &html)?;
-        if scripts
-            .last()
-            .is_none_or(|script| script.start_byte != Some(insertion + OPENING.len()))
-        {
-            return Err(invalid(
-                "generated layers require a final synchronous script slot",
-            ));
-        }
+        let (html, scripts) = runtime_script_slot(source)?;
         return Ok(HyperframesLayerMovePlan {
             generated: true,
+            strategy: HyperframesLayerMoveStrategy::Runtime,
             source_fingerprint: source.fingerprint(),
             layer_key: layer_key.into(),
             file: source.entry_file.clone(),
@@ -257,6 +269,62 @@ pub fn plan_hyperframes_layer_move(
         ));
     }
     let delta = start_seconds - layer.start_seconds;
+    if strategy == HyperframesLayerMoveStrategy::Runtime || grouped {
+        if layer.kind != HyperframesLayerKind::Element
+            || layer.parent_key.is_some()
+            || !crate::hyperframes_layer_edits::hyperframes_layer_is_editable(layer)
+        {
+            return Err(invalid("runtime moves require a top-level element"));
+        }
+        // Untimed images keep their inferred manifest window. Their rendered
+        // visibility comes from the moved parent; independently timed children
+        // need a separate composition-clock contract.
+        let clocks = scraper::Selector::parse("[data-start], [data-duration], [data-end], [data-composition-id], [data-composition-src], audio, video, canvas, iframe, template").unwrap();
+        if authored.select(&clocks).next().is_some() {
+            return Err(invalid("the group contains another timing or media clock"));
+        }
+        let mut descendants = vec![layer_key];
+        let mut index = 0;
+        while index < descendants.len() {
+            let parent = descendants[index];
+            for child in manifest
+                .layers
+                .iter()
+                .filter(|other| other.parent_key.as_deref() == Some(parent))
+            {
+                if child.kind != HyperframesLayerKind::Image
+                    || child.file != layer.file
+                    || !child.key.starts_with(&format!("{layer_key}/"))
+                    || child.start_seconds.abs() > 1e-6
+                    || (child.duration_seconds - manifest.duration_seconds).abs() > 1e-6
+                {
+                    return Err(invalid(
+                        "group children must be untimed images within the selected DOM subtree",
+                    ));
+                }
+                descendants.push(&child.key);
+            }
+            index += 1;
+        }
+        let (html, scripts) = runtime_script_slot(source)?;
+        return Ok(HyperframesLayerMovePlan {
+            generated: false,
+            strategy: HyperframesLayerMoveStrategy::Runtime,
+            source_fingerprint: source.fingerprint(),
+            layer_key: layer_key.into(),
+            file,
+            element_id,
+            start_seconds,
+            duration_seconds: layer.duration_seconds,
+            delta_seconds: delta,
+            local_start_seconds: start_seconds,
+            local_end_seconds: attributes
+                .contains_key("data-end")
+                .then_some(start_seconds + authored_duration),
+            html,
+            scripts,
+        });
+    }
     if (delta * 1000.0 - (delta * 1000.0).round()).abs() > 1e-6 {
         return Err(invalid("layer moves currently use millisecond precision"));
     }
@@ -282,6 +350,7 @@ pub fn plan_hyperframes_layer_move(
     let scripts = source_scripts(source, &file, &html)?;
     Ok(HyperframesLayerMovePlan {
         generated: false,
+        strategy: HyperframesLayerMoveStrategy::Source,
         source_fingerprint: source.fingerprint(),
         layer_key: layer_key.into(),
         file,
@@ -297,6 +366,35 @@ pub fn plan_hyperframes_layer_move(
         html,
         scripts,
     })
+}
+
+fn runtime_script_slot(
+    source: &HyperframesSource,
+) -> Result<(String, Vec<HyperframesMoveScript>), ModelError> {
+    let mut html = source.files[&source.entry_file].clone();
+    let mut emitter = DefaultEmitter::<usize>::new_with_span();
+    emitter.naively_switch_states(true);
+    let insertion = Tokenizer::new_with_emitter(html.as_str(), emitter)
+        .find_map(|token| match token.unwrap() {
+            Token::EndTag(tag) if tag.name.as_ref() == b"body" => Some(tag.span.start),
+            _ => None,
+        })
+        .unwrap_or(html.len());
+    // Runs after authored construction and before the player's inventory,
+    // without changing existing DOM paths. Retain the original marker for
+    // compatibility with sources containing earlier generated-layer moves.
+    const OPENING: &str = "<script data-opencut-generated-layer-move>";
+    html.insert_str(insertion, &format!("{OPENING}</script>"));
+    let scripts = source_scripts(source, &source.entry_file, &html)?;
+    if scripts
+        .last()
+        .is_none_or(|script| script.start_byte != Some(insertion + OPENING.len()))
+    {
+        return Err(invalid(
+            "runtime moves require a final synchronous script slot",
+        ));
+    }
+    Ok((html, scripts))
 }
 
 fn source_scripts(
@@ -421,13 +519,13 @@ pub fn prepare_hyperframes_layer_move(
     source: &HyperframesSource,
     manifest: &HyperframesRuntimeManifest,
     layer_key: &str,
-    start_seconds: f64,
+    timing: impl Into<HyperframesLayerMoveTiming>,
     scripts: &BTreeMap<String, String>,
 ) -> Result<HyperframesSource, ModelError> {
     if scripts.values().map(String::len).sum::<usize>() > crate::hyperframes::MAX_SOURCE_BYTES {
         return Err(invalid("compiled scripts exceed the source size limit"));
     }
-    let plan = plan_hyperframes_layer_move(source, manifest, layer_key, start_seconds)?;
+    let plan = plan_hyperframes_layer_move(source, manifest, layer_key, timing)?;
     if scripts.len() != plan.scripts.len()
         || scripts
             .keys()
@@ -485,11 +583,13 @@ impl ClassicProject {
         &mut self,
         target: (&str, &str),
         layer_key: &str,
-        start_seconds: f64,
+        timing: impl Into<HyperframesLayerMoveTiming>,
         source_fingerprint: &str,
         scripts: &BTreeMap<String, String>,
         manifest: HyperframesRuntimeManifest,
     ) -> Result<(), ModelError> {
+        let timing = timing.into();
+        let start_seconds = timing.start_seconds;
         let (scene_id, element_id) = target;
         let (_, composition, _) = self.hyperframes_clip_composition(scene_id, element_id)?;
         if composition.source.fingerprint() != source_fingerprint {
@@ -499,13 +599,12 @@ impl ClassicProject {
             .runtime_manifest
             .as_ref()
             .ok_or_else(|| invalid("refresh the layer inventory first"))?;
-        let plan =
-            plan_hyperframes_layer_move(&composition.source, original, layer_key, start_seconds)?;
+        let plan = plan_hyperframes_layer_move(&composition.source, original, layer_key, timing)?;
         let source = prepare_hyperframes_layer_move(
             &composition.source,
             original,
             layer_key,
-            start_seconds,
+            timing,
             scripts,
         )?;
         manifest.validate(&source)?;

@@ -464,7 +464,7 @@ test("layer move compiles source and commits history, while cancellation and con
 	const { HyperframesRenderClient } =
 		await import("@/hyperframes/render-client");
 	try {
-		for (const outcome of ["commit", "cancel", "revision"]) {
+		for (const outcome of ["commit", "cancel", "revision", "helper"]) {
 			const host = createHost();
 			const runtime = await createCanonicalTestRuntime();
 			await host.manager.enableCanonical({ runtime });
@@ -472,7 +472,7 @@ test("layer move compiles source and commits history, while cancellation and con
 				entryFile: "index.html",
 				resourceAssetIds: {},
 				files: {
-					"index.html": `<div data-composition-id="main" data-width="320" data-height="180" data-duration="6"><div id="paint" data-start="1" data-duration="2"></div></div><script>const tl=gsap.timeline({paused:true});tl.to('#paint',{x:100,duration:2},1);window.__timelines={main:tl};</script>`,
+					"index.html": `<div data-composition-id="main" data-width="320" data-height="180" data-duration="6"><div id="paint" data-start="1" data-duration="2"></div></div><script>const tl=gsap.timeline({paused:true});${outcome === "helper" ? "function motion(t){tl.to('#paint',{x:100,duration:2},t)}motion(1);" : "tl.to('#paint',{x:100,duration:2},1);"}window.__timelines={main:tl};</script>`,
 				},
 			};
 			const manifestFor = (
@@ -496,11 +496,17 @@ test("layer move compiles source and commits history, while cancellation and con
 							elementId: "paint",
 							label: "paint",
 							kind: "element",
-							startSeconds: Number(
-								parseHTML(prepared.files["index.html"])
-									.document.getElementById("paint")!
-									.getAttribute("data-start"),
-							),
+							startSeconds:
+								outcome === "helper" &&
+								prepared.files["index.html"].includes(
+									"data-opencut-generated-layer-move",
+								)
+									? 3
+									: Number(
+											parseHTML(prepared.files["index.html"])
+												.document.getElementById("paint")!
+												.getAttribute("data-start"),
+										),
 							durationSeconds: 2,
 							trackIndex: 0,
 							resourcePath: null,
@@ -554,7 +560,11 @@ test("layer move compiles source and commits history, while cancellation and con
 				});
 				await Promise.race([entered.promise, pending]);
 				expect(checked).toHaveLength(1);
-				expect(checked[0].files["index.html"]).toContain("duration:2},3)");
+				expect(checked[0].files["index.html"]).toContain(
+					outcome === "helper"
+						? "data-opencut-generated-layer-move"
+						: "duration:2},3)",
+				);
 				expect(host.project()).toEqual(before);
 				if (outcome === "cancel") controller.abort();
 				if (outcome === "revision")
@@ -563,7 +573,7 @@ test("layer move compiles source and commits history, while cancellation and con
 					});
 				const current = structuredClone(host.project());
 				resume.resolve();
-				if (outcome === "commit") {
+				if (outcome === "commit" || outcome === "helper") {
 					await pending;
 					const after = structuredClone(host.project());
 					expect(

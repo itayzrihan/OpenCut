@@ -91,6 +91,8 @@ struct PlanLayerMoveInput {
     manifest: crate::HyperframesRuntimeManifest,
     layer_key: String,
     start_seconds: f64,
+    #[serde(default)]
+    strategy: crate::HyperframesLayerMoveStrategy,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -100,6 +102,8 @@ struct PrepareLayerMoveInput {
     manifest: crate::HyperframesRuntimeManifest,
     layer_key: String,
     start_seconds: f64,
+    #[serde(default)]
+    strategy: crate::HyperframesLayerMoveStrategy,
     scripts: BTreeMap<String, String>,
 }
 
@@ -113,6 +117,8 @@ struct MoveLayerInput {
     source_fingerprint: String,
     layer_key: String,
     start_seconds: f64,
+    #[serde(default)]
+    strategy: crate::HyperframesLayerMoveStrategy,
     scripts: BTreeMap<String, String>,
     manifest: crate::HyperframesRuntimeManifest,
 }
@@ -267,7 +273,7 @@ pub(super) fn register_hyperframes_operations(
         registry,
         "hyperframes.layer.move.plan",
         "Plan a HyperFrames layer move",
-        "Plans source HTML and script compilation for a uniquely authored timed leaf or a generated top-level GSAP element. Keeps source duration fixed and validates parent windows. Generated elements require checked runtime ownership in isolated preflight. Shared targets and nested groups require source editing. Pure source analysis; does not execute scripts.",
+        "Plans source HTML and script compilation for an authored timed leaf or a top-level GSAP element or group with untimed images. Auto selects runtime for groups and generated elements; request runtime for authored helper functions. Keeps source duration fixed and validates parent windows. Runtime moves require checked animation ownership in isolated preflight. Independent nested clocks and shared targets require source editing. Pure source analysis; does not execute scripts.",
         "hyperframes",
         AccessLevel::Read,
         true,
@@ -279,7 +285,10 @@ pub(super) fn register_hyperframes_operations(
                 &input.source,
                 &input.manifest,
                 &input.layer_key,
-                input.start_seconds,
+                crate::HyperframesLayerMoveTiming {
+                    start_seconds: input.start_seconds,
+                    strategy: input.strategy,
+                },
             )
             .map_err(model_error)?;
             check_cancelled(&context)?;
@@ -302,7 +311,10 @@ pub(super) fn register_hyperframes_operations(
                 &input.source,
                 &input.manifest,
                 &input.layer_key,
-                input.start_seconds,
+                crate::HyperframesLayerMoveTiming {
+                    start_seconds: input.start_seconds,
+                    strategy: input.strategy,
+                },
                 &input.scripts,
             )
             .map_err(model_error)?;
@@ -349,7 +361,10 @@ pub(super) fn register_hyperframes_operations(
                             .move_hyperframes_layer(
                                 (&input.scene_id, &input.element_id),
                                 &input.layer_key,
-                                input.start_seconds,
+                                crate::HyperframesLayerMoveTiming {
+                                    start_seconds: input.start_seconds,
+                                    strategy: input.strategy,
+                                },
                                 &input.source_fingerprint,
                                 &input.scripts,
                                 input.manifest,

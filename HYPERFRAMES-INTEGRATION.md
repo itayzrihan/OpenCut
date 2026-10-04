@@ -18,12 +18,86 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview. Edited Brag standalone and mixed MP4s now pass frame and audio comparisons through the production exporter; full-editor review of the source move and remaining source coverage are pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. Source moves support authored leaves and generated GSAP elements. Six Brag Advanced scenes now pass the 100 ms move audit; generated scene frames and history are verified. Other group clocks, custom timing, trim/drag and full-editor UI checks remain open |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. Source moves support authored leaves, generated GSAP elements and authored groups with untimed images. Six Brag Advanced scenes and all five scenes in the reconstruction have frame/history evidence. Independent child clocks, custom timing, trim/drag and full-editor UI checks remain open |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Edited standalone and mixed Brag MP4s pass. A fresh 179.9667-second, seven-folder MP4 passes complete decoding, 44 frame comparisons including every source boundary, and seven audio comparisons with zero measured offset at 44.1 kHz. This verifies the earlier 6 ms mastering correction through the production exporter; full-editor source-move interaction review remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | The recorded full web run passed 1,018 tests across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Moving authored groups and helper animations (2026-10-05)
+
+The existing `hyperframes.layer.move.plan`, `.prepare` and `.move` capabilities
+now accept `strategy: auto | source | runtime`. Auto retains source rewriting
+for authored leaves and selects the checked runtime adapter for generated
+elements and eligible groups. The Classic command manager retries an authored
+leaf with an explicit runtime plan when its GSAP helper functions cannot be
+rewritten. The resolved strategy follows preparation and commit, so Rust
+recomputes the same plan and validates the resulting manifest.
+
+Runtime moves require a top-level element with one registered GSAP timeline.
+An authored group may contain untimed images. Their inferred manifest windows
+stay unchanged; the parent visibility window and owned GSAP tweens move
+together. Declared child timing, nested compositions, media, Canvas, iframes,
+templates, callbacks and shared animation targets remain unsupported. The host
+checks actual animation ownership before applying the move. Runtime timing
+still requires an explicit `data-duration`; the pinned player did not infer
+an element's duration from an end-only fixture. If `data-end` is also present,
+it must agree with the duration and moves with the start.
+
+This remains a **bridged Classic capability**: the serializable source and
+manifest, target validation, revision check, detachment, opacity preservation
+and history belong to `OpenCutRuntime`. The host compiler and isolated renderer
+provide animation compilation and runtime observations. MCP projects the same
+registry contracts. No second timeline or project state was added.
+
+All five scenes in the actual `hyperframes-7` reconstruction now pass canonical
+preparation, runtime preflight, commit, independent-occurrence preservation and
+Undo/Redo. The phone group, including its ten image children, moves forward
+100 ms. Badge, paper, neon and outro move back 100 ms. The outro retains its
+image child; helper-built text, staggered glyphs and 3D transforms remain in
+the original source scripts.
+
+The comparisons include 31 pairs of raw 720 × 1280 frames across moved scenes,
+unchanged scenes and repeated/reverse seeks. Thirty pairs are byte-identical.
+One repeated phone sample differs in 44 channels, with mean absolute RGBA
+error **0.000150/255**. The unedited phone source also changes on the repeated
+seek (497 channels, mean error 0.002198/255); the edited repeat changes 541
+channels, mean error 0.002348/255. This verifies close frame agreement while
+recording that the 3D phone capture is not perfectly repeatable.
+
+Evidence:
+
+- `.local/hf-authored-retime-probe-20261005.ts` runs the real source through the
+  canonical runtime and isolated production capture host. Use Node with
+  `--import ./.local/hf-node-ts-loader.mjs`, `PROBE_CANONICAL=1`,
+  `PROBE_ASSET=hyperframes-7`, the scene ID, delta and sample times.
+- `.local/hf-generated-retime-h7-{phone,badge,paper,neon,outro}-20261005.json`
+  records source manifests, frame hashes, comparisons and history assertions.
+  The matching `-edited-source.json` files contain the derived sources.
+- `.local/hf-authored-retime-summary-20261005.json` summarizes all five scenes
+  and compares repeat frames within both the original and edited source.
+- The fresh source audit still matches all 72 source files and 265 resources
+  against the original Brag directory. The saved canonical project hash remains
+  `4009c34151657fe201a7eb65f03e12792e617bde6b45b4b6fd98c3a19883d14d`.
+
+Tests cover authored groups, authored helper leaves and generated scenes with
+CSS animation, staggered text, repeated moves, explicit end attributes and
+unchanged image manifests. Registry tests exercise group moves through
+`app.state.read`, including atomic rejection, dry run, cancellation, stale
+revisions, idempotency, independent occurrences, opacity and history. The
+command-manager test verifies automatic helper fallback through preflight and
+commit. Full-editor interaction review remains pending; these checks use
+isolated render fixtures and canonical snapshots.
+
+Validation for this change: 81 editor-api tests, 13 MCP tests and 24 targeted
+web tests pass, with browser coverage enabled and zero skips. The final browser
+and compiler report is `.local/classic-web-tests/1791155909813/summary.json`;
+the source-writer browser and command-manager results are in
+`.local/classic-web-tests/1791155559451/summary.json`. TypeScript, scoped ESLint,
+Clippy with warnings denied, scoped Rust formatting and `git diff --check`
+pass. The rebuilt editor WASM retains all 13 required exports, and the existing
+compositor WASM retains all 37.
 
 ## Edited Brag and full-sequence exports (2026-10-05)
 
@@ -187,7 +261,8 @@ attribute. They must not be shifted as though those inferred windows were
 authored clip starts. Its `poses`, `reveal` and `letters` helpers are candidates
 for an explicit runtime retiming contract; group visibility, CSS clocks,
 staggered descendants and repeated/reverse seeks still need frame validation.
-This audit does not enable group editing.
+That audit did not enable group editing. The authored-group implementation
+above now covers these five scenes; independent child clocks remain open.
 
 ## Moving a uniquely authored leaf — initial implementation (2026-10-05)
 

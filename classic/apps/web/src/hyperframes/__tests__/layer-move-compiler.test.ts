@@ -9,6 +9,7 @@ const html =
 function plan(script: string): HyperframesLayerMovePlan {
 	return {
 		generated: false,
+		strategy: "source",
 		sourceFingerprint: "fixture",
 		layerKey: "dom/1/0",
 		file: "index.html",
@@ -88,6 +89,7 @@ test("generated moves preserve authored helpers and check custom clocks across s
 		"const tl=gsap.timeline({paused:true});for(const node of nodes)tl.to(node,{x:50},1);window.__seekRender=t=>tl.pause().seek(t,false);",
 	);
 	request.generated = true;
+	request.strategy = "runtime";
 	request.scripts.push({
 		key: "tail",
 		file: "index.html",

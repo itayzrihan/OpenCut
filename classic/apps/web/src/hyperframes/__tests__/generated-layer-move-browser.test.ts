@@ -14,8 +14,14 @@ import type { HyperframesSource } from "../types";
 const enabled =
 	process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS === "1" &&
 	!!process.env.OPENCUT_HYPERFRAMES_GSAP_FIXTURE;
-function source(extra = ""): HyperframesSource {
-	return {
+function source({
+	extra = "",
+	authored = null,
+}: {
+	extra?: string;
+	authored?: "group" | "helper" | null;
+} = {}): HyperframesSource {
+	const result: HyperframesSource = {
 		entryFile: "index.html",
 		resourceAssetIds: {},
 		files: {
@@ -35,11 +41,35 @@ window.__timelines={main:tl};window.__seekRender=t=>tl.pause().seek(t,false);
 </script></body></html>`,
 		},
 	};
+	if (authored) {
+		result.files["index.html"] = result.files["index.html"]
+			.replace(
+				'data-duration="8"></div><script>',
+				`data-duration="8"><div id="paint" data-start="1" data-duration="2">${authored === "group" ? '<img id="photo" width="10" height="10" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">' : ""}<i class="letter">a</i><i class="letter">b</i></div><div id="other" data-start="0" data-duration="8"></div></div><script>`,
+			)
+			.replace(
+				"const node=document.createElement('div')",
+				"const node=document.getElementById(id)",
+			)
+			.replace("document.getElementById('root').appendChild(node);", "")
+			.replace(
+				"window.__timelines={main:tl}",
+				"tl.fromTo('.letter',{y:0},{y:10,duration:.4,stagger:.1,immediateRender:false},1.2);window.__timelines={main:tl}",
+			);
+	}
+	if (authored === "helper") {
+		// An explicit end must agree with the duration after both runtime moves.
+		result.files["index.html"] = result.files["index.html"].replace(
+			'id="paint" data-start="1" data-duration="2"',
+			'id="paint" data-start="1" data-duration="2" data-end="3"',
+		);
+	}
+	return result;
 }
 
-test.skipIf(!enabled)(
-	"generated GSAP layers move through canonical history, render with CSS and retain independent occurrences",
-	async () => {
+test.skipIf(!enabled).each([null, "group", "helper"] as const)(
+	"GSAP layers (%s) move through canonical history, render with CSS and retain independent occurrences",
+	async (authored) => {
 		const runtime = await createCanonicalTestRuntime();
 		const session = new CanonicalClassicSession({
 			runtime: await createCanonicalTestRuntime(),
@@ -47,7 +77,7 @@ test.skipIf(!enabled)(
 		});
 		const host = new HyperframesRenderHost(runtime),
 			scope = { accountId: "generated-move", projectId: "classic-project" };
-		const original = source();
+		const original = source({ authored });
 		const capture = async ({
 			input,
 			time,
@@ -127,9 +157,12 @@ test.skipIf(!enabled)(
 				manifest: initial.manifest,
 				layerKey: layer.key,
 				startSeconds: 3,
+				strategy:
+					authored === "helper" ? ("runtime" as const) : ("auto" as const),
 			};
 			const plan = session.planHyperframesLayerMove(input);
-			expect(plan.generated).toBe(true);
+			expect(plan.generated).toBe(!authored);
+			expect(plan.strategy).toBe("runtime");
 			expect(
 				plan.scripts.find((script) => script.file === "gsap.js")
 					?.runtimeLibrary,
@@ -140,6 +173,15 @@ test.skipIf(!enabled)(
 				scripts,
 			});
 			const moved = await capture({ input: updated, time: 3.5 });
+			if (authored === "group") {
+				const photo = initial.manifest.layers.find(
+					(layer) => layer.elementId === "photo",
+				);
+				expect(photo).toBeDefined();
+				expect(
+					moved.manifest.layers.find((layer) => layer.key === photo!.key),
+				).toEqual(photo);
+			}
 			expect(moved.left).toEqual(initial.left);
 			expect(moved.right).toEqual(
 				(await capture({ input: original, time: 3.5 })).right,
@@ -150,6 +192,7 @@ test.skipIf(!enabled)(
 				layerKey: layer.key,
 				startSeconds: 3,
 				sourceFingerprint: plan.sourceFingerprint,
+				strategy: plan.strategy,
 				scripts,
 				manifest: moved.manifest,
 				expectedRevision: session.status().revision,
@@ -172,6 +215,7 @@ test.skipIf(!enabled)(
 				manifest: moved.manifest,
 				layerKey: layer.key,
 				startSeconds: 1.2,
+				strategy: "runtime" as const,
 			};
 			const secondPlan = session.planHyperframesLayerMove(repeatedInput);
 			const second = session.prepareHyperframesLayerMove({
@@ -215,7 +259,7 @@ test.skipIf(!enabled)(
 				"gsap.to('#paint',{y:40,duration:4});",
 				"tl.to('#paint',{x:()=>tl.time()*10,duration:1},1);",
 			]) {
-				const inputSource = source(extra);
+				const inputSource = source({ extra });
 				const opened = await host.open({
 					scope,
 					source: inputSource,

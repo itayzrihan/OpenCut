@@ -1,4 +1,5 @@
 use opencut_editor_api::{
+    HyperframesLayerKind, HyperframesLayerMoveStrategy, HyperframesLayerMoveTiming,
     HyperframesRuntimeManifest, HyperframesSource, InvocationContext, OpenCutRuntime,
     plan_hyperframes_layer_move, prepare_hyperframes_layer_move,
 };
@@ -10,6 +11,80 @@ fn source() -> HyperframesSource {
         "index.html":"<!doctype html><div data-composition-id=main data-width=320 data-height=180 data-duration=10>\r\n<!-- שלום 😀 --><div id='paint' data-start='1' data-duration='2' data-end='3' title='1 > 0'></div><div id='other' data-start=0 data-duration=10></div></div><script>const tl=gsap.timeline({paused:true});tl.to('#paint',{x:100,duration:2},1);</script><script src='motion.js'></script>",
         "motion.js":"// external source\r\n"
     }})).unwrap()
+}
+
+fn grouped_source() -> (HyperframesSource, HyperframesRuntimeManifest) {
+    let mut source = source();
+    let insertion = source.files["index.html"]
+        .find("title='1 > 0'></div>")
+        .unwrap()
+        + "title='1 > 0'>".len();
+    source
+        .files
+        .get_mut("index.html")
+        .unwrap()
+        .insert_str(insertion, "<img id='photo'>");
+    let mut manifest = manifest(&source);
+    let mut image = manifest.layers[1].clone();
+    image.key = "dom/1/0/0/0".into();
+    image.parent_key = Some("dom/1/0/0".into());
+    image.element_id = Some("photo".into());
+    image.kind = HyperframesLayerKind::Image;
+    manifest.layers.push(image);
+    (source, manifest)
+}
+
+#[test]
+fn runtime_groups_preserve_untimed_images_and_reject_independent_clocks() {
+    let (source, manifest) = grouped_source();
+    let timing = HyperframesLayerMoveTiming {
+        start_seconds: 3.123456,
+        strategy: HyperframesLayerMoveStrategy::Auto,
+    };
+    let plan = plan_hyperframes_layer_move(&source, &manifest, "dom/1/0/0", timing).unwrap();
+    assert!(!plan.generated);
+    assert_eq!(plan.strategy, HyperframesLayerMoveStrategy::Runtime);
+    assert!(plan.html.starts_with(&source.files["index.html"]));
+    assert_eq!(plan.local_end_seconds, Some(5.123456));
+    assert!(
+        plan_hyperframes_layer_move(
+            &source,
+            &manifest,
+            "dom/1/0/0",
+            HyperframesLayerMoveTiming {
+                strategy: HyperframesLayerMoveStrategy::Source,
+                ..timing
+            }
+        )
+        .is_err()
+    );
+    for child in [
+        "<img id='photo' data-start='0'>",
+        "<img id='photo' data-end='5'>",
+        "<video id='photo'></video>",
+        "<canvas id='photo'></canvas>",
+        "<iframe id='photo'></iframe>",
+        "<div id='photo' data-composition-src='child.html'></div>",
+    ] {
+        let mut nested = source.clone();
+        nested
+            .files
+            .get_mut("index.html")
+            .unwrap()
+            .clone_from(&source.files["index.html"].replace("<img id='photo'>", child));
+        let mut current = manifest.clone();
+        current.source_fingerprint = nested.fingerprint();
+        assert!(
+            plan_hyperframes_layer_move(&nested, &current, "dom/1/0/0", timing).is_err(),
+            "{child}"
+        );
+    }
+    for (start, duration) in [(1.0, 10.0), (0.0, 2.0)] {
+        let mut current = manifest.clone();
+        current.layers[2].start_seconds = start;
+        current.layers[2].duration_seconds = duration;
+        assert!(plan_hyperframes_layer_move(&source, &current, "dom/1/0/0", timing).is_err());
+    }
 }
 
 fn manifest(source: &HyperframesSource) -> HyperframesRuntimeManifest {
@@ -166,6 +241,11 @@ fn generated_layer_plan_uses_a_tail_slot_and_rejects_ambiguous_or_async_sources(
 
 #[tokio::test]
 async fn move_is_preflighted_atomic_detached_undoable_dry_run_and_idempotent() {
+    verify_move_history(false).await;
+    verify_move_history(true).await;
+}
+
+async fn verify_move_history(grouped: bool) {
     let runtime = OpenCutRuntime::default();
     let classic: Value =
         serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
@@ -176,8 +256,13 @@ async fn move_is_preflighted_atomic_detached_undoable_dry_run_and_idempotent() {
         json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
     )
     .await;
-    let source = source();
-    let old_manifest = manifest(&source);
+    let (source, old_manifest) = if grouped {
+        grouped_source()
+    } else {
+        let source = source();
+        let manifest = manifest(&source);
+        (source, manifest)
+    };
     let imported=call(&runtime,"timeline.hyperframes.import",json!({"projectId":"classic-project","expectedRevision":1,"name":"Move test","source":source,"runtimeManifest":old_manifest})).await;
     call(&runtime,"timeline.hyperframes.insert",json!({"projectId":"classic-project","sceneId":scene,"expectedRevision":2,"assetId":imported["assetId"],"name":"Other occurrence","startSeconds":0})).await;
     call(&runtime,"hyperframes.layer.opacity.set",json!({"projectId":"classic-project","sceneId":scene,"expectedRevision":3,"elementId":imported["itemId"],"layerKey":"dom/1/0/0","opacity":0.5})).await;

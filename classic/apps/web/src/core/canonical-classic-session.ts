@@ -246,6 +246,7 @@ export class CanonicalClassicSession {
 		manifest: HyperframesRuntimeManifest;
 		layerKey: string;
 		startSeconds: number;
+		strategy?: import("@/hyperframes/types").HyperframesLayerMoveStrategy;
 	}): import("@/hyperframes/types").HyperframesLayerMovePlan {
 		return this.call({ capability: "hyperframes.layer.move.plan", input });
 	}
@@ -255,6 +256,7 @@ export class CanonicalClassicSession {
 		manifest: HyperframesRuntimeManifest;
 		layerKey: string;
 		startSeconds: number;
+		strategy?: import("@/hyperframes/types").HyperframesLayerMoveStrategy;
 		scripts: Record<string, string>;
 	}): HyperframesSource {
 		return this.call({ capability: "hyperframes.layer.move.prepare", input });
@@ -267,6 +269,7 @@ export class CanonicalClassicSession {
 		sourceFingerprint: string;
 		layerKey: string;
 		startSeconds: number;
+		strategy?: import("@/hyperframes/types").HyperframesLayerMoveStrategy;
 		scripts: Record<string, string>;
 		manifest: HyperframesRuntimeManifest;
 	}): void {

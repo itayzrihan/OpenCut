@@ -31,7 +31,8 @@ export function compileHyperframesLayerMove({
 	plan: HyperframesLayerMovePlan;
 	document?: Document;
 }): Record<string, string> {
-	if (plan.generated) return compileGeneratedHyperframesLayerMove(plan);
+	if (plan.strategy === "runtime")
+		return compileGeneratedHyperframesLayerMove(plan);
 	const document =
 		parsedDocument ?? new DOMParser().parseFromString(plan.html, "text/html");
 	const roots: ParentNode[] = [document];
