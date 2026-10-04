@@ -174,6 +174,144 @@ ${failure === "decode" ? '<video src="broken.mp4" data-start="0" data-duration="
 const run = promisify(execFile);
 
 browserTest(
+	"cold native video captures display decoded frames after fast seeks and visibility changes",
+	async () => {
+		const directory = await mkdtemp(join(tmpdir(), "opencut-hf-cold-video-"));
+		const videoPath = join(directory, "video.mp4");
+		const runtime = await createCanonicalTestRuntime();
+		const host = new HyperframesPreviewHost();
+		try {
+			await run(
+				process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg",
+				[
+					"-v",
+					"error",
+					"-f",
+					"lavfi",
+					"-i",
+					"testsrc2=size=96x64:rate=30:duration=3",
+					"-an",
+					"-c:v",
+					"libx264",
+					"-crf",
+					"0",
+					"-g",
+					"1",
+					"-preset",
+					"ultrafast",
+					"-y",
+					videoPath,
+				],
+				{ windowsHide: true, timeout: 30_000 },
+			);
+			const references = new Map<number, Buffer>();
+			for (const frame of [12, 60]) {
+				const decoded = await run(
+					process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg",
+					[
+						"-v",
+						"error",
+						"-i",
+						videoPath,
+						"-vf",
+						`select=eq(n\\,${frame})`,
+						"-frames:v",
+						"1",
+						"-f",
+						"image2pipe",
+						"-c:v",
+						"png",
+						"pipe:1",
+					],
+					{
+						windowsHide: true,
+						timeout: 10_000,
+						encoding: "buffer",
+						maxBuffer: 1024 * 1024,
+					},
+				);
+				references.set(
+					frame,
+					await sharp(decoded.stdout).removeAlpha().raw().toBuffer(),
+				);
+			}
+			const source: HyperframesSource = {
+				entryFile: "index.html",
+				resourceAssetIds: { "video.mp4": "video" },
+				files: {
+					"index.html": `<!doctype html><html><body style="margin:0">
+<div data-composition-id="main" data-no-timeline data-width="384" data-height="192" data-duration="4">
+${Array.from({ length: 12 }, (_, i) => `<video id="v${i}" muted playsinline src="video.mp4" data-start="1" data-duration="3" style="position:absolute;left:${(i % 4) * 96}px;top:${Math.floor(i / 4) * 64}px;width:96px;height:64px"></video>`).join("")}
+</div></body></html>`,
+				},
+			};
+			const resources = new Map([
+				[
+					"video.mp4",
+					{
+						path: videoPath,
+						size: (await readFile(videoPath)).length,
+						mimeType: "video/mp4",
+					},
+				],
+			]);
+			// A cold fast decode exposed this intermittently. Repeat with fresh
+			// browser sessions, then cover forward/reverse and hide/reveal too.
+			for (let repeat = 0; repeat < 4; repeat++) {
+				const capture = await HyperframesCaptureSession.open({
+					source,
+					resources,
+					runtime,
+					host,
+				});
+				try {
+					for (const timeSeconds of [1.4, 3, 1.4, 0, 1.4]) {
+						const artifact = await capture.capture({ timeSeconds });
+						const pixels = runtime.readArtifact(artifact.uri);
+						if (timeSeconds === 0) {
+							const alpha = await sharp(pixels)
+								.ensureAlpha()
+								.extractChannel(3)
+								.raw()
+								.toBuffer();
+							expect(alpha.every((value) => value === 0)).toBe(true);
+							continue;
+						}
+						const expected = references.get(timeSeconds === 3 ? 60 : 12)!;
+						for (let i = 0; i < 12; i++) {
+							const actual = await sharp(pixels)
+								.extract({
+									left: (i % 4) * 96,
+									top: Math.floor(i / 4) * 64,
+									width: 96,
+									height: 64,
+								})
+								.removeAlpha()
+								.raw()
+								.toBuffer();
+							let error = 0;
+							for (let n = 0; n < actual.length; n++)
+								error += Math.abs(actual[n] - expected[n]);
+							// Browser and FFmpeg YUV conversion differ slightly; a stale
+							// frame zero has a mean RGB error above 23 in this fixture.
+							expect(error / actual.length).toBeLessThan(2);
+						}
+					}
+				} finally {
+					await capture.close();
+				}
+			}
+		} finally {
+			await host.close();
+			runtime.free();
+			await unlink(videoPath).catch(() => {});
+			await rmdir(directory);
+		}
+	},
+	60_000,
+);
+
+browserTest(
 	"live video and asynchronous canvas match captured pixels across forward, reverse and repeated seeks",
 	async () => {
 		const directory = await mkdtemp(join(tmpdir(), "opencut-hf-live-media-"));

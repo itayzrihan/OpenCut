@@ -23,7 +23,67 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,009 web tests have passing results across 219 isolated suites, including two reruns, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,010 web tests pass across 219 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Cold video capture and seek-performance experiments (2026-10-04)
+
+The shared browser media bridge keeps a `requestVideoFrameCallback` request
+pending for each native video. In software Chrome 152, a paused video's first
+fast seek could leave its displayed surface on frame zero after `seeked`, even
+though `currentTime` and a Canvas copy already contained the requested frame.
+This affected the capture/export adapter. Keeping frame presentation observed
+fixes the reproduced case without changing media time, adding a playback clock,
+or imposing a fixed delay on each frame. The callback runs only when a video
+frame is presented; it stops rearming when its element is disconnected.
+
+This is **Classic-only browser rendering integration**. Source assets, the
+canonical document, capabilities and MCP contracts are unchanged.
+
+### Verification
+
+- A new browser regression generates an all-keyframe H.264 video and compares
+  all twelve native video regions to independent FFmpeg-decoded frames. Four
+  fresh browser sessions cover the first seek, forward/reverse seeks, repeated
+  frames and hide/reveal. The previous implementation fails this test with mean
+  RGB error 23.75 from a stale first frame; the updated implementation passes.
+  Reports: `.local/hf-cold-video-regression-before-20261004/summary.json` and
+  `.local/hf-cold-video-targeted-20261004/summary.json`.
+- Four cold Brag sessions using the local all-keyframe H.264 experiment now
+  match live and capture pixels exactly at 4.2, 5 and 8.5 seconds (twelve frame
+  comparisons). Before the change, cold first captures differed intermittently.
+  Report: `.local/hf-video-cold-fixed-brag-20261004.json`.
+- The full isolated web regression passes all 1,010 tests in 219 suites, with
+  browser coverage enabled, zero failures and zero skips. Report:
+  `.local/hf-cold-video-full-regression-20261004/summary.json`.
+  TypeScript and changed-file ESLint pass. The rejected experiments involving
+  fixed presentation waits, extra animation frames and repeated native seeks
+  are not part of the implementation.
+
+### Performance experiment limits
+
+All-keyframe media copies remain local experiments; no proxy generation or
+substitution is enabled in the product. The original Brag files are untouched.
+Lossless VP9 copies increased median sequential seek acknowledgement from
+44.1 ms to 199.4 ms in the profiled software-browser runs, so that option was
+rejected. With the final fix, identical sequential-seek harnesses measured:
+
+| Portfolio media | Median acknowledgement | p95 acknowledgement | Twelve files |
+| --- | --- | --- | --- |
+| Original H.264 | 43.3 ms | 69.1 ms | 4.30 MB |
+| Lossless all-keyframe H.264 | 23.7 ms | 33.5 ms | 64.21 MB |
+
+The H.264 experiment lowers median seek latency by 45%, but costs 14.9 times
+the source storage. Original/proxy captures are pixel-identical at 4.2, 5 and
+8.5 seconds; live/capture comparisons also match for both variants. Reports:
+`.local/hf-video-final-benchmark-original-20261004.json`,
+`.local/hf-video-final-benchmark-h264-20261004.json`, and
+`.local/hf-video-final-proxy-quality-20261004.json`.
+Broader quality, bounded storage, cancellation and actual editor playback
+measurements are still needed before integration. Seek acknowledgement is not
+editor playback FPS.
+Native continuous playback driven by the parent timeline remains a separate
+unresolved performance option; the pinned runtime's seek API restarts media
+decoders and does not expose an external-clock tick.
 
 ## Native video and asynchronous drawing in live preview (2026-10-04)
 

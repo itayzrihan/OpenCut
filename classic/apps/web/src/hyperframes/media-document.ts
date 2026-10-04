@@ -19,7 +19,25 @@ export function installHyperframesMediaBridge(): void {
 		__player?: { getTime: () => number };
 	};
 	const videos = () => [...document.querySelectorAll("video")];
+	const observed = new WeakSet<HTMLVideoElement>();
+	const observePresentation = (video: HTMLVideoElement) => {
+		if (observed.has(video) || !video.requestVideoFrameCallback) return;
+		observed.add(video);
+		const next = () => {
+			if (!video.isConnected) {
+				observed.delete(video);
+				return;
+			}
+			// Keep a presentation request pending. In software Chrome a paused
+			// video's first fast seek can otherwise leave its native surface on
+			// frame zero even after seeked, while drawImage reads the new frame.
+			// This observes decoded frames; it never advances the media clock.
+			video.requestVideoFrameCallback(next);
+		};
+		next();
+	};
 	const waitForVideo = (video: HTMLVideoElement) => {
+		observePresentation(video);
 		if (!video.currentSrc && !video.src && !video.querySelector("source[src]"))
 			return Promise.resolve();
 		if (video.error)
