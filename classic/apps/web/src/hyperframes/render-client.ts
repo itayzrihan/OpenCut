@@ -31,6 +31,8 @@ export class HyperframesRenderClient {
 		string,
 		Promise<HyperframesRenderSession>
 	>();
+	/** Resolved handles can be released synchronously from pagehide. */
+	private readonly openSessionIds = new Set<string>();
 	private readonly sourceKeys = new WeakMap<
 		HyperframesSource,
 		Promise<string>
@@ -61,11 +63,19 @@ export class HyperframesRenderClient {
 							action: "keepAlive",
 							id,
 						});
-						if (!result.alive && this.sessions.get(key) === session)
+						if (!result.alive && this.sessions.get(key) === session) {
 							this.sessions.delete(key);
+							void this.closeRemote(id);
+						}
 					})
 					.catch(() => {
-						if (this.sessions.get(key) === session) this.sessions.delete(key);
+						if (this.sessions.get(key) === session) {
+							this.sessions.delete(key);
+							void session.then(
+								({ id }) => this.closeRemote(id),
+								() => {},
+							);
+						}
 					});
 		}, 45_000);
 	}
@@ -353,11 +363,10 @@ export class HyperframesRenderClient {
 			window.removeEventListener?.("pagehide", this.onPageHide);
 		clearInterval(this.timer);
 		this.pending.abort();
-		for (const session of this.sessions.values())
-			void session.then(
-				({ id }) => this.closeRemote(id),
-				() => {},
-			);
+		// Start fetch while pagehide is still running; do not defer known
+		// handles to Promise callbacks after the document has departed.
+		for (const id of this.openSessionIds) void this.closeRemote(id);
+		// Opens that finish after disposal close themselves in getSession.
 		this.sessions.clear();
 		this.liveLeases.clear();
 		this.capturedLiveSourceKey = null;
@@ -431,6 +440,7 @@ export class HyperframesRenderClient {
 					await this.closeRemote(result.id);
 					throw new Error("The project render was closed");
 				}
+				this.openSessionIds.add(result.id);
 				return result;
 			});
 			this.sessions.set(key, session);
@@ -493,6 +503,7 @@ export class HyperframesRenderClient {
 	}
 
 	private async closeRemote(id: string): Promise<void> {
+		this.openSessionIds.delete(id);
 		await fetch("/api/hyperframes", {
 			method: "POST",
 			headers: this.headers(),

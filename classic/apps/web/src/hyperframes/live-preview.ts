@@ -63,6 +63,7 @@ type Surface = {
 	readyResolve: () => void;
 	readyReject: (error: Error) => void;
 	readyTimer: ReturnType<typeof setTimeout>;
+	loadingStage: string;
 	sequence: number;
 	waiting?: {
 		sequence: number;
@@ -262,6 +263,7 @@ export class HyperframesLivePreview {
 			}
 		}
 		this.options.mount.style.visibility = "visible";
+		this.options.mount.style.opacity = "1";
 	}
 
 	dispose(): void {
@@ -273,7 +275,10 @@ export class HyperframesLivePreview {
 	}
 
 	private hide(): void {
-		this.options.mount.style.visibility = "hidden";
+		// Keep the preparing iframe renderable while concealing its pixels.
+		// Hidden frames can leave image.decode pending until they are painted.
+		this.options.mount.style.visibility = "visible";
+		this.options.mount.style.opacity = "0";
 	}
 	private clearOverlays(): void {
 		for (const canvas of this.overlays.values()) canvas.remove();
@@ -367,7 +372,7 @@ class LiveOccurrence {
 		this.removeSurface();
 	}
 	private hide(): void {
-		if (this.surface) this.surface.frame.style.visibility = "hidden";
+		if (this.surface) this.surface.frame.style.opacity = "0";
 	}
 
 	private async prepareSurface({
@@ -429,7 +434,8 @@ class LiveOccurrence {
 				frame.tabIndex = -1;
 				frame.referrerPolicy = "no-referrer";
 				Object.assign(frame.style, {
-					visibility: "hidden",
+					visibility: "visible",
+					opacity: "0",
 					position: "absolute",
 					border: "0",
 					pointerEvents: "none",
@@ -452,11 +458,12 @@ class LiveOccurrence {
 					readyReject,
 					sequence: 0,
 					failed: false,
+					loadingStage: "shell",
 					readyTimer: setTimeout(
 						() =>
 							this.failSurface({
 								surface,
-								message: "Live preview readiness timed out after 30 seconds",
+								message: `Live preview readiness timed out after 30 seconds (${surface.loadingStage})`,
 							}),
 						30_000,
 					),
@@ -522,6 +529,11 @@ class LiveOccurrence {
 				message: String(event.data.message).slice(0, 200),
 			});
 		}
+		if (
+			event.data.type === "loading" &&
+			["document", "runtime", "fonts", "images"].includes(event.data.stage)
+		)
+			surface.loadingStage = event.data.stage;
 		if (event.data.type === "ready") {
 			clearTimeout(surface.readyTimer);
 			surface.readyResolve();

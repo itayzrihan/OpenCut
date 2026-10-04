@@ -22,8 +22,8 @@ is implemented; the product integration is not complete.
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9 when all surfaces initialize; a four-source capture-cache defect is fixed; intermittent live readiness failures, mixed/capture throughput and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 981 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved; three consecutive reloads retain all four live surfaces and warmed playback reaches 28.22 fps; mixed/capture throughput, longer stability runs and large-timeline performance remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 982 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
 
 ## Feature preservation regression audit (2026-10-04)
 
@@ -1339,8 +1339,8 @@ fell back to capture. A nominally all-live run then reached only 3.51 fps.
 Diagnostics now report readiness timeout, frame-acknowledgement timeout and
 runtime failure separately; they previously collapsed to a generic capture
 fallback message. The time limits and fallback behavior are unchanged. The
-underlying readiness failure is unresolved, so the 28.89 fps result is
-conditional on all four surfaces initializing successfully. Evidence:
+underlying readiness failure was investigated in the next checkpoint below;
+the original 28.89 fps result required all four surfaces to initialize. Evidence:
 `.local/hf-four-packages-live-readiness-failure.json`.
 
 Verification includes 18 targeted cache/audio/render-tree tests, product
@@ -1364,6 +1364,62 @@ Evidence: `.local/hf-four-packages-fixtures.json`,
 `.local/hf-four-packages-live.jpg` and `.local/hf-four-packages-mixed.jpg`.
 Projects: `286360fa-97fd-480e-8a80-2643311705b6` (live/capture comparison) and
 `3e993c3a-d148-48c5-bdd2-88921f104a2c` (mixed).
+
+## Live image preparation and document cleanup (2026-10-04)
+
+Loading-stage messages now distinguish shell, document, runtime, fonts and
+images. Three observed timeouts in the actual editor stopped at `images`, after
+the runtime and fonts were ready. An isolated four-package Chrome probe passed
+with both `visibility:hidden` and opacity zero, so that smaller probe alone did
+not reproduce the failure. In the editor, loading images observed through the
+opaque frame had completed network loading and valid intrinsic dimensions.
+
+Preparing live frames and their mount now use opacity zero while remaining
+renderable. The compositor reveals the mount only after readiness, the initial
+seek and the native layers are complete. Each occurrence still applies its
+canonical clip opacity. This avoids holding the entire live path on image
+decoding in a visibility-hidden frame. The 30-second readiness limit, capture
+fallback, sandbox, package CSP and silent audio contract are unchanged.
+
+A separate reload issue exposed stale server sessions. Known session handles
+now start their keepalive close requests directly inside `pagehide`, instead of
+waiting for Promise callbacks. Late open responses close their own handles;
+failed heartbeats release forgotten handles. Back/forward-cache preservation
+and the existing bounded server expiry remain in place. Development hot reload
+also retained old server bridge code: the diagnostic run required restarting
+the owned test server before the new loading stages appeared. Temporary server
+session logging was removed after collecting evidence.
+
+Verification on the same four-package project and preview dimensions:
+
+- Three consecutive clean loads/reloads presented **four live surfaces**, with
+  no preparation indicator or new fallback messages. These are short local
+  development runs, not a long-duration or cross-device stability guarantee.
+- Two six-second playback runs completed **155 / 169 frames**, at **25.84 /
+  28.22 fps**, with median render times **6.4 / 4.1 ms** and zero render errors.
+  All four surfaces remained live. The full suite had finished before playback.
+- The pagehide regression first failed because no close request had started
+  when the event returned; it passes with immediate dispatch. A new late-open
+  test verifies exactly one scoped, keepalive close after disposal. Existing
+  capture budgets, audio, account scope, independent leases and bitmap cleanup
+  tests pass. Live tests verify preparation stays transparent, stage forwarding,
+  seek pixels, audio muting and blocked navigation.
+- **982 tests in 215 isolated suites pass, zero failures and zero skips**, in
+  **117.5 seconds**, with Chrome, FFmpeg and the local Brag GSAP fixture enabled.
+  Product TypeScript and changed-file ESLint pass. The previously recorded test
+  fixture typing gaps remain outside this checkpoint.
+
+Evidence: `.local/hf-readiness-reloads-20261004.json`,
+`.local/hf-readiness-playback-20261004.json`,
+`.local/hf-readiness-four-live-20261004.jpg`,
+`.local/hf-live-images-loading.json`,
+`.local/hf-readiness-session-evidence.log`,
+`.local/hf-live-visibility-throttled-probe.json`, and
+`.local/hf-readiness-full-regression-20261004/summary.json`.
+The image-load observation was collected while trying the transparent
+preparation path; it does not prove that every earlier timeout had completed
+the same network requests. Mixed capture throughput and broader stability,
+fidelity and UI work remain open.
 
 ## Complete Brag folder import and timeline navigation (2026-10-04)
 
@@ -1433,8 +1489,9 @@ the final generated composition once resource preparation finishes.
    browser runtime needs a transport contract and tests.
 3. The measured two-occurrence bottleneck is resolved for eligible live content.
    Four distinct packages and mixed live/captured occurrences are now measured;
-   capture still limits throughput. Diagnose the repeated 30-second live-surface
-   readiness timeout observed after reloads. Extend video/canvas and dynamic resource
+   capture still limits throughput. Transparent live preparation passes three
+   consecutive reloads; extend stability coverage beyond that local run.
+   Extend video/canvas and dynamic resource
    support after fidelity tests. Broaden
    playback measurements to the remaining projects and large timelines.
    Keep transport and edits canonical and local

@@ -4,6 +4,45 @@ import { HyperframesRenderClient } from "../render-client";
 import type { HyperframesComposition } from "../types";
 import { composition, renderFixture } from "./render-client-fixture";
 
+test("an open response arriving after disposal closes its handle exactly once", async () => {
+	const entered = Promise.withResolvers<void>();
+	const response = Promise.withResolvers<Response>();
+	const closed: RequestInit[] = [];
+	const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
+		// eslint-disable-next-line opencut/prefer-object-params -- Browser fetch signature.
+		(async (_url: RequestInfo | URL, options?: RequestInit) => {
+			const input = JSON.parse(String(options?.body)) as { action: string };
+			if (input.action === "open") {
+				entered.resolve();
+				return response.promise;
+			}
+			closed.push(options!);
+			return Response.json({ closed: true });
+		}) as typeof fetch,
+	);
+	const client = new HyperframesRenderClient("project-a");
+	try {
+		const opening = client.prepareSource(composition().source);
+		await entered.promise;
+		client.dispose();
+		expect(closed).toHaveLength(0);
+		response.resolve(Response.json({ id: "late-session" }));
+		await expect(opening).rejects.toThrow("closed");
+		client.dispose();
+		expect(closed).toHaveLength(1);
+		expect(closed[0].keepalive).toBe(true);
+		expect(closed[0].signal).toBeUndefined();
+		expect(JSON.parse(String(closed[0].body))).toEqual({
+			action: "close",
+			projectId: "project-a",
+			id: "late-session",
+		});
+	} finally {
+		client.dispose();
+		fetchMock.mockRestore();
+	}
+});
+
 test("render cache bounds sessions, recovers closed captures and pins account/project", async () => {
 	const savedWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
 	const savedBitmap = Object.getOwnPropertyDescriptor(

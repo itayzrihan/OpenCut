@@ -118,6 +118,17 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					).events.some((event) => event.type === "ready"),
 				{ timeout: 15_000 },
 			);
+			expect(
+				await page.evaluate(() =>
+					(
+						window as unknown as {
+							events: Array<{ type: string; stage?: string }>;
+						}
+					).events
+						.filter((event) => event.type === "loading")
+						.map((event) => event.stage),
+				),
+			).toEqual(["document", "runtime", "fonts", "images"]);
 			const captures: Buffer[] = [];
 			for (const [index, timeSeconds] of [0.5, 2, 0.519, 0.5].entries()) {
 				await page.evaluate(

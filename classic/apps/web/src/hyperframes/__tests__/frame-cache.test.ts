@@ -54,6 +54,9 @@ test("leaving the page releases cached browsers and frames while back/forward ca
 		expect(fixture.count("open")).toBe(1);
 		expect(fixture.count("close")).toBe(0);
 		fixture.browser.dispatchEvent(new Event("pagehide"));
+		// A departing document may not run another microtask. Start the
+		// keepalive close requests inside pagehide itself.
+		expect(fixture.count("close")).toBe(1);
 		await expect(client.renderTo(input)).rejects.toThrow();
 		expect(fixture.bitmaps[0].closed).toBe(true);
 		expect(fixture.count("close")).toBe(1);

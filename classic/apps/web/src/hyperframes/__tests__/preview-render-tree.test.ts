@@ -114,8 +114,11 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	const mount = {
 		style: {},
 		appendChild: (frame: HTMLIFrameElement) => {
-			if (frame.contentWindow)
+			if (frame.contentWindow) {
+				expect(frame.style.visibility).toBe("visible");
+				expect(frame.style.opacity).toBe("0");
 				queueMicrotask(() => message({ frame, data: { type: "ready" } }));
+			}
 		},
 	} as unknown as HTMLElement;
 	const live = new liveModule.HyperframesLivePreview({
@@ -218,6 +221,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		expect(root.children).toEqual([native, clip]);
 		expect(rendered[0].children).toEqual([native]);
 		expect(mount.style.visibility).toBe("visible");
+		expect(mount.style.opacity).toBe("1");
 		expect(frames[0].style).toMatchObject({
 			width: "1080px",
 			height: "1920px",
@@ -302,7 +306,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		clip.params.transform.perspectiveX = 20;
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)).toBe(root);
-		expect(mount.style.visibility).toBe("hidden");
+		expect(mount.style.opacity).toBe("0");
 		expect(releaseCount).toBe(2);
 		clip.params.transform.perspectiveX = 0;
 		failSeek = true;

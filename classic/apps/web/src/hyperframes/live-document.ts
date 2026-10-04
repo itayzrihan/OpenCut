@@ -59,6 +59,14 @@ function installLiveShell(entryPath: string): void {
 				"*",
 			);
 		} else if (event.source === frame.contentWindow) {
+			if (
+				data.type === "loading" &&
+				["runtime", "fonts", "images"].includes(data.stage)
+			)
+				window.parent.postMessage(
+					{ source: "opencut-hf-live", type: "loading", stage: data.stage },
+					"*",
+				);
 			if (data.type === "ready")
 				window.parent.postMessage(
 					{ source: "opencut-hf-live", type: "ready" },
@@ -80,6 +88,10 @@ function installLiveShell(entryPath: string): void {
 				);
 		}
 	});
+	window.parent.postMessage(
+		{ source: "opencut-hf-live", type: "loading", stage: "document" },
+		"*",
+	);
 	document.body.append(frame);
 }
 
@@ -133,6 +145,7 @@ function installLiveBridge({
 	let lastSequence = 0;
 	const post = (data: object) =>
 		window.parent.postMessage({ source: "opencut-hf-live", ...data }, "*");
+	post({ type: "loading", stage: "runtime" });
 	const fail = (message: string) => {
 		if (failed) return;
 		failed = true;
@@ -205,7 +218,9 @@ function installLiveBridge({
 				);
 			mute();
 			page.__player?.pause();
+			post({ type: "loading", stage: "fonts" });
 			await document.fonts.ready;
+			post({ type: "loading", stage: "images" });
 			await Promise.all([...document.images].map((image) => image.decode()));
 			if (failed) return;
 			ready = true;
