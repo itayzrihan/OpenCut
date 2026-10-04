@@ -74,6 +74,14 @@ interface StoredFontRecord extends ProjectFontData {
 	storedPath: string;
 }
 
+/** Filesystem transaction intent, never editor state. Closed attempts are kept
+ * as tombstones so delayed requests cannot recreate discarded uploads. */
+interface MediaUploadJournal {
+	version: 1;
+	state: "open" | "retained" | "discarding" | "discarded";
+	files: Array<{ mediaId: string; fileName: string; temporaryId: string }>;
+}
+
 interface ProjectLibraryEntry {
 	schemaVersion: 3;
 	sourceSize: number;
@@ -387,6 +395,57 @@ async function readProjectLibraryEntry(
 
 function mediaIndexPath(projectId: string): string {
 	return join(mediaRoot(projectId), MEDIA_INDEX_FILE);
+}
+
+function mediaUploadJournalPath(
+	projectId: string,
+	uploadToken: string,
+): string {
+	return join(
+		mediaRoot(projectId),
+		"uploads",
+		`${assertId(uploadToken, "upload token")}.json`,
+	);
+}
+
+function mediaUploadPaths(
+	projectId: string,
+	uploadToken: string,
+	file: MediaUploadJournal["files"][number],
+) {
+	assertId(file.mediaId, "media id");
+	assertId(file.temporaryId, "temporary id");
+	if (
+		typeof file.fileName !== "string" ||
+		safeFileName(file.fileName, file.mediaId) !== file.fileName
+	)
+		throw new Error("Invalid upload journal filename");
+	const destination = join(
+		mediaRoot(projectId),
+		"files",
+		`${file.mediaId}--${assertId(uploadToken, "upload token")}--${file.fileName}`,
+	);
+	return {
+		destination,
+		temporaryPath: `${destination}.${file.temporaryId}.tmp`,
+	};
+}
+
+async function readMediaUploadJournal(projectId: string, uploadToken: string) {
+	const journal = await readJson<MediaUploadJournal>({
+		path: mediaUploadJournalPath(projectId, uploadToken),
+		fallback: { version: 1, state: "open", files: [] },
+	});
+	if (
+		journal.version !== 1 ||
+		!["open", "retained", "discarding", "discarded"].includes(journal.state) ||
+		!Array.isArray(journal.files)
+	)
+		throw new Error("Invalid media upload journal");
+	// Validate every path before any cleanup, including entries not in the index.
+	for (const file of journal.files)
+		mediaUploadPaths(projectId, uploadToken, file);
+	return journal;
 }
 
 function fontIndexPath(projectId: string): string {
@@ -930,13 +989,6 @@ export async function storeUploadedMedia({
 	uploadToken?: string;
 }): Promise<void> {
 	assertId(mediaId, "media id");
-	if (uploadToken) {
-		assertId(uploadToken, "upload token");
-		if (
-			(await readMediaIndex(projectId)).some((record) => record.id === mediaId)
-		)
-			throw new Error("A staged upload cannot replace existing media");
-	}
 	if (
 		!allowLargeCopy &&
 		disposition({ size, hasSourcePath: false }) === "sourcePathRequired"
@@ -946,60 +998,93 @@ export async function storeUploadedMedia({
 		);
 	}
 	const cleanedName = safeFileName(fileName, mediaId);
-	const destination = join(
-		mediaRoot(projectId),
-		"files",
-		`${mediaId}--${cleanedName}`,
-	);
-	const temporaryPath = `${destination}.${randomUUID()}.tmp`;
-	if (uploadToken && existsSync(destination))
-		throw new Error("A staged upload cannot replace retained media bytes");
-	await mkdir(resolve(destination, ".."), { recursive: true });
-	try {
-		await pipeline(
-			Readable.fromWeb(body as never),
-			createWriteStream(temporaryPath, { flags: "wx" }),
-		);
-		const written = await stat(temporaryPath);
-		if (Number.isFinite(size) && size >= 0 && written.size !== size) {
-			throw new Error("Uploaded media size did not match the file metadata");
+	const file = { mediaId, fileName: cleanedName, temporaryId: randomUUID() };
+	const destination = uploadToken
+		? mediaUploadPaths(projectId, uploadToken, file).destination
+		: join(mediaRoot(projectId), "files", `${mediaId}--${cleanedName}`);
+	const temporaryPath = `${destination}.${file.temporaryId}.tmp`;
+	// Copy and finish share this attempt's lock. Unrelated uploads can stream
+	// concurrently; only index publication needs the project-wide index lock.
+	const lockKey = uploadToken
+		? mediaUploadJournalPath(projectId, uploadToken)
+		: `${mediaIndexPath(projectId)}:${mediaId}`;
+	await withMutationLock(lockKey, async () => {
+		await mkdir(resolve(destination, ".."), { recursive: true });
+		if (uploadToken) {
+			const journal = await readMediaUploadJournal(projectId, uploadToken);
+			if (journal.state !== "open")
+				throw new Error("This media upload attempt is already closed");
+			if (
+				(await readMediaIndex(projectId)).some(
+					(record) => record.id === mediaId,
+				)
+			)
+				throw new Error("A staged upload cannot replace existing media");
+			// Deleted media keeps its bytes for Undo, even without an index record.
+			if (
+				(await readdir(join(mediaRoot(projectId), "files"))).some((name) =>
+					name.startsWith(`${mediaId}--`),
+				)
+			)
+				throw new Error("A staged upload cannot replace retained media bytes");
+			journal.files.push(file);
+			await writeJsonAtomic({
+				path: mediaUploadJournalPath(projectId, uploadToken),
+				value: journal,
+			});
 		}
-		await rename(temporaryPath, destination);
-		const resolvedMimeType =
-			mimeType && mimeType !== "application/octet-stream"
-				? mimeType
-				: mimeTypeForPath(cleanedName);
-		const base: StoredMediaRecord = {
-			...(uploadToken && { uploadToken }),
-			id: mediaId,
-			name: cleanedName,
-			type: resolvedMimeType.startsWith("image/")
-				? "image"
-				: resolvedMimeType.startsWith("audio/")
-					? "audio"
-					: resolvedMimeType.startsWith("video/")
-						? "video"
-						: "file",
-			size: written.size,
-			lastModified,
-			fileName: cleanedName,
-			mimeType: resolvedMimeType,
-			storageKind: "copied",
-			storedPath: relative(projectRoot(projectId), destination).replaceAll(
-				"\\",
-				"/",
-			),
-		};
-		await mutateMediaIndex(projectId, (records) => [
-			...records.filter((item) => item.id !== mediaId),
-			base,
-		]);
-	} catch (error) {
-		await unlink(temporaryPath).catch(() => undefined);
-		// A new staged upload may have renamed its bytes before indexing failed.
-		if (uploadToken) await unlink(destination).catch(() => undefined);
-		throw error;
-	}
+		let renamed = false;
+		try {
+			await pipeline(
+				Readable.fromWeb(body as never),
+				createWriteStream(temporaryPath, { flags: "wx" }),
+			);
+			const written = await stat(temporaryPath);
+			if (Number.isFinite(size) && size >= 0 && written.size !== size) {
+				throw new Error("Uploaded media size did not match the file metadata");
+			}
+			await rename(temporaryPath, destination);
+			renamed = true;
+			const resolvedMimeType =
+				mimeType && mimeType !== "application/octet-stream"
+					? mimeType
+					: mimeTypeForPath(cleanedName);
+			const base: StoredMediaRecord = {
+				...(uploadToken && { uploadToken }),
+				id: mediaId,
+				name: cleanedName,
+				type: resolvedMimeType.startsWith("image/")
+					? "image"
+					: resolvedMimeType.startsWith("audio/")
+						? "audio"
+						: resolvedMimeType.startsWith("video/")
+							? "video"
+							: "file",
+				size: written.size,
+				lastModified,
+				fileName: cleanedName,
+				mimeType: resolvedMimeType,
+				storageKind: "copied",
+				storedPath: relative(projectRoot(projectId), destination).replaceAll(
+					"\\",
+					"/",
+				),
+			};
+			await mutateMediaIndex(projectId, (records) => {
+				// Another attempt may have published this ID while bytes streamed.
+				// Its token-specific path cannot be overwritten or removed by us.
+				if (uploadToken && records.some((record) => record.id === mediaId))
+					throw new Error("A staged upload cannot replace existing media");
+				return [...records.filter((item) => item.id !== mediaId), base];
+			});
+		} catch (error) {
+			await unlink(temporaryPath).catch(() => undefined);
+			// A new staged upload may have renamed its bytes before indexing failed.
+			if (uploadToken && renamed)
+				await unlink(destination).catch(() => undefined);
+			throw error;
+		}
+	});
 }
 
 /** Finalize only files owned by this import attempt. Ordinary deletion retains Undo bytes. */
@@ -1009,21 +1094,66 @@ export async function finishMediaUpload(
 	discard: boolean,
 ) {
 	assertId(uploadToken, "upload token");
-	await mutateMediaIndex(projectId, async (records) => {
-		const owned = records.filter(
-			(record) => record.uploadToken === uploadToken,
-		);
-		if (discard) {
-			for (const record of owned) {
-				if (record.storageKind !== "copied")
-					throw new Error("Only copied uploads can be discarded");
-				await rm(storedMediaPath(projectId, record), { force: true });
+	await withMutationLock(mediaUploadJournalPath(projectId, uploadToken), () =>
+		withMutationLock(mediaIndexPath(projectId), async () => {
+			const journal = await readMediaUploadJournal(projectId, uploadToken);
+			if (journal.state === "discarded") {
+				if (!discard) throw new Error("This media upload was discarded");
+				return;
 			}
-			return records.filter((record) => record.uploadToken !== uploadToken);
-		}
-		for (const record of owned) delete record.uploadToken;
-		return records;
-	});
+			if (journal.state === "discarding" && !discard)
+				throw new Error("This media upload is being discarded");
+			const records = await readMediaIndex(projectId);
+			const owned = records.filter(
+				(record) => record.uploadToken === uploadToken,
+			);
+			const path = mediaUploadJournalPath(projectId, uploadToken);
+			if (discard && journal.state !== "retained") {
+				const paths = new Set<string>();
+				for (const file of journal.files) {
+					const { destination, temporaryPath } = mediaUploadPaths(
+						projectId,
+						uploadToken,
+						file,
+					);
+					paths.add(temporaryPath);
+					// Another registration may now own the bytes; never discard those.
+					if (
+						!records.some(
+							(record) =>
+								record.uploadToken !== uploadToken &&
+								record.storageKind === "copied" &&
+								record.storedPath &&
+								storedMediaPath(projectId, record) === destination,
+						)
+					)
+						paths.add(destination);
+				}
+				for (const record of owned) {
+					if (record.storageKind !== "copied")
+						throw new Error("Only copied uploads can be discarded");
+					paths.add(storedMediaPath(projectId, record));
+				}
+				journal.state = "discarding";
+				await writeJsonAtomic({ path, value: journal });
+				for (const file of paths) await rm(file, { force: true });
+				await writeMediaIndex(
+					projectId,
+					records.filter((record) => record.uploadToken !== uploadToken),
+				);
+				journal.state = "discarded";
+				journal.files = [];
+				await writeJsonAtomic({ path, value: journal });
+				return;
+			}
+			// Record retention before clearing index ownership. A crash between the
+			// two writes must not let a delayed discard erase saved project media.
+			journal.state = "retained";
+			await writeJsonAtomic({ path, value: journal });
+			for (const record of owned) delete record.uploadToken;
+			await writeMediaIndex(projectId, records);
+		}),
+	);
 }
 
 export async function deleteMedia(projectId: string, mediaId: string) {

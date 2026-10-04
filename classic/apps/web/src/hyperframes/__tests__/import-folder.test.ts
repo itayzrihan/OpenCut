@@ -185,8 +185,8 @@ test("imports only after durable resources and measured runtime are ready", asyn
 		"upload:b",
 		"runtime",
 		"commit",
-		"finalize",
 		"save",
+		"finalize",
 	]);
 	expect(input.folder.resources[0].url).toBeUndefined();
 	expect(closed).toBe(1);
@@ -223,6 +223,16 @@ test("save failure retains the committed clip and its resources for retry", asyn
 	const result = await importHyperframesFolder(fixture());
 	expect(result.itemId).toBe("clip");
 	expect(result.saveError).toBe("Drive full");
+	expect(events).not.toContain("discard");
+	expect(events).not.toContain("finalize");
+});
+
+test("finalization failure retains the saved import and reports a retryable error", async () => {
+	failCleanup = true;
+	const result = await importHyperframesFolder(fixture());
+	expect(result.itemId).toBe("clip");
+	expect(result.saveError).toBe("Cleanup failed");
+	expect(events.slice(-2)).toEqual(["save", "finalize"]);
 	expect(events).not.toContain("discard");
 });
 

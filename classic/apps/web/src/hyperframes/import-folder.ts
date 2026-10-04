@@ -100,19 +100,6 @@ export async function importHyperframesFolder({
 		report({ phase: "saving", completed: resources.length });
 		const saveErrors: string[] = [];
 		try {
-			if (staged.length)
-				await storageService.finishMediaUpload({
-					projectId,
-					uploadToken,
-					discard: false,
-					scope: { accountId },
-				});
-		} catch (error) {
-			saveErrors.push(
-				`Could not finalize copied files: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
-		try {
 			if (
 				window.__opencutAccountId !== accountId ||
 				editor.project.getActiveOrNull()?.metadata.id !== projectId
@@ -121,6 +108,15 @@ export async function importHyperframesFolder({
 					"The workspace changed before the imported project could be saved",
 				);
 			await editor.save.flush();
+			// Keep upload ownership until the canonical edit is durably saved.
+			// A failed save must remain identifiable for recovery after a restart.
+			if (staged.length)
+				await storageService.finishMediaUpload({
+					projectId,
+					uploadToken,
+					discard: false,
+					scope: { accountId },
+				});
 		} catch (error) {
 			// The edit already exists. Never delete its resources or encourage a
 			// duplicate import when the existing autosave path needs a retry.

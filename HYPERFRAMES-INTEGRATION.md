@@ -23,7 +23,72 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 984 web tests pass across 216 isolated suites with browser coverage enabled, zero failures and zero skips. The library checkpoint also passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 994 web tests have passing results across 217 isolated suites, including four reruns, with browser coverage enabled and zero skips. The library checkpoint also passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Durable ownership for interrupted folder uploads (2026-10-04)
+
+Folder imports now retain their upload ownership until the canonical project
+save finishes. A failed save leaves the committed edit, copied resources and
+ownership record available for retry. Previously the import cleared ownership
+before saving, so a crash could make unfinished resources indistinguishable from
+completed media.
+
+The Classic local-drive adapter now writes an account/project-scoped journal at
+`media/uploads/<attempt>.json` before streaming a resource. It records generated
+filenames and temporary-file identities, including files that have not reached
+the media index. Final copied filenames include the attempt ID, so one attempt
+cannot overwrite or clean up another attempt's bytes. The journal has four
+states: open, retained, discarding and discarded. Retention is recorded before
+index ownership is cleared; discard intent is recorded before removing bytes.
+Closed journals prevent delayed upload requests from resurrecting a completed
+or cancelled attempt. Ordinary deletion still keeps copied bytes for Undo.
+
+Copy and finish share an attempt lock. Other attempts can stream concurrently,
+and index publication rechecks media identity under the existing index lock.
+An old upload without a journal can still finalize or discard using its index
+ownership. Journals remain filesystem transaction metadata: no editor document,
+capability, MCP endpoint or second editor state store was added.
+
+### Verification
+
+- Nine storage recovery tests pass. Two launch a separate upload worker and kill
+  it during streaming, without its cleanup handlers. A fresh process can discard
+  the recorded partial copy; a simulated rename before index publication is also
+  recovered. Other cases cover delayed requests, concurrent attempts, retained
+  intent before index update, interrupted discard, legacy uploads, account scope
+  and invalid journal paths. A slow upload does not block another attempt.
+- All 26 tests in four targeted import/storage suites pass. The importer test
+  checks save-before-finalize order, retains ownership on save failure and
+  reports finalization failure without rolling back an existing edit. Report:
+  `.local/hf-upload-journal-targeted-20261004/summary.json`.
+- Product TypeScript passes. Changed production files have no ESLint errors;
+  the storage server retains its ten existing type-assertion warnings. Changed
+  import and test files have no warnings. The full isolated regression initially
+  passed 910 tests but hit three AI startup-hook timeouts and a WASM constructor
+  trap in the last manager test. All four suites passed in a sequential rerun
+  (94 tests). Replacing those suites' first results gives **994 passing tests in
+  217 suites, zero remaining failures and zero skips**. The trap's cause was not
+  established by the successful rerun. Reports:
+  `.local/hf-upload-journal-full-regression-20261004/summary.json`,
+  `.local/hf-upload-journal-regression-recheck-20261004/summary.json` and
+  `.local/hf-upload-journal-regression-verified-20261004.json`.
+- The actual folder picker imported `advanced-audio-test-final` into the existing
+  isolated four-package project. All ten text sources and three binary resources
+  remain byte-identical to the originals. The new journal is retained and its
+  media index records no longer carry upload ownership. The original seven
+  elements and four source packages are unchanged. UI Undo restores the original
+  scenes, sources and settings exactly; Redo restores the import from retained
+  files. The fixture was returned to its pre-import state with Undo.
+  Evidence: `.local/hf-upload-journal-ui-evidence-20261004.json` and
+  `.local/hf-upload-journal-ui-20261004.jpg`.
+
+This establishes durable intent and replay-safe completion/cleanup. Automatic
+discovery and a user-facing recovery flow for **open** attempts are still needed.
+Open journals are deliberately retained: an unsaved canonical edit may still be
+alive in another tab, so elapsed time alone cannot authorize deleting its files.
+The current in-process locks also do not establish support for multiple server
+processes writing the same account directory. These limits remain part of the
+interrupted-import completion requirement.
 
 ## Live OpenCut Perspective transforms (2026-10-04)
 
