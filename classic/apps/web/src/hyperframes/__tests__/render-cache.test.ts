@@ -76,7 +76,7 @@ test("live delivery shares the capture session and rejects stale account, projec
 				timeSeconds: 1,
 				target: fixture.target,
 			});
-			expect(fixture.live.size).toBeLessThanOrEqual(2);
+			expect(fixture.live.size).toBeLessThanOrEqual(4);
 			expect(fixture.live.has("1")).toBe(true);
 		}
 		const currentLive = await context.openLivePreview!({ composition: source });
@@ -89,12 +89,13 @@ test("live delivery shares the capture session and rejects stale account, projec
 			target: fixture.target,
 		});
 		expect(fixture.live.has("1")).toBe(true);
-		currentLive.release?.(); // Export/native-only preview can use both cache slots.
-		await context.renderTo({
-			composition: composition("six"),
-			timeSeconds: 1,
-			target: fixture.target,
-		});
+		currentLive.release?.(); // Released deliveries join the four-source LRU.
+		for (const name of ["six", "seven", "eight"])
+			await context.renderTo({
+				composition: composition(name),
+				timeSeconds: 1,
+				target: fixture.target,
+			});
 		expect(fixture.live.has("1")).toBe(false);
 		cache.reset();
 		await expect(

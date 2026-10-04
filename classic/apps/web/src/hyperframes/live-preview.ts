@@ -452,7 +452,14 @@ class LiveOccurrence {
 					readyReject,
 					sequence: 0,
 					failed: false,
-					readyTimer: setTimeout(() => this.failSurface(surface), 30_000),
+					readyTimer: setTimeout(
+						() =>
+							this.failSurface({
+								surface,
+								message: "Live preview readiness timed out after 30 seconds",
+							}),
+						30_000,
+					),
 				};
 				this.surface = surface;
 				frame.src = url;
@@ -478,7 +485,15 @@ class LiveOccurrence {
 				sequence,
 				resolve,
 				reject,
-				timer: setTimeout(() => this.failSurface(surface), 1500),
+				timer: setTimeout(
+					() =>
+						this.failSurface({
+							surface,
+							message:
+								"Live preview frame acknowledgement timed out after 1.5 seconds",
+						}),
+					1500,
+				),
 			};
 			surface.frame.contentWindow?.postMessage(
 				{ source: "opencut-hf-live", type: "seek", sequence, timeSeconds },
@@ -502,7 +517,10 @@ class LiveOccurrence {
 				"HyperFrames live preview runtime:",
 				String(event.data.message).slice(0, 200),
 			);
-			this.failSurface(surface);
+			this.failSurface({
+				surface,
+				message: String(event.data.message).slice(0, 200),
+			});
 		}
 		if (event.data.type === "ready") {
 			clearTimeout(surface.readyTimer);
@@ -519,7 +537,13 @@ class LiveOccurrence {
 		}
 	};
 
-	private failSurface(surface: Surface): void {
+	private failSurface({
+		surface,
+		message,
+	}: {
+		surface: Surface;
+		message: string;
+	}): void {
 		if (this.surface !== surface || surface.failed) return;
 		surface.failed = true;
 		this.failedUrls.add(surface.url);
@@ -527,7 +551,7 @@ class LiveOccurrence {
 			this.failedUrls.delete(this.failedUrls.values().next().value!);
 		this.hide();
 		clearTimeout(surface.readyTimer);
-		const error = new Error("Live preview needs the capture adapter");
+		const error = new Error(message);
 		surface.readyReject(error);
 		if (surface.waiting) {
 			clearTimeout(surface.waiting.timer);

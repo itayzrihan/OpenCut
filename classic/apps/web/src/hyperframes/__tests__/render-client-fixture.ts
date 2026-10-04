@@ -53,6 +53,7 @@ export function renderFixture({
 		},
 	});
 	const live = new Set<string>();
+	const captures = new Set<string>();
 	const calls: Array<{
 		action: string;
 		projectId: string;
@@ -77,6 +78,8 @@ export function renderFixture({
 			if (input.action === "open") {
 				const id = String(++nextId);
 				live.add(id);
+				captures.add(id);
+				expect(captures.size).toBeLessThanOrEqual(4);
 				return Response.json({
 					id,
 					durationSeconds: 4,
@@ -89,13 +92,25 @@ export function renderFixture({
 					},
 				});
 			}
-			if (input.action === "close") live.delete(input.id!);
-			if (input.action === "live")
+			if (input.action === "close") {
+				live.delete(input.id!);
+				captures.delete(input.id!);
+			}
+			if (input.action === "capture") {
+				captures.add(input.id!);
+				expect(captures.size).toBeLessThanOrEqual(4);
+			}
+			if (input.action === "live") {
+				captures.delete(input.id!);
 				return Response.json({
 					url: `http://${"a".repeat(48)}.localhost:1234/live-${input.id}.html`,
 				});
-			if (input.action === "audio" && audio)
+			}
+			if (input.action === "audio" && audio) {
+				// The real host opens a disposable probe alongside warm captures.
+				expect(captures.size).toBeLessThan(4);
 				return Response.json(audio.artifact());
+			}
 			return Response.json({ id: "artifact" });
 		}) as typeof fetch,
 	);
@@ -116,6 +131,7 @@ export function renderFixture({
 		bitmaps,
 		dimensions,
 		live,
+		captures,
 		calls,
 		draws,
 		target,

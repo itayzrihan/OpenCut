@@ -13,6 +13,7 @@ const MAX_FRAMES = 24;
 const MAX_AUDIO_BYTES = 64 * 1024 * 1024;
 const MAX_AUDIO_FILES = 8;
 const MAX_LIVE_SOURCES = 4;
+const MAX_CAPTURE_SOURCES = 4;
 
 /** Derived rendering cache scoped to one active account/project. Original
  * source stays in the canonical document; decoded frames have a bounded LRU.
@@ -148,7 +149,7 @@ export class HyperframesRenderClient {
 						if (!this.closed) {
 							const trim = this.renderQueue.then(() =>
 								this.trimSessions({
-									limit: Math.max(2, this.liveLeases.size + 1),
+									limit: this.sessionLimit(),
 								}),
 							);
 							this.renderQueue = trim.catch(() => {});
@@ -175,6 +176,10 @@ export class HyperframesRenderClient {
 				this.audioFiles.set(key, file);
 				return file;
 			}
+			// A disposable audio probe needs one of the four browser slots. Leave
+			// room for both a cache miss and that probe before preparing its source;
+			// live deliveries stay pinned and retain at most one capture browser.
+			await this.trimSessions({ limit: Math.max(2, this.liveLeases.size) });
 			const session = await this.getSession({ key, source });
 			let artifact: HyperframesFrameArtifact | null;
 			try {
@@ -410,11 +415,11 @@ export class HyperframesRenderClient {
 			this.sessions.set(key, session);
 		}
 		if (!session) {
-			// One capture slot alongside displayed sources; native-only/export
-			// rendering retains its existing two-entry LRU. Live entries hold no
-			// headless browser after host promotion.
+			// Retain four capture sources so a four-compound frame does not reopen
+			// Chrome for every source on every frame. Four live deliveries can keep
+			// one additional capture source; live promotion releases their browsers.
 			await this.trimSessions({
-				limit: Math.max(2, this.liveLeases.size + 1) - 1,
+				limit: this.sessionLimit() - 1,
 			});
 			this.pending.signal.throwIfAborted();
 			session = this.request<HyperframesRenderSession>({
@@ -435,6 +440,10 @@ export class HyperframesRenderClient {
 			});
 		}
 		return session;
+	}
+
+	private sessionLimit(): number {
+		return Math.max(MAX_CAPTURE_SOURCES, this.liveLeases.size + 1);
 	}
 
 	private async trimSessions({ limit }: { limit: number }): Promise<void> {

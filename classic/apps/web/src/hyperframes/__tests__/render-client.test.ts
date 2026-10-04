@@ -43,7 +43,7 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 			if (input.action === "open") {
 				const id = String(++nextId);
 				live.add(id);
-				expect(live.size).toBeLessThanOrEqual(2);
+				expect(live.size).toBeLessThanOrEqual(4);
 				return Response.json({ id, durationSeconds: 4 });
 			}
 			if (input.action === "close") live.delete(input.id!);
@@ -95,14 +95,13 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 			draw({ name: "c" }),
 		]);
 		expect(nextId).toBe(3);
-		expect(live.size).toBe(2);
+		expect(live.size).toBe(3);
 		expect(bitmapCloses).toBe(0);
 		expect(calls).toEqual([
 			"open",
 			"capture",
 			"open",
 			"capture",
-			"close",
 			"open",
 			"capture",
 		]);
@@ -191,12 +190,111 @@ test("independent occurrence leases retain four sources while captures use a bou
 		fifth.release?.();
 		// Preparing an existing source drains release cleanup without a frame.
 		await client.prepareSource(composition("five").source);
-		expect(fixture.live.size).toBeLessThanOrEqual(2);
+		expect(fixture.live.size).toBeLessThanOrEqual(4);
 		client.dispose();
 		await Promise.resolve();
 		expect(fixture.live.size).toBe(0);
 	} finally {
 		client.dispose();
 		fixture.restore();
+	}
+});
+
+test("four captured packages stay warm across frames and leave room for an audio probe", async () => {
+	const fixture = renderFixture({
+		audio: { bytes: new Uint8Array(), artifact: () => null },
+	});
+	const client = new HyperframesRenderClient("project-a");
+	const sources = ["one", "two", "three", "four"].map((name) =>
+		composition(name),
+	);
+	try {
+		for (const timeSeconds of [0, 1, 2]) {
+			for (const source of sources) {
+				await client.renderTo({
+					composition: source,
+					timeSeconds,
+					target: fixture.target,
+				});
+			}
+		}
+		expect(fixture.count("open")).toBe(4);
+		expect(fixture.count("capture")).toBe(12);
+		expect(fixture.count("close")).toBe(0);
+		expect(fixture.captures.size).toBe(4);
+		// A fifth source evicts only the oldest source; the others remain usable.
+		await client.prepareSource(composition("five").source);
+		expect(fixture.count("close")).toBe(1);
+		expect(fixture.live.has("1")).toBe(false);
+		for (const source of [
+			sources[3].source,
+			composition("audio-only").source,
+		]) {
+			expect(await client.readAudio(source)).toBeNull();
+			expect(fixture.captures.size).toBeLessThan(4);
+		}
+		// Returning from audio preparation warms once, then reuses all packages.
+		for (const source of sources)
+			await client.renderTo({
+				composition: source,
+				timeSeconds: 3,
+				target: fixture.target,
+			});
+		const opened = fixture.count("open");
+		for (const source of sources)
+			await client.renderTo({
+				composition: source,
+				timeSeconds: 3.5,
+				target: fixture.target,
+			});
+		expect(fixture.count("open")).toBe(opened);
+	} finally {
+		client.dispose();
+		await Promise.resolve();
+		expect(fixture.live.size).toBe(0);
+		expect(fixture.captures.size).toBe(0);
+		fixture.restore();
+	}
+});
+
+test("audio preparation preserves live occurrences at each capture budget", async () => {
+	for (const count of [1, 2, 3, 4]) {
+		const fixture = renderFixture({
+			audio: { bytes: new Uint8Array(), artifact: () => null },
+		});
+		const client = new HyperframesRenderClient("project-a");
+		try {
+			const sources = Array.from({ length: count }, (_, index) =>
+				composition(`live-${index}`),
+			);
+			const handles = [];
+			for (const source of sources)
+				handles.push(await client.openLivePreview({ composition: source }));
+			// An effectful copy also keeps a warm browser for a pinned source.
+			for (const source of [
+				...sources,
+				composition("capture-a"),
+				composition("capture-b"),
+				composition("capture-c"),
+			])
+				await client.renderTo({
+					composition: source,
+					timeSeconds: 1,
+					target: fixture.target,
+				});
+			for (const source of [sources[0], composition("audio-miss")])
+				expect(await client.readAudio(source.source)).toBeNull();
+			for (const [index, source] of sources.entries()) {
+				expect(fixture.live.has(String(index + 1))).toBe(true);
+				const duplicate = await client.openLivePreview({ composition: source });
+				expect(duplicate.url).toBe(handles[index].url);
+				duplicate.release?.();
+			}
+		} finally {
+			client.dispose();
+			await Promise.resolve();
+			expect(fixture.captures.size).toBe(0);
+			fixture.restore();
+		}
 	}
 });

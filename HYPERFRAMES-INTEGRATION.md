@@ -22,8 +22,8 @@ is implemented; the product integration is not complete.
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 979 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9 when all surfaces initialize; a four-source capture-cache defect is fixed; intermittent live readiness failures, mixed/capture throughput and large-timeline performance remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 981 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
 
 ## Feature preservation regression audit (2026-10-04)
 
@@ -134,7 +134,7 @@ Bun failure logs.
 
 This regression audit is partial preservation evidence. The broader UI review,
 full interactive workflows, remaining Brag exports, child timing editing and
-four-package playback benchmark are still required before completion.
+larger-timeline playback checks are still required before completion.
 
 ## Declared composition variables (2026-10-04)
 
@@ -1276,6 +1276,95 @@ lease release, capture browser rotation, and uninterrupted GPU copy order.
 Scoped TypeScript and changed-file ESLint passed. No editor state, capabilities,
 source packages or saved production projects were changed by this adapter work.
 
+## Four distinct packages and capture cache capacity (2026-10-04)
+
+Two additional projects in the isolated integration account combine four
+different imported sources: `brag-vertical/composition`,
+`brag-reference-recreation-v2/composition`,
+`brag-reference-recreation/composition`, and `advanced-audio-test-final`.
+Each source has a distinct fingerprint. The four portrait compositions appear
+side by side for six seconds over a native blue image, with native text between
+the lower and upper pairs and another native text layer above them. All source
+files and 98 resources per project match the earlier imports byte for byte.
+The second project adds a ten-degree OpenCut perspective transform to the final
+composition, requiring capture for that occurrence while the other three remain
+live. Original HyperFrames source files are unchanged.
+
+### Capture cache fix
+
+The previous client retained two unpinned sessions. Four different captured
+sources therefore evicted each other within every frame and repeatedly launched
+Chrome. Actual playback completed only one or two frames during a six-second
+run. The client now retains up to four captured sources, within the existing
+four-browser host bound. Four pinned live deliveries can still retain one spare
+capture source. Before an uncached audio request, the client evicts unpinned
+sessions to leave room for both source preparation and a disposable audio probe.
+Live occurrence leases remain intact. Captured copies of live sources continue
+to rotate one warm browser through the existing promotion path.
+
+This changes derived rendering resources in Classic only. Canonical state,
+capabilities, saved document data and rendering output are unchanged. The memory
+tradeoff is up to four warm capture browsers instead of two. The host's six
+entry, four-browser and eight-origin limits, and the client's 64 MiB frame cache,
+are unchanged. Projects exceeding four simultaneous captured packages can
+still churn this bounded cache.
+
+### Actual editor measurements
+
+Same development server/browser conditions as the earlier measurements:
+1280x720 viewport, DPR 1, hidden browser panel with a visible document, 640x360
+scene, 451x253 compositor output, 30 fps transport. Preparation before playback
+is excluded. Each run lasts approximately six seconds. All runs below report
+zero render errors.
+
+| Scenario | Completed frames/s, successive runs | Distinct completed frames | Median render time, successive runs |
+| --- | --- | --- | --- |
+| Four different live packages | 24.00 / 28.89 | 144 / 173 | 10.5 / 4.4 ms |
+| Same project, capture override before fix | 0.17 / 0.33 | 1 / 2 | 4358.4 / 3.1 ms |
+| Same project, capture override after fix | 0.67 / 0.67 / 1.67 | 4 / 4 / 10 | 1172.9 / 792.9 / 567.7 ms |
+| Three live packages plus one perspective capture | 2.50 / 5.34 | 15 / 32 | 187.5 / 177.7 ms |
+
+The second pre-fix run completed only two cached early frames; its 3.1 ms
+median excludes the unfinished capture and does not indicate fast playback.
+The final post-fix capture run made 48 HyperFrames API posts with **zero Chrome
+launches or capture-page preparations** in the corresponding server log.
+This confirms reuse across frames. Capturing four sources and the mixed path
+remain too slow for real-time playback on this setup. The live path is the
+stronger result; production builds, full-screen output, longer runs and other
+devices still require measurement.
+
+Later reloads also exposed an initialization failure: one, then two of the
+eligible live surfaces did not send a ready message within 30 seconds and
+fell back to capture. A nominally all-live run then reached only 3.51 fps.
+Diagnostics now report readiness timeout, frame-acknowledgement timeout and
+runtime failure separately; they previously collapsed to a generic capture
+fallback message. The time limits and fallback behavior are unchanged. The
+underlying readiness failure is unresolved, so the 28.89 fps result is
+conditional on all four surfaces initializing successfully. Evidence:
+`.local/hf-four-packages-live-readiness-failure.json`.
+
+Verification includes 18 targeted cache/audio/render-tree tests, product
+TypeScript and changed-file ESLint. Tests exercise distinct captures at changing
+times, fifth-source eviction, audio misses and hits with one through four live
+sources, independent leases, source/account/project invalidation and disposal.
+The transport fixture models capture browsers separately from retained live
+deliveries and checks the four-browser bound, including audio's temporary probe.
+The complete web regression run after these changes passes **981 tests in 215
+suites, zero failures and zero skips**, with all browser tests and the local
+Brag GSAP fixture enabled, in 104.9 seconds. Report:
+`.local/hf-four-packages-regression-20261004/summary.json`.
+
+Evidence: `.local/hf-four-packages-fixtures.json`,
+`.local/hf-four-packages-source-audit.json`,
+`.local/hf-four-packages-live-playback.json`,
+`.local/hf-four-packages-capture-before.json`,
+`.local/hf-four-packages-capture-after.json`,
+`.local/hf-four-capture-warm-server.log`, and
+`.local/hf-four-packages-mixed-playback.json`. Screenshots:
+`.local/hf-four-packages-live.jpg` and `.local/hf-four-packages-mixed.jpg`.
+Projects: `286360fa-97fd-480e-8a80-2643311705b6` (live/capture comparison) and
+`3e993c3a-d148-48c5-bdd2-88921f104a2c` (mixed).
+
 ## Complete Brag folder import and timeline navigation (2026-10-04)
 
 The seven remaining references were selected with the actual browser folder
@@ -1343,8 +1432,10 @@ the final generated composition once resource preparation finishes.
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
 3. The measured two-occurrence bottleneck is resolved for eligible live content.
-   Verify four distinct packages and mixed live/captured occurrences in the UI;
-   extend video/canvas and dynamic resource support after fidelity tests. Broaden
+   Four distinct packages and mixed live/captured occurrences are now measured;
+   capture still limits throughput. Diagnose the repeated 30-second live-surface
+   readiness timeout observed after reloads. Extend video/canvas and dynamic resource
+   support after fidelity tests. Broaden
    playback measurements to the remaining projects and large timelines.
    Keep transport and edits canonical and local
    control endpoints authenticated and loopback-only.
