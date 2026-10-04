@@ -1,6 +1,6 @@
 # HyperFrames integration into OpenCut
 
-## Scope and completion requirements
+## Original scope
 
 Branch: `מיזוג-עם-העורך-של-Hyper-frames` (spaces normalized for Git).
 Keep the full editor in `classic/` and its existing timeline. Projects must accept
@@ -8,8 +8,57 @@ HyperFrames compositions alongside ordinary clips, over them as layers, or alone
 Preserve all existing editing, AI, account, storage, preview and export features.
 Improve the existing interface and performance based on measured differences.
 
-This document tracks an ongoing integration. The source import contract below
-is implemented; the product integration is not complete.
+## Acceptance against the original request (2026-10-05)
+
+The original integration is implemented and verified on this branch. The
+acceptance review covers the requested existing-timeline integration, learning
+from HyperFrames, new interface capabilities, measured performance improvements
+and preservation of Classic. It does not turn every possible follow-up into a
+condition for finishing the original work. No layer-drag implementation was
+started after the user's status question.
+
+| Original requirement | Verified result and evidence |
+| --- | --- |
+| Create the requested branch | `מיזוג-עם-העורך-של-Hyper-frames`, based on `7bf28a5e`; current implementation is `1aaefe33` |
+| Load HyperFrames into the existing timeline, alone, beside and over normal clips | Eight real Brag folders were imported through Classic. Reopen/hash audits verify the seven-folder sequence. Actual editor captures show four different compositions mixed with native image/text layers. Standalone and mixed MP4s pass frame/audio comparison; the mixed test verifies native layers both below and above the compositions |
+| Study HyperFrames interface, timeline and layer ingestion | The source audit covers Studio lane/viewport geometry, playback subscriptions, runtime timing resolution and occurrence identity. Studio timeline/layers/inspector screenshots were reviewed. Classic now has a composition library, grouped resources, search, expandable child rows, a layer inspector, import naming and Fit timeline, with browser evidence recorded below |
+| Learn from its rendering and improve performance | Persistent runtime surfaces, bounded browser reuse, a live preview path and reduced redundant UI renders replace repeated source preparation. The four-package workbench reaches 27–29 completed frames/s; the four-minute, 220-clip mixed project completes without render errors. Warm throughput improved from 25.66 to 27.80 parent renders/s in the recorded windows; differing window lengths limit the comparison |
+| Preserve existing features while adding capabilities | No repository files were deleted relative to the branch base. Full current web regression covers 229 suites and 1,034 passing tests with zero skips. Canonical history, ordinary timeline commands, storage, AI, captions, effects, masks, audio and rendering are covered. Current editor-api/MCP tests pass; the earlier Classic Rust audit covers 158 tests. Existing native layers are preserved in real mixed editor projects and exports |
+| Apply the work to the supplied Brag material | The original directory is unchanged: all 72 source files and 265 imported resources match. The complete seven-folder export decodes all 5,399 frames; 44 sampled frame comparisons, every source boundary and seven audio comparisons pass. Measured audio offset is zero samples at 44.1 kHz |
+
+The fresh web run is `.local/hf-acceptance-20261005/summary.json`. Its AI client
+suite exceeded a startup-hook deadline under two workers; all 14 tests in that
+unchanged suite passed alone in
+`.local/hf-acceptance-ai-recheck-20261005/summary.json`. The consolidated result,
+including that qualification, is `.local/hf-acceptance-summary-20261005.json`.
+This is broad regression evidence, not a claim that every Classic interaction
+has been manually exercised on every platform.
+
+Review artifacts include `.local/hf-library-ui-20261004.jpg`,
+`.local/hf-import-name-timeline-20261004.jpg`,
+`.local/hf-edited-brag-mixed-layers-20261005.mp4` and
+`.local/hf-edited-brag-full-hardware-20261005.mp4`.
+
+Known limitations and further work remain explicit:
+
+- Cold source loading can take several seconds; capture-dependent effects can
+  be much slower than live playback. Sustained 30 fps on every composition and
+  device is a further performance target.
+- Source, variable, opacity and supported GSAP timing edits are available.
+  Direct child-bar dragging/trimming and arbitrary independent child clocks
+  are further editing capabilities.
+- Final manual review of the newest source-editing controls, broader docking
+  and keyboard coverage, and test-fixture type cleanup remain follow-up QA.
+  Earlier import/library/timeline flows have real editor evidence. The current
+  in-app browser has no open tabs; the earlier denied navigation was not retried
+  or bypassed for this audit.
+- The change is local to the requested branch. It has not been merged or deployed.
+
+The sections below retain chronological implementation evidence. Statements
+that a checkpoint was incomplete describe that checkpoint; the table above is
+the acceptance decision for the original request.
+
+## Capability coverage and follow-up work
 
 | Requirement | Evidence needed | Current status |
 | --- | --- | --- |
@@ -23,7 +72,7 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Edited standalone and mixed Brag MP4s pass. A fresh 179.9667-second, seven-folder MP4 passes complete decoding, 44 frame comparisons including every source boundary, and seven audio comparisons with zero measured offset at 44.1 kHz. This verifies the earlier 6 ms mastering correction through the production exporter; full-editor source-move interaction review remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | The recorded full web run passed 1,018 tests across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | The current full web run passes 1,034 tests across 229 isolated suites with browser coverage enabled and zero skips, including an unchanged serial rerun of the AI client suite after a startup timeout. Current editor-api/MCP tests pass; the earlier Classic Rust audit covers 158 tests. Broader manual workflow coverage and test-fixture typing remain follow-up QA |
 
 ## Moving authored groups and helper animations (2026-10-05)
 
