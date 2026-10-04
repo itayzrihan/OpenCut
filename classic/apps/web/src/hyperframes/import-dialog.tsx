@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { FolderOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogBody,
@@ -48,6 +49,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 	const operation = useRef<AbortController | null>(null);
 	const [folder, setFolder] = useState<HyperframesFolder | null>(null);
 	const [entryFile, setEntryFile] = useState("");
+	const [compositionName, setCompositionName] = useState("");
 	const [placement, setPlacement] = useState("playhead");
 	const [busy, setBusy] = useState(false);
 	const [canceling, setCanceling] = useState(false);
@@ -134,6 +136,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 				const selected = planHyperframesFolder({ files, runtime });
 				setFolder(selected);
 				setEntryFile(selected.plan.entryFile ?? "");
+				setCompositionName(selected.name);
 			} finally {
 				runtime.free();
 			}
@@ -150,6 +153,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 
 	const importFolder = async () => {
 		if ((!folder && !recovery) || !entryFile || operation.current) return;
+		if (!recovery && !compositionName.trim()) return;
 		const controller = new AbortController();
 		operation.current = controller;
 		const projectId = editor.project.getActive().metadata.id;
@@ -182,7 +186,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						entryFile,
 					});
 					return await readHyperframesFolder({
-						folder: selected,
+						folder: { ...selected, name: compositionName.trim() },
 						runtime,
 						signal: controller.signal,
 					});
@@ -379,6 +383,21 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 					{folder && !recovery && (
 						<>
 							<div className="space-y-2">
+								<label htmlFor={`${id}-name`} className="text-sm font-medium">
+									Composition name
+								</label>
+								<Input
+									id={`${id}-name`}
+									value={compositionName}
+									disabled={busy}
+									onChange={(event) => setCompositionName(event.target.value)}
+									aria-describedby={`${id}-name-hint`}
+								/>
+								<p id={`${id}-name-hint`} className="text-xs text-muted-foreground">
+									Shown in the composition library and timeline.
+								</p>
+							</div>
+							<div className="space-y-2">
 								<label htmlFor={`${id}-entry`} className="text-sm font-medium">
 									Entry file
 								</label>
@@ -464,6 +483,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						disabled={
 							busy ||
 							!entryFile ||
+							(!recovery && !compositionName.trim()) ||
 							(!folder &&
 								(!recovery ||
 									recovery.readyAssetIds.length <

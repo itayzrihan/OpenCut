@@ -25,6 +25,56 @@ is implemented; the product integration is not complete.
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
 
+## Full Brag export and Studio comparison (2026-10-04)
+
+The production standalone export completed at 18:53:51 UTC, about 13 minutes
+32 seconds after starting. The downloaded MP4 contains all 5,399 H.264 video
+frames at 1920 × 1080 and 30 fps (179.9667 seconds), plus AAC audio at 44.1 kHz.
+Its size is 80,627,192 bytes. No browser errors were recorded after export began.
+The file is `E:/Users/etiez/Downloads/Brag folder import coverage.mp4`.
+
+Thirty distinct frames across all seven source folders were compared with the
+pinned HyperFrames references, including the reconstruction's native video.
+After fitting portrait sources into the project canvas, mean absolute RGB
+error is at most 2.18/255; the worst frame was inspected beside its reference
+and preserves the composition, text and imagery. These are compressed MP4
+comparisons, not pixel equality. All measured pillarbox regions are black.
+Report and reproducible comparator:
+`.local/hf-brag-full-export-compare-20261004.json` and its `.mjs` script.
+
+All seven audio segments correlate above 0.9974 with their reference mixes,
+but lag by approximately 6 ms and have gain ratios of 1.041–1.044. The existing
+OpenCut mastering compressor is applied when any mixed sample exceeds 0.98.
+An isolated browser probe of that production function reproduces the 6 ms
+delay at 22.05, 44.1, 48 and 96 kHz and shows that the final impulse is lost.
+This is an existing export-mastering issue, shared by native and HyperFrames
+audio; it remains open. Probe: `.local/hf-mastering-probe-20261004.json`.
+
+The pinned HyperFrames 0.8.115 Studio was also inspected with a separate copy
+of the 96.9-second reconstruction. The original Brag folder was not modified.
+Observed behavior and corresponding OpenCut decisions:
+
+| Studio behavior | OpenCut implication |
+| --- | --- |
+| Timed elements share track rows; the Layers panel exposes nested, untimed DOM children | Keep the compound clip and expandable rows in the existing timeline; expose deeper source editing contextually rather than flattening shared animations |
+| Selecting a nested text layer selects its owning timed clip and opens text, style, layout and motion sections | Preserve the parent timeline context when adding child editing; current child selection/opacity and declared-variable controls cover part of this |
+| Motion shows an inferred range, individual GSAP effects, and the source selector | Future timing/source edits need source ownership and animation contracts; changing a DOM child's duration alone is insufficient |
+| Compact timeline tools, Fit control, thumbnails and linked selection keep the time ruler prominent | Existing OpenCut Fit, compact tools and expandable rows follow this direction; broader docking, shortcuts and inspector audit remains open |
+| Project title remains the folder name `composition`; the library shows `index` and `index.html` | Allow the user to name an import before committing it so repeated folder names can be distinguished |
+
+Studio evidence: `.local/hf-studio-layers-review-20261004.jpg`,
+`.local/hf-studio-inspector-review-20261004.jpg`, and
+`.local/hf-studio-opening-inventory-20261004.json` (live WebMCP inventory).
+
+The Classic import dialog now offers **Composition name**, initially the folder
+name. Whitespace-only names cannot be submitted; surrounding whitespace is
+trimmed. It feeds the existing canonical import name and recovery draft, with
+no new state store or capability. Recovery retains its recorded name. The real
+Brag audio project was imported as `Brag · קריינות ועריכה`; the library,
+timeline clip, expandable rows and saved project retain the name. Original
+source paths remain unchanged. Existing folder/import/recovery suites pass
+23 tests; product TypeScript and changed-file ESLint pass.
+
 ## MCP publication during export (2026-10-04)
 
 The project store notifies subscribers for export progress as well as document
