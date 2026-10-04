@@ -13,6 +13,8 @@ import {
 import { hyperframesLiveTransform } from "./live-transform";
 
 const MAX_LIVE_OCCURRENCES = 4;
+// Four visible occurrences plus warm surfaces within the client's five leases.
+const MAX_RETAINED_OCCURRENCES = 5;
 type ResolvedLayout = NonNullable<ReturnType<typeof resolveGraphicNodeLayout>>;
 
 /** Split only across source-over leaves. Backdrop-dependent blend modes and
@@ -96,6 +98,7 @@ type Options = {
  * time/layout and shares source delivery through independently released leases. */
 export class HyperframesLivePreview {
 	private readonly occurrences = new Map<string, LiveOccurrence>();
+	private readonly idleOccurrences: LiveOccurrence[] = [];
 	private readonly overlays = new Map<string, HTMLCanvasElement>();
 	private readonly failedSources = new WeakMap<object, number>();
 	private readonly failedUrls = new Set<string>();
@@ -147,26 +150,10 @@ export class HyperframesLivePreview {
 				occurrenceId: source.live!.occurrenceId,
 			});
 		}
-		// Release departed occurrences before acquiring new sources at the limit.
-		this.retainOccurrences(
-			new Set(candidates.map((candidate) => candidate.occurrenceId)),
-		);
+		this.prepareOccurrences(candidates);
 		const prepared = await Promise.all(
 			candidates.map(async (candidate) => {
-				let occurrence = this.occurrences.get(candidate.occurrenceId);
-				if (!occurrence) {
-					occurrence = new LiveOccurrence({
-						...this.options,
-						failedSources: this.failedSources,
-						failedUrls: this.failedUrls,
-						onFallback: () => {
-							if (this.disposed) return;
-							this.hide();
-							this.options.onFallback();
-						},
-					});
-					this.occurrences.set(candidate.occurrenceId, occurrence);
-				}
+				const occurrence = this.occurrences.get(candidate.occurrenceId)!;
 				return (await occurrence.prepare({
 					...candidate,
 					playing,
@@ -181,9 +168,11 @@ export class HyperframesLivePreview {
 		const live = prepared.filter(
 			(candidate): candidate is Candidate => candidate !== null,
 		);
-		this.retainOccurrences(
-			new Set(live.map((candidate) => candidate.occurrenceId)),
-		);
+		this.retainOccurrences({
+			ids: new Set(live.map((candidate) => candidate.occurrenceId)),
+			keepWarm: false,
+		});
+		this.trimIdleOccurrences();
 		if (!live.length) {
 			this.hide();
 			this.clearOverlays();
@@ -286,7 +275,9 @@ export class HyperframesLivePreview {
 	dispose(): void {
 		this.disposed = true;
 		this.hide();
-		this.retainOccurrences(new Set());
+		this.retainOccurrences({ ids: new Set(), keepWarm: false });
+		for (const occurrence of this.idleOccurrences.splice(0))
+			occurrence.dispose();
 		this.clearOverlays();
 		this.baseTree = null;
 	}
@@ -301,11 +292,68 @@ export class HyperframesLivePreview {
 		for (const canvas of this.overlays.values()) canvas.remove();
 		this.overlays.clear();
 	}
-	private retainOccurrences(ids: ReadonlySet<string>): void {
+	private prepareOccurrences(candidates: Candidate[]): void {
+		this.retainOccurrences({
+			ids: new Set(candidates.map((candidate) => candidate.occurrenceId)),
+			keepWarm: true,
+		});
+		for (const candidate of candidates) {
+			if (this.occurrences.has(candidate.occurrenceId)) continue;
+			const index = this.idleOccurrences.findIndex((occurrence) =>
+				occurrence.matchesSource(candidate.node.params.frameSource!),
+			);
+			if (index >= 0) {
+				this.occurrences.set(
+					candidate.occurrenceId,
+					this.idleOccurrences.splice(index, 1)[0],
+				);
+				incrementCounter({ name: "preview.hyperframesWarmReuse" });
+				continue;
+			}
+			const occurrence = new LiveOccurrence({
+				...this.options,
+				failedSources: this.failedSources,
+				failedUrls: this.failedUrls,
+				onFallback: () => {
+					if (
+						this.disposed ||
+						![...this.occurrences.values()].includes(occurrence)
+					)
+						return;
+					this.hide();
+					this.options.onFallback();
+				},
+			});
+			this.occurrences.set(candidate.occurrenceId, occurrence);
+		}
+		// Reserve space for every incoming occurrence before any lease is opened.
+		this.trimIdleOccurrences();
+	}
+	private trimIdleOccurrences(): void {
+		for (let index = this.idleOccurrences.length - 1; index >= 0; index--) {
+			if (!this.idleOccurrences[index].isReusable())
+				this.idleOccurrences.splice(index, 1)[0].dispose();
+		}
+		while (
+			this.idleOccurrences.length + this.occurrences.size >
+			MAX_RETAINED_OCCURRENCES
+		)
+			this.idleOccurrences.shift()!.dispose();
+	}
+	private retainOccurrences({
+		ids,
+		keepWarm,
+	}: {
+		ids: ReadonlySet<string>;
+		keepWarm: boolean;
+	}): void {
 		for (const [id, occurrence] of this.occurrences) {
 			if (!ids.has(id)) {
-				occurrence.dispose();
 				this.occurrences.delete(id);
+				if (keepWarm && occurrence.isReusable()) {
+					occurrence.retire();
+					this.idleOccurrences.push(occurrence);
+				} else occurrence.dispose();
 			}
 		}
 	}
@@ -413,6 +461,30 @@ class LiveOccurrence {
 	}
 	private hide(): void {
 		if (this.surface) this.surface.frame.style.opacity = "0";
+	}
+	isReusable(): boolean {
+		return (
+			!this.disposed &&
+			!!this.surface &&
+			!this.surface.failed &&
+			!this.surface.waiting &&
+			!!this.sourceKey &&
+			!this.failedUrls.has(this.surface.url) &&
+			this.failedSources.get(this.sourceKey) !== this.sourceRevision
+		);
+	}
+	matchesSource(
+		source: NonNullable<GraphicNode["params"]["frameSource"]>,
+	): boolean {
+		return (
+			this.isReusable() &&
+			this.sourceKey === source.live!.key &&
+			this.sourceRevision === source.getResourceRevision()
+		);
+	}
+	retire(): void {
+		this.pause();
+		this.hide();
 	}
 
 	private async prepareSurface({

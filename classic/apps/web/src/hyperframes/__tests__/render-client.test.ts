@@ -169,22 +169,22 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 	}
 });
 
-test("independent occurrence leases retain four sources while captures use a bounded spare slot", async () => {
+test("independent occurrence leases retain five sources while captures use a bounded spare slot", async () => {
 	const fixture = renderFixture();
 	const client = new HyperframesRenderClient("project-a");
 	try {
-		const sources = ["one", "two", "three", "four"].map((name) =>
+		const sources = ["one", "two", "three", "four", "five"].map((name) =>
 			composition(name),
 		);
 		const handles = [];
 		for (const source of sources)
 			handles.push(await client.openLivePreview({ composition: source }));
-		expect(fixture.live.size).toBe(4);
+		expect(fixture.live.size).toBe(5);
 		const duplicate = await client.openLivePreview({
 			composition: composition("one"),
 		});
 		expect(duplicate.url).toBe(handles[0].url);
-		expect(fixture.count("open")).toBe(4);
+		expect(fixture.count("open")).toBe(5);
 		const beforeMixed = fixture.calls.length;
 		for (const source of sources) {
 			await client.renderTo({
@@ -203,11 +203,13 @@ test("independent occurrence leases retain four sources while captures use a bou
 			["capture", "3"],
 			["live", "3"],
 			["capture", "4"],
+			["live", "4"],
+			["capture", "5"],
 		]);
 		handles[0].release?.();
 		handles[0].release?.();
 		await expect(
-			client.openLivePreview({ composition: composition("five") }),
+			client.openLivePreview({ composition: composition("six") }),
 		).rejects.toThrow("limit");
 		for (const name of ["capture-a", "capture-b", "capture-c"]) {
 			await client.renderTo({
@@ -215,20 +217,20 @@ test("independent occurrence leases retain four sources while captures use a bou
 				timeSeconds: 1,
 				target: fixture.target,
 			});
-			expect(fixture.live.size).toBe(5);
-			for (const id of ["1", "2", "3", "4"])
+			expect(fixture.live.size).toBe(6);
+			for (const id of ["1", "2", "3", "4", "5"])
 				expect(fixture.live.has(id)).toBe(true);
 		}
 		duplicate.release?.();
-		const fifth = await client.openLivePreview({
-			composition: composition("five"),
+		const sixth = await client.openLivePreview({
+			composition: composition("six"),
 		});
 		expect(fixture.live.has("1")).toBe(false);
-		expect(fixture.live.size).toBeLessThanOrEqual(5);
+		expect(fixture.live.size).toBeLessThanOrEqual(6);
 		for (const handle of handles) handle.release?.();
-		fifth.release?.();
+		sixth.release?.();
 		// Preparing an existing source drains release cleanup without a frame.
-		await client.prepareSource(composition("five").source);
+		await client.prepareSource(composition("six").source);
 		expect(fixture.live.size).toBeLessThanOrEqual(4);
 		client.dispose();
 		await Promise.resolve();
@@ -297,7 +299,7 @@ test("four captured packages stay warm across frames and leave room for an audio
 });
 
 test("audio preparation preserves live occurrences at each capture budget", async () => {
-	for (const count of [1, 2, 3, 4]) {
+	for (const count of [1, 2, 3, 4, 5]) {
 		const fixture = renderFixture({
 			audio: { bytes: new Uint8Array(), artifact: () => null },
 		});

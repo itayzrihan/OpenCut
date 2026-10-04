@@ -78,6 +78,7 @@ export function renderFixture({
 			if (input.action === "open") {
 				const id = String(++nextId);
 				live.add(id);
+				expect(live.size).toBeLessThanOrEqual(6);
 				captures.add(id);
 				expect(captures.size).toBeLessThanOrEqual(4);
 				return Response.json({

@@ -12,7 +12,9 @@ const MAX_FRAME_BYTES = 64 * 1024 * 1024;
 const MAX_FRAMES = 24;
 const MAX_AUDIO_BYTES = 64 * 1024 * 1024;
 const MAX_AUDIO_FILES = 8;
-const MAX_LIVE_SOURCES = 4;
+// Four visible occurrences and one warm spare; the host permits six sessions
+// so capture/audio work retains its own slot without evicting a live lease.
+const MAX_LIVE_SOURCES = 5;
 const MAX_CAPTURE_SOURCES = 4;
 
 /** Derived rendering cache scoped to one active account/project. Original
@@ -425,7 +427,7 @@ export class HyperframesRenderClient {
 		}
 		if (!session) {
 			// Retain four capture sources so a four-compound frame does not reopen
-			// Chrome for every source on every frame. Four live deliveries can keep
+			// Chrome for every source on every frame. Pinned live deliveries can keep
 			// one additional capture source; live promotion releases their browsers.
 			await this.trimSessions({
 				limit: this.sessionLimit() - 1,

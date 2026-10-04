@@ -22,8 +22,69 @@ is implemented; the product integration is not complete.
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,012 web tests pass across 221 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. A four-minute, 220-clip mixed timeline now completes at 23.49 overall and 24.90 after initial source loading, with zero errors; bounded surface reuse removes repeated multi-second loads at cuts. Sustained 30 fps, first-load delays and required capture throughput remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,014 web tests pass across 221 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Warm surfaces across long-timeline cuts (2026-10-04)
+
+A four-minute fixture contains 220 clips in the existing timeline: 100
+HyperFrames occurrences from five real Brag packages, 40 native videos, 40
+titles and 40 images. Every six seconds it changes between one, two, three and
+four compositions. The copied packages retain their original fingerprints and
+230 resources (33,099,374 bytes). Fixture metadata and creation script:
+`.local/hf-long-mixed-fixture-20261004.json` and
+`.local/hf-long-mixed-fixture-20261004.mjs`.
+
+The first run exposed repeated multi-second stalls at cuts. The preview keyed
+its surfaces only by clip ID and destroyed them as each occurrence ended, even
+when the next clip used the same source. The three playback windows completed
+8.06, 5.74 and 4.88 parent renders/s; maximum render time reached 6,457.4 ms.
+Report: `.local/hf-long-mixed-before-20261004.json`.
+
+Departed occurrences now pause and conceal their surfaces. A later occurrence
+can reuse a surface only when its source/layer-edit identity and resource
+revision match, then seeks using the new clip's own trim and bounds. Overlapping
+copies still own separate surfaces and clocks. Four surfaces can be displayed;
+five can be retained in total. The oldest unused surfaces are released before
+opening new ones. Five source leases leave the host's sixth session available
+for capture and audio preparation. An error from a dormant surface does not
+hide the current picture; failure, eviction and project disposal release leases.
+
+This is **Classic-only rendering integration** with no new document, history
+or MCP state. It preserves original source files and media. First encounters
+still require loading; no speculative preload or media transcode is introduced.
+
+The corrected editor completes the full four-minute timeline: 5,636 parent
+renders in 239.982 seconds (23.49/s), with zero render errors and no live
+fallbacks. The first 240-frame window includes source loading and completes at
+10.30/s, with a 3,346.2 ms maximum render. Subsequent windows range from 22.14
+to 27.07/s (24.90/s combined), with a maximum render of 438.3 ms. Browser
+inspection confirms five retained surfaces and at most four visible surfaces.
+The fixture exercises native video, changing trims, layers and Perspective;
+these are parent render completions, not native video presentation counts.
+Evidence: `.local/hf-long-mixed-after-20261004.json`.
+
+A replay from the beginning retains the same five delivery surfaces and
+completes 2,404 frames in 93.907 seconds (25.60/s), with zero errors and a
+384.8 ms maximum render. After Pause and a backward seek to `00:00:01:00`,
+all twelve portfolio videos are paused at exactly 1.000 seconds. The thirteenth
+video is outside its authored interval and stays paused at zero. Reports:
+`.local/hf-long-mixed-replay-20261004.json` and
+`.local/hf-long-mixed-paused-20261004.json`. The review screenshot is
+`.local/hf-long-mixed-review-20261004.jpg`; after both measurements, only the
+first diagnostic title's font size was reduced from 20 to 7 through the editor
+so its label fits the canvas. No Brag source was edited.
+
+Regression tests cover gaps, successive IDs, distinct simultaneous trims,
+resource and layer-edit changes, dormant/active failures, bounded eviction and
+exact lease cleanup. Client tests exercise five pinned sources alongside
+capture and audio while enforcing six host sessions and four capture browsers.
+The two new regressions fail before the change and pass after it. All 1,014
+tests pass in 221 isolated suites with real-browser coverage, zero failures and
+zero skips (121.4 s). Product TypeScript, changed-file ESLint and diff whitespace
+checks pass. Reports: `.local/hf-warm-cuts-before-20261004/summary.json`,
+`.local/hf-warm-cuts-targeted-20261004/summary.json` and
+`.local/hf-warm-cuts-full-20261004/summary.json`.
 
 ## Continuous native video preview (2026-10-04)
 

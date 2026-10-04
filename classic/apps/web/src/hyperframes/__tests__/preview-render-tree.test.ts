@@ -3,6 +3,7 @@ import { beforeAll, expect, mock, test } from "bun:test";
 import type { SceneTracks } from "@/timeline/types";
 import { mediaTime } from "@/wasm/media-time";
 import type { HyperframesRenderContext } from "../types";
+import { livePreviewFixture } from "./live-preview-fixture";
 
 let buildScene: typeof import("@/services/renderer/scene-builder").buildScene;
 let resolveRenderTree: typeof import("@/services/renderer/resolve").resolveRenderTree;
@@ -339,7 +340,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		await live.render({ node: swapped, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)?.children).toEqual([native, second, middle]);
 		expect(overlays.at(-1)?.children).toEqual([foreground]);
-		expect(releaseCount).toBe(1);
+		expect(releaseCount).toBe(0);
 		const previousSeeks = [...seeks];
 		clip.params.transform.perspectiveX = 20;
 		await live.render({ node: root, time: 10 * 120000, renderer });
@@ -348,7 +349,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		expect(frames[0].style.transform).toContain(
 			"perspective(270px) rotateX(-20deg) rotateY(0deg)",
 		);
-		expect(releaseCount).toBe(1);
+		expect(releaseCount).toBe(0);
 		expect(openCount).toBe(2);
 		clip.params.transform.perspectiveX = 0;
 		failSeek = true;
@@ -370,6 +371,228 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		if (savedDocument)
 			Object.defineProperty(globalThis, "document", savedDocument);
 		else Reflect.deleteProperty(globalThis, "document");
+	}
+});
+
+test("sequential occurrences reuse paused surfaces across gaps while overlapping copies keep independent clocks", async () => {
+	const fixture = livePreviewFixture();
+	let opened = 0;
+	let released = 0;
+	let fallbacks = 0;
+	const sourceKey = {};
+	let revision = 0;
+	const editedKey = {};
+	const live = new liveModule.HyperframesLivePreview({
+		...fixture,
+		width: 640,
+		height: 360,
+		onFallback: () => fallbacks++,
+	});
+	const clip = ({
+		id,
+		trim = 0,
+		key = sourceKey,
+	}: {
+		id: string;
+		trim?: number;
+		key?: object;
+	}) =>
+		new GraphicNode({
+			definitionId: "hyperframes",
+			params: {},
+			isPreview: true,
+			duration: 120000,
+			timeOffset: 0,
+			trimStart: trim * 120000,
+			trimEnd: 0,
+			transform: {
+				position: { x: 0, y: 0 },
+				scaleX: 1,
+				scaleY: 1,
+				rotate: 0,
+				perspectiveX: 0,
+				perspectiveY: 0,
+			},
+			opacity: 1,
+			frameSource: {
+				width: 640,
+				height: 360,
+				getResourceRevision: () => revision,
+				renderTo: async () => {},
+				live: {
+					occurrenceId: id,
+					key,
+					getSourceTime: (time) => trim + time / 120000,
+					open: async () => {
+						const ordinal = ++opened;
+						return {
+							url: `http://${"a".repeat(48)}.localhost:1234/live-${ordinal}.html`,
+							release: () => released++,
+						};
+					},
+				},
+			},
+		});
+	const show = async (clips: InstanceType<typeof GraphicNode>[]) => {
+		const root = new RootNode({ duration: 120000 });
+		root.children = clips;
+		await live.render({
+			node: root,
+			time: 30000,
+			renderer: fixture.renderer,
+			playing: true,
+		});
+	};
+	try {
+		await show([clip({ id: "first" })]);
+		await show([]);
+		expect(fixture.frames[0].style.opacity).toBe("0");
+		expect(fixture.controls.at(-1)?.type).toBe("pause");
+		expect(released).toBe(0);
+		await show([clip({ id: "next", trim: 3 })]);
+		expect(opened).toBe(1);
+		expect(fixture.controls.at(-1)).toMatchObject({
+			frame: fixture.frames[0],
+			type: "seek",
+			timeSeconds: 3.25,
+			playing: true,
+		});
+		await show([
+			clip({ id: "next", trim: 3 }),
+			clip({ id: "overlap", trim: 7 }),
+		]);
+		expect(opened).toBe(2);
+		expect(
+			fixture.controls.slice(-2).map(({ timeSeconds }) => timeSeconds),
+		).toEqual([3.25, 7.25]);
+		expect(
+			new Set(fixture.controls.slice(-2).map(({ frame }) => frame)).size,
+		).toBe(2);
+		await show([]);
+		await show([
+			clip({ id: "return-b", trim: 2 }),
+			clip({ id: "return-a", trim: 5 }),
+		]);
+		expect(opened).toBe(2);
+		expect(
+			fixture.controls.slice(-2).map(({ timeSeconds }) => timeSeconds),
+		).toEqual([2.25, 5.25]);
+		await show([]);
+		revision++;
+		await show([clip({ id: "resource-changed" })]);
+		expect(opened).toBe(3);
+		await show([clip({ id: "layer-edited", key: editedKey })]);
+		expect(opened).toBe(4);
+		// A dormant frame must not hide the currently displayed composition.
+		fixture.message({
+			frame: fixture.frames[2],
+			data: { type: "error", message: "Dormant runtime failed" },
+		});
+		expect(fallbacks).toBe(0);
+		expect(fixture.mount.style.opacity).toBe("1");
+		// A reused surface still reports an active failure under its new clip ID.
+		await show([]);
+		await show([clip({ id: "return-edited", key: editedKey })]);
+		expect(opened).toBe(4);
+		fixture.message({
+			frame: fixture.frames.at(-1)!,
+			data: { type: "error", message: "Active runtime failed" },
+		});
+		expect(fallbacks).toBe(1);
+		expect(fixture.mount.style.opacity).toBe("0");
+	} finally {
+		live.dispose();
+		live.dispose();
+		expect(released).toBe(opened);
+		expect(fixture.attached.size).toBe(0);
+		fixture.restore();
+	}
+});
+
+test("warm live surfaces stay bounded when many sources cut together", async () => {
+	const fixture = livePreviewFixture();
+	let opened = 0;
+	let released = 0;
+	const live = new liveModule.HyperframesLivePreview({
+		...fixture,
+		width: 640,
+		height: 360,
+		onFallback: () => {},
+	});
+	const keys = Array.from({ length: 9 }, () => ({}));
+	const show = async ({
+		indices,
+		pass,
+	}: {
+		indices: number[];
+		pass: number;
+	}) => {
+		const root = new RootNode({ duration: 120000 });
+		root.children = indices.map(
+			(index) =>
+				new GraphicNode({
+					definitionId: "hyperframes",
+					params: {},
+					isPreview: true,
+					duration: 120000,
+					timeOffset: 0,
+					trimStart: 0,
+					trimEnd: 0,
+					transform: {
+						position: { x: 0, y: 0 },
+						scaleX: 1,
+						scaleY: 1,
+						rotate: 0,
+						perspectiveX: 0,
+						perspectiveY: 0,
+					},
+					opacity: 1,
+					frameSource: {
+						width: 640,
+						height: 360,
+						getResourceRevision: () => 0,
+						renderTo: async () => {},
+						live: {
+							occurrenceId: `${pass}-${index}`,
+							key: keys[index],
+							getSourceTime: (time) => time / 120000,
+							open: async () => {
+								opened++;
+								expect(opened - released).toBeLessThanOrEqual(5);
+								return {
+									url: `http://${"a".repeat(48)}.localhost:1234/live-${index}.html`,
+									release: () => released++,
+								};
+							},
+						},
+					},
+				}),
+		);
+		await live.render({ node: root, time: 0, renderer: fixture.renderer });
+		expect(
+			[...fixture.attached].filter((frame) => frame.style.opacity === "1")
+				.length,
+		).toBe(indices.length);
+	};
+	try {
+		await show({ indices: [0, 1, 2, 3], pass: 0 });
+		await show({ indices: [4], pass: 1 });
+		expect(opened).toBe(5);
+		expect(released).toBe(0);
+		await show({ indices: [0, 1, 2, 3], pass: 2 });
+		expect(opened).toBe(5);
+		await show({ indices: [4], pass: 3 });
+		expect(opened).toBe(5);
+		await show({ indices: [5, 6, 7, 8], pass: 4 });
+		expect(opened).toBe(9);
+		expect(released).toBe(4);
+		await show({ indices: [4], pass: 5 }); // Most recently retired surface survives eviction.
+		expect(opened).toBe(9);
+	} finally {
+		live.dispose();
+		expect(released).toBe(opened);
+		expect(fixture.attached.size).toBe(0);
+		fixture.restore();
 	}
 });
 
