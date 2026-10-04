@@ -208,8 +208,7 @@ function HyperframesLayersInspector({
 						)}
 						{manifest.layers.some((layer) => layer.kind === "audio") && (
 							<p className="text-muted-foreground text-xs">
-								Embedded audio is listed here. Audio playback and export are not
-								connected yet.
+								Embedded audio follows this clip during playback and export.
 							</p>
 						)}
 						{manifest.diagnostics.length > 0 && (

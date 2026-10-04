@@ -269,8 +269,8 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 								</select>
 							</div>
 							<p className="text-xs text-muted-foreground">
-								Imported files are copied into this project. Embedded
-								HyperFrames audio is not mixed yet.
+								Imported files are copied into this project. Embedded audio
+								follows the composition during playback and export.
 							</p>
 						</>
 					)}

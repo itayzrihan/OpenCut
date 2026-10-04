@@ -129,6 +129,39 @@ export class HyperframesRenderCache {
 		return structuredClone(ready.runtimeManifest);
 	}
 
+	async readAudio({
+		project,
+		assetId,
+		signal,
+	}: {
+		project: RenderProject;
+		assetId: string;
+		signal?: AbortSignal;
+	}): Promise<File | null> {
+		const projectId = project.metadata.id;
+		const scopeRevision = this.scopeRevision;
+		const revision = this.resourceRevision;
+		const checkScope = () => {
+			signal?.throwIfAborted();
+			if (
+				this.projectId !== projectId ||
+				this.scopeRevision !== scopeRevision ||
+				this.accountId !== currentAccountId() ||
+				this.resourceRevision !== revision
+			)
+				throw new Error(
+					"The HyperFrames project, account or media changed while reading audio",
+				);
+		};
+		checkScope();
+		const composition = project.hyperframesCompositions?.[assetId];
+		if (!composition) throw new Error("HyperFrames composition is missing");
+		this.client ??= new HyperframesRenderClient(projectId);
+		const file = await this.client.readAudio(composition.source);
+		checkScope();
+		return file;
+	}
+
 	reset(): void {
 		this.client?.dispose();
 		this.client = null;

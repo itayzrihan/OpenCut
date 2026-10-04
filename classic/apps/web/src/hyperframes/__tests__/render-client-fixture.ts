@@ -17,7 +17,9 @@ export function composition(name = "main"): HyperframesComposition {
 	};
 }
 
-export function renderFixture() {
+export function renderFixture({
+	audio,
+}: { audio?: { bytes: Uint8Array; artifact: () => unknown } } = {}) {
 	const savedWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
 	const savedBitmap = Object.getOwnPropertyDescriptor(
 		globalThis,
@@ -61,7 +63,8 @@ export function renderFixture() {
 	const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 		// eslint-disable-next-line opencut/prefer-object-params -- Browser fetch signature.
 		(async (_url: RequestInfo | URL, options?: RequestInit) => {
-			if (options?.method !== "POST") return new Response(new Uint8Array([1]));
+			if (options?.method !== "POST")
+				return new Response(Uint8Array.from(audio?.bytes ?? [1]));
 			const input = JSON.parse(String(options.body)) as {
 				action: string;
 				projectId: string;
@@ -87,6 +90,8 @@ export function renderFixture() {
 				});
 			}
 			if (input.action === "close") live.delete(input.id!);
+			if (input.action === "audio" && audio)
+				return Response.json(audio.artifact());
 			return Response.json({ id: "artifact" });
 		}) as typeof fetch,
 	);

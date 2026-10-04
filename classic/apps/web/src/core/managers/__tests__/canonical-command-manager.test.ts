@@ -231,6 +231,66 @@ const source = {
 	resourceAssetIds: {},
 };
 
+test("audio projection reads the same canonical clip after host edits and undo", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	const imported = await host.manager.importHyperframes({
+		name: "Narration",
+		source,
+		startSeconds: 8,
+	});
+	const input = {
+		projectId: host.project().metadata.id,
+		sceneId: host.project().currentSceneId,
+	};
+	const before = await host.manager.readHyperframesAudioClips(input);
+	expect(before.clips[0].compositionId).toBe(imported.assetId);
+	expect(Number(before.clips[0].element.startTime)).toBe(960000);
+	const snapshot = host.manager.captureProjectSnapshot();
+	host.manager.executeTransaction({
+		execute: () => {
+			const project = structuredClone(host.project());
+			const scene = project.scenes.find((scene) => scene.id === input.sceneId)!;
+			const track = scene.tracks.overlay.find(
+				(track) => track.id === imported.trackId,
+			)!;
+			const element = track.elements.find(
+				(element) => element.id === imported.itemId,
+			)!;
+			Object.assign(element, {
+				startTime: 240000,
+				trimStart: 120000,
+				duration: 360000,
+				trimEnd: 240000,
+			});
+			host.editor.scenes.updateSceneTracks({ tracks: scene.tracks });
+		},
+	});
+	const changed = await host.manager.readHyperframesAudioClips(input);
+	expect(changed.clips[0].element).toMatchObject({
+		startTime: 240000,
+		trimStart: 120000,
+		duration: 360000,
+		trimEnd: 240000,
+	});
+	assertCoherent({ host, runtime });
+	host.manager.undo();
+	expect(host.manager.captureProjectSnapshot()).toEqual(snapshot);
+	expect((await host.manager.readHyperframesAudioClips(input)).clips).toEqual(
+		before.clips,
+	);
+	host.manager.redo();
+	expect((await host.manager.readHyperframesAudioClips(input)).clips).toEqual(
+		changed.clips,
+	);
+	await expect(
+		host.manager.readHyperframesAudioClips({ ...input, projectId: "other" }),
+	).rejects.toThrow("project changed");
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
 test("runtime layers publish through canonical state, undo and persisted history", async () => {
 	const host = createHost();
 	const runtime = await createCanonicalTestRuntime();

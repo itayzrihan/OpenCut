@@ -5,6 +5,8 @@ import type { HyperframesFrameArtifact } from "./capture-session";
 
 const MAX_FRAME_BYTES = 64 * 1024 * 1024;
 const MAX_FRAMES = 24;
+const MAX_AUDIO_BYTES = 64 * 1024 * 1024;
+const MAX_AUDIO_FILES = 8;
 
 /** Derived rendering cache scoped to one active account/project. Original
  * source stays in the canonical document; decoded frames have a bounded LRU.
@@ -24,6 +26,8 @@ export class HyperframesRenderClient {
 	>();
 	private readonly frames = new Map<string, ImageBitmap>();
 	private frameBytes = 0;
+	private readonly audioFiles = new Map<string, File | null>();
+	private audioBytes = 0;
 	private readonly timer: ReturnType<typeof setInterval>;
 	private closed = false;
 	private readonly accountId: string | null;
@@ -78,6 +82,86 @@ export class HyperframesRenderClient {
 		this.pending.signal.throwIfAborted();
 		const key = await this.sourceKey(source);
 		const ready = this.renderQueue.then(() => this.getSession({ key, source }));
+		this.renderQueue = ready.then(
+			() => {},
+			() => {},
+		);
+		return ready;
+	}
+
+	/** Authenticated derived audio shares the source/resource lifetime of frames. */
+	async readAudio(source: HyperframesSource): Promise<File | null> {
+		const key = await this.sourceKey(source);
+		const ready = this.renderQueue.then(async () => {
+			this.pending.signal.throwIfAborted();
+			if (this.audioFiles.has(key)) {
+				const file = this.audioFiles.get(key) ?? null;
+				this.audioFiles.delete(key);
+				this.audioFiles.set(key, file);
+				return file;
+			}
+			const session = await this.getSession({ key, source });
+			let artifact: HyperframesFrameArtifact | null;
+			try {
+				artifact = await this.request<HyperframesFrameArtifact | null>({
+					action: "audio",
+					id: session.id,
+				});
+			} catch (error) {
+				this.sessions.delete(key);
+				await this.closeRemote(session.id);
+				throw error;
+			}
+			let file: File | null = null;
+			if (artifact) {
+				if (
+					!Number.isSafeInteger(artifact.byteSize) ||
+					artifact.byteSize <= 0 ||
+					artifact.byteSize > MAX_AUDIO_BYTES ||
+					artifact.mimeType !== "audio/mp4"
+				)
+					throw new Error("HyperFrames audio artifact is invalid or too large");
+				const params = new URLSearchParams({
+					projectId: this.projectId,
+					id: artifact.id,
+				});
+				const response = await fetch(`/api/hyperframes?${params}`, {
+					headers: this.headers(),
+					signal: this.pending.signal,
+					cache: "no-store",
+				});
+				if (!response.ok) throw await responseError(response);
+				const blob = await response.blob();
+				if (blob.size !== artifact.byteSize || blob.size > MAX_AUDIO_BYTES)
+					throw new Error("HyperFrames audio artifact size does not match");
+				const digest = await crypto.subtle.digest(
+					"SHA-256",
+					await blob.arrayBuffer(),
+				);
+				const hash = [...new Uint8Array(digest)]
+					.map((byte) => byte.toString(16).padStart(2, "0"))
+					.join("");
+				if (hash !== artifact.sha256)
+					throw new Error("HyperFrames audio artifact checksum does not match");
+				file = new File([blob], `hyperframes-${hash}.m4a`, {
+					type: "audio/mp4",
+					lastModified: 0,
+				});
+			}
+			this.pending.signal.throwIfAborted();
+			while (
+				this.audioFiles.size >= MAX_AUDIO_FILES ||
+				this.audioBytes + (file?.size ?? 0) > MAX_AUDIO_BYTES
+			) {
+				const oldest = this.audioFiles.entries().next().value;
+				if (!oldest) break;
+				this.audioFiles.delete(oldest[0]);
+				this.audioBytes -= oldest[1]?.size ?? 0;
+			}
+			this.audioFiles.set(key, file);
+			this.audioBytes += file?.size ?? 0;
+			return file;
+		});
 		this.renderQueue = ready.then(
 			() => {},
 			() => {},
@@ -184,6 +268,8 @@ export class HyperframesRenderClient {
 		for (const bitmap of this.frames.values()) bitmap.close();
 		this.frames.clear();
 		this.frameBytes = 0;
+		this.audioFiles.clear();
+		this.audioBytes = 0;
 	}
 
 	private sourceKey(source: HyperframesSource): Promise<string> {

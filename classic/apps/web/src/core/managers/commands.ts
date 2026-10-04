@@ -580,6 +580,23 @@ export class CommandManager {
 		if (!dryRun) this.stateRevision += 1;
 	}
 
+	async readHyperframesAudioClips({
+		projectId,
+		sceneId,
+	}: {
+		projectId: string;
+		sceneId: string;
+	}) {
+		await this.enableCanonical();
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId
+		)
+			throw new Error("The HyperFrames audio project changed");
+		return this.canonical.readHyperframesAudioClips({ sceneId });
+	}
+
 	async importHyperframes(
 		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0] & {
 			target?: { projectId: string; sceneId: string; signal?: AbortSignal };

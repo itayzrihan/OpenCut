@@ -5,7 +5,9 @@ import type { ExportOptions, ExportResult } from "@/export";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
-import { createTimelineAudioBuffer } from "@/media/audio";
+import { createTimelineAudioBuffer, type AudioClipSource } from "@/media/audio";
+import { getClipAudioTiming } from "@/media/audio-sync";
+import { resolveEffectiveAudioGain } from "@/timeline/audio-state";
 import { formatTimecode, mediaMissingUsed } from "opencut-wasm";
 import { downloadBlob } from "@/utils/browser";
 import {
@@ -79,6 +81,61 @@ export class RendererManager {
 			assetId,
 			signal,
 		});
+	}
+
+	async readHyperframesAudioClips({
+		sceneId,
+		signal,
+	}: {
+		sceneId: string;
+		signal?: AbortSignal;
+	}): Promise<AudioClipSource[]> {
+		this.updateHyperframesCache();
+		const project = this.editor.project.getActive();
+		if (!Object.keys(project.hyperframesCompositions ?? {}).length) return [];
+		const projection = await this.editor.command.readHyperframesAudioClips({
+			projectId: project.metadata.id,
+			sceneId,
+		});
+		signal?.throwIfAborted();
+		const files = new Map<string, Promise<File | null>>();
+		const clips = await Promise.all(
+			projection.clips.map(
+				async ({ compositionId, element }): Promise<AudioClipSource | null> => {
+					let pending = files.get(compositionId);
+					if (!pending) {
+						pending = this.hyperframesCache.readAudio({
+							project,
+							assetId: compositionId,
+							signal,
+						});
+						files.set(compositionId, pending);
+					}
+					const file = await pending;
+					if (!file) return null;
+					const sourceKey = `hyperframes:${project.metadata.id}:${file.name}`;
+					return {
+						timelineElement: element,
+						id: element.id,
+						sourceKey,
+						file,
+						mediaAsset: {
+							id: sourceKey,
+							name: element.name,
+							type: "audio",
+							file,
+							duration: (element.sourceDuration ?? 0) / TICKS_PER_SECOND,
+						},
+						...getClipAudioTiming(element),
+						trimEnd: element.trimEnd / TICKS_PER_SECOND,
+						volume: resolveEffectiveAudioGain({ element, localTime: 0 }),
+						muted: false,
+					};
+				},
+			),
+		);
+		signal?.throwIfAborted();
+		return clips.filter((clip): clip is AudioClipSource => clip !== null);
 	}
 
 	private updateHyperframesCache(): boolean {
@@ -370,9 +427,19 @@ export class RendererManager {
 		this.setExporting(true);
 		const releasePlayback = this.editor.playback.suspend();
 		const { format, quality, fps, includeAudio } = options;
+		const cancellation = new AbortController();
+		let exporter: SceneExporter | undefined;
+		const cancelInterval = setInterval(() => {
+			if (!cancellation.signal.aborted && onCancel?.()) {
+				cancellation.abort();
+				exporter?.cancel();
+				this.resetHyperframesRendering();
+			}
+		}, 100);
 
 		try {
-			const tracks = this.editor.scenes.getActiveScene().tracks;
+			const activeScene = this.editor.scenes.getActiveScene();
+			const tracks = activeScene.tracks;
 			const mediaAssets = this.editor.media.getAssets();
 			const activeProject = this.editor.project.getActive();
 			const missing: string[] = JSON.parse(
@@ -398,6 +465,7 @@ export class RendererManager {
 
 			const exportFps = fps ?? activeProject.settings.fps;
 			const canvasSize = activeProject.settings.canvasSize;
+			const hyperframes = this.getHyperframesRenderContext();
 
 			let audioBuffer: AudioBuffer | null = null;
 			if (includeAudio) {
@@ -406,11 +474,26 @@ export class RendererManager {
 					tracks,
 					mediaAssets,
 					duration,
+					additionalClips: await this.readHyperframesAudioClips({
+						sceneId: activeScene.id,
+						signal: cancellation.signal,
+					}),
 				});
 			}
+			cancellation.signal.throwIfAborted();
+			if (
+				this.editor.project.getActiveOrNull()?.metadata.id !==
+					activeProject.metadata.id ||
+				this.editor.project.getActiveOrNull()?.hyperframesCompositions !==
+					activeProject.hyperframesCompositions ||
+				this.editor.scenes.getActiveSceneOrNull()?.tracks !== tracks
+			)
+				throw new Error(
+					"The project changed while preparing export. Start the export again.",
+				);
 
 			const scene = buildScene({
-				hyperframes: this.getHyperframesRenderContext(),
+				hyperframes,
 				tracks,
 				mediaAssets,
 				duration,
@@ -420,7 +503,7 @@ export class RendererManager {
 				activeSceneId: this.editor.scenes.getActiveScene().id,
 			});
 
-			const exporter = new SceneExporter({
+			exporter = new SceneExporter({
 				width: canvasSize.width,
 				height: canvasSize.height,
 				fps: exportFps,
@@ -437,22 +520,11 @@ export class RendererManager {
 				onProgress?.({ progress: adjustedProgress });
 			});
 
-			let cancelled = false;
-			const checkCancel = () => {
-				if (onCancel?.()) {
-					cancelled = true;
-					exporter.cancel();
-					this.resetHyperframesRendering();
-				}
-			};
-
-			const cancelInterval = setInterval(checkCancel, 100);
-
 			try {
 				const buffer = await exporter.export({ rootNode: scene });
 				clearInterval(cancelInterval);
 
-				if (cancelled) {
+				if (cancellation.signal.aborted) {
 					return { success: false, cancelled: true };
 				}
 
@@ -468,12 +540,15 @@ export class RendererManager {
 				clearInterval(cancelInterval);
 			}
 		} catch (error) {
+			if (cancellation.signal.aborted)
+				return { success: false, cancelled: true };
 			console.error("Export failed:", error);
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Unknown export error",
 			};
 		} finally {
+			clearInterval(cancelInterval);
 			try {
 				this.setExporting(false);
 			} finally {

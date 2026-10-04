@@ -29,6 +29,132 @@ async fn state(runtime: &OpenCutRuntime) -> Value {
 }
 
 #[tokio::test]
+async fn derived_audio_follows_canonical_trim_placement_mute_and_undo_without_new_tracks() {
+    let runtime = OpenCutRuntime::default();
+    attach(&runtime, classic()).await;
+    let before = state(&runtime).await;
+    let imported = call(
+        &runtime,
+        "timeline.hyperframes.import",
+        json!({
+            "projectId":"classic-project", "expectedRevision":before["revision"],
+            "name":"Audio composition", "source":source(), "startSeconds":8
+        }),
+    )
+    .await;
+    let original = state(&runtime).await;
+    let scene_id = original["project"]["classic"]["document"]["currentSceneId"].clone();
+    let read = |revision: Value| json!({"projectId":"classic-project", "sceneId":scene_id, "expectedRevision":revision});
+    let projection = call(
+        &runtime,
+        "hyperframes.audio.clips.read",
+        read(original["revision"].clone()),
+    )
+    .await;
+    assert_eq!(projection["clips"].as_array().unwrap().len(), 1);
+    assert_eq!(projection["clips"][0]["compositionId"], imported["assetId"]);
+    assert_eq!(projection["clips"][0]["element"]["startTime"], 960_000);
+    assert_eq!(projection["clips"][0]["element"]["duration"], 720_000);
+    assert_eq!(state(&runtime).await, original);
+
+    let mut snapshot = original["project"]["classic"].clone();
+    let scenes = snapshot["document"]["scenes"].as_array_mut().unwrap();
+    let scene = scenes
+        .iter_mut()
+        .find(|scene| scene["id"] == scene_id)
+        .unwrap();
+    let track = scene["tracks"]["overlay"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|track| track["id"] == imported["trackId"])
+        .unwrap();
+    let element = &mut track["elements"][0];
+    element["startTime"] = json!(240_000);
+    element["trimStart"] = json!(180_000);
+    element["duration"] = json!(600_000); // visual freeze after source end
+    element["hidden"] = json!(true); // only visual visibility
+    element["params"]["volume"] = json!(-6);
+    element["params"]["fadeInDuration"] = json!(0.5);
+    call(&runtime, "project.classic.commit", json!({"projectId":"classic-project", "expectedRevision":original["revision"], "classic":snapshot})).await;
+    let edited = state(&runtime).await;
+    let changed = call(
+        &runtime,
+        "hyperframes.audio.clips.read",
+        read(edited["revision"].clone()),
+    )
+    .await;
+    let audio = &changed["clips"][0]["element"];
+    assert_eq!(audio["type"], "audio");
+    assert_eq!(audio["startTime"], 240_000);
+    assert_eq!(audio["trimStart"], 180_000);
+    assert_eq!(audio["duration"], 540_000);
+    assert_eq!(audio["trimEnd"], 0);
+    assert_eq!(audio["params"]["volume"], -6);
+    assert_eq!(audio["params"]["fadeInDuration"], 0.5);
+    assert!(audio.get("hidden").is_none());
+    assert_eq!(state(&runtime).await, edited);
+    assert!(
+        runtime
+            .registry()
+            .invoke(
+                "hyperframes.audio.clips.read",
+                InvocationContext::default(),
+                read(original["revision"].clone())
+            )
+            .await
+            .is_err()
+    );
+    let mut wrong = read(edited["revision"].clone());
+    wrong["projectId"] = json!("another-project");
+    assert!(
+        runtime
+            .registry()
+            .invoke(
+                "hyperframes.audio.clips.read",
+                InvocationContext::default(),
+                wrong
+            )
+            .await
+            .is_err()
+    );
+
+    call(&runtime, "history.undo", json!({})).await;
+    let undone = state(&runtime).await;
+    assert_eq!(undone["project"], original["project"]);
+    let restored = call(
+        &runtime,
+        "hyperframes.audio.clips.read",
+        read(undone["revision"].clone()),
+    )
+    .await;
+    assert_eq!(restored["clips"], projection["clips"]);
+    call(&runtime, "history.redo", json!({})).await;
+    let redone = state(&runtime).await;
+    assert_eq!(redone["project"], edited["project"]);
+
+    let mut muted = redone["project"]["classic"].clone();
+    for scene in muted["document"]["scenes"].as_array_mut().unwrap() {
+        for track in scene["tracks"]["overlay"].as_array_mut().unwrap() {
+            if track["id"] == imported["trackId"] {
+                track["muted"] = json!(true);
+            }
+        }
+    }
+    call(&runtime, "project.classic.commit", json!({"projectId":"classic-project", "expectedRevision":redone["revision"], "classic":muted})).await;
+    let muted_state = state(&runtime).await;
+    assert_eq!(
+        call(
+            &runtime,
+            "hyperframes.audio.clips.read",
+            read(muted_state["revision"].clone())
+        )
+        .await["clips"],
+        json!([])
+    );
+}
+
+#[tokio::test]
 async fn composition_binary_assets_roundtrip_through_canonical_state_and_history() {
     let runtime = OpenCutRuntime::default();
     let mut original = classic();

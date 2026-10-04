@@ -211,6 +211,23 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	readHyperframesAudioClips({ sceneId }: { sceneId: string }): {
+		revision: number;
+		clips: Array<{
+			compositionId: string;
+			element: import("@/timeline").AudioElement;
+		}>;
+	} {
+		return this.call({
+			capability: "hyperframes.audio.clips.read",
+			input: {
+				projectId: this.projectId,
+				sceneId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	dispose(): void {
 		this.runtime.free();
 	}

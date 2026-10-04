@@ -34,6 +34,21 @@ struct PrepareAudioInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReadAudioInput {
+    project_id: String,
+    scene_id: String,
+    expected_revision: u64,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct ReadAudioOutput {
+    revision: u64,
+    clips: Vec<crate::ClassicHyperframesAudioClip>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SetManifestInput {
     project_id: String,
     expected_revision: u64,
@@ -77,6 +92,50 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    let audio_state = state.clone();
+    register::<ReadAudioInput, ReadAudioOutput, _, _>(
+        registry,
+        "hyperframes.audio.clips.read",
+        "Read HyperFrames timeline audio clips",
+        "Projects compound clips in a canonical Classic scene into derived audio mixer inputs. Preserves placement, trim and gain, bounds audio to the authored source duration, and follows undo history. Requires a project, scene and exact revision. Does not read files, render audio or add tracks.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "audio", "classic", "timeline"],
+        move |context, input| {
+            let state = audio_state.clone();
+            async move {
+                check_cancelled(&context)?;
+                let store = state.read().map_err(|_| {
+                    CapabilityError::Failed("editor state lock was poisoned".into())
+                })?;
+                let document = store.document_for(Some(&input.project_id)).ok_or_else(|| {
+                    CapabilityError::Unavailable("HyperFrames audio project is not open".into())
+                })?;
+                check_target(document, &context)?;
+                check_revision(document, Some(input.expected_revision))?;
+                let classic = document
+                    .project
+                    .as_ref()
+                    .filter(|project| project.id == input.project_id)
+                    .and_then(|project| project.classic.as_ref())
+                    .ok_or_else(|| {
+                        CapabilityError::Unavailable(
+                            "HyperFrames audio requires a Classic project".into(),
+                        )
+                    })?;
+                let clips = classic
+                    .hyperframes_audio_clips(&input.scene_id)
+                    .map_err(model_error)?;
+                check_cancelled(&context)?;
+                Ok(OperationSuccess::new(ReadAudioOutput {
+                    revision: document.revision,
+                    clips,
+                }))
+            }
+        },
+    )?;
     register::<PackagePlanInput, HyperframesPackagePlan, _, _>(
         registry,
         "hyperframes.package.plan",
@@ -150,7 +209,9 @@ pub(super) fn register_hyperframes_operations(
                 if manifest.duration_seconds != input.plan.duration_seconds
                     || manifest.runtime_version != input.plan.runtime_version
                 {
-                    return Err(CapabilityError::InvalidInput("audio plan and runtime manifest disagree".into()));
+                    return Err(CapabilityError::InvalidInput(
+                        "audio plan and runtime manifest disagree".into(),
+                    ));
                 }
                 crate::validate_hyperframes_audio_windows(manifest).map_err(model_error)?;
             }

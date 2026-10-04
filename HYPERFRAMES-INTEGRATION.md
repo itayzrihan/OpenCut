@@ -19,8 +19,8 @@ is implemented; the product integration is not complete.
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated runtime inventory and read-only Classic inspector implemented; timeline rows and child editing pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; audio host verified on all eight, timeline audio connection, fast live preview and speed pending |
-| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Classic MP4 compositor verified with a synthetic trimmed overlay; Brag export comparison and audio integration pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; audio host verified on all eight and connected to Classic playback/export; fast live preview and speed pending |
+| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
@@ -94,9 +94,9 @@ reference project or its version pin.
 
 ## Implemented contract and migration status
 
-**Canonical source contract, Classic command/view adoption, isolated runtime and
-the Classic compositor frame adapter are implemented. Importer UI, fast live
-preview and media/audio fidelity remain pending.** No alternate timeline was added. The lazy browser binding runs the same
+**Canonical source contract, Classic command/view adoption, folder import UI,
+isolated runtime, compositor frames and timeline audio integration are implemented.
+Fast live preview and full media/export parity remain pending.** No alternate timeline was added. The lazy browser binding runs the same
 `OpenCutRuntime` and owns adopted Classic history and validated document changes.
 Projects without an adopted session retain the existing Classic path.
 
@@ -269,7 +269,8 @@ and failure reporting are complete.
 - A deliberately unresolved composition exercised runtime failure after upload.
   With staged cleanup enabled, both the file count and media-index count were
   unchanged after rejection. The successful import's upload token was removed.
-- Embedded audio is explicitly marked unsupported in the dialog. The actual
+- At this stage embedded audio was explicitly marked unsupported in the dialog
+  (superseded by the timeline audio connection recorded below). The actual
   Brag folder verification below extends the synthetic flow. The other seven Brag
   UI imports, generated children, fast preview, video fidelity and crash recovery for staged
   uploads remain pending. The new folder export was invoked through the UI, but
@@ -615,16 +616,66 @@ Verification:
 - Scoped TypeScript, changed-file ESLint, editor-api Clippy, WASM export checks
   and nine real-WASM CommandManager tests (129 assertions) passed.
 
-Existing preview/export audio collectors still accept only native audio/video
-elements. The next step is a canonical projection of compound-clip audio into
-those collectors, reusing their trim, gain, retime and mastering behavior without
-adding persistent duplicate clips. No HyperFrames timeline audio playback is
-claimed yet.
+### Classic timeline audio connection (2026-10-04)
+
+- `hyperframes.audio.clips.read` reads a project, scene and exact revision from
+  the canonical runtime. It projects compound placement, trim, gain and volume
+  animation into existing Classic audio mixer inputs. These are derived views;
+  no additional document tracks or history entries are created. Source duration
+  bounds exclude AAC padding. Visual hiding does not mute audio; explicit clip
+  or track mute does. Graphic looping/retime remains unsupported by the visual
+  source and is not introduced only for audio.
+- The account/project-scoped render client checks artifact size and SHA-256,
+  shares duplicate requests, caches silence, and retains at most eight audio
+  files / 64 MiB. Resource replacement and project/account changes invalidate
+  audio and frames together. Failed reads can be retried.
+- Playback waits for compound audio through its existing preparation mechanism.
+  The same clips feed export's decode cache, gain automation and mastering.
+  Decode/mixer failures fail the operation; playback displays the error and
+  pauses. Export cancellation now covers audio preparation as well as frames.
+  The existing parallax playback mapping also receives these derived clips.
+- Native Rust and real WASM tests cover placement, trim, authored duration,
+  hidden/muted behavior, revisions, source identity, unchanged state, host edits
+  and Undo/Redo. Collector tests verify shared decoding across multiple cuts and
+  propagation of missing-audio errors. Thirty targeted Rust tests passed, as did
+  ten real-WASM CommandManager tests (138 assertions), six audio client/cache
+  tests (185 assertions), and one collector test (six assertions). Scoped
+  TypeScript, changed-file ESLint, editor-api Clippy with `-D warnings`, release
+  WASM build, and the 37 legacy / 13 canonical export checks passed.
+- An actual audio-enabled Classic export produced a 14-second H.264/AAC MP4
+  (640x360, 44.1 kHz stereo, 814,607 bytes). It contains native narration at
+  0–5 seconds and the Brag composition at 8–14 seconds. Decoded PCM compared
+  against the original narration at 8 kHz has zero lag for both, correlation
+  0.999953 for native audio and 0.999871 for compound audio; the 5.2–7.8-second
+  gap has zero RMS. The frame at 9.5 seconds shows the expected Brag text/circle.
+  Evidence: `.local/hyperframes-native-and-brag-audio.mp4`,
+  `.local/hyperframes-export-audio-check.json`, and
+  `.local/hyperframes-audio-export-frame.png`. Export cancellation also returned
+  the normal export form through the UI. Playback preparation completed and the
+  playhead reached the end; audible live playback and smooth performance have
+  not been established by this export check.
+- Splitting the Brag clip through the normal timeline toolbar at 9.5 seconds
+  (source offset 1.5 seconds) and exporting again preserved the entire decoded
+  audio exactly. Both MP4s decode to the same float PCM SHA-256,
+  `ec8789f5357f8901da85d1f8f44a17fc872ef80e745bec7f875d4b9fdf397e43`.
+  The split export passes the same timing/correlation checks. Evidence:
+  `.local/hyperframes-split-native-and-brag-audio.mp4`,
+  `.local/hyperframes-split-export-audio-check.json`, and the actual editor
+  screenshot `.local/hyperframes-split-audio-timeline.png`. Undo through the
+  editor restored the single compound clip after this check.
+- Adding the imported narration resource as an ordinary native clip defaulted
+  to five seconds because package resource metadata lacks its media duration.
+  The native comparison above uses that actual five-second clip. Resource
+  metadata probing is a follow-up; the compound itself retains its six seconds.
+- Transcription and standalone audio extraction use separate entry points and
+  do not yet include compound audio. Child audio controls, waveform display,
+  live preview performance and the remaining unsupported nested windows need
+  follow-up work.
 
 ## Next implementation sequence
 
-1. Diagnose the intermittent black preview after reload described above. Then
-   exercise the folder importer on the remaining seven Brag references, including
+1. The GPU startup/recovery fix above covers the observed black preview. Exercise
+   the folder importer on the remaining seven Brag references, including
    generated duration and durable resources. Verify downloaded exports and add
    recovery for a crash during staging.
 2. The synthetic folder flow now covers import, Undo/Redo and reopen. Source sharing, compact persistence, history adoption,
@@ -641,7 +692,7 @@ claimed yet.
    resolve anonymous/generated source identity before offering source edits.
 5. The frame capture adapter is connected to the existing compositor. Resolve
    the 3D repeatability case, video injection,
-   author timers, audio export and multi-composition cache behavior. Verify Brag references and
+   author timers, remaining audio windows and multi-composition cache behavior. Verify Brag references and
    mixed compositions against actual exports.
 6. Implement measured UI/performance improvements; run the full preservation and
    completion audit above. Do not equate green source-import tests with completion.
@@ -753,4 +804,5 @@ directories, dependencies and symlinks, and reports binary references as unbound
 - Full playback/performance and complete Brag folder-import coverage remain
   unverified. The folder UI proof covers a synthetic GSAP project and Brag's
   `advanced-audio-test-final` in the isolated test account; seven Brag UI imports
-  and Brag export parity remain outstanding.
+  and broader Brag export parity remain outstanding. The later audio connection
+  section records the completed mixed Brag/native MP4 check.

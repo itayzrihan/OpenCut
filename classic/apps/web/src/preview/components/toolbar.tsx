@@ -199,6 +199,13 @@ function PlayPauseButton() {
 			variant="text"
 			size="icon"
 			onClick={() => invokeAction("toggle-play")}
+			aria-label={
+				isBuffering
+					? "Cancel playback preparation"
+					: isPlaying
+						? "Pause"
+						: "Play"
+			}
 			title={isBuffering ? "Buffering playback…" : undefined}
 		>
 			{isBuffering ? (
