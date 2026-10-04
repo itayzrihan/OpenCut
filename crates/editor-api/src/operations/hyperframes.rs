@@ -34,6 +34,31 @@ struct PrepareAudioInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrepareLayerEditsInput {
+    source: HyperframesSource,
+    manifest: crate::HyperframesRuntimeManifest,
+    edits: crate::HyperframesLayerEdits,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct PrepareLayerEditsOutput {
+    layers: Vec<crate::HyperframesLayerRenderEdit>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SetLayerOpacityInput {
+    project_id: String,
+    scene_id: String,
+    element_id: String,
+    layer_key: String,
+    opacity: f64,
+    expected_revision: u64,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ReadAudioInput {
     project_id: String,
     scene_id: String,
@@ -108,6 +133,79 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<PrepareLayerEditsInput, PrepareLayerEditsOutput, _, _>(
+        registry,
+        "hyperframes.layers.render.prepare",
+        "Prepare HyperFrames visual layer edits",
+        "Validates bounded per-occurrence opacity overrides against the exact source and observed runtime manifest. Returns uniquely addressed visual layers. Does not read files or execute scripts.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "layers", "render"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            let plan = input
+                .edits
+                .prepare(&input.source, &input.manifest)
+                .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(PrepareLayerEditsOutput {
+                layers: plan,
+            }))
+        },
+    )?;
+    let edit_state = state.clone();
+    let edit_events = events.clone();
+    register::<SetLayerOpacityInput, MutationOutput, _, _>(
+        registry,
+        "hyperframes.layer.opacity.set",
+        "Change a HyperFrames layer's opacity",
+        "Sets visual opacity within one Classic compound clip, preserving source animation and other occurrences. One resets the override; zero hides the layer. Embedded audio is unchanged. Requires an explicit project, scene, element, layer and revision; rejects locked tracks. Supports undo, dry run, cancellation and registry idempotency keys.",
+        "hyperframes",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "layers", "classic", "timeline", "opacity"],
+        move |context, input| {
+            let state = edit_state.clone();
+            let events = edit_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Change HyperFrames layer opacity",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        let classic = project.classic.as_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "Layer edits currently require a Classic project".into(),
+                            )
+                        })?;
+                        classic
+                            .set_hyperframes_layer_opacity(
+                                &input.scene_id,
+                                &input.element_id,
+                                &input.layer_key,
+                                input.opacity,
+                            )
+                            .map_err(model_error)?;
+                        check_cancelled(&context)?;
+                        Ok(vec![input.element_id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output))
+            }
+        },
+    )?;
     let layers_state = state.clone();
     register::<ReadLayerRowsInput, ReadLayerRowsOutput, _, _>(
         registry,

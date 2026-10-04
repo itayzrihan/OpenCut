@@ -88,6 +88,8 @@ impl CanonicalEditorRuntime {
                 | "hyperframes.audio.prepare"
                 | "hyperframes.audio.clips.read"
                 | "hyperframes.layers.timeline.read"
+                | "hyperframes.layer.opacity.set"
+                | "hyperframes.layers.render.prepare"
                 | "timeline.hyperframes.import"
                 | "app.state.read"
                 | "history.undo"

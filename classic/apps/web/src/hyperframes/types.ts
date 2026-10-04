@@ -17,6 +17,7 @@ export interface HyperframesComposition {
 
 /** Read-only canonical projection into one existing Classic compound clip. */
 export interface HyperframesTimelineClip {
+	controls: Array<{ key: string; editable: boolean; opacity: number }>;
 	trackId: string;
 	elementId: string;
 	compositionId: string;
@@ -70,16 +71,31 @@ export interface HyperframesLiveHandle {
 	release?: () => void;
 }
 
+/** Canonical per-clip overrides, bound to the preserved source package. */
+export interface HyperframesLayerEdits {
+	sourceFingerprint: string;
+	manifestFingerprint: string;
+	opacity: Record<string, number>;
+}
+
+export interface HyperframesLayerRenderEdit {
+	key: string;
+	elementId: string;
+	opacity: number;
+}
+
 export interface HyperframesRenderContext {
 	compositions: Readonly<Record<string, HyperframesComposition>>;
 	/** Changes when a bound resource is replaced, even at the same source time. */
 	getResourceRevision: () => number;
 	/** Silent, isolated DOM surface. The full capture renderer remains the fallback. */
-	openLivePreview?: (
-		composition: HyperframesComposition,
-	) => Promise<HyperframesLiveHandle>;
+	openLivePreview?: (input: {
+		composition: HyperframesComposition;
+		layerEdits?: HyperframesLayerEdits;
+	}) => Promise<HyperframesLiveHandle>;
 	renderTo: (input: {
 		composition: HyperframesComposition;
+		layerEdits?: HyperframesLayerEdits;
 		timeSeconds: number;
 		target: OffscreenCanvas;
 		/** Derived preview quality; omitted for full-resolution export. */

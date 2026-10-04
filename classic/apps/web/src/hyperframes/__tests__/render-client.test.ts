@@ -140,9 +140,11 @@ test("independent occurrence leases retain four sources while captures use a bou
 		);
 		const handles = [];
 		for (const source of sources)
-			handles.push(await client.openLivePreview(source));
+			handles.push(await client.openLivePreview({ composition: source }));
 		expect(fixture.live.size).toBe(4);
-		const duplicate = await client.openLivePreview(composition("one"));
+		const duplicate = await client.openLivePreview({
+			composition: composition("one"),
+		});
 		expect(duplicate.url).toBe(handles[0].url);
 		expect(fixture.count("open")).toBe(4);
 		const beforeMixed = fixture.calls.length;
@@ -166,9 +168,9 @@ test("independent occurrence leases retain four sources while captures use a bou
 		]);
 		handles[0].release?.();
 		handles[0].release?.();
-		await expect(client.openLivePreview(composition("five"))).rejects.toThrow(
-			"limit",
-		);
+		await expect(
+			client.openLivePreview({ composition: composition("five") }),
+		).rejects.toThrow("limit");
 		for (const name of ["capture-a", "capture-b", "capture-c"]) {
 			await client.renderTo({
 				composition: composition(name),
@@ -180,7 +182,9 @@ test("independent occurrence leases retain four sources while captures use a bou
 				expect(fixture.live.has(id)).toBe(true);
 		}
 		duplicate.release?.();
-		const fifth = await client.openLivePreview(composition("five"));
+		const fifth = await client.openLivePreview({
+			composition: composition("five"),
+		});
 		expect(fixture.live.has("1")).toBe(false);
 		expect(fixture.live.size).toBeLessThanOrEqual(5);
 		for (const handle of handles) handle.release?.();

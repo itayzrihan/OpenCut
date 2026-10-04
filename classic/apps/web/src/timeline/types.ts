@@ -347,6 +347,7 @@ export interface StickerElement extends BaseTimelineElement {
 }
 
 export interface GraphicElement extends BaseTimelineElement {
+	hyperframesLayerEdits?: import("@/hyperframes/types").HyperframesLayerEdits;
 	type: "graphic";
 	definitionId: string;
 	hidden?: boolean;

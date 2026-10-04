@@ -663,6 +663,36 @@ export class CommandManager {
 		});
 	}
 
+	async setHyperframesLayerOpacity(
+		input: Parameters<
+			CanonicalClassicSession["setHyperframesLayerOpacity"]
+		>[0] & { projectId: string; signal?: AbortSignal },
+	): Promise<void> {
+		const { projectId, signal, ...request } = input;
+		const accountId = window.__opencutAccountId;
+		const checkTarget = () => {
+			signal?.throwIfAborted();
+			assertBatchEditable(projectId);
+			if (
+				window.__opencutAccountId !== accountId ||
+				this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+				this.editor.scenes.getActiveSceneOrNull()?.id !== request.sceneId
+			)
+				throw new Error("The target project, account or scene changed");
+		};
+		checkTarget();
+		await this.enableCanonical();
+		checkTarget();
+		this.executeTransaction({
+			execute: () => {
+				if (!this.canonical || this.canonical.projectId !== projectId)
+					throw new Error("The canonical project was closed");
+				this.canonical.setHyperframesLayerOpacity(request);
+				this.publishCanonical();
+			},
+		});
+	}
+
 	async setHyperframesManifest(
 		input: Parameters<CanonicalClassicSession["setHyperframesManifest"]>[0] & {
 			projectId: string;

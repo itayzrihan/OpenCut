@@ -32,6 +32,16 @@ pub struct ClassicHyperframesLayerRows {
     pub composition_id: String,
     pub name: String,
     pub rows: Vec<ClassicHyperframesLayerRow>,
+    /// Controls include layers outside the current trimmed window.
+    pub controls: Vec<ClassicHyperframesLayerControl>,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ClassicHyperframesLayerControl {
+    pub key: String,
+    pub editable: bool,
+    pub opacity: f64,
 }
 
 impl ClassicProject {
@@ -128,6 +138,20 @@ impl ClassicProject {
             composition_id: id.into(),
             name: element["name"].as_str().unwrap_or_default().into(),
             rows,
+            controls: manifest
+                .layers
+                .iter()
+                .map(|layer| ClassicHyperframesLayerControl {
+                    key: layer.key.clone(),
+                    editable: track["locked"] != true
+                        && element["locked"] != true
+                        && crate::hyperframes_layer_is_editable(layer),
+                    opacity: element["hyperframesLayerEdits"]["opacity"]
+                        .get(&layer.key)
+                        .and_then(serde_json::Value::as_f64)
+                        .unwrap_or(1.0),
+                })
+                .collect(),
         })
     }
 }

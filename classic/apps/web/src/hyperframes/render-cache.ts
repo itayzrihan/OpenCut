@@ -93,10 +93,10 @@ export class HyperframesRenderCache {
 		return {
 			compositions: project.hyperframesCompositions,
 			getResourceRevision: () => this.resourceRevision,
-			openLivePreview: async (composition) => {
+			openLivePreview: async (input) => {
 				checkScope();
 				this.client ??= new HyperframesRenderClient(projectId);
-				const preview = await this.client.openLivePreview(composition);
+				const preview = await this.client.openLivePreview(input);
 				try {
 					checkScope();
 				} catch (error) {

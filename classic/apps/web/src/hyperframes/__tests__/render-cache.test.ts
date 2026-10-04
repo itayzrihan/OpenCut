@@ -62,7 +62,7 @@ test("live delivery shares the capture session and rejects stale account, projec
 			timeSeconds: 1,
 			target: fixture.target,
 		});
-		const live = await context.openLivePreview!(source);
+		const live = await context.openLivePreview!({ composition: source });
 		expect(live.url).toContain("live-1.html");
 		expect(fixture.count("open")).toBe(1);
 		expect(fixture.calls.find((call) => call.action === "live")).toMatchObject({
@@ -79,7 +79,7 @@ test("live delivery shares the capture session and rejects stale account, projec
 			expect(fixture.live.size).toBeLessThanOrEqual(2);
 			expect(fixture.live.has("1")).toBe(true);
 		}
-		const currentLive = await context.openLivePreview!(source);
+		const currentLive = await context.openLivePreview!({ composition: source });
 		expect(currentLive.url).toEqual(live.url);
 		expect(fixture.count("open")).toBe(4);
 		live.release?.(); // Releasing an older handle must not unpin its replacement.
@@ -97,12 +97,16 @@ test("live delivery shares the capture session and rejects stale account, projec
 		});
 		expect(fixture.live.has("1")).toBe(false);
 		cache.reset();
-		await expect(context.openLivePreview!(source)).rejects.toThrow("previous");
+		await expect(
+			context.openLivePreview!({ composition: source }),
+		).rejects.toThrow("previous");
 		const fresh = cache.getContext(current)!;
 		fixture.browser.__opencutAccountId = "account-b";
-		await expect(fresh.openLivePreview!(source)).rejects.toThrow("previous");
+		await expect(
+			fresh.openLivePreview!({ composition: source }),
+		).rejects.toThrow("previous");
 		fixture.browser.__opencutAccountId = "account-a";
-		const pending = fresh.openLivePreview!(source);
+		const pending = fresh.openLivePreview!({ composition: source });
 		cache.update({ project: null, mediaAssets: [] });
 		await expect(pending).rejects.toThrow();
 	} finally {

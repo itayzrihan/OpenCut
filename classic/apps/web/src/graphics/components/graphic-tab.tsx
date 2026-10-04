@@ -66,8 +66,9 @@ export function GraphicTab({
 			{element.definitionId === "hyperframes" &&
 				typeof element.params.hyperframesAssetId === "string" && (
 					<HyperframesLayersSection
-						key={element.params.hyperframesAssetId}
+						key={element.id}
 						assetId={element.params.hyperframesAssetId}
+						elementId={element.id}
 					/>
 				)}
 			<Section collapsible sectionKey={`${element.id}:graphic`}>

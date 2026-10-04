@@ -18,12 +18,75 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources; crash recovery for interrupted staging remains pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; child timing/source/variable edits remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
+
+## Per-occurrence visual layer controls (2026-10-04)
+
+Classic compound clips now expose Hide/Show, opacity percentage and Reset in the
+existing Composition layers inspector. Each edit belongs to that timeline clip.
+Other uses of the same source keep their own appearance, and the package's HTML,
+scripts, resources and authored animation remain unchanged. Audio layers remain
+read-only here; visual opacity does not mute embedded narration.
+
+The canonical `hyperframes.layer.opacity.set` capability requires an explicit
+project, scene, element, layer key and revision. It validates locks, finite
+opacity in `[0, 1]`, source identity and the complete observed manifest, and uses
+normal transactions, dry runs, cancellation, idempotency and undo history.
+`GraphicElement.hyperframesLayerEdits` stores the source/manifest fingerprints
+and a bounded map of opacity overrides. Setting one removes that override.
+Ordinary Classic commits and admin patches validate the same state.
+
+`hyperframes.layers.render.prepare` produces the render plan. Each capture
+reopen checks it against a freshly observed manifest; ambiguous `manifest/N`
+rows cannot be edited. The shared live/capture DOM adapter resolves exact
+occurrence paths and checks the authored ID, restores author styles before each
+seek, then multiplies the evaluated opacity after the official runtime seeks.
+Parent and child edits compose, while repeated seeks do not accumulate changes.
+Render cache keys include the overrides. No extra timeline or editor state was
+introduced. This editing capability is **Classic-only**, through OpenCutRuntime;
+it has not been ported to the rewrite UI or rewrite timeline model.
+
+Verification completed for this increment:
+
+- Registry tests cover targeted edits/readback, repeated source occurrences,
+  unchanged source packages, dry run, retry idempotency, cancellation, stale
+  revisions, invalid targets/values, locked tracks, undo/redo, reset and rejected
+  manifest changes. Existing timeline projection/history tests also pass.
+- A real Chrome/WASM test edits a parent and one child in two repeated nested
+  compositions, checks the unaffected sibling, and compares complete live and
+  capture RGBA frames at `0.5, 2, 0.5, 0.5` seconds. They are identical. It also
+  reopens capture after live promotion and round-trips the saved undo archive.
+- Actual Brag UI project `980bd89b-dda1-48ae-9098-e660c98334a6` contains two uses
+  of `advanced-audio-test-final`, native text between them and a native image
+  below. Hide affected only the selected occurrence; Undo restored it. At 50%,
+  the two DOM surfaces report opacity `1` and `0.5`. Reopening retained 50%, and
+  persisted Undo/Redo restored 100%/50%. Source packages compare equal to the
+  fixture before editing. Evidence: `.local/hf-layer-opacity-50.png`.
+- UI MP4 export with the edit completed: 640x360, 30 fps, H.264, stereo AAC at
+  44.1 kHz, 6.014 seconds and 479,221 bytes. Its decoded frame at 0.5 seconds
+  shows the edited occurrence and preserved native/sibling layers. Evidence:
+  `.local/hf-layer-opacity-export.mp4` and
+  `.local/hf-layer-opacity-export-frame.png`.
+- A second UI export after Reset, with all other settings unchanged, has
+  identical decoded stereo PCM audio. SHA-256 for both outputs (PCM s16le):
+  `c7db66bbb549caea21c18712c0a74c872a19a8d697d1fb98610931efe121ee64`.
+  The decoded video comparison shows the opacity change on the selected source
+  section. The project was returned to 50% with Undo after this comparison.
+- Three Rust tests and 24 selected TypeScript tests passed (414 assertions),
+  including the real Chrome test above. Three older optional browser cases were
+  skipped in the non-browser regression invocation. Tests that mock modules ran
+  in separate Bun processes. Scoped TypeScript, changed-file ESLint, Editor API
+  Clippy (`--tests -D warnings`), the release WASM build and both binary export
+  contract checks passed. These are scoped checks; the full editor suite remains
+  outstanding.
+
+Child retiming, movement, text/source/variable controls, video/canvas live
+support and the broader preservation/performance audits remain open.
 
 ## Inspected evidence (2026-10-03)
 

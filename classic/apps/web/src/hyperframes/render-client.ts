@@ -3,6 +3,7 @@ import type {
 	HyperframesComposition,
 	HyperframesSource,
 	HyperframesLiveHandle,
+	HyperframesLayerEdits,
 } from "./types";
 import type { HyperframesRenderSession } from "./render-host";
 import type { HyperframesFrameArtifact } from "./capture-session";
@@ -70,17 +71,25 @@ export class HyperframesRenderClient {
 
 	async renderTo({
 		composition,
+		layerEdits,
 		timeSeconds,
 		target,
 		previewScale = 1,
 	}: {
 		composition: HyperframesComposition;
+		layerEdits?: HyperframesLayerEdits;
 		timeSeconds: number;
 		target: OffscreenCanvas;
 		previewScale?: number;
 	}): Promise<void> {
 		const render = this.renderQueue.then(() =>
-			this.renderFrame({ composition, timeSeconds, target, previewScale }),
+			this.renderFrame({
+				composition,
+				layerEdits,
+				timeSeconds,
+				target,
+				previewScale,
+			}),
 		);
 		this.renderQueue = render.catch(() => {});
 		return render;
@@ -101,16 +110,24 @@ export class HyperframesRenderClient {
 	}
 
 	/** Live DOM delivery shares the scoped session and its resource lifetime. */
-	async openLivePreview(
-		composition: HyperframesComposition,
-	): Promise<HyperframesLiveHandle> {
-		const key = await this.sourceKey(composition.source);
+	async openLivePreview({
+		composition,
+		layerEdits,
+	}: {
+		composition: HyperframesComposition;
+		layerEdits?: HyperframesLayerEdits;
+	}): Promise<HyperframesLiveHandle> {
+		const key = await this.visualKey({
+			source: composition.source,
+			layerEdits,
+		});
 		const ready = this.renderQueue.then(async () => {
 			if (!this.liveLeases.has(key) && this.liveLeases.size >= MAX_LIVE_SOURCES)
 				throw new Error("The HyperFrames live preview limit is reached");
 			const session = await this.getSession({
 				key,
 				source: composition.source,
+				layerEdits,
 			});
 			const preview = await this.request<{ url: string }>({
 				action: "live",
@@ -229,17 +246,22 @@ export class HyperframesRenderClient {
 
 	private async renderFrame({
 		composition,
+		layerEdits,
 		timeSeconds,
 		target,
 		previewScale,
 	}: {
 		composition: HyperframesComposition;
+		layerEdits?: HyperframesLayerEdits;
 		timeSeconds: number;
 		target: OffscreenCanvas;
 		previewScale: number;
 	}): Promise<void> {
 		this.pending.signal.throwIfAborted();
-		const key = await this.sourceKey(composition.source);
+		const key = await this.visualKey({
+			source: composition.source,
+			layerEdits,
+		});
 		const frameKey = `${key}:${timeSeconds}:${previewScale}`;
 		const cached = this.frames.get(frameKey);
 		if (cached) {
@@ -249,7 +271,11 @@ export class HyperframesRenderClient {
 			return;
 		}
 		await this.releaseOtherLiveCapture(key);
-		const session = await this.getSession({ key, source: composition.source });
+		const session = await this.getSession({
+			key,
+			source: composition.source,
+			layerEdits,
+		});
 		if (this.liveLeases.has(key)) this.capturedLiveSourceKey = key;
 		let artifact: HyperframesFrameArtifact;
 		try {
@@ -352,12 +378,30 @@ export class HyperframesRenderClient {
 		return key;
 	}
 
+	private async visualKey({
+		source,
+		layerEdits,
+	}: {
+		source: HyperframesSource;
+		layerEdits?: HyperframesLayerEdits;
+	}): Promise<string> {
+		const sourceKey = await this.sourceKey(source);
+		if (!layerEdits) return sourceKey;
+		const hash = await crypto.subtle.digest(
+			"SHA-256",
+			new TextEncoder().encode(JSON.stringify(layerEdits)),
+		);
+		return `${sourceKey}:${[...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+	}
+
 	private async getSession({
 		key,
 		source,
+		layerEdits,
 	}: {
 		key: string;
 		source: HyperframesSource;
+		layerEdits?: HyperframesLayerEdits;
 	}): Promise<HyperframesRenderSession> {
 		this.pending.signal.throwIfAborted();
 		let session = this.sessions.get(key);
@@ -376,6 +420,7 @@ export class HyperframesRenderClient {
 			session = this.request<HyperframesRenderSession>({
 				action: "open",
 				source,
+				...(layerEdits ? { layerEdits } : {}),
 			}).then(async (result) => {
 				if (this.closed) {
 					await this.closeRemote(result.id);

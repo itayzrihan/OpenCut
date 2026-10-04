@@ -1,3 +1,4 @@
+import { hyperframesVisualKey } from "@/hyperframes/layer-edits";
 import type { SceneTracks, TimelineTrack, TScene } from "@/timeline";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
 import type { ElementAnimations } from "@/animation/types";
@@ -606,13 +607,21 @@ function buildTrackNodes({
 										live: hyperframes.openLivePreview
 											? {
 													occurrenceId: element.id,
-													key: composition.source,
-													open: () => hyperframes.openLivePreview!(composition),
+													key: hyperframesVisualKey({
+														source: composition.source,
+														layerEdits: element.hyperframesLayerEdits,
+													}),
+													open: () =>
+														hyperframes.openLivePreview!({
+															composition,
+															layerEdits: element.hyperframesLayerEdits,
+														}),
 													getSourceTime,
 												}
 											: undefined,
 										renderTo: ({ localTime, target, previewScale }) =>
 											hyperframes.renderTo({
+												layerEdits: element.hyperframesLayerEdits,
 												composition,
 												target,
 												previewScale,

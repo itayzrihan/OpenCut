@@ -4,14 +4,22 @@ import { requireAccount, withAccount } from "@/accounts/server";
 import { readBoundedBody } from "@/accounts/request-body";
 import { getMediaFile, getProject } from "@/services/local-drive/server";
 import { HyperframesRenderHost } from "@/hyperframes/render-host";
-import type { HyperframesSource } from "@/hyperframes/types";
+import type {
+	HyperframesSource,
+	HyperframesLayerEdits,
+} from "@/hyperframes/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const id = z.string().min(1).max(128);
 const requestSchema = z.discriminatedUnion("action", [
 	z
-		.object({ action: z.literal("open"), projectId: id, source: z.unknown() })
+		.object({
+			action: z.literal("open"),
+			projectId: id,
+			source: z.unknown(),
+			layerEdits: z.unknown().optional(),
+		})
 		.strict(),
 	z
 		.object({
@@ -70,6 +78,7 @@ export const POST = withAccount(async (request) => {
 				await host.open({
 					scope,
 					source: input.source as HyperframesSource,
+					layerEdits: input.layerEdits as HyperframesLayerEdits | undefined,
 					signal: request.signal,
 					resolveResource: async (assetId) => {
 						const file = await getMediaFile(input.projectId, assetId);

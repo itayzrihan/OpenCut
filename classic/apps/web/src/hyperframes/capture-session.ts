@@ -24,9 +24,12 @@ import {
 } from "./preview-host";
 import type {
 	HyperframesInspection,
+	HyperframesLayerEdits,
+	HyperframesLayerRenderEdit,
 	HyperframesSource,
 	HyperframesRuntimeManifest,
 } from "./types";
+import { installHyperframesLayerEdits } from "./layer-edits";
 import { readHyperframesRuntimeManifest } from "./runtime-manifest";
 import {
 	readHyperframesAudioPlan,
@@ -87,6 +90,7 @@ export class HyperframesCaptureSession {
 
 	static async open({
 		source,
+		layerEdits,
 		resources,
 		runtime,
 		host,
@@ -94,6 +98,7 @@ export class HyperframesCaptureSession {
 		chromePath,
 	}: {
 		source: HyperframesSource;
+		layerEdits?: HyperframesLayerEdits;
 		resources: ReadonlyMap<string, HyperframesPreviewResource>;
 		runtime: CanonicalEditorRuntime;
 		host: HyperframesPreviewHost;
@@ -116,6 +121,7 @@ export class HyperframesCaptureSession {
 		try {
 			await result.initialize({
 				source,
+				layerEdits,
 				resources,
 				html: prepared.html,
 				signal,
@@ -165,12 +171,14 @@ export class HyperframesCaptureSession {
 
 	private async initialize({
 		source,
+		layerEdits,
 		resources,
 		html,
 		signal,
 		chromePath,
 	}: {
 		source: HyperframesSource;
+		layerEdits?: HyperframesLayerEdits;
 		resources: ReadonlyMap<string, HyperframesPreviewResource>;
 		html: string;
 		signal?: AbortSignal;
@@ -232,6 +240,7 @@ export class HyperframesCaptureSession {
 					renderSeek: (time: number, options?: unknown) => void;
 					getDuration: () => number;
 				};
+				__opencutLayerEdits?: import("./layer-edits").HyperframesLayerEditBridge;
 				__hf?: {
 					seek?: (time: number, options?: unknown) => void;
 					duration?: number;
@@ -263,7 +272,11 @@ export class HyperframesCaptureSession {
 							: 0,
 				});
 				// eslint-disable-next-line opencut/prefer-object-params -- The engine's seek protocol takes positional arguments.
-				hf.seek = (time, options) => player.renderSeek(time, options);
+				hf.seek = (time, options) => {
+					page.__opencutLayerEdits?.beforeSeek();
+					player.renderSeek(time, options);
+					page.__opencutLayerEdits?.afterSeek();
+				};
 				clearInterval(bridge);
 			}, 20);
 		}, fps);
@@ -324,6 +337,19 @@ export class HyperframesCaptureSession {
 				durationSeconds: this.resolvedDuration,
 				runtime: this.runtime,
 			});
+			if (layerEdits) {
+				// Validate against freshly observed occurrences, including reopened captures.
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Canonical typed capability output.
+				const receipt = this.runtime.invokeSync(
+					"hyperframes.layers.render.prepare",
+					{ source, manifest: this.resolvedManifest, edits: layerEdits },
+					undefined,
+				) as { result: { data: { layers: HyperframesLayerRenderEdit[] } } };
+				await engine.page.evaluate(
+					installHyperframesLayerEdits,
+					receipt.result.data.layers,
+				);
+			}
 			signal?.throwIfAborted();
 			if (this.closed)
 				throw new Error("The HyperFrames capture was closed while loading");

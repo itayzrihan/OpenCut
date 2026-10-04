@@ -12,7 +12,12 @@ import {
 	HyperframesPreviewHost,
 	type HyperframesPreviewResource,
 } from "./preview-host";
-import type { HyperframesSource, HyperframesRuntimeManifest } from "./types";
+import type {
+	HyperframesSource,
+	HyperframesRuntimeManifest,
+	HyperframesLayerEdits,
+	HyperframesLayerRenderEdit,
+} from "./types";
 import {
 	renderHyperframesAudio,
 	type HyperframesAudioArtifact,
@@ -42,6 +47,7 @@ interface Entry {
 	pendingFrames: number;
 	lastUsed: number;
 	source: HyperframesSource;
+	layerEdits?: HyperframesLayerEdits;
 	resources: ReadonlyMap<string, HyperframesPreviewResource>;
 	audio?: Promise<HyperframesAudioArtifact | null>;
 	livePreview?: { id: string; url: string };
@@ -73,11 +79,13 @@ export class HyperframesRenderHost {
 	async open({
 		scope,
 		source,
+		layerEdits,
 		resolveResource,
 		signal,
 	}: {
 		scope: HyperframesRenderScope;
 		source: HyperframesSource;
+		layerEdits?: HyperframesLayerEdits;
 		resolveResource: (
 			assetId: string,
 		) => Promise<HyperframesPreviewResource | null>;
@@ -107,6 +115,7 @@ export class HyperframesRenderHost {
 		const abort = new AbortController();
 		const capture = HyperframesCaptureSession.open({
 			source,
+			layerEdits,
 			resources,
 			runtime: this.runtime,
 			host: this.previews,
@@ -134,6 +143,7 @@ export class HyperframesRenderHost {
 			pendingFrames: 0,
 			lastUsed: Date.now(),
 			source: structuredClone(source),
+			layerEdits: layerEdits && structuredClone(layerEdits),
 			resources,
 		};
 		this.sessions.set(id, entry);
@@ -182,6 +192,7 @@ export class HyperframesRenderHost {
 				cancellation.throwIfAborted();
 				entry.capture ??= HyperframesCaptureSession.open({
 					source: entry.source,
+					layerEdits: entry.layerEdits,
 					resources: entry.resources,
 					runtime: this.runtime,
 					host: this.previews,
@@ -227,7 +238,22 @@ export class HyperframesRenderHost {
 				this.previews.keepAlive({ id: entry.livePreview.id })
 			)
 				return { url: entry.livePreview.url };
+			let layerPlan: HyperframesLayerRenderEdit[] | undefined;
+			if (entry.layerEdits) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Canonical validated plan from the observed manifest.
+				const receipt = this.runtime.invokeSync(
+					"hyperframes.layers.render.prepare",
+					{
+						source: entry.source,
+						manifest: ready.runtimeManifest,
+						edits: entry.layerEdits,
+					},
+					undefined,
+				) as { result: { data: { layers: HyperframesLayerRenderEdit[] } } };
+				layerPlan = receipt.result.data.layers;
+			}
 			const prepared = prepareHyperframesPreview({
+				layerPlan,
 				source: entry.source,
 				runtime: this.runtime,
 				signal: entry.abort.signal,

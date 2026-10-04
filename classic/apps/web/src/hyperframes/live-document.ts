@@ -111,6 +111,7 @@ function installLiveBridge({
 		__HF_RENDER_CAPTURE_MODE?: boolean;
 		__HF_EXPORT_RENDER_SEEK_CONFIG?: object;
 		__renderReady?: boolean;
+		__opencutLayerEdits?: import("./layer-edits").HyperframesLayerEditBridge;
 		__hfTimelinesBuilding?: boolean;
 		__player?: {
 			renderSeek: (time: number, options?: object) => void;
@@ -242,11 +243,13 @@ function installLiveBridge({
 					"Live preview requires the capture adapter for video or canvas layers",
 				);
 			mute();
+			page.__opencutLayerEdits?.beforeSeek();
 			page.__player!.renderSeek(
 				// Match the pinned engine's quantizeTimeToFrame before renderSeek.
 				Math.floor(data.timeSeconds * fps + 1e-9) / fps,
 				options,
 			);
+			page.__opencutLayerEdits?.afterSeek();
 			if (document.querySelector("video,canvas"))
 				throw new Error(
 					"Live preview requires the capture adapter for video or canvas layers",

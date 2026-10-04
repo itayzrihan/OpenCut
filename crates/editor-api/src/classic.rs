@@ -253,6 +253,16 @@ impl ClassicProject {
                             ));
                         }
                         let composition = &compositions[id];
+                        if let Some(value) = element.get("hyperframesLayerEdits") {
+                            let edits: crate::HyperframesLayerEdits =
+                                serde_json::from_value(value.clone())
+                                    .map_err(|error| invalid(&error.to_string()))?;
+                            let manifest =
+                                composition.runtime_manifest.as_ref().ok_or_else(|| {
+                                    invalid("HyperFrames layer edits require a runtime manifest")
+                                })?;
+                            edits.prepare(&composition.source, manifest)?;
+                        }
                         for (key, expected) in [
                             ("sourceWidth", composition.width),
                             ("sourceHeight", composition.height),
@@ -265,6 +275,10 @@ impl ClassicProject {
                                 ));
                             }
                         }
+                    } else if element.get("hyperframesLayerEdits").is_some() {
+                        return Err(invalid(
+                            "HyperFrames layer edits require a HyperFrames clip",
+                        ));
                     }
                 }
             }

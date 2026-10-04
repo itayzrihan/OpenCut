@@ -197,6 +197,22 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	setHyperframesLayerOpacity(input: {
+		sceneId: string;
+		elementId: string;
+		layerKey: string;
+		opacity: number;
+	}): void {
+		this.call({
+			capability: "hyperframes.layer.opacity.set",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	setHyperframesManifest(input: {
 		assetId: string;
 		manifest: HyperframesRuntimeManifest;
