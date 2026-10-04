@@ -59,6 +59,20 @@ export class HyperframesRenderClient {
 		return render;
 	}
 
+	/** Resolve generated duration and verify runtime readiness before import. */
+	async prepareSource(
+		source: HyperframesSource,
+	): Promise<HyperframesRenderSession> {
+		this.pending.signal.throwIfAborted();
+		const key = await this.sourceKey(source);
+		const ready = this.renderQueue.then(() => this.getSession({ key, source }));
+		this.renderQueue = ready.then(
+			() => {},
+			() => {},
+		);
+		return ready;
+	}
+
 	private async renderFrame({
 		composition,
 		timeSeconds,

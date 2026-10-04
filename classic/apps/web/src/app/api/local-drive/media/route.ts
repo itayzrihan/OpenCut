@@ -125,6 +125,7 @@ async function POSTHandler(request: Request) {
 			size,
 			body,
 			allowLargeCopy: url.searchParams.get("migration") === "1",
+			uploadToken: request.headers.get("X-OpenCut-Upload") || undefined,
 		});
 		return NextResponse.json({ ok: true });
 	} catch (error) {

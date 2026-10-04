@@ -58,6 +58,8 @@ const SHARED_COLLECTIONS = new Set([
 const SHARED_FILE_KINDS = new Set(["audio", "fonts", "stickers"]);
 
 interface StoredMediaRecord extends MediaAssetData {
+	/** Filesystem upload ownership only; never projected into editor state. */
+	uploadToken?: string;
 	fileName: string;
 	mimeType: string;
 	storageKind: MediaStorageKind;
@@ -693,11 +695,11 @@ function clientMediaRecord(
 	projectId: string,
 	record: StoredMediaRecord,
 ): LocalDriveMediaRecord {
+	const { bindingHistory, uploadToken: _uploadToken, ...publicRecord } = record;
 	if (record.unifiedAngles) {
-		return { ...record, sourcePath: "", missing: false };
+		return { ...publicRecord, sourcePath: "", missing: false };
 	}
 	const sourcePath = storedMediaPath(projectId, record);
-	const { bindingHistory, ...publicRecord } = record;
 	return {
 		...publicRecord,
 		sourcePath,
@@ -915,6 +917,7 @@ export async function storeUploadedMedia({
 	size,
 	body,
 	allowLargeCopy,
+	uploadToken,
 }: {
 	projectId: string;
 	mediaId: string;
@@ -924,8 +927,16 @@ export async function storeUploadedMedia({
 	size: number;
 	body: ReadableStream<Uint8Array>;
 	allowLargeCopy: boolean;
+	uploadToken?: string;
 }): Promise<void> {
 	assertId(mediaId, "media id");
+	if (uploadToken) {
+		assertId(uploadToken, "upload token");
+		if (
+			(await readMediaIndex(projectId)).some((record) => record.id === mediaId)
+		)
+			throw new Error("A staged upload cannot replace existing media");
+	}
 	if (
 		!allowLargeCopy &&
 		disposition({ size, hasSourcePath: false }) === "sourcePathRequired"
@@ -941,6 +952,8 @@ export async function storeUploadedMedia({
 		`${mediaId}--${cleanedName}`,
 	);
 	const temporaryPath = `${destination}.${randomUUID()}.tmp`;
+	if (uploadToken && existsSync(destination))
+		throw new Error("A staged upload cannot replace retained media bytes");
 	await mkdir(resolve(destination, ".."), { recursive: true });
 	try {
 		await pipeline(
@@ -957,6 +970,7 @@ export async function storeUploadedMedia({
 				? mimeType
 				: mimeTypeForPath(cleanedName);
 		const base: StoredMediaRecord = {
+			...(uploadToken && { uploadToken }),
 			id: mediaId,
 			name: cleanedName,
 			type: resolvedMimeType.startsWith("image/")
@@ -982,8 +996,34 @@ export async function storeUploadedMedia({
 		]);
 	} catch (error) {
 		await unlink(temporaryPath).catch(() => undefined);
+		// A new staged upload may have renamed its bytes before indexing failed.
+		if (uploadToken) await unlink(destination).catch(() => undefined);
 		throw error;
 	}
+}
+
+/** Finalize only files owned by this import attempt. Ordinary deletion retains Undo bytes. */
+export async function finishMediaUpload(
+	projectId: string,
+	uploadToken: string,
+	discard: boolean,
+) {
+	assertId(uploadToken, "upload token");
+	await mutateMediaIndex(projectId, async (records) => {
+		const owned = records.filter(
+			(record) => record.uploadToken === uploadToken,
+		);
+		if (discard) {
+			for (const record of owned) {
+				if (record.storageKind !== "copied")
+					throw new Error("Only copied uploads can be discarded");
+				await rm(storedMediaPath(projectId, record), { force: true });
+			}
+			return records.filter((record) => record.uploadToken !== uploadToken);
+		}
+		for (const record of owned) delete record.uploadToken;
+		return records;
+	});
 }
 
 export async function deleteMedia(projectId: string, mediaId: string) {

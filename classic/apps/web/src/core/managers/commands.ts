@@ -15,6 +15,7 @@ import type { MediaAsset } from "@/media/types";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import { loadCanonicalRuntime } from "@/core/load-canonical-runtime";
 import { generateUUID } from "@/utils/id";
+import { localMediaUrl } from "@/services/local-drive/client";
 import {
 	CanonicalClassicSession,
 	canonicalMediaBindings,
@@ -580,18 +581,36 @@ export class CommandManager {
 	}
 
 	async importHyperframes(
-		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0],
+		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0] & {
+			target?: { projectId: string; sceneId: string; signal?: AbortSignal };
+			dryRun?: boolean;
+		},
 	) {
-		const projectId = this.editor.project.getActiveOrNull()?.metadata.id;
+		const { target, dryRun = false, ...request } = input;
+		target?.signal?.throwIfAborted();
+		const projectId =
+			target?.projectId ?? this.editor.project.getActiveOrNull()?.metadata.id;
 		assertBatchEditable(projectId);
+		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+			throw new Error("The target project is no longer active");
 		await this.enableCanonical();
+		target?.signal?.throwIfAborted();
 		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
 			throw new Error("The active project changed while preparing the import");
+		if (
+			target &&
+			this.editor.scenes.getActiveSceneOrNull()?.id !== target.sceneId
+		)
+			throw new Error("The active scene changed while preparing the import");
+		if (dryRun) {
+			if (!this.canonical) throw new Error("The canonical project was closed");
+			return this.canonical.previewHyperframesImport(request);
+		}
 		return this.executeTransaction({
 			execute: () => {
 				if (!this.canonical)
 					throw new Error("The canonical project was closed");
-				const imported = this.canonical.importHyperframes(input);
+				const imported = this.canonical.importHyperframes(request);
 				this.publishCanonical();
 				this.editor.selection.applySelectionPatch({
 					patch: {
@@ -638,6 +657,7 @@ export class CommandManager {
 
 	private publishCanonical(): void {
 		if (!this.canonical) return;
+		const projectId = this.canonical.projectId;
 		const state = this.canonical.read();
 		this.isProjectingCanonical = true;
 		try {
@@ -649,7 +669,11 @@ export class CommandManager {
 				assets: state.mediaAssets.map((asset) => ({
 					...asset,
 					file: handles.get(asset.id)?.file,
-					url: handles.get(asset.id)?.url,
+					url:
+						handles.get(asset.id)?.url ??
+						(!asset.missing && asset.storageKind
+							? localMediaUrl({ projectId, id: asset.id })
+							: undefined),
 					thumbnailUrl: handles.get(asset.id)?.thumbnailUrl,
 				})),
 			});

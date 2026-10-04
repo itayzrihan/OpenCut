@@ -15,8 +15,8 @@ is implemented; the product integration is not complete.
 | --- | --- | --- |
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
-| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; CommandManager adoption and real WASM integration tests pass; browser flow pending |
-| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Canonical folder planner, browser file reader and binary asset storage tested; importer UI and end-to-end reopen pending |
+| Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
+| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; Brag folder UI coverage pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; real-project combinations pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; fast live preview, speed and audio pending |
@@ -238,6 +238,44 @@ and failure reporting are complete.
 - The FFmpeg-only renderer rejects a HyperFrames source asset explicitly until
   its composition renderer is installed; it must never silently omit it.
 
+### User-facing folder import (2026-10-04)
+
+- The Assets panel's existing Import button retains ordinary media import. Its
+  adjacent menu opens **HyperFrames project folder**. The dialog chooses an HTML
+  entry, then places a new graphic track at the playhead, at the end, or at zero.
+  After import the preview seeks to the new clip. Progress, cancellation and
+  runtime failures are visible in that dialog.
+- `timeline.hyperframes.import` now accepts optional `classicResourceAssets`.
+  Canonical validation rejects unrelated, duplicate, transient or overwritten
+  media bindings. Resources and composition enter the document in one mutation.
+  A dry run validates the prospective import before copying any binary data.
+- The host pins multi-request work to its initiating account/project/scene and
+  abort signal. Runtime readiness supplies generated duration before the actual
+  edit. Failed uploads and cancelled imports discard only copied resources owned
+  by that attempt's random upload token. Finalization removes that token. Normal
+  media deletion still retains bytes for Undo. A cleanup failure is reported;
+  a save failure after commit retains the new clip and its files.
+- Rust Undo removes the imported bindings and clip atomically. Classic's existing
+  media history policy retains the durable library bindings when undoing the
+  timeline insertion, so Redo uses the same copied files.
+- Browser proof used the isolated render-verification account. A folder with two
+  HTML entries, a local GSAP library and a PNG was selected through the real
+  directory picker. `main.html` had no authored duration; its registered GSAP
+  timeline resolved to four seconds. Appending at four seconds made an eight
+  second project. Undo/Redo and exiting/reopening restored the composition and
+  image. A second import at zero verified overlay placement. Hashes of all saved
+  source strings and copied PNG bytes match the originals; evidence is in
+  `.local/hyperframes-folder-import-proof.json`.
+- A deliberately unresolved composition exercised runtime failure after upload.
+  With staged cleanup enabled, both the file count and media-index count were
+  unchanged after rejection. The successful import's upload token was removed.
+- This completes the synthetic folder flow, not the full integration. Embedded
+  audio is explicitly marked unsupported in the dialog. Brag UI import coverage,
+  generated children, fast preview, video fidelity and crash recovery for staged
+  uploads remain pending. The new folder export was invoked through the UI, but
+  its downloaded MP4 could not yet be recovered for frame verification; the
+  earlier synthetic compositor MP4 remains the verified export evidence.
+
 ### Canonical runtime in the browser
 
 - `classic/rust/editor-runtime-wasm` exposes the live capability registry,
@@ -379,17 +417,15 @@ measurements, not browser playback measurements. Probes are in ignored
 
 ## Next implementation sequence
 
-1. Static inspection and isolated runtime loading have passed on all eight Brag
-   project folders, including the generated duration. Finish durable import
-   orchestration, runtime error reporting and live child manifests.
-2. Exercise folder import and reopen in a real browser. The compositor fixture
-   has verified inspector edits and Undo. Source sharing, compact persistence, history adoption,
+1. Exercise the completed folder importer on the eight Brag references, including
+   generated duration and durable resources. Verify downloaded exports and add
+   recovery for a crash during staging.
+2. The synthetic folder flow now covers import, Undo/Redo and reopen. Source sharing, compact persistence, history adoption,
    media callbacks and canonical view projection are implemented and covered by
    real-WASM tests. The native MCP process still reaches the live editor through
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
-3. Add user-selected folder import, durable asset bindings and a fast live
-   preview path beside the connected capture adapter. Route all
+3. Add a fast live preview path beside the connected capture adapter. Route all
    transport and edits through canonical transactions. Resource serving must be
    scoped to the imported package; keep local control endpoints authenticated
    and loopback-only.
@@ -421,6 +457,17 @@ The example is a read-only static source probe; it skips generated output, hidde
 directories, dependencies and symlinks, and reports binary references as unbound.
 
 ### Current verification and outstanding baseline failures
+
+- Folder UI/orchestration: 16 Rust source/Classic import tests passed, including
+  atomic resource binding and invalid-import rollback. Seven real-WASM command
+  tests passed with 85 assertions; ten import orchestration tests passed with
+  167 assertions; six storage/request tests passed with 42 assertions. The render
+  client readiness/cache test passed with 54 assertions. Scoped TypeScript,
+  including the changed local-drive routes, passed. Changed-file ESLint has no
+  errors; existing assertion warnings remain in storage/server/route files.
+  Browser folder selection, generated duration, placement, Undo/Redo, reopen,
+  byte preservation and failed-import cleanup are described above. The saved
+  mixed preview is `.local/hyperframes-folder-import-preview.webp`.
 
 - Compositor/host additions: eight capture/host tests passed with 80 assertions,
   including three real Chrome tests; client lifecycle/account tests passed with
@@ -478,6 +525,5 @@ directories, dependencies and symlinks, and reports binary references as unbound
   the audio timing code. The real WASM was rebuilt and all 37 required exports,
   including this one, passed `verify-wasm-exports.mjs`. This is an outstanding
   test-harness issue, not evidence of successful full regression coverage.
-- Folder import and full playback/performance coverage remain unverified. The
-  compositor check used an isolated test account and canonical fixture import;
-  it did not exercise a user-facing folder importer.
+- Full playback/performance and Brag folder-import coverage remain unverified.
+  The folder UI proof used a synthetic GSAP project in the isolated test account.

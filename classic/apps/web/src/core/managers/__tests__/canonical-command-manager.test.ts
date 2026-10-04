@@ -111,7 +111,6 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 		})),
 	};
 	let media: MediaAsset[] = initial?.media ?? fixture.mediaAssets;
-	let scenes: InstanceType<typeof ScenesManager>;
 	let selection: EditorSelectionSnapshot = {
 		selectedElements: [],
 		selectedTextWords: [],
@@ -159,7 +158,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 		},
 	} as unknown as EditorCore;
 	const manager = new CommandManager(editor);
-	scenes = new ScenesManager(editor);
+	const scenes = new ScenesManager(editor);
 	editor.scenes.initializeScenes({
 		scenes: project.scenes,
 		currentSceneId: project.currentSceneId,
@@ -316,6 +315,71 @@ test("scene views publish after validation and keep a valid active scene after d
 	expect(host.project().currentSceneId).toBe("main-scene");
 	expect(host.editor.scenes.getActiveScene().id).toBe("main-scene");
 	expect(notifications).toBe(2);
+	assertCoherent({ host, runtime });
+	await host.manager.flushHistory();
+	host.manager.detachCanonical();
+});
+
+test("folder import preflights bindings and retains durable resource URLs through undo/redo", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	const before = runtime.snapshot();
+	const input = {
+		name: "Folder",
+		source: { ...source, resourceAssetIds: { "font.woff2": "folder-font" } },
+		classicResourceAssets: [
+			{
+				id: "folder-font",
+				name: "font.woff2",
+				type: "file" as const,
+				storageKind: "copied" as const,
+				mimeType: "font/woff2",
+				size: 12,
+				lastModified: 1,
+			},
+		],
+		target: {
+			projectId: host.project().metadata.id,
+			sceneId: host.editor.scenes.getActiveScene().id,
+		},
+	};
+	await host.manager.importHyperframes({ ...input, dryRun: true });
+	expect(runtime.snapshot()).toEqual(before);
+	await expect(
+		host.manager.importHyperframes({
+			...input,
+			target: { ...input.target, sceneId: "another-scene" },
+		}),
+	).rejects.toThrow("scene changed");
+	await expect(
+		host.manager.importHyperframes({
+			...input,
+			target: { ...input.target, signal: AbortSignal.abort() },
+		}),
+	).rejects.toThrow();
+	expect(runtime.snapshot()).toEqual(before);
+	const imported = await host.manager.importHyperframes(input);
+	const resource = host.media().find(({ id }) => id === "folder-font");
+	expect(resource?.url).toContain("id=folder-font");
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId],
+	).toBeDefined();
+	host.manager.undo();
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId],
+	).toBeUndefined();
+	// Like ordinary media import, durable files remain in the library for redo.
+	expect(host.media().find(({ id }) => id === "folder-font")?.url).toBe(
+		resource?.url,
+	);
+	host.manager.redo();
+	expect(
+		host.project().hyperframesCompositions?.[imported.assetId],
+	).toBeDefined();
+	expect(host.media().find(({ id }) => id === "folder-font")?.url).toBe(
+		resource?.url,
+	);
 	assertCoherent({ host, runtime });
 	await host.manager.flushHistory();
 	host.manager.detachCanonical();

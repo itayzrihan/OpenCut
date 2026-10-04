@@ -71,6 +71,80 @@ async fn composition_binary_assets_roundtrip_through_canonical_state_and_history
 }
 
 #[tokio::test]
+async fn folder_resources_and_clip_commit_as_one_undoable_import() {
+    let runtime = OpenCutRuntime::default();
+    let original = classic();
+    attach(&runtime, original.clone()).await;
+    let before = state(&runtime).await;
+    let mut package = source();
+    package["resourceAssetIds"]["assets/font.woff2"] = json!("folder-font");
+    let resource = json!({"id":"folder-font", "name":"assets/font.woff2", "type":"file",
+        "mimeType":"font/woff2", "fileName":"font.woff2", "size":1024, "lastModified":100, "storageKind":"copied"});
+    let input = json!({"projectId":"classic-project", "expectedRevision":before["revision"],
+        "name":"Complete folder", "source":package, "classicResourceAssets":[resource]});
+    runtime
+        .registry()
+        .invoke(
+            "timeline.hyperframes.import",
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            input.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(state(&runtime).await, before);
+    call(&runtime, "timeline.hyperframes.import", input).await;
+    let after = state(&runtime).await;
+    assert_eq!(
+        after["project"]["classic"]["mediaAssets"]
+            .as_array()
+            .unwrap()
+            .last()
+            .unwrap(),
+        &resource
+    );
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"]["classic"], original);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(state(&runtime).await["project"], after["project"]);
+}
+
+#[tokio::test]
+async fn invalid_folder_resources_cannot_replace_media_or_leave_partial_imports() {
+    let runtime = OpenCutRuntime::default();
+    attach(&runtime, classic()).await;
+    let before = state(&runtime).await;
+    for resource in [
+        json!({"id":"folder-font", "type":"file", "url":"blob:transient"}),
+        json!({"id":"folder-font", "type":"unsupported"}),
+        json!({"id":"unrelated", "type":"file"}),
+        before["project"]["classic"]["mediaAssets"][0].clone(),
+    ] {
+        let mut package = source();
+        package["resourceAssetIds"]["font.woff2"] = json!("folder-font");
+        // An existing ID may be referenced, but cannot be overwritten by upload metadata.
+        if resource == before["project"]["classic"]["mediaAssets"][0] {
+            package["resourceAssetIds"]["font.woff2"] = resource["id"].clone();
+        }
+        assert!(
+            runtime
+                .registry()
+                .invoke(
+                    "timeline.hyperframes.import",
+                    InvocationContext::default(),
+                    json!({"projectId":"classic-project", "expectedRevision":before["revision"],
+                "name":"Invalid", "source":package, "classicResourceAssets":[resource]})
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(state(&runtime).await, before);
+    }
+}
+
+#[tokio::test]
 async fn existing_classic_timeline_import_is_lossless_and_undoable() {
     let runtime = OpenCutRuntime::default();
     let original = classic();

@@ -17,6 +17,7 @@ import {
 	deleteFont,
 	deleteHistory,
 	deleteMedia,
+	finishMediaUpload,
 	deleteProject,
 	deleteSavedSounds,
 	clearSharedFiles,
@@ -121,6 +122,7 @@ async function POSTHandler(request: Request) {
 			"media.relink",
 			"media.relink.undo",
 			"media.delete",
+			"media.finishUpload",
 			"media.clear",
 			"font.put",
 			"font.delete",
@@ -231,6 +233,15 @@ async function POSTHandler(request: Request) {
 				);
 			case "media.delete":
 				await deleteMedia(projectId(), readString(body.id, "media id"));
+				return NextResponse.json({ ok: true });
+			case "media.finishUpload":
+				if (typeof body.discard !== "boolean")
+					throw new Error("discard must be a boolean");
+				await finishMediaUpload(
+					projectId(),
+					readString(body.uploadToken, "upload token"),
+					body.discard,
+				);
 				return NextResponse.json({ ok: true });
 			case "media.clear":
 				await clearMedia(projectId());

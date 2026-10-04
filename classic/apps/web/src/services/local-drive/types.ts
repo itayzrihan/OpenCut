@@ -42,6 +42,7 @@ export type LocalDriveOperation =
 	| "media.relink"
 	| "media.relink.undo"
 	| "media.delete"
+	| "media.finishUpload"
 	| "media.clear"
 	| "font.list"
 	| "font.put"

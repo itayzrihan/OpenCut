@@ -13,6 +13,7 @@ import {
 	localMediaUrl,
 	uploadLocalFont,
 	uploadLocalMedia,
+	type LocalDriveRequestScope,
 } from "@/services/local-drive/client";
 import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
 import {
@@ -585,20 +586,28 @@ export class StorageService {
 	async saveMediaAsset({
 		projectId,
 		mediaAsset,
+		scope,
 	}: {
 		projectId: string;
 		mediaAsset: MediaAsset;
+		scope?: LocalDriveRequestScope;
 	}): Promise<void> {
-		const targetUrl = localMediaUrl({ projectId, id: mediaAsset.id });
+		const targetUrl = localMediaUrl({
+			projectId,
+			id: mediaAsset.id,
+			accountId: scope?.accountId,
+		});
 		if (mediaAsset.file) {
 			await uploadLocalMedia({
 				projectId,
 				id: mediaAsset.id,
 				file: mediaAsset.file,
+				scope,
 			});
 		} else if (mediaAsset.sourcePath) {
 			const registered = await localDriveRequest<LocalDriveMediaRecord>({
 				operation: "media.registerPath",
+				scope,
 				payload: {
 					projectId,
 					media: {
@@ -617,6 +626,7 @@ export class StorageService {
 			mediaAsset.file?.lastModified ?? mediaAsset.lastModified ?? Date.now();
 		await localDriveRequest({
 			operation: "media.put",
+			scope,
 			payload: {
 				projectId,
 				media: {
@@ -685,10 +695,37 @@ export class StorageService {
 		return records.map((record) => this.hydrateMedia({ projectId, record }));
 	}
 
-	async deleteMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+	async deleteMediaAsset({
+		projectId,
+		id,
+		scope,
+	}: {
+		projectId: string;
+		id: string;
+		scope?: LocalDriveRequestScope;
+	}) {
 		await localDriveRequest({
 			operation: "media.delete",
+			scope,
 			payload: { projectId, id },
+		});
+	}
+
+	async finishMediaUpload({
+		projectId,
+		uploadToken,
+		discard,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		discard: boolean;
+		scope: LocalDriveRequestScope;
+	}) {
+		await localDriveRequest({
+			operation: "media.finishUpload",
+			scope,
+			payload: { projectId, uploadToken, discard },
 		});
 	}
 

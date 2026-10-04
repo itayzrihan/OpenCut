@@ -167,6 +167,7 @@ export class CanonicalClassicSession {
 		startSeconds?: number;
 		trackId?: string;
 		resolvedDurationSeconds?: number;
+		classicResourceAssets?: CanonicalClassicSnapshot["mediaAssets"];
 	}): { assetId: string; itemId: string; trackId: string } {
 		return this.call({
 			capability: "timeline.hyperframes.import",
@@ -175,6 +176,20 @@ export class CanonicalClassicSession {
 				projectId: this.projectId,
 				expectedRevision: this.status().revision,
 			},
+		});
+	}
+
+	previewHyperframesImport(
+		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0],
+	): { assetId: string; itemId: string; trackId: string } {
+		return this.call({
+			capability: "timeline.hyperframes.import",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+			context: { dryRun: true },
 		});
 	}
 

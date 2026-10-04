@@ -30,6 +30,10 @@ struct ImportInput {
     track_id: Option<String>,
     /// Runtime-measured duration when the root has no authored data-duration.
     resolved_duration_seconds: Option<f64>,
+    /// Newly persisted Classic resource metadata. Bytes stay in project storage.
+    /// Attach these bindings and the composition in one undoable transaction.
+    #[serde(default)]
+    classic_resource_assets: Vec<Map<String, Value>>,
 }
 
 #[derive(Debug, Serialize, JsonSchema)]
@@ -135,6 +139,11 @@ pub(super) fn register_hyperframes_operations(
                             ));
                         }
                         if project.classic.is_some() {
+                            let resource_ids = attach_classic_resources(
+                                project.classic.as_mut().unwrap(),
+                                &composition.source,
+                                input.classic_resource_assets,
+                            )?;
                             (asset_id, item_id, track_id) = import_classic(
                                 document,
                                 input.name,
@@ -143,7 +152,15 @@ pub(super) fn register_hyperframes_operations(
                                 composition,
                             )?;
                             check_cancelled(&context)?;
-                            return Ok(vec![asset_id.clone(), item_id.clone(), track_id.clone()]);
+                            let mut affected =
+                                vec![asset_id.clone(), item_id.clone(), track_id.clone()];
+                            affected.extend(resource_ids);
+                            return Ok(affected);
+                        }
+                        if !input.classic_resource_assets.is_empty() {
+                            return Err(CapabilityError::InvalidInput(
+                                "classicResourceAssets requires a Classic project".into(),
+                            ));
                         }
                         let start = input
                             .start_seconds
@@ -268,6 +285,58 @@ fn check_cancelled(context: &InvocationContext) -> Result<(), CapabilityError> {
     } else {
         Ok(())
     }
+}
+
+fn attach_classic_resources(
+    classic: &mut crate::ClassicProject,
+    source: &HyperframesSource,
+    resources: Vec<Map<String, Value>>,
+) -> Result<Vec<String>, CapabilityError> {
+    let allowed: HashSet<&str> = source
+        .resource_asset_ids
+        .values()
+        .map(String::as_str)
+        .collect();
+    if resources.len() > allowed.len() {
+        return Err(CapabilityError::InvalidInput(
+            "Too many HyperFrames resource bindings".into(),
+        ));
+    }
+    let mut occupied: HashSet<String> = classic
+        .media_assets
+        .iter()
+        .filter_map(|asset| asset.get("id").and_then(Value::as_str).map(str::to_owned))
+        .collect();
+    let mut ids = Vec::with_capacity(resources.len());
+    for resource in &resources {
+        if !matches!(
+            resource.get("type").and_then(Value::as_str),
+            Some("file" | "image" | "audio" | "video")
+        ) {
+            return Err(CapabilityError::InvalidInput(
+                "Unsupported HyperFrames resource media type".into(),
+            ));
+        }
+        let id = resource
+            .get("id")
+            .and_then(Value::as_str)
+            .filter(|id| allowed.contains(id))
+            .ok_or_else(|| {
+                CapabilityError::InvalidInput(
+                    "New media must be bound by the imported HyperFrames source".into(),
+                )
+            })?;
+        if !occupied.insert(id.to_owned()) {
+            return Err(CapabilityError::InvalidInput(
+                "HyperFrames resource binding would replace an existing media ID".into(),
+            ));
+        }
+        ids.push(id.to_owned());
+    }
+    classic.media_assets.extend(resources);
+    // The enclosing canonical mutation validates the complete Classic project,
+    // including transient handles and source references.
+    Ok(ids)
 }
 
 fn import_classic(

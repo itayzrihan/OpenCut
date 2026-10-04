@@ -43,7 +43,7 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 				const id = String(++nextId);
 				live.add(id);
 				expect(live.size).toBeLessThanOrEqual(2);
-				return Response.json({ id });
+				return Response.json({ id, durationSeconds: 4 });
 			}
 			if (input.action === "close") live.delete(input.id!);
 			if (input.action === "capture" && failCapture) {
@@ -74,6 +74,13 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 	const draw = (name: string) =>
 		client.renderTo({ composition: composition(name), timeSeconds: 1, target });
 	try {
+		const [ready, reused] = await Promise.all([
+			client.prepareSource(composition("a").source),
+			client.prepareSource(composition("a").source),
+		]);
+		expect(ready).toMatchObject({ id: "1", durationSeconds: 4 });
+		expect(reused).toEqual(ready);
+		expect(nextId).toBe(1);
 		await Promise.all([draw("a"), draw("b"), draw("a"), draw("c")]);
 		expect(nextId).toBe(3);
 		expect(live.size).toBe(2);
@@ -93,6 +100,9 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 		await draw("c");
 		expect(nextId).toBe(4);
 		client.dispose();
+		await expect(
+			client.prepareSource(composition("a").source),
+		).rejects.toThrow();
 		await expect(draw("c")).rejects.toThrow();
 		await Promise.resolve();
 		expect(live.size).toBe(0);

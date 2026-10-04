@@ -8,7 +8,7 @@ const test = (name: string, body: () => Promise<void>) =>
 		),
 	);
 import { describe, expect, mock, test as runTest } from "bun:test";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -18,6 +18,75 @@ mock.module("opencut-wasm", () => ({
 }));
 
 describe("local-drive shared collections", () => {
+	test("discarding a staged import removes only its copied bytes and cannot erase finalized media", async () => {
+		const {
+			storeUploadedMedia,
+			finishMediaUpload,
+			getMediaFile,
+			listMedia,
+			deleteMedia,
+		} = await import("../server");
+		const directory = await mkdtemp(
+			join(tmpdir(), "opencut-upload-ownership-"),
+		);
+		const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
+		const upload = ({
+			mediaId,
+			uploadToken,
+		}: {
+			mediaId: string;
+			uploadToken?: string;
+		}) =>
+			storeUploadedMedia({
+				projectId: "project",
+				mediaId,
+				fileName: "image.png",
+				mimeType: "image/png",
+				lastModified: 1,
+				size: 3,
+				body: new Blob(["png"]).stream(),
+				allowLargeCopy: false,
+				uploadToken,
+			});
+		try {
+			await upload({ mediaId: "existing" });
+			await upload({ mediaId: "staged", uploadToken: "attempt-one" });
+			await upload({ mediaId: "other", uploadToken: "attempt-two" });
+			const stagedPath = (await getMediaFile("project", "staged"))!.path;
+			expect(
+				(await listMedia("project")).some((record) => "uploadToken" in record),
+			).toBe(false);
+			await expect(
+				upload({ mediaId: "existing", uploadToken: "attempt-one" }),
+			).rejects.toThrow("cannot replace");
+			await finishMediaUpload("project", "wrong-token", true);
+			expect(await stat(stagedPath)).toBeDefined();
+			await finishMediaUpload("project", "attempt-one", true);
+			await expect(stat(stagedPath)).rejects.toThrow();
+			expect(await getMediaFile("project", "staged")).toBeNull();
+			expect(
+				(await listMedia("project")).map((record) => record.id).sort(),
+			).toEqual(["existing", "other"]);
+			await finishMediaUpload("project", "attempt-two", false);
+			await finishMediaUpload("project", "attempt-two", true);
+			const retained = (await getMediaFile("project", "other"))!.path;
+			expect(await readFile(retained, "utf8")).toBe("png");
+			await deleteMedia("project", "other");
+			await expect(
+				upload({ mediaId: "other", uploadToken: "new-attempt" }),
+			).rejects.toThrow("retained media bytes");
+			expect(await readFile(retained, "utf8")).toBe("png");
+			await finishMediaUpload("project", "attempt-one", true); // retry is idempotent
+			expect((await listMedia("project")).map((record) => record.id)).toEqual([
+				"existing",
+			]);
+		} finally {
+			if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+			else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+			await rm(directory, { recursive: true, force: true });
+		}
+	});
 	test("round-trips composition fonts and binary data through the project asset store", async () => {
 		const { storeUploadedMedia, getMediaFile, listMedia } =
 			await import("../server");

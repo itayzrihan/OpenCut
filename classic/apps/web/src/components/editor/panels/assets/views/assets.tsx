@@ -63,6 +63,7 @@ import {
 } from "@/selection";
 import { buildElementFromMedia } from "@/timeline/element-utils";
 import { PodcastSyncDialog } from "@/podcast-sync/components/podcast-sync-dialog";
+import { HyperframesImportDialog } from "@/hyperframes/import-dialog";
 import { unnestSceneTracks } from "@/podcast-sync/scene";
 import { exportSceneToPremiereXml } from "@/export/premiere-xml";
 import {
@@ -99,7 +100,12 @@ import {
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { FileOutput, Layers2, SplitSquareHorizontal } from "lucide-react";
+import {
+	ChevronDown,
+	FileOutput,
+	Layers2,
+	SplitSquareHorizontal,
+} from "lucide-react";
 
 type MediaListEntry =
 	| { type: "media"; item: MediaAsset }
@@ -140,6 +146,7 @@ export function MediaView() {
 	} = useAssetsPanelStore();
 
 	const [isProcessing, setIsProcessing] = useState(false);
+	const [hyperframesImportOpen, setHyperframesImportOpen] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [podcastSyncAssets, setPodcastSyncAssets] = useState<
 		MediaAsset[] | null
@@ -436,6 +443,12 @@ export function MediaView() {
 				}}
 				assets={podcastSyncAssets ?? []}
 			/>
+			{hyperframesImportOpen && (
+				<HyperframesImportDialog
+					key={`${activeProject.metadata.id}:${activeScene?.id}`}
+					onClose={() => setHyperframesImportOpen(false)}
+				/>
+			)}
 
 			<PanelView
 				title="Assets"
@@ -448,6 +461,7 @@ export function MediaView() {
 						sortOrder={mediaSortOrder}
 						onSort={handleSort}
 						onImport={() => void importFromDrive()}
+						onImportHyperframes={() => setHyperframesImportOpen(true)}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
 						onUnify={() => void handleUnify({ ids: selectedMediaIds })}
@@ -1052,6 +1066,7 @@ function MediaActions({
 	sortOrder,
 	onSort,
 	onImport,
+	onImportHyperframes,
 	selectedCount,
 	onPodcastSync,
 	onUnify,
@@ -1064,6 +1079,7 @@ function MediaActions({
 	sortOrder: MediaSortOrder;
 	onSort: ({ key }: { key: MediaSortKey }) => void;
 	onImport: () => void;
+	onImportHyperframes: () => void;
 	selectedCount: number;
 	onPodcastSync: () => void;
 	onUnify: () => void;
@@ -1177,16 +1193,39 @@ function MediaActions({
 				<SplitSquareHorizontal className="size-4" />
 				Podcast multicam
 			</Button>
-			<Button
-				variant="outline"
-				onClick={onImport}
-				disabled={isProcessing}
-				size="sm"
-				className="items-center justify-center gap-1.5"
-			>
-				<HugeiconsIcon icon={CloudUploadIcon} />
-				Import
-			</Button>
+			<div className="flex">
+				<Button
+					variant="outline"
+					onClick={onImport}
+					disabled={isProcessing}
+					size="sm"
+					className="gap-1.5 rounded-r-none"
+				>
+					<HugeiconsIcon icon={CloudUploadIcon} />
+					Import
+				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={isProcessing}
+							className="rounded-l-none border-l-0 px-1"
+							aria-label="Import options"
+						>
+							<ChevronDown />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onSelect={onImport}>
+							Media files…
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={onImportHyperframes}>
+							HyperFrames project folder…
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 		</div>
 	);
 }
