@@ -247,6 +247,36 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	readHyperframesLibrary(): {
+		revision: number;
+		items: import("@/hyperframes/types").HyperframesLibraryItem[];
+	} {
+		return this.call({
+			capability: "hyperframes.library.read",
+			input: {
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
+	insertHyperframes(input: {
+		sceneId: string;
+		assetId: string;
+		name: string;
+		startSeconds?: number;
+		trackId?: string;
+	}): { assetId: string; itemId: string; trackId: string } {
+		return this.call({
+			capability: "timeline.hyperframes.insert",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	readHyperframesAudioClips({ sceneId }: { sceneId: string }): {
 		revision: number;
 		clips: Array<{

@@ -580,6 +580,64 @@ export class CommandManager {
 		if (!dryRun) this.stateRevision += 1;
 	}
 
+	async readHyperframesLibrary({ projectId }: { projectId: string }) {
+		const accountId =
+			typeof window === "undefined" ? null : window.__opencutAccountId;
+		await this.enableCanonical();
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+			(typeof window === "undefined" ? null : window.__opencutAccountId) !==
+				accountId
+		)
+			throw new Error("The HyperFrames library project changed");
+		return this.canonical.readHyperframesLibrary();
+	}
+
+	async insertHyperframes(
+		input: Parameters<CanonicalClassicSession["insertHyperframes"]>[0] & {
+			projectId: string;
+		},
+	) {
+		const { projectId, ...request } = input;
+		const accountId =
+			typeof window === "undefined" ? null : window.__opencutAccountId;
+		const checkTarget = () => {
+			assertBatchEditable(projectId);
+			if (
+				this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+				this.editor.scenes.getActiveSceneOrNull()?.id !== request.sceneId ||
+				(typeof window === "undefined" ? null : window.__opencutAccountId) !==
+					accountId
+			)
+				throw new Error("The target project, account or scene changed");
+		};
+		checkTarget();
+		await this.enableCanonical();
+		checkTarget();
+		return this.executeTransaction({
+			execute: () => {
+				if (!this.canonical || this.canonical.projectId !== projectId)
+					throw new Error("The canonical project was closed");
+				const inserted = this.canonical.insertHyperframes(request);
+				this.publishCanonical();
+				this.editor.selection.applySelectionPatch({
+					patch: {
+						selectedElements: [
+							{ trackId: inserted.trackId, elementId: inserted.itemId },
+						],
+						selectedTextWords: [],
+						selectedKeyframes: [],
+						keyframeSelectionAnchor: null,
+						selectedMaskPoints: null,
+					},
+				});
+				return inserted;
+			},
+		});
+	}
+
 	async readHyperframesAudioClips({
 		projectId,
 		sceneId,

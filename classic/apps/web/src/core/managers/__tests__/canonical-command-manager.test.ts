@@ -231,6 +231,88 @@ const source = {
 	resourceAssetIds: {},
 };
 
+test("composition library reuses its canonical source with selection and persistent undo", async () => {
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	await host.manager.enableCanonical({ runtime });
+	const imported = await host.manager.importHyperframes({
+		name: "Brag",
+		source,
+	});
+	const projectId = host.project().metadata.id;
+	const before = host.manager.captureProjectSnapshot();
+	const mediaBefore = structuredClone(host.media());
+	const library = await host.manager.readHyperframesLibrary({ projectId });
+	expect(library.items).toHaveLength(1);
+	expect(library.items[0]).toMatchObject({
+		assetId: imported.assetId,
+		name: "Brag",
+		sourceFileCount: 1,
+		durationSeconds: 6,
+	});
+	expect(host.manager.captureProjectSnapshot()).toEqual(before);
+	const inserted = await host.manager.insertHyperframes({
+		projectId,
+		sceneId: host.project().currentSceneId,
+		assetId: imported.assetId,
+		name: "Brag again",
+		startSeconds: 2.5,
+	});
+	expect(inserted.assetId).toBe(imported.assetId);
+	expect(inserted.itemId).not.toBe(imported.itemId);
+	expect(host.project().hyperframesCompositions).toEqual(
+		before!.hyperframesCompositions,
+	);
+	expect(host.media()).toEqual(mediaBefore);
+	expect(host.selection().selectedElements).toEqual([
+		{ trackId: inserted.trackId, elementId: inserted.itemId },
+	]);
+	const after = host.manager.captureProjectSnapshot();
+	const reused = await host.manager.readHyperframesLibrary({ projectId });
+	expect(reused.items[0].occurrences).toHaveLength(2);
+	expect(
+		reused.items[0].occurrences.find(
+			(item) => item.elementId === inserted.itemId,
+		)?.startTime,
+	).toBe(300000);
+	assertCoherent({ host, runtime });
+	host.manager.undo();
+	expect(host.manager.captureProjectSnapshot()).toEqual(before);
+	host.manager.redo();
+	expect(host.manager.captureProjectSnapshot()).toEqual(after);
+	await expect(
+		host.manager.readHyperframesLibrary({ projectId: "other" }),
+	).rejects.toThrow("project changed");
+	await expect(
+		host.manager.insertHyperframes({
+			projectId,
+			sceneId: "other",
+			assetId: imported.assetId,
+			name: "Wrong scene",
+		}),
+	).rejects.toThrow("scene changed");
+	expect(host.manager.captureProjectSnapshot()).toEqual(after);
+	await host.manager.flushHistory();
+	expect(saved).not.toBeNull();
+	host.manager.detachCanonical();
+	const reopened = createHost({
+		project: structuredClone(host.project()),
+		media: host.media(),
+	});
+	await reopened.manager.loadHistory({ projectId });
+	await reopened.manager.enableCanonical({
+		runtime: await createCanonicalTestRuntime(),
+	});
+	expect(
+		(await reopened.manager.readHyperframesLibrary({ projectId })).items[0]
+			.occurrences,
+	).toHaveLength(2);
+	reopened.manager.undo();
+	expect(reopened.manager.captureProjectSnapshot()).toEqual(before);
+	await reopened.manager.flushHistory();
+	reopened.manager.detachCanonical();
+});
+
 test("audio projection reads the same canonical clip after host edits and undo", async () => {
 	const host = createHost();
 	const runtime = await createCanonicalTestRuntime();

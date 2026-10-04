@@ -154,11 +154,164 @@ struct ImportOutput {
     inspection: HyperframesInspection,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReadLibraryInput {
+    project_id: String,
+    expected_revision: u64,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct ReadLibraryOutput {
+    revision: u64,
+    items: Vec<crate::ClassicHyperframesLibraryItem>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct InsertInput {
+    project_id: String,
+    scene_id: String,
+    expected_revision: u64,
+    asset_id: String,
+    name: String,
+    start_seconds: Option<f64>,
+    track_id: Option<String>,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct InsertOutput {
+    mutation: MutationOutput,
+    asset_id: String,
+    item_id: String,
+    track_id: String,
+}
+
 pub(super) fn register_hyperframes_operations(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    let library_state = state.clone();
+    register::<ReadLibraryInput, ReadLibraryOutput, _, _>(
+        registry,
+        "hyperframes.library.read",
+        "Read imported HyperFrames compositions",
+        "Lists canonical Classic compositions, their resource bindings and timeline occurrences. Returns display metadata without source text or binary files. Requires the project and exact revision; does not execute source or mutate the document.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "library", "classic"],
+        move |context, input| {
+            let state = library_state.clone();
+            async move {
+                check_cancelled(&context)?;
+                let store = state.read().map_err(|_| {
+                    CapabilityError::Failed("editor state lock was poisoned".into())
+                })?;
+                let document = store.document_for(Some(&input.project_id)).ok_or_else(|| {
+                    CapabilityError::Unavailable("HyperFrames library project is not open".into())
+                })?;
+                check_target(document, &context)?;
+                check_revision(document, Some(input.expected_revision))?;
+                let classic = document
+                    .project
+                    .as_ref()
+                    .filter(|project| project.id == input.project_id)
+                    .and_then(|project| project.classic.as_ref())
+                    .ok_or_else(|| {
+                        CapabilityError::Unavailable(
+                            "HyperFrames library requires a Classic project".into(),
+                        )
+                    })?;
+                let items = classic.hyperframes_library().map_err(model_error)?;
+                check_cancelled(&context)?;
+                Ok(OperationSuccess::new(ReadLibraryOutput {
+                    revision: document.revision,
+                    items,
+                }))
+            }
+        },
+    )?;
+    let insert_state = state.clone();
+    let insert_events = events.clone();
+    register::<InsertInput, InsertOutput, _, _>(
+        registry,
+        "timeline.hyperframes.insert",
+        "Add an imported HyperFrames composition to the timeline",
+        "Adds a new Classic compound occurrence of an existing source package without copying source or media. Requires the active project, scene and revision. Supports placement, undo, dry run and registry idempotency keys; does not execute source or read files.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "library", "classic", "timeline"],
+        move |context, input| {
+            let state = insert_state.clone();
+            let events = insert_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let mut item_id = String::new();
+                let mut track_id = String::new();
+                let mutation = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Add HyperFrames composition",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        let classic = project.classic.as_ref().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "Adding an imported composition requires a Classic project".into(),
+                            )
+                        })?;
+                        if classic.document["currentSceneId"] != input.scene_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target scene is not active".into(),
+                            ));
+                        }
+                        let composition = classic
+                            .compositions()
+                            .map_err(model_error)?
+                            .remove(&input.asset_id)
+                            .ok_or_else(|| {
+                                CapabilityError::InvalidInput(
+                                    "HyperFrames composition is missing".into(),
+                                )
+                            })?;
+                        (_, item_id, track_id) = import_classic(
+                            document,
+                            input.name,
+                            input.start_seconds,
+                            input.track_id,
+                            composition,
+                            Some(input.asset_id.clone()),
+                        )?;
+                        check_cancelled(&context)?;
+                        Ok(vec![
+                            input.asset_id.clone(),
+                            item_id.clone(),
+                            track_id.clone(),
+                        ])
+                    },
+                )?;
+                Ok(OperationSuccess::new(InsertOutput {
+                    mutation,
+                    asset_id: input.asset_id,
+                    item_id,
+                    track_id,
+                }))
+            }
+        },
+    )?;
     register::<InspectInput, ReadVariablesOutput, _, _>(
         registry,
         "hyperframes.variables.read",
@@ -636,6 +789,7 @@ pub(super) fn register_hyperframes_operations(
                                 input.start_seconds,
                                 input.track_id,
                                 composition,
+                                None,
                             )?;
                             check_cancelled(&context)?;
                             let mut affected =
@@ -831,6 +985,7 @@ fn import_classic(
     start_seconds: Option<f64>,
     target_track_id: Option<String>,
     composition: HyperframesComposition,
+    existing_asset_id: Option<String>,
 ) -> Result<(String, String, String), CapabilityError> {
     use crate::CLASSIC_TICKS_PER_SECOND;
     use serde_json::json;
@@ -876,7 +1031,9 @@ fn import_classic(
             break id;
         }
     };
-    let asset_id = allocate("hyperframes");
+    let asset_id = existing_asset_id
+        .clone()
+        .unwrap_or_else(|| allocate("hyperframes"));
     let item_id = allocate("item");
     let track_id = target_track_id.clone().unwrap_or_else(|| allocate("track"));
     let classic = document.project.as_mut().unwrap().classic.as_mut().unwrap();
@@ -922,11 +1079,13 @@ fn import_classic(
         "sourceDuration":duration_ticks,
         "params":{"hyperframesAssetId":asset_id,"sourceWidth":composition.width,"sourceHeight":composition.height}, "hidden":false
     }));
-    classic
-        .document
-        .compositions
-        .get_or_insert_default()
-        .insert(asset_id.clone(), composition.into());
+    if existing_asset_id.is_none() {
+        classic
+            .document
+            .compositions
+            .get_or_insert_default()
+            .insert(asset_id.clone(), composition.into());
+    }
     let duration = (classic.main_scene_duration() * CLASSIC_TICKS_PER_SECOND as f64).round() as i64;
     classic
         .document

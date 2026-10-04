@@ -33,6 +33,27 @@ export interface HyperframesComposition {
 	runtimeManifest?: HyperframesRuntimeManifest;
 }
 
+/** Display metadata projected by the canonical Classic library capability. */
+export interface HyperframesLibraryItem {
+	assetId: string;
+	name: string;
+	entryFile: string;
+	width: number;
+	height: number;
+	fps: number;
+	durationSeconds: number;
+	sourceFileCount: number;
+	resourceAssetIds: string[];
+	occurrences: Array<{
+		sceneId: string;
+		sceneName: string;
+		trackId: string;
+		elementId: string;
+		name: string;
+		startTime: number;
+	}>;
+}
+
 /** Read-only canonical projection into one existing Classic compound clip. */
 export interface HyperframesTimelineClip {
 	controls: Array<{ key: string; editable: boolean; opacity: number }>;

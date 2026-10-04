@@ -134,7 +134,7 @@ export function DraggableItem({
 							{preview}
 							{!isDragging && (
 								<PlusButton
-									className="opacity-0 group-hover:opacity-100"
+									className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
 									onClick={handleAddToTimeline}
 								/>
 							)}
@@ -144,12 +144,7 @@ export function DraggableItem({
 								className="text-muted-foreground w-full truncate text-left text-[0.7rem]"
 								title={name}
 							>
-								<span className="sr-only">{name}</span>
-								<span aria-hidden="true">
-									{name.length > 8
-										? `${name.slice(0, 16)}...${name.slice(-3)}`
-										: name}
-								</span>
+								{name}
 							</span>
 						)}
 					</div>
@@ -235,6 +230,7 @@ function PlusButton({
 				e.stopPropagation();
 				onClick?.();
 			}}
+			aria-label={tooltipText ?? "Add to timeline"}
 			title={tooltipText}
 		>
 			<Plus />

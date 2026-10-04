@@ -21,9 +21,80 @@ is implemented; the product integration is not complete.
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
-| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
+| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved; three consecutive reloads retain all four live surfaces and warmed playback reaches 28.22 fps; mixed/capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 982 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 983 web tests pass across 215 isolated suites, including reruns of three startup timeouts; browser coverage enabled with zero skips. This checkpoint passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Composition library in Classic Assets (2026-10-04)
+
+Imported compositions now appear as reusable items in the existing Assets panel.
+The library groups package resources under their composition instead of placing
+every image among ordinary top-level media. Each item supports Add at playhead,
+Show files, Show in timeline and the existing graphic drag path. Resource folders
+and All files retain access to imported media; package fonts and other binary
+resources are listed as non-draggable files. Search covers names, including
+resources, and works within an open composition folder. Library metadata comes
+from the canonical runtime, with no second document store or thumbnail execution
+of authored scripts.
+
+The header keeps Import, view and sort controls visible in the narrow Assets
+panel. Unify and Podcast multicam remain available in More asset actions and in
+their existing media context menus. Media labels now use CSS truncation; add
+buttons have accessible names and remain visible during keyboard focus.
+Reveal media clears an active folder/search and selects All files. Switching
+folder, search or view resets virtual-list scrolling so an old position cannot
+hide the first results.
+
+### Canonical contract and migration status
+
+- **Classic-only:** `hyperframes.library.read` projects source identity, dimensions,
+  duration, resource bindings and occurrences from the existing Classic document.
+  It requires project identity and expected revision and executes no source.
+- **Classic-only:** `timeline.hyperframes.insert` adds another occurrence of an
+  already imported source. Project, active scene and expected revision are checked.
+  The action supports undo/redo, dry run, cancellation and registry idempotency.
+  It reuses the original asset ID and leaves source properties and media bindings
+  unchanged. Both capabilities are exposed by the registry and enabled in the
+  Classic WASM adapter; no transport-specific tool or rewrite UI was added.
+- Library grouping/search/selection are disposable UI state. The normal graphic
+  drag handler still commits through the existing canonical editor transaction.
+  Add at playhead calls the dedicated insertion capability.
+
+### Verification
+
+- Three new Rust registry tests cover read-only metadata, source/resource reuse,
+  original native elements, undo/redo, wrong project/scene/track, stale revisions,
+  missing sources, invalid time, cancellation, dry run and idempotent retry.
+  These and the nine existing Classic HyperFrames tests pass. Clippy passes with
+  warnings denied for this target.
+- The real-WASM manager test verifies selection, source reuse, undo/redo, saved
+  history and reopening. All 11 manager tests pass. Both WASM export checks pass;
+  product TypeScript and changed-file ESLint pass.
+- The full isolated web run passed 875 tests but timed out while loading three
+  AI suites during development recompilation. Those three suites then passed
+  all 108 tests in an isolated single-worker rerun: **983 passed, zero remaining
+  failures and zero skips**. Reports:
+  `.local/hf-library-full-regression-20261004/summary.json` and
+  `.local/hf-library-ai-recheck-20261004/summary.json`.
+- Browser verification used the existing four-package Brag/native project
+  `286360fa-97fd-480e-8a80-2643311705b6`. The library shows four compositions and
+  the native blue image; the composition folders contain 3, 42, 25 and 27 resource
+  files. Folder search, empty search, All files, both display modes, navigation
+  to the layer inspector and Reveal media from a filtered folder work.
+- Add at playhead increased the document from seven to eight elements, kept all
+  seven originals byte-for-byte equivalent as JSON values, and retained the same
+  four source packages. UI Undo restored the scenes, sources and settings exactly;
+  Redo restored the second occurrence. Evidence:
+  `.local/hf-library-insert-evidence-20261004.json` and
+  `.local/hf-library-undo-evidence-20261004.json`.
+- Screenshots: `.local/hf-library-ui-20261004.jpg` and
+  `.local/hf-library-resources-20261004.jpg`. The first shows the library beside
+  four rendered Brag compositions, native layers and the selected layer inspector.
+
+Actual pointer dragging from a composition card, cross-scene navigation and the
+complete interface audit still need broader interactive coverage. Long playback,
+capture throughput, interrupted import recovery and remaining export parity are
+also still open; this checkpoint does not complete the integration.
 
 ## Feature preservation regression audit (2026-10-04)
 

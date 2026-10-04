@@ -194,6 +194,8 @@ where
             | "hyperframes.variables.read"
             | "hyperframes.variables.prepare"
             | "hyperframes.variables.set"
+            | "hyperframes.library.read"
+            | "timeline.hyperframes.insert"
     );
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);
