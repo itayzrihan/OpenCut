@@ -19,11 +19,77 @@ is implemented; the product integration is not complete.
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,007 web tests have passing results across 218 isolated suites, including two reruns, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,009 web tests have passing results across 219 isolated suites, including two reruns, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Native video and asynchronous drawing in live preview (2026-10-04)
+
+The Classic live adapter now uses the pinned runtime's seek-completion barrier
+before acknowledging a frame. It waits for native video decoding and drawing
+registered through `hf-seek` / `waitUntil`, then repeats GPU drawing at the
+runtime's sampled time when a Canvas may depend on video. Source media timing,
+trim, playback rate and loop rules remain owned by HyperFrames. Classic still
+owns audible output. A decoding/drawing error or overlapping seek fails the live
+surface and allows the existing capture fallback. Page compositors requiring
+the engine's screenshot pass remain on capture.
+
+This also fixes an existing capture/export bug: engine 0.8.115 creates empty
+`__render_frame__` images intended for its FFmpeg frame injector. OpenCut's
+screenshot adapter uses native Chrome decoding, so no image was injected; their
+presence made the runtime skip video seeking and retain the first frame. The
+adapter now removes those empty reserved siblings and uses the same media
+completion bridge before capture. Populated frame images remain intact.
+
+This is **Classic-only rendering integration** over the existing canonical
+document and timeline. It introduces no editor state, capability or MCP tool.
+
+### Verification and limits
+
+- Real browser tests compare live pixels with bounded capture artifacts across
+  forward, reverse and repeated seeks. A generated video starts at 0.5 seconds,
+  has a 0.25-second media trim and runs at 1.5×. Both its native element and a
+  Canvas copy match frames independently decoded with FFmpeg. An asynchronous
+  drawing delays completion by 40 ms. Rejected drawing, overlapping requests
+  and invalid video emit one failure with no incomplete-frame acknowledgement.
+- The existing opaque-sandbox and silent-audio test passes. The complete
+  isolated regression passes 1,009 tests across 219 suites with no skips,
+  including an unchanged serial rerun of two AI suites whose startup imports
+  exceeded their default hook timeout. Product TypeScript and changed-file
+  ESLint pass. Reports: `.local/hf-media-full-regression-20261004/summary.json`,
+  `.local/hf-media-regression-recheck-20261004/summary.json`, and the combined
+  `.local/hf-media-regression-verified-20261004.json`.
+- The unchanged full Brag composition has 13 video elements. Live and fixed
+  capture pixels are identical at 4.2, 5, 8.5 and 34.7 seconds. At 0.5 seconds,
+  264 channels differ by one level (mean absolute RGBA error 0.000072). Report:
+  `.local/hf-media-brag-benchmark-20261004.json`.
+- During 60 sequential seeks through the twelve-video portfolio section,
+  median acknowledgement is 65.1 ms and p95 is 121.2 ms in software Chrome.
+  These are seek timings, not editor playback FPS. Real-time playback under
+  this load remains an open performance requirement.
+- In the full Classic editor, the 131-resource Brag package plays in a live
+  surface between a native blue image and native title. The owned six-second
+  fixture trims the source to 3.8–9.8 seconds. Its normal MP4 export contains
+  180 H.264 frames at 640×360/30 fps and AAC audio. Audio correlation against
+  the original trimmed mix is 0.99985, with zero measured sample offset at
+  8 kHz. A second export after restarting the development server produces
+  identical decoded video (SHA-256
+  `c9596d62616fcb75ff300844122bbd42574f91e180c3d681385441bb5fe5c58d`).
+  Artifacts: `.local/hf-brag-video-export-fresh-20261004.mp4`,
+  `.local/hf-brag-video-export-check-20261004.json`, and
+  `.local/hf-brag-video-live-ui-final-20261004.jpg`.
+- The scaled MP4 comparison is not pixel-identical: three composition crops
+  have mean absolute RGB errors of 4.76, 4.04 and 2.78 against bilinearly
+  sampled source captures. It includes native compositing and H.264 encoding;
+  a matched full-resolution export comparison remains open. The mixed UI
+  performance log includes startup, edits and idle gaps, so it is not used
+  as a playback FPS measurement.
+- Unregistered wall-clock drawing is still outside the deterministic contract.
+  Broader GPU/page-compositor, dynamically created media, nested video and loop
+  coverage remains open; these results do not establish parity for every Canvas
+  or shader composition.
 
 ## Continue interrupted imports in the full editor (2026-10-04)
 

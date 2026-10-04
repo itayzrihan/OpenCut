@@ -530,7 +530,9 @@ class LiveOccurrence {
 		}
 		if (
 			event.data.type === "loading" &&
-			["document", "runtime", "fonts", "images"].includes(event.data.stage)
+			["document", "runtime", "fonts", "images", "media"].includes(
+				event.data.stage,
+			)
 		)
 			surface.loadingStage = event.data.stage;
 		if (event.data.type === "ready") {

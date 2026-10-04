@@ -1,3 +1,5 @@
+import { hyperframesMediaBridgeScript } from "./media-document";
+
 /** Trusted transport shells for a package-only, silent live rendering surface.
  * No project mutation or author code runs in the editor's origin.
  */
@@ -8,7 +10,7 @@ export function hyperframesLiveBridgeScript({
 	fps: number;
 	durationSeconds: number;
 }): string {
-	return `(${installLiveBridge.toString()})(${JSON.stringify({ fps, durationSeconds })});`;
+	return `${hyperframesMediaBridgeScript()}\n(${installLiveBridge.toString()})(${JSON.stringify({ fps, durationSeconds })});`;
 }
 
 /** The extra shell keeps its frame-src policy outside the authored document.
@@ -61,7 +63,7 @@ function installLiveShell(entryPath: string): void {
 		} else if (event.source === frame.contentWindow) {
 			if (
 				data.type === "loading" &&
-				["runtime", "fonts", "images"].includes(data.stage)
+				["runtime", "fonts", "images", "media"].includes(data.stage)
 			)
 				window.parent.postMessage(
 					{ source: "opencut-hf-live", type: "loading", stage: data.stage },
@@ -125,6 +127,8 @@ function installLiveBridge({
 		__renderReady?: boolean;
 		__opencutLayerEdits?: import("./layer-edits").HyperframesLayerEditBridge;
 		__hfTimelinesBuilding?: boolean;
+		__opencutMedia: import("./media-document").HyperframesMediaBridge;
+		__hf_page_composite_pending?: boolean;
 		__player?: {
 			renderSeek: (time: number, options?: object) => void;
 			pause: () => void;
@@ -143,6 +147,7 @@ function installLiveBridge({
 	let ready = false;
 	let failed = false;
 	let lastSequence = 0;
+	let seeking = false;
 	const post = (data: object) =>
 		window.parent.postMessage({ source: "opencut-hf-live", ...data }, "*");
 	post({ type: "loading", stage: "runtime" });
@@ -210,18 +215,16 @@ function installLiveBridge({
 			return;
 		clearInterval(poll);
 		void (async () => {
-			// Native video seeking and shader/canvas rendering still need the
-			// verified capture adapter; never silently replace their pixels.
-			if (document.querySelector("video,canvas"))
-				throw new Error(
-					"Live preview requires the capture adapter for video or canvas layers",
-				);
 			mute();
 			page.__player?.pause();
 			post({ type: "loading", stage: "fonts" });
 			await document.fonts.ready;
 			post({ type: "loading", stage: "images" });
 			await Promise.all([...document.images].map((image) => image.decode()));
+			if (document.querySelector("video")) {
+				post({ type: "loading", stage: "media" });
+			}
+			await page.__opencutMedia.ready();
 			if (failed) return;
 			ready = true;
 			clearTimeout(deadline);
@@ -252,11 +255,12 @@ function installLiveBridge({
 		)
 			return;
 		lastSequence = data.sequence;
-		try {
-			if (document.querySelector("video,canvas"))
-				throw new Error(
-					"Live preview requires the capture adapter for video or canvas layers",
-				);
+		if (seeking) {
+			fail("Live preview received overlapping frame requests");
+			return;
+		}
+		seeking = true;
+		void (async () => {
 			mute();
 			page.__opencutLayerEdits?.beforeSeek();
 			page.__player!.renderSeek(
@@ -265,13 +269,21 @@ function installLiveBridge({
 				options,
 			);
 			page.__opencutLayerEdits?.afterSeek();
-			if (document.querySelector("video,canvas"))
+			await page.__opencutMedia.finishSeek();
+			if (page.__hf_page_composite_pending)
 				throw new Error(
-					"Live preview requires the capture adapter for video or canvas layers",
+					"Live preview requires capture for this page compositor",
 				);
+			if (failed) return;
 			post({ type: "frame", sequence: data.sequence });
-		} catch (error) {
-			fail(error instanceof Error ? error.message : "Live preview seek failed");
-		}
+		})()
+			.catch((error: unknown) =>
+				fail(
+					error instanceof Error ? error.message : "Live preview seek failed",
+				),
+			)
+			.finally(() => {
+				seeking = false;
+			});
 	});
 }

@@ -30,6 +30,7 @@ import type {
 	HyperframesRuntimeManifest,
 } from "./types";
 import { installHyperframesLayerEdits } from "./layer-edits";
+import { installHyperframesMediaBridge } from "./media-document";
 import { readHyperframesRuntimeManifest } from "./runtime-manifest";
 import {
 	readHyperframesAudioPlan,
@@ -227,6 +228,7 @@ export class HyperframesCaptureSession {
 		);
 		signal?.throwIfAborted();
 		const engine = this.engine;
+		await engine.page.evaluateOnNewDocument(installHyperframesMediaBridge);
 		await engine.page.evaluateOnNewDocument((renderFps: number) => {
 			// The official runtime exposes __player; the engine consumes __hf.
 			// Adapt that protocol without reimplementing timing or animation logic.
@@ -322,7 +324,30 @@ export class HyperframesCaptureSession {
 			// Preserve those backgrounds while retaining Chrome's transparent default.
 			await engine.page.evaluate(() => {
 				document.getElementById("__hf_transparent_bg__")?.remove();
+				// The pinned engine creates empty siblings for its FFmpeg injector.
+				// This screenshot adapter uses native video decoding; those empty
+				// siblings otherwise tell the runtime to skip every native seek.
+				for (const image of document.querySelectorAll(
+					"video + img.__render_frame__:not([src])",
+				))
+					image.remove();
 			});
+			await engine.page.evaluate(async () => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Installed above in the isolated page.
+				const page = window as unknown as {
+					__opencutMedia: import("./media-document").HyperframesMediaBridge;
+				};
+				await page.__opencutMedia.ready();
+			});
+			engine.onBeforeCapture = async (page) => {
+				await page.evaluate(async () => {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Installed above in the isolated page.
+					const page = window as unknown as {
+						__opencutMedia: import("./media-document").HyperframesMediaBridge;
+					};
+					await page.__opencutMedia.finishSeek();
+				});
+			};
 			this.resolvedDuration =
 				this.inspection.durationSeconds ??
 				(await getCompositionDuration(engine));
