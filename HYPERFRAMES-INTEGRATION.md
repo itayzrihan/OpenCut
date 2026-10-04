@@ -25,6 +25,38 @@ is implemented; the product integration is not complete.
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
 
+## MCP publication during export (2026-10-04)
+
+The project store notifies subscribers for export progress as well as document
+edits. The Classic MCP bridge treated every such notification as a document
+change, incremented its revision, rebuilt the canonical timeline projection and
+published the entire snapshot. A 600-line server-log sample during the Brag
+export contains 130 artifact reads and 120 state publications; all those state
+publications returned 503 because no desktop MCP endpoint was available.
+These overlapping request timings do not measure CPU cost. Evidence:
+`.local/hf-export-mcp-traffic-before-20261004.json`.
+
+The bridge now checks the active project reference on project-store events.
+Export progress and library-status notifications preserve the document cache.
+Project replacement, settings, rename, scene/timeline edits and media events
+still invalidate it. Selection and playback still publish state, and the
+existing heartbeat continues. This is **Classic-only transport scheduling**:
+the authoritative document, capabilities and authentication remain unchanged.
+
+A browser regression runs the real bridge component with controlled host
+stores, network responses and a clock. Five export-progress events previously
+caused five additional document builds and publications; after the change they
+cause none. The regression also checks heartbeat publication without a new
+revision, rename, settings, timeline edits, scene changes, selection, seeking,
+project close/switch and cleanup. It fails against the previous component and
+passes against the updated one. The regression plus canonical history, project
+loading and account bridge-scope suites pass 15 tests; changed-file ESLint
+passes. The webpack production build, including product TypeScript, asset
+verification and WASM export verification, also passes. Reports:
+`.local/hf-export-stable-build-20261004.log`,
+`.local/hf-bridge-progress-before-20261004/summary.json` and
+`.local/hf-bridge-progress-regression-20261004/summary.json`.
+
 ## Faster PNG capture with verified color and alpha (2026-10-04)
 
 The first attempt to export the full seven-folder Brag sequence exposed slow
@@ -90,8 +122,18 @@ hook deadlines in two AI suites; the unchanged suites passed all 78 tests in a
 serial rerun. Combined evidence, including both original runs:
 `.local/hf-fast-png-regression-verified-20261004.json`.
 
-The full editor MP4 export has been restarted with this capture adapter.
-Final video/audio parity remains pending until its output is inspected.
+The full editor MP4 export was last observed at 41% before failing
+on an artifact GET with HTTP 500. At the same time the development server
+reported `Unexpected end of JSON input` while rebuilding multiple routes.
+Adding and editing isolated test files under the app still triggered its
+watcher. The captured frame itself had already been stored. This run therefore
+does not establish full MP4 parity. Evidence:
+`.local/hf-brag-fast-png-export-failure-20261004.json` and
+`.local/hf-fast-png-3165-stderr.log`. The full export has now been restarted in
+the production standalone server, bound to loopback and using the same local
+account/project. It has no development watcher. Start metadata is saved in
+`.local/hf-brag-stable-export-start-20261004.json`; final video/audio comparison
+remains open.
 
 ## Bookmark overlay updates during playback (2026-10-04)
 
