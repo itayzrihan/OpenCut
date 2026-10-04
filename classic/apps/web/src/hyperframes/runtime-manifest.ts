@@ -55,6 +55,9 @@ function collectRuntimeLayers({
 	files: string[];
 	resources: string[];
 }): Pick<HyperframesRuntimeManifest, "layers" | "diagnostics"> {
+	const moveError = (window as unknown as { __opencutLayerMoveError?: string })
+		.__opencutLayerMoveError;
+	if (moveError) throw new Error(`HyperFrames layer move: ${moveError}`);
 	const payload = (
 		window as unknown as {
 			__clipManifest: {

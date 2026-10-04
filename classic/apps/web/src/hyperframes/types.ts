@@ -106,6 +106,7 @@ export interface HyperframesLayerSource {
 
 /** Canonical plan consumed by the pinned GSAP compiler adapter. */
 export interface HyperframesLayerMovePlan {
+	generated: boolean;
 	sourceFingerprint: string;
 	layerKey: string;
 	file: string;
@@ -117,6 +118,7 @@ export interface HyperframesLayerMovePlan {
 	localEndSeconds: number | null;
 	html: string;
 	scripts: Array<{
+		runtimeLibrary?: boolean;
 		key: string;
 		file: string;
 		content: string;

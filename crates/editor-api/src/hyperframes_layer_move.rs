@@ -8,6 +8,7 @@ use crate::{
 use html5gum::{DefaultEmitter, Token, Tokenizer};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -16,6 +17,8 @@ pub struct HyperframesMoveScript {
     pub key: String,
     pub file: String,
     pub content: String,
+    /// Exact inspected GSAP distribution, never inferred from a filename.
+    pub runtime_library: bool,
     /// Inline script body in the planned HTML; None denotes a linked JS file.
     pub start_byte: Option<usize>,
     pub end_byte: Option<usize>,
@@ -24,6 +27,8 @@ pub struct HyperframesMoveScript {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HyperframesLayerMovePlan {
+    /// No authored tag exists; the compiler emits a checked GSAP runtime edit.
+    pub generated: bool,
     pub source_fingerprint: String,
     pub layer_key: String,
     pub file: String,
@@ -55,13 +60,6 @@ pub fn plan_hyperframes_layer_move(
     start_seconds: f64,
 ) -> Result<HyperframesLayerMovePlan, ModelError> {
     let location = read_hyperframes_layer_source(source, manifest, layer_key)?;
-    if location.resolution != HyperframesSourceResolution::Located
-        || location.reported_occurrences != 1
-    {
-        return Err(invalid(
-            "this layer needs a unique authored source; edit its source file instead",
-        ));
-    }
     let layer = manifest
         .layers
         .iter()
@@ -97,6 +95,63 @@ pub fn plan_hyperframes_layer_move(
             return Err(invalid("the layer must stay within its parent time range"));
         }
         parent = ancestor.parent_key.as_deref();
+    }
+    if location.resolution == HyperframesSourceResolution::Unresolved
+        && layer.kind == HyperframesLayerKind::Element
+        && layer.parent_key.is_none()
+        && layer.file.as_deref() == Some(&source.entry_file)
+        && crate::hyperframes_layer_edits::hyperframes_layer_is_editable(layer)
+        && manifest
+            .layers
+            .iter()
+            .filter(|other| other.file == layer.file && other.element_id == layer.element_id)
+            .count()
+            == 1
+    {
+        let mut html = source.files[&source.entry_file].clone();
+        let mut emitter = DefaultEmitter::<usize>::new_with_span();
+        emitter.naively_switch_states(true);
+        let insertion = Tokenizer::new_with_emitter(html.as_str(), emitter)
+            .find_map(|token| match token.unwrap() {
+                Token::EndTag(tag) if tag.name.as_ref() == b"body" => Some(tag.span.start),
+                _ => None,
+            })
+            .unwrap_or(html.len());
+        // A new tail script runs after synchronous authored construction and
+        // before the player's DOMContentLoaded inventory. Its position cannot
+        // change an existing layer's DOM path.
+        const OPENING: &str = "<script data-opencut-generated-layer-move>";
+        html.insert_str(insertion, &format!("{OPENING}</script>"));
+        let scripts = source_scripts(source, &source.entry_file, &html)?;
+        if scripts
+            .last()
+            .is_none_or(|script| script.start_byte != Some(insertion + OPENING.len()))
+        {
+            return Err(invalid(
+                "generated layers require a final synchronous script slot",
+            ));
+        }
+        return Ok(HyperframesLayerMovePlan {
+            generated: true,
+            source_fingerprint: source.fingerprint(),
+            layer_key: layer_key.into(),
+            file: source.entry_file.clone(),
+            element_id: layer.element_id.clone().unwrap(),
+            start_seconds,
+            duration_seconds: layer.duration_seconds,
+            delta_seconds: start_seconds - layer.start_seconds,
+            local_start_seconds: start_seconds,
+            local_end_seconds: None,
+            html,
+            scripts,
+        });
+    }
+    if location.resolution != HyperframesSourceResolution::Located
+        || location.reported_occurrences != 1
+    {
+        return Err(invalid(
+            "this layer needs a unique authored source or a generated GSAP element",
+        ));
     }
     let file = location.file.unwrap();
     let element_id = location.element_id.unwrap();
@@ -226,6 +281,7 @@ pub fn plan_hyperframes_layer_move(
     html.replace_range(range.start_byte..range.end_byte, &opening);
     let scripts = source_scripts(source, &file, &html)?;
     Ok(HyperframesLayerMovePlan {
+        generated: false,
         source_fingerprint: source.fingerprint(),
         layer_key: layer_key.into(),
         file,
@@ -255,6 +311,11 @@ fn source_scripts(
     for token in Tokenizer::new_with_emitter(html, emitter) {
         match token.unwrap() {
             Token::StartTag(tag) if tag.name.as_ref() == b"script" => {
+                if tag.attributes.contains_key(b"async".as_slice())
+                    || tag.attributes.contains_key(b"defer".as_slice())
+                {
+                    return Err(invalid("asynchronous scripts require source editing"));
+                }
                 let script_type = tag
                     .attributes
                     .get(b"type".as_slice())
@@ -308,6 +369,7 @@ fn source_scripts(
                             key: path.clone(),
                             file: path,
                             content: content.clone(),
+                            runtime_library: is_gsap_library(content),
                             start_byte: None,
                             end_byte: None,
                         });
@@ -322,6 +384,7 @@ fn source_scripts(
                         key: format!("{file}#script:{start}"),
                         file: file.into(),
                         content: html[start..tag.span.start].into(),
+                        runtime_library: is_gsap_library(&html[start..tag.span.start]),
                         start_byte: Some(start),
                         end_byte: Some(tag.span.start),
                     });
@@ -335,6 +398,7 @@ fn source_scripts(
             key: format!("{file}#script:{start}"),
             file: file.into(),
             content: html[start..].into(),
+            runtime_library: is_gsap_library(&html[start..]),
             start_byte: Some(start),
             end_byte: Some(html.len()),
         });
@@ -343,6 +407,14 @@ fn source_scripts(
         return Err(invalid("too many animation scripts"));
     }
     Ok(scripts)
+}
+
+fn is_gsap_library(content: &str) -> bool {
+    // GSAP 3.14.2 distributed with the imported Brag projects. Additional
+    // versions need an inspected distribution hash before skipping its internal
+    // timers during generated-layer compiler checks.
+    format!("{:x}", Sha256::digest(content.as_bytes()))
+        == "fd6978c80858a3036c39b4e53b5a6f9385d759d43283e6b1de89237e5640d85f"
 }
 
 pub fn prepare_hyperframes_layer_move(

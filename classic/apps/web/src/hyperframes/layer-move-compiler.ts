@@ -5,6 +5,7 @@ import {
 	shiftPositionsInScript,
 } from "@hyperframes/core/gsap-writer-acorn";
 import type { HyperframesLayerMovePlan } from "./types";
+import { compileGeneratedHyperframesLayerMove } from "./generated-layer-move";
 
 type AstNode = {
 	type?: string;
@@ -30,6 +31,7 @@ export function compileHyperframesLayerMove({
 	plan: HyperframesLayerMovePlan;
 	document?: Document;
 }): Record<string, string> {
+	if (plan.generated) return compileGeneratedHyperframesLayerMove(plan);
 	const document =
 		parsedDocument ?? new DOMParser().parseFromString(plan.html, "text/html");
 	const roots: ParentNode[] = [document];

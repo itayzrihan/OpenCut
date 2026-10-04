@@ -116,6 +116,54 @@ fn source_planning_handles_script_eof_and_declines_unowned_clocks() {
     assert!(plan_hyperframes_layer_move(&svg, &manifest(&svg), "dom/1/0/0", 3.0).is_err());
 }
 
+#[test]
+fn generated_layer_plan_uses_a_tail_slot_and_rejects_ambiguous_or_async_sources() {
+    let mut source = source();
+    source.files.insert("index.html".into(), "<!doctype html><html><body><div data-composition-id=main data-width=320 data-height=180 data-duration=10></div><script src='motion.js'></script><!-- שלום --></body></html>".into());
+    source.files.insert(
+        "motion.js".into(),
+        "const tl=gsap.timeline({paused:true});/* generated DOM */".into(),
+    );
+    let manifest = manifest(&source);
+    let plan = plan_hyperframes_layer_move(&source, &manifest, "dom/1/0/0", 3.0).unwrap();
+    assert!(plan.generated);
+    assert_eq!(plan.delta_seconds, 2.0);
+    assert_eq!(plan.scripts.len(), 2);
+    assert_eq!(plan.scripts[0].content, source.files["motion.js"]);
+    assert!(!plan.scripts[0].runtime_library);
+    assert!(plan.scripts[1].content.is_empty());
+    assert!(
+        plan.html
+            .contains("<!-- שלום --><script data-opencut-generated-layer-move></script></body>")
+    );
+    let mut scripts = compiled(&plan);
+    scripts.insert(
+        plan.scripts[1].key.clone(),
+        "/* checked runtime move */".into(),
+    );
+    let next =
+        prepare_hyperframes_layer_move(&source, &manifest, "dom/1/0/0", 3.0, &scripts).unwrap();
+    assert_eq!(next.files["motion.js"], source.files["motion.js"]);
+    assert!(next.files["index.html"].contains("/* checked runtime move */"));
+    let mut duplicate = manifest.clone();
+    duplicate.layers[1].element_id = duplicate.layers[0].element_id.clone();
+    assert!(plan_hyperframes_layer_move(&source, &duplicate, "dom/1/0/0", 3.0).is_err());
+    for attribute in ["async", "defer", "type=module"] {
+        let mut unsupported = source.clone();
+        unsupported
+            .files
+            .get_mut("index.html")
+            .unwrap()
+            .replace_range(
+                0..0,
+                &format!("<script {attribute} src='motion.js'></script>"),
+            );
+        let mut current = manifest.clone();
+        current.source_fingerprint = unsupported.fingerprint();
+        assert!(plan_hyperframes_layer_move(&unsupported, &current, "dom/1/0/0", 3.0).is_err());
+    }
+}
+
 #[tokio::test]
 async fn move_is_preflighted_atomic_detached_undoable_dry_run_and_idempotent() {
     let runtime = OpenCutRuntime::default();

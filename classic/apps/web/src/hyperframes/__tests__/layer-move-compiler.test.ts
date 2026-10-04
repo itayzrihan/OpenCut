@@ -8,6 +8,7 @@ const html =
 	'<html><body><div id="paint" data-start="3" data-duration="2"><span class="letter">שלום</span></div><div id="other" data-start="0" data-duration="10"></div></body></html>';
 function plan(script: string): HyperframesLayerMovePlan {
 	return {
+		generated: false,
 		sourceFingerprint: "fixture",
 		layerKey: "dom/1/0",
 		file: "index.html",
@@ -80,4 +81,39 @@ test("does not execute arbitrary source while reading or compiling it", () => {
 	const script =
 		"throw new Error('must never execute'); const tl=gsap.timeline();tl.to('#paint',{x:1,duration:1},1);";
 	expect(compile(script)).toContain("duration:1},3)");
+});
+
+test("generated moves preserve authored helpers and check custom clocks across script files", () => {
+	const request = plan(
+		"const tl=gsap.timeline({paused:true});for(const node of nodes)tl.to(node,{x:50},1);window.__seekRender=t=>tl.pause().seek(t,false);",
+	);
+	request.generated = true;
+	request.scripts.push({
+		key: "tail",
+		file: "index.html",
+		startByte: 100,
+		endByte: 100,
+		content: "",
+	});
+	const result = compileHyperframesLayerMove({ plan: request });
+	expect(result.motion).toBe(request.scripts[0].content);
+	expect(result.tail).toContain('"from":1,"to":3');
+	for (const content of [
+		"window.__seekRender=t=>{tl.pause().seek(t,false);document.body.style.opacity=t;};",
+		"window.__seekRender=customSeek;",
+		"setTimeout(()=>document.body.style.opacity=0,10);",
+		"window.addEventListener('hf-seek',()=>{});",
+		"gsap.ticker.add(()=>{});",
+		"window[name]=customSeek;",
+	]) {
+		const extra = structuredClone(request);
+		extra.scripts.splice(1, 0, {
+			key: "extra",
+			file: "extra.js",
+			startByte: null,
+			endByte: null,
+			content,
+		});
+		expect(() => compileHyperframesLayerMove({ plan: extra })).toThrow();
+	}
 });

@@ -18,14 +18,64 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. A restricted source-level leaf move now shifts HTML/GSAP timing, with GSAP/CSS pixel checks and audio metadata checks. None of the 172 saved Brag layers passes the current 100 ms move audit; group clocks, generated animation, trim/drag and the full-editor UI checks remain open |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. Source moves support authored leaves and generated GSAP elements. Six Brag Advanced scenes now pass the 100 ms move audit; generated scene frames and history are verified. Other group clocks, custom timing, trim/drag and full-editor UI checks remain open |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay, a 14-second mixed Brag/native MP4 and the full seven-folder sequence exported; 30 sampled full-sequence frames preserve the references within compressed-video error. Full export exposed a 6 ms mastering delay; compensation now passes browser sample tests and a short two-composition MP4 with zero measured offset. A new full-sequence export with that audio correction remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
 
-## Moving a uniquely authored leaf (2026-10-05)
+## Moving generated Brag scenes (2026-10-05)
+
+The existing **Start in source (s)** action now handles the generated scenes in
+both imported Brag Advanced projects. The generator's loops, helper functions,
+DOM creation and authored files remain intact; a final source script moves the
+owned GSAP tweens and the selected element's timing attributes. Zero-time pose
+initialization stays at zero. The imported source snapshot contains this script,
+so preview, capture, persistence and history use the same source. No independent
+editor state or second timeline is introduced.
+
+This extends the same three canonical layer-move capabilities. Rust validates
+identity, bounds, the script slot and the resulting manifest. The host compiler
+checks custom seek hooks and asynchronous clocks without executing author code.
+The isolated renderer then validates actual DOM/tween ownership before moving
+anything. It rejects shared targets, callbacks, computed tween values, nested
+timelines, off-timeline animation and nested media or composition clocks. Source
+scripts with `async`, `defer` or modules require source editing. Vendor timer
+internals are exempt only for the inspected GSAP 3.14.2 distribution identified
+by its complete SHA-256 digest. Other GSAP distributions need separate review.
+
+The supported generated target is a uniquely identified top-level element with
+untimed descendants and one registered GSAP timeline. A custom seek hook may
+only delegate to that timeline. This does not add general group, canvas, media,
+callback or arbitrary JavaScript retiming. The authored-leaf path remains
+available and continues using the pinned HyperFrames source writer.
+
+The repeated seven-folder audit prepares **6 of 172** layer moves, up from zero
+in the earlier authored-only audit. The same one-candidate method tries 100 ms
+later when it fits, otherwise 100 ms earlier; it is not an exhaustive search.
+The saved project remains byte-identical. Report:
+`.local/hf-generated-layer-move-brag-audit-20261005.json`.
+
+The real-source probe covers opening, claim and proof in `hyperframes-13` and
+`hyperframes-19`. It compares shifted frames and unchanged scenes, including
+reverse seeks, and commits through canonical history while checking another
+occurrence remains unchanged. All 34 compared frames are pixel-identical.
+Proof was also moved 500 ms earlier in both
+projects. Reports and PNGs are under `.local/hf-generated-retime-*`; reproduction
+uses `.local/hf-generated-retime-probe-20261005.ts` with `PROBE_CANONICAL=1`.
+The original Brag directory is untouched. These checks use isolated render
+hosts; the full-editor UI review and edited Brag MP4 export remain pending.
+
+Validation: 80 Editor API tests, 13 MCP tests and 22 web tests pass. The web
+coverage includes generated helpers, CSS animation, a second move, reverse
+seeks, other occurrences, Undo/Redo and rejection of mixed targets, callbacks,
+computed properties and off-timeline animation. Product TypeScript, changed-file
+ESLint, Clippy with warnings denied, formatting and the browser compiler bundle
+pass. The web report is `.local/classic-web-tests/1791150150056/summary.json`.
+This remains **Classic-only UI, bridged to the canonical Rust runtime**.
+
+## Moving a uniquely authored leaf — initial implementation (2026-10-05)
 
 The expanded Classic layer inspector now has **Start in source (s)**. A supported
 move changes the imported HTML timing and its owned GSAP tween positions, then
