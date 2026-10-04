@@ -383,16 +383,21 @@ function TimelineContent() {
 
 	const savedViewState = editor.project.getTimelineViewState();
 
-	const { zoomLevel, setZoomLevel, handleWheel, saveScrollPosition } =
-		useTimelineZoom({
-			containerRef: timelineRef,
-			minZoom: minZoomLevel,
-			initialZoom: savedViewState?.zoomLevel,
-			initialScrollLeft: savedViewState?.scrollLeft,
-			initialPlayheadTime: savedViewState?.playheadTime,
-			tracksScrollRef,
-			rulerScrollRef,
-		});
+	const {
+		zoomLevel,
+		setZoomLevel,
+		fitToContent,
+		handleWheel,
+		saveScrollPosition,
+	} = useTimelineZoom({
+		containerRef: timelineRef,
+		minZoom: minZoomLevel,
+		initialZoom: savedViewState?.zoomLevel,
+		initialScrollLeft: savedViewState?.scrollLeft,
+		initialPlayheadTime: savedViewState?.playheadTime,
+		tracksScrollRef,
+		rulerScrollRef,
+	});
 	const { isResizing, handleResizeStart } = useTimelineResize({
 		zoomLevel,
 		onSnapPointChange: handleSnapPointChange,
@@ -859,6 +864,9 @@ function TimelineContent() {
 				zoomLevel={zoomLevel}
 				minZoom={minZoomLevel}
 				setZoomLevel={({ zoom }) => setZoomLevel(zoom)}
+				onFitTimeline={() =>
+					fitToContent({ duration: timelineDisplayDuration })
+				}
 			/>
 
 			<div className="relative flex flex-1 overflow-hidden" ref={timelineRef}>

@@ -16,13 +16,13 @@ is implemented; the product integration is not complete.
 | Dedicated branch | Git branch at the canonical repository | Created |
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit and three-package capture benchmarks recorded; full interface and live playback comparison pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
-| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
+| Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources; crash recovery for interrupted staging remains pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; isolated live preview supports native layers above and below one eligible DOM composition, with two real Brag packages matching sampled full captures; multiple live surfaces, video/canvas and speed pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
-| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; actual six-second Classic playback measured at 29.2 completed preview frames/s for one live compound versus 9.2–10 with capture; a second compound still reduces throughput to 9.8; multiple live surfaces and large-timeline coverage pending |
+| Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
 
 ## Inspected evidence (2026-10-03)
@@ -96,7 +96,7 @@ reference project or its version pin.
 
 **Canonical source contract, Classic command/view adoption, folder import UI,
 isolated runtime, compositor frames and timeline audio integration are implemented.
-Fast live preview and full media/export parity remain pending.** No alternate timeline was added. The lazy browser binding runs the same
+Multiple live previews are implemented; full media/export parity remains pending.** No alternate timeline was added. The lazy browser binding runs the same
 `OpenCutRuntime` and owns adopted Classic history and validated document changes.
 Projects without an adopted session retain the existing Classic path.
 
@@ -1037,12 +1037,67 @@ lease release, capture browser rotation, and uninterrupted GPU copy order.
 Scoped TypeScript and changed-file ESLint passed. No editor state, capabilities,
 source packages or saved production projects were changed by this adapter work.
 
+## Complete Brag folder import and timeline navigation (2026-10-04)
+
+The seven remaining references were selected with the actual browser folder
+picker in an isolated Classic project. The first was imported into an empty
+timeline; the following six used **After existing clips**. Together they form a
+179.9667-second sequence. All seven reopened and rendered at a sample two seconds
+into their own source; the separately verified `advanced-audio-test-final` brings
+actual Brag UI import coverage to all eight references.
+
+| Brag folder | Start (s) | Duration (s) | Source files | Copied resources | Runtime layers |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `brag-vertical/composition` | 0 | 20 | 9 | 27 | 18 |
+| `brag-reference-recreation-v2/composition` | 20 | 15.5333 | 10 | 25 | 27 |
+| `brag-reference-recreation/composition` | 35.5333 | 15.5333 | 8 | 42 | 17 |
+| `brag-output/composition` | 51.0667 | 20 | 11 | 36 | 20 |
+| `brag-reconstruction-2026-10-03/advanced-audio-test-v2` | 71.0667 | 6 | 9 | 2 | 4 |
+| `brag-reconstruction-2026-10-03/composition` | 77.0667 | 96.9 | 16 | 131 | 82 |
+| `brag-reconstruction-2026-10-03/advanced-audio-test` | 173.9667 | 6 | 9 | 2 | 4 |
+
+The persisted 72 source files and all 265 resources match the reference bytes by
+SHA-256, with no remaining upload tokens. Fonts, narration, images and binary
+resources resolve from project storage after reload. The importer preserves
+package members, including generated thumbnails and preview files. It does not
+filter those outputs yet; they can clutter the Media panel. Generic folder names
+also produce several clips called `composition`, which needs a naming control.
+No reference file was edited. This check establishes import, persistence and
+sampled preview coverage, not full export or audio playback parity for all eight.
+
+The UI exercise exposed two navigation issues, now addressed:
+
+- **Fit timeline to view** uses the existing zoom controller to display the full
+  duration in 90% of the current track viewport. It starts at zero, keeps the
+  playhead time, and persists through the existing timeline view-state setter.
+  It includes displayed caption/AI timing when that extends beyond ordinary
+  clips. It also resets a manually scrolled view when its zoom is already fitted.
+  Zoom buttons now have explicit accessible names. This is a Classic viewport
+  improvement; no document content model or second timeline was introduced.
+- Scroll measurement previously retained a canceled animation-frame ID across
+  React Strict Mode's effect cleanup/setup. Updates then stayed disabled, so the
+  ruler and virtualized viewport could remain at zero width. Each observer
+  setup now owns and cleans up its own scheduled frame. Browser verification
+  showed labels through the full three-minute sequence and working scrolling.
+
+Evidence: project `c2402764-34c5-44fc-a700-c57dfc1a3479` in the isolated integration
+account, `.local/hf-brag-folder-audit.json`, `.local/hf-brag-reopen-1.png` through
+`-7.png`, and `.local/hf-brag-timeline-fit-final.png`. The audit script rereads saved
+project state and hashes imported source/resources against the original folders.
+Controller tests cover fitted geometry, unchanged playhead, scroll reset,
+viewport resizing, empty/short timelines and limits. The observer lifecycle test
+covers cleanup/setup, coalesced scroll events, resize and listener removal.
+Nine focused timeline tests passed (31 assertions), scoped TypeScript passed,
+and changed-file ESLint reported no errors, with one pre-existing event-target
+assertion warning in the zoom controller. Browser checks also confirmed that
+the fitted view survives reload and the saved playhead near 176 seconds renders
+the final generated composition once resource preparation finishes.
+
 ## Next implementation sequence
 
-1. The GPU startup/recovery fix above covers the observed black preview. Exercise
-   the folder importer on the remaining seven Brag references, including
-   generated duration and durable resources. Verify downloaded exports and add
-   recovery for a crash during staging.
+1. All eight Brag UI imports and durable resources are verified. Verify downloaded
+   exports across the remaining references and add recovery for a crash during
+   staging. Improve imported clip naming and generated-resource visibility.
 2. The synthetic folder flow now covers import, Undo/Redo and reopen. Source sharing, compact persistence, history adoption,
    media callbacks and canonical view projection are implemented and covered by
    real-WASM tests. The native MCP process still reaches the live editor through
@@ -1167,8 +1222,7 @@ directories, dependencies and symlinks, and reports binary references as unbound
   the audio timing code. The real WASM was rebuilt and all 37 required exports,
   including this one, passed `verify-wasm-exports.mjs`. This is an outstanding
   test-harness issue, not evidence of successful full regression coverage.
-- Full playback/performance and complete Brag folder-import coverage remain
-  unverified. The folder UI proof covers a synthetic GSAP project and Brag's
-  `advanced-audio-test-final` in the isolated test account; seven Brag UI imports
-  and broader Brag export parity remain outstanding. The later audio connection
-  section records the completed mixed Brag/native MP4 check.
+- All eight Brag folder imports are now verified through the UI, persistence and
+  sampled previews. Full playback/performance and broader Brag export parity
+  remain outstanding. The audio connection section records the completed mixed
+  Brag/native MP4 check; multiple-live export equality is recorded above.

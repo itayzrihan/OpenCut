@@ -90,10 +90,12 @@ export function TimelineToolbar({
 	zoomLevel,
 	minZoom,
 	setZoomLevel,
+	onFitTimeline,
 }: {
 	zoomLevel: number;
 	minZoom: number;
 	setZoomLevel: ({ zoom }: { zoom: number }) => void;
+	onFitTimeline: () => void;
 }) {
 	const handleZoom = ({ direction }: { direction: "in" | "out" }) => {
 		const newZoomLevel =
@@ -115,6 +117,7 @@ export function TimelineToolbar({
 					minZoom={minZoom}
 					onZoomChange={(zoom) => setZoomLevel({ zoom })}
 					onZoom={handleZoom}
+					onFitTimeline={onFitTimeline}
 				/>
 			</div>
 		</ScrollArea>
@@ -587,11 +590,13 @@ function ToolbarRightSection({
 	minZoom,
 	onZoomChange,
 	onZoom,
+	onFitTimeline,
 }: {
 	zoomLevel: number;
 	minZoom: number;
 	onZoomChange: (zoom: number) => void;
 	onZoom: (options: { direction: "in" | "out" }) => void;
+	onFitTimeline: () => void;
 }) {
 	const snappingEnabled = useTimelineStore((s) => s.snappingEnabled);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
@@ -620,8 +625,18 @@ function ToolbarRightSection({
 
 			<div className="flex items-center gap-1">
 				<Button
+					variant="ghost"
+					size="sm"
+					aria-label="Fit timeline to view"
+					title="Show the entire timeline"
+					onClick={onFitTimeline}
+				>
+					Fit
+				</Button>
+				<Button
 					variant="text"
 					size="icon"
+					aria-label="Zoom out timeline"
 					onClick={() => onZoom({ direction: "out" })}
 				>
 					<HugeiconsIcon icon={SearchMinusIcon} />
@@ -639,6 +654,7 @@ function ToolbarRightSection({
 				<Button
 					variant="text"
 					size="icon"
+					aria-label="Zoom in timeline"
 					onClick={() => onZoom({ direction: "in" })}
 				>
 					<HugeiconsIcon icon={SearchAddIcon} />
