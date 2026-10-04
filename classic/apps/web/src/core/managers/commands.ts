@@ -693,6 +693,65 @@ export class CommandManager {
 		});
 	}
 
+	async setHyperframesVariables(input: {
+		projectId: string;
+		sceneId: string;
+		elementId: string;
+		source: import("@/hyperframes/types").HyperframesSource;
+		values: Record<string, unknown>;
+		signal: AbortSignal;
+	}): Promise<void> {
+		const { projectId, sceneId, elementId, source, values, signal } = input;
+		const accountId = window.__opencutAccountId;
+		const checkTarget = () => {
+			signal.throwIfAborted();
+			assertBatchEditable(projectId);
+			if (
+				window.__opencutAccountId !== accountId ||
+				this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+				this.editor.scenes.getActiveSceneOrNull()?.id !== sceneId
+			)
+				throw new Error("The target project, account or scene changed");
+		};
+		checkTarget();
+		await this.enableCanonical();
+		checkTarget();
+		if (!this.canonical || this.canonical.projectId !== projectId)
+			throw new Error("The canonical project was closed");
+		const expectedRevision = this.canonical.status().revision;
+		const prepared = this.canonical.prepareHyperframesVariables({
+			source,
+			values,
+		});
+		const { HyperframesRenderClient } =
+			await import("@/hyperframes/render-client");
+		checkTarget();
+		const client = new HyperframesRenderClient(projectId);
+		const abort = () => client.dispose();
+		signal.addEventListener("abort", abort, { once: true });
+		try {
+			const ready = await client.prepareSource(prepared);
+			checkTarget();
+			this.executeTransaction({
+				execute: () => {
+					if (!this.canonical || this.canonical.projectId !== projectId)
+						throw new Error("The canonical project was closed");
+					this.canonical.setHyperframesVariables({
+						sceneId,
+						elementId,
+						values,
+						manifest: ready.runtimeManifest,
+						expectedRevision,
+					});
+					this.publishCanonical();
+				},
+			});
+		} finally {
+			signal.removeEventListener("abort", abort);
+			client.dispose();
+		}
+	}
+
 	async setHyperframesManifest(
 		input: Parameters<CanonicalClassicSession["setHyperframesManifest"]>[0] & {
 			projectId: string;

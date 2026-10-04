@@ -6,6 +6,7 @@ import type { HyperframesInspection, HyperframesSource } from "./types";
 import { hyperframesLiveBridgeScript } from "./live-document";
 import { hyperframesLayerEditsScript } from "./layer-edits";
 import type { HyperframesLayerRenderEdit } from "./types";
+import { hyperframesVariablesScript } from "./variables-document";
 
 /** Version is pinned with the player in package.json and bun.lock. */
 export const HYPERFRAMES_RUNTIME_VERSION = "0.8.115";
@@ -39,6 +40,9 @@ export function prepareHyperframesPreview({
 	const html = injectScriptsIntoHtml(
 		source.files[source.entryFile],
 		[
+			...(source.variables && Object.keys(source.variables).length
+				? [hyperframesVariablesScript(source.variables)]
+				: []),
 			...(layerPlan?.length ? [hyperframesLayerEditsScript(layerPlan)] : []),
 			...(liveDurationSeconds === undefined
 				? []

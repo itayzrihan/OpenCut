@@ -3,6 +3,7 @@ use crate::{
     HyperframesComposition, HyperframesInspection, HyperframesPackageFile, HyperframesPackagePlan,
     HyperframesSource, inspect_hyperframes, plan_hyperframes_package,
 };
+use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -15,6 +16,31 @@ struct PackagePlanInput {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct InspectInput {
     source: HyperframesSource,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrepareVariablesInput {
+    source: HyperframesSource,
+    values: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct ReadVariablesOutput {
+    declarations: Vec<crate::HyperframesVariable>,
+    values: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SetVariablesInput {
+    project_id: String,
+    scene_id: String,
+    element_id: String,
+    values: BTreeMap<String, Value>,
+    manifest: crate::HyperframesRuntimeManifest,
+    expected_revision: u64,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -133,6 +159,99 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<InspectInput, ReadVariablesOutput, _, _>(
+        registry,
+        "hyperframes.variables.read",
+        "Read HyperFrames variable controls",
+        "Reads authored variable declarations from package HTML without executing scripts. Values are global render overrides within a composition occurrence.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "variables"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            input.source.validate().map_err(model_error)?;
+            let declarations = crate::hyperframes_variables(&input.source).map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(ReadVariablesOutput {
+                declarations,
+                values: input.source.variables,
+            }))
+        },
+    )?;
+    register::<PrepareVariablesInput, HyperframesSource, _, _>(
+        registry,
+        "hyperframes.variables.prepare",
+        "Prepare HyperFrames variable values",
+        "Validates declared variable types, bounds and enum choices and returns a derived source for runtime preflight. Original file bytes and resources remain unchanged. Does not execute scripts or access the network.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "variables", "render"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            input.source.validate().map_err(model_error)?;
+            let source = input
+                .source
+                .with_variables(input.values)
+                .map_err(model_error)?;
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(source))
+        },
+    )?;
+    let variables_state = state.clone();
+    let variables_events = events.clone();
+    register::<SetVariablesInput, MutationOutput, _, _>(
+        registry,
+        "hyperframes.variables.set",
+        "Change HyperFrames composition variables",
+        "Commits preflighted render variables to one Classic timeline occurrence, preserving other occurrences and file bytes. Requires the new runtime manifest, explicit project and revision. Preserves clip placement and rejects a shorter source that no longer covers the clip. Supports undo, dry run, cancellation and idempotency.",
+        "hyperframes",
+        AccessLevel::Write,
+        false,
+        false,
+        &["hyperframes", "variables", "classic", "timeline"],
+        move |context, input| {
+            let state = variables_state.clone();
+            let events = variables_events.clone();
+            async move {
+                check_cancelled(&context)?;
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Change HyperFrames variables",
+                    Some(input.expected_revision),
+                    |document| {
+                        let project = project_mut(document)?;
+                        if project.id != input.project_id {
+                            return Err(CapabilityError::Conflict(
+                                "HyperFrames target project is not active".into(),
+                            ));
+                        }
+                        let classic = project.classic.as_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "Variable edits currently require a Classic project".into(),
+                            )
+                        })?;
+                        classic
+                            .set_hyperframes_variables(
+                                &input.scene_id,
+                                &input.element_id,
+                                input.values,
+                                input.manifest,
+                            )
+                            .map_err(model_error)?;
+                        check_cancelled(&context)?;
+                        Ok(vec![input.element_id])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output))
+            }
+        },
+    )?;
     register::<PrepareLayerEditsInput, PrepareLayerEditsOutput, _, _>(
         registry,
         "hyperframes.layers.render.prepare",

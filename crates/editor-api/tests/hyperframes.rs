@@ -26,6 +26,7 @@ fn source() -> HyperframesSource {
             ("hyperframes.json".into(), r#"{"width":720,"height":1280,"fps":30}"#.into()),
         ]),
         resource_asset_ids: BTreeMap::new(),
+        variables: BTreeMap::new(),
     }
 }
 

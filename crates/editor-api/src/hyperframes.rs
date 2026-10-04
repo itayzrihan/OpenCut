@@ -30,6 +30,9 @@ pub struct HyperframesSource {
     pub files: BTreeMap<String, String>,
     #[serde(default)]
     pub resource_asset_ids: BTreeMap<String, String>,
+    /// Explicit render-time values; author files remain byte-identical.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub variables: BTreeMap<String, serde_json::Value>,
 }
 
 impl HyperframesSource {
@@ -51,6 +54,9 @@ impl HyperframesSource {
             if id.trim().is_empty() || self.files.contains_key(path) {
                 return invalid("HyperFrames resource must have an asset ID and a unique path");
             }
+        }
+        if !self.variables.is_empty() {
+            crate::hyperframes_variables::validate_variables(self)?;
         }
         Ok(())
     }

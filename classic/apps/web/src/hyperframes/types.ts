@@ -3,6 +3,24 @@ export interface HyperframesSource {
 	entryFile: string;
 	files: Record<string, string>;
 	resourceAssetIds: Record<string, string>;
+	variables?: Record<string, unknown>;
+}
+
+export interface HyperframesVariable {
+	id: string;
+	file: string;
+	declaration: {
+		type: "string" | "number" | "boolean" | "color" | "enum" | "font" | "image";
+		label?: string;
+		description?: string;
+		default?: unknown;
+		placeholder?: string;
+		maxLength?: number;
+		min?: number;
+		max?: number;
+		step?: number;
+		options?: Array<{ value: string; label?: string }>;
+	};
 }
 
 export interface HyperframesComposition {

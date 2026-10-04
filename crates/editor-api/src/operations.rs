@@ -191,6 +191,9 @@ where
             | "hyperframes.layers.timeline.read"
             | "hyperframes.layer.opacity.set"
             | "hyperframes.layers.render.prepare"
+            | "hyperframes.variables.read"
+            | "hyperframes.variables.prepare"
+            | "hyperframes.variables.set"
     );
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);

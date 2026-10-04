@@ -18,12 +18,77 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources; crash recovery for interrupted staging remains pending |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; child timing/source/variable edits remain pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; per-occurrence visual layer opacity/hide/reset now works through the canonical registry, with saved history and live/capture parity; declared text/style variables now edit one occurrence after runtime preflight; child timing and arbitrary source edits remain pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
 | Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | Pending |
+
+## Declared composition variables (2026-10-04)
+
+The existing Graphic inspector now shows declared HyperFrames variables for the
+selected clip: text, colors, numbers, booleans, enum choices, images and fonts.
+Apply checks the changed animation before committing; Reset restores authored
+values. Other occurrences stay independent. Values with the same name apply
+throughout the selected compound, including repeated nested compositions.
+Individual nested-host variable overrides remain a separate future capability.
+
+`HyperframesSource.variables` stores explicit values alongside unchanged source
+files/resources. Empty values are omitted, so old source fingerprints and saved
+archives retain their identity. Rust reads declarations from HTML, enforces
+matching types, numeric bounds, string lengths, enum choices, a 256-value limit
+and a 256 KiB payload limit. One value must satisfy all matching declarations.
+Malformed optional display metadata is normalized before reaching the UI.
+
+The canonical capabilities are `hyperframes.variables.read`,
+`hyperframes.variables.prepare`, and `hyperframes.variables.set`. The write
+requires explicit project/scene/element/revision and a freshly observed manifest
+for the derived source. The UI holds the revision across asynchronous preflight,
+checks account/project/scene scope again, and offers cancellation. Shared source
+assets fork for the edited occurrence; a dedicated asset can update in place.
+Existing timeline placement and visible duration stay intact. A new source that
+cannot cover the clip is rejected. Opacity overrides are rebound only when all
+layer identities still match; a structural change requires resetting those
+opacity overrides first. This is **Classic-only**, through OpenCutRuntime.
+
+The render adapter installs values before authored scripts run. In pinned
+HyperFrames 0.8.115, top-level `__hfVariables` alone does not reach nested scripts'
+scoped `getVariables()`. OpenCut also applies explicit values when the runtime
+populates `__hfVariablesByComp`, preserving its host defaults beneath those
+values. Both live and capture use the same adapter. This scope adapter must be
+retested when upgrading HyperFrames. Source identity includes variable values,
+so frame, live-session and audio caches distinguish the variants.
+
+Verification:
+
+- Two new Rust registry tests cover validation, legacy fingerprints, unchanged
+  file bytes, independent repeated clips, preflight fingerprint mismatch, dry
+  run, retry idempotency, cancellation, locks, stale revisions, shortened source,
+  changed layer identity, opacity preservation and undo/redo. Eight import and
+  two opacity regression tests also pass.
+- A real Chrome/WASM test verifies root script initialization, declarative text,
+  CSS color, numeric size and enum layout. Two repeated nested instances receive
+  the same explicit title. A title containing closing script tags remains text.
+  Live/capture RGBA frames match at `0.5, 2, 0.5, 0.5` seconds, including capture
+  reopen after live promotion. Persisted history restores the values and opacity.
+- UI project `d42d8daf-3bfd-4807-8c26-b4f1aae5e27a` contains two copies plus native
+  text and an image. Changing the left title to `Edited in OpenCut` and accent
+  to `#66e3a4` leaves the right title/color original. Reload retains both edits;
+  persisted Undo/Redo changes the edited accent back and forward. Cancel during
+  preflight leaves the canonical values unchanged; reload restores the original
+  size of 60. Reset restores the authored title; Undo restores the edited one.
+  Both clips retain byte-identical original HTML. UI evidence:
+  `.local/hf-variables-ui.png`.
+- UI export is H.264, 640x360, 30 fps, exactly four seconds and 64,150 bytes.
+  Its decoded two-second frame visibly preserves both independent appearances
+  and native layers. This fixture has no active audio. Evidence:
+  `.local/hf-variables-export.mp4`, `.local/hf-variables-export-frame.png`.
+- Nine cache/client tests (256 assertions), five capture/session tests (25
+  assertions; three optional browser tests skipped), scoped TypeScript,
+  changed-file ESLint, Editor API Clippy, the release WASM build and binary
+  export checks passed. Full editor regression and broader Brag coverage remain
+  pending; this increment does not complete the integration.
 
 ## Per-occurrence visual layer controls (2026-10-04)
 

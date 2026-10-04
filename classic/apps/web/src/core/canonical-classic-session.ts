@@ -213,6 +213,26 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	prepareHyperframesVariables(input: {
+		source: HyperframesSource;
+		values: Record<string, unknown>;
+	}): HyperframesSource {
+		return this.call({ capability: "hyperframes.variables.prepare", input });
+	}
+
+	setHyperframesVariables(input: {
+		sceneId: string;
+		elementId: string;
+		values: Record<string, unknown>;
+		manifest: HyperframesRuntimeManifest;
+		expectedRevision: number;
+	}): void {
+		this.call({
+			capability: "hyperframes.variables.set",
+			input: { ...input, projectId: this.projectId },
+		});
+	}
+
 	setHyperframesManifest(input: {
 		assetId: string;
 		manifest: HyperframesRuntimeManifest;

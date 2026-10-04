@@ -29,6 +29,7 @@ import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/utils/ui";
 import type { MediaTime } from "@/wasm";
 import { HyperframesLayersSection } from "@/hyperframes/layers-section";
+import { HyperframesVariablesSection } from "@/hyperframes/variables-section";
 
 registerDefaultGraphics();
 
@@ -63,6 +64,14 @@ export function GraphicTab({
 
 	return (
 		<div className="flex flex-col">
+			{element.definitionId === "hyperframes" &&
+				typeof element.params.hyperframesAssetId === "string" && (
+					<HyperframesVariablesSection
+						key={`variables:${element.id}`}
+						assetId={element.params.hyperframesAssetId}
+						elementId={element.id}
+					/>
+				)}
 			{element.definitionId === "hyperframes" &&
 				typeof element.params.hyperframesAssetId === "string" && (
 					<HyperframesLayersSection

@@ -62,6 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         entry_file: "index.html".into(),
         files,
         resource_asset_ids: BTreeMap::new(),
+        variables: BTreeMap::new(),
     };
     println!(
         "{}",
