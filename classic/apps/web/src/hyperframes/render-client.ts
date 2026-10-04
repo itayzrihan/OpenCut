@@ -3,8 +3,11 @@ import type { HyperframesComposition, HyperframesSource } from "./types";
 import type { HyperframesRenderSession } from "./render-host";
 import type { HyperframesFrameArtifact } from "./capture-session";
 
+const MAX_FRAME_BYTES = 64 * 1024 * 1024;
+const MAX_FRAMES = 24;
+
 /** Derived rendering cache scoped to one active account/project. Original
- * source stays in the canonical document; bitmaps live only for a draw call.
+ * source stays in the canonical document; decoded frames have a bounded LRU.
  */
 export class HyperframesRenderClient {
 	private readonly pending = new AbortController();
@@ -19,6 +22,8 @@ export class HyperframesRenderClient {
 		HyperframesSource,
 		Promise<string>
 	>();
+	private readonly frames = new Map<string, ImageBitmap>();
+	private frameBytes = 0;
 	private readonly timer: ReturnType<typeof setInterval>;
 	private closed = false;
 	private readonly accountId: string | null;
@@ -84,6 +89,14 @@ export class HyperframesRenderClient {
 	}): Promise<void> {
 		this.pending.signal.throwIfAborted();
 		const key = await this.sourceKey(composition.source);
+		const frameKey = `${key}:${timeSeconds}`;
+		const cached = this.frames.get(frameKey);
+		if (cached) {
+			this.drawBitmap({ bitmap: cached, target });
+			this.frames.delete(frameKey);
+			this.frames.set(frameKey, cached);
+			return;
+		}
 		const session = await this.getSession({ key, source: composition.source });
 		let artifact: HyperframesFrameArtifact;
 		try {
@@ -110,15 +123,42 @@ export class HyperframesRenderClient {
 		});
 		if (!response.ok) throw await responseError(response);
 		const bitmap = await createImageBitmap(await response.blob());
+		let retained = false;
 		try {
-			this.pending.signal.throwIfAborted();
-			const context = target.getContext("2d");
-			if (!context) throw new Error("HyperFrames frame target is unavailable");
-			context.clearRect(0, 0, target.width, target.height);
-			context.drawImage(bitmap, 0, 0, target.width, target.height);
+			this.drawBitmap({ bitmap, target });
+			const bytes = bitmap.width * bitmap.height * 4;
+			if (bytes > 0 && bytes <= MAX_FRAME_BYTES) {
+				while (
+					this.frames.size >= MAX_FRAMES ||
+					this.frameBytes + bytes > MAX_FRAME_BYTES
+				) {
+					const oldest = this.frames.entries().next().value;
+					if (!oldest) break;
+					this.frames.delete(oldest[0]);
+					this.frameBytes -= oldest[1].width * oldest[1].height * 4;
+					oldest[1].close();
+				}
+				this.frames.set(frameKey, bitmap);
+				this.frameBytes += bytes;
+				retained = true;
+			}
 		} finally {
-			bitmap.close();
+			if (!retained) bitmap.close();
 		}
+	}
+
+	private drawBitmap({
+		bitmap,
+		target,
+	}: {
+		bitmap: ImageBitmap;
+		target: OffscreenCanvas;
+	}): void {
+		this.pending.signal.throwIfAborted();
+		const context = target.getContext("2d");
+		if (!context) throw new Error("HyperFrames frame target is unavailable");
+		context.clearRect(0, 0, target.width, target.height);
+		context.drawImage(bitmap, 0, 0, target.width, target.height);
 	}
 
 	dispose(): void {
@@ -132,6 +172,9 @@ export class HyperframesRenderClient {
 				() => {},
 			);
 		this.sessions.clear();
+		for (const bitmap of this.frames.values()) bitmap.close();
+		this.frames.clear();
+		this.frameBytes = 0;
 	}
 
 	private sourceKey(source: HyperframesSource): Promise<string> {

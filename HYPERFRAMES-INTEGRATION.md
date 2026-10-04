@@ -415,6 +415,41 @@ Classic tracks matched after restoration. These are Node/WASM storage and edit
 measurements, not browser playback measurements. Probes are in ignored
 `.local/hyperframes-classic-probe*` and `hyperframes-classic-compact-probe*` files.
 
+## Preview cache verification (2026-10-04)
+
+Classic now compares the bound resource values before invalidating HyperFrames
+rendering. Canonical media republishing, loading notifications, names, thumbnails
+and unrelated media no longer dispose the capture client. File/URL replacement,
+binding revision, missing state and storage metadata still invalidate it. Values
+are copied for comparison so in-place relinking is detected. Dependencies of
+previously cached sources remain observed until reset, including after deletion
+and restoration through Undo. Project/account changes invalidate old contexts.
+
+The render client retains up to 24 decoded frames, capped at 64 MiB of estimated
+RGBA storage. It reuses them across render-tree rebuilds and identical source
+copies; eviction and disposal close the ImageBitmaps. Oversized frames are drawn
+and immediately released. In-flight decoding after cancellation also releases
+its bitmap without drawing. These are derived rendering caches; canonical editor
+state and history remain in Rust.
+
+An authenticated API probe used the imported synthetic GSAP folder at 640×360.
+The first frame took 999 ms including session startup. Twenty identical-time
+requests after cloning the projected document/media took 0.49–0.76 ms each and
+made no additional capture requests. An uncached seek took 53 ms. Resetting the
+cache and recapturing the original frame took 2,120 ms, including session close
+and reopen. The decoded RGBA hash matched after reset, while seeking changed the
+pixels. This probe decodes with Sharp and excludes browser/GPU paint time;
+it is not a real-time playback benchmark. Evidence and the repeatable probe are
+in ignored `.local/hyperframes-cache-proof.json` and `.local/hyperframes-cache-proof.ts`.
+
+The actual editor also rendered a mixed native/HyperFrames timeline after moving
+the red composition 48 px and restoring its position with Undo. The cache tests
+cover bounds, cancellation, resource changes, source edits and account/project
+switching. A separate real-WASM CommandManager test performs 20 canonical edits
+plus Undo/Redo: media objects are republished while one open and one capture serve
+all rendered requests. Fresh-frame capture, audio, multiple-composition browser
+churn and the fast live preview remain outstanding.
+
 ## Next implementation sequence
 
 1. Exercise the completed folder importer on the eight Brag references, including
@@ -433,7 +468,7 @@ measurements, not browser playback measurements. Probes are in ignored
    timeline, retain host occurrence identity, and connect selection/inspector.
 5. The frame capture adapter is connected to the existing compositor. Resolve
    the 3D repeatability case, video injection,
-   author timers, audio export and cache invalidation. Verify Brag references and
+   author timers, audio export and multi-composition cache behavior. Verify Brag references and
    mixed compositions against actual exports.
 6. Implement measured UI/performance improvements; run the full preservation and
    completion audit above. Do not equate green source-import tests with completion.
@@ -457,6 +492,12 @@ The example is a read-only static source probe; it skips generated output, hidde
 directories, dependencies and symlinks, and reports binary references as unbound.
 
 ### Current verification and outstanding baseline failures
+
+- Preview caching: 26 tests passed with 538 assertions across rendering/cache,
+  real-WASM CommandManager and folder-import orchestration. Scoped TypeScript and
+  changed-file ESLint passed. Actual editor transforms/Undo and authenticated
+  capture measurements are recorded above. The complete playback and export
+  performance audit remains outstanding.
 
 - Folder UI/orchestration: 16 Rust source/Classic import tests passed, including
   atomic resource binding and invalid-import rollback. Seven real-WASM command

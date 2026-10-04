@@ -16,6 +16,8 @@ import {
 	type CanonicalClassicSnapshot,
 } from "@/core/canonical-classic-session";
 import { createCanonicalTestRuntime } from "../../__tests__/canonical-runtime-fixture";
+import { HyperframesRenderCache } from "@/hyperframes/render-cache";
+import { renderFixture } from "@/hyperframes/__tests__/render-client-fixture";
 
 let saved: SerializedCommandHistory | null = null;
 mock.module("@/services/storage/service", () => ({
@@ -88,6 +90,7 @@ beforeEach(() => {
 });
 
 function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
+	const viewListeners = new Set<() => void>();
 	const fixture = JSON.parse(
 		readFileSync(
 			new URL(
@@ -128,6 +131,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			setActiveProject: ({ project: next }: { project: TProject }) => {
 				manager.synchronizeProject(next);
 				project = next;
+				for (const listener of viewListeners) listener();
 			},
 		},
 		media: {
@@ -135,6 +139,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			setAssets: ({ assets }: { assets: MediaAsset[] }) => {
 				manager.synchronizeMedia({ assets });
 				media = assets;
+				for (const listener of viewListeners) listener();
 			},
 		},
 		selection: {
@@ -169,6 +174,10 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 		project: () => project,
 		media: () => media,
 		selection: () => selection,
+		subscribeViews: (listener: () => void) => {
+			viewListeners.add(listener);
+			return () => viewListeners.delete(listener);
+		},
 	};
 }
 
@@ -239,6 +248,60 @@ function assertCoherent({
 		canonicalMediaBindings(host.media()),
 	);
 }
+
+test("real canonical edits and undo/redo reuse HyperFrames browsers and decoded frames", async () => {
+	const fixture = renderFixture();
+	const cache = new HyperframesRenderCache();
+	const host = createHost();
+	const runtime = await createCanonicalTestRuntime();
+	const refresh = () =>
+		cache.update({ project: host.project(), mediaAssets: host.media() });
+	const unsubscribe = host.subscribeViews(refresh);
+	try {
+		await host.manager.enableCanonical({ runtime });
+		const imported = await host.manager.importHyperframes({
+			name: "Cached overlay",
+			source: {
+				...source,
+				resourceAssetIds: { "media.mp4": host.media()[0].id },
+			},
+		});
+		refresh();
+		const draw = () => {
+			const context = cache.getContext(host.project())!;
+			return context.renderTo({
+				composition: context.compositions[imported.assetId],
+				timeSeconds: 1,
+				target: fixture.target,
+			});
+		};
+		await draw();
+		const revision = cache.revision;
+		const initialMedia = host.media();
+		for (let edit = 0; edit < 20; edit++) {
+			host.manager.execute({
+				command: new Rename({ host, name: `Edit ${edit}` }),
+			});
+			await draw();
+		}
+		host.manager.undo();
+		await draw();
+		host.manager.redo();
+		await draw();
+		expect(host.media()).not.toBe(initialMedia);
+		expect(cache.revision).toBe(revision);
+		expect(fixture.count("open")).toBe(1);
+		expect(fixture.count("capture")).toBe(1);
+		expect(fixture.count("close")).toBe(0);
+		assertCoherent({ host, runtime });
+	} finally {
+		unsubscribe();
+		await host.manager.flushHistory();
+		host.manager.detachCanonical();
+		cache.dispose();
+		fixture.restore();
+	}
+});
 
 test("adopts live Classic undo, imports into existing scenes and retains selective command behavior", async () => {
 	const host = createHost();

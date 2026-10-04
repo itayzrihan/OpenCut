@@ -16,7 +16,7 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 	let bitmapCloses = 0;
 	Object.defineProperty(globalThis, "createImageBitmap", {
 		configurable: true,
-		value: async () => ({ close: () => bitmapCloses++ }),
+		value: async () => ({ width: 64, height: 64, close: () => bitmapCloses++ }),
 	});
 	const live = new Set<string>();
 	let nextId = 0;
@@ -71,8 +71,14 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 		fps: 30,
 		durationSeconds: 4,
 	});
-	const draw = (name: string) =>
-		client.renderTo({ composition: composition(name), timeSeconds: 1, target });
+	const draw = ({
+		name,
+		timeSeconds = 1,
+	}: {
+		name: string;
+		timeSeconds?: number;
+	}) =>
+		client.renderTo({ composition: composition(name), timeSeconds, target });
 	try {
 		const [ready, reused] = await Promise.all([
 			client.prepareSource(composition("a").source),
@@ -81,31 +87,38 @@ test("render cache bounds sessions, recovers closed captures and pins account/pr
 		expect(ready).toMatchObject({ id: "1", durationSeconds: 4 });
 		expect(reused).toEqual(ready);
 		expect(nextId).toBe(1);
-		await Promise.all([draw("a"), draw("b"), draw("a"), draw("c")]);
+		await Promise.all([
+			draw({ name: "a" }),
+			draw({ name: "b" }),
+			draw({ name: "a" }),
+			draw({ name: "c" }),
+		]);
 		expect(nextId).toBe(3);
 		expect(live.size).toBe(2);
-		expect(bitmapCloses).toBe(4);
+		expect(bitmapCloses).toBe(0);
 		expect(calls).toEqual([
 			"open",
 			"capture",
 			"open",
-			"capture",
 			"capture",
 			"close",
 			"open",
 			"capture",
 		]);
 		failCapture = true;
-		await expect(draw("c")).rejects.toThrow("Session expired");
-		await draw("c");
+		await expect(draw({ name: "c", timeSeconds: 2 })).rejects.toThrow(
+			"Session expired",
+		);
+		await draw({ name: "c", timeSeconds: 2 });
 		expect(nextId).toBe(4);
 		client.dispose();
 		await expect(
 			client.prepareSource(composition("a").source),
 		).rejects.toThrow();
-		await expect(draw("c")).rejects.toThrow();
+		await expect(draw({ name: "c" })).rejects.toThrow();
 		await Promise.resolve();
 		expect(live.size).toBe(0);
+		expect(bitmapCloses).toBe(4);
 	} finally {
 		client.dispose();
 		fetchMock.mockRestore();
