@@ -17,13 +17,116 @@ is implemented; the product integration is not complete.
 | Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit and three-package capture benchmarks recorded; full interface and live playback comparison pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | All eight Brag folders imported through the UI and reopened; the seven-folder sequence retains byte-identical source and 265 copied resources. Interrupted imports now appear in the folder dialog and resume missing copies; real Brag recovery, reopen, finalization deduplication and Undo/Redo are verified |
-| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview; standalone and remaining source coverage pending |
+| Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; actual Brag/native overlay and two side-by-side occurrences verified in preview. Edited Brag standalone and mixed MP4s now pass frame and audio comparisons through the production exporter; full-editor review of the source move and remaining source coverage are pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Inventory, expandable rows, source/variable editing and per-occurrence opacity use canonical history. Source moves support authored leaves and generated GSAP elements. Six Brag Advanced scenes now pass the 100 ms move audit; generated scene frames and history are verified. Other group clocks, custom timing, trim/drag and full-editor UI checks remain open |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
-| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay, a 14-second mixed Brag/native MP4 and the full seven-folder sequence exported; 30 sampled full-sequence frames preserve the references within compressed-video error. Full export exposed a 6 ms mastering delay; compensation now passes browser sample tests and a short two-composition MP4 with zero measured offset. A new full-sequence export with that audio correction remains pending |
+| Export parity | Representative frame and audio comparisons to pinned HyperFrames | Edited standalone and mixed Brag MP4s pass. A fresh 179.9667-second, seven-folder MP4 passes complete decoding, 44 frame comparisons including every source boundary, and seven audio comparisons with zero measured offset at 44.1 kHz. This verifies the earlier 6 ms mastering correction through the production exporter; full-editor source-move interaction review remains pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback, import naming and Fit timeline control implemented; Studio timeline/layers/contextual motion inspector reviewed on real Brag source; broader docking and keyboard audit remains open |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | The recorded full web run passed 1,018 tests across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Edited Brag and full-sequence exports (2026-10-05)
+
+Two six-second MP4s verify the generated scene move through the actual Classic
+`RendererManager.exportProject` pipeline. The imported Brag Advanced proof scene
+moves from 3.6 to 3.1 seconds through the canonical plan, prepare and move
+capabilities. The standalone export uses a 720 × 1280 canvas. The mixed export
+places the unchanged occurrence on the left and the edited occurrence on the
+right, with native image layers below and above them on a 1440 × 1280 canvas.
+The original occurrence retains its source after the other occurrence is edited.
+
+Both exports contain 180 H.264 frames at 30 fps and six seconds of video, with
+AAC audio at 44.1 kHz. Six sampled times cover the opening, claim and proof,
+including the moved heading and its changed end window. Decoded pixels match
+the raw source captures within compressed-video error: mean absolute RGB error
+is 1.22–1.66/255 standalone and 1.22–1.70/255 across the two mixed occurrences.
+The native foreground strip appears above both occurrences and matches its
+expected color within 1.67/255. Audio alignment finds zero samples of offset at
+44.1 kHz in both exports. Correlation is 0.99986 standalone and 0.98654 mixed;
+the mixed result contains two copies of the narration and passes through the
+existing mastering compressor, so it has a different gain envelope.
+
+The test host provides canonical project, scene, media and audio projections to
+the production renderer. It uses the real render cache/client, HyperFrames host,
+audio mixer/mastering, scene builder, canvas renderer, Rust compositor and MP4
+encoder. The isolated browser does not load the full editor interface. These
+results verify export after the edit; the full-editor source-move interaction
+still needs browser review. No product changes were required for these checks.
+The initial mixed fixture omitted native object URLs; after matching the storage
+service's File-and-URL hydration, the foreground comparison passes.
+
+Evidence and reproduction are under `.local/`:
+
+- `hf-edited-export-host-20261005.ts` and
+  `hf-edited-export-browser-20261005.ts` run the production path. Use Node with
+  `--import ./.local/hf-node-ts-loader.mjs`, with `EXPORT_MODE=standalone` or
+  `mixed`, and the pinned FFmpeg/FFprobe paths.
+- `hf-edited-brag-{standalone,mixed}-20261005.mp4` and the matching JSON reports
+  contain the outputs and export progress. Software rendering took 35.5 seconds
+  standalone and 105.9 seconds mixed; these are separate runs, not a controlled
+  performance comparison.
+- `hf-edited-export-compare-20261005.mjs` produces the corresponding
+  `-compare.json` reports and decoded PNGs. Both reports have `pass: true`.
+- `hf-original-brag-source-check-20261005.json` confirms that all 72 imported
+  source files and 265 resources still match the original Brag directory.
+  Each export also verifies the saved source project is byte-identical afterward.
+
+A separate standalone run used the RTX 4060 through ANGLE/D3D11 for OpenCut's
+compositor, while retaining the production software capture host. It also
+passes the six frame comparisons (mean RGB error 0.67–1.05/255) and zero-offset
+audio check. The two warm 60-frame windows average 124.3 and 128.8 ms per frame:
+105.4/108.4 ms resolving the source frame, 16.8/17.3 ms uploading textures,
+1.83 ms drawing, and 0.28/0.35 ms submitting the encoded frame. Source resolution
+includes capture, artifact delivery and bitmap decoding. This points to that
+path as the next performance target. The 33.2-second run overlapped the long
+export, so it is not a controlled speed comparison with the earlier runs.
+Report: `.local/hf-edited-brag-hardware-probe-20261005.json`; comparison and MP4
+use the same stem. Reproduce with `EXPORT_PARENT_GPU=hardware`,
+`EXPORT_PROFILE=1` and an independent `EXPORT_TAG`.
+
+A further mixed export uses a red project background and a blue native image
+below the two Brag occurrences. Its decoded background is blue, confirming that
+the lower image is rendered; the orange native strip remains above both clips.
+The six background and six foreground samples have mean RGB errors of 0.67 and
+1.67/255. The twelve Brag samples stay below 1.15/255 and audio remains at zero
+sample offset. This 44.4-second RTX run and its passing comparison use the stem
+`.local/hf-edited-brag-mixed-layers-20261005`. It overlapped the full-file comparison
+and is not a controlled benchmark against the software run.
+
+### Full sequence after mastering compensation
+
+The seven-folder project now completes a fresh export after the audio correction:
+5,399 H.264 frames at 1920 × 1080 and 30 fps, covering 179.966667 seconds, with AAC
+audio at 44.1 kHz. The actual production exporter runs in the isolated driver
+described above, with the RTX 4060 compositor and the existing software capture
+host. It took 716.7 seconds, including output transfer, and produced
+185,194,302 bytes at `very_high` quality. The source project remains byte-identical.
+
+The complete file decodes without errors. All 44 sampled frames pass, including
+the first and last frame of every source and the reconstruction's native video.
+Maximum mean absolute RGB error is 2.107/255; sampled pillarboxes remain black.
+The worst frame was also visually checked beside its fitted source reference.
+All seven audio segments have **zero samples of measured offset at 44.1 kHz**,
+with correlations from 0.998862 to 0.999945. The mastering gain ratios remain
+1.042–1.045. This closes the pending full-sequence export check for the earlier
+6 ms latency correction. Preview's real-time compressor latency and the
+full-editor source-move UI review remain separate outstanding checks.
+
+Evidence: `.local/hf-edited-brag-full-hardware-20261005.mp4`, the matching export
+JSON, and `.local/hf-brag-full-export-compare-20261005.json`. The `.mjs` comparator
+accepts the MP4 path as its first argument. Its expanded reference set combines
+the original 30 samples with 14 new boundary captures in
+`.local/hf-brag-expanded-reference-20261005.json`; the boundary `.ts` and merge
+`.mjs` scripts with the same date reproduce those additions. Rebuild the browser
+fixture with Bun's browser target and externalize `opencut-wasm` and
+`opencut-editor-runtime-wasm` before rerunning after product changes.
+
+The first full-sequence software run reached 5,380 of 5,399 frame captures before
+the isolated driver's 30-minute protocol deadline expired. It produced no final
+MP4 and is not a completed export check. Its report remains at
+`.local/hf-edited-brag-full-20261005.json`. The driver now allows one hour;
+the separate source audit still reports all 72 source files and 265 resources
+unchanged after that attempt.
 
 ## Moving generated Brag scenes (2026-10-05)
 
@@ -65,7 +168,8 @@ Proof was also moved 500 ms earlier in both
 projects. Reports and PNGs are under `.local/hf-generated-retime-*`; reproduction
 uses `.local/hf-generated-retime-probe-20261005.ts` with `PROBE_CANONICAL=1`.
 The original Brag directory is untouched. These checks use isolated render
-hosts; the full-editor UI review and edited Brag MP4 export remain pending.
+hosts. The edited Brag MP4 exports are verified above; full-editor UI review
+remains pending.
 
 Validation: 80 Editor API tests, 13 MCP tests and 22 web tests pass. The web
 coverage includes generated helpers, CSS animation, a second move, reverse
@@ -74,6 +178,16 @@ computed properties and off-timeline animation. Product TypeScript, changed-file
 ESLint, Clippy with warnings denied, formatting and the browser compiler bundle
 pass. The web report is `.local/classic-web-tests/1791150150056/summary.json`.
 This remains **Classic-only UI, bridged to the canonical Rust runtime**.
+
+The follow-up authored-group audit records actual child clock declarations in
+`.local/hf-authored-group-clocks-20261005.json`. In `hyperframes-7`, the phone
+scene has ten image children and the outro has one. Their inferred manifest
+windows span the full 15.533-second source, while none declares a nested timing
+attribute. They must not be shifted as though those inferred windows were
+authored clip starts. Its `poses`, `reveal` and `letters` helpers are candidates
+for an explicit runtime retiming contract; group visibility, CSS clocks,
+staggered descendants and repeated/reverse seeks still need frame validation.
+This audit does not enable group editing.
 
 ## Moving a uniquely authored leaf — initial implementation (2026-10-05)
 
@@ -328,8 +442,9 @@ Product TypeScript and changed-file ESLint pass. Evidence:
 because drive C was full. The generated standalone webpack cache was preserved
 at `D:/dev/OpenCut-generated-cache-20261004/hyperframes-export-stable`, freeing
 about 1.2 GB; the unchanged suites then passed. The standalone runtime and all
-source/media files remain in place. Preview's real-time compressor latency and
-a fresh full-sequence MP4 after this correction remain follow-up checks.
+source/media files remain in place. The fresh full-sequence MP4 now passes the
+verification recorded above. Preview's real-time compressor latency remains a
+follow-up check.
 
 ## MCP publication during export (2026-10-04)
 
@@ -387,6 +502,9 @@ capability or transport. The engine patch adds an option that defaults off;
 the adapter selects it after the probe. Rendering still uses sandboxed software
 Chrome and the original seek/media synchronization. Faster PNG files can be
 larger; the existing ArtifactStore size and retention limits still apply.
+The pinned engine selects BeginFrame only on Linux and notes that its compositor
+capture loses alpha. Windows layer exports still need an alpha-preserving path;
+drawElement has separate upstream gates for transparency, filters and 3D.
 
 An isolated portrait fixture with 227 distinct alpha values decoded identically
 with both encoders. Standard PNG capture took 249–296 ms over five samples;
