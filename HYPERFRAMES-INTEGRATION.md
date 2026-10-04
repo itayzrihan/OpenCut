@@ -22,8 +22,68 @@ is implemented; the product integration is not complete.
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; up to four eligible live DOM compositions interleave with native layers, with independent occurrence timing; video/canvas live support and broader speed/fidelity coverage pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved; three consecutive reloads retain all four live surfaces and warmed playback reaches 28.22 fps; mixed/capture throughput, longer stability runs and large-timeline performance remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 983 web tests pass across 215 isolated suites, including reruns of three startup timeouts; browser coverage enabled with zero skips. This checkpoint passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | One live compound reaches 29.2 completed frames/s, two reach 28.4–28.9, and four distinct Brag packages reach 28.9; capture-cache reuse and live image preparation are improved. OpenCut Perspective now stays live: the previously mixed fixture reaches 27.40 / 28.89 / 28.84 fps, versus 2.50 / 5.34 with capture. Required capture throughput, longer stability runs and large-timeline performance remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 984 web tests pass across 216 isolated suites with browser coverage enabled, zero failures and zero skips. The library checkpoint also passes 12 targeted Rust tests and 11 real-WASM manager tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Live OpenCut Perspective transforms (2026-10-04)
+
+An otherwise eligible HyperFrames occurrence now remains live when its OpenCut
+transform tilts the plane on either Perspective axis. Previously either nonzero
+axis forced that occurrence through screenshot capture, slowing the entire mixed
+frame. The CSS adapter uses the existing resolved quad, with the same plane
+projection as Classic's compositor: size and flips, Y tilt, X tilt, perspective,
+then Z rotation and placement. The CSS tilt signs reverse because its projection
+uses the opposite depth sign. Perspective distance remains 1.5 times the larger
+displayed dimension, subject to CSS's one-pixel minimum.
+
+This is **Classic-only rendering**. The canonical transform, animation evaluation,
+document state, capabilities and undo history are unchanged. Effects, masks,
+unsupported blending or scene wrapping, video/canvas sources and runtime failures
+retain their capture behavior. The live-occurrence limit remains four. This does
+not address the separate repeatability limitations of authored 3D scripts.
+
+### Fidelity verification
+
+- A real Chrome test compares the production CSS helper on an iframe with
+  rendered pixels from the bundled Classic WASM compositor. Ten cases cover both
+  axes, combined Z rotation, each flip and both together, nonuniform sizing,
+  opacity, portrait proportions, translated placement and the 75-degree UI limit.
+- All cases pass. Maximum mean premultiplied RGBA error is **0.373 / 255**;
+  at most **1.25%** of pixels differ by more than 8 in any channel. Tolerances
+  account for the two rasterizers' antialiased edges. Tests also reject blank
+  compositor output. This machine uses the compositor's WebGL fallback in the
+  software browser; hardware WebGPU parity remains unverified.
+- The render-tree test verifies that adding Perspective preserves the same live
+  source lease and native base segment, and that a subsequent runtime failure
+  still releases the lease and switches to capture.
+- Targeted browser/render-tree/document coverage passes all five tests in three
+  isolated suites. Product TypeScript and changed-file ESLint pass. Evidence:
+  `.local/hf-perspective-targeted-20261004/summary.json`.
+- The full isolated web regression passes **984 tests in 216 suites, zero
+  failures and zero skips**, with browser coverage and the local Brag GSAP
+  fixture enabled, in 111.8 seconds. Report:
+  `.local/hf-perspective-full-regression-20261004/summary.json`.
+
+### Existing Brag fixture measurements
+
+Project `3e993c3a-d148-48c5-bdd2-88921f104a2c` retains its four source packages,
+native image/text layers and the final occurrence's ten-degree X Perspective.
+Its historical name still ends in "plus capture"; all four occurrences now use
+live iframes. The measurement uses the same 1280x720 development workbench,
+640x360 scene, fitted preview and six-second 30 fps transport as the earlier
+capture comparison. Preparation before playback is excluded.
+
+| Path | Completed frames/s | Distinct completed frames | Median render time |
+| --- | --- | --- | --- |
+| Earlier: three live, one Perspective capture | 2.50 / 5.34 | 15 / 32 | 187.5 / 177.7 ms |
+| Current: four live, including Perspective | 27.40 / 28.89 / 28.84 | 164 / 173 / 173 | 6.1 / 4.4 / 5.5 ms |
+
+All three current runs report zero render errors. The last two complete 173 of
+179 observed source-frame positions. These short workbench measurements do not
+establish sustained playback, full-screen performance or other-device results.
+Required capture paths remain a performance limitation. Evidence:
+`.local/hf-perspective-playback-20261004.json`; screenshot at 2.5 seconds:
+`.local/hf-perspective-live-20261004.jpg`.
 
 ## Composition library in Classic Assets (2026-10-04)
 
@@ -1358,8 +1418,9 @@ side by side for six seconds over a native blue image, with native text between
 the lower and upper pairs and another native text layer above them. All source
 files and 98 resources per project match the earlier imports byte for byte.
 The second project adds a ten-degree OpenCut perspective transform to the final
-composition, requiring capture for that occurrence while the other three remain
-live. Original HyperFrames source files are unchanged.
+composition. At this checkpoint that required capture for the occurrence while
+the other three remained live. The later Live OpenCut Perspective checkpoint
+above removes this restriction. Original HyperFrames source files are unchanged.
 
 ### Capture cache fix
 

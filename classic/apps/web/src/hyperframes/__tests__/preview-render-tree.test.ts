@@ -305,18 +305,22 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		const previousSeeks = [...seeks];
 		clip.params.transform.perspectiveX = 20;
 		await live.render({ node: root, time: 10 * 120000, renderer });
-		expect(rendered.at(-1)).toBe(root);
-		expect(mount.style.opacity).toBe("0");
-		expect(releaseCount).toBe(2);
+		expect(rendered.at(-1)?.children).toEqual([native]);
+		expect(mount.style.opacity).toBe("1");
+		expect(frames[0].style.transform).toContain(
+			"perspective(270px) rotateX(-20deg) rotateY(0deg)",
+		);
+		expect(releaseCount).toBe(1);
+		expect(openCount).toBe(2);
 		clip.params.transform.perspectiveX = 0;
 		failSeek = true;
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)).toBe(root);
 		expect(fallbackCount).toBe(1);
 		await live.render({ node: root, time: 11 * 120000, renderer });
-		expect(seeks).toEqual([...previousSeeks, 3]);
-		expect(openCount).toBe(3);
-		expect(releaseCount).toBe(3);
+		expect(seeks).toEqual([...previousSeeks, 3, 3]);
+		expect(openCount).toBe(2);
+		expect(releaseCount).toBe(2);
 		clip.params.isPreview = false;
 		expect(
 			liveModule.findHyperframesLiveLayer({ node: root, time: 9 * 120000 }),

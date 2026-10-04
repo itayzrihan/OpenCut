@@ -6,6 +6,7 @@ import { VisualNode } from "@/services/renderer/nodes/visual-node";
 import { TextNode } from "@/services/renderer/nodes/text-node";
 import { resolveGraphicNodeLayout } from "@/services/renderer/resolve";
 import { incrementCounter } from "@/diagnostics/render-perf";
+import { hyperframesLiveTransform } from "./live-transform";
 
 const MAX_LIVE_OCCURRENCES = 4;
 type ResolvedLayout = NonNullable<ReturnType<typeof resolveGraphicNodeLayout>>;
@@ -128,13 +129,7 @@ export class HyperframesLivePreview {
 				renderer: this.options,
 				time,
 			});
-			if (
-				!resolved ||
-				resolved.effectPasses.length ||
-				resolved.transform.perspectiveX ||
-				resolved.transform.perspectiveY
-			)
-				continue;
+			if (!resolved || resolved.effectPasses.length) continue;
 			candidates.push({
 				node: candidate,
 				resolved,
@@ -358,7 +353,11 @@ class LiveOccurrence {
 			left: `${quad.centerX}px`,
 			top: `${quad.centerY}px`,
 			opacity: String(resolved.opacity),
-			transform: `translate(-50%, -50%) rotate(${quad.rotationDegrees}deg) scale(${((quad.flipX ? -1 : 1) * quad.width) / resolved.sourceWidth}, ${((quad.flipY ? -1 : 1) * quad.height) / resolved.sourceHeight})`,
+			transform: hyperframesLiveTransform({
+				quad,
+				sourceWidth: resolved.sourceWidth,
+				sourceHeight: resolved.sourceHeight,
+			}),
 		});
 		this.surface!.frame.style.visibility = "visible";
 		this.surface!.frame.style.zIndex = String(zIndex);
