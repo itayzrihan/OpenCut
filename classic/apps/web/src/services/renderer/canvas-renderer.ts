@@ -129,7 +129,13 @@ export class CanvasRenderer {
 			};
 			await measureSpanAsync({
 				name: "resolve",
-				fn: () => resolveRenderTree({ node, renderer: logicalRenderer, time }),
+				fn: () =>
+					resolveRenderTree({
+						node,
+						renderer: logicalRenderer,
+						time,
+						outputSize: { width: this.width, height: this.height },
+					}),
 			});
 			const logicalFrame = await measureSpanAsync({
 				name: "buildFrame",

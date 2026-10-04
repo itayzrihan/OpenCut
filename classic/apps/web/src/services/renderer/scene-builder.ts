@@ -81,6 +81,7 @@ function buildTrackNodes({
 	visitedSceneIds,
 	isParallaxCanvasScene,
 	hyperframes,
+	allowHyperframesPreviewScaling,
 }: {
 	tracks: TimelineTrack[];
 	sceneTracks: SceneTracks;
@@ -93,8 +94,17 @@ function buildTrackNodes({
 	visitedSceneIds: ReadonlySet<string>;
 	isParallaxCanvasScene: boolean;
 	hyperframes?: HyperframesRenderContext;
+	allowHyperframesPreviewScaling: boolean;
 }): AnyBaseNode[] {
 	const nodes: AnyBaseNode[] = [];
+	const canScaleHyperframesPreview = Boolean(
+		isPreview &&
+		allowHyperframesPreviewScaling &&
+		!isParallaxCanvasScene &&
+		!tracks.some((track) =>
+			track.elements.some((element) => element.type === "effect"),
+		),
+	);
 	const parallaxAssignments = isParallaxCanvasScene
 		? resolveParallaxTrackAssignments({
 				tracks: getDisplayTracks({ tracks: sceneTracks }),
@@ -169,6 +179,7 @@ function buildTrackNodes({
 							visitedSceneIds: nextVisited,
 							isParallaxCanvasScene: Boolean(nestedScene.parallax),
 							hyperframes,
+							allowHyperframesPreviewScaling: false,
 						})) {
 							nestedNode.add(child);
 						}
@@ -568,6 +579,9 @@ function buildTrackNodes({
 				nodes.push(
 					new GraphicNode({
 						definitionId: element.definitionId,
+						// Camera and scene effects can magnify a layer after it is
+						// resolved. Keep its full source for those preview paths.
+						isPreview: canScaleHyperframesPreview,
 						params: composition
 							? {
 									...element.params,
@@ -581,10 +595,11 @@ function buildTrackNodes({
 										width: composition.width,
 										height: composition.height,
 										getResourceRevision: hyperframes.getResourceRevision,
-										renderTo: ({ localTime, target }) =>
+										renderTo: ({ localTime, target, previewScale }) =>
 											hyperframes.renderTo({
 												composition,
 												target,
+												previewScale,
 												timeSeconds: Math.max(
 													0,
 													Math.min(
@@ -737,6 +752,7 @@ export function buildScene({
 
 	const allNodes = buildTrackNodes({
 		hyperframes,
+		allowHyperframesPreviewScaling: !editorCameraEffectParams,
 		tracks: orderedTracksBottomToTop,
 		sceneTracks: tracks,
 		mediaMap,

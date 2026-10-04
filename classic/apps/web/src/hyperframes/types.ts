@@ -72,6 +72,8 @@ export interface HyperframesRenderContext {
 		composition: HyperframesComposition;
 		timeSeconds: number;
 		target: OffscreenCanvas;
+		/** Derived preview quality; omitted for full-resolution export. */
+		previewScale?: number;
 	}) => Promise<void>;
 }
 

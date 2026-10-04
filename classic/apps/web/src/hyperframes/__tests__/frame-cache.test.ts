@@ -2,6 +2,41 @@ import { expect, test } from "bun:test";
 import { HyperframesRenderClient } from "../render-client";
 import { composition, renderFixture } from "./render-client-fixture";
 
+test("preview resolutions share a browser but never substitute for full-resolution export", async () => {
+	const fixture = renderFixture();
+	const client = new HyperframesRenderClient("project-a");
+	const input = {
+		composition: composition(),
+		timeSeconds: 1,
+		target: fixture.target,
+	};
+	try {
+		await client.renderTo({ ...input, previewScale: 0.25 });
+		await client.renderTo({ ...input, previewScale: 0.5 });
+		await client.renderTo(input);
+		await client.renderTo({ ...input, previewScale: 0.25 });
+		await client.renderTo(input);
+		expect(fixture.count("open")).toBe(1);
+		expect(
+			fixture.calls.filter(({ action }) => action === "capture"),
+		).toMatchObject([
+			{ previewScale: 0.25 },
+			{ previewScale: 0.5 },
+			{ previewScale: 1 },
+		]);
+		expect(fixture.draws).toEqual([
+			fixture.bitmaps[0],
+			fixture.bitmaps[1],
+			fixture.bitmaps[2],
+			fixture.bitmaps[0],
+			fixture.bitmaps[2],
+		]);
+	} finally {
+		client.dispose();
+		fixture.restore();
+	}
+});
+
 test("leaving the page releases cached browsers and frames while back/forward cache preserves them", async () => {
 	const fixture = renderFixture();
 	const client = new HyperframesRenderClient("project-a");

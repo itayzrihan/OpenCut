@@ -14,7 +14,7 @@ is implemented; the product integration is not complete.
 | Requirement | Evidence needed | Current status |
 | --- | --- | --- |
 | Dedicated branch | Git branch at the canonical repository | Created |
-| Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit started; visual comparison and benchmarks pending |
+| Study UI, timeline, element model and performance | Source audit, visual comparison, measured baselines | Source audit and three-package capture benchmarks recorded; full interface and live playback comparison pending |
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
@@ -703,6 +703,60 @@ Verification:
   (141 assertions), thirteen existing track visibility/hit-testing tests
   (17 assertions), scoped TypeScript, changed-file ESLint and editor-api Clippy passed. Release WASM
   and its existing export contract were rebuilt and verified.
+
+### Preview capture resolution and measured cost (2026-10-04)
+
+- The persistent screenshot adapter now samples previews at the resolution
+  needed by the output canvas and the resolved layer scale. It rounds upward
+  to 1/8, 1/4, 1/2 or full resolution. The authored CSS viewport, source size,
+  timing, source package and canonical document remain the same. Only derived
+  PNG pixels change. The existing Classic compositor still controls layer order,
+  transforms, opacity, masks and native/HF combinations.
+- Preview frame and GPU invalidation keys include sampling resolution. Export
+  forces full source resolution and cannot reuse a reduced preview bitmap.
+  Capture options change only inside the serialized queue and are restored
+  afterward. PNG header dimensions are checked and stored in ArtifactStore.
+  Perspective, clip effects, scene effects, nested scenes and parallax retain
+  full source captures because subsequent camera/effect stages can magnify them.
+- On Windows / HeadlessChrome 152, three real Brag packages were sampled at
+  0.5–1.067 seconds (18 sequential frames, first three omitted from statistics).
+  The software-rendered host's median request-to-artifact times were:
+
+  | Package | Full source | Half dimensions | Quarter dimensions |
+  | --- | ---: | ---: | ---: |
+  | `advanced-audio-test-final` | 153.8 ms | 64.4 ms | 50.4 ms |
+  | `brag-vertical/composition` | 369.6 ms | 135.0 ms | 74.0 ms |
+  | Reconstruction 96.9-second composition | 98.6 ms | 89.9 ms | 81.1 ms |
+
+  These measure the isolated render host, excluding editor transport, bitmap
+  decode and composition. The third sample covers only its opening second;
+  it does not establish performance or repeatability of its later 3D scenes.
+  At a fixed 1080x1920 frame, PNG screenshot encoding itself took 277 ms with
+  hardware acceleration, versus 118 ms at half dimensions. WebP was not a
+  consistent improvement: its 85-quality path was slower on partial-alpha
+  content. Hardware acceleration alone did not remove the capture bottleneck.
+  The product retains its existing PNG/software path with adaptive preview
+  sampling. This is an interim improvement; a live DOM preview path is still
+  required for smooth playback. Full intrinsic offscreen targets remain in use.
+- Browser tests verify partial alpha, nested content at the source's far edge,
+  forward/reverse seeks, concurrent mixed-resolution requests, invalid sampling
+  rejection, and exact full-resolution pixels after a preview request. Cache and
+  real-WASM scene-builder tests verify viewport resizing, source trim/placement,
+  one shared browser, and full-resolution export. The real capture/host suite,
+  frame cache/client tests, scoped TypeScript and changed-file ESLint passed.
+  Eight existing transform, static-cache and frame-scaling checks passed using
+  a local preload of the actual Classic WASM; their default Bun invocation
+  still needs a harness fix for the generated `.wasm` module import.
+- The actual Classic UI sought among Brag sections and exported the mixed
+  14-second project after reduced preview captures. Its entire decoded video
+  and float PCM exactly match the earlier full-resolution export:
+  video SHA-256 `b76a85a1dc793e6618def4ebf34a1a458ae1e3871433b8fcc04eb1a112b73631`,
+  audio SHA-256 `ec8789f5357f8901da85d1f8f44a17fc872ef80e745bec7f875d4b9fdf397e43`.
+  Evidence: `.local/hyperframes-after-preview-scaling.mp4`,
+  `.local/hyperframes-scaled-preview.png`, `.local/hf-perf-software.json`,
+  `.local/hf-perf-scaled-0.5.json`, `.local/hf-perf-scaled-0.25.json`, and
+  `.local/hf-encoding-benchmark.json`. Sampling decisions and capture caches are
+  platform rendering resources, so this adds no editor state or MCP mutation.
 
 ## Next implementation sequence
 

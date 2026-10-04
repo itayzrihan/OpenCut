@@ -130,16 +130,22 @@ export class HyperframesRenderHost {
 		scope,
 		id,
 		timeSeconds,
+		previewScale,
 		signal,
 	}: {
 		scope: HyperframesRenderScope;
 		id: string;
 		timeSeconds: number;
+		previewScale?: number;
 		signal?: AbortSignal;
 	}): Promise<HyperframesFrameArtifact> {
 		const entry = this.getEntry({ scope, id });
 		const session = await entry.capture;
-		const artifact = await session.capture({ timeSeconds, signal });
+		const artifact = await session.capture({
+			timeSeconds,
+			previewScale,
+			signal,
+		});
 		if (this.closed || this.sessions.get(id) !== entry) {
 			this.runtime.removeArtifact(artifact.uri);
 			throw new Error("The HyperFrames render was closed during capture");

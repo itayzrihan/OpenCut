@@ -48,6 +48,13 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 				timeSeconds: 0,
 			});
 			const output = host.readArtifact({ scope, id: artifact.id });
+			const reduced = await host.capture({
+				scope,
+				id: opened.id,
+				timeSeconds: 0,
+				previewScale: 0.5,
+			});
+			expect([reduced.width, reduced.height]).toEqual([32, 32]);
 			expect([...output.bytes.slice(0, 8)]).toEqual([
 				137, 80, 78, 71, 13, 10, 26, 10,
 			]);

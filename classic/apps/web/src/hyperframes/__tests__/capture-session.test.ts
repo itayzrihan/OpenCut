@@ -22,7 +22,7 @@ html,body{margin:0;width:320px;height:180px;background:${background}}
 .square{position:absolute;top:20px;left:0;width:40px;height:40px;background:var(--paint);animation:move 4s linear both}
 @keyframes move{from{transform:translateX(0)}to{transform:translateX(160px)}}
 </style></head><body><div data-composition-id="main" data-no-timeline data-width="320" data-height="180" data-duration="4">
-<div class="square"></div><div data-composition-id="child" data-no-timeline data-composition-src="child.html" data-start="0" data-duration="4"></div>
+<div class="square"></div><div style="position:absolute;left:180px;top:80px;width:20px;height:20px;background:rgba(80,20,240,.5)"></div><div data-composition-id="child" data-no-timeline data-composition-src="child.html" data-start="0" data-duration="4"></div>
 </div><script>
 window.__hf=window.__hf||{};
 window.__hf.buildReady={data:fetch("data.json").then(r=>r.json()).then(data=>document.documentElement.style.setProperty("--paint",data.color))};
@@ -220,6 +220,41 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 				]);
 				expect(earlyResult.sha256).toBe(first.sha256);
 				expect(lateResult.sha256).toBe(later.sha256);
+				const [small, full] = await Promise.all([
+					session.capture({ timeSeconds: 0.5, previewScale: 0.5 }),
+					session.capture({ timeSeconds: 0.5 }),
+				]);
+				expect([small.width, small.height]).toEqual([160, 90]);
+				expect(full.sha256).toBe(first.sha256);
+				const decodedSmall = await sharp(runtime.readArtifact(small.uri))
+					.ensureAlpha()
+					.raw()
+					.toBuffer({ resolveWithObject: true });
+				expect([decodedSmall.info.width, decodedSmall.info.height]).toEqual([
+					160, 90,
+				]);
+				const offset = (13 * 160 + 13) * 4;
+				expect([...decodedSmall.data.subarray(offset, offset + 4)]).toEqual([
+					255, 0, 0, 255,
+				]);
+				expect(decodedSmall.data[(85 * 160 + 155) * 4 + 3]).toBe(0);
+				const childOffset = (63 * 160 + 128) * 4;
+				expect([
+					...decodedSmall.data.subarray(childOffset, childOffset + 4),
+				]).toEqual([0, 255, 0, 255]);
+				expect(decodedSmall.data[(42 * 160 + 92) * 4 + 3]).toBe(128);
+				expect(early[(84 * 320 + 184) * 4 + 3]).toBe(128);
+				for (const previewScale of [
+					0,
+					0.124,
+					1.1,
+					Number.NaN,
+					Number.POSITIVE_INFINITY,
+				]) {
+					await expect(
+						session.capture({ timeSeconds: 0, previewScale }),
+					).rejects.toThrow("preview scale");
+				}
 				await expect(session.capture({ timeSeconds: 4 })).rejects.toThrow(
 					"inside",
 				);

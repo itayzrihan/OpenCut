@@ -28,8 +28,10 @@ test("external frames refresh GPU textures on seek and resource replacement", as
 	let revision = 0;
 	let fail = false;
 	const draws: number[] = [];
+	const scales: number[] = [];
 	const node = new GraphicNode({
 		definitionId: "hyperframes",
+		isPreview: true,
 		params: {},
 		duration: 360000,
 		timeOffset: 0,
@@ -48,9 +50,10 @@ test("external frames refresh GPU textures on seek and resource replacement", as
 			width: 640,
 			height: 360,
 			getResourceRevision: () => revision,
-			renderTo: async ({ localTime }) => {
+			renderTo: async ({ localTime, previewScale }) => {
 				if (fail) throw new Error("Capture failed");
 				draws.push(localTime);
+				scales.push(previewScale);
 			},
 		},
 	});
@@ -81,4 +84,14 @@ test("external frames refresh GPU textures on seek and resource replacement", as
 	fail = false;
 	await node.prepareFrame({ localTime: 0 });
 	expect(read(0)).toBe(canvas);
+	const fullVersion = getCanvasSourceVersion({ source: canvas });
+	await node.prepareFrame({ localTime: 0, previewScale: 0.5 });
+	expect(getCanvasSourceVersion({ source: canvas })).not.toBe(fullVersion);
+	await node.prepareFrame({ localTime: 0, previewScale: 0.5 });
+	expect(scales).toEqual([1, 1, 1, 1, 0.5]);
+	expect(node.getSourceSize()).toEqual({ width: 640, height: 360 });
+	node.params.isPreview = false;
+	await node.prepareFrame({ localTime: 0, previewScale: 0.25 });
+	expect(scales.at(-1)).toBe(1);
+	expect(getCanvasSourceVersion({ source: canvas })).toBe(fullVersion);
 });

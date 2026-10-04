@@ -19,6 +19,7 @@ const requestSchema = z.discriminatedUnion("action", [
 			projectId: id,
 			id,
 			timeSeconds: z.number().finite().nonnegative(),
+			previewScale: z.number().finite().min(0.125).max(1).optional(),
 		})
 		.strict(),
 	z

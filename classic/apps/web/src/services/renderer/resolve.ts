@@ -1,4 +1,5 @@
 import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
+import { getHyperframesPreviewScale } from "@/hyperframes/preview-scale";
 import {
 	getElementLocalTime,
 	resolveAnimationPathValueAtTime,
@@ -77,6 +78,7 @@ import { resolveParallaxMotionLoopFrame } from "@/parallax-story-teller/motion-l
 
 type ResolveContext = {
 	renderer: Pick<CanvasRenderer, "width" | "height">;
+	outputSize: { width: number; height: number };
 	time: number;
 };
 
@@ -96,16 +98,19 @@ const staticResolutionCache = new WeakMap<
 export async function resolveRenderTree({
 	node,
 	renderer,
+	outputSize = renderer,
 	time,
 }: {
 	node: AnyBaseNode;
 	renderer: Pick<CanvasRenderer, "width" | "height">;
+	outputSize?: { width: number; height: number };
 	time: number;
 }): Promise<void> {
 	await resolveNode({
 		node,
 		context: {
 			renderer,
+			outputSize,
 			time,
 		},
 	});
@@ -903,7 +908,25 @@ async function resolveGraphicNode({
 		definitionId: node.params.definitionId,
 	});
 	if (node.params.definitionId === "hyperframes") {
-		await node.prepareFrame({ localTime: visualState.localTime });
+		await node.prepareFrame({
+			localTime: visualState.localTime,
+			previewScale: getHyperframesPreviewScale({
+				sourceWidth,
+				sourceHeight,
+				logicalWidth: context.renderer.width,
+				logicalHeight: context.renderer.height,
+				outputWidth: context.outputSize.width,
+				outputHeight: context.outputSize.height,
+				scaleX: visualState.transform.scaleX,
+				scaleY: visualState.transform.scaleY,
+				preserveFullResolution:
+					!node.params.isPreview ||
+					Boolean(node.params.effects?.length) ||
+					visualState.effectPasses.length > 0 ||
+					visualState.transform.perspectiveX !== 0 ||
+					visualState.transform.perspectiveY !== 0,
+			}),
+		});
 	} else
 		await definition.prepare?.({
 			params: resolvedParams,

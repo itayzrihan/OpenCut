@@ -339,12 +339,21 @@ export class HyperframesCaptureSession {
 
 	async capture({
 		timeSeconds,
+		previewScale = 1,
 		signal,
 	}: {
 		timeSeconds: number;
+		/** Screenshot sampling only; the authored CSS viewport stays unchanged. */
+		previewScale?: number;
 		signal?: AbortSignal;
 	}): Promise<HyperframesFrameArtifact> {
 		signal?.throwIfAborted();
+		if (
+			!Number.isFinite(previewScale) ||
+			previewScale < 0.125 ||
+			previewScale > 1
+		)
+			throw new Error("HyperFrames preview scale must be between 0.125 and 1");
 		if (this.consumingAudio)
 			throw new Error(
 				"The HyperFrames audio probe cannot capture visual frames",
@@ -376,8 +385,12 @@ export class HyperframesCaptureSession {
 				void this.close();
 			};
 			cancellation.addEventListener("abort", abort, { once: true });
+			const previousScale = engine.options.deviceScaleFactor;
 			try {
 				cancellation.throwIfAborted();
+				// This serialized queue owns the temporary capture option. Keep the
+				// page viewport and all runtime/media preparation at source dimensions.
+				engine.options.deviceScaleFactor = previewScale;
 				const frameIndex = Math.floor(timeSeconds * this.inspection.fps);
 				const { buffer } = await captureFrameToBuffer(
 					engine,
@@ -386,13 +399,31 @@ export class HyperframesCaptureSession {
 				);
 				cancellation.throwIfAborted();
 				if (this.closed) throw new Error("The HyperFrames capture is closed");
+				// Read the PNG header because Chrome rounds fractional output sizes.
+				// Avoid decoding or recompressing an already encoded frame on the host.
+				if (
+					buffer.length < 24 ||
+					buffer.readUInt32BE(0) !== 0x89504e47 ||
+					buffer.readUInt32BE(4) !== 0x0d0a1a0a ||
+					buffer.toString("ascii", 12, 16) !== "IHDR"
+				)
+					throw new Error("HyperFrames capture did not return a PNG frame");
+				const width = buffer.readUInt32BE(16);
+				const height = buffer.readUInt32BE(20);
+				if (
+					!width ||
+					!height ||
+					width > this.inspection.width ||
+					height > this.inspection.height
+				)
+					throw new Error("HyperFrames capture dimensions exceed the source");
 				// The Rust ArtifactStore owns limits, checksums, expiry and eviction.
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Artifact metadata is constructed and validated by the Rust store.
 				return this.runtime.storeArtifact(
 					buffer,
 					"image/png",
-					this.inspection.width,
-					this.inspection.height,
+					width,
+					height,
 					undefined,
 				) as HyperframesFrameArtifact;
 			} catch (error) {
@@ -400,6 +431,7 @@ export class HyperframesCaptureSession {
 				cancellation.throwIfAborted();
 				throw error;
 			} finally {
+				engine.options.deviceScaleFactor = previousScale;
 				cancellation.removeEventListener("abort", abort);
 				this.lastUsed = Date.now();
 			}

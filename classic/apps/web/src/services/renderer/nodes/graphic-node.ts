@@ -16,6 +16,8 @@ import {
 export interface GraphicNodeParams extends VisualNodeParams {
 	definitionId: string;
 	params: ParamValues;
+	/** Enables derived capture scaling only in the interactive preview. */
+	isPreview?: boolean;
 	/** Host rendering dependency, never serialized in the editor document. */
 	frameSource?: {
 		width: number;
@@ -24,6 +26,7 @@ export interface GraphicNodeParams extends VisualNodeParams {
 		renderTo: (input: {
 			localTime: number;
 			target: OffscreenCanvas;
+			previewScale: number;
 		}) => Promise<void>;
 	};
 }
@@ -43,6 +46,7 @@ export class GraphicNode extends VisualNode<
 	private cachedSource: OffscreenCanvas | null = null;
 	private externalTime: number | null = null;
 	private externalRevision: number | null = null;
+	private externalScale: number | null = null;
 
 	constructor(params: GraphicNodeParams) {
 		super(params);
@@ -154,27 +158,40 @@ export class GraphicNode extends VisualNode<
 		return canvas;
 	}
 
-	async prepareFrame({ localTime }: { localTime: number }): Promise<void> {
+	async prepareFrame({
+		localTime,
+		previewScale = 1,
+	}: {
+		localTime: number;
+		previewScale?: number;
+	}): Promise<void> {
 		const source = this.params.frameSource;
 		if (!source)
 			throw new Error("HyperFrames composition source is unavailable");
 		const revision = source.getResourceRevision();
+		const scale = this.params.isPreview ? previewScale : 1;
 		if (
 			this.cachedSource &&
 			this.externalTime === localTime &&
-			this.externalRevision === revision
+			this.externalRevision === revision &&
+			this.externalScale === scale
 		)
 			return;
 		this.cachedSource ??= createCanvasSurface({
 			width: source.width,
 			height: source.height,
 		}).canvas;
-		await source.renderTo({ localTime, target: this.cachedSource });
+		await source.renderTo({
+			localTime,
+			target: this.cachedSource,
+			previewScale: scale,
+		});
 		markCanvasSourceVersion({
 			source: this.cachedSource,
-			version: `${revision}:${localTime}`,
+			version: `${revision}:${localTime}:${scale}`,
 		});
 		this.externalTime = localTime;
 		this.externalRevision = revision;
+		this.externalScale = scale;
 	}
 }

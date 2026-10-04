@@ -63,13 +63,15 @@ export class HyperframesRenderClient {
 		composition,
 		timeSeconds,
 		target,
+		previewScale = 1,
 	}: {
 		composition: HyperframesComposition;
 		timeSeconds: number;
 		target: OffscreenCanvas;
+		previewScale?: number;
 	}): Promise<void> {
 		const render = this.renderQueue.then(() =>
-			this.renderFrame({ composition, timeSeconds, target }),
+			this.renderFrame({ composition, timeSeconds, target, previewScale }),
 		);
 		this.renderQueue = render.catch(() => {});
 		return render;
@@ -173,14 +175,16 @@ export class HyperframesRenderClient {
 		composition,
 		timeSeconds,
 		target,
+		previewScale,
 	}: {
 		composition: HyperframesComposition;
 		timeSeconds: number;
 		target: OffscreenCanvas;
+		previewScale: number;
 	}): Promise<void> {
 		this.pending.signal.throwIfAborted();
 		const key = await this.sourceKey(composition.source);
-		const frameKey = `${key}:${timeSeconds}`;
+		const frameKey = `${key}:${timeSeconds}:${previewScale}`;
 		const cached = this.frames.get(frameKey);
 		if (cached) {
 			this.drawBitmap({ bitmap: cached, target });
@@ -195,6 +199,7 @@ export class HyperframesRenderClient {
 				action: "capture",
 				id: session.id,
 				timeSeconds,
+				previewScale,
 			});
 		} catch (error) {
 			// A timeout or idle expiry closes the host session. The next requested
