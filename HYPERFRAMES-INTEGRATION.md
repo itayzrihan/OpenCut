@@ -18,7 +18,7 @@ is implemented; the product integration is not complete.
 | Lossless source import into existing document | Registry tests, original source roundtrip, native clips unchanged | Implemented for native and Classic documents; registry, real WASM and browser folder flow pass |
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
-| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated runtime inventory and read-only Classic inspector implemented; timeline rows and child editing pending |
+| Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic frame adapter, CSS seek, trim and alpha verified; audio host verified on all eight and connected to Classic playback/export; fast live preview and speed pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
@@ -672,6 +672,38 @@ Verification:
   live preview performance and the remaining unsupported nested windows need
   follow-up work.
 
+### Composition layers inside existing tracks (2026-10-04)
+
+- `hyperframes.layers.timeline.read` projects one Classic compound clip into
+  ordered child rows. Rust preserves occurrence keys and hierarchy, intersects
+  each layer with its ancestor windows and the compound's trimmed source window,
+  and returns timeline ticks. Reads require an explicit project, scene, element
+  and revision. No source execution, document changes or additional tracks occur.
+- Existing track headers expand/collapse these rows beneath the compound. Labels
+  remain in the fixed column, time bars share the existing ruler, and both use
+  the same height in scrolling, selection and drop geometry. Rows are rendered
+  only near the vertical viewport and bars near the horizontal viewport. Native
+  clips, keyframe expansion and the existing timeline remain in place.
+- Clicking a row selects its compound and seeks to that row's timeline start.
+  This respects the existing AI range lock. Expansion is temporary view state;
+  timing/identity are read from the canonical registry after edits and history
+  changes. Projects lacking a runtime manifest direct the user to read layers
+  in the inspector.
+- Actual Brag UI verification: Narration spans 8–14 seconds, Opening 8–9.75,
+  Claim 9.75–11.6 and Proof 11.6–14. Clicking Claim seeks to 9.75 seconds.
+  Splitting there leaves Opening in the left clip, Claim/Proof in the right,
+  and clips narration to each side. Undo restores the original four rows.
+  Collapse restores ordinary track height. Enter expands the row without
+  invoking the global jump-to-start shortcut; Space activates Proof at 11.6
+  seconds without starting playback. All eight visible layer buttons become
+  disabled while AI range selection is armed and recover when cancelled.
+  Evidence: `.local/hyperframes-expanded-timeline.png`. Independent child timing/source
+  edits are still pending; these bars currently navigate and show structure.
+- Fourteen Rust source/manifest/Classic-layer tests, ten real-WASM command tests
+  (141 assertions), thirteen existing track visibility/hit-testing tests
+  (17 assertions), scoped TypeScript, changed-file ESLint and editor-api Clippy passed. Release WASM
+  and its existing export contract were rebuilt and verified.
+
 ## Next implementation sequence
 
 1. The GPU startup/recovery fix above covers the observed black preview. Exercise
@@ -687,8 +719,7 @@ Verification:
    transport and edits through canonical transactions. Resource serving must be
    scoped to the imported package; keep local control endpoints authenticated
    and loopback-only.
-4. Extend the implemented runtime manifest and read-only inspector into expandable
-   rows of the existing timeline. Connect child selection and canonical edits;
+4. Extend the implemented expandable timeline rows with child selection and canonical edits;
    resolve anonymous/generated source identity before offering source edits.
 5. The frame capture adapter is connected to the existing compositor. Resolve
    the 3D repeatability case, video injection,

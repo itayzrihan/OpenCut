@@ -597,6 +597,24 @@ export class CommandManager {
 		return this.canonical.readHyperframesAudioClips({ sceneId });
 	}
 
+	async readHyperframesLayerRows({
+		projectId,
+		...input
+	}: {
+		projectId: string;
+		sceneId: string;
+		elementId: string;
+	}) {
+		await this.enableCanonical();
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId
+		)
+			throw new Error("The HyperFrames layer project changed");
+		return this.canonical.readHyperframesLayerRows(input);
+	}
+
 	async importHyperframes(
 		input: Parameters<CanonicalClassicSession["importHyperframes"]>[0] & {
 			target?: { projectId: string; sceneId: string; signal?: AbortSignal };

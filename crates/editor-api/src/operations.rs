@@ -188,6 +188,7 @@ where
             | "hyperframes.manifest.validate" | "hyperframes.manifest.set"
             | "hyperframes.audio.prepare"
             | "hyperframes.audio.clips.read"
+            | "hyperframes.layers.timeline.read"
     );
     descriptor.tags = tags.iter().map(|tag| (*tag).to_owned()).collect();
     let handler = Arc::new(handler);

@@ -308,7 +308,23 @@ test("runtime layers publish through canonical state, undo and persisted history
 		sourceFingerprint: inspection.result.data.fingerprint,
 		runtimeVersion: "0.8.115",
 		durationSeconds: 6,
-		layers: [],
+		layers: [
+			{
+				key: "generated/title",
+				parentKey: null,
+				file: "index.html",
+				elementId: null,
+				label: "Generated title",
+				kind: "element" as const,
+				startSeconds: 1.5,
+				durationSeconds: 2,
+				trackIndex: 1,
+				resourcePath: null,
+				playbackStartSeconds: 0,
+				playbackRate: 1,
+				media: null,
+			},
+		],
 		diagnostics: [],
 	};
 	const request = {
@@ -334,6 +350,25 @@ test("runtime layers publish through canonical state, undo and persisted history
 	).rejects.toThrow();
 	expect(host.project()).toEqual(before);
 	await host.manager.setHyperframesManifest(request);
+	const layerRows = await host.manager.readHyperframesLayerRows({
+		projectId: "classic-project",
+		sceneId: host.editor.scenes.getActiveScene().id,
+		elementId: imported.itemId,
+	});
+	expect(layerRows.clip.rows).toHaveLength(1);
+	expect(layerRows.clip.rows[0]).toMatchObject({
+		key: "generated/title",
+		label: "Generated title",
+		duration: 240_000,
+		depth: 0,
+	});
+	await expect(
+		host.manager.readHyperframesLayerRows({
+			projectId: "other",
+			sceneId: host.editor.scenes.getActiveScene().id,
+			elementId: imported.itemId,
+		}),
+	).rejects.toThrow();
 	expect(
 		host.project().hyperframesCompositions?.[imported.assetId].runtimeManifest,
 	).toEqual(manifest);

@@ -228,6 +228,20 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	readHyperframesLayerRows(input: { sceneId: string; elementId: string }): {
+		revision: number;
+		clip: import("@/hyperframes/types").HyperframesTimelineClip;
+	} {
+		return this.call({
+			capability: "hyperframes.layers.timeline.read",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	dispose(): void {
 		this.runtime.free();
 	}

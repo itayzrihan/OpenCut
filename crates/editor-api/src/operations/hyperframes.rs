@@ -49,6 +49,22 @@ struct ReadAudioOutput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReadLayerRowsInput {
+    project_id: String,
+    scene_id: String,
+    element_id: String,
+    expected_revision: u64,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct ReadLayerRowsOutput {
+    revision: u64,
+    clip: crate::ClassicHyperframesLayerRows,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SetManifestInput {
     project_id: String,
     expected_revision: u64,
@@ -92,6 +108,50 @@ pub(super) fn register_hyperframes_operations(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    let layers_state = state.clone();
+    register::<ReadLayerRowsInput, ReadLayerRowsOutput, _, _>(
+        registry,
+        "hyperframes.layers.timeline.read",
+        "Read composition layers on the Classic timeline",
+        "Projects validated runtime layers into the existing compound clip's timeline window. Preserves occurrence identity and hierarchy, applies trim and ancestor windows, and follows canonical edits and undo. Requires a project, scene, compound element and exact revision. Does not execute source or add tracks.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "layers", "classic", "timeline"],
+        move |context, input| {
+            let state = layers_state.clone();
+            async move {
+                check_cancelled(&context)?;
+                let store = state.read().map_err(|_| {
+                    CapabilityError::Failed("editor state lock was poisoned".into())
+                })?;
+                let document = store.document_for(Some(&input.project_id)).ok_or_else(|| {
+                    CapabilityError::Unavailable("HyperFrames layer project is not open".into())
+                })?;
+                check_target(document, &context)?;
+                check_revision(document, Some(input.expected_revision))?;
+                let classic = document
+                    .project
+                    .as_ref()
+                    .filter(|project| project.id == input.project_id)
+                    .and_then(|project| project.classic.as_ref())
+                    .ok_or_else(|| {
+                        CapabilityError::Unavailable(
+                            "HyperFrames layer rows require a Classic project".into(),
+                        )
+                    })?;
+                let clip = classic
+                    .hyperframes_layer_rows(&input.scene_id, &input.element_id)
+                    .map_err(model_error)?;
+                check_cancelled(&context)?;
+                Ok(OperationSuccess::new(ReadLayerRowsOutput {
+                    revision: document.revision,
+                    clip,
+                }))
+            }
+        },
+    )?;
     let audio_state = state.clone();
     register::<ReadAudioInput, ReadAudioOutput, _, _>(
         registry,

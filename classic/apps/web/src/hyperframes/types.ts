@@ -15,6 +15,25 @@ export interface HyperframesComposition {
 	runtimeManifest?: HyperframesRuntimeManifest;
 }
 
+/** Read-only canonical projection into one existing Classic compound clip. */
+export interface HyperframesTimelineClip {
+	trackId: string;
+	elementId: string;
+	compositionId: string;
+	name: string;
+	rows: Array<{
+		key: string;
+		parentKey: string | null;
+		label: string;
+		kind: HyperframesRuntimeLayer["kind"];
+		depth: number;
+		startTime: number;
+		duration: number;
+		sourceStartSeconds: number;
+		sourceEndSeconds: number;
+	}>;
+}
+
 export interface HyperframesRuntimeManifest {
 	sourceFingerprint: string;
 	runtimeVersion: string;
