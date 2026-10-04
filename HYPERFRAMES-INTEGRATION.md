@@ -22,8 +22,66 @@ is implemented; the product integration is not complete.
 | Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; up to four live compositions interleave with native layers. Native video and asynchronous Canvas now wait for decoded/drawn frames; trim, 1.5× media speed, repeated/reverse seeks and real Brag video frames pass comparison. Broader GPU, dynamic-media and speed coverage remains pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
-| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. A four-minute, 220-clip mixed timeline now completes at 23.49 overall and 24.90 after initial source loading, with zero errors; bounded surface reuse removes repeated multi-second loads at cuts. Sustained 30 fps, first-load delays and required capture throughput remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,014 web tests pass across 221 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,015 web tests pass across 222 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Bookmark overlay updates during playback (2026-10-04)
+
+The preview parent subscribed to every transport tick whenever bookmark notes
+were enabled, including empty timelines. That preference is enabled by default.
+The resulting parent updates repeatedly rendered the preview toolbar and
+interaction overlay. The parent now selects the active notes through the
+existing playback subscription and snapshot equality. An unchanged set of note
+objects keeps the same snapshot; entering or leaving a note interval, editing a
+note, seeking or changing visibility still updates the displayed overlay.
+Parallax retains its per-tick camera subscription.
+
+The extracted `PreviewPanelWithOverlays` remains the editor's actual component.
+This is **Classic-only UI rendering work**, with no new document state, history,
+MCP capability or transport. Small, opt-in React Profiler spans distinguish the
+toolbar and interaction work under the existing `renderPerf=1` diagnostic flag.
+The `Render` spans measure actual React work; the `Commit` spans include elapsed
+time spent waiting for other work and should not be interpreted as component CPU
+cost.
+
+Before the change, representative steady 60-frame windows recorded 124–148
+toolbar commits with 2.89–3.09 ms mean React render duration. After the change,
+saved warm windows record 60–74 toolbar commits at 0.43–0.99 ms mean duration;
+the interaction overlay records only 1–3 commits when it needs an update.
+
+The same 220-clip fixture was measured before and after, with automated tests
+stopped during playback. The baseline warm segment rendered 1,895 frames in
+73.8475 seconds (25.66/s). The updated editor reached `00:04:00:00`; its retained
+warm reports rendered 5,803 frames in 208.7078 seconds (27.80/s), with windows
+between 26.47 and 28.82/s, zero errors and a 341.8 ms maximum render. The saved
+reports cover timeline frames 939–7199; the browser log buffer had discarded the
+first two windows by the final collection. The first, observed earlier, still
+took 3,527.6 ms for a cold source render and completed at 10.99/s. This change
+does not resolve cold loading. Observation lengths differ, so these measurements
+show local improvement rather than a controlled percentage gain or guaranteed
+30 fps. They count parent render completions, not native video presentations.
+
+Evidence: `.local/hf-ui-component-profile-before-20261004.json` and
+`.local/hf-ui-component-profile-after-20261004.json`. Actual editor checks added
+a diagnostic note at one second with a two-second duration: it was visible at
+two seconds, absent at `00:00:03:01`, and restored by seeking backward to two
+seconds. The note was removed afterward. Evidence:
+`.local/hf-bookmark-overlay-ui-20261004.json` and
+`.local/hf-bookmark-overlay-review-20261004.jpg`.
+
+The isolated browser regression uses the real preview parent, playback
+subscription and bookmark rendering, with doubles for editor stores and
+unrelated preview geometry. It covers empty intervals, blank notes, overlapping
+and point notes, inclusive ends, backward seeks, visibility, note/color edits,
+removal and preservation of Parallax clock updates. It fails against the prior
+subscription (five parent renders instead of one), and passes after the change.
+This tests camera clock routing, not Parallax geometry. All 1,015 tests pass in
+222 isolated suites, with browser tests enabled and no failures or skips
+(124.4 s). Product TypeScript passes; changed-file ESLint has zero errors and
+one existing project-ID assertion warning. Reports:
+`.local/hf-overlay-ticks-before-20261004/summary.json`,
+`.local/hf-overlay-ticks-after-20261004/summary.json` and
+`.local/hf-overlay-ticks-full-20261004/summary.json`.
 
 ## Warm surfaces across long-timeline cuts (2026-10-04)
 

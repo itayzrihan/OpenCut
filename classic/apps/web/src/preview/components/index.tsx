@@ -247,13 +247,14 @@ function PreviewCanvas({
 		(...args) => {
 			if (!isRenderPerfEnabled()) return;
 
-			const [, , actualDuration, , startTime, commitTime] = args;
+			const [id, , actualDuration, , startTime, commitTime] = args;
+			const name = id === "PreviewCanvas" ? "preview" : id;
 			recordSpan({
-				name: "react.previewRender",
+				name: `react.${name}Render`,
 				durationMs: actualDuration,
 			});
 			recordSpan({
-				name: "react.previewCommit",
+				name: `react.${name}Commit`,
 				durationMs: Math.max(0, commitTime - startTime),
 			});
 		},
@@ -821,7 +822,12 @@ function PreviewCanvas({
 										instances={overlayInstances}
 										plane="under-interaction"
 									/>
-									<PreviewInteractionOverlay />
+									<Profiler
+										id="previewInteraction"
+										onRender={handleProfilerRender}
+									>
+										<PreviewInteractionOverlay />
+									</Profiler>
 									<PreviewOverlayLayer
 										instances={overlayInstances}
 										plane="over-interaction"
@@ -862,11 +868,13 @@ function PreviewCanvas({
 							/>
 						</ContextMenu>
 					</div>
-					<PreviewToolbar
-						onToggleFullscreen={onToggleFullscreen}
-						overlayControls={overlayControls}
-						onOverlayVisibilityChange={onOverlayVisibilityChange}
-					/>
+					<Profiler id="previewToolbar" onRender={handleProfilerRender}>
+						<PreviewToolbar
+							onToggleFullscreen={onToggleFullscreen}
+							overlayControls={overlayControls}
+							onOverlayVisibilityChange={onOverlayVisibilityChange}
+						/>
+					</Profiler>
 				</div>
 			</PreviewViewportProvider>
 		</Profiler>
