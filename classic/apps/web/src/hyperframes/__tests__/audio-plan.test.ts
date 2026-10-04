@@ -1,5 +1,11 @@
-import { describe, expect, test } from "bun:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+// @opencut-test-runner: node
+// Exercise Puppeteer/CDP in the same runtime as the Next server. Bun 1.3.5 on
+// Windows can stall CDP and crash when disposing a rejected audio probe.
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createCanonicalTestRuntime } from "@/core/__tests__/canonical-runtime-fixture";
@@ -8,7 +14,27 @@ import { HyperframesPreviewHost } from "../preview-host";
 import { HyperframesRenderHost } from "../render-host";
 import { renderHyperframesAudio } from "../audio-render";
 import type { HyperframesSource } from "../types";
-
+const execFileAsync = promisify(execFile);
+const browserTest = {
+	skip: process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1",
+	timeout: 60_000,
+};
+function assertNear({
+	actual,
+	expected,
+	digits,
+}: {
+	actual: number | undefined;
+	expected: number;
+	digits: number;
+}) {
+	assert.strictEqual(typeof actual, "number");
+	const tolerance = 0.5 * 10 ** -digits;
+	assert.ok(
+		Math.abs(actual! - expected) < tolerance,
+		`${actual} differs from ${expected} by at least ${tolerance}`,
+	);
+}
 function tone(): Buffer {
 	const wav = Buffer.alloc(44 + 6 * 8000 * 2);
 	wav.write("RIFF", 0);
@@ -30,11 +56,11 @@ function tone(): Buffer {
 		);
 	return wav;
 }
-
-describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
-	"real audio plan probe",
-	() => {
-		test("discovers undeclared video audio and ignores a looping silent video", async () => {
+describe("real audio plan probe", () => {
+	test(
+		"discovers undeclared video audio and ignores a looping silent video",
+		browserTest,
+		async () => {
 			const folder = await mkdtemp(
 				join(tmpdir(), "opencut-hf-video-audio-test-"),
 			);
@@ -56,12 +82,11 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					args.push("-c:v", "libx264", "-pix_fmt", "yuv420p");
 					if (audible) args.push("-c:a", "aac");
 					args.push("-y", join(folder, audible ? "voice.mp4" : "silent.mp4"));
-					const child = Bun.spawn(
-						[process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg", ...args],
-						{ stdout: "pipe", stderr: "pipe" },
+					await execFileAsync(
+						process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg",
+						args,
+						{ windowsHide: true, timeout: 30_000 },
 					);
-					const error = await new Response(child.stderr).text();
-					if (await child.exited) throw new Error(error);
 				}
 				const source: HyperframesSource = {
 					entryFile: "index.html",
@@ -79,7 +104,7 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 									{
 										path: join(folder, name),
 										mimeType: "video/mp4",
-										size: await Bun.file(join(folder, name)).size,
+										size: (await stat(join(folder, name))).size,
 									},
 								] as const,
 						),
@@ -92,37 +117,45 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					host,
 				});
 				const plan = await session.consumeAudioPlan({ source });
-				expect(plan.elements).toHaveLength(2);
-				expect(plan.elements.every((element) => element.type === "video")).toBe(
+				assert.strictEqual(plan.elements.length, 2);
+				assert.strictEqual(
+					plan.elements.every((element) => element.type === "video"),
 					true,
 				);
-				expect(
+				assert.strictEqual(
 					plan.elements.find((element) => element.src === "silent.mp4")
 						?.looping,
-				).toBe(true);
+					true,
+				);
 				const artifact = await renderHyperframesAudio({
 					source,
 					plan,
 					resources,
 					runtime,
 				});
-				expect(artifact?.mimeType).toBe("audio/mp4");
-				expect(artifact?.byteSize).toBeGreaterThan(10_000);
+				assert.ok(artifact);
+				assert.strictEqual(artifact.mimeType, "audio/mp4");
+				assert.ok(artifact.byteSize > 10000);
 				const audible = plan.elements.find(
 					(element) => element.src === "voice.mp4",
 				)!;
 				audible.looping = true;
-				await expect(
+				await assert.rejects(
 					renderHyperframesAudio({ source, plan, resources, runtime }),
-				).rejects.toThrow("Looped HyperFrames audio");
+					new RegExp("Looped HyperFrames audio"),
+				);
 			} finally {
 				await session?.close();
 				await host.close();
 				runtime.free();
 				await rm(folder, { recursive: true, force: true });
 			}
-		}, 60_000);
-		test("retains nested occurrences, groups, offsets and fades while dropping authored mute", async () => {
+		},
+	);
+	test(
+		"retains nested occurrences, groups, offsets and fades while dropping authored mute",
+		browserTest,
+		async () => {
 			const folder = await mkdtemp(join(tmpdir(), "opencut-hf-audio-test-"));
 			const path = join(folder, "voice.wav");
 			const wav = tone();
@@ -155,27 +188,34 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					]),
 				});
 				const plan = await session.consumeAudioPlan({ source });
-				expect(session.isClosed).toBe(true);
-				expect(plan.durationSeconds).toBe(6);
-				expect(plan.elements).toHaveLength(2);
-				expect(plan.elements.map((element) => element.start)).toEqual([
-					0.5, 3.5,
-				]);
-				expect(plan.elements.map((element) => element.end)).toEqual([2.5, 5.5]);
-				expect(plan.elements.map((element) => element.id)).toEqual([
-					"track-0",
-					"track-1",
-				]);
+				assert.strictEqual(session.isClosed, true);
+				assert.strictEqual(plan.durationSeconds, 6);
+				assert.strictEqual(plan.elements.length, 2);
+				assert.deepStrictEqual(
+					plan.elements.map((element) => element.start),
+					[0.5, 3.5],
+				);
+				assert.deepStrictEqual(
+					plan.elements.map((element) => element.end),
+					[2.5, 5.5],
+				);
+				assert.deepStrictEqual(
+					plan.elements.map((element) => element.id),
+					["track-0", "track-1"],
+				);
 				for (const element of plan.elements) {
-					expect(element.src).toBe("voice.wav");
-					expect(element.mediaStart).toBe(0.25);
-					expect(element.playbackRate).toBe(2);
-					expect(element.volume).toBe(0.5);
-					expect(element.fadeIn).toBe(0.2);
-					expect(element.fadeOut).toBe(0.3);
-					expect(element.groupVolume).toBe(0.75);
+					assert.strictEqual(element.src, "voice.wav");
+					assert.strictEqual(element.mediaStart, 0.25);
+					assert.strictEqual(element.playbackRate, 2);
+					assert.strictEqual(element.volume, 0.5);
+					assert.strictEqual(element.fadeIn, 0.2);
+					assert.strictEqual(element.fadeOut, 0.3);
+					assert.strictEqual(element.groupVolume, 0.75);
 				}
-				expect(plan.elements[0].groupId).not.toBe(plan.elements[1].groupId);
+				assert.notStrictEqual(
+					plan.elements[0].groupId,
+					plan.elements[1].groupId,
+				);
 				const artifact = await renderHyperframesAudio({
 					source,
 					plan,
@@ -184,14 +224,15 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 						["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
 					]),
 				});
-				expect(artifact?.mimeType).toBe("audio/mp4");
-				expect(artifact?.durationMs).toBe(6000);
-				expect(artifact?.byteSize).toBeGreaterThan(1000);
+				assert.ok(artifact);
+				assert.strictEqual(artifact.mimeType, "audio/mp4");
+				assert.strictEqual(artifact.durationMs, 6000);
+				assert.ok(artifact.byteSize > 1000);
 				const mixed = join(folder, "mixed.m4a");
-				await writeFile(mixed, runtime.readArtifact(artifact!.id));
-				const decode = Bun.spawn(
+				await writeFile(mixed, runtime.readArtifact(artifact.id));
+				const decode = await execFileAsync(
+					process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg",
 					[
-						process.env.HYPERFRAMES_FFMPEG_PATH || "ffmpeg",
 						"-v",
 						"error",
 						"-i",
@@ -204,12 +245,14 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 						"8000",
 						"pipe:1",
 					],
-					{ stdout: "pipe", stderr: "pipe" },
+					{
+						windowsHide: true,
+						timeout: 30_000,
+						encoding: "buffer",
+						maxBuffer: 4 * 1024 * 1024,
+					},
 				);
-				const pcm = new Float32Array(
-					await new Response(decode.stdout).arrayBuffer(),
-				);
-				expect(await decode.exited).toBe(0);
+				const pcm = new Float32Array(Uint8Array.from(decode.stdout).buffer);
 				const rms = ({ start, end }: { start: number; end: number }) => {
 					const samples = pcm.slice(start * 8000, end * 8000);
 					return Math.sqrt(
@@ -217,15 +260,16 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 							samples.length,
 					);
 				};
-				expect(pcm.length / 8000).toBeCloseTo(6, 1);
-				expect(rms({ start: 0, end: 0.3 })).toBeLessThan(0.002);
-				expect(rms({ start: 2.7, end: 3.2 })).toBeLessThan(0.002);
-				expect(rms({ start: 1, end: 1.5 })).toBeGreaterThan(0.09);
-				expect(rms({ start: 1, end: 1.5 })).toBeLessThan(0.12);
-				expect(rms({ start: 4, end: 4.5 })).toBeCloseTo(
-					rms({ start: 1, end: 1.5 }),
-					2,
-				);
+				assertNear({ actual: pcm.length / 8000, expected: 6, digits: 1 });
+				assert.ok(rms({ start: 0, end: 0.3 }) < 0.002);
+				assert.ok(rms({ start: 2.7, end: 3.2 }) < 0.002);
+				assert.ok(rms({ start: 1, end: 1.5 }) > 0.09);
+				assert.ok(rms({ start: 1, end: 1.5 }) < 0.12);
+				assertNear({
+					actual: rms({ start: 4, end: 4.5 }),
+					expected: rms({ start: 1, end: 1.5 }),
+					digits: 2,
+				});
 				const renderHost = new HyperframesRenderHost(runtime);
 				const scope = { accountId: "audio-a", projectId: "project-a" };
 				try {
@@ -242,25 +286,27 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 						renderHost.audio({ scope, id: ready.id }),
 						renderHost.audio({ scope, id: ready.id }),
 					]);
-					expect(first?.id).toBe(second?.id);
-					expect(first?.mimeType).toBe("audio/mp4");
+					assert.strictEqual(first?.id, second?.id);
+					assert.strictEqual(first?.mimeType, "audio/mp4");
 					for (const wrong of [
 						{ ...scope, accountId: "audio-b" },
 						{ ...scope, projectId: "project-b" },
 					]) {
-						expect(() =>
-							renderHost.readArtifact({ scope: wrong, id: first!.id }),
-						).toThrow("unavailable");
+						assert.throws(
+							() => renderHost.readArtifact({ scope: wrong, id: first!.id }),
+							new RegExp("unavailable"),
+						);
 					}
-					expect(
+					assert.strictEqual(
 						(await renderHost.capture({ scope, id: ready.id, timeSeconds: 1 }))
 							.mimeType,
-					).toBe("image/png");
+						"image/png",
+					);
 					const abort = new AbortController();
 					abort.abort();
-					await expect(
+					await assert.rejects(
 						renderHost.audio({ scope, id: ready.id, signal: abort.signal }),
-					).rejects.toThrow();
+					);
 				} finally {
 					await renderHost.close();
 				}
@@ -277,71 +323,101 @@ describe.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 						["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
 					]),
 				});
-				await expect(
+				const rejectedAt = performance.now();
+				await assert.rejects(
 					overhangProbe.consumeAudioPlan({ source: overhang }),
-				).rejects.toThrow("outside a nested composition window");
+					/outside a nested composition window/,
+				);
+				assert.ok(
+					performance.now() - rejectedAt < 5000,
+					"Rejected audio probes must dispose without a CDP timeout",
+				);
+				assert.strictEqual(overhangProbe.isClosed, true);
+				// The same runtime and preview host remain usable after rejection.
+				const recovered = await HyperframesCaptureSession.open({
+					source,
+					runtime,
+					host,
+					resources: new Map([
+						["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
+					]),
+				});
+				try {
+					assert.strictEqual(
+						(await recovered.capture({ timeSeconds: 1 })).mimeType,
+						"image/png",
+					);
+				} finally {
+					await recovered.close();
+				}
 			} finally {
 				await session?.close();
 				await host.close();
 				runtime.free();
 				await rm(folder, { recursive: true, force: true });
 			}
-		}, 60_000);
-
-		test.skipIf(!process.env.OPENCUT_HYPERFRAMES_GSAP_FIXTURE)(
-			"samples GSAP volume automation with the official helper",
-			async () => {
-				const folder = await mkdtemp(
-					join(tmpdir(), "opencut-hf-envelope-test-"),
-				);
-				const path = join(folder, "voice.wav");
-				const wav = tone();
-				await writeFile(path, wav);
-				const runtime = await createCanonicalTestRuntime();
-				const host = new HyperframesPreviewHost();
-				const source: HyperframesSource = {
-					entryFile: "index.html",
-					resourceAssetIds: { "voice.wav": "voice" },
-					files: {
-						"gsap.js": await Bun.file(
-							process.env.OPENCUT_HYPERFRAMES_GSAP_FIXTURE!,
-						).text(),
-						"index.html": `<!doctype html><html><head><script src="gsap.js"></script></head><body><div data-composition-id="main" data-width="64" data-height="64" data-duration="2"><audio id="voice" src="voice.wav" data-start="0" data-duration="2" data-volume="0.2"></audio></div><script>window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});tl.fromTo('#voice',{volume:0.2},{volume:1.2,duration:1,ease:'none'},0.5);tl.to({}, {duration:0.5},1.5);window.__timelines.main=tl;</script></body></html>`,
-					},
-				};
-				let session: HyperframesCaptureSession | undefined;
-				try {
-					session = await HyperframesCaptureSession.open({
-						source,
-						runtime,
-						host,
-						resources: new Map([
-							["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
-						]),
-					});
-					const plan = await session.consumeAudioPlan({ source });
-					const frames = plan.elements[0].volumeKeyframes!;
-					expect(frames.length).toBeGreaterThan(20);
-					expect(frames[0]).toEqual({ time: 0, volume: 0.2 });
-					expect(
-						frames.find((frame) => frame.time === 0.5)?.volume,
-					).toBeCloseTo(0.2, 3);
-					expect(frames.find((frame) => frame.time === 1)?.volume).toBeCloseTo(
-						0.7,
-						3,
-					);
-					expect(
-						frames.find((frame) => frame.time === 1.5)?.volume,
-					).toBeCloseTo(1.2, 3);
-					expect(frames.at(-1)).toEqual({ time: 2, volume: 1.2 });
-				} finally {
-					await session?.close();
-					await host.close();
-					runtime.free();
-					await rm(folder, { recursive: true, force: true });
-				}
-			},
-			60_000,
-		);
-	},
-);
+		},
+	);
+	test(
+		"samples GSAP volume automation with the official helper",
+		{
+			...browserTest,
+			skip: browserTest.skip || !process.env.OPENCUT_HYPERFRAMES_GSAP_FIXTURE,
+		},
+		async () => {
+			const folder = await mkdtemp(join(tmpdir(), "opencut-hf-envelope-test-"));
+			const path = join(folder, "voice.wav");
+			const wav = tone();
+			await writeFile(path, wav);
+			const runtime = await createCanonicalTestRuntime();
+			const host = new HyperframesPreviewHost();
+			const source: HyperframesSource = {
+				entryFile: "index.html",
+				resourceAssetIds: { "voice.wav": "voice" },
+				files: {
+					"gsap.js": await readFile(
+						process.env.OPENCUT_HYPERFRAMES_GSAP_FIXTURE!,
+						"utf8",
+					),
+					"index.html": `<!doctype html><html><head><script src="gsap.js"></script></head><body><div data-composition-id="main" data-width="64" data-height="64" data-duration="2"><audio id="voice" src="voice.wav" data-start="0" data-duration="2" data-volume="0.2"></audio></div><script>window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});tl.fromTo('#voice',{volume:0.2},{volume:1.2,duration:1,ease:'none'},0.5);tl.to({}, {duration:0.5},1.5);window.__timelines.main=tl;</script></body></html>`,
+				},
+			};
+			let session: HyperframesCaptureSession | undefined;
+			try {
+				session = await HyperframesCaptureSession.open({
+					source,
+					runtime,
+					host,
+					resources: new Map([
+						["voice.wav", { path, mimeType: "audio/wav", size: wav.length }],
+					]),
+				});
+				const plan = await session.consumeAudioPlan({ source });
+				const frames = plan.elements[0].volumeKeyframes!;
+				assert.ok(frames.length > 20);
+				assert.deepStrictEqual(frames[0], { time: 0, volume: 0.2 });
+				assertNear({
+					actual: frames.find((frame) => frame.time === 0.5)?.volume,
+					expected: 0.2,
+					digits: 3,
+				});
+				assertNear({
+					actual: frames.find((frame) => frame.time === 1)?.volume,
+					expected: 0.7,
+					digits: 3,
+				});
+				assertNear({
+					actual: frames.find((frame) => frame.time === 1.5)?.volume,
+					expected: 1.2,
+					digits: 3,
+				});
+				assert.deepStrictEqual(frames.at(-1), { time: 2, volume: 1.2 });
+			} finally {
+				await session?.close();
+				await host.close();
+				runtime.free();
+				await rm(folder, { recursive: true, force: true });
+			}
+		},
+	);
+});

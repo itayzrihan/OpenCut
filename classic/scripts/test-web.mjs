@@ -4,7 +4,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const webRoot = fileURLToPath(new URL("../apps/web/", import.meta.url));
 const testPattern = /\.(test|spec)\.tsx?$/;
@@ -61,15 +61,29 @@ async function run(file) {
 	const start = Date.now();
 	const relative = path.relative(webRoot, file).replaceAll("\\", "/");
 	const log = relative.replaceAll("/", "__") + ".log";
-	const usesRealWasm = /^\/\/ @opencut-test-wasm: real\r?$/m.test(
-		await readFile(file, "utf8"),
-	);
-	const bunArgs = ["test"];
+	const source = await readFile(file, "utf8");
+	const usesNode = /^\/\/ @opencut-test-runner: node\r?$/m.test(source);
+	const usesRealWasm = /^\/\/ @opencut-test-wasm: real\r?$/m.test(source);
+	if (usesNode && usesRealWasm)
+		throw new Error(`Node suites must initialize their own WASM: ${relative}`);
+	const runner = usesNode ? "node" : "bun";
+	const executable = usesNode ? process.execPath : process.env.BUN_BIN || "bun";
+	const runnerArgs = usesNode
+		? [
+				"--import",
+				pathToFileURL(path.join(webRoot, "test-support/node-typescript.mjs")).href,
+				"--test",
+				"--test-reporter=tap",
+			]
+		: ["test"];
 	if (usesRealWasm)
-		bunArgs.push("--preload", path.join(webRoot, "test-support/real-wasm.ts"));
-	bunArgs.push(`./${relative}`);
+		runnerArgs.push(
+			"--preload",
+			path.join(webRoot, "test-support/real-wasm.ts"),
+		);
+	runnerArgs.push(`./${relative}`);
 	const result = await new Promise((resolve) => {
-		const child = spawn(process.env.BUN_BIN || "bun", bunArgs, {
+		const child = spawn(executable, runnerArgs, {
 			cwd: webRoot,
 			env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" },
 			stdio: ["ignore", "pipe", "pipe"],
@@ -97,12 +111,15 @@ async function run(file) {
 		});
 	});
 	await writeFile(path.join(report, log), result.output, "utf8");
-	const count = (kind) =>
-		Number(
-			result.output.match(new RegExp(`^\\s*(\\d+) ${kind}\\b`, "m"))?.[1] ?? 0,
-		);
+	const count = (kind) => {
+		const pattern = usesNode
+			? `^# ${kind === "skip" ? "skipped" : kind} (\\d+)\\b`
+			: `^\\s*(\\d+) ${kind}\\b`;
+		return Number(result.output.match(new RegExp(pattern, "m"))?.[1] ?? 0);
+	};
 	const entry = {
 		file: relative,
+		runner,
 		wasm: usesRealWasm ? "real" : "suite",
 		exitCode: result.exitCode,
 		passed: count("pass"),

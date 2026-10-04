@@ -23,12 +23,13 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector, preparation/failure feedback and Fit timeline control implemented; scroll/ruler updates recover correctly from React effect restarts; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; one compound measured at 29.2 completed preview frames/s versus 9.2–10 with capture; two live compounds now reach 28.4–28.9 versus the former 9.8; four distinct packages and large-timeline coverage pending |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites (968 passing tests) and 232 Rust tests pass; real browser coverage recorded below; invalid nested-audio cleanup, test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | 215 isolated web suites now pass all 979 tests with browser coverage enabled and zero skips; 232 Rust tests pass; test-fixture typing and full interactive workflow coverage remain open |
 
 ## Feature preservation regression audit (2026-10-04)
 
-The web suite now runs through `bun run test:web` from `classic/`, one Bun
-process per file. This prevents process-wide module mocks from changing other
+The web suite now runs through `bun run test:web` from `classic/`, one isolated
+process per file. Bun is the default; the audio browser suite explicitly uses
+Node, matching the server runtime. This prevents process-wide module mocks from changing other
 suites. Tests requiring real Classic Rust exports explicitly declare the
 `@opencut-test-wasm: real` preload. Tests with partial mocks merge the generated
 WASM exports before their own overrides. A universal preload was rejected:
@@ -87,24 +88,49 @@ available to fresh accounts. Presets still reference account library IDs;
 missing-library feedback and the fresh-account preset experience need review.
 Private media was not restored to `public/` or added to Git.
 
-### Remaining browser failure
+### Audio browser suite now uses the server runtime
 
-The optional nested-audio test exposes a cleanup problem with Bun 1.3.5 on
-Windows and the pinned HyperFrames engine. Its invalid fixture extends an audio
-clip 0.1 seconds beyond a nested composition. The canonical preflight rejects
-that window correctly, but closing its browser page times out. Three runs
-crashed Bun with a segmentation fault after forced browser shutdown. A
-trace-instrumented run completed all 38 assertions in 45.56 seconds but still
-logged the close timeout, so it does not establish a fix. The trace statements
-were removed; the original test remains enabled.
+The invalid nested-audio fixture extends a clip 0.1 seconds beyond its parent.
+Phase tracing showed that canonical rejection completes in 1–2 ms under Bun
+1.3.5, followed by a 30-second stall in the engine's final Chrome memory sample
+and a five-second page-close timeout. Several runs then crashed Bun. Disabling
+the sampler reduced the delay but did not eliminate the page-close timeout;
+keeping preview resources alive and moving cleanup out of the error-unwinding
+path also did not resolve it. Those experimental edits were reverted.
 
-The valid nested mix, independent occurrences, gains/fades and decoded PCM
-assertions completed before that cleanup, and undeclared-video-audio detection
-passed in the failed suite. Keep the entire audio browser suite marked **not
-reliably passing** until shutdown is fixed or isolated from the Bun failure.
-Logs: `.local/hf-audio-overhang-trace.log`,
-`.local/hf-regression-audio-recheck-20261004/`, and
-`.local/hf-regression-browser-20261004/`.
+The unchanged production adapter handled the same fixture under Node 24.12.0
+in **954 ms**, including rejection and browser disposal. The engine declares
+Node as its supported runtime, and the Next server runs on Node. The three
+real audio tests now use `node:test`, retaining their video-audio discovery,
+nested occurrences, trims, rates, gains, fades, decoded PCM, account/project
+isolation, cancellation and GSAP envelope assertions. A new assertion requires
+invalid-probe cleanup within five seconds, then opens a valid composition and
+captures a PNG with the same runtime and preview host. Memory sampling remains
+enabled. Production capture/disposal code is unchanged.
+
+`// @opencut-test-runner: node` explicitly selects this runtime in the isolated
+runner; there is no retry or runtime selection based on pass/fail. A small
+TypeScript hook loads the same source files and installed dependencies under
+Node. WASM fixture bytes now load through `node:fs/promises`, shared with the
+Bun suites. Node TAP totals and the selected runtime are recorded in each report.
+
+Verification after the change:
+
+- All three audio tests pass in **21.9 seconds** with Chrome and FFmpeg. Report:
+  `.local/hf-audio-node-suite-20261004/summary.json`.
+- The full suite with browser tests and the local Brag GSAP fixture enabled
+  passes **979 tests in 215 suites, zero failures and zero skips**, in **90.1
+  seconds** with two workers. This includes the default 968 tests and all 11
+  previously optional browser tests. Report:
+  `.local/hf-regression-with-browser-node-20261004/summary.json`.
+- Changed TypeScript test files pass ESLint. The test type audit still reports
+  51 existing fixture errors elsewhere, with none in the changed audio test or
+  canonical runtime fixture (`.local/hf-audio-node-typecheck.log`).
+
+Bun's CDP/cleanup issue is not claimed fixed upstream. The verified product path
+and its audio regression suite now run in Node. Diagnostic evidence remains in
+`.local/hf-disposal-phases.log`, `.local/hf-disposal-node.log`, and the earlier
+Bun failure logs.
 
 This regression audit is partial preservation evidence. The broader UI review,
 full interactive workflows, remaining Brag exports, child timing editing and

@@ -123,8 +123,8 @@ bun run test:web
 bun run test:web src/timeline/__tests__/cut-silence.test.ts
 ```
 
-The runner starts a separate Bun process for each test file. Module mocks share
-a registry within a Bun process, so running the entire web suite with a single
+The runner starts a separate process for each test file, using Bun by default.
+Module mocks share a registry within a Bun process, so running the entire web suite with a single
 `bun test` can change another file's renderer or WASM behavior. The runner
 discovers all tests under `apps/web/src`, uses two workers, writes per-file logs
 and a JSON summary under the repository's `.local/classic-web-tests/`, and exits
@@ -136,6 +136,14 @@ the top. The runner initializes the generated bundler WASM before loading them.
 Suites with partial WASM mocks import `test-support/wasm` and spread its exports
 into their own mock factory before overriding specific functions. A global
 WASM preload must not override these mocks.
+
+Suites marked `// @opencut-test-runner: node` use `node:test` in the server's
+runtime. The audio browser suite uses this path because Bun 1.3.5 on Windows
+can stall Chrome's CDP connection and crash during rejected-probe cleanup.
+The Node TypeScript hook resolves the same source and packages without mocks
+or bundling. It requires `node:module.registerHooks`; Node 24.12.0 was verified.
+The JSON report records the runtime for each suite. Test failures do not trigger
+an automatic retry or a switch to a different runtime.
 
 Real HyperFrames browser tests are opt-in with
 `OPENCUT_HYPERFRAMES_BROWSER_TESTS=1`. Set `HYPERFRAMES_FFMPEG_PATH` and
