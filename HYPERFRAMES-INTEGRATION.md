@@ -19,7 +19,7 @@ is implemented; the product integration is not complete.
 | Folder/project import in the full editor | Import from user-selected Brag folder; resources persist across reopen | Folder picker, entry selection, staged resources and canonical import implemented; synthetic GSAP folder verified through UI, Undo/Redo and reopen; one actual Brag folder imported and persisted, seven remain |
 | Mixed, overlaid and standalone compositions | Existing Classic timeline, live preview and export for all three | Synthetic overlay verified in Classic preview and MP4 between two native image layers; one Brag composition appended and previewed in the mixed project; real overlay/standalone coverage pending |
 | Editable composition children | Expand/collapse in existing lanes; select, trim, move, source/variable editing and undo | Validated inventory, inspector and expandable rows within existing tracks implemented; rows follow compound placement/trim/split/undo and navigate to their timeline times; independent child editing pending |
-| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; isolated live preview works for an eligible topmost DOM composition, with two real Brag packages matching sampled full captures; general live layer ordering, video/canvas and speed pending |
+| Full-fidelity playback | GSAP, CSS, media, fonts, nested hosts, generated DOM; seek/trim/speed/audio tests | Official runtime tested on eight Brag projects; Classic capture and audio paths connected; isolated live preview supports native layers above and below one eligible DOM composition, with two real Brag packages matching sampled full captures; multiple live surfaces, video/canvas and speed pending |
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Layer inspector and preview preparation/failure feedback implemented; complete interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Adaptive captures and direct live DOM seeking implemented; two-package seek acknowledgement measurements recorded; end-to-end frame rate and large mixed timelines pending |
@@ -823,6 +823,58 @@ Verification:
   `.local/hyperframes-after-live-preview.mp4` and
   `.local/hyperframes-live-preview.png`.
 
+### Native layers above live DOM compositions (2026-10-04)
+
+- The topmost restriction described above is lifted for ordinary native layers
+  using normal blending. The preview derives a native base and foreground from
+  the existing render tree, places the live compound between them, and preserves
+  the original order. Text, image, video, sticker and graphic nodes remain on
+  their existing renderer paths. No document fields, editor state or capabilities
+  were added; this is a Classic-only rendering improvement.
+- The shared compositor prepares both native groups before submitting their
+  output. It copies the foreground with transparent pixels into a separate canvas,
+  then restores the opaque base without an asynchronous gap between submissions.
+  A `copy` operation clears pixels from moved or ended clips. Texture IDs are
+  distinct between the groups, and both groups are synchronized together so
+  alternating renders do not evict and re-upload their textures every frame.
+- The compositor's WebGPU surface now requests premultiplied output. This is
+  restricted to compositor surfaces; other GPU effect-output surfaces retain
+  their existing configuration. wgpu 29's browser implementation accepts this
+  mode despite listing only Opaque in its capabilities. WebGL retains its
+  supported surface mode and default alpha/premultiplied-alpha context settings.
+- Direct browser checks with the rebuilt WASM passed on WebGPU and forced WebGL:
+  empty pixels are `[0,0,0,0]`, half-alpha red at half opacity produces
+  `[255,0,0,64]`, the sampled hybrid foreground/base matches the complete GPU
+  composition exactly, and an ended foreground leaves no pixels. These are
+  controlled 64x36 alpha/compositing checks, not complete media or FPS coverage.
+- In the actual Classic UI, an ordinary text clip was added above the imported
+  `advanced-audio-test-final` compound at 10.5 seconds. Content, font size,
+  position and 0.65 opacity edits kept the live iframe visible with a native
+  foreground canvas. Multiply removed the live surface and used capture;
+  returning to Normal restored the live surface and foreground. Seeking beyond
+  the compound's end removed the live surface; seeking backward restored it.
+- The test text was temporarily removed to export the same 14-second baseline.
+  The downloaded MP4's decoded video and float PCM hashes exactly match the
+  hashes recorded in the preceding section. Undo restored the native text after
+  export, and the live preview resumed with the foreground canvas. The verified
+  export is `.local/hyperframes-after-native-live-overlay.mp4`.
+- Renderer startup/queue tests passed two tests (23 assertions), the real-WASM
+  scene/live tests passed three (35 assertions), and eight existing transform,
+  static-node and output-scaling checks passed (19 assertions). Tests cover
+  foreground order, native blend fallback, source timing, non-mutating tree
+  partitioning, texture ID separation and opaque-base restoration even if the
+  foreground copy fails. Scoped TypeScript, changed-file ESLint, targeted Rust
+  formatting and both WASM export manifests passed.
+- One compound is live at a time. Other HyperFrames compounds in the base still
+  use capture. Backdrop-dependent native blend modes, scene effects, camera,
+  parallax and unsupported compound content retain the full capture path.
+  Multiple live surfaces, native video-specific browser checks, dynamic source
+  changes and measured end-to-end playback FPS remain pending.
+- Evidence: `.local/hyperframes-native-text-live.png`,
+  `.local/hyperframes-with-live-native-overlay-project.json`,
+  `.local/hf-overlay-gpu-probe.html`, `.local/hf-overlay-webgpu-result.json`
+  and `.local/hf-overlay-webgl-result.json`.
+
 ## Next implementation sequence
 
 1. The GPU startup/recovery fix above covers the observed black preview. Exercise
@@ -834,7 +886,7 @@ Verification:
    real-WASM tests. The native MCP process still reaches the live editor through
    the existing Classic bridge; forwarding newly registered capabilities to that
    browser runtime needs a transport contract and tests.
-3. Extend the implemented topmost live DOM preview to mixed layer ordering,
+3. Extend the implemented native/live/native preview to multiple live surfaces,
    video/canvas and dynamic resource cases after fidelity tests. Measure actual
    editor playback frame rate. Keep transport and edits canonical and local
    control endpoints authenticated and loopback-only.

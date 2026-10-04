@@ -5,6 +5,10 @@ import { buildFrameDescriptor } from "./compositor/frame-descriptor";
 import { scaleFrameOutput } from "./compositor/scale-frame-output";
 import { compositorRenderQueue } from "./compositor/render-queue";
 import { wasmCompositor } from "./compositor/wasm-compositor";
+import type {
+	FrameDescriptor,
+	TextureUploadDescriptor,
+} from "./compositor/types";
 import { resolveRenderTree } from "./resolve";
 import { initializeGpuRenderer } from "./gpu-renderer";
 import { isStaticRenderTree } from "./static-node-cache";
@@ -123,45 +127,7 @@ export class CanvasRenderer {
 				return cachedResult;
 			}
 
-			const logicalRenderer = {
-				width: this.logicalWidth,
-				height: this.logicalHeight,
-			};
-			await measureSpanAsync({
-				name: "resolve",
-				fn: () =>
-					resolveRenderTree({
-						node,
-						renderer: logicalRenderer,
-						time,
-						outputSize: { width: this.width, height: this.height },
-					}),
-			});
-			const logicalFrame = await measureSpanAsync({
-				name: "buildFrame",
-				fn: () => buildFrameDescriptor({ node, renderer: logicalRenderer }),
-			});
-			const { frame, textures } = measureSpanSync({
-				name: "scalePreviewFrame",
-				fn: () =>
-					scaleFrameOutput({
-						...logicalFrame,
-						width: this.width,
-						height: this.height,
-					}),
-			});
-			wasmCompositor.ensureInitialized({
-				width: this.width,
-				height: this.height,
-			});
-			measureSpanSync({
-				name: "syncTextures",
-				fn: () => wasmCompositor.syncTextures(textures),
-			});
-			measureSpanSync({
-				name: "renderFrame",
-				fn: () => wasmCompositor.render(frame),
-			});
+			this.submitFrame(await this.prepareFrame({ node, time }));
 			this.staticSceneNode = staticScene ? node : null;
 			this.staticSceneRendered = staticScene;
 			this.staticSceneGeneration = staticScene
@@ -172,6 +138,131 @@ export class CanvasRenderer {
 				onRenderPerfFrameComplete();
 			}
 			return result;
+		});
+	}
+
+	/** Render native layers on either side of a live DOM composition. Prepare
+	 * both groups before touching the shared canvas, then copy the transparent
+	 * foreground and restore the opaque base without yielding to browser paint. */
+	async renderWithOverlay({
+		node,
+		overlay,
+		time,
+		targetCanvas,
+	}: {
+		node: AnyBaseNode;
+		overlay: AnyBaseNode;
+		time: number;
+		targetCanvas: HTMLCanvasElement;
+	}): Promise<void> {
+		const ctx = targetCanvas.getContext("2d");
+		if (!ctx) throw new Error("Failed to get overlay canvas context");
+		await compositorRenderQueue.run(async () => {
+			await initializeGpuRenderer();
+			const base = await this.prepareFrame({ node, time });
+			const foreground = await this.prepareFrame({
+				node: overlay,
+				time,
+				rootPath: "root:overlay",
+			});
+			foreground.frame = {
+				...foreground.frame,
+				clear: { color: [0, 0, 0, 0] },
+			};
+			this.staticSceneNode = null;
+			this.staticSceneRendered = false;
+			this.staticSceneGeneration = null;
+			// Keep both groups' textures resident, with distinct IDs. Alternating
+			// two syncTextures calls would evict and re-upload each group per frame.
+			this.syncFrameTextures([...base.textures, ...foreground.textures]);
+			try {
+				this.renderFrame(foreground.frame);
+				ctx.save();
+				try {
+					ctx.resetTransform();
+					ctx.globalAlpha = 1;
+					// Replace transparent pixels too, so moving or ending clips
+					// cannot leave old content behind in the presentation canvas.
+					ctx.globalCompositeOperation = "copy";
+					ctx.drawImage(
+						wasmCompositor.getCanvas(),
+						0,
+						0,
+						targetCanvas.width,
+						targetCanvas.height,
+					);
+				} finally {
+					ctx.restore();
+				}
+			} finally {
+				this.renderFrame(base.frame);
+			}
+			onRenderPerfFrameComplete();
+		});
+	}
+
+	private async prepareFrame({
+		node,
+		time,
+		rootPath,
+	}: {
+		node: AnyBaseNode;
+		time: number;
+		rootPath?: string;
+	}) {
+		const logicalRenderer = {
+			width: this.logicalWidth,
+			height: this.logicalHeight,
+		};
+		await measureSpanAsync({
+			name: "resolve",
+			fn: () =>
+				resolveRenderTree({
+					node,
+					renderer: logicalRenderer,
+					time,
+					outputSize: { width: this.width, height: this.height },
+				}),
+		});
+		const logicalFrame = await measureSpanAsync({
+			name: "buildFrame",
+			fn: () =>
+				buildFrameDescriptor({ node, renderer: logicalRenderer, rootPath }),
+		});
+		return measureSpanSync({
+			name: "scalePreviewFrame",
+			fn: () =>
+				scaleFrameOutput({
+					...logicalFrame,
+					width: this.width,
+					height: this.height,
+				}),
+		});
+	}
+
+	private submitFrame({
+		frame,
+		textures,
+	}: Awaited<ReturnType<CanvasRenderer["prepareFrame"]>>) {
+		this.syncFrameTextures(textures);
+		this.renderFrame(frame);
+	}
+
+	private syncFrameTextures(textures: TextureUploadDescriptor[]) {
+		wasmCompositor.ensureInitialized({
+			width: this.width,
+			height: this.height,
+		});
+		measureSpanSync({
+			name: "syncTextures",
+			fn: () => wasmCompositor.syncTextures(textures),
+		});
+	}
+
+	private renderFrame(frame: FrameDescriptor) {
+		measureSpanSync({
+			name: "renderFrame",
+			fn: () => wasmCompositor.render(frame),
 		});
 	}
 

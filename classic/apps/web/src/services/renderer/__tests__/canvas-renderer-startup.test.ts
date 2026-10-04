@@ -40,7 +40,8 @@ mock.module("opencut-wasm", () => ({
 	getCompositorCanvas: () => outputCanvas,
 	getLastFrameProfile: () => [],
 	releaseTexture: () => {},
-	renderFrame: () => events.push("render"),
+	renderFrame: (value: FrameDescriptor) =>
+		events.push(value.clear.color[3] === 0 ? "transparent-render" : "render"),
 	resizeCompositor: () => {},
 	uploadTexture: () => {},
 	applyEffectPasses: () => {},
@@ -61,7 +62,8 @@ mock.module("../static-node-cache", () => ({
 
 test("thumbnail and preview wait for shared GPU startup, including recovery after failure", async () => {
 	const { CanvasRenderer } = await import("../canvas-renderer");
-	const { initializeGpuRenderer, isGpuAvailable } = await import("../gpu-renderer");
+	const { initializeGpuRenderer, isGpuAvailable } =
+		await import("../gpu-renderer");
 	const warning = spyOn(console, "warn").mockImplementation(() => {});
 	try {
 		const renderer = new CanvasRenderer({
@@ -113,4 +115,71 @@ test("thumbnail and preview wait for shared GPU startup, including recovery afte
 	} finally {
 		warning.mockRestore();
 	}
+});
+
+test("native overlay preparation precedes an uninterrupted transparent copy and opaque base restore", async () => {
+	const { CanvasRenderer } = await import("../canvas-renderer");
+	const renderer = new CanvasRenderer({
+		width: 640,
+		height: 360,
+		fps: { numerator: 30, denominator: 1 },
+	});
+	const node = new BaseNode();
+	let failCopy = false;
+	const ctx = {
+		globalAlpha: 0.2,
+		globalCompositeOperation: "source-over",
+		save() {},
+		resetTransform() {},
+		restore() {},
+		drawImage(canvas: HTMLCanvasElement) {
+			expect(canvas).toBe(outputCanvas);
+			expect(this.globalAlpha).toBe(1);
+			expect(this.globalCompositeOperation).toBe("copy");
+			events.push("overlay-copy");
+			if (failCopy) throw new Error("Copy failed");
+		},
+	};
+	const targetCanvas = {
+		width: 640,
+		height: 360,
+		getContext: () => ctx,
+	} as unknown as HTMLCanvasElement;
+	const render = () =>
+		renderer.renderWithOverlay({
+			node,
+			overlay: new BaseNode(),
+			time: 0,
+			targetCanvas,
+		});
+	events.length = 0;
+	await Promise.all([
+		render(),
+		renderer.renderAndConsume({
+			node,
+			time: 0,
+			consume: () => events.push("other-consumer"),
+		}),
+	]);
+	expect(events).toEqual([
+		"resolve",
+		"resolve",
+		"transparent-render",
+		"overlay-copy",
+		"render",
+		"resolve",
+		"render",
+		"other-consumer",
+	]);
+	expect(frame.clear.color).toEqual([0, 0, 0, 1]);
+	failCopy = true;
+	events.length = 0;
+	await expect(render()).rejects.toThrow("Copy failed");
+	expect(events).toEqual([
+		"resolve",
+		"resolve",
+		"transparent-render",
+		"overlay-copy",
+		"render",
+	]);
 });

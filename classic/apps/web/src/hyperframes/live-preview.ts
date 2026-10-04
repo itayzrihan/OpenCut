@@ -7,8 +7,8 @@ import { TextNode } from "@/services/renderer/nodes/text-node";
 import { resolveGraphicNodeLayout } from "@/services/renderer/resolve";
 import { incrementCounter } from "@/diagnostics/render-perf";
 
-/** Only the top visible, unfiltered layer can be placed above the shared canvas.
- * All other arrangements continue through the complete compositor. */
+/** Native source-over layers can be isolated above a live composition. Effects
+ * on the whole scene and blend modes that read the backdrop require capture. */
 export function findHyperframesLiveLayer({
 	node,
 	time,
@@ -35,6 +35,16 @@ export function findHyperframesLiveLayer({
 			child.children.length === 0
 		)
 			return child;
+		if (
+			(child instanceof VisualNode || child instanceof TextNode) &&
+			!(
+				child instanceof GraphicNode &&
+				child.params.definitionId === "hyperframes"
+			) &&
+			(!child.params.blendMode || child.params.blendMode === "normal") &&
+			child.children.length === 0
+		)
+			continue;
 		return null;
 	}
 	return null;
@@ -66,10 +76,12 @@ export class HyperframesLivePreview {
 	private releaseSource: (() => void) | null = null;
 	private readonly failedSources = new WeakMap<object, number>();
 	private readonly failedUrls = new Set<string>();
+	private overlayCanvas: HTMLCanvasElement | null = null;
 	private baseTree: {
 		original: RootNode;
 		omitted: GraphicNode;
 		tree: RootNode;
+		overlay: RootNode;
 	} | null = null;
 	private disposed = false;
 
@@ -141,12 +153,41 @@ export class HyperframesLivePreview {
 			this.baseTree?.original !== node ||
 			this.baseTree.omitted !== candidate
 		) {
+			const index = node.children.indexOf(candidate);
 			const tree = new RootNode(node.params);
-			tree.children = node.children.filter((child) => child !== candidate);
-			this.baseTree = { original: node, omitted: candidate, tree };
+			tree.children = node.children.slice(0, index);
+			const overlay = new RootNode(node.params);
+			overlay.children = node.children.slice(index + 1);
+			this.baseTree = { original: node, omitted: candidate, tree, overlay };
 		}
 		try {
-			await renderer.render({ node: this.baseTree.tree, time });
+			if (this.baseTree.overlay.children.length) {
+				if (!this.overlayCanvas) {
+					this.overlayCanvas = document.createElement("canvas");
+					this.overlayCanvas.setAttribute("aria-hidden", "true");
+					Object.assign(this.overlayCanvas.style, {
+						position: "absolute",
+						inset: "0",
+						pointerEvents: "none",
+						width: `${this.options.width}px`,
+						height: `${this.options.height}px`,
+					});
+				}
+				const canvas = this.overlayCanvas;
+				if (canvas.width !== renderer.width) canvas.width = renderer.width;
+				if (canvas.height !== renderer.height) canvas.height = renderer.height;
+				if (canvas.parentElement !== this.options.mount)
+					this.options.mount.appendChild(canvas);
+				await renderer.renderWithOverlay({
+					node: this.baseTree.tree,
+					overlay: this.baseTree.overlay,
+					time,
+					targetCanvas: canvas,
+				});
+			} else {
+				this.removeOverlay();
+				await renderer.render({ node: this.baseTree.tree, time });
+			}
 		} catch (error) {
 			this.hide();
 			throw error;
@@ -183,6 +224,11 @@ export class HyperframesLivePreview {
 
 	private hide(): void {
 		this.options.mount.style.visibility = "hidden";
+	}
+
+	private removeOverlay(): void {
+		this.overlayCanvas?.remove();
+		this.overlayCanvas = null;
 	}
 
 	private async prepareSurface({
@@ -349,6 +395,7 @@ export class HyperframesLivePreview {
 
 	private removeSurface(): void {
 		this.hide();
+		this.removeOverlay();
 		this.releaseSource?.();
 		this.releaseSource = null;
 		const surface = this.surface;

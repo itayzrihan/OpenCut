@@ -72,9 +72,12 @@ const staticFrameFragmentCache = new WeakMap<
 export async function buildFrameDescriptor({
 	node,
 	renderer,
+	rootPath = "root",
 }: {
 	node: AnyBaseNode;
 	renderer: RendererSize;
+	/** Separate texture IDs for groups rendered in the same compositor batch. */
+	rootPath?: string;
 }): Promise<{
 	frame: FrameDescriptor;
 	textures: TextureUploadDescriptor[];
@@ -85,7 +88,7 @@ export async function buildFrameDescriptor({
 	await collectNode({
 		node,
 		renderer,
-		path: "root",
+		path: rootPath,
 		items,
 		textures,
 	});

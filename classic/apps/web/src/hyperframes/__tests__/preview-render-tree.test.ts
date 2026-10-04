@@ -51,6 +51,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	const savedDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
 	const browser = new EventTarget();
 	const frames: Array<HTMLIFrameElement> = [];
+	const canvases: Array<HTMLCanvasElement> = [];
 	const seeks: number[] = [];
 	let failSeek = false;
 	let openCount = 0;
@@ -77,7 +78,16 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	Object.defineProperty(globalThis, "document", {
 		configurable: true,
 		value: {
-			createElement: () => {
+			createElement: (tag: string) => {
+				if (tag === "canvas") {
+					const canvas = {
+						style: {},
+						setAttribute() {},
+						remove() {},
+					} as unknown as HTMLCanvasElement;
+					canvases.push(canvas);
+					return canvas;
+				}
 				const frame = {
 					style: {},
 					setAttribute() {},
@@ -103,6 +113,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	});
 	const mount = {
 		style: {},
+		appendChild() {},
 		replaceChildren: (frame: HTMLIFrameElement) =>
 			queueMicrotask(() => message({ frame, data: { type: "ready" } })),
 	} as unknown as HTMLElement;
@@ -162,13 +173,35 @@ test("live preview preserves the authored viewport, source trim and layer order,
 	root.add(native);
 	expect(
 		liveModule.findHyperframesLiveLayer({ node: root, time: 9 * 120000 }),
+	).toBe(clip);
+	native.params.blendMode = "multiply";
+	expect(
+		liveModule.findHyperframesLiveLayer({ node: root, time: 9 * 120000 }),
 	).toBeNull();
+	native.params.blendMode = "normal";
 	root.remove(native);
 	root.children.unshift(native);
 	const rendered: (typeof root)[] = [];
+	const overlays: (typeof root)[] = [];
 	const renderer = {
+		width: 320,
+		height: 180,
 		render: async ({ node }: { node: typeof root }) => {
 			rendered.push(node);
+		},
+		renderWithOverlay: async ({
+			node,
+			overlay,
+			targetCanvas,
+		}: {
+			node: typeof root;
+			overlay: typeof root;
+			targetCanvas: HTMLCanvasElement;
+		}) => {
+			rendered.push(node);
+			overlays.push(overlay);
+			expect(targetCanvas.width).toBe(320);
+			expect(targetCanvas.height).toBe(180);
 		},
 	} as unknown as import("@/services/renderer/canvas-renderer").CanvasRenderer;
 	try {
@@ -194,6 +227,17 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(openCount).toBe(1);
 		expect(rendered[0]).toBe(rendered[1]);
+		const reordered = new RootNode(root.params);
+		reordered.children = [clip, native];
+		await live.render({ node: reordered, time: 10 * 120000, renderer });
+		expect(rendered.at(-1)?.children).toEqual([]);
+		expect(overlays.at(-1)?.children).toEqual([native]);
+		expect(reordered.children).toEqual([clip, native]);
+		expect(canvases[0].style).toMatchObject({
+			width: "640px",
+			height: "360px",
+		});
+		expect(openCount).toBe(1);
 		clip.params.transform.perspectiveX = 20;
 		await live.render({ node: root, time: 10 * 120000, renderer });
 		expect(rendered.at(-1)).toBe(root);
@@ -205,7 +249,7 @@ test("live preview preserves the authored viewport, source trim and layer order,
 		expect(rendered.at(-1)).toBe(root);
 		expect(fallbackCount).toBe(1);
 		await live.render({ node: root, time: 11 * 120000, renderer });
-		expect(seeks).toEqual([2, 3, 3]);
+		expect(seeks).toEqual([2, 3, 3, 3]);
 		expect(openCount).toBe(2);
 		expect(releaseCount).toBe(2);
 		clip.params.isPreview = false;
@@ -323,4 +367,28 @@ test("the scene builder and resolver pass preview pixels while preserving trim, 
 	tracks.overlay[0].elements[0].params["transform.perspectiveX"] = 20;
 	await resolve({ outputWidth: 640, target: build(true) });
 	expect(rendered.at(-1)).toMatchObject({ timeSeconds: 2, previewScale: 1 });
+});
+
+test("native base and foreground keep disjoint texture IDs when frame fragments are reused", async () => {
+	const { ColorNode } = await import("@/services/renderer/nodes/color-node");
+	const { buildFrameDescriptor } =
+		await import("@/services/renderer/compositor/frame-descriptor");
+	const node = new RootNode({ duration: 120000 });
+	node.add(new ColorNode({ color: "#0000ff" }));
+	const renderer = { width: 640, height: 360 };
+	const base = await buildFrameDescriptor({ node, renderer });
+	const overlay = await buildFrameDescriptor({
+		node,
+		renderer,
+		rootPath: "root:overlay",
+	});
+	expect(base.textures).toHaveLength(1);
+	expect(overlay.textures).toHaveLength(1);
+	expect(base.textures[0].id).not.toBe(overlay.textures[0].id);
+	expect(overlay.frame.items[0]).toMatchObject({
+		type: "layer",
+		textureId: overlay.textures[0].id,
+	});
+	const restored = await buildFrameDescriptor({ node, renderer });
+	expect(restored.frame.items).toEqual(base.frame.items);
 });
