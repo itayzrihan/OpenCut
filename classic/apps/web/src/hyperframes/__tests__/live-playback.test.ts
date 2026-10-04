@@ -17,19 +17,35 @@ import { prepareHyperframesPreview } from "../preview-document";
 import type { HyperframesSource } from "../types";
 
 type ParentFixture = {
-	events: Array<{ type: string; sequence?: number; message?: string }>;
+	events: Array<{
+		type: string;
+		sequence?: number;
+		message?: string;
+		metrics?: {
+			continuous: boolean;
+			resynced: boolean;
+			driftMs: number;
+			renderMs: number;
+		};
+	}>;
 	request: (input: {
 		timeSeconds: number;
 		playing?: boolean;
 		endTimeSeconds?: number;
+		diagnostics?: boolean;
 	}) => Promise<void>;
 };
 type AuthoredFixture = {
 	__player: {
 		getTime: () => number;
 		isPlaying: () => boolean;
-		seek: (time: number) => void | Promise<void>;
+		seek: (
+			time: number,
+			options?: { keepPlaying?: boolean },
+		) => void | Promise<void>;
 	};
+	__opencutMedia: { finishSeek: () => Promise<void> };
+	restoreMedia?: () => void;
 	__opencutLayerEdits?: { beforeSeek: () => void; afterSeek: () => void };
 	observed: {
 		frames: number;
@@ -38,6 +54,7 @@ type AuthoredFixture = {
 		after: number;
 		starting: boolean;
 		playerSeeks: number;
+		warmSeekBarriers: number;
 	};
 };
 const run = promisify(execFile);
@@ -197,11 +214,12 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					after: 0,
 					starting: false,
 					playerSeeks: 0,
+					warmSeekBarriers: 0,
 				};
 				const seek = state.__player.seek.bind(state.__player);
-				state.__player.seek = (time) => {
+				state.__player.seek = (...args) => {
 					state.observed.playerSeeks++;
-					return seek(time);
+					return seek(...args);
 				};
 				const video = document.querySelector("video")!;
 				video.addEventListener("seeking", () => state.observed.seeks++);
@@ -238,6 +256,7 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 					await state.request({
 						timeSeconds: 0.75 + (performance.now() - start) / 1000,
 						playing: true,
+						diagnostics: true,
 					});
 					updates++;
 					await new Promise(requestAnimationFrame);
@@ -250,6 +269,26 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 			expect(running.muted).toBe(true);
 			expect(running.frames).toBeGreaterThan(5);
 			expect(running.seeks).toBeLessThan(updates / 2);
+			const diagnostics = await page.evaluate(() =>
+				(window as unknown as ParentFixture).events
+					.filter((event) => event.type === "frame")
+					.map((event) => event.metrics),
+			);
+			expect(diagnostics).toHaveLength(updates);
+			expect(diagnostics.every((metrics) => metrics?.continuous)).toBe(true);
+			expect(
+				diagnostics.every(
+					(metrics) =>
+						metrics &&
+						Number.isFinite(metrics.driftMs) &&
+						metrics.driftMs >= 0 &&
+						Number.isFinite(metrics.renderMs) &&
+						metrics.renderMs >= 0,
+				),
+			).toBe(true);
+			expect(diagnostics.filter((metrics) => metrics?.resynced).length).toBe(
+				running.playerSeeks,
+			);
 			expect(
 				Math.abs(running.sourceTime - ((running.time - 0.5) * 1.5 + 0.25)),
 			).toBeLessThan(0.15);
@@ -263,6 +302,11 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 			await page.evaluate(() =>
 				(window as unknown as ParentFixture).request({ timeSeconds: 1 }),
 			);
+			expect(
+				await page.evaluate(
+					() => (window as unknown as ParentFixture).events.at(-1)?.metrics,
+				),
+			).toBeUndefined();
 			const preparedSeeks = (await read()).playerSeeks;
 			await page.evaluate(() =>
 				(window as unknown as ParentFixture).request({
@@ -272,6 +316,34 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 			);
 			// The already prepared frame must start without resetting its decoder.
 			expect((await read()).playerSeeks).toBe(preparedSeeks);
+			// A running player's resync must keep its clock advancing. Re-entering
+			// the paused decode barrier would leave it behind the parent's clock
+			// again and trigger another expensive seek on the next update.
+			await authored.evaluate(() => {
+				const state = window as unknown as AuthoredFixture;
+				const finish = state.__opencutMedia.finishSeek;
+				state.restoreMedia = () => {
+					state.__opencutMedia.finishSeek = finish;
+				};
+				state.__opencutMedia.finishSeek = async () => {
+					state.observed.warmSeekBarriers++;
+					await new Promise((resolve) => setTimeout(resolve, 250));
+					await finish();
+				};
+			});
+			await page.evaluate(() =>
+				(window as unknown as ParentFixture).request({
+					timeSeconds: 1.75,
+					playing: true,
+				}),
+			);
+			const resynced = await read();
+			expect(resynced.playing).toBe(true);
+			expect(resynced.warmSeekBarriers).toBe(0);
+			expect(resynced.playerSeeks).toBe(preparedSeeks + 1);
+			await authored.evaluate(() =>
+				(window as unknown as AuthoredFixture).restoreMedia!(),
+			);
 			await page.evaluate(() =>
 				window.postMessage({ source: "opencut-hf-live", type: "pause" }, "*"),
 			);

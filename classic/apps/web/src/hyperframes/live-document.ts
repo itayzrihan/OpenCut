@@ -63,6 +63,7 @@ function installLiveShell(entryPath: string): void {
 					playing: data.playing,
 					sampledAt: data.sampledAt,
 					endTimeSeconds: data.endTimeSeconds,
+					diagnostics: data.diagnostics === true,
 				},
 				"*",
 			);
@@ -82,7 +83,12 @@ function installLiveShell(entryPath: string): void {
 				);
 			if (data.type === "frame" && Number.isSafeInteger(data.sequence))
 				window.parent.postMessage(
-					{ source: "opencut-hf-live", type: "frame", sequence: data.sequence },
+					{
+						source: "opencut-hf-live",
+						type: "frame",
+						sequence: data.sequence,
+						metrics: data.metrics,
+					},
 					"*",
 				);
 			if (data.type === "error")
@@ -137,7 +143,10 @@ function installLiveBridge({
 		__hf_page_composite_pending?: boolean;
 		__player?: {
 			renderSeek: (time: number, options?: object) => void;
-			seek: (time: number) => void | Promise<void>;
+			seek: (
+				time: number,
+				options?: { keepPlaying?: boolean },
+			) => void | Promise<void>;
 			play: () => void;
 			pause: () => void;
 			getTime: () => number;
@@ -284,6 +293,9 @@ function installLiveBridge({
 		seeking = true;
 		const epoch = playbackEpoch;
 		void (async () => {
+			const startedAt = performance.now();
+			let driftMs = 0;
+			let resynced = false;
 			mute();
 			// Continuous native decoding is driven by the parent's sampled clock.
 			// Edited layers and Canvas draws still use the exact seek barrier:
@@ -309,8 +321,12 @@ function installLiveBridge({
 				);
 				const target = Math.min(end - 1 / fps, data.timeSeconds + elapsed);
 				const player = page.__player!;
-				if (Math.abs(player.getTime() - target) > 1.5 / fps) {
-					await player.seek(Math.max(0, target));
+				driftMs = Math.abs(player.getTime() - target) * 1000;
+				if (driftMs > 1500 / fps) {
+					resynced = true;
+					// A warm resync must keep the runtime clock running while native
+					// media catches up. Pausing to decode would create another drift.
+					await player.seek(Math.max(0, target), { keepPlaying: true });
 				}
 				if (!player.isPlaying()) {
 					// Starting before the first seek decodes can strand a cold native
@@ -344,7 +360,20 @@ function installLiveBridge({
 					"Live preview requires capture for this page compositor",
 				);
 			if (failed) return;
-			post({ type: "frame", sequence: data.sequence });
+			post({
+				type: "frame",
+				sequence: data.sequence,
+				...(data.diagnostics === true
+					? {
+							metrics: {
+								continuous,
+								resynced,
+								driftMs,
+								renderMs: performance.now() - startedAt,
+							},
+						}
+					: {}),
+			});
 		})()
 			.catch((error: unknown) =>
 				fail(

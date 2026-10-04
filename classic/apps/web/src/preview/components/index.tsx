@@ -321,6 +321,17 @@ function PreviewCanvas({
 				return;
 			}
 
+			// Playback updates already run inside the transport's animation frame.
+			// Starting here avoids delaying every preview by another display frame.
+			if (reason === "playback") {
+				if (scheduledRenderRef.current !== null) {
+					cancelAnimationFrame(scheduledRenderRef.current);
+					scheduledRenderRef.current = null;
+				}
+				runRenderRef.current();
+				return;
+			}
+
 			if (scheduledRenderRef.current !== null) {
 				pendingRenderRef.current = true;
 				incrementCounter({ name: "preview.renderCoalesced" });

@@ -100,10 +100,59 @@ documents use it.
   per second with zero errors. Median render time is 7.9 / 11.6 ms; p95 is
   33.7 / 135.2 ms. Report: `.local/hf-continuous-final-ui-playback-20261004.json`.
   Earlier development runs ranged from about 8 to 27, so performance is still
-  variable. A decoder reset can lead to repeated synchronization under
-  load. Stable 30 fps in the complete editor, long timelines and seeks during
+  variable. The follow-up below measures and corrects two sources of delay.
+  Stable 30 fps in the complete editor, long timelines and seeks during
   playback remain open performance requirements. These observations are not
   replaced by the faster isolated result.
+
+### Playback scheduling and resync follow-up
+
+The live protocol now supplies optional diagnostics with `?renderPerf=1`:
+parent round-trip time, runtime work, clock drift, continuous updates and
+resync counts. Frame acknowledgements still require the matching source and
+sequence. Numeric timing samples are checked before recording. The real-browser
+test verifies opt-in reporting and that resync counts match actual player seeks.
+
+The first measured runs had no resyncs and median runtime work below 1 ms, but
+completed only 23.85 and 19.51 parent renders/s. The preview was scheduling an
+extra animation frame after the transport's own animation-frame notification.
+It now starts that render immediately, while retaining the existing in-flight
+guard and coalescing for other requests. Scheduling alone measured 26.21 and
+28.06 renders/s. Reports: `.local/hf-clock-diagnostics-before-20261004.json`
+and `.local/hf-clock-diagnostics-immediate-20261004.json`.
+
+A later replay exposed a separate failure: after a stall, the normal seek
+paused the runtime clock while the native decoder caught up. That wait created
+another clock drift and another seek. Warm resyncs now use the pinned player's
+official `seek(time, { keepPlaying: true })` option. The initial paused decode
+barrier, immediate pause, source bounds and lost-update lease still apply. A
+browser regression inserts a 250 ms paused decode delay during a warm resync;
+the old path stops and the corrected path keeps playing without entering that
+barrier. Reports: `.local/hf-warm-resync-before-20261004/summary.json` and
+`.local/hf-warm-resync-after-20261004/summary.json`.
+
+With both fixes, two six-second runs of the full Brag fixture complete 28.05
+and 27.57 parent renders/s with zero errors. Mean transport lag is 3.57 and
+2.42 ms. These runs contain no warm resyncs, so the synthetic regression is the
+direct evidence for that fix. The paused UI check at `00:00:01:00` leaves all
+twelve portfolio videos paused at exactly 1.000 seconds. Evidence:
+`.local/hf-warm-resync-final-ui-20261004.json`,
+`.local/hf-warm-resync-final-paused-20261004.json` and
+`.local/hf-warm-resync-review-20261004.jpg`.
+
+Parent render completion is distinct from native video presentation. A temporary
+browser video-quality probe confirmed 163 total frames per portfolio video over
+its authored 5.433-second interval in one run, with 0–6 dropped frames per video.
+A subsequent resync-heavy run decoded repeated frames, so decoded totals cannot
+serve as a presentation-rate benchmark. That temporary probe was removed; its
+raw observations remain in `.local/hf-native-video-quality-20261004.json`.
+The smaller isolated fixture above remains the direct presentation measurement.
+Large mixed timelines and sustained 30 fps still need validation.
+
+Validation after both fixes: all 1,012 tests pass across 221 isolated web
+suites with browser coverage enabled, zero failures and zero skips (111.3 s).
+Product TypeScript, changed-file ESLint and `git diff --check` also pass.
+Report: `.local/hf-warm-resync-final-regression-20261004/summary.json`.
 
 ## Cold video capture and seek-performance experiments (2026-10-04)
 

@@ -5,7 +5,11 @@ import { GraphicNode } from "@/services/renderer/nodes/graphic-node";
 import { VisualNode } from "@/services/renderer/nodes/visual-node";
 import { TextNode } from "@/services/renderer/nodes/text-node";
 import { resolveGraphicNodeLayout } from "@/services/renderer/resolve";
-import { incrementCounter } from "@/diagnostics/render-perf";
+import {
+	incrementCounter,
+	isRenderPerfEnabled,
+	recordSpan,
+} from "@/diagnostics/render-perf";
 import { hyperframesLiveTransform } from "./live-transform";
 
 const MAX_LIVE_OCCURRENCES = 4;
@@ -68,6 +72,7 @@ type Surface = {
 	sequence: number;
 	waiting?: {
 		sequence: number;
+		startedAt: number;
 		resolve: () => void;
 		reject: (error: Error) => void;
 		timer: ReturnType<typeof setTimeout>;
@@ -538,6 +543,7 @@ class LiveOccurrence {
 		await new Promise<void>((resolve, reject) => {
 			surface.waiting = {
 				sequence,
+				startedAt: performance.now(),
 				resolve,
 				reject,
 				timer: setTimeout(
@@ -551,7 +557,13 @@ class LiveOccurrence {
 				),
 			};
 			surface.frame.contentWindow?.postMessage(
-				{ source: "opencut-hf-live", type: "seek", sequence, ...input },
+				{
+					source: "opencut-hf-live",
+					type: "seek",
+					sequence,
+					diagnostics: isRenderPerfEnabled(),
+					...input,
+				},
 				"*",
 			);
 		});
@@ -593,6 +605,29 @@ class LiveOccurrence {
 			surface.waiting &&
 			event.data.sequence === surface.waiting.sequence
 		) {
+			recordSpan({
+				name: "preview.hyperframesRoundTrip",
+				durationMs: performance.now() - surface.waiting.startedAt,
+			});
+			const metrics = event.data.metrics;
+			if (metrics && typeof metrics === "object") {
+				for (const [key, name] of [
+					["driftMs", "preview.hyperframesClockDrift"],
+					["renderMs", "preview.hyperframesRuntimeWork"],
+				]) {
+					if (
+						typeof metrics[key] === "number" &&
+						Number.isFinite(metrics[key]) &&
+						metrics[key] >= 0 &&
+						metrics[key] <= 30_000
+					)
+						recordSpan({ name, durationMs: metrics[key] });
+				}
+				if (metrics.continuous === true)
+					incrementCounter({ name: "preview.hyperframesContinuousUpdate" });
+				if (metrics.resynced === true)
+					incrementCounter({ name: "preview.hyperframesPlaybackSeek" });
+			}
 			clearTimeout(surface.waiting.timer);
 			surface.waiting.resolve();
 			surface.waiting = undefined;
