@@ -31,6 +31,7 @@ import type {
 } from "./types";
 import { installHyperframesLayerEdits } from "./layer-edits";
 import { installHyperframesMediaBridge } from "./media-document";
+import { supportsLosslessFastPng } from "./fast-png";
 import { readHyperframesRuntimeManifest } from "./runtime-manifest";
 import {
 	readHyperframesAudioPlan,
@@ -318,6 +319,11 @@ export class HyperframesCaptureSession {
 		};
 		signal?.addEventListener("abort", abort, { once: true });
 		try {
+			signal?.throwIfAborted();
+			engine.options.pngOptimizeForSpeed = await supportsLosslessFastPng({
+				browser: engine.browser,
+				signal,
+			});
 			signal?.throwIfAborted();
 			await initializeSession(engine);
 			// PNG initialization clears authored html/body backgrounds in 0.8.115.

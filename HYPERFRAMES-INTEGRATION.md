@@ -23,7 +23,75 @@ is implemented; the product integration is not complete.
 | Export parity | Representative frame and audio comparisons to pinned HyperFrames | Synthetic trimmed overlay and a 14-second mixed Brag/native MP4 verified; native and compound narration have zero measured timing offset; remaining Brag/media comparisons pending |
 | Clearer existing UI | Browser review of hierarchy, labels, source status, selection and keyboard behavior | Composition library, resource folders, asset search, compact toolbar, layer inspector, preparation/failure feedback and Fit timeline control implemented; full interface audit pending |
 | Faster interaction/playback | Same-machine measurements for real projects and large mixed timelines | Short fixtures reach 27–29 completed frames/s. The four-minute, 220-clip mixed timeline reaches its end without render errors. Bounded surface reuse removes repeated multi-second loads at cuts; reducing unchanged bookmark overlay renders raises measured warm throughput from 25.66 to 27.80 parent renders/s (different observation lengths; details below). Sustained 30 fps, first-load delays and required capture throughput remain open |
-| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,015 web tests pass across 222 isolated suites, with browser coverage enabled and zero skips. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+| Existing features retained | Feature inventory and applicable Classic/Rust suites plus browser workflows | All 1,018 web tests pass across 223 isolated suites, with browser coverage enabled and zero skips; two AI suites needed an unchanged serial rerun after startup deadlines in the parallel run. Recovery also passes 25 targeted Rust tests; the earlier broader Rust audit passed 232 tests. Test-fixture typing and full interactive workflow coverage remain open |
+
+## Faster PNG capture with verified color and alpha (2026-10-04)
+
+The first attempt to export the full seven-folder Brag sequence exposed slow
+PNG capture. The 179.9667-second project uses the existing timeline at
+1920 × 1080 and 30 fps. Early 60-frame windows spent 701–1,310 ms per frame
+rendering and encoding, while video encoding itself took about 0.26–1 ms.
+That diagnostic export was canceled normally at 17%; it produced no final MP4.
+Isolated engine measurements identified screenshot encoding as the largest
+part of capture time.
+
+The pinned HyperFrames engine disables Chrome's fast PNG path because some
+Chrome versions lose partial alpha. OpenCut now enables it only after a probe
+in the same capture browser confirms identical decoded RGBA pixels. The tiny,
+separate page includes all 256 alpha values and gradient/filter paint. Both
+captures must have the expected dimensions and preserve transparent, partial
+and opaque pixels. A mismatch, exception, cancellation or two-second deadline
+uses the standard encoder. The probe closes its page, including a page that
+arrives after cancellation.
+
+This is **Classic-only capture integration**, with no new editor state,
+capability or transport. The engine patch adds an option that defaults off;
+the adapter selects it after the probe. Rendering still uses sandboxed software
+Chrome and the original seek/media synchronization. Faster PNG files can be
+larger; the existing ArtifactStore size and retention limits still apply.
+
+An isolated portrait fixture with 227 distinct alpha values decoded identically
+with both encoders. Standard PNG capture took 249–296 ms over five samples;
+fast PNG took 106–116 ms. File size increased from 568,881 to 1,104,053 bytes.
+The WebP candidate changed pixels and was not adopted. Evidence:
+`.local/hf-png-codec-probe-20261004.json`.
+
+The imported seven-folder project was rechecked against the original Brag
+files and resources before capture. The production adapter captured 37 frames
+at the original source dimensions, including late animation, native video and
+backward/repeated seeks. All decoded RGBA pixels match the standard PNG
+references, and all seven repeated frames match their earlier captures.
+Average capture times for these small sample sets are:
+
+| Original Brag source | Standard PNG (ms) | Validated fast PNG (ms) |
+| --- | ---: | ---: |
+| `brag-vertical/composition` | 423.99 | 192.15 |
+| `brag-reference-recreation-v2/composition` | 365.68 | 241.10 |
+| `brag-reference-recreation/composition` | 260.99 | 165.63 |
+| `brag-output/composition` | 342.56 | 142.86 |
+| `brag-reconstruction-2026-10-03/advanced-audio-test-v2` | 131.97 | 80.90 |
+| `brag-reconstruction-2026-10-03/composition` | 274.42 | 166.11 |
+| `brag-reconstruction-2026-10-03/advanced-audio-test` | 144.27 | 81.03 |
+
+These are 34–58% reductions in sampled capture time, not end-to-end export
+speed guarantees. Reports: `.local/hf-brag-full-reference-20261004.json`,
+`.local/hf-brag-production-fast-png-reference-20261004.json` and
+`.local/hf-production-fast-png-compare-20261004.json`. Seven reference audio
+mixes were also rendered for the pending full MP4 comparison. A hardware-GPU
+experiment did not consistently improve capture speed and introduced small
+color/repeat differences, so production remains on software rendering.
+GPU evidence: `.local/hf-gpu-compare-20261004.json`.
+
+The new regression covers color changes, flattened alpha, malformed output,
+unavailable/aborted/late probes and the real bundled Chrome. Product TypeScript
+and changed-file ESLint pass. Across 223 isolated suites, 1,018 tests pass with
+browser coverage enabled and zero skips. The initial parallel run hit startup
+hook deadlines in two AI suites; the unchanged suites passed all 78 tests in a
+serial rerun. Combined evidence, including both original runs:
+`.local/hf-fast-png-regression-verified-20261004.json`.
+
+The full editor MP4 export has been restarted with this capture adapter.
+Final video/audio parity remains pending until its output is inspected.
 
 ## Bookmark overlay updates during playback (2026-10-04)
 

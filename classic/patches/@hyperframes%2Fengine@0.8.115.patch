@@ -51,16 +51,32 @@ index af8ff39a6c3743ff12e4b823e0888298e96563bf..d4730f5e0de9d8a7887d4e658a5d9715
              waitUntil: "domcontentloaded",
              timeout: pageNavigationTimeout,
          });
+diff --git a/dist/services/screenshotService.js b/dist/services/screenshotService.js
+index 4989c31a4518f73dd8f8269ff1a268fdf40c6e55..ab5ae7b64e176f3c9ed2b229248de4b4fa58f56c 100644
+--- a/dist/services/screenshotService.js
++++ b/dist/services/screenshotService.js
+@@ -188,7 +188,8 @@ export async function pageScreenshotCapture(page, options) {
+         // opt into the beyond-viewport path only for known compositor edge cases,
+         // such as native video surfaces in tall portrait renders.
+         captureBeyondViewport: options.captureBeyondViewport ?? false,
+-        optimizeForSpeed: !isPng,
++        // OpenCut opts in only after this browser passes a decoded RGBA probe.
++        optimizeForSpeed: !isPng || options.pngOptimizeForSpeed === true,
+         clip,
+     });
+     return Buffer.from(result.data, "base64");
 diff --git a/dist/types.d.ts b/dist/types.d.ts
-index 4c59fbc1c0c54298d3dcbc558e83225b2038761a..12c64ad23c8c0da03de4eaf8a7c1aedbf2c4b34c 100644
+index 4c59fbc1c0c54298d3dcbc558e83225b2038761a..768ae8b877d98b856d439c927fb5f0be5d7f4c71 100644
 --- a/dist/types.d.ts
 +++ b/dist/types.d.ts
-@@ -107,6 +107,8 @@ export interface HfProtocol {
+@@ -107,6 +107,10 @@ export interface HfProtocol {
      transitions?: HfTransitionMeta[];
  }
  export interface CaptureOptions {
 +    /** Exact entry URL, preserving nested paths and runtime-relative requests. */
 +    entryUrl?: string;
++    /** Opt in only after verifying lossless color and alpha on this browser. */
++    pngOptimizeForSpeed?: boolean;
      width: number;
      height: number;
      /**
