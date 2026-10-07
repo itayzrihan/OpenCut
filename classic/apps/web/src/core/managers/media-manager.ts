@@ -63,9 +63,11 @@ export class MediaManager {
 	async addMediaAsset({
 		projectId,
 		asset,
+		afterRegister,
 	}: {
 		projectId: string;
 		asset: Omit<MediaAsset, "id"> & { id?: string };
+		afterRegister?: (asset: MediaAsset) => undefined;
 	}): Promise<MediaAsset | null> {
 		const newAsset: MediaAsset = {
 			...asset,
@@ -76,6 +78,9 @@ export class MediaManager {
 			const publish = this.editor.command.prepareClassicMediaImport({
 				projectId,
 				assets: [newAsset],
+				afterRegister: afterRegister
+					? () => afterRegister(newAsset)
+					: undefined,
 			});
 			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
 			publish();

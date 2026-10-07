@@ -3,8 +3,17 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { processMediaAssets } from "@/media/processing";
-import { AddMediaAssetCommand } from "@/commands/media";
 import type { SpeechRequest, SpeechResponse } from "@/services/speech/worker";
+
+const VOICE_OPTIONS = [
+	{ value: "af_heart", label: "Heart · US English" },
+	{ value: "am_michael", label: "Michael · US English" },
+	{ value: "bf_emma", label: "Emma · UK English" },
+	{ value: "bm_george", label: "George · UK English" },
+] as const satisfies readonly {
+	value: NonNullable<SpeechRequest["voice"]>;
+	label: string;
+}[];
 
 export function SpeechView() {
 	const editor = useEditor();
@@ -92,12 +101,11 @@ export function SpeechView() {
 				);
 			if (assets.length !== 1)
 				throw new Error("Could not import generated audio.");
-			editor.command.execute({
-				command: new AddMediaAssetCommand({
-					projectId: project.metadata.id,
-					asset: assets[0],
-				}),
+			const added = await editor.media.addMediaAsset({
+				projectId: project.metadata.id,
+				asset: assets[0],
 			});
+			if (!added) throw new Error("Could not save the generated voiceover.");
 			setStatus("Voiceover added to project media.");
 		} catch (error) {
 			setError(
@@ -132,15 +140,19 @@ export function SpeechView() {
 				<select
 					value={voice}
 					disabled={busy}
-					onChange={(event) =>
-						setVoice(event.target.value as SpeechRequest["voice"])
-					}
+					onChange={(event) => {
+						const option = VOICE_OPTIONS.find(
+							(option) => option.value === event.target.value,
+						);
+						if (option) setVoice(option.value);
+					}}
 					className="w-full rounded border bg-background p-2"
 				>
-					<option value="af_heart">Heart · US English</option>
-					<option value="am_michael">Michael · US English</option>
-					<option value="bf_emma">Emma · UK English</option>
-					<option value="bm_george">George · UK English</option>
+					{VOICE_OPTIONS.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
 				</select>
 			</label>
 			<label className="block space-y-1 text-sm">
@@ -149,9 +161,11 @@ export function SpeechView() {
 					value={device}
 					disabled={busy}
 					onChange={(event) => {
+						const nextDevice = event.target.value;
+						if (nextDevice !== "auto" && nextDevice !== "wasm") return;
 						worker.current?.terminate();
 						worker.current = null;
-						setDevice(event.target.value as SpeechRequest["device"]);
+						setDevice(nextDevice);
 					}}
 					className="w-full rounded border bg-background p-2"
 				>

@@ -403,6 +403,80 @@ test(
 );
 
 test(
+	"import plus canonical insertion is one undo and a failed insertion rolls back membership and FPS",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		const importer = new MediaManager(host.editor);
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		const asset: MediaAsset = {
+			id: "pasted-file",
+			name: "Pasted",
+			type: "video",
+			fps: 60,
+			duration: 1,
+			file: new File(["x"], "paste.mp4"),
+			url: "blob:pasted-file",
+		};
+		const afterRegister = (registered: MediaAsset): undefined => {
+			host.manager.insertClassicTimelineElements([
+				{
+					element: {
+						type: "video",
+						name: "Pasted",
+						mediaId: registered.id,
+						startTime: mediaTime({ ticks: 600000 }),
+						duration: mediaTime({ ticks: 120000 }),
+						trimStart: mediaTime({ ticks: 0 }),
+						trimEnd: mediaTime({ ticks: 0 }),
+						params: {},
+					},
+					placement: { mode: "auto", trackType: "video" },
+				},
+			]);
+		};
+		expect(
+			await importer.addMediaAsset({
+				projectId: "classic-project",
+				asset,
+				afterRegister,
+			}),
+		).not.toBeNull();
+		const after = host.manager.captureProjectSnapshot();
+		expect(host.media().at(-1)?.id).toBe(asset.id);
+		expect(host.project().settings.fps).toEqual({
+			numerator: 60,
+			denominator: 1,
+		});
+		host.manager.undo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		host.manager.redo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		host.manager.undo();
+		expect(
+			await importer.addMediaAsset({
+				projectId: "classic-project",
+				asset: { ...asset, id: "pasted-failure" },
+				afterRegister: () => {
+					throw new Error("Follow-up insertion rejected");
+				},
+			}),
+		).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		// A failed follow-up does not consume the prior successful transaction's Redo.
+		host.manager.redo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
 	"media removal uses one canonical transaction across scenes and reopens with durable Undo handles",
 	async () => {
 		const { MediaManager } = await import("@/core/managers/media-manager");
@@ -3960,9 +4034,21 @@ test(
 			value: {
 				capturePreviewFrameAt: async () => ({
 					success: true,
-					blob: new Blob([Uint8Array.of(255, 216, 255, 217)], {
-						type: "image/jpeg",
-					}),
+					blob: new Blob(
+						[
+							new Uint8Array(
+								readFileSync(
+									new URL(
+										"../../../../../../../crates/editor-agent/tests/fixtures/color-frame.jpg",
+										import.meta.url,
+									),
+								),
+							),
+						],
+						{
+							type: "image/jpeg",
+						},
+					),
 					filename: "test.jpg",
 				}),
 			},

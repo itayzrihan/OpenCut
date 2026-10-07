@@ -801,9 +801,12 @@ export class CommandManager {
 	prepareClassicMediaImport({
 		projectId,
 		assets,
+		afterRegister,
 	}: {
 		projectId: string;
 		assets: MediaAsset[];
+		/** Synchronous canonical follow-up, grouped with registration in one Undo. */
+		afterRegister?: () => undefined;
 	}): () => void {
 		const session = this.canonical;
 		const expectedRevision = session?.status().revision;
@@ -826,7 +829,12 @@ export class CommandManager {
 				throw new Error(
 					"Media import account or editor session changed before publication",
 				);
-			this.registerClassicMedia({ projectId, assets, expectedRevision });
+			this.executeTransaction({
+				execute: () => {
+					this.registerClassicMedia({ projectId, assets, expectedRevision });
+					afterRegister?.();
+				},
+			});
 		};
 	}
 
