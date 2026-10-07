@@ -5,6 +5,8 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
+mod quality;
+use quality::{AudioEvidence, AudioGaps, QualityReport};
 const TPS: f64 = 120_000.0;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -72,6 +74,10 @@ struct Assembly {
     applied_digest: String,
     source_words: Vec<Word>,
     recommendations: Vec<usize>,
+    #[serde(default)]
+    audio_gaps: Vec<AudioGaps>,
+    #[serde(default)]
+    quality: QualityReport,
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -95,6 +101,8 @@ enum Change {
         #[serde(rename = "elementIds")]
         element_ids: Vec<String>,
         plan: Plan,
+        #[serde(default, rename = "audioEvidence")]
+        audio_evidence: Vec<AudioEvidence>,
     },
     Select {
         #[serde(rename = "groupIndex")]
@@ -190,7 +198,11 @@ fn source(tracks: &Value) -> Result<&Value, CapabilityError> {
     }
     Ok(source)
 }
-fn inventory(tracks: &Value, ids: &[String]) -> Result<(Vec<Word>, i64, i64), CapabilityError> {
+fn inventory(
+    tracks: &Value,
+    ids: &[String],
+    precise: bool,
+) -> Result<(Vec<Word>, i64, i64), CapabilityError> {
     let unique: HashSet<_> = ids.iter().collect();
     if ids.is_empty() || ids.len() > 1000 || unique.len() != ids.len() {
         return Err(invalid("Select 1..1000 distinct main-track videos"));
@@ -230,7 +242,8 @@ fn inventory(tracks: &Value, ids: &[String]) -> Result<(Vec<Word>, i64, i64), Ca
     }
     let transcript = source(tracks)?;
     let mut words = vec![];
-    for (source_index, word) in arr(&transcript["words"]).iter().enumerate() {
+    let evidence = quality::source_words(tracks, ids, precise)?;
+    for (source_index, word) in evidence.iter().enumerate() {
         if word["source"]["type"] == "text-layer" {
             continue;
         }
@@ -343,7 +356,6 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
                 return Err(invalid("Duplicate take alternative"));
             }
             let mut used = HashSet::new();
-            let mut spans = vec![];
             for p in &a.parts {
                 for i in range(p, words)? {
                     if !used.insert(i) || owners[i].is_some_and(|owner| owner != gi) {
@@ -353,7 +365,17 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
                     }
                     owners[i] = Some(gi);
                 }
-                let span = (words[p.first_word].start, words[p.last_word].end);
+            }
+            let mut spans = vec![];
+            for p in quality::merged(&a.parts, words) {
+                let span = (
+                    words[p.first_word].start,
+                    words[p.first_word..=p.last_word]
+                        .iter()
+                        .map(|w| w.end)
+                        .max()
+                        .unwrap(),
+                );
                 if spans.iter().any(|(s, e)| span.0 < *e && span.1 > *s) {
                     return Err(invalid("Overlapping source spans within an alternative"));
                 }
@@ -393,7 +415,7 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
         return Ok(());
     };
     let a: Assembly = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
-    if a.version != 1 || !label(&a.id) || a.applied_digest.len() != 64 {
+    if !matches!(a.version, 1 | 2) || !label(&a.id) || a.applied_digest.len() != 64 {
         return Err("Invalid take assembly version/identity".into());
     }
     let archive_scene = json!({"tracks":a.source_tracks});
@@ -439,7 +461,8 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
     for b in arr(&a.source_bookmarks) {
         tick(&b["time"]).map_err(|e| e.to_string())?;
     }
-    let (words, _, _) = inventory(&a.source_tracks, &a.element_ids).map_err(|e| e.to_string())?;
+    let (words, _, _) =
+        inventory(&a.source_tracks, &a.element_ids, a.version >= 2).map_err(|e| e.to_string())?;
     if serde_json::to_value(&a.source_words).unwrap() != serde_json::to_value(&words).unwrap()
         || a.recommendations.len() != a.plan.groups.len()
         || a.recommendations
@@ -449,6 +472,7 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
     {
         return Err("Invalid take source evidence or recommendations".into());
     }
+    quality::validate_audio(&a.audio_gaps, &a.source_tracks, &a.element_ids)?;
     validate_plan(&a.plan, &words).map_err(|e| e.to_string())
 }
 
@@ -464,7 +488,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.prepare",
         "Read smart-take source words",
-        "Read bounded word-indexed source evidence for selected main-track videos. Returns revision and word IDs with original clip identity and absolute integer tick timing. No inference or IO; generated transcript only. Contiguous selection (gaps allowed), one caption source. Use the returned revision for takes.edit. Up to 15000 words. Cancellation supported.",
+        "Read bounded word-indexed source evidence for selected main-track videos. Returns revision and word IDs with original clip identity and absolute integer tick timing. No inference or IO; generated transcript reconciled with valid source-caption word clocks, preserving source text corrections. Contiguous selection (gaps allowed), one caption source. Use the returned revision for takes.edit. Up to 15000 words. Cancellation supported.",
         "timeline",
         AccessLevel::Read,
         true,
@@ -494,7 +518,7 @@ pub(super) fn register_classic_takes(
                     .iter()
                     .find(|s| s["id"] == input.scene_id)
                     .ok_or_else(|| invalid("Scene not found"))?;
-                let (words, _, _) = inventory(&scene["tracks"], &input.element_ids)?;
+                let (words, _, _) = inventory(&scene["tracks"], &input.element_ids, true)?;
                 Ok(OperationSuccess::new(Prepared {
                     revision: store.document.revision,
                     words,
@@ -508,7 +532,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.edit",
         "Assemble or select smart takes",
-        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection rejects subsequent timeline/bookmark edits rather than overwriting them. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
+        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection rejects subsequent timeline/bookmark edits rather than overwriting them. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -532,7 +556,11 @@ pub(super) fn register_classic_takes(
                             .ok_or_else(|| invalid("Scene not found"))?
                             .clone();
                         let mut assembly = match input.change {
-                            Change::Assemble { element_ids, plan } => {
+                            Change::Assemble {
+                                element_ids,
+                                plan,
+                                audio_evidence,
+                            } => {
                                 if scene.get("takeAssembly").is_some() {
                                     return Err(invalid(
                                         "This scene already has take alternatives. Undo the assembly or use a new scene to analyze again",
@@ -545,7 +573,13 @@ pub(super) fn register_classic_takes(
                                         .iter()
                                         .map(|g| g.selected)
                                         .collect(),
-                                    version: 1,
+                                    audio_gaps: quality::analyze_audio(
+                                        &scene["tracks"],
+                                        &element_ids,
+                                        audio_evidence,
+                                    )?,
+                                    quality: QualityReport::default(),
+                                    version: 2,
                                     id: format!("takes-{}", document.revision),
                                     element_ids,
                                     source_tracks: scene["tracks"].clone(),
@@ -577,9 +611,31 @@ pub(super) fn register_classic_takes(
                                 a
                             }
                         };
-                        let (words, start, end) =
-                            inventory(&assembly.source_tracks, &assembly.element_ids)?;
+                        let (words, start, end) = inventory(
+                            &assembly.source_tracks,
+                            &assembly.element_ids,
+                            assembly.version >= 2,
+                        )?;
                         validate_plan(&assembly.plan, &words)?;
+                        if assembly.version >= 2 {
+                            // Only the initial AI recommendation is ranked. Manual selection is respected.
+                            if scene.get("takeAssembly").is_none() {
+                                quality::prefer_coherent(
+                                    &mut assembly.plan,
+                                    &words,
+                                    &assembly.source_tracks,
+                                    &assembly.audio_gaps,
+                                )?;
+                                assembly.recommendations =
+                                    assembly.plan.groups.iter().map(|g| g.selected).collect();
+                            }
+                            assembly.quality = quality::report(
+                                &assembly.plan,
+                                &words,
+                                &assembly.source_tracks,
+                                &assembly.audio_gaps,
+                            )?;
+                        }
                         assembly.source_words = words.clone();
                         let canvas = classic_scenes::classic_target(document, &input.project_id)?
                             .document["settings"]["canvasSize"]
@@ -692,9 +748,17 @@ fn render(
     }
     let mut cursor = start;
     for (gi, g) in a.plan.groups.iter().enumerate() {
-        for part in &g.alternatives[g.selected].parts {
-            let from = words[part.first_word].start;
-            let to = words[part.last_word].end;
+        let parts = if a.version >= 2 {
+            quality::merged(&g.alternatives[g.selected].parts, words)
+        } else {
+            g.alternatives[g.selected].parts.clone()
+        };
+        for part in &parts {
+            let (from, to) = if a.version >= 2 {
+                quality::bounds(part, words, &a.source_tracks, &a.audio_gaps)?
+            } else {
+                (words[part.first_word].start, words[part.last_word].end)
+            };
             spans.push(Span {
                 from,
                 to,
@@ -742,6 +806,7 @@ fn render(
         });
     }
     let transcript = source(&a.source_tracks)?;
+    let evidence = quality::source_words(&a.source_tracks, &a.element_ids, a.version >= 2)?;
     let mut tracks = a.source_tracks.clone();
     for track in std::iter::once(&mut tracks["main"]) {
         remap_track(track, &spans, a, fresh, context)?;
@@ -754,9 +819,10 @@ fn render(
         }
     }
     let mut mapped_words = vec![];
+    let mut segment_breaks = vec![];
     let selected_words: HashMap<_, _> = words.iter().map(|w| (w.source_index, w)).collect();
     for span in &spans {
-        for (index, w) in arr(&transcript["words"]).iter().enumerate() {
+        for (index, w) in evidence.iter().enumerate() {
             let (s, e) = if let Some(word) = selected_words.get(&index) {
                 (word.start, word.end)
             } else {
@@ -777,6 +843,7 @@ fn render(
                 mapped_words.push(word);
             }
         }
+        segment_breaks.push(mapped_words.len());
     }
     mapped_words.sort_by(|a, b| {
         a["start"]
@@ -784,7 +851,7 @@ fn render(
             .partial_cmp(&b["start"].as_f64())
             .unwrap()
     });
-    let template = arr(&a.source_tracks["overlay"])
+    let mut template = arr(&a.source_tracks["overlay"])
         .iter()
         .filter(|t| t["captionSource"].is_object())
         .flat_map(|t| arr(&t["elements"]))
@@ -796,18 +863,29 @@ fn render(
     // overlay: retaining it can resurrect discarded dialogue and make ordinary
     // generated captions hit the manual-word-run slicing guard. Keep edited
     // captions outside the region, and retain the guard for independent text.
-    let ignored_edited_elements: Vec<_> = arr(&a.source_tracks["overlay"])
+    let mut ignored_edited_elements: Vec<_> = arr(&a.source_tracks["overlay"])
         .iter()
         .filter(|t| t["captionSource"].is_object())
         .flat_map(|t| arr(&t["elements"]).iter().map(move |e| (t, e)))
         .filter(|(_, e)| {
-            tick(&e["startTime"]).is_ok_and(|s| {
-                tick(&e["duration"]).is_ok_and(|d| s < end && s + d > start)
-            })
+            tick(&e["startTime"])
+                .is_ok_and(|s| tick(&e["duration"]).is_ok_and(|d| s < end && s + d > start))
         })
         .map(|(t, e)| json!({"trackId":t["id"],"elementId":e["id"]}))
         .collect();
-    let request = json!({"tracks":tracks,"words":mapped_words,"settings":transcript["settings"],"canvasSize":canvas,
+    let mut settings = transcript["settings"].clone();
+    if a.version >= 2 {
+        settings["exactWordTimings"] = json!(true);
+        settings["segmentBreaks"] = json!(segment_breaks);
+        // A template's old trim/animation clock is unrelated to the new cue.
+        for key in ["animations", "transitions", "wordRuns"] {
+            template.as_object_mut().unwrap().remove(key);
+        }
+        template["trimStart"] = json!(0);
+        template["trimEnd"] = json!(0);
+        ignored_edited_elements = quality::remap_caption_presentation(&mut tracks, &spans, fresh)?;
+    }
+    let request = json!({"tracks":tracks,"words":mapped_words,"settings":settings,"canvasSize":canvas,
         "layerCount":transcript["layerCount"],"preserveEditedElements":true,"trackDefaults":{"type":"text","hidden":false,"elements":[]},
         "ignoredEditedElements":ignored_edited_elements,
         "defaults":{"element":template,"bottomFadeOutEndOpacity":0.25},"fontSizeScaleReference":90});
@@ -832,7 +910,8 @@ fn render(
         .filter_map(|t| t["id"].as_str())
         .collect();
     for track in tracks["overlay"].as_array_mut().into_iter().flatten() {
-        if !track["captionSource"].is_object()
+        if a.version == 1
+            && !track["captionSource"].is_object()
             && !old_track_ids.contains(track["id"].as_str().unwrap_or(""))
         {
             remap_track(track, &spans, a, fresh, context)?;

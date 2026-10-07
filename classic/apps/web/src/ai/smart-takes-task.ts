@@ -29,6 +29,7 @@ const checkpointSchema = z.object({
 	}),
 });
 type Status = {
+	quality?: import("@/timeline/smart-takes/types").TakeAssembly["quality"];
 	status: "idle" | "running" | "succeeded" | "failed" | "cancelled";
 	requestId?: string;
 	projectId?: string;
@@ -115,7 +116,7 @@ export class SmartTakesTask {
 		if (this.controller) throw new Error("Smart takes is already running");
 		const prepared = this.editor.command.prepareSmartTakes(elementIds);
 		const source = sourceKey({ scene, elementIds, words: prepared.words });
-		const key = `opencut:smart-takes:v1:${account}:${projectId}:${scene.id}`;
+		const key = `opencut:smart-takes:v2:${account}:${projectId}:${scene.id}`;
 		let checkpoint: SmartTakeCheckpoint = {};
 		try {
 			const saved = checkpointSchema.safeParse(
@@ -181,11 +182,26 @@ export class SmartTakesTask {
 				onStage: (stage) => this.update({ stage }),
 			});
 			controller.signal.throwIfAborted();
+			this.update({ stage: "Checking audio and protecting word boundaries" });
+			const audioEvidence = await prepared.analyzeAudio(controller.signal);
+			controller.signal.throwIfAborted();
 			this.update({ stage: "Applying take plan" });
-			prepared.apply(plan);
-			this.update({ status: "succeeded", groupCount: plan.groups.length });
-			toast.success("Smart takes assembled", {
-				description: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
+			prepared.apply(plan, audioEvidence);
+			const quality = this.editor.scenes.getActiveScene().takeAssembly?.quality;
+			this.update({
+				status: "succeeded",
+				groupCount: plan.groups.length,
+				quality,
+			});
+			const needsReview =
+				quality &&
+				(quality.unverifiedBoundaries > 0 ||
+					quality.shortParts > 0 ||
+					quality.repeatedPhrases > 0);
+			(needsReview ? toast.warning : toast.success)("Smart takes assembled", {
+				description: needsReview
+					? `${plan.groups.length} story groups. Review ${quality.unverifiedBoundaries} cuts without verified silence, ${quality.shortParts} short parts and ${quality.repeatedPhrases} possible repetitions. Right-click to choose alternatives.`
+					: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
 				action: { label: "Undo", onClick: () => this.editor.command.undo() },
 			});
 		} catch (error) {

@@ -2,7 +2,7 @@
 //! wrapping, geometry, word timing and serializable clip state are shared policy.
 use super::caption_sync::{js_whitespace, strip_caption_punctuation};
 use serde::Serialize;
-use serde_json::{Map, Value, json};
+use serde_json::{json, Map, Value};
 use time::MediaTime;
 
 #[derive(Serialize)]
@@ -100,7 +100,12 @@ pub fn readable_caption_word_timings(
     }
     result
 }
-fn word_runs(caption: &Value, content: &str, hide: bool) -> Result<Option<Value>, String> {
+fn word_runs(
+    caption: &Value,
+    content: &str,
+    hide: bool,
+    exact: bool,
+) -> Result<Option<Value>, String> {
     let start = n(&caption["startTime"], 0.0);
     let duration = n(&caption["duration"], 0.0);
     let raw: Vec<(String, f64, f64)> =
@@ -144,11 +149,15 @@ fn word_runs(caption: &Value, content: &str, hide: bool) -> Result<Option<Value>
     if source.is_empty() {
         return Ok(None);
     }
-    let times = readable_caption_word_timings(
-        &source.iter().map(|(_, s, e)| (*s, *e)).collect::<Vec<_>>(),
-        start,
-        start + duration,
-    );
+    let times = if exact {
+        source.iter().map(|(_, s, e)| (*s, *e)).collect()
+    } else {
+        readable_caption_word_timings(
+            &source.iter().map(|(_, s, e)| (*s, *e)).collect::<Vec<_>>(),
+            start,
+            start + duration,
+        )
+    };
     let lines: Vec<_> = content
         .split('\n')
         .enumerate()
@@ -156,7 +165,7 @@ fn word_runs(caption: &Value, content: &str, hide: bool) -> Result<Option<Value>
         .collect();
     let runs: Result<Vec<_>,String> = source.iter().enumerate().map(|(i,(text,_,_))| Ok(json!({
         "id":format!("word-{i}"),"text":text,"lineIndex":lines.get(i).copied().unwrap_or(0),
-        "startTime":ticks((times[i].0 - start).max(0.0))?,"endTime":ticks((times[i].1 - start).max(0.001))?
+        "startTime":ticks((times[i].0 - start).max(0.0))?,"endTime":ticks((times[i].1 - start).max(if exact {0.0} else {0.001}))?
     }))).collect();
     Ok(Some(json!(runs?)))
 }
@@ -341,7 +350,7 @@ pub fn build_caption_text_element(
         .collect::<Vec<_>>()
         .join(" ");
     result["responsiveText"] = json!({"sourceContent":responsive,"generatedContent":content,"maxWidth":maximum,"canvasHeight":height,"fontSize":size});
-    if let Some(runs) = word_runs(caption, &content, hide)? {
+    if let Some(runs) = word_runs(caption, &content, hide, layout["exactWordTimings"] == true)? {
         result["wordRuns"] = runs;
     } else {
         result.as_object_mut().unwrap().remove("wordRuns");

@@ -33,7 +33,12 @@ export interface PreparedTakes {
 	words: SmartTakeWord[];
 }
 export interface TakeAssembly {
-	version: 1;
+	version: 1 | 2;
+	quality?: {
+		shortParts: number;
+		repeatedPhrases: number;
+		unverifiedBoundaries: number;
+	};
 	sourceWords: SmartTakeWord[];
 	recommendations: number[];
 	id: string;
@@ -43,6 +48,21 @@ export interface TakeAssembly {
 	plan: SmartTakePlan;
 	appliedDigest: string;
 }
+export interface TakeAudioEvidence {
+	clipId: string;
+	frames: {
+		start: number;
+		end: number;
+		rms: number;
+		peak: number;
+		zeroCrossingRate: number;
+	}[];
+}
 export type TakeChange =
-	| { type: "assemble"; elementIds: string[]; plan: SmartTakePlan }
+	| {
+			type: "assemble";
+			elementIds: string[];
+			plan: SmartTakePlan;
+			audioEvidence?: TakeAudioEvidence[];
+	  }
 	| { type: "select"; groupIndex: number; alternativeIndex: number };

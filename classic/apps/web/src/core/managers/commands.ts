@@ -1,3 +1,4 @@
+import { collectTakeAudioEvidence } from "@/timeline/smart-takes/audio-evidence";
 import { assertBatchEditable } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type { Command, CommandResult } from "@/commands";
@@ -736,7 +737,12 @@ export class CommandManager {
 		const prepared = session.prepareTakes({ sceneId, elementIds });
 		return {
 			...prepared,
-			apply: (plan: import("@/timeline/smart-takes/types").SmartTakePlan) => {
+			analyzeAudio: (signal: AbortSignal) =>
+				collectTakeAudioEvidence({ editor: this.editor, elementIds, signal }),
+			apply: (
+				plan: import("@/timeline/smart-takes/types").SmartTakePlan,
+				audioEvidence?: import("@/timeline/smart-takes/types").TakeAudioEvidence[],
+			) => {
 				if (
 					this.canonical !== session ||
 					this.agentAccountId() !== account ||
@@ -750,7 +756,7 @@ export class CommandManager {
 					execute: () => {
 						session.editTakes({
 							sceneId,
-							change: { type: "assemble", elementIds, plan },
+							change: { type: "assemble", elementIds, plan, audioEvidence },
 							expectedRevision: prepared.revision,
 						});
 						this.publishCanonical();

@@ -94,9 +94,9 @@ fn transcript(scene: &Value) -> Vec<String> {
 async fn point_word_timings_survive_assembly_alternatives_reload_and_undo() {
     let r = setup_with_word_times(&[
         (1, 1.1, 1.1),
-        (2, 1.1, 1.1),           // Consecutive words must retain their original order.
+        (2, 1.1, 1.1),         // Consecutive words must retain their original order.
         (5, 5.99999, 5.99999), // Clip edge: do not extend into the next clip.
-        (7, 7.1, 7.1000001),     // Positive duration rounds to zero ticks.
+        (7, 7.1, 7.1000001),   // Positive duration rounds to zero ticks.
         (10, 10.1, 10.1),
         (13, 13.1, 13.1), // A word outside the selected footage must not block it.
     ])
@@ -229,10 +229,10 @@ async fn assembly_composites_retime_ripple_transcript_undo_and_reload() {
         transcript(s),
         ["Hello", "world", "Useful", "ending", "tail", "end"]
     );
-    assert_eq!(s["tracks"]["main"]["elements"][0]["trimStart"], 645000); // 480000 + 1.1s * 1.25
-    assert_eq!(s["tracks"]["main"]["elements"][2]["startTime"], 420000);
-    assert_eq!(s["bookmarks"][0]["time"], 480000);
-    assert_eq!(s["bookmarks"][1]["time"], 1980000);
+    assert_eq!(s["tracks"]["main"]["elements"][0]["trimStart"], 633000); // 480000 + (1.1s - 80ms handle) * 1.25
+    assert_eq!(s["tracks"]["main"]["elements"][2]["startTime"], 462600);
+    assert_eq!(s["bookmarks"][0]["time"], 522600);
+    assert_eq!(s["bookmarks"][1]["time"], 2022600);
     assert_eq!(
         s["takeAssembly"]["sourceTracks"],
         scene(&original)["tracks"]
@@ -265,7 +265,7 @@ async fn assembly_composites_retime_ripple_transcript_undo_and_reload() {
         ]
     );
     assert_eq!(s["tracks"]["main"]["elements"].as_array().unwrap().len(), 4);
-    assert_eq!(s["tracks"]["main"]["elements"][3]["startTime"], 510000);
+    assert_eq!(s["tracks"]["main"]["elements"][3]["startTime"], 576600);
     assert_eq!(s["takeAssembly"]["recommendations"][0], 0);
     // Persisted state reopens with all source footage and alternatives.
     let reopened = OpenCutRuntime::default();
@@ -404,8 +404,23 @@ async fn narrative_order_and_shared_half_take_composites_use_selected_source_wor
         ["Useful", "ending", "Hello", "world", "tail", "end"]
     );
     let clips = s["tracks"]["main"]["elements"].as_array().unwrap();
-    assert_eq!(clips[1]["trimStart"], 645000);
-    assert_eq!(clips[2]["trimStart"], 492000); // word 10.1s within the later clip starting at 6s
+    assert_eq!(clips.len(), 3); // Prefer the continuous performance over two isolated words.
+    assert_eq!(clips[1]["trimStart"], 633000);
+    assert_eq!(s["takeAssembly"]["plan"]["groups"][1]["selected"], 0);
+    call(
+        &r,
+        EDIT,
+        input(
+            &state,
+            json!({"type":"select","groupIndex":1,"alternativeIndex":2}),
+        ),
+    )
+    .await;
+    let selected = read(&r).await;
+    let clips = scene(&selected)["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap();
+    assert_eq!(clips.len(), 4); // The editor can still explicitly select the composite.
     assert_eq!(clips[1]["takeGroup"], clips[2]["takeGroup"]);
 }
 
@@ -425,23 +440,48 @@ async fn source_linked_caption_cues_are_rebuilt_instead_of_preserved_as_manual_o
          "params":{"content":"Keep authored tail"},"wordRuns":[{"id":"outside-word","text":"Keep authored tail","startTime":0,"endTime":120000}]}
     ]);
     let reopened = OpenCutRuntime::default();
-    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await;
+    call(
+        &reopened,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
     let before = read(&reopened).await;
     let request = assemble(&before);
-    reopened.registry().invoke(EDIT,InvocationContext {dry_run:true,..Default::default()},request.clone()).await.unwrap();
-    assert_eq!(read(&reopened).await,before);
-    call(&reopened,EDIT,request).await;
+    reopened
+        .registry()
+        .invoke(
+            EDIT,
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            request.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(read(&reopened).await, before);
+    call(&reopened, EDIT, request).await;
     let after = read(&reopened).await;
     let overlays = scene(&after)["tracks"]["overlay"].as_array().unwrap();
-    let elements: Vec<_> = overlays.iter().flat_map(|t|t["elements"].as_array().unwrap()).collect();
-    assert!(!elements.iter().any(|e|e["id"]=="stale-cue"));
-    let outside=elements.iter().find(|e|e["id"]=="outside-cue").unwrap();
-    assert_eq!(outside["params"]["content"],"Keep authored tail");
-    assert_eq!(outside["startTime"],480000);
-    assert_eq!(transcript(scene(&after)),["Hello","world","Useful","ending","tail","end"]);
-    assert_eq!(scene(&after)["takeAssembly"]["sourceTracks"],scene(&before)["tracks"]);
-    call(&reopened,"history.undo",json!({})).await;
-    assert_eq!(read(&reopened).await["project"],before["project"]);
+    let elements: Vec<_> = overlays
+        .iter()
+        .flat_map(|t| t["elements"].as_array().unwrap())
+        .collect();
+    assert!(!elements.iter().any(|e| e["id"] == "stale-cue"));
+    let outside = elements.iter().find(|e| e["id"] == "outside-cue").unwrap();
+    assert_eq!(outside["params"]["content"], "Keep authored tail");
+    assert_eq!(outside["startTime"], 522600);
+    assert_eq!(
+        transcript(scene(&after)),
+        ["Hello", "world", "Useful", "ending", "tail", "end"]
+    );
+    assert_eq!(
+        scene(&after)["takeAssembly"]["sourceTracks"],
+        scene(&before)["tracks"]
+    );
+    call(&reopened, "history.undo", json!({})).await;
+    assert_eq!(read(&reopened).await["project"], before["project"]);
 }
 
 #[tokio::test]
@@ -452,11 +492,215 @@ async fn independent_authored_word_runs_still_block_a_partial_cut_atomically() {
     tracks["overlay"].as_array_mut().unwrap().push(json!({"id":"manual-overlay","type":"text","name":"Authored","elements":[
         {"id":"manual-clip","type":"text","startTime":0,"duration":360000,"trimStart":0,"trimEnd":0,"params":{"content":"Independent authored text"},"wordRuns":[{"id":"manual-word","text":"Independent authored text","startTime":0,"endTime":360000}]}
     ]}));
-    tracks["order"].as_array_mut().unwrap().push(json!("manual-overlay"));
+    tracks["order"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("manual-overlay"));
     let reopened = OpenCutRuntime::default();
-    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await;
+    call(
+        &reopened,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
     let before = read(&reopened).await;
-    let error = reopened.registry().invoke(EDIT,InvocationContext::default(),assemble(&before)).await.unwrap_err();
+    let error = reopened
+        .registry()
+        .invoke(EDIT, InvocationContext::default(), assemble(&before))
+        .await
+        .unwrap_err();
     assert!(error.to_string().contains("manually authored text"));
-    assert_eq!(read(&reopened).await,before);
+    assert_eq!(read(&reopened).await, before);
+}
+
+#[tokio::test]
+async fn corrected_caption_clocks_survive_reordering_without_delayed_rows_or_cross_cut_cues() {
+    let initial = setup().await;
+    let mut classic = read(&initial).await["project"]["classic"].clone();
+    let track = &mut classic["document"]["scenes"][0]["tracks"]["overlay"][0];
+    track["elements"] = json!([
+        {"id":"corrected","type":"text","startTime":144000,"duration":204000,"trimStart":0,"trimEnd":0,
+        "params":{"content":"Hello world","color":"#ff1234"},
+        "wordRuns":[{"id":"a","text":"Hello","startTime":0,"endTime":60000},{"id":"b","text":"world","startTime":192000,"endTime":204000}]}
+    ]);
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    let prepared=call(&r,PREPARE,json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":before["revision"],"elementIds":["item-2","second"]})).await;
+    assert_eq!(prepared["words"][1]["start"], 144000);
+    assert_eq!(prepared["words"][2]["start"], 336000);
+    let mut request = assemble(&before);
+    request["change"]["plan"]["groups"]
+        .as_array_mut()
+        .unwrap()
+        .swap(0, 1);
+    call(&r, EDIT, request).await;
+    let state = read(&r).await;
+    let s = scene(&state);
+    let generated: Vec<_> = s["tracks"]["overlay"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|t| t["captionSource"].is_object())
+        .collect();
+    let words = generated[0]["captionSource"]["words"].as_array().unwrap();
+    let mut runs = 0;
+    for clip in generated
+        .iter()
+        .flat_map(|t| t["elements"].as_array().unwrap())
+    {
+        for run in clip["wordRuns"].as_array().unwrap() {
+            runs += 1;
+            let start = clip["startTime"].as_i64().unwrap() + run["startTime"].as_i64().unwrap();
+            let end = clip["startTime"].as_i64().unwrap() + run["endTime"].as_i64().unwrap();
+            assert!(words.iter().any(|w| w["text"] == run["text"]
+                && (w["start"].as_f64().unwrap() * 120000.0 - start as f64).abs() < 1.0
+                && (w["end"].as_f64().unwrap() * 120000.0 - end as f64).abs() < 1.0));
+        }
+        let content = clip["params"]["content"].as_str().unwrap();
+        assert!(
+            !(content.contains("ending") && content.contains("Hello")),
+            "Caption must not straddle an edit"
+        );
+        if content == "Hello world" {
+            assert_eq!(clip["wordRuns"][1]["startTime"], 192000); // No readability heuristic shifts the last word earlier.
+            assert_eq!(clip["params"]["color"], "#ff1234");
+        }
+    }
+    assert_eq!(runs, words.len());
+    let hello = words.iter().find(|w| w["text"] == "Hello").unwrap();
+    let clip = &s["tracks"]["main"]["elements"][1];
+    let media_clock = clip["trimStart"].as_i64().unwrap() as f64
+        + (hello["start"].as_f64().unwrap() * 120000.0
+            - clip["startTime"].as_i64().unwrap() as f64)
+            * 1.25;
+    assert!((media_clock - (480000.0 + 144000.0 * 1.25)).abs() < 1.0);
+}
+
+#[tokio::test]
+async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_selection() {
+    let r = setup_with_word_times(&[(1, 1.1, 1.5), (2, 2.1, 2.5)]).await;
+    let before = read(&r).await;
+    let mut request = assemble(&before);
+    let frames:Vec<_>=(0..600).map(|i|{
+        let start=i as f64/100.0;
+        // Actual speech extends 140ms beyond the ASR word end.
+        let active=(1.02..1.64).contains(&start)||(2.02..2.64).contains(&start)||(4.02..5.90).contains(&start);
+        let energy=if active {0.15} else {0.001};
+        json!({"start":start,"end":(i+1) as f64/100.0,"rms":energy,"peak":energy*1.4,"zeroCrossingRate":0.1})
+    }).collect();
+    request["change"]["audioEvidence"] = json!([{"clipId":"item-2","frames":frames}]);
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    let s = scene(&after);
+    let clip = &s["tracks"]["main"]["elements"][0];
+    let source_end = (clip["trimStart"].as_f64().unwrap() - 480000.0) / 1.25
+        + clip["duration"].as_f64().unwrap();
+    assert!(
+        source_end > 2.64 * 120000.0,
+        "Cut must retain the audible tail, not stop at the ASR timestamp"
+    );
+    assert!(
+        source_end < 3.1 * 120000.0,
+        "Do not include the next discarded word"
+    );
+    assert!(
+        !s["takeAssembly"]["audioGaps"][0]["ranges"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    let reopened = OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
+    let state = read(&reopened).await;
+    call(
+        &reopened,
+        EDIT,
+        input(
+            &state,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":0}),
+        ),
+    )
+    .await;
+    assert_eq!(
+        scene(&read(&reopened).await)["tracks"]["main"]["elements"][0]["duration"],
+        clip["duration"]
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+}
+
+#[tokio::test]
+async fn consecutive_word_parts_are_rendered_as_one_continuous_clip() {
+    let r = setup().await;
+    let before = read(&r).await;
+    let mut request = assemble(&before);
+    request["change"]["plan"]["groups"][0]["alternatives"][0]["parts"] =
+        json!([{"firstWord":1,"lastWord":1},{"firstWord":2,"lastWord":2}]);
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    assert_eq!(
+        scene(&after)["tracks"]["main"]["elements"]
+            .as_array()
+            .unwrap()
+            .len(),
+        3
+    );
+    assert_eq!(scene(&after)["takeAssembly"]["quality"]["shortParts"], 0);
+}
+
+#[tokio::test]
+async fn touching_parts_with_overlapping_asr_words_do_not_duplicate_or_clip_speech() {
+    let r = setup_with_word_times(&[(1, 1.1, 2.3), (2, 2.1, 2.85)]).await;
+    let before = read(&r).await;
+    let mut request = assemble(&before);
+    request["change"]["plan"]["groups"][0]["alternatives"][0]["parts"] =
+        json!([{"firstWord":1,"lastWord":1},{"firstWord":2,"lastWord":2}]);
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    assert_eq!(
+        transcript(scene(&after)),
+        ["Hello", "world", "Useful", "ending", "tail", "end"]
+    );
+    assert_eq!(
+        scene(&after)["tracks"]["main"]["elements"]
+            .as_array()
+            .unwrap()
+            .len(),
+        3
+    );
+}
+
+#[tokio::test]
+async fn corrected_caption_word_missing_from_stale_transcript_is_recovered_once() {
+    let r = setup().await;
+    let mut classic = read(&r).await["project"]["classic"].clone();
+    let t = &mut classic["document"]["scenes"][0]["tracks"]["overlay"][0];
+    t["elements"] = json!([{"id":"restored-words","type":"text","startTime":120000,"duration":240000,"trimStart":0,"trimEnd":0,"params":{"content":"Hello recovered world"},"wordRuns":[
+        {"id":"a","text":"Hello","startTime":84000,"endTime":120000},
+        {"id":"b","text":"recovered","startTime":120000,"endTime":126000},
+        {"id":"c","text":"world","startTime":132000,"endTime":222000}
+    ]}]);
+    let opened = OpenCutRuntime::default();
+    call(
+        &opened,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let state = read(&opened).await;
+    let prepared=call(&opened,PREPARE,json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":state["revision"],"elementIds":["item-2","second"]})).await;
+    let words = prepared["words"].as_array().unwrap();
+    assert_eq!(words.iter().filter(|w| w["text"] == "Hello").count(), 1);
+    assert_eq!(words.iter().filter(|w| w["text"] == "recovered").count(), 1);
+    assert_eq!(
+        words.iter().find(|w| w["text"] == "Hello").unwrap()["start"],
+        204000
+    );
+    assert_eq!(read(&opened).await, state);
 }

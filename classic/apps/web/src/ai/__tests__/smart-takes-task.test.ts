@@ -61,6 +61,7 @@ function setup() {
 		);
 	}) as unknown as typeof fetch;
 	const apply = mock(() => {});
+	const analyzeAudio = mock(async () => []);
 	const scene = {
 		id: "scene",
 		tracks: { main: { elements: [{ id: "clip" }] } },
@@ -73,11 +74,16 @@ function setup() {
 		},
 		scenes: { getActiveScene: () => scene, getActiveSceneOrNull: () => scene },
 		command: {
-			prepareSmartTakes: () => ({ words, revision: 1, apply }),
+			prepareSmartTakes: () => ({
+				words,
+				revision: 1,
+				apply,
+				analyzeAudio,
+			}),
 			undo: () => {},
 		},
 	} as unknown as EditorCore;
-	return { editor, apply, scene, requests: () => requests };
+	return { editor, apply, analyzeAudio, scene, requests: () => requests };
 }
 async function finished(task: SmartTakesTask) {
 	if (task.getSnapshot().status !== "running") return;
@@ -152,5 +158,53 @@ test("cancelling analysis prevents apply", async () => {
 	task.cancel();
 	await finished(task);
 	expect(task.read()).toMatchObject({ status: "cancelled" });
+	expect(apply).not.toHaveBeenCalled();
+});
+
+test("audio decode failure leaves the timeline untouched and retries the saved plan", async () => {
+	const { editor, apply, analyzeAudio, requests } = setup();
+	analyzeAudio.mockImplementation(async () => {
+		throw new Error("Source audio unavailable");
+	});
+	const task = new SmartTakesTask(editor);
+	task.start({ elementIds: ["clip"], requestId: "audio-failure" });
+	await finished(task);
+	expect(task.read()).toMatchObject({
+		status: "failed",
+		stage: "Checking audio and protecting word boundaries",
+		hasCheckpoint: true,
+	});
+	expect(apply).not.toHaveBeenCalled();
+	analyzeAudio.mockImplementation(async () => []);
+	task.start({ elementIds: ["clip"], requestId: "audio-retry" });
+	await finished(task);
+	expect(task.read()).toMatchObject({ status: "succeeded" });
+	expect(requests()).toBe(4);
+	expect(apply).toHaveBeenCalledWith(plan, []);
+});
+
+test("cancelling during audio analysis never applies the completed AI plan", async () => {
+	const { editor, apply, analyzeAudio } = setup();
+	let release!: (value: never[]) => void;
+	let started!: () => void;
+	const decoding = new Promise<void>((resolve) => {
+		started = resolve;
+	});
+	analyzeAudio.mockImplementation(() => {
+		started();
+		return new Promise<never[]>((resolve) => {
+			release = resolve;
+		});
+	});
+	const task = new SmartTakesTask(editor);
+	task.start({ elementIds: ["clip"], requestId: "cancel-audio" });
+	await decoding;
+	task.cancel();
+	release([]);
+	await finished(task);
+	expect(task.read()).toMatchObject({
+		status: "cancelled",
+		hasCheckpoint: true,
+	});
 	expect(apply).not.toHaveBeenCalled();
 });
