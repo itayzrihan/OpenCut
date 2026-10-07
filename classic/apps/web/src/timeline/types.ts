@@ -35,6 +35,7 @@ export interface Bookmark {
 }
 
 export interface TScene {
+	takeAssembly?: import("./smart-takes/types").TakeAssembly;
 	id: string;
 	name: string;
 	isMain: boolean;
@@ -171,6 +172,7 @@ export interface LibraryAudioElement extends BaseAudioElement {
 export type AudioElement = UploadAudioElement | LibraryAudioElement;
 
 interface BaseTimelineElement {
+	takeGroup?: { assemblyId: string; groupIndex: number };
 	id: string;
 	name: string;
 	duration: MediaTime;

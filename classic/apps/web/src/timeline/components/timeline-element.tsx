@@ -1,5 +1,7 @@
 "use client";
 
+import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
+
 import {
 	previewRestoreSilence,
 	restoreSelectedSilence,
@@ -359,6 +361,7 @@ function TimelineElementComponent({
 									: undefined,
 						}}
 					>
+						<SmartTakeBadge element={element} />
 						{needsKeyframeSurface ? (
 							<TimelineElementKeyframeSurface
 								element={element}
@@ -858,6 +861,7 @@ function TimelineElementMenuContent({
 			>
 				Split
 			</ActionMenuItem>
+			<SmartTakeMenu element={element} />
 			<CopyMenuItem />
 			{canRestoreSilence && (
 				<ContextMenuItem

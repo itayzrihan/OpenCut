@@ -713,6 +713,66 @@ export class CommandManager {
 		});
 	}
 
+	prepareSmartTakes(elementIds: string[]) {
+		const session = this.canonical;
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!session || !sceneId || this.transactionDepth > 0)
+			throw new Error("Open the canonical editor before analyzing takes");
+		this.synchronizeCanonicalViews();
+		const account = this.agentAccountId();
+		const prepared = session.prepareTakes({ sceneId, elementIds });
+		return {
+			...prepared,
+			apply: (plan: import("@/timeline/smart-takes/types").SmartTakePlan) => {
+				if (
+					this.canonical !== session ||
+					this.agentAccountId() !== account ||
+					this.editor.scenes.getActiveSceneOrNull()?.id !== sceneId ||
+					session.status().revision !== prepared.revision
+				)
+					throw new Error(
+						"The project changed during analysis. Nothing was applied; run Smart takes again.",
+					);
+				this.executeTransaction({
+					execute: () => {
+						session.editTakes({
+							sceneId,
+							change: { type: "assemble", elementIds, plan },
+							expectedRevision: prepared.revision,
+						});
+						this.publishCanonical();
+					},
+				});
+			},
+		};
+	}
+
+	selectSmartTake({
+		groupIndex,
+		alternativeIndex,
+	}: {
+		groupIndex: number;
+		alternativeIndex: number;
+	}): void {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the canonical editor before selecting takes");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.editTakes({
+					sceneId,
+					change: {
+						type: "select",
+						groupIndex,
+						alternativeIndex,
+					},
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	editClassicBookmarks(input: {
 		sceneId: string;
 		change: import("@/core/canonical-classic-session").ClassicBookmarkChange;

@@ -129,6 +129,9 @@ pub(super) fn register_classic_media(
                         let mut plans = Vec::new();
                         let mut count = 0usize;
                         for scene in scenes.iter() {
+                            if references_media(&scene["takeAssembly"], &ids) {
+                                return Err(invalid("Media is retained by smart-take alternatives; remove the assembly first"));
+                            }
                             let mut elements = Vec::new();
                             for track in tracks(&scene["tracks"]) {
                                 for element in track["elements"].as_array().into_iter().flatten() {
