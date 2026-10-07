@@ -14,7 +14,7 @@ assert.equal(baseline.projectId,projectId);assert.equal(bundle.archive.revision,
 const manifest=JSON.parse(await readFile(new URL("../resources/editor-agent-qa/tasks.json",import.meta.url),"utf8"));
 const task=manifest.tasks.find(task=>task.id==="en-ui-navigation");
 const users=bundle.conversation.entries.filter(entry=>entry.kind==="user");assert.equal(users.length,1);assert.equal(users[0].text,task.prompt);
-const activities=bundle.conversation.entries.flatMap(entry=>entry.activities??[]).filter(activity=>activity.ok && ["editor.ui.snapshot","editor.ui.control"].includes(activity.input.id));
+const activities=bundle.conversation.entries.flatMap(entry=>entry.activities??[]).filter(activity=>activity.ok && activity.input.action==="invoke" && ["editor.ui.snapshot","editor.ui.control"].includes(activity.input.id));
 const snapshots=activities.filter(activity=>activity.input.id==="editor.ui.snapshot");
 const clicks=activities.filter(activity=>activity.input.id==="editor.ui.control");assert.equal(clicks.length,2);assert.ok(snapshots.length>=3);
 for(const activity of activities) {assert.equal(activity.input.input.projectId,projectId);assert.equal(activity.output.result.result.data.projectId,projectId);}
