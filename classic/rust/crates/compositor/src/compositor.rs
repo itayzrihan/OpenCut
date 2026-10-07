@@ -394,6 +394,7 @@ impl Compositor {
             frame.width,
             frame.height,
             layer,
+            None,
         )?;
 
         if !layer.effect_pass_groups.is_empty() {
@@ -478,8 +479,38 @@ impl Compositor {
                     items,
                     opacity,
                     blend_mode,
+                    transform,
+                    clip,
                 } => {
-                    let group_texture = self.render_group(context, encoder, frame, items)?;
+                    let mut group_texture = self.render_group(context, encoder, frame, items)?;
+                    if let Some(transform) = transform {
+                        let target = self.texture_pool.acquire(
+                            context,
+                            frame.width,
+                            frame.height,
+                            "group-transform",
+                        );
+                        let layer = LayerDescriptor {
+                            texture_id: String::new(),
+                            transform: transform.clone(),
+                            opacity: 1.0,
+                            blend_mode: *blend_mode,
+                            effect_pass_groups: vec![],
+                            source_mask: None,
+                            mask: None,
+                        };
+                        self.render_source_to_texture(
+                            context,
+                            encoder,
+                            &group_texture,
+                            &target,
+                            frame.width,
+                            frame.height,
+                            &layer,
+                            *clip,
+                        )?;
+                        group_texture = target;
+                    }
                     scene = self.blend_texture(
                         context,
                         encoder,
@@ -611,6 +642,7 @@ impl Compositor {
         width: u32,
         height: u32,
         layer: &LayerDescriptor,
+        clip: Option<[f32; 4]>,
     ) -> Result<(), CompositorError> {
         let source_view = source.create_view(&wgpu::TextureViewDescriptor::default());
         let source_mask_texture = match &layer.source_mask {
@@ -720,6 +752,16 @@ impl Compositor {
                 timestamp_writes: None,
                 multiview_mask: None,
             });
+            if let Some([x, y, w, h]) = clip {
+                let left = x.max(0.0).floor().min(width as f32) as u32;
+                let top = y.max(0.0).floor().min(height as f32) as u32;
+                let right = (x + w).ceil().max(0.0).min(width as f32) as u32;
+                let bottom = (y + h).ceil().max(0.0).min(height as f32) as u32;
+                if right <= left || bottom <= top {
+                    return Ok(());
+                }
+                render_pass.set_scissor_rect(left, top, right - left, bottom - top);
+            }
             render_pass.set_pipeline(&self.layer_pipeline);
             render_pass.set_vertex_buffer(0, context.fullscreen_quad().slice(..));
             render_pass.set_bind_group(0, &source_bind_group, &[]);

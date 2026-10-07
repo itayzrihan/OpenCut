@@ -657,6 +657,48 @@ export class CommandManager {
 		}
 	}
 
+	createTextGraphics(input: {
+		trackId: string;
+		elementId: string;
+		edge: "top" | "bottom";
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before adding graphics");
+		const sceneId = this.editor.scenes.getActiveScene().id;
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.text-graphics.create",
+					input: { ...input, sceneId },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
+	createPushBroll(input: {
+		edge: "top" | "bottom";
+		startTime: number;
+		duration: number;
+		screenPercent?: number;
+		transitionSeconds?: number;
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before adding B-roll");
+		const sceneId = this.editor.scenes.getActiveScene().id;
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.push-broll.create",
+					input: { ...input, sceneId },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	editClassicScene(
 		change: import("@/core/canonical-classic-session").ClassicSceneChange,
 	): void {

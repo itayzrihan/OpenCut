@@ -40,3 +40,32 @@ Existing operations are linked to their manager or implementation entry points, 
 | Owned project inspection and media transfer | [owned_projects.rs](C:/DEV/OpenCut/crates/editor-api/src/operations/owned_projects.rs); [owned-projects.ts](C:/DEV/OpenCut/classic/apps/web/src/editor-agent/server/owned-projects.ts) | projects.owned.read; projects.owned.media.copy | [owned_projects.rs](C:/DEV/OpenCut/crates/editor-api/tests/owned_projects.rs); [owned-projects.test.ts](C:/DEV/OpenCut/classic/apps/web/src/editor-agent/__tests__/owned-projects.test.ts); [host-effects.test.ts](C:/DEV/OpenCut/classic/apps/web/src/editor-agent/__tests__/host-effects.test.ts) | Saved owned project/scene/clip reads and one-file image/video/audio transfers use native projection, current target fences, durable content-bound IDs/checksums, cancellation and one canonical media Undo. General clip insertion maps media/clip identities. Full dependency transfer for custom fonts, HyperFrames, linked groups, compound media and complex Parallax remains; no full-project migration claim or live model acceptance yet. |
 
 Inventory: 33 actions, 405 manager methods, 1244 JSX event candidates, 108 generic/legacy mutation sites. No parity percentage is inferred.
+
+### Editable push B-roll (Classic-only)
+
+`timeline.classic.push-broll.create` atomically creates an empty nested Classic
+scene and an upper/lower effect layer. Simple advanced layers exposes both
+options. The shared compositor translates the underlying composition and
+reveals the nested scene with one deterministic entry/exit clock; default area
+is 40%. Content keeps its aspect ratio and is center-cropped to the band.
+Properties opens the nested scene for ordinary video, background, HyperFrames,
+text and caption editing. Nested audio is silent; the main dialogue continues.
+Empty scenes leave the underlying composition intact. Settings and references
+are retained in `EditorDocument.project.classic`, validated by the runtime,
+readable/patchable through `app.state.read`/`app.state.patch`, and creation has
+optimistic revisions, registry idempotency, dry run and undo. The rewrite UI has
+no separate implementation; no Classic functionality was removed.
+
+### Graphics above/below text (Classic-only)
+
+`timeline.classic.text-graphics.create` creates a nested content scene linked
+through validated text parameters to one existing text element. Populate the
+returned scene with existing insertion/catalog capabilities for multiple
+icons, graphics, UI Elements, HyperFrames or media. The Graphics inspector tab
+creates, edits and detaches attachments. The renderer uses the target's timing,
+animated position and measured text height: content above pushes the text down,
+content below pushes it up, with synchronized entry/exit. Other layers and
+video are unchanged. Content remains editable with its own animations; empty
+content does not move text. Creation does not generate semantic assets itself.
+Creation is canonical, undoable, revision checked, idempotent and dry-run safe;
+state and content are readable through app.state.read. No rewrite duplication.

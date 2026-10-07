@@ -21,7 +21,10 @@ import { effectPreviewService } from "@/services/renderer/effect-preview";
 import { useEditor } from "@/editor/use-editor";
 import { buildEffectElement } from "@/timeline/element-utils";
 import type { EffectDefinition } from "@/effects/types";
-import { useSharedLibraryStore, type GeneratedEffectPreset } from "@/shared-library";
+import {
+	useSharedLibraryStore,
+	type GeneratedEffectPreset,
+} from "@/shared-library";
 import { generateEffectPreset } from "@/ai/preset-generation";
 import type { ParamValues } from "@/params";
 import { Sparkles } from "lucide-react";
@@ -32,6 +35,7 @@ import { ZERO_MEDIA_TIME } from "@/wasm";
 
 const FULL_LENGTH_EFFECT_TYPES = new Set([EDITORIAL_EDGE_FEATHER_EFFECT_TYPE]);
 const SMART_LAYER_ONLY_EFFECT_TYPES = new Set([
+	"push-broll",
 	SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE,
 	PERSON_CUTOUT_LAYER_EFFECT_TYPE,
 ]);
@@ -135,7 +139,10 @@ function GeneratedEffectItem({ preset }: { preset: GeneratedEffectPreset }) {
 	}, [editor, preset]);
 
 	const preview = (
-		<EffectPreviewCanvas effectType={preset.effectType} params={preset.params} />
+		<EffectPreviewCanvas
+			effectType={preset.effectType}
+			params={preset.params}
+		/>
 	);
 
 	return (

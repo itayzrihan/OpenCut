@@ -1,3 +1,4 @@
+import { PushBrollNode, TextGraphicsNode } from "./nodes/push-broll-node";
 import { hyperframesVisualKey } from "@/hyperframes/layer-edits";
 import type { SceneTracks, TimelineTrack, TScene } from "@/timeline";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
@@ -119,6 +120,45 @@ function buildTrackNodes({
 
 		for (const element of elements) {
 			if (element.type === "effect") {
+				if (element.effectType === "push-broll") {
+					const id = element.params.brollSceneId;
+					const nested = scenes.find((scene) => scene.id === id);
+					if (nested && !visitedSceneIds.has(nested.id)) {
+						const node = new PushBrollNode({
+							timeOffset: element.startTime,
+							duration: element.duration,
+							edge: element.params.edge === "bottom" ? "bottom" : "top",
+							screenPercent: Number(element.params.screenPercent ?? 40),
+							transitionSeconds: Number(
+								element.params.transitionSeconds ?? 0.4,
+							),
+						});
+						const visited = new Set(visitedSceneIds);
+						visited.add(nested.id);
+						for (const child of buildTrackNodes({
+							tracks: getDisplayTracks({ tracks: nested.tracks })
+								.filter(
+									(t) => t.type !== "audio" && !("hidden" in t && t.hidden),
+								)
+								.slice()
+								.reverse(),
+							sceneTracks: nested.tracks,
+							mediaMap,
+							mediaAssets,
+							canvasSize,
+							cameraCanvasSize,
+							isPreview,
+							scenes,
+							visitedSceneIds: visited,
+							isParallaxCanvasScene: false,
+							hyperframes,
+							allowHyperframesPreviewScaling: false,
+						}))
+							node.add(child);
+						nodes.push(node);
+					}
+					continue;
+				}
 				const nestedSceneId = readParallaxSceneId({ params: element.params });
 				if (nestedSceneId && !visitedSceneIds.has(nestedSceneId)) {
 					const nestedScene = scenes.find(
@@ -504,29 +544,63 @@ function buildTrackNodes({
 				const clipMediaAsset = element.clipMediaId
 					? mediaMap.get(element.clipMediaId)
 					: undefined;
-				nodes.push(
-					new TextNode({
-						...element,
-						transform: buildTransformFromParams({ params: element.params }),
-						animations: buildTransitionAnimationsFromElement({ element }),
-						opacity: readOpacityFromParams({ params: element.params }),
-						blendMode: readBlendModeFromParams({ params: element.params }),
-						canvasCenter: {
-							x: cameraCanvasSize.width / 2,
-							y: cameraCanvasSize.height / 2,
-						},
-						canvasHeight: cameraCanvasSize.height,
-						textBaseline: "middle",
-						effects: element.effects ?? [],
-						clipMediaAsset,
-						cameraDepth: camera.depth,
-						cameraLocked: camera.locked,
-						cameraMotionFactor: camera.motionFactor,
-						cameraCanvasWidth: cameraCanvasSize.width,
-						cameraCanvasHeight: cameraCanvasSize.height,
-						worldPinned: isParallaxCanvasScene,
-					}),
+				const textNode = new TextNode({
+					...element,
+					transform: buildTransformFromParams({ params: element.params }),
+					animations: buildTransitionAnimationsFromElement({ element }),
+					opacity: readOpacityFromParams({ params: element.params }),
+					blendMode: readBlendModeFromParams({ params: element.params }),
+					canvasCenter: {
+						x: cameraCanvasSize.width / 2,
+						y: cameraCanvasSize.height / 2,
+					},
+					canvasHeight: cameraCanvasSize.height,
+					textBaseline: "middle",
+					effects: element.effects ?? [],
+					clipMediaAsset,
+					cameraDepth: camera.depth,
+					cameraLocked: camera.locked,
+					cameraMotionFactor: camera.motionFactor,
+					cameraCanvasWidth: cameraCanvasSize.width,
+					cameraCanvasHeight: cameraCanvasSize.height,
+					worldPinned: isParallaxCanvasScene,
+				});
+				const nested = scenes.find(
+					(s) => s.id === element.params.textGraphicsSceneId,
 				);
+				if (nested && !visitedSceneIds.has(nested.id)) {
+					const wrapper = new TextGraphicsNode({
+						timeOffset: element.startTime,
+						duration: element.duration,
+						edge: element.params.textGraphicsEdge === "top" ? "top" : "bottom",
+						screenPercent: Number(element.params.textGraphicsSizePercent ?? 20),
+						transitionSeconds: Number(
+							element.params.textGraphicsTransitionSeconds ?? 0.4,
+						),
+					});
+					wrapper.add(textNode);
+					const visited = new Set(visitedSceneIds);
+					visited.add(nested.id);
+					for (const child of buildTrackNodes({
+						tracks: getDisplayTracks({ tracks: nested.tracks })
+							.filter((t) => t.type !== "audio" && !("hidden" in t && t.hidden))
+							.slice()
+							.reverse(),
+						sceneTracks: nested.tracks,
+						mediaMap,
+						mediaAssets,
+						canvasSize,
+						cameraCanvasSize,
+						isPreview,
+						scenes,
+						visitedSceneIds: visited,
+						isParallaxCanvasScene: false,
+						hyperframes,
+						allowHyperframesPreviewScaling: false,
+					}))
+						wrapper.add(child);
+					nodes.push(wrapper);
+				} else nodes.push(textNode);
 			}
 
 			if (element.type === "sticker") {

@@ -270,7 +270,7 @@ pub(super) fn register_classic_insert(
                                 &mut element,
                                 &new_track_id,
                             )?;
-                            if empty && matches!(clip.element.kind, Kind::Video | Kind::Image) {
+                            if empty && scene.get("brollParentSceneId").is_none() && matches!(clip.element.kind, Kind::Video | Kind::Image) {
                                 if let Some(asset) = asset {
                                     adopt_media_settings(&mut classic.document, &asset)?;
                                 }
