@@ -720,7 +720,7 @@ async fn rendered_review_is_bound_to_current_revision_and_cannot_self_attest_wit
     );
     let artifact = runtime
         .artifacts()
-        .put(vec![1, 2, 3], "image/jpeg", None, None, None)
+        .put(include_bytes!("fixtures/color-frame.jpg").to_vec(), "image/jpeg", None, None, None)
         .unwrap();
     let frames: Vec<ReviewFrame> = plan
         .times
@@ -735,6 +735,7 @@ async fn rendered_review_is_bound_to_current_revision_and_cannot_self_attest_wit
         .unwrap();
     assert!(request.body["tools"].as_array().unwrap().is_empty());
     assert!(request.body.to_string().contains("data:image/jpeg;base64,"));
+    assert!(request.body.to_string().contains("nativePixelEvidence"));
     let review = json!({"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":json!({"issues":[],"summary":"The new name matches canonical state; rendered samples are readable."}).to_string()}]}]});
     // Human edits between capture and the review response invalidate evidence.
     classic["document"]["metadata"]["name"] = json!("User changed it again");

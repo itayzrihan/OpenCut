@@ -18,6 +18,7 @@ pub use knowledge_capabilities::register_knowledge_capabilities;
 mod model_protocol;
 mod provider;
 mod transport_policy;
+mod review_image;
 pub use transport_policy::provider_retry_plan;
 mod runtime;
 pub mod session_store;
