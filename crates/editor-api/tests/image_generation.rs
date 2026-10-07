@@ -137,6 +137,12 @@ fn durable_image_dispatch_policy_never_replays_uncertain_generation_and_excludes
     let plan = subscription_image_plan(request.clone(), None, None, 10).unwrap();
     assert_eq!(plan["action"], "dispatch");
     assert_eq!(plan["providerBody"]["tools"][0]["type"], "image_generation");
+    assert_eq!(plan["providerBody"]["tools"][0]["output_format"], "png");
+    assert_eq!(plan["providerBody"]["tools"][0]["background"], "transparent");
+    assert_eq!(plan["providerBody"]["tool_choice"], json!({"type":"image_generation"}));
+    let mut opaque_request = request.clone();
+    opaque_request["transparentBackground"] = json!(false);
+    assert_eq!(subscription_image_plan(opaque_request,None,None,10).unwrap()["providerBody"]["tools"][0]["background"],"auto");
     let journal = plan["journal"].clone();
     let mut fresh = request.clone();
     fresh["expectedRevision"] = json!(99);

@@ -49,7 +49,14 @@ mock.module("@/ai/server/openai-codex-oauth", () => ({
 	}) => {
 		calls++;
 		expect(allowModelFallback).toBe(false);
-		expect(body.tools).toEqual([{ type: "image_generation" }]);
+		expect(body.tools).toEqual([
+			{
+				type: "image_generation",
+				output_format: "png",
+				background: "transparent",
+			},
+		]);
+		expect(body.tool_choice).toEqual({ type: "image_generation" });
 		if (failProvider) throw new Error("Provider reply lost after dispatch");
 		return {
 			output: [
@@ -120,6 +127,8 @@ const generate = ({
 }) =>
 	account.run("alice", () =>
 		generateSubscriptionImage({
+			// Only standard Request fields are exercised by this authenticated host fixture.
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 			request: new Request("http://localhost") as NextRequest,
 			projectId: "project",
 			input: { ...input(operationId), ...overrides },
