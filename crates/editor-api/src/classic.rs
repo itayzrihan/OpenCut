@@ -243,6 +243,7 @@ impl ClassicProject {
             }
         }
         for scene in scenes {
+            crate::operations::classic_takes::validate_scene(scene, &asset_ids).map_err(|e| invalid(&e))?;
             if !scene_ids.insert(string_at(scene, "id")?) {
                 return Err(invalid("duplicate scene id"));
             }

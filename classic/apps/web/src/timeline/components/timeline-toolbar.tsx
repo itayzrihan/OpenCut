@@ -1,3 +1,4 @@
+import { SmartTakesControl } from "@/timeline/smart-takes/controls";
 import {
 	useEditorMediaAsset,
 	useEditorPlayback,
@@ -190,6 +191,7 @@ function ToolbarLeftSection() {
 					hasSelectedVideo={hasSelectedVideo}
 					removeAllSilence={(options) => timeline.removeAllSilence(options)}
 				/>
+				<SmartTakesControl />
 				<ReorganizeTakesToolbarControl
 					hasSelectedVideo={hasSelectedVideo}
 					hasTranscribedSelection={hasTranscribedSelection}

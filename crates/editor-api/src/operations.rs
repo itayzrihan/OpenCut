@@ -74,6 +74,7 @@ mod classic_ripple;
 mod classic_insert;
 mod classic_scenes;
 mod classic_bookmarks;
+pub(crate) mod classic_takes;
 pub(crate) mod classic_settings;
 mod classic_effects;
 mod classic_masks;
@@ -128,6 +129,7 @@ pub(crate) fn register_all(
     classic_caption_cues::register_caption_cues(registry, state.clone())?;
     classic_insert::register_classic_insert(registry, state.clone(), events.clone(), classic_animation.clone())?;
     classic_scenes::register_classic_scene_operations(registry, state.clone(), events.clone())?;
+    classic_takes::register_classic_takes(registry, state.clone(), events.clone())?;
     classic_bookmarks::register_classic_bookmark_operations(registry, state.clone(), events.clone())?;
     classic_settings::register_classic_settings(registry, state.clone(), events.clone())?;
     classic_source_audio::register_classic_source_audio(registry, state.clone(), events.clone())?;
