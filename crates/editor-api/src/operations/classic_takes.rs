@@ -791,8 +791,25 @@ fn render(
         .next()
         .cloned()
         .unwrap_or_else(|| json!({"type":"text","trimStart":0,"trimEnd":0,"params":{}}));
+    // Source-linked captions inside the assembled region are superseded by
+    // the rebuilt transcript. Their old cue grouping/timing is not an authored
+    // overlay: retaining it can resurrect discarded dialogue and make ordinary
+    // generated captions hit the manual-word-run slicing guard. Keep edited
+    // captions outside the region, and retain the guard for independent text.
+    let ignored_edited_elements: Vec<_> = arr(&a.source_tracks["overlay"])
+        .iter()
+        .filter(|t| t["captionSource"].is_object())
+        .flat_map(|t| arr(&t["elements"]).iter().map(move |e| (t, e)))
+        .filter(|(_, e)| {
+            tick(&e["startTime"]).is_ok_and(|s| {
+                tick(&e["duration"]).is_ok_and(|d| s < end && s + d > start)
+            })
+        })
+        .map(|(t, e)| json!({"trackId":t["id"],"elementId":e["id"]}))
+        .collect();
     let request = json!({"tracks":tracks,"words":mapped_words,"settings":transcript["settings"],"canvasSize":canvas,
         "layerCount":transcript["layerCount"],"preserveEditedElements":true,"trackDefaults":{"type":"text","hidden":false,"elements":[]},
+        "ignoredEditedElements":ignored_edited_elements,
         "defaults":{"element":template,"bottomFadeOutEndOpacity":0.25},"fontSizeScaleReference":90});
     let rebuilt = classic_timeline::rebuild_caption_scene(&request, &mut || Ok(fresh()), None)
         .map_err(invalid)?;

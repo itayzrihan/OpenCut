@@ -83,10 +83,14 @@ export async function requestSmartTakePlan({
 	words,
 	signal,
 	onStage,
+	checkpoint = {},
+	onCheckpoint = () => {},
 }: {
 	words: SmartTakeWord[];
 	signal: AbortSignal;
 	onStage: (stage: string) => void;
+	checkpoint?: SmartTakeCheckpoint;
+	onCheckpoint?: (checkpoint: SmartTakeCheckpoint) => void;
 }): Promise<SmartTakePlan> {
 	const account = window.__opencutAccountId;
 	if (!account) throw new Error("Sign in and connect ChatGPT first");
@@ -108,6 +112,7 @@ export async function requestSmartTakePlan({
 	};
 	try {
 		assertCurrent();
+		if (checkpoint.plan) return smartTakePlanSchema.parse(checkpoint.plan);
 		const response = await fetch("/api/editor-agent/connection", {
 			method: "POST",
 			credentials: "same-origin",
@@ -160,26 +165,40 @@ export async function requestSmartTakePlan({
 			return text;
 		};
 		onStage("1/3 · Identifying takes and filming notes");
-		const analysis = await ask({
-			instructions: `${contract}\nFor this first pass ONLY, return a concise analysis (up to 6000 words): identify production asides with word IDs, complete and partial takes, semantic correspondences across the entire recording, and an inferred narrative outline. Do not output the final plan yet.`,
-			prompt: evidence,
-		});
+		const analysis =
+			checkpoint.analysis ??
+			(await ask({
+				instructions: `${contract}\nFor this first pass ONLY, return a concise analysis (up to 6000 words): identify production asides with word IDs, complete and partial takes, semantic correspondences across the entire recording, and an inferred narrative outline. Do not output the final plan yet.`,
+				prompt: evidence,
+			}));
+		onCheckpoint({ analysis });
 		onStage("2/3 · Grouping alternatives and choosing takes");
-		const draft = parseSmartTakePlan(
-			await ask({
-				instructions: contract,
-				prompt: `Source words:\n${evidence}\nAnalysis:\n${analysis}\nBuild the full take plan.`,
-			}),
-		);
+		const draft =
+			checkpoint.draft ??
+			parseSmartTakePlan(
+				await ask({
+					instructions: contract,
+					prompt: `Source words:\n${evidence}\nAnalysis:\n${analysis}\nBuild the full take plan.`,
+				}),
+			);
+		onCheckpoint({ analysis, draft });
 		onStage("3/3 · Reviewing continuity and coverage");
-		return parseSmartTakePlan(
+		const plan = parseSmartTakePlan(
 			await ask({
 				instructions: contract,
 				prompt: `Source words:\n${evidence}\nProposed plan:\n${JSON.stringify(draft)}\nAudit and return the complete corrected plan. Check every word is accounted for, notes removed without losing real dialogue, complete vs composite alternatives are grouped together, selected takes cover the same meaning, and narrative order makes sense. Fix missing, overlapping or repeated ranges. Preserve useful uncertainty as alternatives.`,
 			}),
 		);
+		onCheckpoint({ analysis, draft, plan });
+		return plan;
 	} finally {
 		signal.removeEventListener("abort", abort);
 		window.removeEventListener("pagehide", abort);
 	}
 }
+
+export type SmartTakeCheckpoint = {
+	analysis?: string;
+	draft?: SmartTakePlan;
+	plan?: SmartTakePlan;
+};

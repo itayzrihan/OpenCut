@@ -127,3 +127,56 @@ test("malformed output, tool-shaped content and invalid confidence are rejected"
 		parseSmartTakePlan(`\`\`\`json\n${JSON.stringify(plan)}\n\`\`\``),
 	).toEqual(plan);
 });
+test("a completed checkpoint retries apply without another provider request", async () => {
+	windowStub();
+	globalThis.fetch = mock(() => {
+		throw new Error("Unexpected network request");
+	}) as unknown as typeof fetch;
+	expect(
+		await requestSmartTakePlan({
+			words,
+			signal: new AbortController().signal,
+			onStage: () => {},
+			checkpoint: { plan },
+		}),
+	).toEqual(plan);
+	expect(globalThis.fetch).not.toHaveBeenCalled();
+});
+test("a saved draft resumes only the continuity pass", async () => {
+	windowStub();
+	const prompts: string[] = [];
+	globalThis.fetch = mock(async (_url, init) => {
+		prompts.push(String(init?.body));
+		return prompts.length === 1
+			? Response.json({ models: [{ id: "model" }] })
+			: stream(JSON.stringify(plan));
+	}) as unknown as typeof fetch;
+	const checkpoints: unknown[] = [];
+	await requestSmartTakePlan({
+		words,
+		signal: new AbortController().signal,
+		onStage: () => {},
+		checkpoint: { analysis: "saved analysis", draft: plan },
+		onCheckpoint: (value) => checkpoints.push(value),
+	});
+	expect(prompts).toHaveLength(2);
+	expect(prompts[1]).toContain("Proposed plan");
+	expect(checkpoints.at(-1)).toEqual({
+		analysis: "saved analysis",
+		draft: plan,
+		plan,
+	});
+});
+test("a cancelled request cannot return a cached final plan", async () => {
+	windowStub();
+	const controller = new AbortController();
+	controller.abort();
+	await expect(
+		requestSmartTakePlan({
+			words,
+			signal: controller.signal,
+			onStage: () => {},
+			checkpoint: { plan },
+		}),
+	).rejects.toThrow();
+});

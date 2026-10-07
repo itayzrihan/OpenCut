@@ -94,3 +94,32 @@ Measure preferred-selection agreement (target ≥90%), false removal of useful
 speech, note-removal precision/recall, narrative coherence, and editor correction
 time. Verify playback, cuts and caption layout in the desktop UI. Keep this
 branch isolated until those acceptance results justify merging.
+
+## Live MCP diagnosis and recovery
+
+The live Classic tool registry now exposes `smart_takes.start`,
+`smart_takes.get_status` and `smart_takes.cancel`. They run the same browser
+transport coordinator as the toolbar, and all timeline edits still go through
+`timeline.classic.takes.edit` in the canonical Rust runtime. Start requires
+explicit clip IDs and a request ID, plus layer, app-control and network access;
+its descriptor is open-world and mutating. The MCP bridge adds project,
+optimistic-revision and idempotency scope. Start returns immediately; use status
+for actual completion (acceptance of a start command is not completed assembly).
+Cancellation aborts inference before commit.
+
+Each completed inference pass is checkpointed in tab-local session storage,
+scoped to account/project/scene and the exact source scene, selected clips and
+prepared words. An unchanged-source retry resumes the saved pass; a saved final
+plan retries canonical apply without further inference. Source changes
+invalidate the checkpoint. Storage failures do not block editing. Status normally
+returns compact progress/error metadata; `includePlan: true` explicitly includes
+the source words and saved proposal for diagnosis. This cache is not a second
+editor state store: Rust always validates the plan and owns the resulting scene.
+
+Source-linked caption cues within the assembled region are regenerated from the
+selected transcript, including when their previous grouping, wrapping or timing
+has become stale. They must not be preserved as detached manual text, which
+would revive discarded dialogue and fail when cut. The original caption tracks
+remain in the assembly archive and Undo restores them. Edited captions outside
+the selected region remain preserved and retimed. Independent authored text and
+manually owned transcript words retain their existing protection.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Layers, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,7 +21,7 @@ import {
 	ContextMenuSubContent,
 	ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
-import { requestSmartTakePlan } from "@/ai/smart-takes-plan";
+import { getSmartTakesTask } from "@/ai/smart-takes-task";
 import type { TimelineElement } from "@/timeline/types";
 
 export function SmartTakesControl() {
@@ -30,9 +30,13 @@ export function SmartTakesControl() {
 	const selection = useEditorTimelineSelection((e) =>
 		e.selection.getSelectedElements(),
 	);
-	const [stage, setStage] = useState<string | null>(null);
-	const controller = useRef<AbortController | null>(null);
-	useEffect(() => () => controller.current?.abort(), []);
+	const task = getSmartTakesTask(editor);
+	const status = useSyncExternalStore(
+		task.subscribe,
+		task.getSnapshot,
+		task.getSnapshot,
+	);
+	const stage = status.status === "running" ? status.stage : null;
 	const ids = selection
 		.filter(
 			(ref) =>
@@ -46,44 +50,15 @@ export function SmartTakesControl() {
 		!ids.length ||
 		!!scene?.takeAssembly ||
 		!scene?.tracks.overlay.some((t) => t.type === "text" && t.captionSource);
-	const run = async () => {
-		if (controller.current || disabled) return;
-		const abort = new AbortController();
-		controller.current = abort;
-		let currentStage = "Preparing transcript";
-		const updateStage = (next: string) => {
-			currentStage = next;
-			setStage(next);
-		};
-		updateStage(currentStage);
+	const run = () => {
 		try {
-			const prepared = editor.command.prepareSmartTakes(ids);
-			const plan = await requestSmartTakePlan({
-				words: prepared.words,
-				signal: abort.signal,
-				onStage: updateStage,
-			});
-			abort.signal.throwIfAborted();
-			updateStage("Applying take plan");
-			prepared.apply(plan);
-			toast.success("Smart takes assembled", {
-				description: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
-				action: { label: "Undo", onClick: () => editor.command.undo() },
-			});
+			task.start({ elementIds: ids, requestId: crypto.randomUUID() });
 		} catch (error) {
-			if (!abort.signal.aborted) {
-				const message =
-					error instanceof Error ? error.message : "Please try again";
-				console.error("Smart takes failed", { stage: currentStage, message });
-				toast.error("Could not assemble takes", {
-					description: `${currentStage}: ${message}`,
-					duration: Infinity,
-					closeButton: true,
-				});
-			}
-		} finally {
-			controller.current = null;
-			setStage(null);
+			toast.error("Could not assemble takes", {
+				description: error instanceof Error ? error.message : String(error),
+				duration: Infinity,
+				closeButton: true,
+			});
 		}
 	};
 	return (
@@ -124,7 +99,7 @@ export function SmartTakesControl() {
 						variant="ghost"
 						size="icon"
 						aria-label="Cancel take analysis"
-						onClick={() => controller.current?.abort()}
+						onClick={() => task.cancel()}
 					>
 						<X />
 					</Button>

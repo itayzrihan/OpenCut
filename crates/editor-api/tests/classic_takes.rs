@@ -408,3 +408,55 @@ async fn narrative_order_and_shared_half_take_composites_use_selected_source_wor
     assert_eq!(clips[2]["trimStart"], 492000); // word 10.1s within the later clip starting at 6s
     assert_eq!(clips[1]["takeGroup"], clips[2]["takeGroup"]);
 }
+
+#[tokio::test]
+async fn source_linked_caption_cues_are_rebuilt_instead_of_preserved_as_manual_overlays() {
+    let r = setup().await;
+    let original = read(&r).await;
+    let mut classic = original["project"]["classic"].clone();
+    // Source-linked captions can have older grouping, line wraps or timings
+    // after transcript changes. They must not be copied as authored overlays.
+    let track = &mut classic["document"]["scenes"][0]["tracks"]["overlay"][0];
+    track["elements"] = json!([
+        {"id":"stale-cue","type":"text","name":"Caption 1","startTime":0,"duration":360000,"trimStart":0,"trimEnd":0,
+         "params":{"content":"restart Hello\nworld"},
+         "wordRuns":[{"id":"cue-0","text":"restart","startTime":12000,"endTime":102000},{"id":"cue-1","text":"Hello","startTime":132000,"endTime":222000},{"id":"cue-2","text":"world","startTime":252000,"endTime":342000}]},
+        {"id":"outside-cue","type":"text","name":"Authored tail","startTime":1500000,"duration":120000,"trimStart":0,"trimEnd":0,
+         "params":{"content":"Keep authored tail"},"wordRuns":[{"id":"outside-word","text":"Keep authored tail","startTime":0,"endTime":120000}]}
+    ]);
+    let reopened = OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await;
+    let before = read(&reopened).await;
+    let request = assemble(&before);
+    reopened.registry().invoke(EDIT,InvocationContext {dry_run:true,..Default::default()},request.clone()).await.unwrap();
+    assert_eq!(read(&reopened).await,before);
+    call(&reopened,EDIT,request).await;
+    let after = read(&reopened).await;
+    let overlays = scene(&after)["tracks"]["overlay"].as_array().unwrap();
+    let elements: Vec<_> = overlays.iter().flat_map(|t|t["elements"].as_array().unwrap()).collect();
+    assert!(!elements.iter().any(|e|e["id"]=="stale-cue"));
+    let outside=elements.iter().find(|e|e["id"]=="outside-cue").unwrap();
+    assert_eq!(outside["params"]["content"],"Keep authored tail");
+    assert_eq!(outside["startTime"],480000);
+    assert_eq!(transcript(scene(&after)),["Hello","world","Useful","ending","tail","end"]);
+    assert_eq!(scene(&after)["takeAssembly"]["sourceTracks"],scene(&before)["tracks"]);
+    call(&reopened,"history.undo",json!({})).await;
+    assert_eq!(read(&reopened).await["project"],before["project"]);
+}
+
+#[tokio::test]
+async fn independent_authored_word_runs_still_block_a_partial_cut_atomically() {
+    let r = setup().await;
+    let mut classic = read(&r).await["project"]["classic"].clone();
+    let tracks = &mut classic["document"]["scenes"][0]["tracks"];
+    tracks["overlay"].as_array_mut().unwrap().push(json!({"id":"manual-overlay","type":"text","name":"Authored","elements":[
+        {"id":"manual-clip","type":"text","startTime":0,"duration":360000,"trimStart":0,"trimEnd":0,"params":{"content":"Independent authored text"},"wordRuns":[{"id":"manual-word","text":"Independent authored text","startTime":0,"endTime":360000}]}
+    ]}));
+    tracks["order"].as_array_mut().unwrap().push(json!("manual-overlay"));
+    let reopened = OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await;
+    let before = read(&reopened).await;
+    let error = reopened.registry().invoke(EDIT,InvocationContext::default(),assemble(&before)).await.unwrap_err();
+    assert!(error.to_string().contains("manually authored text"));
+    assert_eq!(read(&reopened).await,before);
+}
