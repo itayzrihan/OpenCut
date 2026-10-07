@@ -33,6 +33,10 @@ Reorder takes remains available and unchanged.
   to 1 ms within their owning clip. Assembly and caption rebuilding use the same
   bounded timings; the archived source transcript remains unchanged. Reversed
   or invalid timestamps are still rejected.
+  Fresh Auto Texts transcripts also pass through the shared Rust word-timing
+  normalization before captions are generated and inserted. The same guard runs
+  after transcript time removals; regression tests cover zero/sub-tick durations,
+  cut boundaries, repeated normalization and unchanged valid timings.
 - `timeline.classic.takes.edit`: Write, assemble/select tagged union. Supports
   optimistic revisions, registry idempotency keys, dry run, cancellation,
   transactions and history. These are automatically projected through MCP.
