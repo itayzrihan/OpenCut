@@ -14,6 +14,9 @@ async fn read(r: &OpenCutRuntime) -> Value {
     call(r, "app.state.read", json!({})).await["value"].clone()
 }
 async fn setup() -> OpenCutRuntime {
+    setup_with_word_times(&[]).await
+}
+async fn setup_with_word_times(times: &[(usize, f64, f64)]) -> OpenCutRuntime {
     let r = OpenCutRuntime::default();
     let mut classic: Value =
         serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
@@ -42,6 +45,11 @@ async fn setup() -> OpenCutRuntime {
             .map(|(i, text)| json!({"text":text,"start":i as f64+0.1,"end":i as f64+0.85}))
             .collect::<Vec<_>>()
     );
+    for &(index, start, end) in times {
+        let word = &mut scene["tracks"]["overlay"][0]["captionSource"]["words"][index];
+        word["start"] = json!(start);
+        word["end"] = json!(end);
+    }
     scene["bookmarks"] =
         json!([{"time":1500000,"note":"tail note"},{"time":3000000,"note":"After the footage"}]);
     call(
@@ -80,6 +88,107 @@ fn transcript(scene: &Value) -> Vec<String> {
         .iter()
         .map(|w| w["text"].as_str().unwrap().into())
         .collect()
+}
+
+#[tokio::test]
+async fn point_word_timings_survive_assembly_alternatives_reload_and_undo() {
+    let r = setup_with_word_times(&[
+        (1, 1.1, 1.1),
+        (2, 1.1, 1.1),           // Consecutive words must retain their original order.
+        (5, 5.99999, 5.99999), // Clip edge: do not extend into the next clip.
+        (7, 7.1, 7.1000001),     // Positive duration rounds to zero ticks.
+        (10, 10.1, 10.1),
+        (13, 13.1, 13.1), // A word outside the selected footage must not block it.
+    ])
+    .await;
+    let original = read(&r).await;
+    let prepared = call(&r, PREPARE, json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":original["revision"],"elementIds":["item-2","second"]})).await;
+    let words = prepared["words"].as_array().unwrap();
+    assert_eq!(words.len(), 12);
+    for (index, word) in words.iter().enumerate() {
+        assert_eq!(word["sourceIndex"], index);
+        assert!(word["end"].as_i64().unwrap() > word["start"].as_i64().unwrap());
+        let clip_end = if word["clipId"] == "item-2" {
+            720000
+        } else {
+            1440000
+        };
+        assert!(word["end"].as_i64().unwrap() <= clip_end);
+    }
+    assert_eq!(read(&r).await, original); // Preparation is read-only.
+    call(&r, EDIT, assemble(&original)).await;
+    let assembled = read(&r).await;
+    assert_eq!(
+        transcript(scene(&assembled)),
+        ["Hello", "world", "Useful", "ending", "tail", "end"]
+    );
+    assert_eq!(
+        scene(&assembled)["takeAssembly"]["sourceTracks"],
+        scene(&original)["tracks"]
+    );
+    for word in scene(&assembled)["tracks"]["overlay"][0]["captionSource"]["words"]
+        .as_array()
+        .unwrap()
+    {
+        assert!(word["end"].as_f64().unwrap() > word["start"].as_f64().unwrap());
+    }
+    let reopened = OpenCutRuntime::default();
+    call(&reopened, "project.classic.session.attach", json!({"projectId":"classic-project","expectedRevision":0,"classic":assembled["project"]["classic"]})).await;
+    let restored = read(&reopened).await;
+    call(
+        &reopened,
+        EDIT,
+        input(
+            &restored,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    assert_eq!(
+        transcript(scene(&read(&reopened).await)),
+        [
+            "Welcome", "dear", "world", "Useful", "ending", "tail", "end"
+        ]
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], original["project"]);
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(read(&r).await["project"], assembled["project"]);
+}
+
+#[tokio::test]
+async fn point_words_at_shared_and_final_clip_boundaries_have_one_owner() {
+    let r = setup_with_word_times(&[(6, 6.0, 6.0), (13, 14.0, 14.0)]).await;
+    let state = read(&r).await;
+    let prepared = call(&r, PREPARE, json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":state["revision"],"elementIds":["item-2","second","tail"]})).await;
+    assert_eq!(prepared["words"].as_array().unwrap().len(), 14);
+    assert_eq!(prepared["words"][6]["clipId"], "second");
+    assert_eq!(prepared["words"][13]["clipId"], "tail");
+    assert_eq!(prepared["words"][13]["start"], 1679880);
+    assert_eq!(prepared["words"][13]["end"], 1680000);
+    let partial = call(&r, PREPARE, json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":state["revision"],"elementIds":["item-2"]})).await;
+    assert_eq!(partial["words"].as_array().unwrap().len(), 6);
+}
+
+#[tokio::test]
+async fn reversed_word_timings_are_rejected_without_mutation() {
+    let r = setup_with_word_times(&[(1, 1.1, 1.0)]).await;
+    let state = read(&r).await;
+    for (id, request) in [
+        (
+            PREPARE,
+            json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":state["revision"],"elementIds":["item-2","second"]}),
+        ),
+        (EDIT, assemble(&state)),
+    ] {
+        let error = r
+            .registry()
+            .invoke(id, InvocationContext::default(), request)
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("must not precede"));
+        assert_eq!(read(&r).await, state);
+    }
 }
 #[tokio::test]
 async fn assembly_composites_retime_ripple_transcript_undo_and_reload() {

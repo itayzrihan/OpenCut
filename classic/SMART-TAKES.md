@@ -29,6 +29,10 @@ Reorder takes remains available and unchanged.
 - `timeline.classic.takes.prepare`: Read, project/scene/revision scoped, no IO.
   Returns stable word IDs for that revision, original clip identity, transcript
   source index and integer tick boundaries (120000 ticks/second).
+  Zero-duration and sub-tick transcript words retain their text and receive up
+  to 1 ms within their owning clip. Assembly and caption rebuilding use the same
+  bounded timings; the archived source transcript remains unchanged. Reversed
+  or invalid timestamps are still rejected.
 - `timeline.classic.takes.edit`: Write, assemble/select tagged union. Supports
   optimistic revisions, registry idempotency keys, dry run, cancellation,
   transactions and history. These are automatically projected through MCP.

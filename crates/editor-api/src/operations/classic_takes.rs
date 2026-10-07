@@ -3,6 +3,7 @@
 use super::*;
 use serde_json::json;
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 
 const TPS: f64 = 120_000.0;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -128,6 +129,29 @@ fn seconds(v: &Value) -> Result<i64, CapabilityError> {
         .ok_or_else(|| invalid("Invalid transcript word time"))?;
     Ok((value * TPS).round() as i64)
 }
+fn word_times(word: &Value) -> Result<(i64, i64), CapabilityError> {
+    let start = seconds(&word["start"])?;
+    let end = seconds(&word["end"])?;
+    if word["end"].as_f64().unwrap() < word["start"].as_f64().unwrap() {
+        return Err(invalid("Transcript word end must not precede its start"));
+    }
+    Ok((start, end))
+}
+
+// Transcription can emit point timestamps, including positive sub-tick spans
+// rounded to one tick boundary. Keep their text and source identity, using up
+// to 1 ms inside the owning clip rather than rejecting the entire recording.
+fn bounded_word_times(start: i64, end: i64, from: i64, to: i64) -> (i64, i64) {
+    let mut start = start.clamp(from, to);
+    let mut end = end.clamp(from, to);
+    if end == start {
+        end = (start + 120).min(to);
+        if end == start {
+            start = (end - 120).max(from);
+        }
+    }
+    (start, end)
+}
 fn digest(tracks: &Value, bookmarks: &Value) -> String {
     // JS round-trips integral floats as integers. Normalize numeric representation
     // before hashing so a WASM read/save/reopen does not masquerade as an edit.
@@ -210,25 +234,39 @@ fn inventory(tracks: &Value, ids: &[String]) -> Result<(Vec<Word>, i64, i64), Ca
         if word["source"]["type"] == "text-layer" {
             continue;
         }
-        let s = seconds(&word["start"])?;
-        let e = seconds(&word["end"])?;
-        if e <= s {
-            return Err(invalid("Transcript words must have positive duration"));
-        }
+        let (s, e) = word_times(word)?;
         let mid = s + (e - s) / 2;
-        if let Some(clip) = clips.iter().find(|clip| {
+        let clip = clips.iter().find(|clip| {
             mid >= clip["startTime"].as_i64().unwrap()
                 && mid < clip["startTime"].as_i64().unwrap() + clip["duration"].as_i64().unwrap()
-        }) {
+        });
+        // At a shared boundary the following clip owns the word. A point at
+        // the end of the footage belongs to the preceding clip instead.
+        let clip = clip.or_else(|| {
+            (s == e
+                && !arr(&tracks["main"]["elements"]).iter().any(|c| {
+                    c["startTime"].as_i64().is_some_and(|start| start <= s)
+                        && c["startTime"].as_i64().unwrap() + c["duration"].as_i64().unwrap() > s
+                }))
+            .then(|| {
+                clips.iter().rev().find(|c| {
+                    c["duration"].as_i64().unwrap() > 0
+                        && c["startTime"].as_i64().unwrap() + c["duration"].as_i64().unwrap() == s
+                })
+            })
+            .flatten()
+        });
+        if let Some(clip) = clip {
             let clip_start = tick(&clip["startTime"])?;
             let clip_end = clip_start + tick(&clip["duration"])?;
+            let (start, end) = bounded_word_times(s, e, clip_start, clip_end);
             words.push(Word {
                 id: 0,
                 source_index,
                 clip_id: clip["id"].as_str().unwrap().into(),
                 text: word["text"].as_str().unwrap_or("").into(),
-                start: s.max(clip_start),
-                end: e.min(clip_end),
+                start,
+                end,
             });
         }
     }
@@ -716,10 +754,14 @@ fn render(
         }
     }
     let mut mapped_words = vec![];
+    let selected_words: HashMap<_, _> = words.iter().map(|w| (w.source_index, w)).collect();
     for span in &spans {
         for (index, w) in arr(&transcript["words"]).iter().enumerate() {
-            let s = seconds(&w["start"])?;
-            let e = seconds(&w["end"])?;
+            let (s, e) = if let Some(word) = selected_words.get(&index) {
+                (word.start, word.end)
+            } else {
+                word_times(w)?
+            };
             let mid = s + (e - s) / 2;
             if span
                 .word_indices
@@ -729,8 +771,9 @@ fn render(
                 })
             {
                 let mut word = w.clone();
-                word["start"] = json!((span.dest + s.max(span.from) - span.from) as f64 / TPS);
-                word["end"] = json!((span.dest + e.min(span.to) - span.from) as f64 / TPS);
+                let (s, e) = bounded_word_times(s, e, span.from, span.to);
+                word["start"] = json!((span.dest + s - span.from) as f64 / TPS);
+                word["end"] = json!((span.dest + e - span.from) as f64 / TPS);
                 mapped_words.push(word);
             }
         }
