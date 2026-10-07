@@ -58,6 +58,7 @@ mod classic_element_controls;
 mod classic_track_layout;
 mod classic_remove;
 mod classic_media;
+mod classic_media_register;
 mod classic_image_inspection;
 mod classic_captions;
 mod classic_caption_cues;
@@ -115,6 +116,7 @@ pub(crate) fn register_all(
     classic_track_layout::register_classic_track_layout(registry, state.clone(), events.clone())?;
     classic_remove::register_classic_remove(registry, state.clone(), events.clone())?;
     classic_media::register_classic_media(registry, state.clone(), events.clone())?;
+    classic_media_register::register(registry, state.clone(), events.clone())?;
     classic_image_inspection::register_image_inspection(registry, state.clone(), artifacts.clone())?;
     classic_duplicate::register_classic_duplicate(registry, state.clone(), events.clone())?;
     classic_clipboard::register_classic_clipboard(registry, state.clone(), events.clone(), classic_animation.clone())?;

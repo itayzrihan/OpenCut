@@ -576,7 +576,7 @@ fn adopt_media_settings(
     }
     Ok(())
 }
-fn float_rate(fps: f64) -> Value {
+pub(super) fn float_rate(fps: f64) -> Value {
     for (n, d) in [
         (24000, 1001),
         (24, 1),

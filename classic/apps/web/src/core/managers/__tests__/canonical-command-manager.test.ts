@@ -109,8 +109,15 @@ function knowledgeFixtureResponse() {
 		},
 	});
 }
+let saveImportedMedia = async (_input: {
+	projectId: string;
+	mediaAsset: MediaAsset;
+}) => {};
 mock.module("@/services/storage/service", () => ({
 	storageService: {
+		saveMediaAsset: (input: { projectId: string; mediaAsset: MediaAsset }) =>
+			saveImportedMedia(input),
+		isQuotaExceededError: () => false,
 		saveCommandHistory: async ({
 			history,
 		}: {
@@ -164,6 +171,7 @@ beforeAll(async () => {
 });
 beforeEach(() => {
 	saved = null;
+	saveImportedMedia = async () => {};
 });
 
 function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
@@ -260,6 +268,139 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 		},
 	};
 }
+
+test(
+	"media import publishes only after saved bytes and keeps canonical FPS/resources through history",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		let bundle: EditorSessionBundle | null = null;
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({
+			runtime,
+			persistSession: async (capture) => {
+				bundle = structuredClone(capture());
+			},
+		});
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		const importer = new MediaManager(host.editor);
+		const file = new File([new Uint8Array([1, 2, 3])], "import.mp4", {
+			type: "video/mp4",
+		});
+		const asset: MediaAsset = {
+			id: "import-native",
+			name: "Imported",
+			type: "video",
+			fps: 59.94,
+			duration: 3,
+			file,
+			url: "blob:import-native",
+			storageKind: "copied",
+		};
+		let finishSave: (() => void) | undefined;
+		saveImportedMedia = async () => {
+			expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+			await new Promise<void>((resolve) => {
+				finishSave = resolve;
+			});
+		};
+		const pending = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		finishSave!();
+		expect(await pending).toEqual(asset);
+		expect(host.media().at(-1)?.file).toBe(file);
+		expect(host.project().settings.fps).toEqual({
+			numerator: 60000,
+			denominator: 1001,
+		});
+		host.manager.undo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		host.manager.redo();
+		expect(host.media().at(-1)?.file).toBe(file);
+		expect(host.media().at(-1)?.url).toBe(asset.url);
+		await host.manager.persistEditingSession();
+		host.manager.detachCanonical();
+		const reopened = createHost({
+			project: host.project(),
+			media: host.media(),
+		});
+		await reopened.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			atomicBundle: bundle!,
+			persistSession: async () => {},
+		});
+		reopened.manager.undo();
+		expect(reopened.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(reopened.media())).toEqual(beforeMedia);
+		reopened.manager.redo();
+		expect(reopened.media().at(-1)?.file).toBe(file);
+		reopened.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"failed, stale or detached media import leaves project membership and FPS unchanged",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+		});
+		const importer = new MediaManager(host.editor);
+		const asset: MediaAsset = {
+			id: "import-stale",
+			name: "Imported",
+			type: "video",
+			fps: 60,
+			file: new File(["x"], "import.mp4"),
+		};
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		saveImportedMedia = async () => {
+			throw new Error("storage unavailable");
+		};
+		expect(
+			await importer.addMediaAsset({ projectId: "classic-project", asset }),
+		).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		let finishSave: (() => void) | undefined;
+		saveImportedMedia = async () => {
+			await new Promise<void>((resolve) => {
+				finishSave = resolve;
+			});
+		};
+		const stale = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		host.manager.registerClassicMedia({
+			projectId: "classic-project",
+			assets: [{ id: "other", name: "Other", type: "image" }],
+			expectedRevision: host.manager.getCanonicalRevision()!,
+		});
+		const afterConcurrent = host.manager.captureProjectSnapshot();
+		finishSave!();
+		expect(await stale).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(afterConcurrent);
+		expect(host.media().map((asset) => asset.id)).not.toContain(asset.id);
+		const detached = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		host.manager.detachCanonical();
+		finishSave!();
+		expect(await detached).toBeNull();
+		expect(host.media().map((asset) => asset.id)).not.toContain(asset.id);
+	},
+	INTEGRATION_TIMEOUT,
+);
 
 test(
 	"media removal uses one canonical transaction across scenes and reopens with durable Undo handles",

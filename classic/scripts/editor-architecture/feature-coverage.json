@@ -545,14 +545,15 @@
 		{
 			"id": "media",
 			"title": "Import/delete media",
-			"managers": ["MediaManager.removeMediaAssets", "CommandManager.removeClassicMedia"],
-			"contracts": ["media.classic.remove"],
+			"managers": ["MediaManager.removeMediaAssets", "CommandManager.removeClassicMedia", "MediaManager.addMediaAsset", "CommandManager.registerClassicMedia", "CommandManager.prepareClassicMediaImport"],
+			"contracts": ["media.classic.remove", "media.classic.register"],
 			"tests": [
 				"crates/editor-api/tests/classic_media.rs",
+				"crates/editor-api/tests/classic_media_register.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
 				"classic/apps/web/src/editor-agent/__tests__/project-media-ownership.test.ts"
 			],
-			"gap": "Classic project membership removal is canonical and undoable, cascading direct clip uses across all scenes while retaining durable bytes. Retained HyperFrames/compound/nested dependencies reject removal. Host IO handles remain scoped to the project for history. General import, permanent deletion/GC and broader live acceptance remain.",
+			"gap": "Ordinary MediaManager import saves bytes before canonical bounded metadata registration and rational FPS adjustment, fenced by session/account/revision. Registration and membership removal are undoable and retain bytes. Retained HyperFrames/compound/nested dependencies reject removal. Legacy paste/TTS import commands, relink, compound dependency validation, permanent deletion/GC and broader live acceptance remain.",
 			"actions": [
 				"remove-media-asset",
 				"remove-media-assets"

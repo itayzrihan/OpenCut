@@ -72,19 +72,18 @@ export class MediaManager {
 			id: asset.id ?? generateUUID(),
 		};
 
-		this.assets = [...this.assets, newAsset];
-		this.notify();
-
 		try {
-			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
-			this.editor.project.ratchetFpsForImportedMedia({
-				importedAssets: [newAsset],
+			const publish = this.editor.command.prepareClassicMediaImport({
+				projectId,
+				assets: [newAsset],
 			});
+			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
+			publish();
 			return newAsset;
 		} catch (error) {
 			console.error("Failed to save media asset:", error);
-			this.assets = this.assets.filter((asset) => asset.id !== newAsset.id);
-			this.notify();
+			// Saved bytes are retained after a stale/cancelled publication, never
+			// deleted or injected into a different project. Membership is canonical.
 
 			if (storageService.isQuotaExceededError({ error })) {
 				toast.error("Not enough browser storage", {
