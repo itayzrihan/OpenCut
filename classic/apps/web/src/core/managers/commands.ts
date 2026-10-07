@@ -61,6 +61,7 @@ export class CommandManager {
 	public isRippleEnabled = false;
 	private history: CommandHistoryEntry[] = [];
 	private redoStack: CommandHistoryEntry[] = [];
+	private historyListeners = new Set<() => void>();
 	private reactors: Array<() => void> = [];
 	private activeProjectId: string | null = null;
 	private historySaveQueue: Promise<void> = Promise.resolve();
@@ -92,6 +93,13 @@ export class CommandManager {
 	} | null = null;
 
 	constructor(private editor: EditorCore) {}
+
+	subscribeHistory(listener: () => void): () => void {
+		this.historyListeners.add(listener);
+		return () => {
+			this.historyListeners.delete(listener);
+		};
+	}
 
 	execute({
 		command,
@@ -384,6 +392,8 @@ export class CommandManager {
 			this.history = [];
 			this.redoStack = [];
 			this.stateRevision += 1;
+		} finally {
+			this.notifyHistoryChange();
 		}
 	}
 
@@ -397,6 +407,7 @@ export class CommandManager {
 		this.history = [];
 		this.redoStack = [];
 		this.stateRevision += 1;
+		this.notifyHistoryChange();
 		try {
 			await storageService.saveCommandHistory({
 				history: this.serializeHistory({ projectId }),
@@ -508,6 +519,8 @@ export class CommandManager {
 		this.stateRevision += 1;
 		if (persist) {
 			this.persistHistory();
+		} else {
+			this.notifyHistoryChange();
 		}
 	}
 
@@ -1766,6 +1779,7 @@ export class CommandManager {
 	}
 	detachCanonical(): void {
 		this.releaseCanonical();
+		this.notifyHistoryChange();
 	}
 
 	async enableCanonical({
@@ -1925,6 +1939,7 @@ export class CommandManager {
 			throw error;
 		}
 		if (persistInitial) this.persistHistory();
+		else this.notifyHistoryChange();
 	}
 
 	/** ProjectManager publishes this view only after canonical validation succeeds. */
@@ -2707,7 +2722,14 @@ export class CommandManager {
 		}
 	}
 
+	private notifyHistoryChange(): void {
+		for (const listener of this.historyListeners) listener();
+	}
+
 	private persistHistory(): void {
+		// Views may be published before the canonical history transaction commits.
+		// Notify here so controls read the final Undo/Redo availability.
+		this.notifyHistoryChange();
 		if (this.sessionPersistence) {
 			void this.persistEditingSession().catch((error) => {
 				console.error("Failed to persist the editor session:", error);

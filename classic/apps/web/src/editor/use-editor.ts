@@ -47,6 +47,8 @@ const subscribeScenes: EditorSubscribe = ({ editor, onChange }) =>
 	editor.scenes.subscribe(onChange);
 const subscribeProject: EditorSubscribe = ({ editor, onChange }) =>
 	editor.project.subscribe(onChange);
+const subscribeHistory: EditorSubscribe = ({ editor, onChange }) =>
+	editor.command.subscribeHistory(onChange);
 const subscribeMedia: EditorSubscribe = ({ editor, onChange }) =>
 	editor.media.subscribe(onChange);
 const subscribeRenderer: EditorSubscribe = ({ editor, onChange }) =>
@@ -176,6 +178,7 @@ const TIMELINE_SELECTION_STORES = [
 	subscribeProject,
 ];
 const PROJECT_STORES = [subscribeProject];
+const HISTORY_STORES = [subscribeHistory, subscribeProject];
 const MEDIA_STORES = [subscribeMedia];
 const RENDERER_STORES = [subscribeRenderer];
 const SELECTION_STORES = [subscribeSelection];
@@ -212,6 +215,10 @@ export function useEditorTimelineSelection<T>(
 
 export function useEditorProject<T>(selector: (editor: EditorCore) => T): T {
 	return useSubscribedEditor({ selector, stores: PROJECT_STORES });
+}
+
+export function useEditorHistory<T>(selector: (editor: EditorCore) => T): T {
+	return useSubscribedEditor({ selector, stores: HISTORY_STORES });
 }
 
 export function useEditorMedia<T>(selector: (editor: EditorCore) => T): T {

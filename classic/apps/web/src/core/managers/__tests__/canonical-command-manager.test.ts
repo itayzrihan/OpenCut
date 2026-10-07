@@ -262,6 +262,47 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 }
 
 test(
+	"history subscribers see committed Undo and Redo availability",
+	async () => {
+		const host = createHost();
+		const availability: boolean[][] = [];
+		const unsubscribe = host.manager.subscribeHistory(() => {
+			availability.push([host.manager.canUndo(), host.manager.canRedo()]);
+		});
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			persistInitial: false,
+		});
+		try {
+			expect(availability.at(-1)).toEqual([false, false]);
+			const sceneId = host.project().scenes[0].id;
+			host.manager.editClassicScene({ type: "rename", sceneId, name: "Edited" });
+			expect(availability.at(-1)).toEqual([true, false]);
+			host.manager.undo();
+			expect(availability.at(-1)).toEqual([false, true]);
+			host.manager.redo();
+			expect(availability.at(-1)).toEqual([true, false]);
+			expect(host.project().scenes[0].name).toBe("Edited");
+			host.manager.undo();
+			host.manager.editClassicScene({ type: "rename", sceneId, name: "New edit" });
+			expect(availability.at(-1)).toEqual([true, false]);
+			host.manager.clear({ persist: false });
+			expect(availability.at(-1)).toEqual([false, false]);
+			unsubscribe();
+			const notificationCount = availability.length;
+			host.manager.editClassicScene({ type: "rename", sceneId, name: "Unsubscribed" });
+			expect(host.manager.canUndo()).toBe(true);
+			expect(availability).toHaveLength(notificationCount);
+		} finally {
+			unsubscribe();
+			host.manager.detachCanonical();
+			await host.manager.flushHistory();
+		}
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
 	"media removal uses one canonical transaction across scenes and reopens with durable Undo handles",
 	async () => {
 		const { MediaManager } = await import("@/core/managers/media-manager");
