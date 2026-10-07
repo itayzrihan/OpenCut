@@ -180,6 +180,21 @@ passing unit test does not establish full product completion.
   The original failed attempt remains in previousAttempts. Aggregate now records
   **6 accepted cases, 6 successes, zero unsupported success claims**, 14
   unattempted; the complete 18/20 and packaged release gates remain open.
+- `he-clipboard` now has an accepted 13-round live rerun: two fresh clip IDs,
+  exact starts at 600000/690000 ticks, all copied fields and owned media retained,
+  source file SHA preserved, eight review samples (three original/copy pairs
+  byte-identical), one-step Undo/Redo and reload. The first fixture used an
+  oversized title; the agent honestly failed without changing its design.
+  That attempt and baseline remain saved; the title was corrected before the
+  fresh task. Reload content comparison excludes only explicit screenshot
+  seek/zoom presentation changes, while Undo/Redo compare the full document.
+- `en-source-audio` passed an 18-round live run with nonzero source trims,
+  1.25x rate and volume automation. The agent separated and muted the track,
+  confirmed timeline mapping and history, and explicitly limited its claim to
+  timeline synchronization rather than audible quality. Two Undo/Redo steps and
+  reload restore exact content. Aggregate: **8 successes in 8 attempted cases,
+  zero unsupported claims, 12 unattempted**; the 18/20 release gate is still open.
+  Evidence: `.local/editor-agent-qa-live/{he-clipboard,en-source-audio}`.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
