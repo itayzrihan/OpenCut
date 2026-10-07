@@ -38,6 +38,15 @@ export interface TakeAssembly {
 		shortParts: number;
 		repeatedPhrases: number;
 		unverifiedBoundaries: number;
+		audioDiagnostics?: {
+			clipId: string;
+			framesAnalyzed: number;
+			coveredStart: number | null;
+			coveredEnd: number | null;
+			duration: number;
+			quietRanges: number;
+			safetyHoldReason: string | null;
+		}[];
 	};
 	sourceWords: SmartTakeWord[];
 	recommendations: number[];

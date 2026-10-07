@@ -1,5 +1,5 @@
 use opencut_editor_api::{InvocationContext, OpenCutRuntime};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 const EDIT: &str = "timeline.classic.takes.edit";
 const PREPARE: &str = "timeline.classic.takes.prepare";
 async fn call(r: &OpenCutRuntime, id: &str, input: Value) -> Value {
@@ -39,12 +39,11 @@ async fn setup_with_word_times(times: &[(usize, f64, f64)]) -> OpenCutRuntime {
         "restart", "Hello", "world", "oops", "Useful", "ending", "again", "Welcome", "mistake",
         "dear", "world", "cut", "tail", "end",
     ];
-    scene["tracks"]["overlay"][0]["captionSource"]["words"] = json!(
-        text.iter()
-            .enumerate()
-            .map(|(i, text)| json!({"text":text,"start":i as f64+0.1,"end":i as f64+0.85}))
-            .collect::<Vec<_>>()
-    );
+    scene["tracks"]["overlay"][0]["captionSource"]["words"] = json!(text
+        .iter()
+        .enumerate()
+        .map(|(i, text)| json!({"text":text,"start":i as f64+0.1,"end":i as f64+0.85}))
+        .collect::<Vec<_>>());
     for &(index, start, end) in times {
         let word = &mut scene["tracks"]["overlay"][0]["captionSource"]["words"][index];
         word["start"] = json!(start);
@@ -146,9 +145,7 @@ async fn point_word_timings_survive_assembly_alternatives_reload_and_undo() {
     .await;
     assert_eq!(
         transcript(scene(&read(&reopened).await)),
-        [
-            "Welcome", "dear", "world", "Useful", "ending", "tail", "end"
-        ]
+        ["Welcome", "dear", "world", "Useful", "ending", "tail", "end"]
     );
     call(&r, "history.undo", json!({})).await;
     assert_eq!(read(&r).await["project"], original["project"]);
@@ -260,9 +257,7 @@ async fn assembly_composites_retime_ripple_transcript_undo_and_reload() {
     let s = scene(&selected);
     assert_eq!(
         transcript(s),
-        [
-            "Welcome", "dear", "world", "Useful", "ending", "tail", "end"
-        ]
+        ["Welcome", "dear", "world", "Useful", "ending", "tail", "end"]
     );
     assert_eq!(s["tracks"]["main"]["elements"].as_array().unwrap().len(), 4);
     assert_eq!(s["tracks"]["main"]["elements"][3]["startTime"], 576600);
@@ -324,12 +319,11 @@ async fn malformed_stale_cancelled_and_partial_selection_never_modify_state() {
     skipped["change"]["elementIds"] = json!(["item-2", "tail"]);
     requests.push(skipped);
     for request in requests {
-        assert!(
-            r.registry()
-                .invoke(EDIT, InvocationContext::default(), request)
-                .await
-                .is_err()
-        );
+        assert!(r
+            .registry()
+            .invoke(EDIT, InvocationContext::default(), request)
+            .await
+            .is_err());
         assert_eq!(read(&r).await, before);
     }
     let context = InvocationContext::default();
@@ -345,19 +339,18 @@ async fn timeline_edits_are_not_overwritten_by_alternative_selection() {
     let assembled = read(&r).await;
     call(&r,"timeline.classic.bookmarks.edit",json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":assembled["revision"],"change":{"type":"replace","bookmarks":[]}})).await;
     let changed = read(&r).await;
-    assert!(
-        r.registry()
-            .invoke(
-                EDIT,
-                InvocationContext::default(),
-                input(
-                    &changed,
-                    json!({"type":"select","groupIndex":0,"alternativeIndex":1})
-                )
+    assert!(r
+        .registry()
+        .invoke(
+            EDIT,
+            InvocationContext::default(),
+            input(
+                &changed,
+                json!({"type":"select","groupIndex":0,"alternativeIndex":1})
             )
-            .await
-            .is_err()
-    );
+        )
+        .await
+        .is_err());
     assert_eq!(read(&r).await, changed);
 }
 
@@ -371,20 +364,18 @@ async fn archived_alternatives_protect_media_even_when_cascade_is_requested() {
     assert_eq!(read(&r).await, assembled);
     // The document validator also protects restore/admin patch, beyond the feature action.
     let mut corrupt = assembled["project"]["classic"].clone();
-    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceTracks"]["main"]["elements"][0]["trimStart"] =
-        json!(-1);
+    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceTracks"]["main"]["elements"][0]
+        ["trimStart"] = json!(-1);
     let other = OpenCutRuntime::default();
-    assert!(
-        other
-            .registry()
-            .invoke(
-                "project.classic.session.attach",
-                InvocationContext::default(),
-                json!({"projectId":"classic-project","expectedRevision":0,"classic":corrupt})
-            )
-            .await
-            .is_err()
-    );
+    assert!(other
+        .registry()
+        .invoke(
+            "project.classic.session.attach",
+            InvocationContext::default(),
+            json!({"projectId":"classic-project","expectedRevision":0,"classic":corrupt})
+        )
+        .await
+        .is_err());
 }
 
 #[tokio::test]
@@ -599,6 +590,10 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
     let after = read(&r).await;
     let s = scene(&after);
     let clip = &s["tracks"]["main"]["elements"][0];
+    let diagnostics = &s["takeAssembly"]["quality"]["audioDiagnostics"][0];
+    assert_eq!(diagnostics["framesAnalyzed"], 600);
+    assert_eq!(diagnostics["safetyHoldReason"], Value::Null);
+    assert!(diagnostics["quietRanges"].as_u64().unwrap() > 0);
     let source_end = (clip["trimStart"].as_f64().unwrap() - 480000.0) / 1.25
         + clip["duration"].as_f64().unwrap();
     assert!(
@@ -609,12 +604,10 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
         source_end < 3.1 * 120000.0,
         "Do not include the next discarded word"
     );
-    assert!(
-        !s["takeAssembly"]["audioGaps"][0]["ranges"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
+    assert!(!s["takeAssembly"]["audioGaps"][0]["ranges"]
+        .as_array()
+        .unwrap()
+        .is_empty());
     let reopened = OpenCutRuntime::default();
     call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
     let state = read(&reopened).await;
@@ -633,6 +626,23 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
     );
     call(&r, "history.undo", json!({})).await;
     assert_eq!(read(&r).await["project"], before["project"]);
+}
+
+#[tokio::test]
+async fn missing_audio_coverage_is_reported_without_claiming_safe_boundaries() {
+    let r = setup().await;
+    let before = read(&r).await;
+    let mut request = assemble(&before);
+    request["change"]["audioEvidence"] = json!([{"clipId":"item-2","frames":[]}]);
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    let q = &scene(&after)["takeAssembly"]["quality"];
+    assert_eq!(
+        q["audioDiagnostics"][0]["safetyHoldReason"],
+        "missing-audio-frames"
+    );
+    assert_eq!(q["audioDiagnostics"][0]["quietRanges"], 0);
+    assert!(q["unverifiedBoundaries"].as_u64().unwrap() > 0);
 }
 
 #[tokio::test]

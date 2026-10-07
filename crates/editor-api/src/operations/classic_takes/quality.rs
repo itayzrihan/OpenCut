@@ -22,6 +22,19 @@ pub(super) struct AudioEvidence {
 pub(super) struct AudioGaps {
     clip_id: String,
     ranges: Vec<(i64, i64)>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    diagnostics: Option<AudioDiagnostics>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct AudioDiagnostics {
+    clip_id: String,
+    frames_analyzed: usize,
+    covered_start: Option<f64>,
+    covered_end: Option<f64>,
+    duration: f64,
+    quiet_ranges: usize,
+    safety_hold_reason: Option<String>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -29,6 +42,8 @@ pub(super) struct QualityReport {
     pub short_parts: usize,
     pub repeated_phrases: usize,
     pub unverified_boundaries: usize,
+    #[serde(default)]
+    pub audio_diagnostics: Vec<AudioDiagnostics>,
 }
 fn normalized(text: &str) -> String {
     text.chars()
@@ -180,6 +195,8 @@ pub(super) fn analyze_audio(
             .ok_or_else(|| invalid("Audio evidence clip missing"))?;
         let start = tick(&clip["startTime"])? as f64 / TPS;
         let duration = tick(&clip["duration"])? as f64 / TPS;
+        let covered_start = e.frames.first().map(|f| f.start);
+        let covered_end = e.frames.last().map(|f| f.end);
         let analysis = classic_timeline::analyze_smart_audio_silence(
             classic_timeline::AnalyzeSmartAudioSilenceOptions {
                 frames: e
@@ -219,6 +236,15 @@ pub(super) fn analyze_audio(
             },
         );
         result.push(AudioGaps {
+            diagnostics: Some(AudioDiagnostics {
+                clip_id: e.clip_id.clone(),
+                frames_analyzed: analysis.diagnostics.frames_analyzed,
+                covered_start,
+                covered_end,
+                duration,
+                quiet_ranges: analysis.cut_ranges.len(),
+                safety_hold_reason: analysis.diagnostics.safety_hold_reason,
+            }),
             clip_id: e.clip_id,
             ranges: analysis
                 .cut_ranges
@@ -326,7 +352,10 @@ pub(super) fn report(
     tracks: &Value,
     gaps: &[AudioGaps],
 ) -> Result<QualityReport, CapabilityError> {
-    let mut q = QualityReport::default();
+    let mut q = QualityReport {
+        audio_diagnostics: gaps.iter().filter_map(|g| g.diagnostics.clone()).collect(),
+        ..QualityReport::default()
+    };
     for g in &plan.groups {
         let a = Alternative {
             parts: merged(&g.alternatives[g.selected].parts, words),
