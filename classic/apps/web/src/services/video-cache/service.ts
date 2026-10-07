@@ -6,7 +6,6 @@ import {
 	markCanvasSourceVersion,
 } from "@/services/renderer/canvas-source-version";
 
-const FRAME_TIME_PRECISION = 1000;
 const PREVIEW_DECODE_POOL_SIZE = 18;
 const FULL_RESOLUTION_DECODE_POOL_SIZE = 3;
 
@@ -32,7 +31,6 @@ export class VideoCache {
 	private sinks = new Map<string, VideoSinkData>();
 	private initPromises = new Map<string, Promise<void>>();
 	private frameChain = new Map<string, Promise<unknown>>();
-	private seekGenerations = new Map<string, number>();
 	private frameCache = new Map<string, CachedVideoFrame>();
 	private pendingFrameRequests = new Map<
 		string,
@@ -83,10 +81,12 @@ export class VideoCache {
 					this.markFrameVersion({ sinkKey, frame });
 					this.storeCachedFrame({ sinkKey, time, frame });
 				}
-				return frame;
+				// A caller must never receive pixels from a different source time.
+				return frame && this.isFrameValid({ frame, time }) ? frame : null;
 			})
 			.finally(() => {
-				this.pendingFrameRequests.delete(requestKey);
+				if (this.pendingFrameRequests.get(requestKey) === request)
+					this.pendingFrameRequests.delete(requestKey);
 				recordSpan({
 					name: "videoCache.getFrameAt",
 					durationMs: performance.now() - start,
@@ -115,15 +115,15 @@ export class VideoCache {
 		const sinkData = this.sinks.get(sinkKey);
 		if (!sinkData) return null;
 
-		const generation = (this.seekGenerations.get(sinkKey) ?? 0) + 1;
-		this.seekGenerations.set(sinkKey, generation);
-
 		const previous = this.frameChain.get(sinkKey) ?? Promise.resolve();
-		const current = previous.then(() => {
-			if (this.seekGenerations.get(sinkKey) !== generation) {
-				return sinkData.currentFrame ?? null;
-			}
-			return this.resolveFrame({ sinkData, time });
+		// Different consumers (preview, review/export, playback warmup and
+		// overlapping clips) all need their requested source times. Coalesce
+		// identical requests above; serialize distinct reads instead of treating
+		// one reader as permission to replace another reader's pixels.
+		const current = previous.then(async () => {
+			if (this.sinks.get(sinkKey) !== sinkData) return null;
+			const frame = await this.resolveFrame({ sinkData, time });
+			return this.sinks.get(sinkKey) === sinkData ? frame : null;
 		});
 		this.frameChain.set(
 			sinkKey,
@@ -149,7 +149,9 @@ export class VideoCache {
 		sinkKey: string;
 		time: number;
 	}): string {
-		return `${sinkKey}:${Math.round(time * FRAME_TIME_PRECISION)}`;
+		// Samples one tick before/at a frame boundary must not share a pending
+		// request merely because rounding puts both in the same millisecond.
+		return `${sinkKey}:${time}`;
 	}
 
 	private getCachedFrame({
@@ -513,7 +515,6 @@ export class VideoCache {
 			this.sinks.delete(sinkKey);
 			this.initPromises.delete(sinkKey);
 			this.frameChain.delete(sinkKey);
-			this.seekGenerations.delete(sinkKey);
 		}
 
 		for (const key of this.frameCache.keys()) {
@@ -538,7 +539,6 @@ export class VideoCache {
 		this.sinks.clear();
 		this.initPromises.clear();
 		this.frameChain.clear();
-		this.seekGenerations.clear();
 		this.frameCache.clear();
 		this.pendingFrameRequests.clear();
 	}
