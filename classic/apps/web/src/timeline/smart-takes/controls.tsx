@@ -50,26 +50,37 @@ export function SmartTakesControl() {
 		if (controller.current || disabled) return;
 		const abort = new AbortController();
 		controller.current = abort;
-		setStage("Preparing transcript");
+		let currentStage = "Preparing transcript";
+		const updateStage = (next: string) => {
+			currentStage = next;
+			setStage(next);
+		};
+		updateStage(currentStage);
 		try {
 			const prepared = editor.command.prepareSmartTakes(ids);
 			const plan = await requestSmartTakePlan({
 				words: prepared.words,
 				signal: abort.signal,
-				onStage: setStage,
+				onStage: updateStage,
 			});
 			abort.signal.throwIfAborted();
+			updateStage("Applying take plan");
 			prepared.apply(plan);
 			toast.success("Smart takes assembled", {
 				description: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
 				action: { label: "Undo", onClick: () => editor.command.undo() },
 			});
 		} catch (error) {
-			if (!abort.signal.aborted)
+			if (!abort.signal.aborted) {
+				const message =
+					error instanceof Error ? error.message : "Please try again";
+				console.error("Smart takes failed", { stage: currentStage, message });
 				toast.error("Could not assemble takes", {
-					description:
-						error instanceof Error ? error.message : "Please try again",
+					description: `${currentStage}: ${message}`,
+					duration: Infinity,
+					closeButton: true,
 				});
+			}
 		} finally {
 			controller.current = null;
 			setStage(null);
