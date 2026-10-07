@@ -67,6 +67,8 @@ export type TrackType =
 interface BaseTrack {
 	id: string;
 	name: string;
+	/** Explicitly created tracks remain until removed, even without elements. */
+	keepEmpty?: boolean;
 }
 
 export interface VideoTrack extends BaseTrack {

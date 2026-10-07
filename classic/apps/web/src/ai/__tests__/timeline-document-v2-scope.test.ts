@@ -110,7 +110,7 @@ describe("Timeline Source v2 Rust mutation-scope adapter", () => {
 			after: structuredClone(document),
 			validate: (() => ({
 				valid: true,
-			})) as TimelineDocumentV2MutationScopeValidator,
+			})) as unknown as TimelineDocumentV2MutationScopeValidator,
 		});
 
 		expect(thrown).toMatchObject({

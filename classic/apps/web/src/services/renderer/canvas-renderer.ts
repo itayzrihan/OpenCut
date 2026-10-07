@@ -38,6 +38,7 @@ export class CanvasRenderer {
 	private staticSceneNode: AnyBaseNode | null = null;
 	private staticSceneRendered = false;
 	private staticSceneGeneration: number | null = null;
+	private presentationCanvas: HTMLCanvasElement | null = null;
 
 	constructor({
 		width,
@@ -68,6 +69,31 @@ export class CanvasRenderer {
 		});
 	}
 
+	/** The GPU canvas is shared by preview, snapshots, thumbnails and exports.
+	 * A mounted preview owns a separate canvas; only its renderer publishes to it. */
+	async getPresentationCanvas(): Promise<HTMLCanvasElement> {
+		this.presentationCanvas ??= document.createElement("canvas");
+		return this.presentationCanvas;
+	}
+
+	private publishPresentation(canvas: HTMLCanvasElement) {
+		const target = this.presentationCanvas;
+		if (!target) return;
+		if (target.width !== this.width) target.width = this.width;
+		if (target.height !== this.height) target.height = this.height;
+		const ctx = target.getContext("2d");
+		if (!ctx) throw new Error("Failed to get preview presentation context");
+		ctx.save();
+		try {
+			ctx.resetTransform();
+			ctx.globalAlpha = 1;
+			ctx.globalCompositeOperation = "copy";
+			ctx.drawImage(canvas, 0, 0, target.width, target.height);
+		} finally {
+			ctx.restore();
+		}
+	}
+
 	setSize({ width, height }: { width: number; height: number }) {
 		this.width = width;
 		this.height = height;
@@ -93,7 +119,7 @@ export class CanvasRenderer {
 			node,
 			time,
 			completePerfFrame,
-			consume: () => undefined,
+			consume: (canvas) => this.publishPresentation(canvas),
 		});
 	}
 
@@ -226,6 +252,7 @@ export class CanvasRenderer {
 				}
 			} finally {
 				this.renderFrame(base.frame);
+				this.publishPresentation(wasmCompositor.getCanvas());
 			}
 			onRenderPerfFrameComplete();
 		});

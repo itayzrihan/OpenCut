@@ -13,8 +13,11 @@ export function pruneEmptyElementTracks({
 	return {
 		...tracks,
 		overlay: tracks.overlay.filter(
-			(track) => track.type === "parallax" || track.elements.length > 0,
+			(track) =>
+				track.keepEmpty || track.type === "parallax" || track.elements.length > 0,
 		),
-		audio: tracks.audio.filter((track) => track.elements.length > 0),
+		audio: tracks.audio.filter(
+			(track) => track.keepEmpty || track.elements.length > 0,
+		),
 	};
 }

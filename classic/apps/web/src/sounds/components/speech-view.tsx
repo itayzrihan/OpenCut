@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { processMediaAssets } from "@/media/processing";
@@ -9,6 +9,8 @@ import type { SpeechRequest, SpeechResponse } from "@/services/speech/worker";
 export function SpeechView() {
 	const editor = useEditor();
 	const worker = useRef<Worker | null>(null);
+	const submittedText = useRef("");
+	const transcriptId = useId();
 	const [text, setText] = useState("");
 	const [voice, setVoice] = useState<SpeechRequest["voice"]>("af_heart");
 	const [device, setDevice] = useState<SpeechRequest["device"]>("auto");
@@ -16,9 +18,11 @@ export function SpeechView() {
 		[saving, setSaving] = useState(false);
 	const [status, setStatus] = useState(""),
 		[error, setError] = useState("");
-	const [result, setResult] = useState<{ blob: Blob; url: string } | null>(
-		null,
-	);
+	const [result, setResult] = useState<{
+		blob: Blob;
+		url: string;
+		transcript: string;
+	} | null>(null);
 	useEffect(() => () => worker.current?.terminate(), []);
 	useEffect(
 		() => () => {
@@ -48,7 +52,11 @@ export function SpeechView() {
 					setError(data.message);
 					setBusy(false);
 				} else {
-					setResult({ blob: data.audio, url: URL.createObjectURL(data.audio) });
+					setResult({
+						blob: data.audio,
+						url: URL.createObjectURL(data.audio),
+						transcript: submittedText.current,
+					});
 					setStatus(
 						`Generated on your ${data.device === "webgpu" ? "GPU" : "CPU"}.`,
 					);
@@ -62,6 +70,7 @@ export function SpeechView() {
 				setBusy(false);
 			};
 		}
+		submittedText.current = text;
 		worker.current.postMessage({ text, voice, device } satisfies SpeechRequest);
 	}
 	async function addToProject() {
@@ -171,7 +180,17 @@ export function SpeechView() {
 			)}
 			{result && (
 				<div className="space-y-3">
-					<audio controls src={result.url} className="w-full" />
+					{/* Generated audio has an exact text alternative; the engine does not emit timed caption cues. */}
+					{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+					<audio
+						controls
+						src={result.url}
+						aria-describedby={transcriptId}
+						className="w-full"
+					/>
+					<p id={transcriptId} className="whitespace-pre-wrap text-sm">
+						{result.transcript}
+					</p>
 					<Button disabled={saving} onClick={() => void addToProject()}>
 						{saving ? "Adding…" : "Add to project media"}
 					</Button>

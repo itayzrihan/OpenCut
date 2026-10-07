@@ -15,7 +15,7 @@ use crate::{HyperframesComposition, HyperframesSource, ModelError, ProjectSettin
 
 // The established Classic media clock (classic/rust/crates/time).
 pub const CLASSIC_TICKS_PER_SECOND: i64 = 120_000;
-const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
+pub(crate) const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -146,6 +146,8 @@ impl ClassicProject {
         let frame_rate: Rational = serde_json::from_value(settings["fps"].clone())
             .map_err(|_| invalid("fps must be a rational frame rate"))?;
         frame_rate.validate("Classic fps")?;
+        crate::operations::classic_settings::validate_settings(settings)
+            .map_err(|e| invalid(&e))?;
         let width = settings["canvasSize"]["width"]
             .as_u64()
             .and_then(|v| u32::try_from(v).ok())
@@ -244,17 +246,77 @@ impl ClassicProject {
             if !scene_ids.insert(string_at(scene, "id")?) {
                 return Err(invalid("duplicate scene id"));
             }
+            if scene.get("isMain").is_some_and(|value| !value.is_boolean()) {
+                return Err(invalid("scene isMain must be a boolean"));
+            }
+            if let Some(bookmarks) = scene.get("bookmarks") {
+                let bookmarks = bookmarks
+                    .as_array()
+                    .ok_or_else(|| invalid("bookmarks must be an array"))?;
+                for bookmark in bookmarks {
+                    let start = ticks(bookmark, "time")?;
+                    for key in ["note", "color", "groupId"] {
+                        if bookmark
+                            .get(key)
+                            .is_some_and(|value| !value.is_null() && !value.is_string())
+                        {
+                            return Err(invalid("bookmark text properties must be strings"));
+                        }
+                    }
+                    if bookmark
+                        .get("duration")
+                        .is_some_and(|value| !value.is_null())
+                    {
+                        let duration = ticks(bookmark, "duration")?;
+                        if start
+                            .checked_add(duration)
+                            .is_none_or(|end| end > MAX_SAFE_INTEGER)
+                        {
+                            return Err(invalid("bookmark end exceeds safe integer timing"));
+                        }
+                    }
+                }
+            }
             for track in tracks(scene)? {
                 let track_id = string_at(track, "id")?;
                 if !entity_ids.insert(track_id) {
                     return Err(invalid("duplicate track or element id"));
                 }
                 string_at(track, "type")?;
+                if track["type"] == "parallax" {
+                    if !scene.get("parallax").is_some_and(Value::is_object)
+                        || !matches!(
+                            track["direction"].as_str(),
+                            Some("with-camera" | "against-camera")
+                        )
+                        || !track["speedPercent"].as_f64().is_some_and(|speed| {
+                            speed.is_finite() && (0.0..=400.0).contains(&speed)
+                        })
+                        || !elements(track)?.is_empty()
+                    {
+                        return Err(invalid(
+                            "parallax marker requires a canvas scene, direction, speed in 0..400 and no elements",
+                        ));
+                    }
+                }
+                for flag in ["muted", "hidden", "keepEmpty"] {
+                    if track.get(flag).is_some_and(|value| !value.is_boolean()) {
+                        return Err(invalid(&format!("track {flag} must be a boolean")));
+                    }
+                }
                 for element in elements(track)? {
                     if !entity_ids.insert(string_at(element, "id")?) {
                         return Err(invalid("duplicate track or element id"));
                     }
                     string_at(element, "type")?;
+                    crate::classic_effects::validate_effects(element)
+                        .map_err(|e| invalid(&e.to_string()))?;
+                    if element
+                        .get("isSourceAudioEnabled")
+                        .is_some_and(|value| !value.is_boolean())
+                    {
+                        return Err(invalid("isSourceAudioEnabled must be a boolean"));
+                    }
                     let start = ticks(element, "startTime")?;
                     let duration = ticks(element, "duration")?;
                     ticks(element, "trimStart")?;

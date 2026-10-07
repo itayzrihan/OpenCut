@@ -1,0 +1,43 @@
+{
+  "id": "flash-through-white",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "b57704fcb5b1973e1ec9f7f3afcdd56ba1c6b8c3e8239f2902374d8df4326b62",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "flash-through-white.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "20863a8bcdd1d41881d35b0ca7e3e2105fcdcb4fecb879a6e92d4504a8f7d6a9",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "cd8c2efdec607a20b031fde753883d83e0e3d06cdcb13fec5e11c04ab94cbbb8",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "5475b29e4adaa03002a86da2ed759750f593636e23523a4ac64aabb3d7e2bd71",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "cd8c2efdec607a20b031fde753883d83e0e3d06cdcb13fec5e11c04ab94cbbb8",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

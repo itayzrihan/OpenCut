@@ -4,6 +4,10 @@ import type { NextConfig } from "next";
 import type { webpack as WebpackTypes } from "next/dist/compiled/webpack/webpack";
 import { withBotId } from "botid/next/config";
 import { withContentCollections } from "@content-collections/next";
+import {
+	canonicalWorkspacePath,
+	type WorkspacePathResolver,
+} from "./config/windows-module-paths";
 
 const webRootDirectory = dirname(fileURLToPath(import.meta.url));
 const workspaceRootDirectory = resolve(webRootDirectory, "../..");
@@ -17,7 +21,12 @@ const runtimeTarget =
 const nextConfig: NextConfig = {
 	distDir: process.env.OPENCUT_BUILD_DIR || ".next",
 	typescript: { tsconfigPath: "tsconfig.build.json" },
-	allowedDevOrigins: ["127.0.0.1"],
+	allowedDevOrigins: [
+		"127.0.0.1",
+		...(process.env.OPENCUT_PUBLIC_ORIGIN
+			? [new URL(process.env.OPENCUT_PUBLIC_ORIGIN).hostname]
+			: []),
+	],
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
@@ -39,7 +48,12 @@ const nextConfig: NextConfig = {
 		],
 	},
 	output: "standalone",
-	serverExternalPackages: ["@hyperframes/engine"],
+	outputFileTracingIncludes: {
+		"/api/editor-agent/hyperframes-references": [
+			"./.hyperframes-references/**/*",
+		],
+	},
+	serverExternalPackages: ["@hyperframes/engine", "@huggingface/transformers"],
 	// Runtime transcription caches are local, mutable user data. They must not
 	// be copied into a production standalone bundle (the Whisper cache alone
 	// can be several gigabytes and may exhaust the build disk).
@@ -56,6 +70,37 @@ const nextConfig: NextConfig = {
 		root: workspaceRootDirectory,
 	},
 	webpack: (config, { isServer, dev, webpack }) => {
+		if (process.platform === "win32") {
+			config.plugins.push({
+				apply(compiler: WebpackTypes.Compiler) {
+					for (const kind of ["normal", "loader"])
+						compiler.resolverFactory.hooks.resolver
+							.for(kind)
+							.tap(
+								"OpenCutWorkspacePath",
+								(resolver: WorkspacePathResolver) => {
+									resolver.hooks.result.tap(
+										"OpenCutWorkspacePath",
+										(result) => {
+											for (const key of [
+												"path",
+												"descriptionFilePath",
+												"descriptionFileRoot",
+											] as const) {
+												const path = result[key];
+												if (typeof path === "string")
+													result[key] = canonicalWorkspacePath({
+														path,
+														workspaceRoot: workspaceRootDirectory,
+													});
+											}
+										},
+									);
+								},
+							);
+				},
+			});
+		}
 		config.resolve.alias = {
 			...config.resolve.alias,
 			"opencut-wasm": localWasmEntry,
@@ -72,13 +117,26 @@ const nextConfig: NextConfig = {
 			// Next emits node chunks under server/chunks, but its shared runtime
 			// resolves async WASM relative to server/. Emit that runtime copy as a
 			// tracked asset so both page collection and standalone packaging work.
-			config.plugins.push({ apply(compiler: WebpackTypes.Compiler) {
-				compiler.hooks.thisCompilation.tap("OpenCutServerWasm", (compilation: WebpackTypes.Compilation) => {
-					compilation.hooks.processAssets.tap({ name: "OpenCutServerWasm", stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL }, () => {
-						for (const asset of compilation.getAssets()) if (/^static\/wasm\/[^/]+\.wasm$/.test(asset.name)) compilation.emitAsset(`../${asset.name}`, asset.source);
-					});
-				});
-			} });
+			config.plugins.push({
+				apply(compiler: WebpackTypes.Compiler) {
+					compiler.hooks.thisCompilation.tap(
+						"OpenCutServerWasm",
+						(compilation: WebpackTypes.Compilation) => {
+							compilation.hooks.processAssets.tap(
+								{
+									name: "OpenCutServerWasm",
+									stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+								},
+								() => {
+									for (const asset of compilation.getAssets())
+										if (/^static\/wasm\/[^/]+\.wasm$/.test(asset.name))
+											compilation.emitAsset(`../${asset.name}`, asset.source);
+								},
+							);
+						},
+					);
+				},
+			});
 		}
 		return config;
 	},

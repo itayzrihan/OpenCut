@@ -1,3 +1,4 @@
+import { mockFetch } from "@/test-support/mock-fetch";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- This isolated browser fixture supplies the bridge's host boundaries. */
 
 const projectListeners = new Set<() => void>();
@@ -42,7 +43,7 @@ window.setInterval = ((callback: () => void, delay = 0) => {
 	return id;
 }) as typeof window.setInterval;
 window.clearTimeout = window.clearInterval = (id) => {
-	if (id !== undefined) timers.delete(id);
+	if (typeof id === "number") timers.delete(id);
 };
 
 type Publication = {
@@ -55,8 +56,7 @@ type Publication = {
 };
 const publications: Publication[] = [];
 let deletes = 0;
-// eslint-disable-next-line opencut/prefer-object-params -- Match the browser fetch API.
-window.fetch = async (input, options) => {
+window.fetch = mockFetch(async (input, options) => {
 	const url = String(input);
 	if (url === "/api/mcp-bridge/state") {
 		publications.push(JSON.parse(String(options?.body)));
@@ -69,7 +69,7 @@ window.fetch = async (input, options) => {
 		return Response.json({});
 	}
 	throw new Error(`Unexpected fixture request: ${url}`);
-};
+});
 
 export const mediaTimeToSeconds = ({ time }: { time: number }) => time;
 export const applyAiEditPlan = () => {

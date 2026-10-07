@@ -14,9 +14,6 @@ import {
 	buildElementFromMedia,
 	buildEffectElement,
 } from "@/timeline/element-utils";
-import { AddTrackCommand, InsertElementCommand } from "@/commands/timeline";
-import { BatchCommand } from "@/commands";
-import type { Command } from "@/commands/base-command";
 import { computeDropTarget } from "@/timeline/components/drop-target";
 import type { TimelineDragSource } from "@/timeline/drag-source";
 import type {
@@ -59,7 +56,14 @@ export interface DragDropConfig {
 		projectId: string;
 		asset: ProcessedMediaAsset;
 	}) => Promise<MediaAsset | null>;
-	executeCommand: (command: Command) => void;
+	insertElements: (
+		clips: import("@/commands/timeline/element/insert-element").InsertElementParams[],
+	) => void;
+	insertOnNewTrack: (args: {
+		type: TrackType;
+		index: number;
+		element: CreateTimelineElement;
+	}) => void;
 	insertElement: (args: {
 		placement: { mode: "explicit"; trackId: string };
 		element: CreateTimelineElement;
@@ -446,19 +450,11 @@ export class DragDropController {
 		trackType: TrackType;
 	}): void {
 		if (target.isNewTrack) {
-			const addTrackCmd = new AddTrackCommand({
+			this.config.insertOnNewTrack({
 				type: trackType,
 				index: target.trackIndex,
+				element,
 			});
-			this.config.executeCommand(
-				new BatchCommand([
-					addTrackCmd,
-					new InsertElementCommand({
-						element,
-						placement: { mode: "explicit", trackId: addTrackCmd.getTrackId() },
-					}),
-				]),
-			);
 			return;
 		}
 
@@ -565,21 +561,18 @@ export class DragDropController {
 		target: DropTarget;
 		dragData: Extract<TimelineDragData, { type: "element-bundle" }>;
 	}): void {
-		const commands = dragData.items.map(
-			({ element, trackType }) =>
-				new InsertElementCommand({
-					element: {
-						...element,
-						startTime: addMediaTime({
-							a: target.xPosition,
-							b: element.startTime,
-						}),
-					},
-					placement: { mode: "auto", trackType },
+		const clips = dragData.items.map(({ element, trackType }) => ({
+			element: {
+				...element,
+				startTime: addMediaTime({
+					a: target.xPosition,
+					b: element.startTime,
 				}),
-		);
-		if (commands.length === 0) return;
-		this.config.executeCommand(new BatchCommand(commands));
+			},
+			placement: { mode: "auto" as const, trackType },
+		}));
+		if (clips.length === 0) return;
+		this.config.insertElements(clips);
 	}
 
 	private executeMediaDrop({

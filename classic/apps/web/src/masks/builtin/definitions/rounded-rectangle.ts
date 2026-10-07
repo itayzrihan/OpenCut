@@ -52,7 +52,7 @@ function buildRoundedRectanglePath({
 		halfHeight,
 		Math.max(0, cornerRadius) * Math.min(width, height),
 	);
-	const point = (x: number, y: number) =>
+	const point = ({ x, y }: { x: number; y: number }) =>
 		rotatePoint({
 			x: centerX + x,
 			y: centerY + y,
@@ -61,18 +61,18 @@ function buildRoundedRectanglePath({
 			rotationRad,
 		});
 	const path = new Path2D();
-	const move = point(-halfWidth + radius, -halfHeight);
+	const move = point({ x: -halfWidth + radius, y: -halfHeight });
 	path.moveTo(move.x, move.y);
 
-	const topEnd = point(halfWidth - radius, -halfHeight);
-	const topRight = point(halfWidth, -halfHeight);
-	const rightStart = point(halfWidth, -halfHeight + radius);
+	const topEnd = point({ x: halfWidth - radius, y: -halfHeight });
+	const topRight = point({ x: halfWidth, y: -halfHeight });
+	const rightStart = point({ x: halfWidth, y: -halfHeight + radius });
 	path.lineTo(topEnd.x, topEnd.y);
 	path.quadraticCurveTo(topRight.x, topRight.y, rightStart.x, rightStart.y);
 
-	const rightEnd = point(halfWidth, halfHeight - radius);
-	const bottomRight = point(halfWidth, halfHeight);
-	const bottomStart = point(halfWidth - radius, halfHeight);
+	const rightEnd = point({ x: halfWidth, y: halfHeight - radius });
+	const bottomRight = point({ x: halfWidth, y: halfHeight });
+	const bottomStart = point({ x: halfWidth - radius, y: halfHeight });
 	path.lineTo(rightEnd.x, rightEnd.y);
 	path.quadraticCurveTo(
 		bottomRight.x,
@@ -81,15 +81,15 @@ function buildRoundedRectanglePath({
 		bottomStart.y,
 	);
 
-	const bottomEnd = point(-halfWidth + radius, halfHeight);
-	const bottomLeft = point(-halfWidth, halfHeight);
-	const leftStart = point(-halfWidth, halfHeight - radius);
+	const bottomEnd = point({ x: -halfWidth + radius, y: halfHeight });
+	const bottomLeft = point({ x: -halfWidth, y: halfHeight });
+	const leftStart = point({ x: -halfWidth, y: halfHeight - radius });
 	path.lineTo(bottomEnd.x, bottomEnd.y);
 	path.quadraticCurveTo(bottomLeft.x, bottomLeft.y, leftStart.x, leftStart.y);
 
-	const leftEnd = point(-halfWidth, -halfHeight + radius);
-	const topLeft = point(-halfWidth, -halfHeight);
-	const closeStart = point(-halfWidth + radius, -halfHeight);
+	const leftEnd = point({ x: -halfWidth, y: -halfHeight + radius });
+	const topLeft = point({ x: -halfWidth, y: -halfHeight });
+	const closeStart = point({ x: -halfWidth + radius, y: -halfHeight });
 	path.lineTo(leftEnd.x, leftEnd.y);
 	path.quadraticCurveTo(topLeft.x, topLeft.y, closeStart.x, closeStart.y);
 	path.closePath();
@@ -98,6 +98,7 @@ function buildRoundedRectanglePath({
 
 export const roundedRectangleMaskDefinition: MaskDefinition<"rounded-rectangle"> =
 	{
+		defaultSizing: "square",
 		type: "rounded-rectangle",
 		name: "Rounded Rectangle",
 		features: {

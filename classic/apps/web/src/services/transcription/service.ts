@@ -91,7 +91,13 @@ export class TranscriptionService {
 				type: "module",
 			});
 			let settled = false;
-			const finish = (error?: Error, result?: TranscriptionResult) => {
+			const finish = ({
+				error,
+				result,
+			}: {
+				error?: Error;
+				result?: TranscriptionResult;
+			}) => {
 				if (settled) return;
 				settled = true;
 				worker.terminate(); // Interrupts downloads/inference and releases account audio and GPU memory.
@@ -100,19 +106,23 @@ export class TranscriptionService {
 				else resolve(result!);
 			};
 			const abort = () =>
-				finish(new DOMException("Transcription cancelled", "AbortError"));
+				finish({
+					error: new DOMException("Transcription cancelled", "AbortError"),
+				});
 			signal.addEventListener("abort", abort, { once: true });
 			worker.onerror = (event) =>
-				finish(
-					new Error(
+				finish({
+					error: new Error(
 						event.message ||
 							"The browser transcription worker could not start.",
 					),
-				);
+				});
 			worker.onmessageerror = () =>
-				finish(
-					new Error("The browser could not read the transcription result."),
-				);
+				finish({
+					error: new Error(
+						"The browser could not read the transcription result.",
+					),
+				});
 			worker.onmessage = ({ data }: MessageEvent<WorkerResponse>) => {
 				if (signal.aborted || window.__opencutAccountId !== account) {
 					abort();
@@ -123,10 +133,13 @@ export class TranscriptionService {
 					try {
 						onProgress?.(data.progress);
 					} catch (error) {
-						finish(error instanceof Error ? error : new Error(String(error)));
+						finish({
+							error: error instanceof Error ? error : new Error(String(error)),
+						});
 					}
-				} else if (data.type === "complete") finish(undefined, data.result);
-				else finish(new Error(data.error));
+				} else if (data.type === "complete")
+					finish({ error: undefined, result: data.result });
+				else finish({ error: new Error(data.error) });
 			};
 			worker.postMessage(
 				{ audio: audioData, language } satisfies WorkerMessage,

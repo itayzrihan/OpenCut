@@ -1,7 +1,8 @@
-export type CutSilenceMode = "audio" | "fast" | "deep";
+export type CutSilenceMode = "audio" | "smart" | "fast" | "deep";
 export type CutSilenceOptions = {
 	mode: CutSilenceMode;
 	minSilenceSeconds?: number;
+	signal?: AbortSignal;
 };
 
 export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "audio";
@@ -12,6 +13,12 @@ export const CUT_SILENCE_ACTIONS = [
 		label: "Audio-based tight cut (default)",
 		description:
 			"Removes audio pauses from 0.3 seconds and keeps existing captions synchronized.",
+	},
+	{
+		mode: "smart",
+		label: "Smart audio cut · protect speech",
+		description:
+			"Uses the whole clip’s average sound level, keeps speech margins and protects captioned words. Leaves uncertain pauses intact.",
 	},
 	{
 		mode: "fast",
@@ -33,14 +40,17 @@ export const CUT_SILENCE_ACTIONS = [
 export async function executeCutSilenceAction({
 	mode,
 	minSilenceSeconds,
+	signal,
 	removeAllSilence,
 }: {
 	mode: CutSilenceMode;
 	minSilenceSeconds?: number;
+	signal?: AbortSignal;
 	removeAllSilence: (options: CutSilenceOptions) => Promise<unknown>;
 }): Promise<void> {
 	await removeAllSilence({
 		mode,
 		...(minSilenceSeconds === undefined ? {} : { minSilenceSeconds }),
+		...(signal === undefined ? {} : { signal }),
 	});
 }

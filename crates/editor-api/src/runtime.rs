@@ -276,6 +276,26 @@ pub struct OpenCutRuntime {
     state_events: broadcast::Sender<u64>,
     artifacts: ArtifactStore,
     jobs: JobManager,
+    classic_effects: crate::ClassicEffectCatalog,
+    classic_masks: crate::ClassicMaskCatalog,
+    classic_animation: crate::ClassicAnimationCatalog,
+}
+
+impl OpenCutRuntime {
+    /// Host observation time for public activity; never supplied by a model.
+    pub fn host_time_ms() -> u64 { now_ms() }
+    pub(crate) fn mutation_events(&self) -> broadcast::Sender<u64> { self.state_events.clone() }
+    pub(crate) fn downgrade(&self) -> impl Fn() -> Option<Self> + Clone + Send + Sync + 'static {
+        let registry = self.registry.downgrade();
+        let state = self.state.clone();
+        let state_events = self.state_events.clone();
+        let artifacts = self.artifacts.clone();
+        let jobs = self.jobs.clone();
+        let classic_effects = self.classic_effects.clone();
+        let classic_masks = self.classic_masks.clone();
+        let classic_animation = self.classic_animation.clone();
+        move || Some(Self { registry: registry()?, state: state.clone(), state_events: state_events.clone(), artifacts: artifacts.clone(), jobs: jobs.clone(), classic_effects: classic_effects.clone(), classic_masks: classic_masks.clone(), classic_animation: classic_animation.clone() })
+    }
 }
 
 #[derive(Clone)]
@@ -295,13 +315,45 @@ impl OpenCutRuntime {
             state_events,
             artifacts: artifacts.clone(),
             jobs: jobs.clone(),
+            classic_effects: crate::ClassicEffectCatalog::default(),
+            classic_masks: crate::ClassicMaskCatalog::default(),
+            classic_animation: crate::ClassicAnimationCatalog::default(),
         };
+        let state = Arc::downgrade(&runtime.state);
+        runtime
+            .registry
+            .set_document_resolver(Arc::new(move |input, context| {
+                let state = state.upgrade().ok_or(RegistryError::LockPoisoned)?;
+                let store = state.read().map_err(|_| RegistryError::LockPoisoned)?;
+                let project_id = input
+                    .get("projectId")
+                    .and_then(serde_json::Value::as_str)
+                    .or_else(|| {
+                        context
+                            .metadata
+                            .get("opencut/projectId")
+                            .and_then(serde_json::Value::as_str)
+                    });
+                Ok(store
+                    .document_for(project_id)
+                    .and_then(|doc| doc.project.as_ref())
+                    .map(|project| {
+                        if project.classic.is_some() {
+                            crate::DocumentKind::Classic
+                        } else {
+                            crate::DocumentKind::Rewrite
+                        }
+                    }))
+            }))?;
         operations::register_all(
             &runtime.registry,
             runtime.state.clone(),
             runtime.state_events.clone(),
             artifacts,
             jobs,
+            runtime.classic_effects.clone(),
+            runtime.classic_masks.clone(),
+            runtime.classic_animation.clone(),
         )?;
         Ok(runtime)
     }
@@ -314,8 +366,56 @@ impl OpenCutRuntime {
         &self.registry
     }
 
+    pub fn classic_effect_catalog(&self) -> &crate::ClassicEffectCatalog {
+        &self.classic_effects
+    }
+
+    pub fn classic_mask_catalog(&self) -> &crate::ClassicMaskCatalog { &self.classic_masks }
+    pub fn classic_animation_catalog(&self) -> &crate::ClassicAnimationCatalog { &self.classic_animation }
+
     pub fn artifacts(&self) -> &ArtifactStore {
         &self.artifacts
+    }
+
+    /// Binary references in the active project's document/history are durable
+    /// dependencies even when the chat does not display them. Recognize the
+    /// common ArtifactRef shape plus the established artifactId/SHA binding.
+    pub fn referenced_artifact_ids(&self, project_id: &str) -> Result<Vec<String>, RuntimeError> {
+        fn collect(value: &serde_json::Value, pairs: &mut BTreeMap<String, std::collections::BTreeSet<String>>) {
+            match value {
+                serde_json::Value::Object(fields) => {
+                    let id = fields.get("artifactId").and_then(serde_json::Value::as_str)
+                        .or_else(|| fields.get("id").and_then(serde_json::Value::as_str)
+                            .filter(|id| fields.get("uri").and_then(serde_json::Value::as_str)
+                                == Some(format!("{}{}", crate::ARTIFACT_URI_PREFIX, id).as_str())));
+                    if let (Some(id), Some(sha)) = (id, fields.get("sha256").and_then(serde_json::Value::as_str)) {
+                        if id.starts_with("artifact-") && id.len() <= 160 && sha.len() == 64 {
+                            pairs.entry(id.into()).or_default().insert(sha.into());
+                        }
+                    }
+                    for value in fields.values() { collect(value, pairs); }
+                }
+                serde_json::Value::Array(items) => { for item in items { collect(item, pairs); } }
+                _ => {}
+            }
+        }
+        let store = self.state.read().map_err(|_| RuntimeError::LockPoisoned)?;
+        if store.active_project_id() != Some(project_id) { return Err(RuntimeError::UnknownProject(project_id.into())); }
+        let mut pairs = BTreeMap::new();
+        for document in std::iter::once(&store.document).chain(store.undo.iter().map(|entry| &entry.document)).chain(store.redo.iter().map(|entry| &entry.document)) {
+            if document.project.as_ref().is_none_or(|project| project.id != project_id) { continue; }
+            collect(&serde_json::to_value(&document.project)?, &mut pairs);
+            collect(&serde_json::to_value(&document.extensions)?, &mut pairs);
+            collect(&serde_json::to_value(&document.workspace)?, &mut pairs);
+        }
+        for (id, hashes) in &pairs {
+            match self.artifacts.get(id) {
+                Ok(artifact) if hashes.iter().any(|sha| artifact.metadata.sha256 != *sha) => return Err(crate::ArtifactError::InvalidArchive("Document/history artifact checksum differs from stored bytes".into()).into()),
+                Ok(_) | Err(crate::ArtifactError::NotFound(_)) => {},
+                Err(error) => return Err(error.into()),
+            }
+        }
+        Ok(pairs.into_keys().collect())
     }
 
     pub fn jobs(&self) -> &JobManager {
@@ -525,6 +625,8 @@ impl Default for OpenCutRuntime {
 
 #[derive(Debug, Error)]
 pub enum RuntimeError {
+    #[error(transparent)]
+    Artifact(#[from] crate::ArtifactError),
     #[error(transparent)]
     Registry(#[from] RegistryError),
     #[error("editor state lock was poisoned")]

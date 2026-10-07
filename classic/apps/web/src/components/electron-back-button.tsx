@@ -15,10 +15,7 @@ export function ElectronBackButton() {
 
 	useEffect(() => {
 		// Check if running in Electron
-		const electronBridge = (typeof window !== "undefined" &&
-			(window as any).opencutElectron) as
-			| { canGoBack?: () => Promise<boolean> }
-			| undefined;
+		const electronBridge = typeof window !== "undefined" ? window.opencutElectron : undefined;
 
 		if (!electronBridge?.canGoBack) {
 			setIsElectron(false);
@@ -47,7 +44,7 @@ export function ElectronBackButton() {
 	}
 
 	const handleGoBack = async () => {
-		const electronBridge = (window as any).opencutElectron;
+		const electronBridge = window.opencutElectron;
 		if (electronBridge?.goBack) {
 			await electronBridge.goBack();
 		}

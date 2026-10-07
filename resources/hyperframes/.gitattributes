@@ -1,0 +1,5 @@
+# Preserve upstream bytes: provenance hashes must survive Windows checkouts.
+upstream/** -text
+vendor/** -text
+prepared/** -text
+evidence/** -text

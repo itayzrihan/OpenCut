@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, beforeEach, expect, mock, test } from "bun:test";
+import type { AutomaticSpeechRecognitionOutput } from "@huggingface/transformers-v4";
+import type { WorkerMessage, WorkerResponse } from "./worker";
 import {
 	BROWSER_WHISPER_MODEL,
 	BROWSER_WHISPER_REVISION,
@@ -11,29 +13,39 @@ const env = {
 	useBrowserCache: false,
 	backends: { onnx: { wasm: { numThreads: 8 } } },
 };
-let loadOptions: any, inferenceOptions: any, loadedModel: string;
-let output: any,
+let loadOptions: Record<string, unknown>,
+	inferenceOptions: Record<string, unknown>,
+	loadedModel: string;
+let output: AutomaticSpeechRecognitionOutput,
 	failLoad = false,
 	disposed = 0;
-const messages: any[] = [];
+const messages: WorkerResponse[] = [];
 const originalSelf = Object.getOwnPropertyDescriptor(globalThis, "self");
 const originalNavigator = Object.getOwnPropertyDescriptor(
 	globalThis,
 	"navigator",
 );
 const worker = {
-	postMessage: (value: unknown) => messages.push(value),
-	onmessage: null as any,
+	postMessage: (value: WorkerResponse) => messages.push(value),
+	onmessage: null as
+		| ((event: Pick<MessageEvent<WorkerMessage>, "data">) => Promise<void>)
+		| null,
 };
 mock.module("@huggingface/transformers-v4", () => ({
 	env,
 	TextStreamer: class {},
-	pipeline: async (_: string, model: string, options: any) => {
+	// Matches the fixed third-party Transformers pipeline signature.
+	// eslint-disable-next-line opencut/prefer-object-params
+	pipeline: async (
+		_: string,
+		model: string,
+		options: Record<string, unknown>,
+	) => {
 		loadedModel = model;
 		loadOptions = options;
 		if (failLoad) throw new Error("Model download failed");
 		const pipe = Object.assign(
-			async (_: unknown, settings: any) => {
+			async (_: unknown, settings: Record<string, unknown>) => {
 				inferenceOptions = settings;
 				return output;
 			},
@@ -84,10 +96,19 @@ afterAll(() => {
 		else Reflect.deleteProperty(globalThis, key);
 	}
 });
-const run = () =>
-	worker.onmessage({
+const run = () => {
+	if (!worker.onmessage)
+		throw new Error("Transcription worker did not initialize");
+	return worker.onmessage({
 		data: { audio: new Float32Array(32000), language: "he" },
 	});
+};
+
+function lastError(): string {
+	const value = messages.at(-1);
+	if (value?.type !== "error") throw new Error("Expected a worker error");
+	return value.error;
+}
 test("pins GPU timestamped weights, caches public files and preserves word timing", async () => {
 	await run();
 	expect(loadedModel).toBe(BROWSER_WHISPER_MODEL);
@@ -128,18 +149,20 @@ test("without fp16 WebGPU uses the local WASM-compatible timestamped conversion"
 		dtype: "q8",
 	});
 	expect(env.backends.onnx.wasm.numThreads).toBe(1);
-	expect(messages[0].progress.message).toContain("CPU");
+	const first = messages[0];
+	if (first?.type !== "progress") throw new Error("Expected CPU progress");
+	expect(first.progress.message).toContain("CPU");
 });
 test("download failure is returned, never replaced with a host transcription request", async () => {
 	failLoad = true;
 	await run();
 	expect(messages.at(-1)).toMatchObject({ type: "error" });
-	expect(messages.at(-1).error).toContain("Model download failed");
+	expect(lastError()).toContain("Model download failed");
 	expect(messages.some((m) => m.type === "complete")).toBe(false);
 });
 test("untimed text fails instead of producing unusable caption sources", async () => {
 	output = { text: "שלום", chunks: [] };
 	await run();
-	expect(messages.at(-1).error).toContain("did not return timed words");
+	expect(lastError()).toContain("did not return timed words");
 	expect(disposed).toBe(1);
 });

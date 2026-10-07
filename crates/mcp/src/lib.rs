@@ -274,8 +274,13 @@ impl OpenCutMcp {
             || descriptor.id.starts_with("classic.")
             || matches!(
                 descriptor.id.as_str(),
-                "project.create" | "project.open" | "project.activate" | "project.close"
-                    | "project.classic.attach" | "project.classic.session.attach" | "project.classic.session.restore"
+                "project.create"
+                    | "project.open"
+                    | "project.activate"
+                    | "project.close"
+                    | "project.classic.attach"
+                    | "project.classic.session.attach"
+                    | "project.classic.session.restore"
             )
         {
             return Ok(());
@@ -1522,6 +1527,130 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn canonical_classic_features_are_automatically_projected_and_share_mcp_history() {
+        let runtime = OpenCutRuntime::default();
+        let server = OpenCutMcp::from_runtime(&runtime);
+        let classic: Value = serde_json::from_str(include_str!(
+            "../../editor-api/tests/fixtures/classic-project.json"
+        ))
+        .unwrap();
+        let adopted = server
+            .call_generated_capability(
+                "project.classic.session.attach",
+                json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+                InvocationContext::default(),
+            )
+            .await;
+        assert_ne!(adopted.is_error, Some(true));
+        let tools = server.tools().unwrap();
+        for id in [
+            "timeline.classic.elements.duplicate",
+            "timeline.classic.remove",
+            "timeline.classic.track.update",
+        ] {
+            let name = format!("opencut.{id}");
+            let tool = tools
+                .iter()
+                .find(|tool| tool.name.as_ref() == name)
+                .expect("generated feature tool");
+            assert!(tool.input_schema["properties"].get("projectId").is_some());
+            assert!(
+                tool.input_schema["properties"]
+                    .get("expectedRevision")
+                    .is_some()
+            );
+            assert!(
+                tool.input_schema["properties"]
+                    .get("idempotencyKey")
+                    .is_some()
+            );
+        }
+        let add = server.call_generated_capability("timeline.classic.tracks.layout",
+            json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":runtime.snapshot().unwrap().revision,
+                "change":{"type":"add","trackId":"depth","trackType":"parallax"}}).as_object().unwrap().clone(),InvocationContext::default()).await;
+        assert_ne!(add.is_error, Some(true));
+        let before = runtime
+            .snapshot()
+            .unwrap()
+            .project
+            .unwrap()
+            .classic
+            .unwrap();
+        let updated = server.call_generated_capability("timeline.classic.track.update",
+            json!({"projectId":"classic-project","sceneId":"main-scene","trackId":"depth","expectedRevision":runtime.snapshot().unwrap().revision,
+                "change":{"type":"parallax","direction":"with-camera","speedPercent":850}}).as_object().unwrap().clone(),InvocationContext::default()).await;
+        assert_ne!(updated.is_error, Some(true));
+        let request = json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":runtime.snapshot().unwrap().revision,
+            "idempotencyKey":"copy-once","elements":[{"trackId":"video-track","elementId":"item-2"}]}).as_object().unwrap().clone();
+        let copy = server
+            .call_generated_capability(
+                "timeline.classic.elements.duplicate",
+                request.clone(),
+                InvocationContext::default(),
+            )
+            .await;
+        assert_ne!(copy.is_error, Some(true));
+        let retry = server
+            .call_generated_capability(
+                "timeline.classic.elements.duplicate",
+                request,
+                InvocationContext::default(),
+            )
+            .await;
+        assert_eq!(copy.structured_content, retry.structured_content);
+        let copied = runtime
+            .snapshot()
+            .unwrap()
+            .project
+            .unwrap()
+            .classic
+            .unwrap();
+        let ref_copy = &copy.structured_content.as_ref().unwrap()["result"]["data"]["elements"][0];
+        let read = server
+            .call_generated_capability("app.state.read", Map::new(), InvocationContext::default())
+            .await;
+        assert_eq!(
+            read.structured_content.as_ref().unwrap()["result"]["data"]["value"]["project"]["classic"],
+            serde_json::to_value(&copied).unwrap()
+        );
+        assert_eq!(
+            copied.document["scenes"][0]["tracks"]["overlay"][1]["speedPercent"],
+            json!(400.0)
+        );
+        let removed = server.call_generated_capability("timeline.classic.remove",
+            json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":runtime.snapshot().unwrap().revision,
+                "removal":{"type":"track","trackId":ref_copy["trackId"]}}).as_object().unwrap().clone(),InvocationContext::default()).await;
+        assert_ne!(removed.is_error, Some(true));
+        for expected in [
+            copied.clone(),
+            {
+                let mut value = before.clone();
+                value.document["scenes"][0]["tracks"]["overlay"][0]["direction"] =
+                    json!("with-camera");
+                value.document["scenes"][0]["tracks"]["overlay"][0]["speedPercent"] = json!(400.0);
+                value
+            },
+            before,
+        ] {
+            let undo = server.call_generated_capability("history.undo",json!({"projectId":"classic-project","expectedRevision":runtime.snapshot().unwrap().revision}).as_object().unwrap().clone(),InvocationContext::default()).await;
+            assert_ne!(undo.is_error, Some(true));
+            assert_eq!(
+                runtime
+                    .snapshot()
+                    .unwrap()
+                    .project
+                    .unwrap()
+                    .classic
+                    .unwrap(),
+                expected
+            );
+        }
+    }
+
+    #[tokio::test]
     async fn classic_adoption_is_project_creation_not_activation() {
         let classic: Value = serde_json::from_str(include_str!(
             "../../editor-api/tests/fixtures/classic-project.json"
@@ -1541,7 +1670,17 @@ mod tests {
                 .await;
             assert_ne!(first.is_error, Some(true), "{capability}: {first:?}");
             assert_eq!(
-                serde_json::to_value(runtime.snapshot().unwrap().project.unwrap().classic.unwrap().document).unwrap(),
+                serde_json::to_value(
+                    runtime
+                        .snapshot()
+                        .unwrap()
+                        .project
+                        .unwrap()
+                        .classic
+                        .unwrap()
+                        .document
+                )
+                .unwrap(),
                 classic["document"]
             );
             let retry = server

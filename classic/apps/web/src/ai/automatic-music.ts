@@ -194,12 +194,12 @@ export async function runAutomaticMusic({
 			throw new Error(
 				"Music catalog and timeline exceed the AI request limit; nothing changed",
 			);
-		const response = await aiClientFetch("/api/ai/chat", {
+		const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body,
 			signal,
-		});
+		} });
 		const data = responseSchema.parse(await response.json());
 		if (!response.ok || !data.response)
 			throw new Error(data.error ?? "Automatic Music request failed");

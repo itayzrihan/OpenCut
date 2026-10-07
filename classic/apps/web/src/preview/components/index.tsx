@@ -284,7 +284,7 @@ function PreviewCanvas({
 		let disposed = false;
 		let outputCanvas: HTMLCanvasElement | null = null;
 		void renderer
-			.getOutputCanvas()
+			.getPresentationCanvas()
 			.then((canvas) => {
 				if (disposed) return;
 				outputCanvas = canvas;

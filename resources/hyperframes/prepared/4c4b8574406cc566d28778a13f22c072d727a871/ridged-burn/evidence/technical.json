@@ -1,0 +1,43 @@
+{
+  "id": "ridged-burn",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "48c60b5728c15b16cc07d077c8468aa2875408e613cc0d5d138330b9410b3077",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "ridged-burn.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "7c9e12fac22b7755486603caeb522f3fabba8d5792ece1dcd250d90d998c2b3b",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "63ffd3d35d60d6a63c8a1b74671af63660b0017eaff401b2b481732a9f48f06f",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "b60493ec9dc410ed7d8b737fc0dd2db34d81ba40ddccc691c24a7182efcfd00a",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "63ffd3d35d60d6a63c8a1b74671af63660b0017eaff401b2b481732a9f48f06f",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

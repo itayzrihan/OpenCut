@@ -1,0 +1,42 @@
+{
+  "id": "transitions-blur",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "9d0f186c1dbd054032d5da336ccee80d8cbff451415217b87ca107f02d9ddedd",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "transitions-blur.html",
+  "durationSeconds": 20,
+  "frames": [
+    {
+      "timeSeconds": 3,
+      "sha256": "f30fbc8668ff451c91143cf1d8cca81e41dc9593785beb3fad40085eb702427c",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 10,
+      "sha256": "e8fdef7c9b32eccaf44c66c799bbba6788d806834f7a73762d7ead90c917e02a",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 17,
+      "sha256": "ad549b8f9d83e596c963f87645a69b4b4c8191629b266bf1c8cada3fbd805c67",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 10,
+      "sha256": "e8fdef7c9b32eccaf44c66c799bbba6788d806834f7a73762d7ead90c917e02a",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

@@ -13,6 +13,7 @@ import {
 import { HyperframesRenderHost } from "../render-host";
 import { compileHyperframesLayerMove } from "../layer-move-compiler";
 import { parseHTML } from "./layer-move-fixture";
+import type { TimelineElement } from "@/timeline/types";
 import type { HyperframesLayerEdits, HyperframesSource } from "../types";
 
 test.skipIf(
@@ -113,7 +114,7 @@ test.skipIf(
 			const before = session.read();
 			const clip = before.document.scenes
 				.flatMap((scene) => scene.tracks.overlay)
-				.flatMap((track) => track.elements)
+				.flatMap<TimelineElement>((track) => track.elements)
 				.find((element) => element.id === imported.itemId)!;
 			const oldEdits = (
 				clip as { hyperframesLayerEdits: HyperframesLayerEdits }
@@ -147,7 +148,7 @@ test.skipIf(
 			const after = session.read();
 			const moved = after.document.scenes
 				.flatMap((scene) => scene.tracks.overlay)
-				.flatMap((track) => track.elements)
+				.flatMap<TimelineElement>((track) => track.elements)
 				.find((element) => element.id === imported.itemId)!;
 			const edits = (moved as { hyperframesLayerEdits: HyperframesLayerEdits })
 				.hyperframesLayerEdits;
@@ -274,8 +275,8 @@ test.skipIf(process.env.OPENCUT_HYPERFRAMES_BROWSER_TESTS !== "1")(
 						name: "voice.wav",
 						type: "audio",
 						duration: 6,
-						storageKind: "media",
-						fileSize: wav.length,
+						storageKind: "copied",
+						size: wav.length,
 						mimeType: "audio/wav",
 					},
 				],

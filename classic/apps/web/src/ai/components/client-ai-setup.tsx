@@ -23,11 +23,11 @@ export function ClientAiSetup() {
 	const generation = useRef(0);
 	const account = useRef<string | null>(null);
 	async function operation(action: string) {
-		const response = await aiClientFetch("/api/ai/oauth/device", {
+		const response = await aiClientFetch({ path: "/api/ai/oauth/device", init: {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ action }),
-		});
+		} });
 		const result = await response.json();
 		if (!response.ok) throw Error(result.error || "OpenAI sign-in failed");
 		return result;

@@ -10,6 +10,7 @@ import {
 	logoutAccount,
 	sessionCookie,
 	assertLocalOrigin,
+	localRequestOrigin,
 	changeAccountPassword,
 } from "./server";
 import { assertAccountMediaSource } from "./media-source";
@@ -18,21 +19,43 @@ mock.module("opencut-wasm", () => ({
 	mediaStorageDisposition: () => "copy",
 }));
 
+test("browser origin survives normalized Next URLs without accepting outside hosts", () => {
+	const request = new Request("http://localhost:3100/api/ai/oauth/start", {
+		headers: {
+			host: "127.0.0.1:3100",
+			origin: "http://127.0.0.1:3100",
+			"sec-fetch-site": "same-origin",
+		},
+	});
+	expect(localRequestOrigin(request)).toBe("http://127.0.0.1:3100");
+	expect(() => assertLocalOrigin(request)).not.toThrow();
+	for (const host of [
+		"evil.example:3100",
+		"127.0.0.1:3100@evil.example:3100",
+		"evil@127.0.0.1:3100",
+	]) {
+		expect(() =>
+			localRequestOrigin(new Request(request.url, { headers: { host } })),
+		).toThrow();
+	}
+	expect(() =>
+		assertLocalOrigin(
+			new Request(request.url, {
+				headers: { host: "127.0.0.1:3100", origin: "http://localhost:3100" },
+			}),
+		),
+	).toThrow("Cross-origin");
+});
+
 test("authenticated accounts isolate projects, preferences and asset bytes under concurrent requests", async () => {
 	const root = await mkdtemp(join(tmpdir(), "opencut-accounts-"));
 	const previous = process.env.OPENCUT_ACCOUNTS_DIR;
 	process.env.OPENCUT_ACCOUNTS_DIR = root;
 	try {
 		const store = await import("@/services/local-drive/server");
-		const alice = await registerAccount(
-			"alice",
-			"Alice",
-			"a secure password for Alice",
+		const alice = await registerAccount({ login: "alice", displayName: "Alice", password: "a secure password for Alice" }
 		);
-		const bob = await registerAccount(
-			"bob",
-			"Bob",
-			"a secure password for Bob",
+		const bob = await registerAccount({ login: "bob", displayName: "Bob", password: "a secure password for Bob" }
 		);
 		const privateMedia = join(root, "data", alice.account.id, "private.wav");
 		await mkdir(join(root, "data", alice.account.id), { recursive: true });
@@ -57,11 +80,11 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 		expect((await authenticateAccount(request(alice.token))).id).toBe(
 			alice.account.id,
 		);
-		await expect(loginAccount("alice", "wrong password")).rejects.toThrow(
+		await expect(loginAccount({ login: "alice", password: "wrong password" })).rejects.toThrow(
 			"Invalid credentials",
 		);
 		expect(
-			(await loginAccount("ALICE", "a secure password for Alice")).account.id,
+			(await loginAccount({ login: "ALICE", password: "a secure password for Alice" })).account.id,
 		).toBe(alice.account.id);
 		await Promise.all(
 			[alice, bob].map(({ account }) =>
@@ -99,13 +122,11 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 			bob.account.id,
 		);
 		const changed = await accountScope.run(bob.account, () =>
-			changeAccountPassword(
-				"a secure password for Bob",
-				"a new secure password for Bob",
+			changeAccountPassword({ currentPassword: "a secure password for Bob", password: "a new secure password for Bob" }
 			),
 		);
 		await expect(
-			loginAccount("bob", "a secure password for Bob"),
+			loginAccount({ login: "bob", password: "a secure password for Bob" }),
 		).rejects.toThrow("Invalid credentials");
 		await expect(authenticateAccount(request(bob.token))).rejects.toThrow();
 		expect((await authenticateAccount(request(changed.token))).id).toBe(

@@ -1,10 +1,14 @@
 // IndexedDB uses structured clone, whose binary values JSON.stringify discards.
 // Read-back verification must compare the bytes as well as the surrounding data.
-export async function sameBrowserRecord(
-	left: unknown,
-	right: unknown,
+export async function sameBrowserRecord({
+	left,
+	right,
 	seen = new Map<object, object>(),
-): Promise<boolean> {
+}: {
+	left: unknown;
+	right: unknown;
+	seen?: Map<object, object>;
+}): Promise<boolean> {
 	if (Object.is(left, right)) return true;
 	if (!left || !right || typeof left !== "object" || typeof right !== "object")
 		return false;
@@ -33,7 +37,11 @@ export async function sameBrowserRecord(
 	if (left instanceof RegExp && right instanceof RegExp)
 		return left.source === right.source && left.flags === right.flags;
 	if (left instanceof ArrayBuffer && right instanceof ArrayBuffer)
-		return sameBrowserRecord(new Uint8Array(left), new Uint8Array(right), seen);
+		return sameBrowserRecord({
+			left: new Uint8Array(left),
+			right: new Uint8Array(right),
+			seen: seen,
+		});
 	if (ArrayBuffer.isView(left) && ArrayBuffer.isView(right)) {
 		if (left.byteLength !== right.byteLength) return false;
 		const a = new Uint8Array(left.buffer, left.byteOffset, left.byteLength),
@@ -42,11 +50,13 @@ export async function sameBrowserRecord(
 	}
 	if (left instanceof Map && right instanceof Map)
 		return (
-			left.size === right.size && sameBrowserRecord([...left], [...right], seen)
+			left.size === right.size &&
+			sameBrowserRecord({ left: [...left], right: [...right], seen: seen })
 		);
 	if (left instanceof Set && right instanceof Set)
 		return (
-			left.size === right.size && sameBrowserRecord([...left], [...right], seen)
+			left.size === right.size &&
+			sameBrowserRecord({ left: [...left], right: [...right], seen: seen })
 		);
 	if (
 		Array.isArray(left) &&
@@ -60,11 +70,11 @@ export async function sameBrowserRecord(
 	for (const key of keys) {
 		if (
 			!Object.hasOwn(right, key) ||
-			!(await sameBrowserRecord(
-				(left as Record<string, unknown>)[key],
-				(right as Record<string, unknown>)[key],
-				seen,
-			))
+			!(await sameBrowserRecord({
+				left: (left as Record<string, unknown>)[key],
+				right: (right as Record<string, unknown>)[key],
+				seen: seen,
+			}))
 		)
 			return false;
 	}

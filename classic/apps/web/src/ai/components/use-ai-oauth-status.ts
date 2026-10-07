@@ -25,7 +25,7 @@ export function useAiOAuthStatus() {
 	const refresh = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await aiClientFetch("/api/ai/oauth/status");
+			const response = await aiClientFetch({ path: "/api/ai/oauth/status" });
 			const data: unknown = await response.json();
 			const nextStatus = normalizeAiOAuthStatus(data);
 			if (nextStatus.authenticated) {
@@ -71,7 +71,7 @@ export function useAiOAuthStatus() {
 	}, []);
 
 	const logout = useCallback(async () => {
-		await aiClientFetch("/api/ai/oauth/logout", { method: "POST" });
+		await aiClientFetch({ path: "/api/ai/oauth/logout", init: { method: "POST" } });
 		await refresh();
 	}, [refresh]);
 

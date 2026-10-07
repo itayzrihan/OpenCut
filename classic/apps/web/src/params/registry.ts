@@ -53,6 +53,9 @@ export function buildDefaultParamValues(
 
 export class DefinitionRegistry<TKey extends string, TDefinition> {
 	private definitions = new Map<TKey, TDefinition>();
+	private definitionListeners = new Set<
+		(entries: Array<[TKey, TDefinition]>) => void
+	>();
 	private entityName: string;
 
 	constructor(entityName: string) {
@@ -60,7 +63,37 @@ export class DefinitionRegistry<TKey extends string, TDefinition> {
 	}
 
 	register({ key, definition }: { key: TKey; definition: TDefinition }): void {
+		const previous = this.entries();
+		const next = new Map(this.definitions);
+		next.set(key, definition);
+		try {
+			for (const listener of this.definitionListeners)
+				listener(Array.from(next));
+		} catch (error) {
+			for (const listener of this.definitionListeners) {
+				try {
+					listener(previous);
+				} catch {
+					/* rejecting host retains its prior catalog */
+				}
+			}
+			throw error;
+		}
 		this.definitions.set(key, definition);
+	}
+
+	entries(): Array<[TKey, TDefinition]> {
+		return Array.from(this.definitions);
+	}
+
+	/** Notify hosts before publishing; failed validation keeps the registry intact. */
+	subscribeDefinitions(
+		listener: (entries: Array<[TKey, TDefinition]>) => void,
+	): () => void {
+		this.definitionListeners.add(listener);
+		return () => {
+			this.definitionListeners.delete(listener);
+		};
 	}
 
 	has(key: TKey): boolean {

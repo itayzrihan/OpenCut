@@ -1,0 +1,42 @@
+{
+  "id": "hw-scribble-transition",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "2d909acdebc20784ce6046115416d283bdf5375fb91853c49f0a130f6f923b4c",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "hw-scribble-transition.html",
+  "durationSeconds": 2.2,
+  "frames": [
+    {
+      "timeSeconds": 0.33,
+      "sha256": "f429e8c40af113781b9a1ab7ac1da63a491c5e366dacf35243a2a00c2b1007a4",
+      "file": "frame-0.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 1.1,
+      "sha256": "8325078aaba95c3d0db7b1ede740fe46150f46e6de13a156c882b2e47b4dcecf",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.87,
+      "sha256": "670fcc41f86f30a7a8c99e068efc48222fd92f91e47466feeed1f6aa276c9ab6",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 1.1,
+      "sha256": "8325078aaba95c3d0db7b1ede740fe46150f46e6de13a156c882b2e47b4dcecf",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

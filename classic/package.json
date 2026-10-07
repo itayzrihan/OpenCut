@@ -3,11 +3,12 @@
   "packageManager": "bun@1.2.18",
   "workspaces": [
     "apps/*",
+    "apps/electron/app",
     "packages/*"
   ],
   "scripts": {
     "build:tools": "turbo run build --filter=@opencut/tools",
-    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
+    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg --no-pack && wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg --no-pack && node scripts/write-wasm-manifests.mjs && node scripts/verify-wasm-exports.mjs",
     "build:web": "turbo run build --filter=@opencut/web",
     "build:browser": "turbo run build --filter=@opencut/web",
     "start:mcp": "node scripts/mcp-bridge-runner.mjs",
@@ -22,6 +23,10 @@
     "generate:fonts": "npx tsx apps/web/scripts/generate-font-sprites.ts",
     "lint:web": "eslint apps/web/src --ext .ts,.tsx",
     "lint:web:fix": "eslint apps/web/src --ext .ts,.tsx --fix",
+    "architecture:check": "node scripts/editor-architecture/check.mjs",
+    "architecture:coverage": "node scripts/editor-architecture/feature-coverage.mjs",
+    "architecture:inventory": "node scripts/editor-architecture/check.mjs --with-runtime",
+    "architecture:test": "node --test scripts/editor-architecture/inventory.test.mjs",
     "preview:web": "turbo run preview --filter=@opencut/web",
     "publish:wasm": "bun run build:wasm && npm publish rust/wasm/pkg --access public",
     "skills:check": "bun run --cwd apps/web skills:check",

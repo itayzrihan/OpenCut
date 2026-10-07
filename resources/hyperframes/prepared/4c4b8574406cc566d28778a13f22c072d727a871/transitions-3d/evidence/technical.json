@@ -1,0 +1,42 @@
+{
+  "id": "transitions-3d",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "cd7acef30287fd789551ab2fac2c689082a6da94d002820d1f46a8f58ce0ada9",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "transitions-3d.html",
+  "durationSeconds": 11,
+  "frames": [
+    {
+      "timeSeconds": 1.65,
+      "sha256": "4d33a9227eba98195c6cc6b242a595d159d28f75b91568dd697b365713fb023c",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5.5,
+      "sha256": "7323035b9bb24b8706c3f51d5b9c4701d97fa4c8ca152704ac536f0f29e3174f",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 9.35,
+      "sha256": "5fb5cd9dbe742f9ce96ec07b817945208820abd2404e24f35bb2a448fd2022e1",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5.5,
+      "sha256": "7323035b9bb24b8706c3f51d5b9c4701d97fa4c8ca152704ac536f0f29e3174f",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

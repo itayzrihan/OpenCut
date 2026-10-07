@@ -7,11 +7,7 @@ import type {
 } from "@/animation/types";
 import type { ParamValue } from "@/params";
 import type { Command } from "@/commands/base-command";
-import type {
-	CreateTimelineElement,
-	ElementRef,
-	TrackType,
-} from "@/timeline";
+import type { CreateTimelineElement, ElementRef, TrackType } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 
 export interface ElementClipboardItem {
@@ -35,6 +31,7 @@ export interface KeyframeClipboardItem {
 
 export interface ElementsClipboardEntry {
 	type: "elements";
+	sourceProjectId?: string;
 	items: ElementClipboardItem[];
 }
 
@@ -72,7 +69,7 @@ export interface ClipboardHandler<TType extends ClipboardEntryType> {
 	paste(args: {
 		entry: ClipboardEntryByType[TType];
 		context: PasteContext;
-	}): Command | null;
+	}): Command | { executeCanonical: () => boolean } | null;
 }
 
 export type ClipboardHandlerMap = {

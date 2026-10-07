@@ -3,7 +3,7 @@ import { extname, isAbsolute, relative, resolve, join } from "node:path";
 import { homedir } from "node:os";
 import { accountDataRoot, accountsRoot, canImportLegacy } from "./server";
 
-function within(root: string, path: string) {
+function within({ root, path }: { root: string; path: string }) {
 	const rel = relative(root, path);
 	return !rel || (!rel.startsWith("..") && !isAbsolute(rel));
 }
@@ -23,7 +23,10 @@ export async function assertAccountMediaSource(source: string) {
 		throw new Error("Only supported media files can be registered");
 	const privateRoot = await canonical(accountsRoot()),
 		ownRoot = await canonical(accountDataRoot());
-	if (within(privateRoot, path) && !within(ownRoot, path))
+	if (
+		within({ root: privateRoot, path: path }) &&
+		!within({ root: ownRoot, path: path })
+	)
 		throw new Error(
 			"This media belongs to another account or to private host storage",
 		);
@@ -35,7 +38,10 @@ export async function assertAccountMediaSource(source: string) {
 			join(process.cwd(), "../../../.local/legacy-public"),
 	];
 	for (const root of legacyRoots)
-		if (within(await canonical(root), path) && !(await canImportLegacy()))
+		if (
+			within({ root: await canonical(root), path: path }) &&
+			!(await canImportLegacy())
+		)
 			throw new Error("The legacy media belongs to the installation owner");
 	return path;
 }

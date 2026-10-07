@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { wasm } from "../../../test-support/wasm";
 import { afterAll, beforeAll, beforeEach, expect, mock, test } from "bun:test";
 import type {
@@ -440,9 +441,9 @@ test("keeps selected video fragments targeted across multiple silence cuts", () 
 			duration,
 		})),
 	).toEqual([
-		{ startTime: 0, duration: 20 },
-		{ startTime: 20, duration: 30 },
-		{ startTime: 50, duration: 30 },
+		{ startTime: mediaTime({ ticks: 0 }), duration: mediaTime({ ticks: 20 }) },
+		{ startTime: mediaTime({ ticks: 20 }), duration: mediaTime({ ticks: 30 }) },
+		{ startTime: mediaTime({ ticks: 50 }), duration: mediaTime({ ticks: 30 }) },
 	]);
 });
 

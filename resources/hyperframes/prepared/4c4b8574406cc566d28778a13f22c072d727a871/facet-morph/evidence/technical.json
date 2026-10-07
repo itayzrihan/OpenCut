@@ -1,0 +1,42 @@
+{
+  "id": "facet-morph",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "757ae83051896e1a7ff57347c8e26e823e3af2bba4ca89e7103db969072404a0",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "5f0a7bb4c106121e07fef243a870ef00b22d7886d16f1321f68abc7ddb01e91a",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "8f4dc3726f628fd483536cdd8df092d7edbdbd3041849e7a9118e2b7de19d0e6",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "fc4974b4c2a32428de041cc9fdddf3ae899fbdf5fed5b7a7057acf874a0a6ba6",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "8f4dc3726f628fd483536cdd8df092d7edbdbd3041849e7a9118e2b7de19d0e6",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

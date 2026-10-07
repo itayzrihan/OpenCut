@@ -43,10 +43,15 @@ test("real WASM session groups host edits, restores context and reopens compact 
 		hostContext: {
 			previousSelection: { selectedElements: [] },
 			callbackId: "command",
+			optionalMetadata: { absent: undefined, cleared: null },
 		},
 	});
 	expect(session.read()).toEqual(changed);
-	expect(session.undo().hostContext.callbackId).toBe("command");
+	expect(session.undo().hostContext).toEqual({
+		previousSelection: { selectedElements: [] },
+		callbackId: "command",
+		optionalMetadata: { cleared: null },
+	});
 	expect(session.read()).toEqual(refresh);
 	expect(session.status().canUndo).toBe(false);
 	const saved = session.archive();

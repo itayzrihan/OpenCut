@@ -62,17 +62,11 @@ export async function expectMigratedBundleAudio(assetIds: string[]) {
 		await writeFile(join(libraryRoot, "manifest.json"), original);
 		for (const [id, content] of bytes)
 			await writeFile(join(libraryRoot, "audio", "sfx", `${id}.mp3`), content);
-		const owner = await registerAccount(
-			"owner",
-			"Owner",
-			"bundle test owner password",
+		const owner = await registerAccount({ login: "owner", displayName: "Owner", password: "bundle test owner password" }
 		);
-		const other = await registerAccount(
-			"other",
-			"Other",
-			"bundle test other password",
+		const other = await registerAccount({ login: "other", displayName: "Other", password: "bundle test other password" }
 		);
-		await accountScope.run(owner.account, () => importLegacyAccount());
+		await accountScope.run(owner.account, () => importLegacyAccount({  }));
 		const request = (url: string, token?: string) =>
 			new Request(`http://localhost:3000${url}`, {
 				headers: token ? { cookie: sessionCookie(token) } : {},

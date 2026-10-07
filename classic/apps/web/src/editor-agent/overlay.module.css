@@ -1,0 +1,478 @@
+.workspace {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	min-width: 0;
+}
+.editor {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+}
+.panel {
+	display: flex;
+	flex-direction: column;
+	color: var(--foreground);
+	background: var(--background);
+	border: 1px solid var(--border);
+	font-size: 13px;
+	overflow: hidden;
+}
+.panel[hidden] {
+	display: none;
+}
+.floating {
+	position: fixed;
+	z-index: 60;
+	right: 26px;
+	bottom: 32px;
+	width: 410px;
+	height: 610px;
+	max-width: calc(100vw - 16px);
+	max-height: calc(100dvh - 90px);
+	min-width: min(320px, calc(100vw - 16px));
+	min-height: 320px;
+	border-radius: 16px;
+	box-shadow:
+		0 16px 65px #0005,
+		0 2px 8px #0002;
+	resize: both;
+}
+.docked {
+	position: relative;
+	flex: 0 0 380px;
+	max-width: 44vw;
+	min-width: 300px;
+	margin: 0 12px 12px 0;
+	border-radius: 12px;
+}
+.header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 48px;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--border);
+	user-select: none;
+	touch-action: none;
+}
+.floating .header {
+	cursor: grab;
+}
+.header strong {
+	font-weight: 550;
+	font-size: 13px;
+	flex: 1;
+}
+.badge {
+	color: var(--muted-foreground);
+	font-size: 10px;
+	border: 1px solid var(--border);
+	border-radius: 5px;
+	padding: 1px 4px;
+}
+.connection {
+	padding: 7px 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-bottom: 1px solid var(--border);
+	font-size: 11px;
+	color: var(--muted-foreground);
+}
+.connection > span {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.messages {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	padding: 16px;
+}
+.messages[hidden],
+.composer[hidden] {
+	display: none;
+}
+.knowledge {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.knowledge label {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	font-size: 11px;
+	color: var(--muted-foreground);
+}
+.knowledge input,
+.knowledge select {
+	min-width: 0;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 7px;
+	background: var(--background);
+	color: var(--foreground);
+}
+.knowledgeBody {
+	min-height: 160px;
+	font-size: 12px;
+}
+.knowledgeToolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	font-size: 11px;
+}
+.knowledgeToolbar input,
+.knowledgeToolbar strong {
+	flex: 1;
+}
+.knowledgeHint {
+	color: var(--muted-foreground);
+	font-size: 11px;
+	line-height: 1.6;
+}
+.knowledgeItem {
+	border-bottom: 1px solid var(--border);
+	padding: 10px 0;
+}
+.knowledgeItem > button {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	text-align: start;
+	width: 100%;
+	cursor: pointer;
+}
+.knowledgeItem span {
+	font-size: 10px;
+	color: var(--muted-foreground);
+}
+.knowledgeItem p {
+	font-size: 11px;
+	line-height: 1.6;
+	color: var(--muted-foreground);
+}
+.empty {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 28px 6px;
+	color: var(--muted-foreground);
+}
+.empty h2 {
+	font-size: 18px;
+	color: var(--foreground);
+	font-weight: 550;
+	letter-spacing: -0.35px;
+}
+.empty p {
+	line-height: 1.7;
+}
+.user {
+	padding: 10px 13px;
+	background: var(--accent);
+	border-radius: 13px 13px 3px 13px;
+	margin: 0 0 18px 25px;
+}
+.assistant {
+	margin: 0 0 16px;
+	position: relative;
+	padding-inline-start: 28px;
+}
+.avatar {
+	position: absolute;
+	inset-inline-start: 0;
+	top: 3px;
+	display: grid;
+	place-items: center;
+	width: 21px;
+	height: 21px;
+	border-radius: 7px;
+	color: #18131e;
+	background: linear-gradient(135deg, #c2ef87, #8a72fb);
+}
+.messageActions {
+	display: flex;
+	gap: 4px;
+	padding: 4px 0;
+	opacity: 0;
+	transition: opacity 0.12s;
+}
+.user .messageActions {
+	justify-content: flex-end;
+}
+.user:hover .messageActions,
+.assistant:hover .messageActions,
+.user:focus-within .messageActions,
+.assistant:focus-within .messageActions {
+	opacity: 1;
+}
+.messageActions button {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+}
+.followLatest {
+	flex: 0 0 auto;
+	align-self: center;
+	margin: -10px 0 8px;
+	z-index: 1;
+}
+.assistant:empty {
+	display: none;
+}
+.markdown {
+	line-height: 1.7;
+	overflow-wrap: anywhere;
+}
+.markdown p + p {
+	margin-top: 9px;
+}
+.markdown ul,
+.markdown ol {
+	padding-inline-start: 20px;
+	margin-block: 8px;
+}
+.markdown ul {
+	list-style-type: disc;
+}
+.markdown ol {
+	list-style-type: decimal;
+}
+.markdown pre {
+	max-height: 260px;
+	overflow: auto;
+	border-radius: 7px;
+	padding: 9px;
+	background: var(--accent);
+	font-size: 11px;
+	white-space: pre-wrap;
+}
+.markdown a {
+	text-decoration: underline;
+}
+.assistant > p,
+.user > p {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	line-height: 1.7;
+}
+.activity {
+	color: var(--muted-foreground);
+	font-size: 11px;
+	margin-bottom: 10px;
+}
+.activity > summary,
+.action > summary {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	padding: 5px 0;
+	cursor: pointer;
+}
+.activity summary::marker {
+	font-size: 9px;
+}
+.summary {
+	white-space: pre-wrap;
+	line-height: 1.65;
+	padding: 8px 0 8px 13px;
+	border-left: 1px solid var(--border);
+}
+.action {
+	margin: 3px 0 3px 9px;
+	padding-left: 9px;
+	border-left: 1px solid var(--border);
+}
+.action > summary > span:nth-of-type(1) {
+	flex: 1;
+	overflow-wrap: anywhere;
+}
+.action[data-status="failed"] > summary {
+	color: #cf6f7e;
+}
+.action[data-status="running"] > summary {
+	color: var(--foreground);
+}
+.duration {
+	font-variant-numeric: tabular-nums;
+	font-size: 10px;
+	color: var(--muted-foreground);
+}
+.action > details {
+	margin-left: 12px;
+	padding: 3px 0;
+}
+.action pre {
+	max-height: 220px;
+	overflow: auto;
+	font: 10px/1.6 monospace;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	padding: 8px;
+	background: var(--accent);
+	border-radius: 7px;
+}
+.frames {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 6px;
+	margin-top: 10px;
+}
+.frames img {
+	width: 100%;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+}
+.issues {
+	margin: 10px 0;
+	padding-left: 18px;
+	color: #cf6f7e;
+	font-size: 12px;
+}
+.plan {
+	border-top: 1px solid var(--border);
+	padding-top: 10px;
+	color: var(--muted-foreground);
+	font-size: 11px;
+}
+.plan li {
+	display: flex;
+	gap: 8px;
+	align-items: baseline;
+	margin-top: 8px;
+}
+.plan li[data-status="inProgress"] {
+	color: var(--foreground);
+}
+.plan li[data-status="complete"] {
+	opacity: 0.65;
+}
+.composer {
+	position: relative;
+	flex: 0 0 auto;
+	margin: 0 10px 8px;
+	padding: 9px;
+	border: 1px solid var(--border);
+	border-radius: 13px;
+}
+.composer:focus-within {
+	border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+}
+.dropActive {
+	border-color: var(--primary);
+}
+.dropHint {
+	position: absolute;
+	inset: 4px;
+	display: grid;
+	place-items: center;
+	border-radius: 10px;
+	background: var(--background);
+	pointer-events: none;
+	z-index: 1;
+}
+.attachments {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 8px;
+}
+.attachments button {
+	max-width: 100%;
+	height: 30px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+}
+.attachments span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.composer textarea {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	padding: 3px;
+	min-height: 66px;
+	max-height: 160px;
+}
+.controls {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	margin-top: 9px;
+}
+.controls select {
+	min-width: 0;
+	width: 100%;
+	flex: 1;
+	font-size: 11px;
+	background: var(--background);
+	color: var(--muted-foreground);
+	border-radius: 5px;
+	padding: 5px 0;
+}
+.footer {
+	display: flex;
+	justify-content: space-between;
+	padding-top: 9px;
+	font-size: 9px;
+	color: var(--muted-foreground);
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.footer kbd {
+	border: 1px solid var(--border);
+	border-radius: 3px;
+	padding: 1px 3px;
+}
+@media (hover: none) {
+	.messageActions {
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.messageActions {
+		transition: none;
+	}
+}
+.error {
+	display: flex;
+	gap: 6px;
+	align-items: flex-start;
+	margin: 0 12px 10px;
+	font-size: 11px;
+	color: #d47b85;
+	overflow-wrap: anywhere;
+}
+.error > span {
+	flex: 1;
+}
+.launcher {
+	position: fixed;
+	right: 24px;
+	bottom: 26px;
+	z-index: 60;
+	box-shadow: 0 5px 20px #0003;
+	border-radius: 30px;
+}
+@media (max-height: 480px) {
+	.floating {
+		min-height: 250px;
+		max-height: calc(100dvh - 16px);
+	}
+}

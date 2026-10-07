@@ -14,6 +14,8 @@ mock.module("@/timeline/scenes", () => ({
 	},
 }));
 mock.module("@/services/local-drive/client", () => ({
+	captureLocalDriveWriteScope: unexpected,
+	pinLocalDriveWriteScope: unexpected,
 	localDriveRequest: async ({
 		operation,
 		payload,

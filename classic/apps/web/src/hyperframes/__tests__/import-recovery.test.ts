@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Host API doubles isolate file selection and browser lock behavior. */
 /* eslint-disable opencut/prefer-object-params -- Doubles preserve canonical runtime and Web Locks API signatures. */
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 import type { HyperframesImportRecovery } from "../import-recovery-types";
@@ -61,6 +60,14 @@ function fixture() {
 	};
 	const selected = {
 		name: "Folder",
+		plan: {
+			entryFile: "index.html",
+			entryCandidates: ["index.html"],
+			files: [],
+			ignoredPaths: [],
+			sourceBytes: source.length,
+			resourceBytes: 3,
+		},
 		files: new Map([
 			["index.html", new File([source], "index.html")],
 			[

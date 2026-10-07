@@ -21,6 +21,7 @@ const {
 } = require("./runtime.cjs");
 
 let mainWindow = null;
+let mainAppUrl = null;
 let webServer = null;
 let isQuitting = false;
 const serverOutput = [];
@@ -140,6 +141,7 @@ ipcMain.handle("opencut:can-go-back", async (event) => {
 });
 
 function createWindow(appUrl) {
+	mainAppUrl = appUrl;
 	const window = new BrowserWindow({
 		width: 1440,
 		height: 900,
@@ -223,6 +225,28 @@ function createWindow(appUrl) {
 	void window.loadURL(appUrl);
 	mainWindow = window;
 }
+
+ipcMain.handle("opencut:editor-screenshot", async (event, request) => {
+	const { captureOwnedEditor, authorizeEditorScreenshot } = require("./editor-screenshot.cjs");
+	try {
+		authorizeEditorScreenshot(event, mainWindow, mainAppUrl);
+		return await captureOwnedEditor(event.sender, { appOrigin: new URL(mainAppUrl).origin, request });
+	} catch {
+		// CDP/Playwright errors can contain connection headers or page data.
+		throw new Error("The editor screenshot is unavailable. Keep the same account and project open and close DevTools before retrying.");
+	}
+});
+
+ipcMain.handle("opencut:editor-ui-control", async (event, request) => {
+	const { authorizeEditorScreenshot } = require("./editor-screenshot.cjs");
+	const { controlOwnedEditor } = require("./editor-ui-control.cjs");
+	try {
+		authorizeEditorScreenshot(event, mainWindow, mainAppUrl);
+		await controlOwnedEditor(event.sender, { appOrigin: new URL(mainAppUrl).origin, request });
+	} catch {
+		throw new Error("The owned editor UI gesture failed or its scope changed. Inspect the interface again before retrying.");
+	}
+});
 
 async function boot() {
 	const appUrl = app.isPackaged

@@ -63,54 +63,7 @@ export function createAudioContext({
 	return new AudioContextConstructor(sampleRate ? { sampleRate } : undefined);
 }
 
-export interface DecodedAudio {
-	samples: Float32Array;
-	sampleRate: number;
-}
-
-export async function decodeAudioToFloat32({
-	audioBlob,
-	url,
-}: {
-	audioBlob?: Blob;
-	url?: string;
-	sampleRate?: number;
-}): Promise<DecodedAudio> {
-	const input = new Input({
-		source: createMediaSource({ file: audioBlob, url }),
-		formats: ALL_FORMATS,
-	});
-	try {
-		const track = await input.getPrimaryAudioTrack();
-		if (!track) throw new Error("Media does not contain an audio track");
-		const sink = new AudioBufferSink(track);
-		const chunks: Float32Array[] = [];
-		let totalLength = 0;
-		let nativeSampleRate = 0;
-		for await (const { buffer } of sink.buffers(0)) {
-			nativeSampleRate = buffer.sampleRate;
-			const mono = new Float32Array(buffer.length);
-			for (let i = 0; i < buffer.length; i++) {
-				let sum = 0;
-				for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-					sum += buffer.getChannelData(channel)[i];
-				}
-				mono[i] = sum / Math.max(1, buffer.numberOfChannels);
-			}
-			chunks.push(mono);
-			totalLength += mono.length;
-		}
-		const samples = new Float32Array(totalLength);
-		let offset = 0;
-		for (const chunk of chunks) {
-			samples.set(chunk, offset);
-			offset += chunk.length;
-		}
-		return { samples, sampleRate: nativeSampleRate };
-	} finally {
-		input.dispose();
-	}
-}
+export { decodeAudioToFloat32, type DecodedAudio } from "./decode-audio";
 
 export interface AudibleElementCandidate {
 	element: AudioElement | VideoElement;

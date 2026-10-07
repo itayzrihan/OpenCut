@@ -27,11 +27,9 @@ export const GET = withAccount(async (request: Request) => {
 			return Response.json({ job: await storageJob() });
 		const connection = await readStorageConnection(policy);
 		const profile = await readStorageProfile();
-		const device = await localStorageDevice(
-			profile.deviceId,
-			profile.account.storage.devices.find(
+		const device = await localStorageDevice({ existingId: profile.deviceId, name: profile.account.storage.devices.find(
 				(entry) => entry.id === profile.deviceId,
-			)?.name,
+			)?.name }
 		);
 		return Response.json({
 			profile,
@@ -55,7 +53,7 @@ export const GET = withAccount(async (request: Request) => {
 export const POST = withAccount(async (request: Request) => {
 	try {
 		const body = JSON.parse(
-			new TextDecoder().decode(await readBoundedBody(request, 8192)),
+			new TextDecoder().decode(await readBoundedBody({ request: request, maximumBytes: 8192 })),
 		);
 		if (body.action === "cancel") {
 			cancelStorageJob();
@@ -68,7 +66,7 @@ export const POST = withAccount(async (request: Request) => {
 			)
 				return Response.json({ started: false });
 			return Response.json(
-				{ started: true, job: await startStorageJob("publish", policy) },
+				{ started: true, job: await startStorageJob({ action: "publish", policy: policy }) },
 				{ status: 202 },
 			);
 		}
@@ -81,27 +79,18 @@ export const POST = withAccount(async (request: Request) => {
 			(body.folder === null || typeof body.folder === "string")
 		)
 			return Response.json({
-				profile: await configureStorageFolder(
-					body.folder,
-					policy,
-					body.automaticSnapshots === true,
-					{ mode: body.mode, deviceName: body.deviceName },
+				profile: await configureStorageFolder({ folder: body.folder, policy: policy, automaticSnapshots: body.automaticSnapshots === true, options: { mode: body.mode, deviceName: body.deviceName } }
 				),
 			});
 		if (body.action === "publish")
 			return Response.json(
-				{ job: await startStorageJob("publish", policy) },
+				{ job: await startStorageJob({ action: "publish", policy: policy }) },
 				{ status: 202 },
 			);
 		if (body.action === "restore" && typeof body.snapshotId === "string")
 			return Response.json(
 				{
-					job: await startStorageJob(
-						"restore",
-						policy,
-						body.snapshotId,
-						body.preserveExisting === true,
-						body.metadataOnly === true,
+					job: await startStorageJob({ action: "restore", policy: policy, snapshotId: body.snapshotId, preserveExisting: body.preserveExisting === true, metadataOnly: body.metadataOnly === true }
 					),
 				},
 				{ status: 202 },

@@ -206,3 +206,68 @@ test("native overlay preparation precedes an uninterrupted transparent copy and 
 		"render",
 	]);
 });
+
+test("background review renders cannot replace or resize the mounted preview, including failed captures", async () => {
+	const { CanvasRenderer } = await import("../canvas-renderer");
+	const originalDocument = globalThis.document;
+	let copies = 0;
+	const ctx = {
+		globalAlpha: 0.2,
+		globalCompositeOperation: "source-over",
+		save() {},
+		resetTransform() {},
+		restore() {},
+		drawImage(canvas: HTMLCanvasElement) {
+			expect(canvas).toBe(outputCanvas);
+			expect(this.globalAlpha).toBe(1);
+			expect(this.globalCompositeOperation).toBe("copy");
+			copies++;
+		},
+	};
+	const visible = {
+		width: 0,
+		height: 0,
+		getContext: () => ctx,
+	} as unknown as HTMLCanvasElement;
+	globalThis.document = { createElement: () => visible } as unknown as Document;
+	try {
+		const preview = new CanvasRenderer({
+			width: 640,
+			height: 360,
+			fps: { numerator: 30, denominator: 1 },
+		});
+		const review = new CanvasRenderer({
+			width: 1536,
+			height: 1024,
+			fps: { numerator: 30, denominator: 1 },
+		});
+		expect(await preview.getPresentationCanvas()).toBe(visible);
+		expect(visible).not.toBe(await review.getOutputCanvas());
+		const node = new BaseNode();
+		await preview.render({ node, time: 0 });
+		expect(copies).toBe(1);
+		expect([visible.width, visible.height]).toEqual([640, 360]);
+		await review.renderAndConsume({ node, time: 360000, consume: () => {} });
+		await expect(
+			review.renderAndConsume({
+				node,
+				time: 480000,
+				consume: () => {
+					throw new Error("Capture cancelled");
+				},
+			}),
+		).rejects.toThrow("Capture cancelled");
+		expect(copies).toBe(1);
+		expect([visible.width, visible.height]).toEqual([640, 360]);
+		await preview.renderWithOverlays({ node, overlays: [], time: 4000 });
+		expect(copies).toBe(2);
+		// Same-renderer snapshots also do not publish. The next real preview may
+		// safely render after the shared compositor was used by another consumer.
+		await preview.renderAndConsume({ node, time: 720000, consume: () => {} });
+		expect(copies).toBe(2);
+		await preview.render({ node, time: 8000 });
+		expect(copies).toBe(3);
+	} finally {
+		globalThis.document = originalDocument;
+	}
+});

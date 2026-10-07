@@ -11,8 +11,8 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 
 use crate::{
-    AccessPolicy, Capability, CapabilityDescriptor, CapabilityError, InvocationContext,
-    InvocationReceipt, PolicyDecision, runtime::now_ms,
+    AccessPolicy, Capability, CapabilityDescriptor, CapabilityError, DocumentKind,
+    InvocationContext, InvocationReceipt, PolicyDecision, runtime::now_ms,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -63,7 +63,11 @@ pub struct CapabilityRegistry {
     events: broadcast::Sender<RegistryEvent>,
     audit: Arc<RwLock<AuditState>>,
     idempotency: Arc<RwLock<IdempotencyState>>,
+    document_resolver: Arc<RwLock<Option<Arc<DocumentResolver>>>>,
 }
+
+type DocumentResolver =
+    dyn Fn(&Value, &InvocationContext) -> Result<Option<DocumentKind>, RegistryError> + Send + Sync;
 
 #[derive(Default)]
 struct AuditState {
@@ -90,6 +94,16 @@ impl Default for CapabilityRegistry {
 }
 
 impl CapabilityRegistry {
+    /// A registered orchestration capability must not own its own registry.
+    pub(crate) fn downgrade(&self) -> impl Fn() -> Option<Self> + Clone + Send + Sync + 'static {
+        let state = Arc::downgrade(&self.state);
+        let policy = self.policy.clone();
+        let events = self.events.clone();
+        let audit = self.audit.clone();
+        let idempotency = self.idempotency.clone();
+        let document_resolver = self.document_resolver.clone();
+        move || Some(Self { state: state.upgrade()?, policy: policy.clone(), events: events.clone(), audit: audit.clone(), idempotency: idempotency.clone(), document_resolver: document_resolver.clone() })
+    }
     pub fn new(policy: AccessPolicy) -> Self {
         let (events, _) = broadcast::channel(256);
         Self {
@@ -98,11 +112,48 @@ impl CapabilityRegistry {
             events,
             audit: Arc::new(RwLock::new(AuditState::default())),
             idempotency: Arc::new(RwLock::new(IdempotencyState::default())),
+            document_resolver: Arc::new(RwLock::new(None)),
         }
     }
 
     pub fn subscribe(&self) -> broadcast::Receiver<RegistryEvent> {
         self.events.subscribe()
+    }
+
+    pub(crate) fn set_document_resolver(
+        &self,
+        resolver: Arc<DocumentResolver>,
+    ) -> Result<(), RegistryError> {
+        *self
+            .document_resolver
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = Some(resolver);
+        Ok(())
+    }
+
+    fn document_kind(
+        &self,
+        input: &Value,
+        context: &InvocationContext,
+    ) -> Result<Option<DocumentKind>, RegistryError> {
+        let resolver = self
+            .document_resolver
+            .read()
+            .map_err(|_| RegistryError::LockPoisoned)?
+            .clone();
+        resolver.map_or(Ok(None), |resolve| resolve(input, context))
+    }
+
+    fn project_descriptor(descriptor: &mut CapabilityDescriptor, kind: Option<DocumentKind>) {
+        if let Some(kind) = kind
+            && !descriptor.document_support.supports(kind)
+        {
+            descriptor.available = false;
+            descriptor.unavailable_reason = Some(format!(
+                "{} does not operate on the {kind:?} document representation",
+                descriptor.id
+            ));
+        }
     }
 
     pub fn notify_resources_changed(&self, uris: Vec<String>) -> Result<(), RegistryError> {
@@ -205,14 +256,20 @@ impl CapabilityRegistry {
 
     pub fn snapshot(&self) -> Result<RegistrySnapshot, RegistryError> {
         let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
-        Ok(RegistrySnapshot {
+        let mut snapshot = RegistrySnapshot {
             revision: state.revision,
             capabilities: state
                 .entries
                 .values()
                 .map(|entry| entry.capability.descriptor().clone())
                 .collect(),
-        })
+        };
+        drop(state);
+        let kind = self.document_kind(&Value::Null, &InvocationContext::default())?;
+        for descriptor in &mut snapshot.capabilities {
+            Self::project_descriptor(descriptor, kind);
+        }
+        Ok(snapshot)
     }
 
     /// Returns only the capabilities currently permitted by the effective policy.
@@ -265,10 +322,18 @@ impl CapabilityRegistry {
 
     pub fn descriptor(&self, id: &str) -> Result<Option<CapabilityDescriptor>, RegistryError> {
         let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
-        Ok(state
+        let mut descriptor = state
             .entries
             .get(id)
-            .map(|entry| entry.capability.descriptor().clone()))
+            .map(|entry| entry.capability.descriptor().clone());
+        drop(state);
+        if let Some(descriptor) = descriptor.as_mut() {
+            Self::project_descriptor(
+                descriptor,
+                self.document_kind(&Value::Null, &InvocationContext::default())?,
+            );
+        }
+        Ok(descriptor)
     }
 
     pub async fn invoke(
@@ -277,7 +342,7 @@ impl CapabilityRegistry {
         context: InvocationContext,
         input: Value,
     ) -> Result<InvocationReceipt, RegistryError> {
-        let (capability, descriptor, revision) = {
+        let (capability, mut descriptor, revision) = {
             let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
             let entry = state
                 .entries
@@ -296,6 +361,8 @@ impl CapabilityRegistry {
                 state.revision,
             )
         };
+
+        Self::project_descriptor(&mut descriptor, self.document_kind(&input, &context)?);
 
         let policy = self
             .policy

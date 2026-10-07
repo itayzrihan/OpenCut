@@ -29,14 +29,19 @@ export function EditorProvider({
 	readOnly = false,
 }: EditorProviderProps) {
 	const activeProject = useEditorProject((e) => e.project.getActiveOrNull());
+	const replacingProject = useEditorProject((e) => e.project.getIsLoading());
+	const sessionReadOnly = useEditorProject((e) =>
+		e.project.getSessionReadOnlyReason(),
+	);
+	const [takingOwnership, setTakingOwnership] = useState(false);
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const { setLoadingProject } = useKeybindingsStore();
 
 	useEffect(() => {
-		setLoadingProject(isLoading);
-	}, [isLoading, setLoadingProject]);
+		setLoadingProject(isLoading || replacingProject || takingOwnership);
+	}, [isLoading, replacingProject, takingOwnership, setLoadingProject]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -124,7 +129,7 @@ export function EditorProvider({
 		);
 	}
 
-	if (isLoading) {
+	if (isLoading || replacingProject || takingOwnership) {
 		return (
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
@@ -148,8 +153,37 @@ export function EditorProvider({
 
 	return (
 		<>
-			{!readOnly && <EditorRuntimeBindings />}
-			{children}
+			{!readOnly && !sessionReadOnly && <EditorRuntimeBindings />}
+			{sessionReadOnly && !readOnly && (
+				<div className="fixed top-0 inset-x-0 z-100 flex items-center justify-between gap-4 border-b bg-background p-3 text-sm">
+					<span role="status">{sessionReadOnly}</span>
+					<button
+						type="button"
+						className="shrink-0 underline"
+						disabled={takingOwnership}
+						onClick={() => {
+							setTakingOwnership(true);
+							void EditorCore.getInstance()
+								.project.takeOverEditorSession()
+								.catch((err) => {
+									setError(
+										err instanceof Error
+											? err.message
+											: "Could not acquire editor ownership",
+									);
+								})
+								.finally(() => setTakingOwnership(false));
+						}}
+					>
+						{takingOwnership
+							? "Opening latest version…"
+							: "Take ownership and open latest saved version"}
+					</button>
+				</div>
+			)}
+			<div className="contents" inert={!!sessionReadOnly}>
+				{children}
+			</div>
 		</>
 	);
 }

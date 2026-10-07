@@ -347,6 +347,8 @@ export interface MaskInteractionDefinition<
 }
 
 export interface MaskDefinition<TType extends MaskType = MaskType> {
+	/** Serializable product sizing contract for canonical mask creation. */
+	defaultSizing?: "fixed" | "square" | "diagonal";
 	type: TType;
 	name: string;
 	features: MaskFeatures;

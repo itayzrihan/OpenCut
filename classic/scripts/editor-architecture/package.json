@@ -1,0 +1,12 @@
+{
+	"name": "opencut-editor-architecture-check",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "node --test inventory.test.mjs",
+		"check": "node check.mjs"
+	},
+	"dependencies": {
+		"typescript": "6.0.2"
+	}
+}

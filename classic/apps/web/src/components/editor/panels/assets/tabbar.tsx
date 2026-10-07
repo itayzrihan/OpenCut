@@ -6,7 +6,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
+import { UiSurfaceButton as Button } from "@/components/editor/ui-surface-button";
 import { cn } from "@/utils/ui";
 import {
 	TAB_KEYS,

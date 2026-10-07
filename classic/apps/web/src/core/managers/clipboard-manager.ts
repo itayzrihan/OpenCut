@@ -1,6 +1,6 @@
 import type { EditorCore } from "@/core";
 import {
-	buildPasteClipboardCommand,
+	buildPasteClipboardAction,
 	copyClipboardEntry,
 	type ClipboardEntry,
 	type CopyContext,
@@ -40,13 +40,14 @@ export class ClipboardManager {
 			return false;
 		}
 
-		const command = buildPasteClipboardCommand({
+		const command = buildPasteClipboardAction({
 			entry: this.entry,
 			context: this.getPasteContext({ time }),
 		});
 		if (!command) {
 			return false;
 		}
+		if ("executeCanonical" in command) return command.executeCanonical();
 
 		this.editor.command.execute({ command });
 		return true;

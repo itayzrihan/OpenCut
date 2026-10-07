@@ -1,6 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CanonicalButton } from "@/components/editor/canonical-button";
 import {
 	HyperframesTimelineProvider,
 	HyperframesTimelineRows,
@@ -1738,6 +1739,8 @@ const TrackLabelRow = memo(function TrackLabelRow({
 	timeline: TrackLabelTimelineActions;
 }) {
 	const { track, index } = layout;
+	const editor = useEditor();
+	const sceneId = editor.scenes.getActiveSceneOrNull()?.id;
 	const { rows: compositionRows } = useHyperframesTimelineLayers();
 	const compoundTop =
 		layout.height -
@@ -1762,32 +1765,52 @@ const TrackLabelRow = memo(function TrackLabelRow({
 					<ParallaxTrackControls track={track} timeline={timeline} />
 				)}
 				{canTrackHaveAudio(track) && (
-					<TrackToggleIcon
-						isOff={track.muted}
-						icons={{
-							on: VolumeHighIcon,
-							off: VolumeOffIcon,
-						}}
-						onClick={() =>
-							timeline.toggleTrackMute({
+					<CanonicalButton
+						variant="ghost"
+						size="icon"
+						className={cn(
+							"size-4",
+							track.muted ? "text-destructive" : "text-muted-foreground",
+						)}
+						aria-label={`${track.muted ? "Unmute" : "Mute"} ${track.name}`}
+						aria-pressed={track.muted}
+						disabled={!sceneId}
+						action={{
+							capabilityId: "timeline.classic.track.update",
+							input: {
+								sceneId,
 								trackId: track.id,
-							})
-						}
-					/>
+								change: { type: "toggleMute" },
+							},
+						}}
+					>
+						<HugeiconsIcon
+							icon={track.muted ? VolumeOffIcon : VolumeHighIcon}
+						/>
+					</CanonicalButton>
 				)}
 				{canTrackBeHidden(track) && (
-					<TrackToggleIcon
-						isOff={track.hidden}
-						icons={{
-							on: ViewIcon,
-							off: ViewOffSlashIcon,
-						}}
-						onClick={() =>
-							timeline.toggleTrackVisibility({
+					<CanonicalButton
+						variant="ghost"
+						size="icon"
+						className={cn(
+							"size-4",
+							track.hidden ? "text-destructive" : "text-muted-foreground",
+						)}
+						aria-label={`${track.hidden ? "Show" : "Hide"} ${track.name}`}
+						aria-pressed={track.hidden}
+						disabled={!sceneId}
+						action={{
+							capabilityId: "timeline.classic.track.update",
+							input: {
+								sceneId,
 								trackId: track.id,
-							})
-						}
-					/>
+								change: { type: "toggleVisibility" },
+							},
+						}}
+					>
+						<HugeiconsIcon icon={track.hidden ? ViewOffSlashIcon : ViewIcon} />
+					</CanonicalButton>
 				)}
 				<TrackToggleIcon
 					isOff={index === 0}
@@ -1848,7 +1871,10 @@ function ParallaxTrackControls({
 	timeline: TrackLabelTimelineActions;
 }) {
 	return (
-		<div className="mr-auto flex min-w-0 items-center gap-0.5" title="W = with camera, A = against camera. Tracks below inherit this speed percentage.">
+		<div
+			className="mr-auto flex min-w-0 items-center gap-0.5"
+			title="W = with camera, A = against camera. Tracks below inherit this speed percentage."
+		>
 			<button
 				type="button"
 				className="size-6 rounded border border-cyan-400/25 text-[9px] text-cyan-200"

@@ -15,7 +15,7 @@ const serve = withAccount(async (request: Request, context: { params: Promise<{ 
 	try {
 		const info = await stat(file);
 		if (!info.isFile()) return new Response(null, { status: 404 });
-		const range = readByteRange(request.headers.get("range"), info.size);
+		const range = readByteRange({ header: request.headers.get("range"), size: info.size });
 		if (range?.invalid) return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${info.size}` } });
 		const start = range?.start ?? 0, end = range?.end ?? info.size - 1;
 		const headers = new Headers({ "Content-Type": type, "Content-Length": String(Math.max(0, end - start + 1)), "Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "sandbox" });

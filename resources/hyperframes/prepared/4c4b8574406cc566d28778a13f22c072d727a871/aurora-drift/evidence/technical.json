@@ -1,0 +1,42 @@
+{
+  "id": "aurora-drift",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c64ad006594f9b3eb78a344d40c5faa64f006ce1670dff662ccad7a8062064f7",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "02ba182314f4b6b705db49074756659ff0287fc2120d217d63dbbbece4cc46d0",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "ebcea2cde76199299a1f99eeb9997063ff4e6134bf2d7501c15bb5b0187afa51",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "9b68d0def1ae5b7ac70c381cf1f3b49d0bbadfae0dacac67db3ed8bd769030df",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "ebcea2cde76199299a1f99eeb9997063ff4e6134bf2d7501c15bb5b0187afa51",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

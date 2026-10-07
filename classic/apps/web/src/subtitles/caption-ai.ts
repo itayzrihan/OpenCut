@@ -128,7 +128,7 @@ async function requestCaptionAiJson({
 	words: IndexedTranscriptWord[];
 	signal?: AbortSignal;
 }): Promise<unknown> {
-	const response = await aiClientFetch("/api/ai/chat", {
+	const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -153,7 +153,7 @@ async function requestCaptionAiJson({
 			],
 		}),
 		signal,
-	});
+	} });
 	const data: unknown = await response.json().catch(() => ({}));
 	const routeResult = z
 		.object({

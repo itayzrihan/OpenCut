@@ -1,5 +1,5 @@
 import { withAccount } from "@/accounts/server";
-import { assertBatchProjectWrite } from "@/batch/server";
+import { withProjectWriteRequest } from "@/editor-agent/server/project-write";
 /* eslint-disable opencut/prefer-object-params -- HTTP range helpers mirror protocol parameters. */
 import { NextResponse } from "next/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
@@ -107,25 +107,27 @@ async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
-		await assertBatchProjectWrite({
-			projectId: required(url.searchParams, "projectId"),
-			token: request.headers.get("X-OpenCut-Batch-Token"),
-		});
 		const body = request.body;
 		if (!body) throw new Error("Media request body is required");
 		const size = Number(required(url.searchParams, "size"));
 		if (!Number.isFinite(size) || size < 0)
 			throw new Error("Invalid media size");
-		await storeUploadedMedia({
-			projectId: required(url.searchParams, "projectId"),
-			mediaId: required(url.searchParams, "id"),
-			fileName: required(url.searchParams, "fileName"),
-			mimeType: url.searchParams.get("mimeType") || "application/octet-stream",
-			lastModified: Number(url.searchParams.get("lastModified")) || Date.now(),
-			size,
-			body,
-			allowLargeCopy: url.searchParams.get("migration") === "1",
-			uploadToken: request.headers.get("X-OpenCut-Upload") || undefined,
+		await withProjectWriteRequest({
+			request,
+			run: () =>
+				storeUploadedMedia({
+					projectId: required(url.searchParams, "projectId"),
+					mediaId: required(url.searchParams, "id"),
+					fileName: required(url.searchParams, "fileName"),
+					mimeType:
+						url.searchParams.get("mimeType") || "application/octet-stream",
+					lastModified:
+						Number(url.searchParams.get("lastModified")) || Date.now(),
+					size,
+					body,
+					allowLargeCopy: url.searchParams.get("migration") === "1",
+					uploadToken: request.headers.get("X-OpenCut-Upload") || undefined,
+				}),
 		});
 		return NextResponse.json({ ok: true });
 	} catch (error) {

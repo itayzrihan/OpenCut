@@ -38,6 +38,12 @@ pub(super) fn register_classic_operations(
         let events = events.clone();
         register::<ClassicInput, MutationOutput, _, _>(
             registry,
+            if attach {
+                DocumentSupport::Both
+            } else {
+                DocumentSupport::Classic
+            },
+            crate::CapabilityExecution::Immediate,
             id,
             title,
             if record_history {

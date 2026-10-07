@@ -181,7 +181,7 @@ async function requestPresetJson({
 	system: string;
 	prompt: string;
 }): Promise<unknown> {
-	const response = await aiClientFetch("/api/ai/chat", {
+	const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -190,7 +190,7 @@ async function requestPresetJson({
 				{ role: "user", content: prompt },
 			],
 		}),
-	});
+	} });
 	const data = await response.json().catch(() => ({}));
 	if (!response.ok) {
 		throw new Error(

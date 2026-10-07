@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, mock, spyOn, test } from "bun:test";
+import { wasm } from "../../../../test-support/wasm";
 import type { EditorCore } from "@/core";
 import { getAutoTextsTranscriptionError } from "@/subtitles/components/auto-texts-transcription";
 import { transcribeTimelineAudioBlob } from "@/transcription/server-client";
@@ -76,6 +77,7 @@ function transitionTaskForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	sampleAutomaticZoom: () => ({ scale: 1, anchorX: 0.5, anchorY: 0.5 }),
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,

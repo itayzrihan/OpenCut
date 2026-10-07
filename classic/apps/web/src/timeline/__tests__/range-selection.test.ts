@@ -18,8 +18,8 @@ describe("timeline range selection", () => {
 			endTime: t(100),
 		});
 
-		expect(range.startTime).toBe(100);
-		expect(range.endTime).toBe(900);
+		expect(range.startTime).toBe(t(100));
+		expect(range.endTime).toBe(t(900));
 		expect(range.duration).toBe(800);
 	});
 

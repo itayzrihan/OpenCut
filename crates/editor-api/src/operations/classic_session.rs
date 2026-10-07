@@ -99,6 +99,8 @@ pub(super) fn register_classic_session_operations(
     let status_state = state.clone();
     register::<ReadInput, SessionStatus, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "project.classic.session.status",
         "Read Classic history status",
         "Returns the active Classic project revision and undo/redo availability without serializing the project or source packages.",
@@ -134,6 +136,8 @@ pub(super) fn register_classic_session_operations(
     let attach_state = state.clone();
     register::<AttachInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.classic.session.attach",
         "Attach Classic session and history",
         "Atomically adopts a complete Classic document and its existing undo/redo target snapshots into an empty runtime. Stacks are ordered oldest first, next action last. Every boundary must belong to the same project. Host context carries selection or callback identifiers; it is inert JSON. Supports dry run, explicit revision and registry retry keys.",
@@ -145,11 +149,13 @@ pub(super) fn register_classic_session_operations(
         move |context, input| {
             let state = attach_state.clone();
             let events = events.clone();
-            async move { attach_session(&state, &events, context, input) }
+            async move { attach_session(&state, &events, context, input, None) }
         },
     )?;
     register::<ReadInput, SessionOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "project.classic.session.read",
         "Read Classic session and history",
         "Returns the canonical Classic document and its complete undo/redo boundaries for host persistence. Does not execute any host callbacks or expose transient media handles.",
@@ -261,6 +267,7 @@ fn attach_session(
     events: &broadcast::Sender<u64>,
     context: InvocationContext,
     input: AttachInput,
+    restored_revision: Option<u64>,
 ) -> Result<OperationSuccess<MutationOutput>, CapabilityError> {
     if context.cancellation.is_cancelled() {
         return Err(CapabilityError::Failed("operation was cancelled".into()));
@@ -298,7 +305,10 @@ fn attach_session(
     let undo = share(input.undo_stack)?;
     let redo = share(input.redo_stack)?;
     let previous_revision = template.revision;
-    document.revision = previous_revision + 1;
+    document.revision = restored_revision.unwrap_or(previous_revision + 1);
+    if document.revision <= previous_revision || document.revision >= 9_007_199_254_740_991 {
+        return Err(CapabilityError::InvalidInput("restored revision must be positive, newer than the empty runtime, and safely incrementable by browser hosts".into()));
+    }
     let revision = document.revision;
     if !context.dry_run {
         store.begin_new_active(document, false);
@@ -330,6 +340,8 @@ fn register_archive_operations(
     let archive_state = state.clone();
     register::<ArchiveInput, SessionArchive, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "project.classic.session.archive",
         "Archive Classic session",
         "Serializes Classic history with each immutable HyperFrames source stored once. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
@@ -387,6 +399,8 @@ fn register_archive_operations(
     )?;
     register::<RestoreInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.classic.session.restore",
         "Restore Classic session archive",
         "Atomically adopts a versioned compact Classic archive into an empty runtime. Validates source hashes, project identity, every undo/redo boundary and the expected revision. Supports dry run and registry retry keys.",
@@ -437,7 +451,7 @@ fn register_archive_operations(
                     undo_stack: restore(archive.undo_stack)?,
                     redo_stack: restore(archive.redo_stack)?,
                 };
-                attach_session(&state, &events, context, restored)
+                attach_session(&state, &events, context, restored, Some(archive.revision))
             }
         },
     )

@@ -58,28 +58,36 @@ export async function storageJob() {
 export function cancelStorageJob() {
 	jobs.get(requireAccount().id)?.controller.abort();
 }
-export async function startStorageJob(
-	action: "publish" | "restore",
-	policy: StoragePolicy,
-	snapshotId?: string,
+export async function startStorageJob({
+	action,
+	policy,
+	snapshotId,
 	preserveExisting = false,
 	metadataOnly = false,
-) {
+}: {
+	action: "publish" | "restore";
+	policy: StoragePolicy;
+	snapshotId?: string;
+	preserveExisting?: boolean;
+	metadataOnly?: boolean;
+}) {
 	const account = requireAccount(),
 		state: Job = { action, status: "running", files: 0, total: 0 },
 		controller = new AbortController();
-	await markAccountImport(
-		account.id,
-		true,
-		action === "publish" ? "snapshot" : "exclusive",
-	);
+	await markAccountImport({
+		id: account.id,
+		active: true,
+		mode: action === "publish" ? "snapshot" : "exclusive",
+	});
 	try {
 		await persist(state);
 	} catch (error) {
-		await markAccountImport(account.id, false);
+		await markAccountImport({ id: account.id, active: false });
 		throw error;
 	}
 	jobs.set(account.id, { state, controller });
+	// Storage snapshot callbacks report completed and total file counts positionally.
+	// eslint-disable-next-line opencut/prefer-object-params
 	const progress = (files: number, total: number) => {
 		state.files = files;
 		state.total = total;
@@ -88,21 +96,25 @@ export async function startStorageJob(
 		let status: Job["status"] = "complete";
 		try {
 			await (action === "publish"
-				? publishAccountSnapshot(policy, progress, controller.signal)
-				: restoreAccountSnapshot(
-						snapshotId!,
+				? publishAccountSnapshot({
 						policy,
 						progress,
-						controller.signal,
-						preserveExisting,
-						metadataOnly,
-					));
+						signal: controller.signal,
+					})
+				: restoreAccountSnapshot({
+						snapshotId: snapshotId!,
+						policy: policy,
+						progress: progress,
+						signal: controller.signal,
+						preserveExisting: preserveExisting,
+						metadataOnly: metadataOnly,
+					}));
 		} catch (error) {
 			status = controller.signal.aborted ? "cancelled" : "failed";
 			state.error = error instanceof Error ? error.message : String(error);
 		}
 		try {
-			await markAccountImport(account.id, false);
+			await markAccountImport({ id: account.id, active: false });
 			state.status = status;
 			await accountScope.run(account, () => persist(state));
 		} catch (error) {

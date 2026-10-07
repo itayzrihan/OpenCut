@@ -1,8 +1,7 @@
 import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { EditorCore } from "@/core";
-import { AddClipEffectCommand, BatchCommand } from "@/commands";
-import { InsertElementCommand } from "@/commands/timeline";
+import type { InsertElementParams } from "@/commands/timeline/element/insert-element";
 import { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "@/effects/definitions/editorial-edge-feather";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
 import type { SceneTracks, VideoElement } from "@/timeline";
@@ -81,19 +80,22 @@ export function findTemplateVideoTarget({
 			.flatMap((track) =>
 				track.type === "video"
 					? track.elements
-							.filter((element): element is VideoElement => element.type === "video")
+							.filter(
+								(element): element is VideoElement => element.type === "video",
+							)
 							.map((element) => ({ trackId: track.id, element }))
 					: [],
 			)
-			.sort((left, right) => right.element.duration - left.element.duration)[0] ??
-		null
+			.sort(
+				(left, right) => right.element.duration - left.element.duration,
+			)[0] ?? null
 	);
 }
 
 export function normalizeBreakoutPlacements({
 	placements,
-		rangeStartSeconds,
-		rangeEndSeconds,
+	rangeStartSeconds,
+	rangeEndSeconds,
 }: {
 	placements: BreakoutPlacement[];
 	rangeStartSeconds: number;
@@ -126,13 +128,17 @@ export function normalizeBreakoutPlacements({
 		});
 		if (normalized.length === 3) break;
 	}
-	if (normalized.length > 0) return normalized.sort((a, b) => a.startSeconds - b.startSeconds);
+	if (normalized.length > 0)
+		return normalized.sort((a, b) => a.startSeconds - b.startSeconds);
 
 	const fallbackDuration = Math.min(6, Math.max(4, end - start));
 	return [
 		{
 			startSeconds: Number(
-				Math.max(start, Math.min(end - fallbackDuration, start + (end - start) * 0.46)).toFixed(3),
+				Math.max(
+					start,
+					Math.min(end - fallbackDuration, start + (end - start) * 0.46),
+				).toFixed(3),
 			),
 			durationSeconds: Number(fallbackDuration.toFixed(3)),
 		},
@@ -170,15 +176,22 @@ export function buildTemplateAiContext({
 		instruction:
 			"Complete only the remaining 5% of a Paper Grid Editorial edit. Choose one, two, or three non-overlapping Speaker Frame Breakout placements, the proof-stage interval where captions should switch to near-black, and checklist timing when the transcript supports it. Do not change cuts, dialogue audio, fonts, or the deterministic opening.",
 		referenceGrammar: {
-			opening: "human-first 3s monochrome-to-color reveal with glowing divider and whoosh",
-			proofStage: "light paper-grid field, speaker in rounded lower frame, black captions",
-			checklist: "RTL rows יש לו כסף / קנו אותו / עשו לו; red transition on ביטלתם; stationary blur-zoom-fade exit",
-			matte: "apply and reapply the Speaker Frame Breakout matte after timing/source changes",
+			opening:
+				"human-first 3s monochrome-to-color reveal with glowing divider and whoosh",
+			proofStage:
+				"light paper-grid field, speaker in rounded lower frame, black captions",
+			checklist:
+				"RTL rows יש לו כסף / קנו אותו / עשו לו; red transition on ביטלתם; stationary blur-zoom-fade exit",
+			matte:
+				"apply and reapply the Speaker Frame Breakout matte after timing/source changes",
 		},
 		videoRange: {
 			startSeconds: Number((target.element.startTime / 120_000).toFixed(3)),
 			endSeconds: Number(
-				((target.element.startTime + target.element.duration) / 120_000).toFixed(3),
+				(
+					(target.element.startTime + target.element.duration) /
+					120_000
+				).toFixed(3),
 			),
 			totalDurationSeconds,
 		},
@@ -186,7 +199,11 @@ export function buildTemplateAiContext({
 	};
 }
 
-function findChecklistStartSeconds({ tracks }: { tracks: SceneTracks }): number | null {
+function findChecklistStartSeconds({
+	tracks,
+}: {
+	tracks: SceneTracks;
+}): number | null {
 	const spokenWords = getDisplayTracks({ tracks }).flatMap((track) => {
 		if (track.type !== "text") return [];
 		return track.elements.map((element) => ({
@@ -200,8 +217,14 @@ function findChecklistStartSeconds({ tracks }: { tracks: SceneTracks }): number 
 	if (!moneyWord || !boughtWord || !didWord) return null;
 	const firstLeadIn = [...spokenWords]
 		.reverse()
-		.find(({ text, startSeconds }) => text.includes("יש") && startSeconds <= moneyWord.startSeconds);
-	return Math.max(0, firstLeadIn?.startSeconds ?? moneyWord.startSeconds - 0.35);
+		.find(
+			({ text, startSeconds }) =>
+				text.includes("יש") && startSeconds <= moneyWord.startSeconds,
+		);
+	return Math.max(
+		0,
+		firstLeadIn?.startSeconds ?? moneyWord.startSeconds - 0.35,
+	);
 }
 
 export async function chooseTemplateAiPlan({
@@ -211,27 +234,29 @@ export async function chooseTemplateAiPlan({
 	context: ReturnType<typeof buildTemplateAiContext>;
 	signal?: AbortSignal;
 }): Promise<TemplateAiPlan> {
-	const response = await aiClientFetch("/api/ai/chat", {
+	const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
 			input: [
 				{
 					role: "system",
-						content:
-							"You are the 5% completion pass for the OpenCut Paper Grid Editorial template. Follow the paper-grid-editorial skill and the supplied Hebrew reference grammar. Return JSON only with placements (one to three intervals), optional proofStage {startSeconds,endSeconds}, and optional checklist {startSeconds,eventSeconds,endSeconds}. Use only supplied transcript/video timing. Do not invent cuts, assets, or dialogue edits.",
+					content:
+						"You are the 5% completion pass for the OpenCut Paper Grid Editorial template. Follow the paper-grid-editorial skill and the supplied Hebrew reference grammar. Return JSON only with placements (one to three intervals), optional proofStage {startSeconds,endSeconds}, and optional checklist {startSeconds,eventSeconds,endSeconds}. Use only supplied transcript/video timing. Do not invent cuts, assets, or dialogue edits.",
 				},
 				{ role: "user", content: JSON.stringify(context) },
 			],
 			tools: [],
 		}),
 		signal,
-	});
+	} });
 	const body = (await response.json().catch(() => ({}))) as {
 		error?: string;
 		response?: {
 			output_text?: string;
-			output?: Array<{ content?: Array<{ text?: string; output_text?: string }> }>;
+			output?: Array<{
+				content?: Array<{ text?: string; output_text?: string }>;
+			}>;
 		};
 	};
 	if (!response.ok) {
@@ -247,11 +272,13 @@ export async function chooseTemplateAiPlan({
 	const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1] ?? text;
 	const start = fenced.indexOf("{");
 	const end = fenced.lastIndexOf("}");
-	if (start < 0 || end <= start) throw new Error("AI returned no template plan JSON");
+	if (start < 0 || end <= start)
+		throw new Error("AI returned no template plan JSON");
 	const parsed = TEMPLATE_AI_PLAN_SCHEMA.safeParse(
 		JSON.parse(fenced.slice(start, end + 1)),
 	);
-	if (!parsed.success) throw new Error("AI returned an invalid template completion plan");
+	if (!parsed.success)
+		throw new Error("AI returned an invalid template completion plan");
 	return parsed.data;
 }
 
@@ -271,29 +298,39 @@ export function applyProgrammaticEditorialTemplate({
 	if (!target) throw new Error("Import a video before applying a template");
 	const totalDuration = calculateTotalDuration({ tracks: scene.tracks });
 	const totalDurationSeconds = totalDuration / 120_000;
-	const opening = UI_ELEMENT_PRESETS.find((preset) => preset.id === "color-reveal-whoosh");
-	const commands = [];
+	const opening = UI_ELEMENT_PRESETS.find(
+		(preset) => preset.id === "color-reveal-whoosh",
+	);
+	const clips: InsertElementParams[] = [];
 	if (opening?.bundle && totalDurationSeconds >= 3) {
 		for (const item of buildUiElementBundleTimelineItems({
 			bundle: opening.bundle,
 			startTime: ZERO_MEDIA_TIME,
 		})) {
-			commands.push(
-				new InsertElementCommand({
-					element: item.element,
-					placement: { mode: "auto", trackType: item.trackType },
-				}),
-			);
+			clips.push({
+				element: item.element,
+				placement: { mode: "auto", trackType: item.trackType },
+			});
 		}
 	}
 	const checklist = UI_ELEMENT_PRESETS.find(
 		(preset) => preset.id === "rtl-cancellation-checklist-sfx",
 	);
-	const checklistStartSeconds = findChecklistStartSeconds({ tracks: scene.tracks });
-	const checklistAlreadyExists = getDisplayTracks({ tracks: scene.tracks }).some((track) =>
-		track.elements.some((element) => element.name.includes("Cancellation Checklist")),
+	const checklistStartSeconds = findChecklistStartSeconds({
+		tracks: scene.tracks,
+	});
+	const checklistAlreadyExists = getDisplayTracks({
+		tracks: scene.tracks,
+	}).some((track) =>
+		track.elements.some((element) =>
+			element.name.includes("Cancellation Checklist"),
+		),
 	);
-	if (checklist?.bundle && checklistStartSeconds !== null && !checklistAlreadyExists) {
+	if (
+		checklist?.bundle &&
+		checklistStartSeconds !== null &&
+		!checklistAlreadyExists
+	) {
 		const safeStartSeconds = Math.min(
 			checklistStartSeconds,
 			Math.max(0, totalDurationSeconds - checklist.defaultDurationSeconds),
@@ -302,29 +339,32 @@ export function applyProgrammaticEditorialTemplate({
 			bundle: checklist.bundle,
 			startTime: mediaTimeFromSeconds({ seconds: safeStartSeconds }),
 		})) {
-			commands.push(
-				new InsertElementCommand({
-					element: item.element,
-					placement: { mode: "auto", trackType: item.trackType },
-				}),
-			);
+			clips.push({
+				element: item.element,
+				placement: { mode: "auto", trackType: item.trackType },
+			});
 		}
 	}
 	const hasEditorialEdgeFeather = target.element.effects?.some(
 		(effect) => effect.type === EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
 	);
-	if (!hasEditorialEdgeFeather) {
-		commands.push(
-			new AddClipEffectCommand({
-				trackId: target.trackId,
-				elementId: target.element.id,
-				effectType: EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
-				params: PAPER_GRID_EDITORIAL_EDGE_FEATHER_PARAMS,
-			}),
-		);
-	}
-	if (commands.length > 0) {
-		editor.command.execute({ command: new BatchCommand(commands) });
+	if (clips.length > 0 || !hasEditorialEdgeFeather) {
+		editor.command.executeTransaction({
+			execute: () => {
+				if (clips.length > 0)
+					editor.command.insertClassicTimelineElements(clips);
+				if (!hasEditorialEdgeFeather)
+					editor.command.editClassicEffects({
+						trackId: target.trackId,
+						elementId: target.element.id,
+						change: {
+							type: "add",
+							effectType: EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
+							params: PAPER_GRID_EDITORIAL_EDGE_FEATHER_PARAMS,
+						},
+					});
+			},
+		});
 	}
 
 	const captionUpdates = getDisplayTracks({ tracks: scene.tracks }).flatMap(
@@ -356,13 +396,15 @@ export function applyProgrammaticEditorialTemplate({
 			});
 		},
 	);
-	if (captionUpdates.length > 0) editor.timeline.updateElements({ updates: captionUpdates });
+	if (captionUpdates.length > 0)
+		editor.timeline.updateElements({ updates: captionUpdates });
 
 	return {
 		target,
 		totalDurationSeconds,
 		rangeStartSeconds: target.element.startTime / 120_000,
-		rangeEndSeconds: (target.element.startTime + target.element.duration) / 120_000,
+		rangeEndSeconds:
+			(target.element.startTime + target.element.duration) / 120_000,
 	};
 }
 
@@ -381,35 +423,40 @@ export function applyTemplateAiCompletion({
 	const proofEnd = plan.proofStage
 		? Math.max(plan.proofStage.startSeconds, plan.proofStage.endSeconds)
 		: null;
-	const captionUpdates = getDisplayTracks({ tracks: scene.tracks }).flatMap((track) => {
-		if (track.type !== "text") return [];
-		return track.elements.flatMap((element) => {
-			if (element.type !== "text" || !element.name.startsWith("Caption")) return [];
-			const startSeconds = mediaTimeToSeconds({ time: element.startTime });
-			const endSeconds = mediaTimeToSeconds({
-				time: addMediaTime({ a: element.startTime, b: element.duration }),
-			});
-			const onProofStage =
-				proofStart !== null &&
-				proofEnd !== null &&
-				startSeconds < proofEnd &&
-				endSeconds > proofStart;
-			return [{
-				trackId: track.id,
-				elementId: element.id,
-				patch: {
-					params: {
-						...element.params,
-						color: onProofStage ? "#111827" : "#ffffff",
-						"shadow.blur": onProofStage ? 14 : 50,
-						"shadow.color": onProofStage ? "#00000024" : "#000000",
-						"shadow.enabled": true,
-						"shadow.offsetY": 4,
+	const captionUpdates = getDisplayTracks({ tracks: scene.tracks }).flatMap(
+		(track) => {
+			if (track.type !== "text") return [];
+			return track.elements.flatMap((element) => {
+				if (element.type !== "text" || !element.name.startsWith("Caption"))
+					return [];
+				const startSeconds = mediaTimeToSeconds({ time: element.startTime });
+				const endSeconds = mediaTimeToSeconds({
+					time: addMediaTime({ a: element.startTime, b: element.duration }),
+				});
+				const onProofStage =
+					proofStart !== null &&
+					proofEnd !== null &&
+					startSeconds < proofEnd &&
+					endSeconds > proofStart;
+				return [
+					{
+						trackId: track.id,
+						elementId: element.id,
+						patch: {
+							params: {
+								...element.params,
+								color: onProofStage ? "#111827" : "#ffffff",
+								"shadow.blur": onProofStage ? 14 : 50,
+								"shadow.color": onProofStage ? "#00000024" : "#000000",
+								"shadow.enabled": true,
+								"shadow.offsetY": 4,
+							},
+						},
 					},
-				},
-			}];
-		});
-	});
+				];
+			});
+		},
+	);
 	const checklist = plan.checklist;
 	const checklistUpdates = checklist
 		? getDisplayTracks({ tracks: scene.tracks }).flatMap((track) => {
@@ -417,20 +464,27 @@ export function applyTemplateAiCompletion({
 				return track.elements.flatMap((element) => {
 					if (!element.name.includes("Cancellation Checklist")) return [];
 					const startSeconds = mediaTimeToSeconds({ time: element.startTime });
-					const durationSeconds = mediaTimeToSeconds({ time: element.duration });
+					const durationSeconds = mediaTimeToSeconds({
+						time: element.duration,
+					});
 					const percent = (value: number) =>
-						Math.max(0, Math.min(100, ((value - startSeconds) / durationSeconds) * 100));
-					return [{
-						trackId: track.id,
-						elementId: element.id,
-						patch: {
-							params: {
-								...element.params,
-								eventAt: percent(checklist.eventSeconds),
-								animationOutStart: percent(checklist.endSeconds),
+						Math.max(
+							0,
+							Math.min(100, ((value - startSeconds) / durationSeconds) * 100),
+						);
+					return [
+						{
+							trackId: track.id,
+							elementId: element.id,
+							patch: {
+								params: {
+									...element.params,
+									eventAt: percent(checklist.eventSeconds),
+									animationOutStart: percent(checklist.endSeconds),
+								},
 							},
 						},
-					}];
+					];
 				});
 			})
 		: [];
@@ -452,7 +506,9 @@ export async function applyBreakoutPlacements({
 	let applied = 0;
 	for (const placement of placements) {
 		const startTime = mediaTimeFromSeconds({ seconds: placement.startSeconds });
-		const duration = mediaTimeFromSeconds({ seconds: placement.durationSeconds });
+		const duration = mediaTimeFromSeconds({
+			seconds: placement.durationSeconds,
+		});
 		const ref = editor.timeline.createSpeakerFrameBreakout({
 			trackId: target.trackId,
 			elementId: target.element.id,

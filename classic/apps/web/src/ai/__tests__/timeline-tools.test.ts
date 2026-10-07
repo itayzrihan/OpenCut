@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, mock, test } from "bun:test";
+import { wasm } from "../../../test-support/wasm";
 import type { EditorCore } from "@/core";
 import type { ExportState } from "@/export";
 import type { AiEditPlan } from "@/ai/types";
@@ -105,6 +106,7 @@ function validateTimelineSourceV2MutationScopeForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	mediaMissingUsed: () => "[]",
 	mediaStorageDisposition: () => "copy",
 	resolveAudioSyncRetrim: () => null,
@@ -620,7 +622,7 @@ describe("AI timeline tool access", () => {
 		).toBe(true);
 		expect(result.frames.every((frame) => frame.byteSize <= 90_000)).toBe(true);
 		expect(result.totalDataUrlCharacters).toBeLessThanOrEqual(500_000);
-		expect(editor.playback.getCurrentTime()).toBe(777_000);
+		expect(editor.playback.getCurrentTime()).toBe(mediaTime({ ticks: 777_000 }));
 	});
 
 	test("captures a bounded current preview frame instead of a full-resolution snapshot", async () => {
@@ -1062,7 +1064,7 @@ describe("AI timeline tool access", () => {
 	test("stages one exact full-source mutation as a reviewed v2 operation", async () => {
 		const runtime = await createTimelineToolRuntime({
 			editor: createFullSourceEditorFixture().editor,
-			options: { range: { startTime: 120_000, endTime: 360_000 } },
+			options: { range: { startTime: mediaTime({ ticks: 120_000 }), endTime: mediaTime({ ticks: 360_000 }) } },
 			authorizeCapabilities: authorizeForTest,
 		});
 		const source = await readEntireFullSource(runtime);
@@ -1110,7 +1112,7 @@ describe("AI timeline tool access", () => {
 	test("rejects a full-source mutation that escapes the selected range", async () => {
 		const runtime = await createTimelineToolRuntime({
 			editor: createFullSourceEditorFixture().editor,
-			options: { range: { startTime: 120_000, endTime: 360_000 } },
+			options: { range: { startTime: mediaTime({ ticks: 120_000 }), endTime: mediaTime({ ticks: 360_000 }) } },
 			authorizeCapabilities: authorizeForTest,
 		});
 		const source = await readEntireFullSource(runtime);
@@ -1363,7 +1365,9 @@ describe("AI timeline tool access", () => {
 					getActiveSceneOrNull: () => activeScene,
 					getScenes: () => scenes,
 					switchToScene: async ({ sceneId }: { sceneId: string }) => {
-						activeScene = scenes.find((scene) => scene.id === sceneId);
+						const found = scenes.find((scene) => scene.id === sceneId);
+						if (!found) throw new Error("Missing fixture scene");
+						activeScene = found;
 					},
 				},
 				media: { getAssets: () => [] },

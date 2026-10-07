@@ -441,7 +441,7 @@ async function callAiChatRoute({
 	signal?: AbortSignal;
 	webSearch?: boolean;
 }): Promise<ResponsesApiResult> {
-	const response = await aiClientFetch("/api/ai/chat", {
+	const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -451,7 +451,7 @@ async function callAiChatRoute({
 			...(webSearch ? { webSearch: true } : {}),
 		}),
 		signal,
-	});
+	} });
 
 	const data = await readAiChatJson(response);
 	if (!response.ok) {

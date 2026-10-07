@@ -56,10 +56,13 @@ export async function cancelDeviceLogin(request: NextRequest) {
 	}
 }
 
-export async function handleDeviceLogin(
-	request: NextRequest,
-	createProcess: () => Promise<DeviceLoginProcess> = createDeviceLoginProcess,
-) {
+export async function handleDeviceLogin({
+	request,
+	createProcess = createDeviceLoginProcess,
+}: {
+	request: NextRequest;
+	createProcess?: () => Promise<DeviceLoginProcess>;
+}) {
 	const account = requireAccount().id;
 	// A custom account header plus same-origin checks prevent login CSRF, even
 	// on direct loopback access. No caller can select a different account/home.

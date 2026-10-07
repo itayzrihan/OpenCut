@@ -11,24 +11,28 @@ test("local AI binds every request to the paired origin, account and capability"
 		token: "a".repeat(64),
 	};
 	const handled: string[] = [];
-	const server = createCompanionServer(
-		pair,
-		async (path) => {
+	const server = createCompanionServer({
+		pair: pair,
+		handle: async (path) => {
 			handled.push(path);
 			return Response.json({
 				authenticated: true,
 				identity: { email: "alice@example.com" },
 			});
 		},
-		0,
-	).listen(0, "127.0.0.1");
+		port: 0,
+	}).listen(0, "127.0.0.1");
 	await once(server, "listening");
 	const port = (server.address() as { port: number }).port;
-	const call = (
-		path: string,
-		headers: Record<string, string> = {},
+	const call = ({
+		path,
+		headers = {},
 		method = "GET",
-	) =>
+	}: {
+		path: string;
+		headers?: Record<string, string>;
+		method?: string;
+	}) =>
 		new Promise<{
 			status: number;
 			body: string;
@@ -62,17 +66,21 @@ test("local AI binds every request to the paired origin, account and capability"
 			r.end();
 		});
 	try {
-		expect((await call("/api/ai/oauth/status")).status).toBe(200);
-		expect((await call("/api/ai/chat", {}, "POST")).status).toBe(200);
-		for (const headers of [
+		expect((await call({ path: "/api/ai/oauth/status" })).status).toBe(200);
+		expect(
+			(await call({ path: "/api/ai/chat", headers: {}, method: "POST" }))
+				.status,
+		).toBe(200);
+		const rejectedHeaders: Record<string, string>[] = [
 			{ origin: "https://other.example.com" },
 			{ origin: "" },
 			{ host: "evil.example:0" },
 			{ authorization: `Bearer ${"b".repeat(64)}` },
 			{ authorization: `Bearer ${"é".repeat(64)}` },
 			{ "X-OpenCut-Account": "22222222-2222-4222-8222-222222222222" },
-		]) {
-			const r = await call("/api/ai/oauth/status", headers);
+		];
+		for (const headers of rejectedHeaders) {
+			const r = await call({ path: "/api/ai/oauth/status", headers: headers });
 			expect([401, 403]).toContain(r.status);
 			expect(r.body).not.toContain("alice@example.com");
 		}
@@ -82,9 +90,13 @@ test("local AI binds every request to the paired origin, account and capability"
 			"/api/ai/oauth/status?account=other",
 			"/api/ai/chat/../oauth/start",
 		])
-			expect((await call(path)).status).toBe(404);
-		expect((await call("/api/ai/oauth/logout")).status).toBe(404);
-		const preflight = await call("/api/ai/chat", {}, "OPTIONS");
+			expect((await call({ path: path })).status).toBe(404);
+		expect((await call({ path: "/api/ai/oauth/logout" })).status).toBe(404);
+		const preflight = await call({
+			path: "/api/ai/chat",
+			headers: {},
+			method: "OPTIONS",
+		});
 		expect(preflight.status).toBe(204);
 		expect(preflight.headers["access-control-allow-origin"]).toBe(pair.origin);
 		expect(handled).toEqual(["/api/ai/oauth/status", "/api/ai/chat"]);

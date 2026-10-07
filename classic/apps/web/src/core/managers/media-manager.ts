@@ -5,7 +5,7 @@ import { storageService } from "@/services/storage/service";
 import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
-import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
+import { buildWaveformSourceKey } from "@/media/waveform-summary";
 import { localDriveRequest } from "@/services/local-drive/client";
 
 export class MediaManager {
@@ -112,23 +112,15 @@ export class MediaManager {
 			return;
 		}
 
-		const command =
-			uniqueIds.length === 1
-				? new RemoveMediaAssetCommand({
-						projectId,
-						assetId: uniqueIds[0],
-					})
-				: new BatchCommand(
-						uniqueIds.map(
-							(id) =>
-								new RemoveMediaAssetCommand({
-									projectId,
-									assetId: id,
-								}),
-						),
-					);
-
-		this.editor.command.execute({ command });
+		this.editor.command.removeClassicMedia({ projectId, mediaIds: uniqueIds });
+		// Canonical removal retains durable files and URL handles for history.
+		// Discard only derived decode caches after the successful transaction.
+		for (const id of uniqueIds) {
+			videoCache.clearVideo({ mediaId: id });
+			waveformCache.clearSource({
+				sourceKey: buildWaveformSourceKey({ kind: "media", id }),
+			});
+		}
 	}
 
 	async loadProjectMedia({ projectId }: { projectId: string }): Promise<void> {

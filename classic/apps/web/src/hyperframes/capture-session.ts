@@ -73,6 +73,7 @@ export class HyperframesCaptureSession {
 	private resolvedDuration = 0;
 	private resolvedManifest: HyperframesRuntimeManifest | null = null;
 	private capturedWarnings: CaptureWarning[] = [];
+	private readonly requestedExternalUrls = new Set<string>();
 	private readonly runtime: CanonicalEditorRuntime;
 	private readonly host: HyperframesPreviewHost;
 
@@ -98,6 +99,7 @@ export class HyperframesCaptureSession {
 		host,
 		signal,
 		chromePath,
+		bundledOnly = false,
 	}: {
 		source: HyperframesSource;
 		layerEdits?: HyperframesLayerEdits;
@@ -107,6 +109,8 @@ export class HyperframesCaptureSession {
 		signal?: AbortSignal;
 		/** Host configuration only; never take an executable path from a request. */
 		chromePath?: string;
+		/** Verification hosts may forbid every off-origin request. */
+		bundledOnly?: boolean;
 	}): Promise<HyperframesCaptureSession> {
 		signal?.throwIfAborted();
 		if (active.size >= MAX_SESSIONS)
@@ -128,6 +132,7 @@ export class HyperframesCaptureSession {
 				html: prepared.html,
 				signal,
 				chromePath,
+				bundledOnly,
 			});
 			return result;
 		} catch (error) {
@@ -171,6 +176,8 @@ export class HyperframesCaptureSession {
 		return structuredClone(this.engine?.warnings ?? this.capturedWarnings);
 	}
 
+	get externalRequests(): string[] { return [...this.requestedExternalUrls]; }
+
 	private async initialize({
 		source,
 		layerEdits,
@@ -178,6 +185,7 @@ export class HyperframesCaptureSession {
 		html,
 		signal,
 		chromePath,
+		bundledOnly,
 	}: {
 		source: HyperframesSource;
 		layerEdits?: HyperframesLayerEdits;
@@ -185,6 +193,7 @@ export class HyperframesCaptureSession {
 		html: string;
 		signal?: AbortSignal;
 		chromePath?: string;
+		bundledOnly: boolean;
 	}): Promise<void> {
 		const { width, height, fps } = this.inspection;
 		if (width * height > 16_777_216)
@@ -307,8 +316,11 @@ export class HyperframesCaptureSession {
 					url.href !== preview.url
 				)
 					throw new Error("The composition cannot navigate the capture page");
-				if (url.origin !== origin && !["data:", "blob:"].includes(url.protocol))
+				if (url.origin !== origin && !["data:", "blob:"].includes(url.protocol)) {
+					this.requestedExternalUrls.add(url.href);
+					if (bundledOnly) throw new Error("Reference verification requires bundled dependencies");
 					assertPublicHttpsUrl(url.href);
+				}
 				void request.continue().catch(() => {});
 			} catch {
 				void request.abort("blockedbyclient").catch(() => {});

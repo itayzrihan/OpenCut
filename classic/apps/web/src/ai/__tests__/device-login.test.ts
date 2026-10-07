@@ -1,3 +1,4 @@
+import { mockFetch } from "@/test-support/mock-fetch";
 import { afterAll, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -8,7 +9,7 @@ import type { DeviceLoginProcess } from "../server/device-login-process";
 
 const directory = mkdtempSync(join(tmpdir(), "opencut-device-login-tests-"));
 process.env.OPENCUT_OPENAI_OAUTH_SESSION_DIR = directory;
-process.env.NODE_ENV = "test";
+Reflect.set(process.env, "NODE_ENV", "test");
 process.env.BETTER_AUTH_SECRET =
 	"device-login-test-key-never-used-in-production";
 afterAll(() => rmSync(directory, { recursive: true, force: true }));
@@ -24,12 +25,17 @@ const {
 const { handleAiChatRequest } = await import("../server/chat-handler");
 const alice = { id: "alice-device", login: "alice", displayName: "Alice" };
 const bob = { id: "bob-device", login: "bob", displayName: "Bob" };
-function request(
-	account: string,
-	session: string,
-	action: string,
+function request({
+	account,
+	session,
+	action,
 	cookies = "",
-) {
+}: {
+	account: string;
+	session: string;
+	action: string;
+	cookies?: string;
+}) {
 	return new NextRequest("http://localhost:3000/api/ai/oauth/device", {
 		method: "POST",
 		headers: {
@@ -81,36 +87,60 @@ function fakeProcess() {
 test("device login is bound to account + browser session; encrypted credentials never appear in responses", async () => {
 	const a = fakeProcess();
 	const start = await accountScope.run(alice, () =>
-		handleDeviceLogin(
-			request(alice.id, "session-a", "start"),
-			async () => a.process,
-		),
+		handleDeviceLogin({
+			request: request({
+				account: alice.id,
+				session: "session-a",
+				action: "start",
+			}),
+			createProcess: async () => a.process,
+		}),
 	);
 	expect(start.status).toBe(200);
 	const binding = cookies(start);
 	expect((await start.json()).userCode).toBe("TEST-1234");
-	const stolen = request(bob.id, "session-b", "poll", binding);
+	const stolen = request({
+		account: bob.id,
+		session: "session-b",
+		action: "poll",
+		cookies: binding,
+	});
 	expect(
-		(await accountScope.run(bob, () => handleDeviceLogin(stolen))).status,
+		(await accountScope.run(bob, () => handleDeviceLogin({ request: stolen })))
+			.status,
 	).toBe(410);
 	await accountScope.run(bob, () => cancelDeviceLogin(stolen));
 	expect(a.isClosed()).toBe(false);
-	const rotated = request(alice.id, "session-a-new", "poll", binding);
+	const rotated = request({
+		account: alice.id,
+		session: "session-a-new",
+		action: "poll",
+		cookies: binding,
+	});
 	expect(
-		(await accountScope.run(alice, () => handleDeviceLogin(rotated))).status,
+		(
+			await accountScope.run(alice, () =>
+				handleDeviceLogin({ request: rotated }),
+			)
+		).status,
 	).toBe(410);
-	const poll = request(alice.id, "session-a", "poll", binding);
+	const poll = request({
+		account: alice.id,
+		session: "session-a",
+		action: "poll",
+		cookies: binding,
+	});
 	expect(
 		await (
 			await accountScope.run(alice, () =>
-				handleDeviceLogin(new NextRequest(poll.clone())),
+				handleDeviceLogin({ request: new NextRequest(poll.clone()) }),
 			)
 		).json(),
 	).toEqual({ pending: true });
 	a.complete(tokens("openai-alice"));
 	await Promise.resolve();
 	const finished = await accountScope.run(alice, () =>
-		handleDeviceLogin(new NextRequest(poll.clone())),
+		handleDeviceLogin({ request: new NextRequest(poll.clone()) }),
 	);
 	expect(await finished.clone().json()).toEqual({ authenticated: true });
 	expect(JSON.stringify([...finished.headers])).not.toContain("secret-refresh");
@@ -119,7 +149,12 @@ test("device login is bound to account + browser session; encrypted credentials 
 		expect(readFileSync(join(directory, file), "utf8")).not.toContain(
 			"secret-refresh",
 		);
-	const auth = request(alice.id, "session-a", "poll", authCookies);
+	const auth = request({
+		account: alice.id,
+		session: "session-a",
+		action: "poll",
+		cookies: authCookies,
+	});
 	testing.resetOAuthRuntimeForTests();
 	const identity = await accountScope.run(alice, () =>
 		getOpenAIOAuthStatus({ request: auth }),
@@ -131,10 +166,10 @@ test("device login is bound to account + browser session; encrypted credentials 
 	).toBe(false);
 	const originalFetch = globalThis.fetch;
 	const upstream: string[] = [];
-	globalThis.fetch = (async (_url, init) => {
+	globalThis.fetch = mockFetch(async (_url, init) => {
 		upstream.push(new Headers(init?.headers).get("Authorization")!);
 		return Response.json({ id: "synthetic-response", output_text: "Verified" });
-	}) as typeof fetch;
+	});
 	const chat = () =>
 		new NextRequest("http://localhost:3000/api/ai/chat", {
 			method: "POST",
@@ -159,7 +194,8 @@ test("device login is bound to account + browser session; encrypted credentials 
 		globalThis.fetch = originalFetch;
 	}
 	expect(
-		(await accountScope.run(alice, () => handleDeviceLogin(poll))).status,
+		(await accountScope.run(alice, () => handleDeviceLogin({ request: poll })))
+			.status,
 	).toBe(410);
 	accountScope.run(alice, () =>
 		clearOpenAICredentials({ request: auth, response: NextResponse.json({}) }),
@@ -174,12 +210,12 @@ test("device login is bound to account + browser session; encrypted credentials 
 });
 
 test("concurrent refresh uses one token exchange and logout cannot be undone by its response", async () => {
-	const base = request(
-		alice.id,
-		"refresh-session",
-		"poll",
-		"opencut_openai_oauth_binding=refresh-binding",
-	);
+	const base = request({
+		account: alice.id,
+		session: "refresh-session",
+		action: "poll",
+		cookies: "opencut_openai_oauth_binding=refresh-binding",
+	});
 	const credentials = {
 		access: "expired",
 		refresh: "private-refresh",
@@ -190,21 +226,21 @@ test("concurrent refresh uses one token exchange and logout cannot be undone by 
 	};
 	const saved = NextResponse.json({});
 	setCredentialsCookie({ response: saved, credentials });
-	const req = request(
-		alice.id,
-		"refresh-session",
-		"poll",
-		`opencut_openai_oauth_binding=refresh-binding; ${cookies(saved)}`,
-	);
+	const req = request({
+		account: alice.id,
+		session: "refresh-session",
+		action: "poll",
+		cookies: `opencut_openai_oauth_binding=refresh-binding; ${cookies(saved)}`,
+	});
 	const originalFetch = globalThis.fetch;
 	let resolve!: (r: Response) => void;
 	let calls = 0;
-	globalThis.fetch = (() => {
+	globalThis.fetch = mockFetch(() => {
 		calls++;
 		return new Promise<Response>((yes) => {
 			resolve = yes;
 		});
-	}) as typeof fetch;
+	});
 	try {
 		const one = accountScope.run(alice, () =>
 			getOpenAIOAuthStatus({ request: req }),
@@ -236,19 +272,31 @@ test("cancelled login cannot later recreate a credential session; another accoun
 	const a = fakeProcess(),
 		b = fakeProcess();
 	const startA = await accountScope.run(alice, () =>
-		handleDeviceLogin(
-			request(alice.id, "cancel-a", "start"),
-			async () => a.process,
-		),
+		handleDeviceLogin({
+			request: request({
+				account: alice.id,
+				session: "cancel-a",
+				action: "start",
+			}),
+			createProcess: async () => a.process,
+		}),
 	);
 	const startB = await accountScope.run(bob, () =>
-		handleDeviceLogin(
-			request(bob.id, "cancel-b", "start"),
-			async () => b.process,
-		),
+		handleDeviceLogin({
+			request: request({
+				account: bob.id,
+				session: "cancel-b",
+				action: "start",
+			}),
+			createProcess: async () => b.process,
+		}),
 	);
-	const reqA = request(alice.id, "cancel-a", "cancel");
-	await accountScope.run(alice, () => handleDeviceLogin(reqA));
+	const reqA = request({
+		account: alice.id,
+		session: "cancel-a",
+		action: "cancel",
+	});
+	await accountScope.run(alice, () => handleDeviceLogin({ request: reqA }));
 	expect(a.isClosed()).toBe(true);
 	expect(b.isClosed()).toBe(false);
 	a.complete(tokens("cancelled"));
@@ -257,14 +305,26 @@ test("cancelled login cannot later recreate a credential session; another accoun
 	expect(
 		(
 			await accountScope.run(alice, () =>
-				handleDeviceLogin(
-					request(alice.id, "cancel-a", "poll", cookies(startA)),
-				),
+				handleDeviceLogin({
+					request: request({
+						account: alice.id,
+						session: "cancel-a",
+						action: "poll",
+						cookies: cookies(startA),
+					}),
+				}),
 			)
 		).status,
 	).toBe(410);
 	const doneB = await accountScope.run(bob, () =>
-		handleDeviceLogin(request(bob.id, "cancel-b", "poll", cookies(startB))),
+		handleDeviceLogin({
+			request: request({
+				account: bob.id,
+				session: "cancel-b",
+				action: "poll",
+				cookies: cookies(startB),
+			}),
+		}),
 	);
 	expect((await doneB.json()).authenticated).toBe(true);
 });
@@ -276,12 +336,12 @@ test("missing/mismatched account header and oversized or invalid actions never s
 		return fakeProcess().process;
 	};
 	for (const req of [
-		request(bob.id, "a", "start"),
-		request(alice.id, "a", "unknown"),
-		request(alice.id, "a", "x".repeat(1100)),
+		request({ account: bob.id, session: "a", action: "start" }),
+		request({ account: alice.id, session: "a", action: "unknown" }),
+		request({ account: alice.id, session: "a", action: "x".repeat(1100) }),
 	]) {
 		const response = await accountScope.run(alice, () =>
-			handleDeviceLogin(req, factory),
+			handleDeviceLogin({ request: req, createProcess: factory }),
 		);
 		expect(response.status).toBeGreaterThanOrEqual(400);
 	}

@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld("opencutElectron", {
 	pickMediaFiles: () => ipcRenderer.invoke("opencut:pick-media-files"),
 	goBack: () => ipcRenderer.invoke("opencut:go-back"),
 	canGoBack: () => ipcRenderer.invoke("opencut:can-go-back"),
+	captureEditorScreenshot: (scope) => ipcRenderer.invoke("opencut:editor-screenshot", scope),
+	controlEditorUi: (scope) => ipcRenderer.invoke("opencut:editor-ui-control", scope),
 });

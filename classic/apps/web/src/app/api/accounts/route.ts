@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 		if (!request.headers.get("content-type")?.startsWith("application/json"))
 			throw new Error("JSON required");
 		const text = new TextDecoder().decode(
-			await readBoundedBody(request, 16 * 1024),
+			await readBoundedBody({ request: request, maximumBytes: 16 * 1024 }),
 		);
 		const body = JSON.parse(text);
 		if (body.action === "change-password") {
@@ -43,9 +43,7 @@ export async function POST(request: Request) {
 					typeof body.password !== "string"
 				)
 					throw new Error("Current and new password required");
-				const result = await changeAccountPassword(
-					body.currentPassword,
-					body.password,
+				const result = await changeAccountPassword({ currentPassword: body.currentPassword, password: body.password }
 				);
 				return Response.json(
 					{ account: result.account },
@@ -59,7 +57,7 @@ export async function POST(request: Request) {
 			})(request);
 		}
 		if (body.action === "recover" && typeof body.password === "string") {
-			const result = await importAccountIdentity(body.recovery, body.password);
+			const result = await importAccountIdentity({ value: body.recovery, password: body.password });
 			return Response.json(
 				{ account: result.account },
 				{
@@ -86,9 +84,9 @@ export async function POST(request: Request) {
 			throw new Error("Account name and password required");
 		const result =
 			body.action === "register" && typeof body.displayName === "string"
-				? await registerAccount(body.login, body.displayName, body.password)
+				? await registerAccount({ login: body.login, displayName: body.displayName, password: body.password })
 				: body.action === "login"
-					? await loginAccount(body.login, body.password)
+					? await loginAccount({ login: body.login, password: body.password })
 					: null;
 		if (!result) throw new Error("Unknown account action");
 		return Response.json(

@@ -1,0 +1,43 @@
+{
+  "id": "cross-warp-morph",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "64d4bce9022e9f4c548f5b683272c4b84b3909c0ef98179a757fa60551edf75e",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "cross-warp-morph.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "90c96ae35ac05cbb3b82320cc6607c92fc1b77fc70421be21dfce9a0b25923ca",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "2d0616e7e19211671fbec34da55ff27f8d691b211997cd68c52aace446b1de4e",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "b3a2ba6b322dae9113e0ffe0abaee4736343c13dd286cb27c43358e28a499528",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "2d0616e7e19211671fbec34da55ff27f8d691b211997cd68c52aace446b1de4e",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

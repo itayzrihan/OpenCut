@@ -1,0 +1,42 @@
+{
+  "id": "menu-morph",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "a37b1c0c454177d25f19fa6cbcd37d3ea7abb331b38d3dd64f7a77e00ec01036",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "e9a4f1928e92781bdda37190f67d6a74304c71eb430de4a8eb1b4ffaef67b2a6",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "ea1585f45e49b9d71e628c19597fa742a5a78380525e9b21ec4fe5f79ba22dfb",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "ea1585f45e49b9d71e628c19597fa742a5a78380525e9b21ec4fe5f79ba22dfb",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "ea1585f45e49b9d71e628c19597fa742a5a78380525e9b21ec4fe5f79ba22dfb",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

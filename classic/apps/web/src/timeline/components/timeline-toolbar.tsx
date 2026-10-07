@@ -312,6 +312,10 @@ function CutSilenceToolbarControl({
 	const [audioMinSilenceSeconds, setAudioMinSilenceSeconds] = useState(
 		String(DEFAULT_AUDIO_MIN_SILENCE_SECONDS),
 	);
+	const [smartMinSilenceSeconds, setSmartMinSilenceSeconds] = useState(
+		String(DEFAULT_AUDIO_MIN_SILENCE_SECONDS),
+	);
+	const abortRef = useRef<AbortController | null>(null);
 	const activeRunRef = useRef(false);
 	const isAnalyzing = activeMode !== null;
 	const disabled = !hasSelectedVideo || isAnalyzing;
@@ -320,21 +324,38 @@ function CutSilenceToolbarControl({
 	);
 	const formattedAudioMinSilenceSeconds =
 		resolvedAudioMinSilenceSeconds.toString();
+	const resolvedSmartMinSilenceSeconds = clampAudioMinSilenceSeconds(
+		Number(smartMinSilenceSeconds),
+	);
+	const formattedSmartMinSilenceSeconds =
+		resolvedSmartMinSilenceSeconds.toString();
 
 	const runCutSilence = async ({ mode }: { mode: CutSilenceMode }) => {
 		if (!hasSelectedVideo || activeRunRef.current) return;
 		activeRunRef.current = true;
 		setActiveMode(mode);
+		const controller = new AbortController();
+		abortRef.current = controller;
 		try {
 			await executeCutSilenceAction({
 				mode,
 				minSilenceSeconds:
-					mode === "audio" ? resolvedAudioMinSilenceSeconds : undefined,
+					mode === "audio"
+						? resolvedAudioMinSilenceSeconds
+						: mode === "smart"
+							? resolvedSmartMinSilenceSeconds
+							: undefined,
+				...(mode === "smart" ? { signal: controller.signal } : {}),
 				removeAllSilence,
 			});
 			if (mode === "audio") {
 				toast.success("Audio-based silence cut complete", {
 					description: `Pauses of ${formattedAudioMinSilenceSeconds} seconds or longer were removed and captions were synchronized.`,
+				});
+			} else if (mode === "smart") {
+				toast.success("Smart audio cut complete", {
+					description:
+						"Clear pauses were shortened with speech margins and captioned words protected. Undo to compare with the original cut.",
 				});
 			} else if (mode === "deep") {
 				toast.success("Deep silence analysis complete", {
@@ -343,6 +364,16 @@ function CutSilenceToolbarControl({
 				});
 			}
 		} catch (error) {
+			if (controller.signal.aborted) {
+				toast.info("Smart audio cut cancelled");
+				return;
+			}
+			if (error instanceof Error && error.name === "NoClearSilence") {
+				toast.info("Smart audio cut: audio kept", {
+					description: error.message,
+				});
+				return;
+			}
 			console.error(`Failed to run ${mode} silence removal:`, error);
 			toast.error("Could not cut silences", {
 				description:
@@ -350,6 +381,7 @@ function CutSilenceToolbarControl({
 			});
 		} finally {
 			activeRunRef.current = false;
+			abortRef.current = null;
 			setActiveMode(null);
 		}
 	};
@@ -391,7 +423,7 @@ function CutSilenceToolbarControl({
 			<DropdownMenu>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />}
-					tooltip="Cut silence modes: Audio-based, Fast, or Deep"
+					tooltip="Cut silence modes: Audio-based, Smart, Fast, or Deep"
 					disabled={disabled}
 					className="h-7 w-4 rounded-l-none px-0"
 					buttonWrapper={(button) => (
@@ -405,7 +437,7 @@ function CutSilenceToolbarControl({
 							key={action.mode}
 							onSelect={(event) => {
 								if (
-									action.mode === "audio" &&
+									(action.mode === "audio" || action.mode === "smart") &&
 									event.target instanceof HTMLInputElement
 								) {
 									event.preventDefault();
@@ -432,7 +464,7 @@ function CutSilenceToolbarControl({
 											)
 										: action.description}
 								</span>
-								{action.mode === "audio" && (
+								{(action.mode === "audio" || action.mode === "smart") && (
 									<span
 										className="mt-2 flex items-center gap-2"
 										onPointerDown={(event) => event.stopPropagation()}
@@ -440,25 +472,35 @@ function CutSilenceToolbarControl({
 									>
 										<label
 											className="text-muted-foreground text-xs"
-											htmlFor="cut-silence-min-seconds"
+											htmlFor={`cut-silence-${action.mode}-min-seconds`}
 										>
 											Minimum pause (seconds)
 										</label>
 										<Input
-											id="cut-silence-min-seconds"
+											id={`cut-silence-${action.mode}-min-seconds`}
 											type="number"
-											value={audioMinSilenceSeconds}
+											value={
+												action.mode === "smart"
+													? smartMinSilenceSeconds
+													: audioMinSilenceSeconds
+											}
 											min={MIN_AUDIO_MIN_SILENCE_SECONDS}
 											max={MAX_AUDIO_MIN_SILENCE_SECONDS}
 											step="0.01"
 											className="h-7 w-20 px-2 text-xs"
-											aria-label="Minimum pause duration in seconds"
+											aria-label={`${action.mode === "smart" ? "Smart cut" : "Audio cut"} minimum pause duration in seconds`}
 											onChange={(event) =>
-												setAudioMinSilenceSeconds(event.target.value)
+												(action.mode === "smart"
+													? setSmartMinSilenceSeconds
+													: setAudioMinSilenceSeconds)(event.target.value)
 											}
 											onBlur={() =>
-												setAudioMinSilenceSeconds(
-													formattedAudioMinSilenceSeconds,
+												(action.mode === "smart"
+													? setSmartMinSilenceSeconds
+													: setAudioMinSilenceSeconds)(
+													action.mode === "smart"
+														? formattedSmartMinSilenceSeconds
+														: formattedAudioMinSilenceSeconds,
 												)
 											}
 											onKeyDown={(event) => event.stopPropagation()}
@@ -471,6 +513,31 @@ function CutSilenceToolbarControl({
 					))}
 				</DropdownMenuContent>
 			</DropdownMenu>
+			<ToolbarButton
+				icon={
+					activeMode === "smart" ? (
+						<Spinner className="size-3.5" />
+					) : (
+						<HugeiconsIcon icon={AiAudioIcon} />
+					)
+				}
+				tooltip={`Smart audio cut: protect speech · pauses from ${formattedSmartMinSilenceSeconds}s`}
+				disabled={disabled}
+				className="ml-1"
+				onClick={({ event }) => {
+					event.stopPropagation();
+					void runCutSilence({ mode: "smart" });
+				}}
+			/>
+			{activeMode === "smart" && (
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={() => abortRef.current?.abort()}
+				>
+					Cancel
+				</Button>
+			)}
 		</div>
 	);
 }

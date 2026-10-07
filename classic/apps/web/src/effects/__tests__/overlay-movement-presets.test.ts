@@ -1,3 +1,4 @@
+import { mediaTime } from "@/wasm";
 import { describe, expect, test } from "bun:test";
 import {
 	getOverlayMovementDefaultSfx,
@@ -167,14 +168,14 @@ describe("overlay movement presets", () => {
 				keys: [
 					{
 						id: "start",
-						time: 0,
+						time: mediaTime({ ticks: 0 }),
 						value: 0,
 						segmentToNext: "linear" as const,
 						tangentMode: "auto" as const,
 					},
 					{
 						id: "end",
-						time: 100,
+						time: mediaTime({ ticks: 100 }),
 						value: 0.25,
 						segmentToNext: "linear" as const,
 						tangentMode: "auto" as const,

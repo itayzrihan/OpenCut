@@ -80,7 +80,7 @@ function profilePath() {
 		`${requireAccount().id}.json`,
 	);
 }
-async function atomicJson(path: string, value: unknown) {
+async function atomicJson({ path, value }: { path: string; value: unknown }) {
 	await mkdir(dirname(path), { recursive: true });
 	const temporary = `${path}.${randomUUID()}.tmp`;
 	await writeFile(temporary, JSON.stringify(value), {
@@ -102,20 +102,25 @@ export async function readStorageProfile(): Promise<Profile> {
 				storage: { mode: "localOnly", destinationId: null, devices: [] },
 			},
 			folder: null,
-			deviceId: (await localStorageDevice()).id,
+			deviceId: (await localStorageDevice({})).id,
 		};
 	}
 }
-function inside(root: string, target: string) {
+function inside({ root, target }: { root: string; target: string }) {
 	const path = relative(root, target);
 	return !path || (!path.startsWith("..") && !isAbsolute(path));
 }
-export async function configureStorageFolder(
-	folder: string | null,
-	policy: StoragePolicy,
+export async function configureStorageFolder({
+	folder,
+	policy,
 	automaticSnapshots = false,
-	options: { mode?: StorageState["storage"]["mode"]; deviceName?: string } = {},
-) {
+	options = {},
+}: {
+	folder: string | null;
+	policy: StoragePolicy;
+	automaticSnapshots?: boolean;
+	options?: { mode?: StorageState["storage"]["mode"]; deviceName?: string };
+}) {
 	const profile = await readStorageProfile();
 	const mode = options.mode ?? (folder ? "externalDrive" : "localOnly");
 	if (
@@ -131,23 +136,25 @@ export async function configureStorageFolder(
 		folder = await realpath(folder);
 		if (!(await stat(folder)).isDirectory())
 			throw new Error("Storage destination must be a folder");
-		if (inside(await realpath(accountsRoot()), folder))
+		if (inside({ root: await realpath(accountsRoot()), target: folder }))
 			throw new Error(
 				"Choose a destination outside the account host's private storage",
 			);
 	}
-	const device = await localStorageDevice(
-		profile.deviceId,
-		options.deviceName ??
+	const device = await localStorageDevice({
+		existingId: profile.deviceId,
+		name:
+			options.deviceName ??
 			profile.account.storage.devices.find(
 				(entry) => entry.id === profile.deviceId,
 			)?.name,
-	);
+	});
 	const root = folder
 		? join(folder, "OpenCut Vaults", requireAccount().id)
 		: null;
 	const key = root ? await accountStorageKey() : null;
-	const devices = root && key ? await listStorageDevices(root, key) : [];
+	const devices =
+		root && key ? await listStorageDevices({ root: root, key: key }) : [];
 	const configuration = {
 		mode,
 		destinationId: folder
@@ -173,8 +180,9 @@ export async function configureStorageFolder(
 		}),
 	);
 	profile.folder = folder;
-	if (root && key) await publishStorageDevice(root, key, device);
-	await atomicJson(profilePath(), profile);
+	if (root && key)
+		await publishStorageDevice({ root: root, key: key, device: device });
+	await atomicJson({ path: profilePath(), value: profile });
 	return profile;
 }
 export async function accountStorageKey(): Promise<Buffer> {
@@ -207,7 +215,13 @@ async function vault() {
 		key: await accountStorageKey(),
 	};
 }
-async function walk(root: string, prefix = ""): Promise<Source[]> {
+async function walk({
+	root,
+	prefix = "",
+}: {
+	root: string;
+	prefix?: string;
+}): Promise<Source[]> {
 	const files: Source[] = [];
 	for (const item of await readdir(root, { withFileTypes: true }).catch(
 		(error) => {
@@ -219,7 +233,8 @@ async function walk(root: string, prefix = ""): Promise<Source[]> {
 			name = prefix ? `${prefix}/${item.name}` : item.name;
 		if (item.isSymbolicLink())
 			throw new Error(`Resolve the symbolic link before syncing: ${name}`);
-		if (item.isDirectory()) files.push(...(await walk(path, name)));
+		if (item.isDirectory())
+			files.push(...(await walk({ root: path, prefix: name })));
 		else if (item.isFile()) {
 			const info = await stat(path);
 			files.push({ name, path, bytes: info.size, mtimeMs: info.mtimeMs });
@@ -229,14 +244,21 @@ async function walk(root: string, prefix = ""): Promise<Source[]> {
 	}
 	return files;
 }
-async function decodeObject(
-	path: string,
-	key: Buffer,
-	aad: string,
-	expected: { bytes: number; sha256: string },
-	target?: string,
-	signal?: AbortSignal,
-) {
+async function decodeObject({
+	path,
+	key,
+	aad,
+	expected,
+	target,
+	signal,
+}: {
+	path: string;
+	key: Buffer;
+	aad: string;
+	expected: { bytes: number; sha256: string };
+	target?: string;
+	signal?: AbortSignal;
+}) {
 	const info = await stat(path);
 	if (info.size !== expected.bytes + 32)
 		throw new Error("Snapshot object size mismatch");
@@ -276,15 +298,19 @@ async function decodeObject(
 	if (hash.digest("hex") !== expected.sha256)
 		throw new Error("Snapshot object checksum mismatch");
 }
-export async function publishAccountSnapshot(
-	policy: StoragePolicy,
-	progress: (done: number, total: number) => void = () => {},
-	signal?: AbortSignal,
-) {
+export async function publishAccountSnapshot({
+	policy,
+	progress = () => {},
+	signal,
+}: {
+	policy: StoragePolicy;
+	progress?: (done: number, total: number) => void;
+	signal?: AbortSignal;
+}) {
 	const { profile, root, key } = await vault(),
 		accountId = requireAccount().id,
 		snapshotId = randomUUID();
-	const originals = await walk(accountDataRoot()),
+	const originals = await walk({ root: accountDataRoot() }),
 		files = originals.map((entry) => ({ ...entry }));
 	const linkedSources: { path: string; bytes: number; mtimeMs: number }[] = [];
 	if (!files.length) throw new Error("There is no account data to sync");
@@ -349,7 +375,7 @@ export async function publishAccountSnapshot(
 			bytes: file.bytes,
 			sha256: file.data
 				? createHash("sha256").update(file.data).digest("hex")
-				: await hashFile(file.path, signal),
+				: await hashFile({ path: file.path, signal: signal }),
 		});
 	}
 	policy.validate({
@@ -385,9 +411,24 @@ export async function publishAccountSnapshot(
 				{ signal },
 			);
 			await appendFile(temporary, cipher.getAuthTag());
-			await decodeObject(temporary, key, aad, entry, undefined, signal);
+			await decodeObject({
+				path: temporary,
+				key: key,
+				aad: aad,
+				expected: entry,
+				target: undefined,
+				signal: signal,
+			});
 			await rename(temporary, target);
-		} else await decodeObject(target, key, aad, entry, undefined, signal);
+		} else
+			await decodeObject({
+				path: target,
+				key: key,
+				aad: aad,
+				expected: entry,
+				target: undefined,
+				signal: signal,
+			});
 		if (!source.data) {
 			const after = await stat(source.path);
 			if (after.size !== source.bytes || after.mtimeMs !== source.mtimeMs)
@@ -398,39 +439,40 @@ export async function publishAccountSnapshot(
 		progress(index + 1, files.length);
 	}
 	if (
-		JSON.stringify(await walk(accountDataRoot())) !== JSON.stringify(originals)
+		JSON.stringify(await walk({ root: accountDataRoot() })) !==
+		JSON.stringify(originals)
 	)
 		throw new Error("Account changed during sync. No snapshot was published.");
 	signal?.throwIfAborted();
-	const encoded = seal(
-		Buffer.from(JSON.stringify(manifest)),
-		key,
-		`${accountId}:manifest:${snapshotId}`,
-	);
+	const encoded = seal({
+		data: Buffer.from(JSON.stringify(manifest)),
+		key: key,
+		aad: `${accountId}:manifest:${snapshotId}`,
+	});
 	const temporary = join(root, "snapshots", `${snapshotId}.partial`);
-	await publishStorageDevice(
-		root,
-		key,
-		await localStorageDevice(
-			profile.deviceId,
-			profile.account.storage.devices.find(
+	await publishStorageDevice({
+		root: root,
+		key: key,
+		device: await localStorageDevice({
+			existingId: profile.deviceId,
+			name: profile.account.storage.devices.find(
 				(entry) => entry.id === profile.deviceId,
 			)?.name,
-		),
-	);
+		}),
+	});
 	await writeFile(temporary, encoded, { flag: "wx" });
 	await rename(temporary, join(root, "snapshots", `${snapshotId}.manifest`));
-	await atomicJson(
-		join(accountsRoot(), "snapshot-inventories", `${accountId}.json`),
-		{ folder: profile.folder, files: originals, linkedSources },
-	);
+	await atomicJson({
+		path: join(accountsRoot(), "snapshot-inventories", `${accountId}.json`),
+		value: { folder: profile.folder, files: originals, linkedSources },
+	});
 	return manifest;
 }
 export async function accountSnapshotNeeded() {
 	const profile = await readStorageProfile();
 	if (!profile.folder || !profile.account.storage.automaticSnapshots)
 		return false;
-	const files = await walk(accountDataRoot());
+	const files = await walk({ root: accountDataRoot() });
 	if (!files.length) return false;
 	const linkedSources = [];
 	for (const entry of files.filter((entry) =>
@@ -465,7 +507,13 @@ export async function accountSnapshotNeeded() {
 			JSON.stringify(linkedSources)
 	);
 }
-async function readSnapshot(snapshotId: string, policy: StoragePolicy) {
+async function readSnapshot({
+	snapshotId,
+	policy,
+}: {
+	snapshotId: string;
+	policy: StoragePolicy;
+}) {
 	if (!/^[a-f0-9-]{36}$/.test(snapshotId))
 		throw new Error("Invalid snapshot identifier");
 	const { root, key } = await vault(),
@@ -474,11 +522,11 @@ async function readSnapshot(snapshotId: string, policy: StoragePolicy) {
 	if ((await stat(path)).size > 64 * 1024 * 1024)
 		throw new Error("Snapshot manifest is too large");
 	const manifest: SnapshotManifest = JSON.parse(
-		unseal(
-			await readFile(path),
-			key,
-			`${accountId}:manifest:${snapshotId}`,
-		).toString("utf8"),
+		unseal({
+			data: await readFile(path),
+			key: key,
+			aad: `${accountId}:manifest:${snapshotId}`,
+		}).toString("utf8"),
 	);
 	policy.validate({
 		manifestJson: JSON.stringify(manifest),
@@ -498,7 +546,10 @@ export async function listAccountSnapshots(policy: StoragePolicy) {
 	});
 	const snapshots = [];
 	for (const file of files.filter((file) => file.endsWith(".manifest"))) {
-		const { manifest } = await readSnapshot(file.slice(0, -9), policy);
+		const { manifest } = await readSnapshot({
+			snapshotId: file.slice(0, -9),
+			policy: policy,
+		});
 		snapshots.push({
 			id: manifest.snapshotId,
 			deviceId: manifest.deviceId,
@@ -520,7 +571,7 @@ export async function readStorageConnection(policy: StoragePolicy) {
 		};
 	try {
 		const { root, key } = await vault();
-		const devices = await listStorageDevices(root, key);
+		const devices = await listStorageDevices({ root: root, key: key });
 		return {
 			status: "connected" as const,
 			devices,
@@ -536,17 +587,27 @@ export async function readStorageConnection(policy: StoragePolicy) {
 		};
 	}
 }
-export async function restoreAccountSnapshot(
-	snapshotId: string,
-	policy: StoragePolicy,
-	progress: (done: number, total: number) => void = () => {},
-	signal?: AbortSignal,
+export async function restoreAccountSnapshot({
+	snapshotId,
+	policy,
+	progress = () => {},
+	signal,
 	preserveExisting = false,
 	metadataOnly = false,
-) {
-	const { root, key, manifest } = await readSnapshot(snapshotId, policy),
+}: {
+	snapshotId: string;
+	policy: StoragePolicy;
+	progress?: (done: number, total: number) => void;
+	signal?: AbortSignal;
+	preserveExisting?: boolean;
+	metadataOnly?: boolean;
+}) {
+	const { root, key, manifest } = await readSnapshot({
+			snapshotId: snapshotId,
+			policy: policy,
+		}),
 		destination = accountDataRoot();
-	const originals = await walk(destination);
+	const originals = await walk({ root: destination });
 	if (originals.length && !preserveExisting)
 		throw new Error(
 			"Restore requires an empty workspace. Existing work is never overwritten.",
@@ -566,36 +627,49 @@ export async function restoreAccountSnapshot(
 			progress(index + 1, manifest.files.length);
 			continue;
 		}
-		if (!inside(staging, target))
+		if (!inside({ root: staging, target: target }))
 			throw new Error("Snapshot path escapes staging");
 		await mkdir(dirname(target), { recursive: true });
-		await decodeObject(
-			join(root, "objects", `${file.sha256}.blob`),
-			key,
-			`${manifest.accountId}:${file.sha256}`,
-			file,
-			target,
-			signal,
-		);
+		await decodeObject({
+			path: join(root, "objects", `${file.sha256}.blob`),
+			key: key,
+			aad: `${manifest.accountId}:${file.sha256}`,
+			expected: file,
+			target: target,
+			signal: signal,
+		});
 		progress(index + 1, manifest.files.length);
 	}
 	if (metadataOnly)
-		await atomicJson(join(staging, "offline-restore.json"), {
-			snapshotId,
-			deferredMedia,
+		await atomicJson({
+			path: join(staging, "offline-restore.json"),
+			value: {
+				snapshotId,
+				deferredMedia,
+			},
 		});
 	signal?.throwIfAborted();
-	if (JSON.stringify(await walk(destination)) !== JSON.stringify(originals))
+	if (
+		JSON.stringify(await walk({ root: destination })) !==
+		JSON.stringify(originals)
+	)
 		throw new Error(
 			"Workspace changed during restore; verified staging was retained",
 		);
 	// A version switch first publishes the current workspace as another immutable
 	// version. Concurrent machines' versions are never merged or discarded.
 	const savedCurrent = originals.length
-		? await publishAccountSnapshot(policy, progress, signal)
+		? await publishAccountSnapshot({
+				policy: policy,
+				progress: progress,
+				signal: signal,
+			})
 		: null;
 	signal?.throwIfAborted();
-	if (JSON.stringify(await walk(destination)) !== JSON.stringify(originals))
+	if (
+		JSON.stringify(await walk({ root: destination })) !==
+		JSON.stringify(originals)
+	)
 		throw new Error(
 			"Workspace changed before activation; verified staging was retained",
 		);
@@ -606,13 +680,16 @@ export async function restoreAccountSnapshot(
 		"restore-journals",
 		`${requireAccount().id}-${randomUUID()}.json`,
 	);
-	await atomicJson(journal, {
-		status: "prepared",
-		destination,
-		retained,
-		staging,
-		snapshotId,
-		savedCurrent: savedCurrent?.snapshotId,
+	await atomicJson({
+		path: journal,
+		value: {
+			status: "prepared",
+			destination,
+			retained,
+			staging,
+			snapshotId,
+			savedCurrent: savedCurrent?.snapshotId,
+		},
 	});
 	let moved = false;
 	try {
@@ -627,12 +704,15 @@ export async function restoreAccountSnapshot(
 		if (moved) await rename(retained, destination);
 		throw error;
 	}
-	await atomicJson(journal, {
-		status: "complete",
-		destination,
-		retained: moved ? retained : null,
-		snapshotId,
-		savedCurrent: savedCurrent?.snapshotId,
+	await atomicJson({
+		path: journal,
+		value: {
+			status: "complete",
+			destination,
+			retained: moved ? retained : null,
+			snapshotId,
+			savedCurrent: savedCurrent?.snapshotId,
+		},
 	});
 	return {
 		files: manifest.files.length - deferredMedia.length,

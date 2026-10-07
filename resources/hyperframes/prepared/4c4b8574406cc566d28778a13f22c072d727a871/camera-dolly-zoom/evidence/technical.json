@@ -1,0 +1,42 @@
+{
+  "id": "camera-dolly-zoom",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "d41fe4ce44a324e1d1f0a4597b44182089cb5b3bc7dfbab79e3c7d6c249d2d7f",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "camera-dolly-zoom.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "8f5a09f3e0a1584f74cf64050e98e408eadc69ba03ada1ff8f47c5b2dacf5245",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "2d58c975f5722f30a9362d0c812377486b24944418f81b9fccde2385e1bcd383",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "dad5ba8a9df0cba18c39e4cc7f4f0539aa970edbfb6816ba7f9b281e0330b78e",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "2d58c975f5722f30a9362d0c812377486b24944418f81b9fccde2385e1bcd383",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

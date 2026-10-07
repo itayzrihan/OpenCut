@@ -1,0 +1,42 @@
+{
+  "id": "avatar-group-hover",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "6a3e5fadc1e1bd5f9e6b2d5c1fe5f1c07d7e5b04ab95f527ae44b66c536efe45",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "9c2fbd2e96eed7cd929bf518141eb9d7d1bfc8f6016c5f0b319f4f587d6b6f82",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "13e8da90412c01e6e7ce79aba8c2800477a8605fecd20829d74009db0144c563",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "13e8da90412c01e6e7ce79aba8c2800477a8605fecd20829d74009db0144c563",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "13e8da90412c01e6e7ce79aba8c2800477a8605fecd20829d74009db0144c563",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

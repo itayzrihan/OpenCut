@@ -1,6 +1,7 @@
 import { withAccount } from "@/accounts/server";
 import { type NextRequest } from "next/server";
 import { completeOpenAIAuthorizationHandoff } from "@/ai/server/openai-codex-oauth";
+import { oauthReturnDocument } from "@/accounts/oauth-return";
 
 export const runtime = "nodejs";
 
@@ -9,4 +10,7 @@ async function GETHandler(request: NextRequest) {
 	return response;
 }
 
-export const GET = withAccount(GETHandler);
+const completeWithAccount = withAccount(GETHandler);
+export async function GET(request: NextRequest) {
+	return oauthReturnDocument(request) ?? completeWithAccount(request);
+}

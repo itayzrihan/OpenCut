@@ -63,16 +63,10 @@ test("legacy import copies unknown fields, history, settings, private assets and
 				{ id: "media-1", storageKind: "linked", sourcePath: media, size: 24 },
 			]),
 		);
-		const before = await hashFile(indexPath);
-		const alice = await registerAccount(
-			"alice",
-			"Alice",
-			"a strong migration password",
+		const before = await hashFile({ path: indexPath });
+		const alice = await registerAccount({ login: "alice", displayName: "Alice", password: "a strong migration password" }
 		);
-		const bob = await registerAccount(
-			"bob",
-			"Bob",
-			"another migration password",
+		const bob = await registerAccount({ login: "bob", displayName: "Bob", password: "another migration password" }
 		);
 		await expect(
 			accountScope.run(bob.account, inspectLegacyImport),
@@ -83,7 +77,7 @@ test("legacy import copies unknown fields, history, settings, private assets and
 				files: 5,
 				missing: [],
 			});
-			const result = await importLegacyAccount();
+			const result = await importLegacyAccount({  });
 			expect(result).toMatchObject({ projects: 1, files: 6 });
 			const destination = accountDataRoot();
 			const actual = JSON.parse(
@@ -124,8 +118,8 @@ test("legacy import copies unknown fields, history, settings, private assets and
 			expect(
 				await readFile(join(destination, "settings", "custom.json"), "utf8"),
 			).toBe('{"custom":true}');
-			expect(await hashFile(indexPath)).toBe(before);
-			await expect(importLegacyAccount()).rejects.toThrow("empty account");
+			expect(await hashFile({ path: indexPath })).toBe(before);
+			await expect(importLegacyAccount({  })).rejects.toThrow("empty account");
 		});
 	} finally {
 		keys.forEach((key, index) => {

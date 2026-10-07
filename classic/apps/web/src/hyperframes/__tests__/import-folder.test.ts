@@ -4,6 +4,7 @@ import type { EditorCore } from "@/core";
 import type { PreparedHyperframesFolder } from "../folder";
 import type { MediaAsset } from "@/media/types";
 import type { LocalDriveRequestScope } from "@/services/local-drive/client";
+import { bindEditorWriteAuthority } from "@/editor-agent/write-authority";
 import type {
 	HyperframesImportRecovery,
 	HyperframesImportDraft,
@@ -21,13 +22,15 @@ let mode:
 	| "scene"
 	| "commit"
 	| "save";
+let onRuntime: (() => void) | undefined;
+let lastCleanupScope: LocalDriveRequestScope | undefined;
 let abort: AbortController;
 let sceneId: string;
 let closed: number;
 let failCleanup = false;
 let activeUploadToken = "";
 let windowDescriptor: PropertyDescriptor | undefined;
-let savedRecovery: HyperframesImportRecovery;
+let savedRecovery: HyperframesImportRecovery | undefined;
 let libraryItems: HyperframesLibraryItem[];
 let uploadedFiles: string[];
 const runtimeManifest = {
@@ -99,6 +102,7 @@ mock.module("@/services/storage/service", () => ({
 			expect(uploadToken).toBe(activeUploadToken);
 			events.push(discard ? "discard" : "finalize");
 			if (failCleanup) throw new Error("Cleanup failed");
+			lastCleanupScope = scope;
 		},
 	},
 }));
@@ -109,6 +113,7 @@ mock.module("../render-client", () => ({
 	HyperframesRenderClient: class {
 		async prepareSource() {
 			events.push("runtime");
+			onRuntime?.();
 			if (mode === "runtime") throw new Error("Runtime failed");
 			return { durationSeconds: 4, runtimeManifest };
 		}
@@ -120,6 +125,9 @@ mock.module("../render-client", () => ({
 const { importHyperframesFolder } = await import("../import-folder");
 
 beforeEach(() => {
+	savedRecovery = undefined;
+	onRuntime = undefined;
+	lastCleanupScope = undefined;
 	events = [];
 	mode = "ok";
 	abort = new AbortController();
@@ -366,4 +374,29 @@ test("resuming cannot move the import into a different scene", async () => {
 		"original scene",
 	);
 	expect(events).toEqual(["recover"]);
+});
+
+test("ownership changing after preview prevents a canonical import and cleanup keeps the original fence", async () => {
+	let generation = 1;
+	const unbind = bindEditorWriteAuthority({
+		accountId: "account",
+		projectId: "project",
+		read: () => ({ sessionId: "same-tab", generation }),
+	});
+	onRuntime = () => {
+		generation = 2;
+	};
+	try {
+		await expect(importHyperframesFolder(fixture())).rejects.toThrow(
+			"ownership changed",
+		);
+		expect(events).toContain("runtime");
+		expect(events).not.toContain("commit");
+		expect(events).not.toContain("save");
+		expect(
+			lastCleanupScope?.writeHeaders?.["X-OpenCut-Editor-Generation"],
+		).toBe("1");
+	} finally {
+		unbind();
+	}
 });

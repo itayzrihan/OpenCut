@@ -1,0 +1,42 @@
+{
+  "id": "mesh-gradient-bg",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c93f8b68f309d6ad5071cd562815c5c35d4b26fbb432111f7b7450b66434595a",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "6c3dad47fa0d7f3670fff6eb58e4552639797aa2194528d9cfa2ae30186d9436",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "cdbf13bb67f4d6653d9e8b9fec02505f07eaf64ad1bfc6dc9fbf6e9f3f7b5c1b",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "280bf35c0d4c817db770d0cd7e1d0156643606678aecea519c879d5353a1b05a",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "cdbf13bb67f4d6653d9e8b9fec02505f07eaf64ad1bfc6dc9fbf6e9f3f7b5c1b",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

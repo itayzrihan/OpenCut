@@ -18,24 +18,22 @@ test("portable browser archive restores binary values, cycles and non-JSON value
 		undefined,
 		infinity: Infinity,
 		negativeZero: -0,
-		big: 999999999999999999n,
+		big: BigInt("999999999999999999"),
 		map: new Map([["a", new Set([1, 2])]]),
 	};
 	value.self = value;
-	const graph = await encodeBrowserGraph(value, async (blob) => {
+	const graph = await encodeBrowserGraph({ value: value, storeBlob: async (blob) => {
 		const id = crypto.randomUUID();
 		objects.set(id, blob);
 		return id;
-	});
+	} });
 	const encoded = JSON.stringify(graph);
-	const restored = await decodeBrowserGraph(
-		JSON.parse(encoded),
-		async (id) => objects.get(id)!,
+	const restored = await decodeBrowserGraph({ graph: JSON.parse(encoded), readBlob: async (id) => objects.get(id)! }
 	);
-	expect(await sameBrowserRecord(value, restored)).toBe(true);
+	expect(await sameBrowserRecord({ left: value, right: restored })).toBe(true);
 	expect((restored as Record<string, unknown>).self).toBe(restored);
 	expect(objects.size).toBe(3);
 	await expect(
-		encodeBrowserGraph({ bad: () => {} }, async () => "unused"),
+		encodeBrowserGraph({ value: { bad: () => {} }, storeBlob: async () => "unused" }),
 	).rejects.toThrow("Unsupported");
 });

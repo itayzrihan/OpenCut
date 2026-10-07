@@ -1,3 +1,4 @@
+import { mockFetch } from "@/test-support/mock-fetch";
 import { wasm } from "../../../test-support/wasm";
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 
@@ -102,8 +103,8 @@ afterEach(() => {
 
 describe("AI client agent", () => {
 	test("tries a direct no-tool edit plan before the tool loop", async () => {
-		let requestBody: Record<string, unknown> | null = null;
-		globalThis.fetch = async (...fetchParameters) => {
+		let requestBody: Record<string, unknown> = {};
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			const init = fetchParameters[1];
 			if (typeof init?.body === "string") {
 				requestBody = parseRequestBody(init.body);
@@ -130,7 +131,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "change text" }],
@@ -159,8 +160,8 @@ describe("AI client agent", () => {
 
 	test("falls back to tools when the direct edit plan is malformed", async () => {
 		let callCount = 0;
-		let secondRequestBody: Record<string, unknown> | null = null;
-		globalThis.fetch = async (...fetchParameters) => {
+		let secondRequestBody: Record<string, unknown> = {};
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -183,7 +184,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "change text" }],
@@ -212,7 +213,7 @@ describe("AI client agent", () => {
 	test("isolates web research, preserves citations, and removes direct controls", async () => {
 		const requestBodies: Record<string, unknown>[] = [];
 		let callCount = 0;
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (typeof init?.body === "string") {
@@ -261,7 +262,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [
@@ -314,9 +315,9 @@ describe("AI client agent", () => {
 
 	test("executes tool calls and returns the final edit plan", async () => {
 		let callCount = 0;
-		let firstRequestBody: Record<string, unknown> | null = null;
+		let firstRequestBody: Record<string, unknown> = {};
 		let executedToolName = "";
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			const init = fetchParameters[1];
 			callCount += 1;
 			if (callCount === 1 && typeof init?.body === "string") {
@@ -345,7 +346,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "do nothing" }],
@@ -373,7 +374,7 @@ describe("AI client agent", () => {
 	});
 
 	test("stops when the max iteration budget is exhausted", async () => {
-		globalThis.fetch = async () =>
+		globalThis.fetch = mockFetch(async () =>
 			new Response(
 				JSON.stringify({
 					response: {
@@ -389,7 +390,7 @@ describe("AI client agent", () => {
 					},
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
-			);
+			));
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "loop" }],
@@ -412,7 +413,7 @@ describe("AI client agent", () => {
 
 	test("returns immediately when the edit-plan validation tool succeeds", async () => {
 		let callCount = 0;
-		globalThis.fetch = async () => {
+		globalThis.fetch = mockFetch(async () => {
 			callCount += 1;
 			return new Response(
 				JSON.stringify({
@@ -431,7 +432,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "validate this" }],
@@ -459,8 +460,8 @@ describe("AI client agent", () => {
 
 	test("retries a validated proposal that fails the completion guard", async () => {
 		let callCount = 0;
-		let secondRequestBody: Record<string, unknown> | null = null;
-		globalThis.fetch = async (...fetchParameters) => {
+		let secondRequestBody: Record<string, unknown> = {};
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -488,7 +489,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "add SFX" }],
@@ -532,9 +533,9 @@ describe("AI client agent", () => {
 	});
 
 	test("bounds large tool outputs before sending the next turn", async () => {
-		let secondRequestBody: Record<string, unknown> | null = null;
+		let secondRequestBody: Record<string, unknown> = {};
 		let callCount = 0;
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -576,7 +577,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "inspect layer" }],
@@ -613,7 +614,7 @@ describe("AI client agent", () => {
 		let callCount = 0;
 		const requestBodies: Record<string, unknown>[] = [];
 		let executedTool = "";
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (typeof init?.body === "string") {
@@ -650,7 +651,7 @@ describe("AI client agent", () => {
 				status: 200,
 				headers: { "Content-Type": "application/json" },
 			});
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "inspect the captions layer" }],
@@ -692,8 +693,8 @@ describe("AI client agent", () => {
 	test("rejects calls to deferred capabilities that were not loaded", async () => {
 		let callCount = 0;
 		let executeCount = 0;
-		let secondRequestBody: Record<string, unknown> | null = null;
-		globalThis.fetch = async (...fetchParameters) => {
+		let secondRequestBody: Record<string, unknown> = {};
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -720,7 +721,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "inspect a layer" }],
@@ -759,7 +760,7 @@ describe("AI client agent", () => {
 		let callCount = 0;
 		let activeCalls = 0;
 		let maximumConcurrency = 0;
-		globalThis.fetch = async () => {
+		globalThis.fetch = mockFetch(async () => {
 			callCount += 1;
 			return new Response(
 				JSON.stringify({
@@ -788,7 +789,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "inspect app and effects" }],
@@ -826,7 +827,7 @@ describe("AI client agent", () => {
 	test("compacts long runs without orphaning tool calls", async () => {
 		let callCount = 0;
 		const requestBodies: Record<string, unknown>[] = [];
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (typeof init?.body === "string") {
@@ -850,7 +851,7 @@ describe("AI client agent", () => {
 				status: 200,
 				headers: { "Content-Type": "application/json" },
 			});
-		};
+		});
 
 		const result = await runAiAgent({
 			messages: [{ role: "user", content: "keep inspecting" }],
@@ -899,9 +900,9 @@ describe("AI client agent", () => {
 	});
 
 	test("sends preview frames as multimodal tool output", async () => {
-		let secondRequestBody: Record<string, unknown> | null = null;
+		let secondRequestBody: Record<string, unknown> = {};
 		let callCount = 0;
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -928,7 +929,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		await runAiAgent({
 			messages: [{ role: "user", content: "inspect preview" }],
@@ -966,9 +967,9 @@ describe("AI client agent", () => {
 	});
 
 	test("bounds range preview storyboards and sends them as low-detail images", async () => {
-		let secondRequestBody: Record<string, unknown> | null = null;
+		let secondRequestBody: Record<string, unknown> = {};
 		let callCount = 0;
-		globalThis.fetch = async (...fetchParameters) => {
+		globalThis.fetch = mockFetch(async (...fetchParameters) => {
 			callCount += 1;
 			const init = fetchParameters[1];
 			if (callCount === 2 && typeof init?.body === "string") {
@@ -995,7 +996,7 @@ describe("AI client agent", () => {
 				}),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
-		};
+		});
 
 		const oversized = `data:image/jpeg;base64,${"A".repeat(121_001)}`;
 		await runAiAgent({

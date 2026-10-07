@@ -9,7 +9,13 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function serve(request: Request, includeBody: boolean) {
+async function serve({
+	request,
+	includeBody,
+}: {
+	request: Request;
+	includeBody: boolean;
+}) {
 	assertLocalDriveRequest(request);
 	const projectId = new URL(request.url).searchParams.get("projectId");
 	if (!projectId) throw new Error("projectId is required");
@@ -37,7 +43,7 @@ async function serve(request: Request, includeBody: boolean) {
 
 async function GETHandler(request: Request) {
 	try {
-		return await serve(request, true);
+		return await serve({ request: request, includeBody: true });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : String(error) },
@@ -48,7 +54,7 @@ async function GETHandler(request: Request) {
 
 async function HEADHandler(request: Request) {
 	try {
-		return await serve(request, false);
+		return await serve({ request: request, includeBody: false });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : String(error) },

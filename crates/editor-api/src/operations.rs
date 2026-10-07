@@ -14,14 +14,15 @@ use tokio::sync::broadcast;
 
 use crate::{
     ARTIFACT_URI_PREFIX, AccessLevel, ArtifactRef, ArtifactStore, AudioProperties, BlendMode,
-    CapabilityDescriptor, CapabilityError, CapabilityRegistry, CapabilityResult, EditorDocument,
-    Effect, ExportPreset, FnCapability, InvocationContext, JobManager, JobRecord, JobStatus,
-    Keyframe, KeyframeInterpolation, Marker, MediaAsset, MediaType, ModelError, PlaybackState,
-    Project, ProjectSettings, Rational, RegistryError, SMART_LAYER_MASK_ARTIFACT_MIME_TYPE,
-    SelectionState, ShapeProperties, SmartLayer, SmartLayerAppliedSnapshot, SmartLayerBackground,
-    SmartLayerBackgroundRemoval, SmartLayerFade, SmartLayerSourceItemSnapshot,
-    SpeakerFrameBreakoutSettings, SpeakerFrameLayout, TextProperties, Timeline, TimelineItem,
-    TimelineItemKind, Track, TrackKind, Transform, Transition, UnifiedAngles, VisualFitMode,
+    CapabilityDescriptor, CapabilityError, CapabilityRegistry, CapabilityResult, DocumentSupport,
+    EditorDocument, Effect, ExportPreset, FnCapability, InvocationContext, JobManager, JobRecord,
+    JobStatus, Keyframe, KeyframeInterpolation, Marker, MediaAsset, MediaType, ModelError,
+    PlaybackState, Project, ProjectSettings, Rational, RegistryError,
+    SMART_LAYER_MASK_ARTIFACT_MIME_TYPE, SelectionState, ShapeProperties, SmartLayer,
+    SmartLayerAppliedSnapshot, SmartLayerBackground, SmartLayerBackgroundRemoval, SmartLayerFade,
+    SmartLayerSourceItemSnapshot, SpeakerFrameBreakoutSettings, SpeakerFrameLayout, TextProperties,
+    Timeline, TimelineItem, TimelineItemKind, Track, TrackKind, Transform, Transition,
+    UnifiedAngles, VisualFitMode,
     render::{RenderTarget, render},
     runtime::{EditorStore, HistoryEntry, now_ms},
 };
@@ -30,9 +31,64 @@ const STATE_RESOURCE: &str = "opencut://state";
 const PROJECT_RESOURCE: &str = "opencut://project";
 const TIMELINE_RESOURCE: &str = "opencut://timeline";
 
-mod hyperframes;
+// IDs embedded in retained Classic fields also participate in allocation.
+fn collect_ids(value: &Value, ids: &mut HashSet<String>) {
+    match value {
+        Value::Object(o) => {
+            if let Some(id) = o.get("id").and_then(Value::as_str) {
+                ids.insert(id.into());
+            }
+            for v in o.values() {
+                collect_ids(v, ids);
+            }
+        }
+        Value::Array(a) => {
+            for v in a {
+                collect_ids(v, ids);
+            }
+        }
+        _ => {}
+    }
+}
+
 mod classic;
 mod classic_session;
+mod classic_tracks;
+mod classic_element_controls;
+mod classic_track_layout;
+mod classic_remove;
+mod classic_media;
+mod classic_image_inspection;
+mod classic_captions;
+mod classic_caption_cues;
+mod classic_duplicate;
+mod classic_clipboard;
+mod classic_move;
+mod classic_update;
+mod classic_background_removal;
+mod classic_transitions;
+mod classic_split;
+mod classic_text;
+mod classic_text_merge;
+mod classic_ripple;
+mod classic_insert;
+mod classic_scenes;
+mod classic_bookmarks;
+pub(crate) mod classic_settings;
+mod classic_effects;
+mod classic_masks;
+mod classic_keyframes;
+mod classic_animation_catalog;
+mod classic_source_audio;
+mod hyperframes;
+mod hyperframes_examples;
+mod image_generation;
+mod owned_projects;
+pub use owned_projects::{owned_project_read, owned_media_transfer_plan, register_owned_project_capabilities};
+pub use image_generation::subscription_image_plan;
+pub use image_generation::register_editor_image_generation;
+pub use hyperframes_examples::{hyperframes_reference_source, register_hyperframes_reference_source, hyperframes_embedding_plan, register_hyperframes_embedding};
+mod silence;
 
 pub(crate) fn register_all(
     registry: &CapabilityRegistry,
@@ -40,6 +96,9 @@ pub(crate) fn register_all(
     events: broadcast::Sender<u64>,
     artifacts: ArtifactStore,
     jobs: JobManager,
+    classic_effects: crate::ClassicEffectCatalog,
+    classic_masks: crate::ClassicMaskCatalog,
+    classic_animation: crate::ClassicAnimationCatalog,
 ) -> Result<(), RegistryError> {
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
@@ -51,6 +110,32 @@ pub(crate) fn register_all(
     register_project_operations(registry, state.clone(), events.clone())?;
     classic::register_classic_operations(registry, state.clone(), events.clone())?;
     classic_session::register_classic_session_operations(registry, state.clone(), events.clone())?;
+    classic_tracks::register_classic_track_operations(registry, state.clone(), events.clone())?;
+    classic_element_controls::register_classic_element_controls(registry, state.clone(), events.clone())?;
+    classic_track_layout::register_classic_track_layout(registry, state.clone(), events.clone())?;
+    classic_remove::register_classic_remove(registry, state.clone(), events.clone())?;
+    classic_media::register_classic_media(registry, state.clone(), events.clone())?;
+    classic_image_inspection::register_image_inspection(registry, state.clone(), artifacts.clone())?;
+    classic_duplicate::register_classic_duplicate(registry, state.clone(), events.clone())?;
+    classic_clipboard::register_classic_clipboard(registry, state.clone(), events.clone(), classic_animation.clone())?;
+    classic_move::register_classic_move(registry, state.clone(), events.clone())?;
+    classic_update::register_classic_update(registry, state.clone(), events.clone())?;
+    classic_background_removal::register_classic_background_removal(registry, state.clone(), events.clone())?;
+    classic_transitions::register_classic_transitions(registry, state.clone(), events.clone())?;
+    classic_split::register_classic_split(registry, state.clone(), events.clone())?;
+    classic_text_merge::register_classic_text_merge(registry, state.clone(), events.clone())?;
+    classic_ripple::register_classic_ripple(registry, state.clone(), events.clone())?;
+    classic_caption_cues::register_caption_cues(registry, state.clone())?;
+    classic_insert::register_classic_insert(registry, state.clone(), events.clone(), classic_animation.clone())?;
+    classic_scenes::register_classic_scene_operations(registry, state.clone(), events.clone())?;
+    classic_bookmarks::register_classic_bookmark_operations(registry, state.clone(), events.clone())?;
+    classic_settings::register_classic_settings(registry, state.clone(), events.clone())?;
+    classic_source_audio::register_classic_source_audio(registry, state.clone(), events.clone())?;
+    classic_effects::register_classic_effects(registry, state.clone(), events.clone(), classic_effects)?;
+    classic_masks::register_classic_masks(registry, state.clone(), events.clone(), classic_masks)?;
+    classic_keyframes::register_classic_keyframes(registry, state.clone(), events.clone(), classic_animation.clone())?;
+    classic_animation_catalog::register_animation_catalog(registry, state.clone(), classic_animation)?;
+    silence::register_silence_operations(registry, state.clone(), events.clone())?;
     register_media_probe(registry)?;
     register_media_operations(registry, state.clone(), events.clone())?;
     register_media_observation_operations(
@@ -62,6 +147,7 @@ pub(crate) fn register_all(
     register_track_operations(registry, state.clone(), events.clone())?;
     register_item_operations(registry, state.clone(), events.clone())?;
     hyperframes::register_hyperframes_operations(registry, state.clone(), events.clone())?;
+    hyperframes_examples::register_hyperframes_examples(registry)?;
     register_speaker_frame_breakout_operations(
         registry,
         state.clone(),
@@ -119,6 +205,8 @@ impl<T> OperationSuccess<T> {
 #[allow(clippy::too_many_arguments)]
 fn register<I, O, F, Fut>(
     registry: &CapabilityRegistry,
+    document_support: DocumentSupport,
+    execution: crate::CapabilityExecution,
     id: &'static str,
     title: &'static str,
     description: &'static str,
@@ -143,6 +231,8 @@ where
         schema::<I>(),
         schema::<O>(),
     );
+    descriptor.document_support = document_support;
+    descriptor.execution = execution;
     descriptor.access = access;
     descriptor.idempotent = idempotent;
     descriptor.open_world = open_world;
@@ -174,7 +264,9 @@ where
     descriptor.supports_dry_run = descriptor.transactional
         || matches!(
             id,
-            "project.classic.attach" | "project.classic.session.attach" | "project.classic.session.restore"
+            "project.classic.attach"
+                | "project.classic.session.attach"
+                | "project.classic.session.restore"
         );
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
@@ -184,8 +276,11 @@ where
         || id.starts_with("caption.transcribe");
     descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
     descriptor.cancellable |= matches!(
-        id, "hyperframes.project.inspect" | "timeline.hyperframes.import"
-            | "hyperframes.manifest.validate" | "hyperframes.manifest.set"
+        id,
+        "hyperframes.project.inspect"
+            | "timeline.hyperframes.import"
+            | "hyperframes.manifest.validate"
+            | "hyperframes.manifest.set"
             | "hyperframes.audio.prepare"
             | "hyperframes.audio.clips.read"
             | "hyperframes.layers.timeline.read"
@@ -242,9 +337,11 @@ struct ManifestOutput {
 }
 
 fn register_manifest(registry: &CapabilityRegistry) -> Result<(), RegistryError> {
-    let registry_for_handler = registry.clone();
+    let registry_for_handler = registry.downgrade();
     register::<EmptyInput, ManifestOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.capabilities.list",
         "List app capabilities",
         "Returns every live Editor API capability, including capabilities registered by new features and plugins.",
@@ -254,8 +351,9 @@ fn register_manifest(registry: &CapabilityRegistry) -> Result<(), RegistryError>
         false,
         &["manifest", "features", "tools", "discovery"],
         move |_, _| {
-            let registry = registry_for_handler.clone();
+            let registry = registry_for_handler();
             async move {
+                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let snapshot = registry
                     .snapshot()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -293,6 +391,8 @@ fn register_state_read(
 ) -> Result<(), RegistryError> {
     register::<StateReadInput, StateReadOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.state.read",
         "Read complete editor state",
         "Reads the entire typed editor document or any subtree by RFC 6901 JSON Pointer, including project, assets, tracks, layers, text, effects, keyframes, selection, playback, and workspace state.",
@@ -402,21 +502,41 @@ struct AccountSnapshotValidation {
     files: usize,
 }
 
-fn register_account_snapshot_validation(registry: &CapabilityRegistry, state: Arc<RwLock<EditorStore>>) -> Result<(), RegistryError> {
+fn register_account_snapshot_validation(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+) -> Result<(), RegistryError> {
     register::<AccountSnapshotInput, AccountSnapshotValidation, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "account.snapshot.validate",
         "Validate an account snapshot manifest",
         "Validates the supplied portable manifest against the loaded account's identity, path rules and checksum format. This is a pure contract check; it does not read external storage, verify file bytes, transfer data or restore files.",
-        "account", AccessLevel::Read, true, false,
+        "account",
+        AccessLevel::Read,
+        true,
+        false,
         &["account", "storage", "snapshot", "validation"],
         move |_, input| {
             let state = state.clone();
             async move {
-                let store = state.read().map_err(|_| CapabilityError::Failed("editor state lock was poisoned".into()))?;
-                let account = store.document.account.as_ref().ok_or_else(|| CapabilityError::InvalidInput("No authenticated account document is loaded".into()))?;
-                input.manifest.validate(&account.id).map_err(CapabilityError::InvalidInput)?;
-                Ok(OperationSuccess::new(AccountSnapshotValidation { valid: true, files: input.manifest.files.len() }))
+                let store = state.read().map_err(|_| {
+                    CapabilityError::Failed("editor state lock was poisoned".into())
+                })?;
+                let account = store.document.account.as_ref().ok_or_else(|| {
+                    CapabilityError::InvalidInput(
+                        "No authenticated account document is loaded".into(),
+                    )
+                })?;
+                input
+                    .manifest
+                    .validate(&account.id)
+                    .map_err(CapabilityError::InvalidInput)?;
+                Ok(OperationSuccess::new(AccountSnapshotValidation {
+                    valid: true,
+                    files: input.manifest.files.len(),
+                }))
             }
         },
     )
@@ -429,6 +549,8 @@ fn register_account_storage(
 ) -> Result<(), RegistryError> {
     register::<AccountStorageInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "account.storage.configure",
         "Configure account storage",
         "Changes the current account's storage policy using the shared canonical transaction. The host must authenticate the account before loading its document. This operation records policy only; it does not grant filesystem access, pair devices, or transfer data.",
@@ -441,13 +563,27 @@ fn register_account_storage(
             let state = state.clone();
             let events = events.clone();
             async move {
-                let output = mutate(&state, &events, &context, "Configure account storage", Some(input.expected_revision), |document| {
-                    let account = document.account.as_mut().ok_or_else(|| CapabilityError::InvalidInput("No authenticated account document is loaded".into()))?;
-                    account.configure_storage(&input.account_id, input.configuration)
-                        .map_err(CapabilityError::InvalidInput)?;
-                    Ok(vec![account.id.clone()])
-                })?;
-                Ok(OperationSuccess::new(output).summary("Configured account storage policy").changed([STATE_RESOURCE]))
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Configure account storage",
+                    Some(input.expected_revision),
+                    |document| {
+                        let account = document.account.as_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput(
+                                "No authenticated account document is loaded".into(),
+                            )
+                        })?;
+                        account
+                            .configure_storage(&input.account_id, input.configuration)
+                            .map_err(CapabilityError::InvalidInput)?;
+                        Ok(vec![account.id.clone()])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output)
+                    .summary("Configured account storage policy")
+                    .changed([STATE_RESOURCE]))
             }
         },
     )
@@ -478,6 +614,8 @@ fn register_state_patch(
 ) -> Result<(), RegistryError> {
     register::<StatePatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.state.patch",
         "Patch any editor state",
         "Applies validated RFC 6902 operations to the complete editor document with optimistic revision control. This is the future-proof escape hatch: newly added serializable feature fields are immediately readable and editable without adding MCP-specific code.",
@@ -559,6 +697,8 @@ fn register_application_operations(
     let list_state = state.clone();
     register::<EmptyInput, ProjectSessionsOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.sessions.list",
         "List open projects",
         "Lists every OpenCut project tab with its active, dirty, revision, path, and thumbnail state.",
@@ -585,6 +725,8 @@ fn register_application_operations(
     let activate_events = events.clone();
     register::<ProjectActivateInput, ProjectSessionsOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.activate",
         "Activate project",
         "Activates an already-open OpenCut project tab without closing other projects.",
@@ -634,6 +776,8 @@ fn register_application_operations(
 
     register::<EmptyInput, RecentProjectsOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.recent.list",
         "List recent projects",
         "Lists recently opened OpenCut projects in most-recent-first order.",
@@ -765,10 +909,12 @@ fn register_observation_operations(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
 ) -> Result<(), RegistryError> {
-    let health_registry = registry.clone();
+    let health_registry = registry.downgrade();
     let health_state = state.clone();
     register::<EmptyInput, HealthOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.health.read",
         "Read application health",
         "Reports runtime, capability, project-session, and FFmpeg/FFprobe availability.",
@@ -778,9 +924,10 @@ fn register_observation_operations(
         false,
         &["health", "diagnostics", "ffmpeg", "status"],
         move |_, _| {
-            let registry = health_registry.clone();
+            let registry = health_registry();
             let state = health_state.clone();
             async move {
+                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let manifest = registry
                     .effective_snapshot()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -806,9 +953,11 @@ fn register_observation_operations(
         },
     )?;
 
-    let permissions_registry = registry.clone();
+    let permissions_registry = registry.downgrade();
     register::<EmptyInput, PermissionsOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.permissions.read",
         "Read effective MCP permissions",
         "Returns the runtime access policy and the capability IDs currently allowed by it.",
@@ -818,8 +967,9 @@ fn register_observation_operations(
         false,
         &["permissions", "policy", "access", "security"],
         move |_, _| {
-            let registry = permissions_registry.clone();
+            let registry = permissions_registry();
             async move {
+                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let policy = registry
                     .effective_policy()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -838,9 +988,11 @@ fn register_observation_operations(
         },
     )?;
 
-    let audit_registry = registry.clone();
+    let audit_registry = registry.downgrade();
     register::<AuditListInput, AuditListOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.audit.list",
         "List editor activity",
         "Returns recent capability invocations with actor, request, result, resource, and timestamp metadata.",
@@ -850,8 +1002,9 @@ fn register_observation_operations(
         false,
         &["audit", "activity", "actor", "operations"],
         move |_, input| {
-            let registry = audit_registry.clone();
+            let registry = audit_registry();
             async move {
+                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let entries = registry
                     .audit_log(input.limit, input.capability_id.as_deref())
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -863,6 +1016,8 @@ fn register_observation_operations(
     let diff_state = state.clone();
     register::<StateDiffInput, StateDiffOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "app.state.diff",
         "Read state changes",
         "Returns an RFC 6902 patch from a retained project revision, or a full snapshot when the revision is no longer retained.",
@@ -942,6 +1097,8 @@ fn register_observation_operations(
     let query_state = state.clone();
     register::<TimelineQueryInput, TimelineQueryOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.query",
         "Query timeline",
         "Queries timeline tracks and items by project, playhead, range, text, enabled state, or current selection.",
@@ -1045,6 +1202,8 @@ fn register_observation_operations(
 
     register::<HistoryListInput, HistoryListOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "history.list",
         "List undo history",
         "Lists retained undo and redo entries for an open project without changing it.",
@@ -1133,6 +1292,8 @@ fn register_project_operations(
     let create_events = events.clone();
     register::<ProjectCreateInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.create",
         "Create project",
         "Creates a new editable project with video, audio, text, and overlay tracks.",
@@ -1193,6 +1354,8 @@ fn register_project_operations(
     let open_events = events.clone();
     register::<PathInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "project.open",
         "Open project",
         "Loads an OpenCut project JSON file into the canonical editor runtime.",
@@ -1264,6 +1427,8 @@ fn register_project_operations(
     let save_events = events.clone();
     register::<ProjectSaveInput, SaveOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "project.save",
         "Save project",
         "Serializes the complete current OpenCut project to disk.",
@@ -1366,6 +1531,8 @@ fn register_project_operations(
     let close_events = events.clone();
     register::<ProjectTargetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "project.close",
         "Close project",
         "Closes the active project. The operation is recorded in history and can be undone while the runtime remains open.",
@@ -1440,6 +1607,8 @@ fn register_project_operations(
     let update_events = events;
     register::<MergePatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "project.update",
         "Update project",
         "Applies a JSON Merge Patch to project metadata, settings, extensions, or export presets while validating the complete project.",
@@ -1531,6 +1700,8 @@ struct MediaProbeOutput {
 fn register_media_probe(registry: &CapabilityRegistry) -> Result<(), RegistryError> {
     register::<MediaProbeInput, MediaProbeOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "media.probe",
         "Probe media file",
         "Reads streams, duration, dimensions, frame rate, codecs, tags, and other technical metadata from a local media file through FFprobe.",
@@ -1588,6 +1759,8 @@ fn register_media_operations(
     let import_events = events.clone();
     register::<MediaImportInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.import",
         "Import media asset",
         "Adds a video, audio, image, subtitle, font, or other media asset to the active project.",
@@ -1647,6 +1820,8 @@ fn register_media_operations(
     let unify_events = events.clone();
     register::<MediaAnglesUnifyInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "media.angles.unify",
         "Create Unified Angles asset",
         "Creates one virtual video asset from exactly two concrete camera-angle videos and selects one source for all audio.",
@@ -1773,6 +1948,8 @@ fn register_media_operations(
     let update_events = events.clone();
     register::<EntityPatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.update",
         "Update media asset",
         "Applies a validated JSON Merge Patch to a media asset, including relinking, proxy, metadata, and offline state.",
@@ -1813,6 +1990,8 @@ fn register_media_operations(
     let remove_events = events;
     register::<EntityRemoveInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "media.remove",
         "Remove media asset",
         "Removes a media asset. With cascade enabled, timeline items using it are also removed.",
@@ -1926,6 +2105,8 @@ fn register_media_observation_operations(
     let scan_state = state.clone();
     register::<MediaDependenciesInput, MediaDependenciesOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.dependencies.scan",
         "Scan media dependencies",
         "Reports every project media source, whether it exists or is offline, and which timeline items use it.",
@@ -1982,6 +2163,8 @@ fn register_media_observation_operations(
     let relink_events = events;
     register::<MediaRelinkInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.relink",
         "Relink media",
         "Changes one asset to an existing replacement file and clears its offline state.",
@@ -2015,10 +2198,13 @@ fn register_media_observation_operations(
                             .find(|asset| asset.id == asset_id)
                             .ok_or_else(|| unknown("asset", &asset_id))?;
                         let updated = opencut_account_core::media::relink(
-                            &serde_json::to_value(&*asset).map_err(|e| CapabilityError::InvalidInput(e.to_string()))?,
+                            &serde_json::to_value(&*asset)
+                                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?,
                             &input.new_source,
-                        ).map_err(CapabilityError::InvalidInput)?;
-                        *asset = serde_json::from_value(updated).map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+                        )
+                        .map_err(CapabilityError::InvalidInput)?;
+                        *asset = serde_json::from_value(updated)
+                            .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
                         Ok(vec![asset_id.clone()])
                     },
                 )?;
@@ -2033,6 +2219,8 @@ fn register_media_observation_operations(
     let thumbnail_artifacts = artifacts.clone();
     register::<MediaArtifactInput, MediaArtifactOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.thumbnail.generate",
         "Generate media thumbnail",
         "Generates a PNG thumbnail for a project media asset and returns it directly as an artifact.",
@@ -2091,6 +2279,8 @@ fn register_media_observation_operations(
 
     register::<MediaArtifactInput, MediaArtifactOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "media.waveform.generate",
         "Generate audio waveform",
         "Generates a PNG waveform for a project media asset and returns it directly as an artifact.",
@@ -2224,6 +2414,8 @@ fn register_track_operations(
     let add_events = events.clone();
     register::<TrackAddInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.track.add",
         "Add timeline track",
         "Adds a video, audio, text, caption, overlay, or adjustment track at a requested layer index.",
@@ -2262,6 +2454,8 @@ fn register_track_operations(
     let update_events = events.clone();
     register::<EntityPatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.track.update",
         "Update timeline track",
         "Updates track name, kind, visibility, lock, mute, solo, height, metadata, or extensions.",
@@ -2298,6 +2492,8 @@ fn register_track_operations(
     let delete_events = events.clone();
     register::<EntityRemoveInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.track.delete",
         "Delete timeline track",
         "Deletes a timeline track and its items. The operation can be undone.",
@@ -2339,6 +2535,8 @@ fn register_track_operations(
     let reorder_events = events;
     register::<ReorderInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.track.reorder",
         "Reorder timeline track",
         "Moves a track to a new layer index, controlling compositing order.",
@@ -2492,6 +2690,8 @@ fn register_item_operations(
     let add_events = events.clone();
     register::<ItemAddInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.add",
         "Add timeline item",
         "Adds video, audio, image, text, caption, shape, adjustment, or compound content to a track.",
@@ -2575,6 +2775,8 @@ fn register_item_operations(
     let update_events = events.clone();
     register::<EntityPatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.update",
         "Update timeline item",
         "Applies a validated JSON Merge Patch to any timeline item property, including timing, transform, crop, opacity, blend, audio, text, shape, metadata, and extensions.",
@@ -2611,6 +2813,8 @@ fn register_item_operations(
     let delete_events = events.clone();
     register::<EntityRemoveInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.delete",
         "Delete timeline item",
         "Deletes a timeline item and related transitions. The operation can be undone.",
@@ -2663,6 +2867,8 @@ fn register_item_operations(
     let move_events = events.clone();
     register::<ItemMoveInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.move",
         "Move timeline items",
         "Moves one or more items in time and optionally between tracks while preserving their relative offsets.",
@@ -2698,6 +2904,8 @@ fn register_item_operations(
     let trim_events = events.clone();
     register::<ItemTrimInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.trim",
         "Trim timeline item",
         "Changes an item's timeline start, duration, and source in/out points.",
@@ -2745,6 +2953,8 @@ fn register_item_operations(
     let split_events = events.clone();
     register::<ItemSplitInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.split",
         "Split timeline item",
         "Splits an item at an absolute timeline position and adjusts source offsets and keyframes.",
@@ -2825,6 +3035,8 @@ fn register_item_operations(
     let angle_events = events.clone();
     register::<ItemAngleSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.angle.set",
         "Switch Unified Angles camera",
         "Switches one timeline segment to another camera inside its Unified Angles asset without changing the clip or its single audio source.",
@@ -2895,6 +3107,8 @@ fn register_item_operations(
     let set_angles_events = events.clone();
     register::<ItemAnglesSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.items.angle.set",
         "Switch selected Unified Angles cameras",
         "Switches multiple selected timeline cuts from the same Unified Angles asset to one camera in a single undoable transaction.",
@@ -3000,6 +3214,8 @@ fn register_item_operations(
     let set_fit_mode_events = events.clone();
     register::<ItemsFitModeSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.items.fit.set",
         "Set video framing",
         "Sets one or more video timeline items to fit the entire source inside the frame or fill the frame while cropping overflow.",
@@ -3075,6 +3291,8 @@ fn register_item_operations(
     let cycle_angles_events = events.clone();
     register::<ItemAnglesCycleInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.items.angles.cycle",
         "Alternate Unified Angles cameras",
         "Assigns selected cuts from one Unified Angles asset to its cameras in timeline order, cycling through every angle from the chosen starting camera.",
@@ -3202,6 +3420,8 @@ fn register_item_operations(
     let duplicate_events = events.clone();
     register::<ItemDuplicateInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.item.duplicate",
         "Duplicate timeline items",
         "Duplicates items with independent item, effect, and keyframe identifiers.",
@@ -3233,6 +3453,8 @@ fn register_item_operations(
     let text_events = events;
     register::<TextUpdateInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.text.update",
         "Edit timeline text",
         "Updates text content, font, rich spans, alignment, color, stroke, shadow, spacing, or text box properties.",
@@ -3379,6 +3601,8 @@ fn register_speaker_frame_breakout_operations(
     let create_events = events.clone();
     register::<SpeakerFrameBreakoutCreateInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.smart_layer.speaker_frame_breakout.create",
         "Create Speaker Frame Breakout smart layer",
         "Creates one timeline-visible Speaker Frame Breakout layer directly above a source video. Its rendered base, cutout, background, and fades remain derived state rather than separate timeline items.",
@@ -3539,6 +3763,8 @@ fn register_speaker_frame_breakout_operations(
     let update_events = events.clone();
     register::<SpeakerFrameBreakoutUpdateInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.smart_layer.speaker_frame_breakout.update",
         "Update Speaker Frame Breakout smart layer",
         "Updates timing, catalog background, layout, fades, or background-removal settings in one validated undoable operation. Processing is not started; an explicit Apply remains required.",
@@ -3616,6 +3842,8 @@ fn register_speaker_frame_breakout_operations(
     let inspect_artifacts = artifacts.clone();
     register::<SpeakerFrameBreakoutInspectInput, SpeakerFrameBreakoutInspectOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.smart_layer.speaker_frame_breakout.inspect",
         "Inspect Speaker Frame Breakout smart layer",
         "Resolves the nearest active video track below the smart layer and returns stable settings and source signatures for a manual background-removal Apply.",
@@ -3649,6 +3877,8 @@ fn register_speaker_frame_breakout_operations(
     let apply_events = events;
     register::<SpeakerFrameBreakoutApplyInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.smart_layer.speaker_frame_breakout.apply",
         "Apply Speaker Frame Breakout processing",
         "Atomically attaches a prepared background-removal snapshot from the bounded ArtifactStore after verifying the current layer configuration and automatically resolved source signatures.",
@@ -4119,6 +4349,8 @@ fn register_advanced_edit_operations(
     let transform_events = events.clone();
     register::<MultiTransformInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.items.transform",
         "Transform multiple items",
         "Applies one validated transform patch to multiple selected timeline items in a single undoable operation.",
@@ -4169,6 +4401,8 @@ fn register_advanced_edit_operations(
     let group_events = events.clone();
     register::<GroupSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.group.set",
         "Group or link timeline items",
         "Assigns multiple items to a group and optionally creates symmetric linked-item relationships.",
@@ -4222,6 +4456,8 @@ fn register_advanced_edit_operations(
 
     register::<RangeDeleteInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.range.delete",
         "Delete timeline range",
         "Deletes or trims content intersecting a time range and optionally ripple-closes the removed duration.",
@@ -4360,6 +4596,8 @@ fn register_effect_operations(
     let add_events = events.clone();
     register::<EffectAddInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.effect.add",
         "Add item effect",
         "Adds any effect type with arbitrary typed parameters to a timeline item.",
@@ -4412,6 +4650,8 @@ fn register_effect_operations(
     let update_events = events.clone();
     register::<EntityPatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.effect.update",
         "Update item effect",
         "Updates effect type, enabled state, parameters, metadata, or extensions.",
@@ -4448,6 +4688,8 @@ fn register_effect_operations(
     let delete_events = events.clone();
     register::<EffectDeleteInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.effect.delete",
         "Delete item effect",
         "Removes an effect from a timeline item.",
@@ -4494,6 +4736,8 @@ fn register_effect_operations(
     let reorder_events = events;
     register::<ReorderInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.effect.reorder",
         "Reorder item effect",
         "Moves an effect to a new position in its item's effect stack.",
@@ -4566,6 +4810,8 @@ fn register_keyframe_operations(
     let set_events = events.clone();
     register::<KeyframeSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.keyframe.set",
         "Set item keyframe",
         "Creates or updates a keyframe for any addressable item/effect property.",
@@ -4623,6 +4869,8 @@ fn register_keyframe_operations(
     let delete_events = events;
     register::<KeyframeDeleteInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.keyframe.delete",
         "Delete item keyframe",
         "Deletes a keyframe from an item.",
@@ -4682,6 +4930,8 @@ fn register_transition_operations(
     let add_events = events.clone();
     register::<TransitionAddInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.transition.add",
         "Add transition",
         "Adds a transition between timeline items or at a timeline boundary.",
@@ -4763,6 +5013,8 @@ fn register_marker_operations(
     let add_events = events.clone();
     register::<MarkerAddInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "timeline.marker.add",
         "Add timeline marker",
         "Adds a named, colored marker at a timeline position.",
@@ -4872,6 +5124,8 @@ fn register_caption_operations(
     let import_events = events.clone();
     register::<CaptionImportInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "caption.import",
         "Import captions",
         "Parses SRT or WebVTT text into editable caption timeline items.",
@@ -4906,6 +5160,8 @@ fn register_caption_operations(
     let export_artifacts = artifacts.clone();
     register::<CaptionExportInput, CaptionExportOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "caption.export",
         "Export captions",
         "Serializes editable caption items as SRT or WebVTT and returns both text and an artifact.",
@@ -4967,6 +5223,8 @@ fn register_caption_operations(
 
     register::<CaptionTranscribeInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "caption.transcribe",
         "Transcribe media locally",
         "Runs the configured local Whisper executable, imports its WebVTT result, and never sends media to a hosted service.",
@@ -5273,6 +5531,8 @@ fn register_playback_operations(
 ) -> Result<(), RegistryError> {
     register::<MergePatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "playback.update",
         "Control playback",
         "Controls play/pause, playhead position, rate, loop range, preview volume, and mute state.",
@@ -5318,6 +5578,8 @@ fn register_selection_operations(
 ) -> Result<(), RegistryError> {
     register::<SelectionSetInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "selection.set",
         "Set editor selection",
         "Selects any assets, tracks, timeline items, or effects exactly as a human editor can.",
@@ -5356,6 +5618,8 @@ fn register_workspace_operations(
 ) -> Result<(), RegistryError> {
     register::<MergePatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         "workspace.update",
         "Update editor workspace",
         "Controls active panel, snapping, ripple editing, preview quality, and extensible panel state.",
@@ -5463,6 +5727,8 @@ fn register_render_operations(
 ) -> Result<(), RegistryError> {
     register::<EmptyInput, RenderCapabilitiesOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "render.capabilities.list",
         "List render capabilities",
         "Reports exactly which project features the active preview/export backend renders faithfully and which remain compatibility limitations.",
@@ -5524,6 +5790,8 @@ fn register_render_operations(
     let export_artifacts = artifacts.clone();
     register::<ExportRenderInput, RenderOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "export.render",
         "Render timeline",
         "Renders the open timeline to a video file with FFmpeg using project tracks, timing, transforms, crop, opacity, audio, text, shapes, and supported effects.",
@@ -5595,6 +5863,8 @@ fn register_render_operations(
     let render_state = state.clone();
     register::<PreviewFrameInput, RenderOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "preview.frame.render",
         "Render preview frame",
         "Renders a still image of the exact composited timeline at the requested position, or at the current playhead when omitted.",
@@ -5655,6 +5925,8 @@ fn register_render_operations(
 
     register::<PreviewCaptureInput, PreviewCaptureOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Async,
         "preview.frame.capture",
         "Capture preview frame",
         "Renders the exact composited timeline frame and returns it as an opaque MCP image artifact. No filesystem path is required.",
@@ -5783,6 +6055,8 @@ fn register_history_operations(
     let undo_events = events.clone();
     register::<EmptyInput, HistoryOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "history.undo",
         "Undo editor action",
         "Undoes the last committed editor operation, including agent or human edits.",
@@ -5835,6 +6109,8 @@ fn register_history_operations(
 
     register::<EmptyInput, HistoryOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "history.redo",
         "Redo editor action",
         "Redoes the last undone editor operation.",
@@ -5963,10 +6239,12 @@ fn register_job_operations(
     registry: &CapabilityRegistry,
     jobs: JobManager,
 ) -> Result<(), RegistryError> {
-    let start_registry = registry.clone();
+    let start_registry = registry.downgrade();
     let start_jobs = jobs.clone();
     register::<JobStartInput, JobRecord, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "job.start",
         "Start background job",
         "Runs a cancellable OpenCut capability asynchronously and returns a durable job record immediately.",
@@ -5976,9 +6254,10 @@ fn register_job_operations(
         true,
         &["job", "async", "render", "analysis", "progress"],
         move |context, input| {
-            let registry = start_registry.clone();
+            let registry = start_registry();
             let jobs = start_jobs.clone();
             async move {
+                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 if input.capability_id.starts_with("job.") {
                     return Err(CapabilityError::InvalidInput(
                         "job capabilities cannot recursively start jobs".into(),
@@ -6042,6 +6321,8 @@ fn register_job_operations(
     let read_jobs = jobs.clone();
     register::<JobIdInput, JobRecord, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "job.read",
         "Read background job",
         "Returns current status, result receipt, errors, and artifacts for one background job.",
@@ -6064,6 +6345,8 @@ fn register_job_operations(
     let list_jobs = jobs.clone();
     register::<JobListInput, JobListOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "job.list",
         "List background jobs",
         "Lists recent background work filtered by status.",
@@ -6084,6 +6367,8 @@ fn register_job_operations(
 
     register::<JobIdInput, JobRecord, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Async,
         "job.cancel",
         "Cancel background job",
         "Requests cancellation of queued or running background work.",
@@ -6127,6 +6412,8 @@ fn register_patch_and_delete(
     let update_events = events.clone();
     register::<EntityPatchInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         update_id,
         update_title,
         "Applies a validated JSON Merge Patch to the timeline entity.",
@@ -6179,6 +6466,8 @@ fn register_patch_and_delete(
 
     register::<EntityRemoveInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Rewrite,
+        crate::CapabilityExecution::Immediate,
         delete_id,
         delete_title,
         "Deletes the timeline entity. The operation can be undone.",
@@ -6237,6 +6526,32 @@ fn mutate<F>(
 where
     F: FnOnce(&mut EditorDocument) -> Result<Vec<String>, CapabilityError>,
 {
+    mutate_grouped(
+        state,
+        events,
+        context,
+        label,
+        expected_revision,
+        None,
+        mutation,
+    )
+}
+
+/// Coalescing is revision fenced: an intervening mutation or undo cannot
+/// cause a gesture to swallow unrelated history.
+#[allow(clippy::too_many_arguments)]
+fn mutate_grouped<F>(
+    state: &Arc<RwLock<EditorStore>>,
+    events: &broadcast::Sender<u64>,
+    context: &InvocationContext,
+    label: &str,
+    expected_revision: Option<u64>,
+    history_group: Option<&str>,
+    mutation: F,
+) -> Result<MutationOutput, CapabilityError>
+where
+    F: FnOnce(&mut EditorDocument) -> Result<Vec<String>, CapabilityError>,
+{
     if context.cancellation.is_cancelled() {
         return Err(CapabilityError::Failed("operation was cancelled".into()));
     }
@@ -6281,6 +6596,9 @@ where
         .validate()
         .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
     let previous_revision = before.revision;
+    if context.cancellation.is_cancelled() {
+        return Err(CapabilityError::Failed("operation was cancelled before commit".into()));
+    }
     let project_id = working.project.as_ref().map(|project| project.id.clone());
     let next_revision = previous_revision + 1;
     working.revision = next_revision;
@@ -6316,7 +6634,19 @@ where
         .get("opencut/transaction")
         .and_then(Value::as_bool)
         .unwrap_or(false);
-    if !in_transaction {
+    let coalesced = !in_transaction
+        && store.redo.is_empty()
+        && history_group.is_some_and(|group| {
+            store.undo.last().is_some_and(|entry| {
+                entry.host_context.get("gestureGroup").and_then(Value::as_str) == Some(group)
+                    && entry
+                        .host_context
+                        .get("gestureRevision")
+                        .and_then(Value::as_u64)
+                        == Some(previous_revision)
+            })
+        });
+    if !in_transaction && !coalesced {
         store.undo.push(HistoryEntry {
             label: label.into(),
             document: before,
@@ -6328,6 +6658,17 @@ where
                 .unwrap_or_default(),
         });
         store.redo.clear();
+    }
+    if !in_transaction
+        && let Some(group) = history_group
+    {
+        let entry = store.undo.last_mut().unwrap();
+        entry
+            .host_context
+            .insert("gestureGroup".into(), Value::String(group.into()));
+        entry
+            .host_context
+            .insert("gestureRevision".into(), Value::from(next_revision));
     }
     store.document = working;
     if !in_transaction {
@@ -6615,23 +6956,61 @@ mod tests {
         let imported = invoke(&runtime, "media.import", json!({"name":"Offline clip","source":"missing.mp4","mediaType":"video","durationSeconds":30.0})).await;
         let id = imported["changedIds"][0].as_str().unwrap();
         let project = runtime.snapshot().unwrap().project.unwrap();
-        let track = &project.timeline.tracks.iter().find(|t| t.kind == TrackKind::Video).unwrap().id;
+        let track = &project
+            .timeline
+            .tracks
+            .iter()
+            .find(|t| t.kind == TrackKind::Video)
+            .unwrap()
+            .id;
         invoke(&runtime, "timeline.item.add", json!({"trackId":track,"assetId":id,"name":"Retained cut","kind":"video","startSeconds":2.0,"durationSeconds":5.0})).await;
-        invoke(&runtime, "media.update", json!({"id":id,"patch":{"offline":true}})).await;
+        invoke(
+            &runtime,
+            "media.update",
+            json!({"id":id,"patch":{"offline":true}}),
+        )
+        .await;
         let before = runtime.snapshot().unwrap();
-        let path = std::env::temp_dir().join(format!("opencut-relink-{}-{}.mp4", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let path = std::env::temp_dir().join(format!(
+            "opencut-relink-{}-{}.mp4",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
         std::fs::write(&path, b"fixture").unwrap();
         let input = json!({"projectId":project.id,"assetId":id,"newSource":path.to_string_lossy(),"expectedRevision":before.revision});
-        let preview = runtime.registry().invoke("media.relink", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
+        let preview = runtime
+            .registry()
+            .invoke(
+                "media.relink",
+                InvocationContext {
+                    dry_run: true,
+                    ..Default::default()
+                },
+                input.clone(),
+            )
+            .await
+            .unwrap();
         assert_eq!(preview.result.data["committed"], false);
         assert_eq!(runtime.snapshot().unwrap().revision, before.revision);
         invoke(&runtime, "media.relink", input.clone()).await;
         let state = invoke(&runtime, "app.state.read", json!({})).await;
         assert_eq!(state["value"]["project"]["assets"][0]["offline"], false);
-        assert_eq!(state["value"]["project"]["timeline"], serde_json::to_value(&before.project.as_ref().unwrap().timeline).unwrap());
-        assert!(matches!(invoke_error(&runtime, "media.relink", input).await, CapabilityError::Conflict(_)));
+        assert_eq!(
+            state["value"]["project"]["timeline"],
+            serde_json::to_value(&before.project.as_ref().unwrap().timeline).unwrap()
+        );
+        assert!(matches!(
+            invoke_error(&runtime, "media.relink", input).await,
+            CapabilityError::Conflict(_)
+        ));
         invoke(&runtime, "history.undo", json!({})).await;
-        assert_eq!(runtime.snapshot().unwrap().project.unwrap().assets[0].source, "missing.mp4");
+        assert_eq!(
+            runtime.snapshot().unwrap().project.unwrap().assets[0].source,
+            "missing.mp4"
+        );
         std::fs::remove_file(path).unwrap();
     }
 
@@ -6642,31 +7021,72 @@ mod tests {
             "id":"alice","displayName":"Alice","storage":{"mode":"localOnly","destinationId":null,"devices":[]}
         }}],"expectedRevision":0})).await;
         let mut manifest = json!({"version":1,"accountId":"alice","snapshotId":"snapshot-1","deviceId":"desktop","createdAt":"2026-09-28T00:00:00Z","files":[{"path":"projects/one.json","bytes":12,"sha256":"a".repeat(64)}]});
-        let validation = invoke(&runtime, "account.snapshot.validate", json!({"manifest":manifest})).await;
+        let validation = invoke(
+            &runtime,
+            "account.snapshot.validate",
+            json!({"manifest":manifest}),
+        )
+        .await;
         assert_eq!(validation["valid"], true);
         assert_eq!(runtime.snapshot().unwrap().revision, 1);
         manifest["accountId"] = json!("bob");
-        assert!(matches!(invoke_error(&runtime, "account.snapshot.validate", json!({"manifest":manifest})).await, CapabilityError::InvalidInput(_)));
+        assert!(matches!(
+            invoke_error(
+                &runtime,
+                "account.snapshot.validate",
+                json!({"manifest":manifest})
+            )
+            .await,
+            CapabilityError::InvalidInput(_)
+        ));
         let configuration = json!({"mode":"externalDrive","destinationId":"folder_1","devices":[],"automaticSnapshots":true});
         let input = json!({"accountId":"alice","configuration":configuration,"expectedRevision":1});
-        let preview = runtime.registry().invoke("account.storage.configure", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
+        let preview = runtime
+            .registry()
+            .invoke(
+                "account.storage.configure",
+                InvocationContext {
+                    dry_run: true,
+                    ..Default::default()
+                },
+                input.clone(),
+            )
+            .await
+            .unwrap();
         assert_eq!(preview.result.data["committed"], false);
         assert_eq!(runtime.snapshot().unwrap().revision, 1);
         invoke(&runtime, "account.storage.configure", input.clone()).await;
         let state = invoke(&runtime, "app.state.read", json!({})).await;
         assert_eq!(state["value"]["account"]["storage"], configuration);
-        assert!(matches!(invoke_error(&runtime, "account.storage.configure", input).await, CapabilityError::Conflict(_)));
+        assert!(matches!(
+            invoke_error(&runtime, "account.storage.configure", input).await,
+            CapabilityError::Conflict(_)
+        ));
         let wrong = json!({"accountId":"bob","configuration":{"mode":"localOnly","destinationId":null,"devices":[]},"expectedRevision":2});
-        assert!(matches!(invoke_error(&runtime, "account.storage.configure", wrong).await, CapabilityError::InvalidInput(_)));
+        assert!(matches!(
+            invoke_error(&runtime, "account.storage.configure", wrong).await,
+            CapabilityError::InvalidInput(_)
+        ));
         invoke(&runtime, "history.undo", json!({})).await;
-        assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
+        assert_eq!(
+            runtime.snapshot().unwrap().account.unwrap().storage.mode,
+            opencut_account_core::StorageMode::LocalOnly
+        );
         let machines = json!({"mode":"personalDevices","destinationId":"shared_folder","devices":[{"id":"desktop","name":"Editing desktop","fingerprint":"b".repeat(64),"enabled":true}],"automaticSnapshots":true});
         let revision = runtime.snapshot().unwrap().revision;
-        invoke(&runtime, "account.storage.configure", json!({"accountId":"alice","configuration":machines,"expectedRevision":revision})).await;
+        invoke(
+            &runtime,
+            "account.storage.configure",
+            json!({"accountId":"alice","configuration":machines,"expectedRevision":revision}),
+        )
+        .await;
         let state = invoke(&runtime, "app.state.read", json!({})).await;
         assert_eq!(state["value"]["account"]["storage"], machines);
         invoke(&runtime, "history.undo", json!({})).await;
-        assert_eq!(runtime.snapshot().unwrap().account.unwrap().storage.mode, opencut_account_core::StorageMode::LocalOnly);
+        assert_eq!(
+            runtime.snapshot().unwrap().account.unwrap().storage.mode,
+            opencut_account_core::StorageMode::LocalOnly
+        );
     }
 
     async fn invoke(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {

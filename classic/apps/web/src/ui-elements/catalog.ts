@@ -793,8 +793,8 @@ export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
 				name: "Typing",
 				libraryAssetId: COUNTER_TYPING_SFX_ASSET_ID,
 				startOffsetSeconds: 0.09808333333333333,
-				durationSeconds: 1.3114166666666668,
-				sourceDurationSeconds: 1.3114166666666668,
+				durationSeconds: 1.311416666666667,
+				sourceDurationSeconds: 1.311416666666667,
 				trimStartSeconds: 0,
 				trimEndSeconds: 0,
 				params: {

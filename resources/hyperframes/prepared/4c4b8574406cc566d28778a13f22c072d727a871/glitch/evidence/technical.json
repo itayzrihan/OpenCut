@@ -1,0 +1,43 @@
+{
+  "id": "glitch",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "fc18ee301be9c459f5cc89bd1cfb5fb1abf341086f706418d6c00e36ebbb148a",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "glitch.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "888597aacc181e78e1fc3b811c674d57fc46dead2f6c1aa3c96d64ec770e23a8",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "01cc3b7d5ffda410159478bd100535ff212d9eb73fc5d25f2e197f74b26cecee",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "d080077bb14fc2b0a2451fda8ec9cf3b66b8f259c315a4df5577a9869b5d9a16",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "01cc3b7d5ffda410159478bd100535ff212d9eb73fc5d25f2e197f74b26cecee",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

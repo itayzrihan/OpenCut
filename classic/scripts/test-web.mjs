@@ -11,6 +11,7 @@ const testPattern = /\.(test|spec)\.tsx?$/;
 const args = process.argv.slice(2);
 let jobs = 2;
 let timeoutMs = 90_000;
+let testTimeoutMs = 5_000;
 let report = fileURLToPath(
 	new URL(`../../.local/classic-web-tests/${Date.now()}/`, import.meta.url),
 );
@@ -18,6 +19,8 @@ const requested = [];
 for (const arg of args) {
 	if (arg.startsWith("--jobs=")) jobs = Number(arg.slice(7));
 	else if (arg.startsWith("--timeout=")) timeoutMs = Number(arg.slice(10));
+	else if (arg.startsWith("--test-timeout="))
+		testTimeoutMs = Number(arg.slice(15));
 	else if (arg.startsWith("--report=")) report = path.resolve(arg.slice(9));
 	else if (arg.startsWith("--")) throw new Error(`Unknown option: ${arg}`);
 	else requested.push(arg);
@@ -26,6 +29,14 @@ if (!Number.isInteger(jobs) || jobs < 1 || jobs > 8)
 	throw new Error("--jobs must be an integer from 1 to 8");
 if (!Number.isInteger(timeoutMs) || timeoutMs < 1)
 	throw new Error("--timeout must be a positive number of milliseconds");
+if (
+	!Number.isInteger(testTimeoutMs) ||
+	testTimeoutMs < 1 ||
+	testTimeoutMs > timeoutMs
+)
+	throw new Error(
+		"--test-timeout must be positive and no greater than --timeout",
+	);
 
 async function discover(directory) {
 	const files = [];
@@ -71,11 +82,12 @@ async function run(file) {
 	const runnerArgs = usesNode
 		? [
 				"--import",
-				pathToFileURL(path.join(webRoot, "test-support/node-typescript.mjs")).href,
+				pathToFileURL(path.join(webRoot, "test-support/node-typescript.mjs"))
+					.href,
 				"--test",
 				"--test-reporter=tap",
 			]
-		: ["test"];
+		: ["test", `--timeout=${testTimeoutMs}`];
 	if (usesRealWasm)
 		runnerArgs.push(
 			"--preload",
@@ -145,6 +157,9 @@ await Promise.all(
 );
 results.sort((a, b) => a.file.localeCompare(b.file));
 const summary = {
+	jobs,
+	suiteTimeoutMs: timeoutMs,
+	bunTestTimeoutMs: testTimeoutMs,
 	suites: files.length,
 	failedSuites: results.filter((result) => result.exitCode !== 0).length,
 	passed: results.reduce((sum, result) => sum + result.passed, 0),

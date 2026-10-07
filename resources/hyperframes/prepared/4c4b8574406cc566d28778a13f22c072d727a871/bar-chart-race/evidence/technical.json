@@ -1,0 +1,42 @@
+{
+  "id": "bar-chart-race",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c725e557dbe5d563c197588f2767836b13c8d48bc75a55957a34c8fa6fdae468",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "bar-chart-race.html",
+  "durationSeconds": 12,
+  "frames": [
+    {
+      "timeSeconds": 1.7999999999999998,
+      "sha256": "016d376a413f0d9d57306c5fc9ba5838779bc9267f36fe6abb18ebc5ecc7aa76",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 6,
+      "sha256": "e7c32da9e0e4445f89f2547c67f21fc67f506045b980f9a85135fc0cb4fe47a5",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 10.2,
+      "sha256": "7eda3f2104a052a3f4cb64a1768f68bea5bf4f00545e4958f2e4fa99e0f9630c",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 6,
+      "sha256": "e7c32da9e0e4445f89f2547c67f21fc67f506045b980f9a85135fc0cb4fe47a5",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

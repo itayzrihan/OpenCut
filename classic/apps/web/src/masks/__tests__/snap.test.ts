@@ -1,14 +1,16 @@
-import { describe, expect, test } from "bun:test";
 import {
 	findClosestPointOnFreeformSegment,
-	getFreeformPathClosedStateAfterPointRemoval,
 	insertPointIntoFreeformSegment,
+	insertPointOnFreeformSegment,
+} from "./legacy-freeform-insert";
+import { describe, expect, test } from "bun:test";
+import {
+	getFreeformPathClosedStateAfterPointRemoval,
 	removeFreeformPathPoints,
 } from "@/masks/freeform/path";
 import {
 	appendPointToFreeformPathMask,
 	freeformMaskDefinition,
-	insertPointOnFreeformSegment,
 } from "@/masks/freeform/definition";
 import { getSplitMaskStrokeSegment } from "@/masks/builtin/definitions/split";
 import { textMaskDefinition } from "@/masks/builtin/definitions/text";

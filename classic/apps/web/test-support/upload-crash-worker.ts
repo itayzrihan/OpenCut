@@ -2,10 +2,14 @@
 // storeUploadedMedia's catch/finally blocks, like an unexpected server exit.
 import { mock } from "bun:test";
 import { accountScope } from "@/accounts/server";
+import "./session-policy";
 
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
+	batchEditIsLocked: () => false,
+	batchEditTransition: () => "",
+	fullAutoEditStages: () => [],
 }));
 const { storeUploadedMedia } = await import("@/services/local-drive/server");
 const keepAlive = setInterval(() => undefined, 1000);

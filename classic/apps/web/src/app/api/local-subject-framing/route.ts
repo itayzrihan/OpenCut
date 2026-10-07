@@ -30,7 +30,7 @@ async function POSTHandler(request: NextRequest) {
 		);
 	if (Number(request.headers.get("content-length")) > 1400000)
 		return NextResponse.json({ error: "Frames too large" }, { status: 413 });
-	const raw = new TextDecoder().decode(await readBoundedBody(request, 1400000));
+	const raw = new TextDecoder().decode(await readBoundedBody({ request: request, maximumBytes: 1400000 }));
 	if (raw.length > 1400000)
 		return NextResponse.json({ error: "Frames too large" }, { status: 413 });
 	const parsed = schema.safeParse(

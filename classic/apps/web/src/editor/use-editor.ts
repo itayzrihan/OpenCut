@@ -61,9 +61,11 @@ const subscribeTranscription: EditorSubscribe = ({ editor, onChange }) =>
 function useSubscribedEditor<T>({
 	selector,
 	stores,
+	suspendDuringProjectLoad = false,
 }: {
 	selector: (editor: EditorCore) => T;
 	stores: EditorSubscribe[];
+	suspendDuringProjectLoad?: boolean;
 }): T {
 	const editor = useMemo(() => EditorCore.getInstance(), []);
 	const snapshotCacheRef = useRef<T | typeof SNAPSHOT_UNSET>(SNAPSHOT_UNSET);
@@ -74,6 +76,16 @@ function useSubscribedEditor<T>({
 	);
 
 	const getSnapshot = useCallback((): T => {
+		// Project replacement clears scenes before restoring the validated bundle.
+		// Keep the last rendered snapshot until the provider unmounts the view;
+		// never evaluate a scene-dependent selector against this transient gap.
+		if (
+			suspendDuringProjectLoad &&
+			editor.project.getIsLoading() &&
+			snapshotCacheRef.current !== SNAPSHOT_UNSET
+		) {
+			return snapshotCacheRef.current;
+		}
 		const next = selector(editor);
 		if (
 			snapshotCacheRef.current !== SNAPSHOT_UNSET &&
@@ -87,7 +99,7 @@ function useSubscribedEditor<T>({
 
 		snapshotCacheRef.current = next;
 		return next;
-	}, [editor, selector]);
+	}, [editor, selector, suspendDuringProjectLoad]);
 
 	return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
@@ -152,11 +164,16 @@ export function useEditor<T>(
 
 const PLAYBACK_STORES = [subscribePlayback];
 const TIMELINE_STORES = [subscribeTimeline];
-const TIMELINE_SCENE_STORES = [subscribeTimeline, subscribeScenes];
+const TIMELINE_SCENE_STORES = [
+	subscribeTimeline,
+	subscribeScenes,
+	subscribeProject,
+];
 const TIMELINE_SELECTION_STORES = [
 	subscribeTimeline,
 	subscribeScenes,
 	subscribeSelection,
+	subscribeProject,
 ];
 const PROJECT_STORES = [subscribeProject];
 const MEDIA_STORES = [subscribeMedia];
@@ -176,13 +193,21 @@ export function useEditorTimeline<T>(selector: (editor: EditorCore) => T): T {
 export function useEditorTimelineScenes<T>(
 	selector: (editor: EditorCore) => T,
 ): T {
-	return useSubscribedEditor({ selector, stores: TIMELINE_SCENE_STORES });
+	return useSubscribedEditor({
+		selector,
+		stores: TIMELINE_SCENE_STORES,
+		suspendDuringProjectLoad: true,
+	});
 }
 
 export function useEditorTimelineSelection<T>(
 	selector: (editor: EditorCore) => T,
 ): T {
-	return useSubscribedEditor({ selector, stores: TIMELINE_SELECTION_STORES });
+	return useSubscribedEditor({
+		selector,
+		stores: TIMELINE_SELECTION_STORES,
+		suspendDuringProjectLoad: true,
+	});
 }
 
 export function useEditorProject<T>(selector: (editor: EditorCore) => T): T {

@@ -7,6 +7,8 @@ import type { Bookmark, SceneTracks, TScene } from "@/timeline";
 import { getProjectDurationFromScenes } from "@/timeline/scenes";
 import { roundMediaTime } from "@/wasm";
 import {
+	captureLocalDriveWriteScope,
+	pinLocalDriveWriteScope,
 	loadLocalFontFile,
 	localDriveRequest,
 	localFontUrl,
@@ -131,7 +133,9 @@ function readProjectMetadata(entry: unknown): TProjectMetadata | null {
 	};
 }
 
-function deserializeProject(serializedProject: SerializedProject): TProject {
+export function deserializeProject(
+	serializedProject: SerializedProject,
+): TProject {
 	const scenes =
 		serializedProject.scenes?.map((scene) => ({
 			...scene,
@@ -384,12 +388,14 @@ export class StorageService {
 			});
 			const driveFontIds = new Set(driveFonts.map((item) => item.id));
 			for (const metadata of fontRecords) {
+				const scope = captureLocalDriveWriteScope({ projectId });
 				if (!recovering && driveFontIds.has(metadata.id)) continue;
 				const file = await legacyFonts.files.get(metadata.id);
 				if (!file) {
 					if (driveFontIds.has(metadata.id)) continue;
 					await localDriveRequest({
 						operation: "font.put",
+						scope,
 						payload: {
 							projectId,
 							font: { ...metadata, missing: true },
@@ -400,11 +406,13 @@ export class StorageService {
 				}
 				const storedPath = await uploadLocalFont({
 					projectId,
+					scope,
 					id: metadata.id,
 					file,
 				});
 				await localDriveRequest({
 					operation: "font.put",
+					scope,
 					payload: { projectId, font: metadata, storedPath },
 				});
 			}
@@ -592,6 +600,7 @@ export class StorageService {
 		mediaAsset: MediaAsset;
 		scope?: LocalDriveRequestScope;
 	}): Promise<void> {
+		scope = pinLocalDriveWriteScope({ projectId, scope });
 		const targetUrl = localMediaUrl({
 			projectId,
 			id: mediaAsset.id,
@@ -791,8 +800,10 @@ export class StorageService {
 		projectId: string;
 		font: ProjectFontAsset;
 	}) {
+		const scope = captureLocalDriveWriteScope({ projectId });
 		const storedPath = await uploadLocalFont({
 			projectId,
+			scope,
 			id: font.id,
 			file: font.file,
 		});
@@ -809,6 +820,7 @@ export class StorageService {
 		};
 		await localDriveRequest({
 			operation: "font.put",
+			scope,
 			payload: { projectId, font: metadata, storedPath },
 		});
 	}

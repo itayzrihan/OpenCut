@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
 import { registerCanceller } from "@/editor/cancel-interaction";
 import type { NormalizedCubicBezier } from "@/animation/types";
+import type { ClassicKeyframeEdit } from "@/core/canonical-classic-session";
 import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
 import {
 	applyGraphEditorCurvePreview,
@@ -25,6 +26,9 @@ export function useGraphEditorController() {
 		null,
 	);
 	const hasPreviewRef = useRef(false);
+	const preparedCommitRef = useRef<
+		((edits: ClassicKeyframeEdit[]) => void) | null
+	>(null);
 
 	const state = useMemo<GraphEditorSelectionState>(
 		() =>
@@ -48,6 +52,7 @@ export function useGraphEditorController() {
 	const previousStateKeyRef = useRef(stateKey);
 
 	const discardPreview = useCallback(() => {
+		preparedCommitRef.current = null;
 		if (!hasPreviewRef.current) {
 			return;
 		}
@@ -55,6 +60,7 @@ export function useGraphEditorController() {
 		editor.timeline.discardPreview();
 		hasPreviewRef.current = false;
 	}, [editor]);
+	useEffect(() => () => discardPreview(), [discardPreview]);
 
 	useEffect(() => {
 		if (hasPreviewRef.current && previousStateKeyRef.current !== stateKey) {
@@ -101,6 +107,7 @@ export function useGraphEditorController() {
 			if (state.status !== "ready") {
 				return;
 			}
+			preparedCommitRef.current ??= editor.command.prepareClassicKeyframeEdit();
 
 			const nextAnimations = state.segments.reduce(
 				(animations, segment) =>
@@ -136,32 +143,40 @@ export function useGraphEditorController() {
 				return;
 			}
 
-			editor.timeline.updateKeyframeCurves({
-				keyframes: state.segments.flatMap((segment) => {
-					const patches = buildGraphEditorCurvePatches({
-						context: segment.context,
-						cubicBezier: nextValue,
-						referenceSpanValue: segment.referenceSpanValue,
-					});
-					if (!patches) {
-						return [];
-					}
+			const edits: ClassicKeyframeEdit[] = state.segments.flatMap((segment) => {
+				const patches = buildGraphEditorCurvePatches({
+					context: segment.context,
+					cubicBezier: nextValue,
+					referenceSpanValue: segment.referenceSpanValue,
+				});
+				if (!patches) {
+					return [];
+				}
 
-					return segment.allContexts.flatMap((context) =>
-						patches.map(({ keyframeId, patch }) => ({
-							trackId: state.trackId,
-							elementId: state.elementId,
-							propertyPath: segment.propertyPath,
+				return segment.allContexts.flatMap((context) =>
+					patches.map(({ keyframeId, patch }) => ({
+						trackId: state.trackId,
+						elementId: state.elementId,
+						propertyPath: segment.propertyPath,
+						keyframeId,
+						change: {
+							type: "curve" as const,
 							componentKey: context.componentKey,
-							keyframeId,
 							patch,
-						})),
-					);
-				}),
+						},
+					})),
+				);
 			});
-			hasPreviewRef.current = false;
+			try {
+				const commit =
+					preparedCommitRef.current ??
+					editor.command.prepareClassicKeyframeEdit();
+				commit(edits);
+			} finally {
+				discardPreview();
+			}
 		},
-		[editor, state],
+		[discardPreview, editor, state],
 	);
 
 	return {

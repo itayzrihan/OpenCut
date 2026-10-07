@@ -654,7 +654,7 @@ describe("resolveTrackPlacement", () => {
 			trackId: "video-main",
 			trackIndex: 0,
 			trackType: "video",
-			adjustedStartTime: 0,
+				adjustedStartTime: mediaTime({ ticks: 0 }),
 		});
 	});
 

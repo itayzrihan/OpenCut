@@ -271,6 +271,8 @@ pub(super) fn register_hyperframes_operations(
 ) -> Result<(), RegistryError> {
     register::<PlanLayerMoveInput, crate::HyperframesLayerMovePlan, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layer.move.plan",
         "Plan a HyperFrames layer move",
         "Plans source HTML and script compilation for an authored timed leaf or a top-level GSAP element or group with untimed images. Auto selects runtime for groups and generated elements; request runtime for authored helper functions. Keeps source duration fixed and validates parent windows. Runtime moves require checked animation ownership in isolated preflight. Independent nested clocks and shared targets require source editing. Pure source analysis; does not execute scripts.",
@@ -297,6 +299,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<PrepareLayerMoveInput, HyperframesSource, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layer.move.prepare",
         "Prepare a compiled HyperFrames layer move",
         "Combines canonical timing HTML with the pinned host compiler's script-body results. Requires every planned script and rejects unknown scripts and changes to shared linked scripts. Returns source for isolated runtime preflight without executing it.",
@@ -326,6 +330,8 @@ pub(super) fn register_hyperframes_operations(
     let move_events = events.clone();
     register::<MoveLayerInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layer.move",
         "Move a HyperFrames layer",
         "Commits a compiled, runtime-preflighted source move for one Classic timeline occurrence. Requires explicit project, scene, revision and original source fingerprint. Recomputes HTML and script ownership, verifies resulting manifest timing, preserves other layers and supports undo, dry run, cancellation and idempotency. Compiler results are supplied by the host; no script execution or filesystem access occurs here.",
@@ -380,6 +386,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<ReadLayerSourceInput, crate::HyperframesLayerSource, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layer.source.read",
         "Locate the authored source of a HyperFrames layer",
         "Finds an unambiguous HTML opening tag for a runtime layer in the supplied, fingerprint-matched package. Reports source and textarea offsets and known shared occurrences. This is source navigation, not authorization to retime or mutate a runtime occurrence. Does not execute scripts, access files or change editor state.",
@@ -403,6 +411,8 @@ pub(super) fn register_hyperframes_operations(
     let library_state = state.clone();
     register::<ReadLibraryInput, ReadLibraryOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.library.read",
         "Read imported HyperFrames compositions",
         "Lists canonical Classic compositions, their resource bindings and timeline occurrences. Returns display metadata without source text or binary files. Requires the project and exact revision; does not execute source or mutate the document.",
@@ -446,6 +456,8 @@ pub(super) fn register_hyperframes_operations(
     let insert_events = events.clone();
     register::<InsertInput, InsertOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "timeline.hyperframes.insert",
         "Add an imported HyperFrames composition to the timeline",
         "Adds a new Classic compound occurrence of an existing source package without copying source or media. Requires the active project, scene and revision. Supports placement, undo, dry run and registry idempotency keys; does not execute source or read files.",
@@ -520,6 +532,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<InspectInput, ReadVariablesOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.variables.read",
         "Read HyperFrames variable controls",
         "Reads authored variable declarations from package HTML without executing scripts. Values are global render overrides within a composition occurrence.",
@@ -541,6 +555,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<PrepareVariablesInput, HyperframesSource, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.variables.prepare",
         "Prepare HyperFrames variable values",
         "Validates declared variable types, bounds and enum choices and returns a derived source for runtime preflight. Original file bytes and resources remain unchanged. Does not execute scripts or access the network.",
@@ -564,6 +580,8 @@ pub(super) fn register_hyperframes_operations(
     let variables_events = events.clone();
     register::<SetVariablesInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.variables.set",
         "Change HyperFrames composition variables",
         "Commits preflighted render variables to one Classic timeline occurrence, preserving other occurrences and file bytes. Requires the new runtime manifest, explicit project and revision. Preserves clip placement and rejects a shorter source that no longer covers the clip. Supports undo, dry run, cancellation and idempotency.",
@@ -613,6 +631,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<PrepareSourceInput, PrepareSourceOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.source.prepare",
         "Prepare HyperFrames source edits",
         "Applies bounded text file changes to a supplied source package without executing scripts or reading files. A string adds or replaces a file; null removes it. Preserves entry and resource bindings, validates the resulting package, and returns its original fingerprint for a later commit.",
@@ -639,6 +659,8 @@ pub(super) fn register_hyperframes_operations(
     let source_events = events.clone();
     register::<SetSourceInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.source.set",
         "Edit a HyperFrames composition's source",
         "Commits preflighted source file changes to one Classic timeline occurrence. Requires its original source fingerprint, new runtime manifest, explicit project and exact revision. Shared occurrences detach, locked clips and incompatible layer overrides are rejected, and placement and used duration are preserved. Does not execute scripts or access files or the network. Supports undo, dry run, cancellation and idempotency.",
@@ -689,6 +711,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<PrepareLayerEditsInput, PrepareLayerEditsOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layers.render.prepare",
         "Prepare HyperFrames visual layer edits",
         "Validates bounded per-occurrence opacity overrides against the exact source and observed runtime manifest. Returns uniquely addressed visual layers. Does not read files or execute scripts.",
@@ -713,6 +737,8 @@ pub(super) fn register_hyperframes_operations(
     let edit_events = events.clone();
     register::<SetLayerOpacityInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layer.opacity.set",
         "Change a HyperFrames layer's opacity",
         "Sets visual opacity within one Classic compound clip, preserving source animation and other occurrences. One resets the override; zero hides the layer. Embedded audio is unchanged. Requires an explicit project, scene, element, layer and revision; rejects locked tracks. Supports undo, dry run, cancellation and registry idempotency keys.",
@@ -763,6 +789,8 @@ pub(super) fn register_hyperframes_operations(
     let layers_state = state.clone();
     register::<ReadLayerRowsInput, ReadLayerRowsOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.layers.timeline.read",
         "Read composition layers on the Classic timeline",
         "Projects validated runtime layers into the existing compound clip's timeline window. Preserves occurrence identity and hierarchy, applies trim and ancestor windows, and follows canonical edits and undo. Requires a project, scene, compound element and exact revision. Does not execute source or add tracks.",
@@ -807,6 +835,8 @@ pub(super) fn register_hyperframes_operations(
     let audio_state = state.clone();
     register::<ReadAudioInput, ReadAudioOutput, _, _>(
         registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.audio.clips.read",
         "Read HyperFrames timeline audio clips",
         "Projects compound clips in a canonical Classic scene into derived audio mixer inputs. Preserves placement, trim and gain, bounds audio to the authored source duration, and follows undo history. Requires a project, scene and exact revision. Does not read files, render audio or add tracks.",
@@ -850,6 +880,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<PackagePlanInput, HyperframesPackagePlan, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.package.plan",
         "Plan HyperFrames folder import",
         "Validates supplied relative paths and byte sizes, identifies HTML entry candidates and separates UTF-8 source from durable binary resources. Excludes node_modules and .git. Does not read or execute files.",
@@ -868,6 +900,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<InspectInput, HyperframesInspection, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.project.inspect",
         "Inspect HyperFrames project",
         "Inspects supplied HyperFrames source without executing scripts or fetching files. Retains authored layers, nested hosts, resource references and unresolved runtime requirements.",
@@ -885,6 +919,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<ValidateManifestInput, crate::HyperframesRuntimeManifest, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.manifest.validate",
         "Validate HyperFrames runtime manifest",
         "Validates bounded runtime layer and media observations against their exact source fingerprint. Checks package references, occurrence identity, parent hierarchy and timing without executing scripts or reading files.",
@@ -906,6 +942,8 @@ pub(super) fn register_hyperframes_operations(
     let manifest_state = state.clone();
     register::<PrepareAudioInput, crate::HyperframesAudioPlan, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.audio.prepare",
         "Validate HyperFrames audio render plan",
         "Validates a bounded, derived audio plan against its source fingerprint and registered resources. Normalizes temporary track and group IDs. Does not read files, execute scripts or render audio.",
@@ -935,6 +973,8 @@ pub(super) fn register_hyperframes_operations(
     let manifest_events = events.clone();
     register::<SetManifestInput, MutationOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "hyperframes.manifest.set",
         "Update HyperFrames runtime layers",
         "Stores validated runtime layer and media observations on an existing composition. Requires the exact source fingerprint, project and revision. Supports undo, dry run, cancellation and registry idempotency keys.",
@@ -1008,6 +1048,8 @@ pub(super) fn register_hyperframes_operations(
     )?;
     register::<ImportInput, ImportOutput, _, _>(
         registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
         "timeline.hyperframes.import",
         "Import HyperFrames into timeline",
         "Preserves a HyperFrames source package as a compound clip in the existing timeline. Appends by default or places at an explicit time on an existing visual track. Supports revision checks, undo, dry run and registry idempotency keys. Playback requires the HyperFrames renderer integration.",

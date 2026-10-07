@@ -20,11 +20,11 @@ test("a crash between workspace renames restores the previous workspace and reta
 			journal,
 			JSON.stringify({ status: "prepared", destination, retained, staging }),
 		);
-		await recoverInterruptedRestores(root, "bob");
+		await recoverInterruptedRestores({ root: root, accountId: "bob" });
 		expect(await readFile(join(retained, "project.json"), "utf8")).toBe(
 			"previous unsent edits",
 		);
-		await recoverInterruptedRestores(root, "alice");
+		await recoverInterruptedRestores({ root: root, accountId: "alice" });
 		expect(await readFile(join(destination, "project.json"), "utf8")).toBe(
 			"previous unsent edits",
 		);
@@ -34,7 +34,7 @@ test("a crash between workspace renames restores the previous workspace and reta
 		expect(JSON.parse(await readFile(journal, "utf8")).status).toBe(
 			"rolled-back-after-restart",
 		);
-		await recoverInterruptedRestores(root, "alice");
+		await recoverInterruptedRestores({ root: root, accountId: "alice" });
 		expect(await readFile(join(destination, "project.json"), "utf8")).toBe(
 			"previous unsent edits",
 		);

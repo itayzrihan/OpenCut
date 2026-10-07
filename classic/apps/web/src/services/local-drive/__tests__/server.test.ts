@@ -1,4 +1,5 @@
 import { accountScope } from "@/accounts/server";
+import "../../../../test-support/session-policy";
 // eslint-disable-next-line opencut/prefer-object-params -- Preserve Bun's test signature while adding account scope.
 const test = (name: string, body: () => Promise<void>) =>
 	runTest(name, () =>
@@ -15,6 +16,9 @@ import { join } from "node:path";
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
+	batchEditIsLocked: () => false,
+	batchEditTransition: () => "",
+	fullAutoEditStages: () => [],
 }));
 
 describe("local-drive shared collections", () => {

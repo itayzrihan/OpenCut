@@ -4,5 +4,4 @@ export { BatchCommand } from "./batch-command";
 
 export * from "./timeline";
 export * from "./media";
-export * from "./scene";
 export * from "./project";

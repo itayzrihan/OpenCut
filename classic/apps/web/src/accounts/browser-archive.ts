@@ -82,7 +82,10 @@ export async function archiveLegacyBrowserData(
 			const stores = [];
 			for (const item of await Promise.all(reading)) {
 				const { keys, values, ...schema } = item;
-				const graph = await encodeBrowserGraph({ keys, values }, storeBlob);
+				const graph = await encodeBrowserGraph({
+					value: { keys, values },
+					storeBlob: storeBlob,
+				});
 				stores.push({
 					...schema,
 					graph: await storeBlob(
@@ -95,14 +98,20 @@ export async function archiveLegacyBrowserData(
 			db.close();
 		}
 	}
-	async function archiveDirectory(
-		directory: FileSystemDirectoryHandle,
-		prefix: string[],
-	) {
+	async function archiveDirectory({
+		directory,
+		prefix,
+	}: {
+		directory: FileSystemDirectoryHandle;
+		prefix: string[];
+	}) {
 		for await (const [name, handle] of directory.entries()) {
 			const path = [...prefix, name];
 			if (handle.kind === "directory")
-				await archiveDirectory(handle as FileSystemDirectoryHandle, path);
+				await archiveDirectory({
+					directory: handle as FileSystemDirectoryHandle,
+					prefix: path,
+				});
 			else {
 				const file = await (handle as FileSystemFileHandle).getFile();
 				onProgress(`Archiving browser media ${files.length + 1}…`);
@@ -123,7 +132,10 @@ export async function archiveLegacyBrowserData(
 			handle.kind === "directory" &&
 			/^(media-files-|font-files-|shared-library-)/.test(name)
 		)
-			await archiveDirectory(handle as FileSystemDirectoryHandle, [name]);
+			await archiveDirectory({
+				directory: handle as FileSystemDirectoryHandle,
+				prefix: [name],
+			});
 	}
 	const manifest = {
 		format: "opencut-browser-archive-v1",

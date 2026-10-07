@@ -2,6 +2,10 @@
 
 #![cfg(target_arch = "wasm32")]
 
+mod agent;
+mod knowledge;
+mod session_store;
+
 use opencut_editor_api::{InvocationContext, OpenCutRuntime, RuntimeCheckpoint};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -21,16 +25,37 @@ struct InvocationOptions {
 pub struct CanonicalEditorRuntime {
     runtime: OpenCutRuntime,
     transaction: RefCell<Option<RuntimeCheckpoint>>,
+    agent: RefCell<Option<opencut_editor_agent::RuntimeAgent>>,
+    host: opencut_editor_api::HostBridge,
+    conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,
 }
 
 #[wasm_bindgen]
 impl CanonicalEditorRuntime {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Result<CanonicalEditorRuntime, JsValue> {
+        let runtime = OpenCutRuntime::full_access().map_err(js_error)?;
+        let host = opencut_editor_api::HostBridge::default();
+        opencut_editor_agent::register_knowledge_capabilities(runtime.registry(), &host)
+            .map_err(js_error)?;
+        opencut_editor_api::register_editor_host_capabilities(&runtime, &host).map_err(js_error)?;
         Ok(Self {
-            runtime: OpenCutRuntime::full_access().map_err(js_error)?,
+            runtime,
             transaction: RefCell::new(None),
+            agent: RefCell::new(None),
+            host,
+            conversation: RefCell::new(None),
         })
+    }
+
+    /// The trusted desktop shell opts in before restoring or starting a run.
+    #[wasm_bindgen(js_name = installDesktopUi)]
+    pub fn install_desktop_ui(&self) -> Result<(), JsValue> {
+        if self.agent.borrow().is_some() || self.transaction.borrow().is_some() {
+            return Err(js_error("Install desktop UI before starting an editor run"));
+        }
+        opencut_editor_api::register_editor_screenshot_capability(&self.runtime, &self.host)
+            .map_err(js_error)
     }
 
     /// Invokes the live registry, including validation, revisions and history.
@@ -46,7 +71,7 @@ impl CanonicalEditorRuntime {
                 "Use synchronous capabilities inside a Classic transaction",
             ));
         }
-        let input: Value = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
+        let input: Value = from_json_input(input)?;
         let context = invocation_context(context)?;
         let receipt = self
             .runtime
@@ -55,6 +80,42 @@ impl CanonicalEditorRuntime {
             .await
             .map_err(js_error)?;
         to_js(&receipt)
+    }
+
+    /// Classic's command stack is synchronous. These built-in handlers perform
+    /// Run an installed read-only adapter from a UI surface through the same
+    /// registry as the agent. The callback performs IO; it never selects tools.
+    #[wasm_bindgen(js_name = invokeReadWithHost)]
+    pub async fn invoke_read_with_host(&self, capability_id: String, input: JsValue, callback: js_sys::Function) -> Result<JsValue, JsValue> {
+        use std::{future::Future, task::{Context, Poll, Waker}};
+        if self.transaction.borrow().is_some() || !self.host.pending().map_err(js_error)?.is_empty() {
+            return Err(js_error("Finish the current transaction or host operation first"));
+        }
+        let descriptor = self.runtime.registry().descriptor(&capability_id).map_err(js_error)?.ok_or_else(|| js_error("Unknown capability"))?;
+        if descriptor.access != opencut_editor_api::AccessLevel::Read || !self.host.supports(&descriptor) {
+            return Err(js_error("This UI adapter accepts only installed read capabilities"));
+        }
+        let mut pending = std::pin::pin!(self.runtime.registry().invoke(&capability_id, InvocationContext::default(), from_json_input(input)?));
+        if let Poll::Ready(result) = pending.as_mut().poll(&mut Context::from_waker(Waker::noop())) {
+            return to_js(&result.map_err(js_error)?);
+        }
+        let effect = self.host.pending().map_err(js_error)?.into_iter().next().ok_or_else(|| js_error("Read capability did not produce a host request"))?;
+        let reply = match callback.call1(&JsValue::UNDEFINED, &to_js(&effect)?) {
+            Ok(value) => wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&value)).await,
+            Err(error) => Err(error),
+        };
+        let reply = reply.and_then(from_json_input::<opencut_editor_api::HostEffectResult>);
+        match reply {
+            Ok(reply) => {
+                if let Err(error) = self.host.settle(effect.id, reply) {
+                    // A read has no uncertain write to reconcile. Reject malformed
+                    // callbacks so a UI read cannot strand the shared host slot.
+                    self.host.settle(effect.id, opencut_editor_api::HostEffectResult::Rejected { message: error.to_string() }).map_err(js_error)?;
+                }
+            },
+            Err(_) => self.host.settle(effect.id, opencut_editor_api::HostEffectResult::Rejected { message: "Reference host read failed or was cancelled".into() }).map_err(js_error)?,
+        }
+        to_js(&pending.await.map_err(js_error)?)
     }
 
     /// Classic's command stack is synchronous. These built-in handlers perform
@@ -71,46 +132,16 @@ impl CanonicalEditorRuntime {
             future::Future,
             task::{Context, Poll, Waker},
         };
-        if !matches!(
-            capability_id.as_str(),
-            "project.classic.attach"
-                | "project.classic.session.attach"
-                | "project.classic.session.read"
-                | "project.classic.session.status"
-                | "project.classic.session.archive"
-                | "project.classic.session.restore"
-                | "project.classic.commit"
-                | "project.classic.synchronize"
-                | "hyperframes.project.inspect"
-                | "hyperframes.package.plan"
-                | "hyperframes.manifest.validate"
-                | "hyperframes.manifest.set"
-                | "hyperframes.audio.prepare"
-                | "hyperframes.audio.clips.read"
-                | "hyperframes.layers.timeline.read"
-                | "hyperframes.library.read"
-                | "hyperframes.layer.opacity.set"
-                | "hyperframes.layers.render.prepare"
-                | "hyperframes.variables.read"
-                | "hyperframes.variables.prepare"
-                | "hyperframes.variables.set"
-                | "hyperframes.source.prepare"
-                | "hyperframes.layer.source.read"
-                | "hyperframes.layer.move.plan"
-                | "hyperframes.layer.move.prepare"
-                | "hyperframes.layer.move"
-                | "hyperframes.source.set"
-                | "timeline.hyperframes.import"
-                | "timeline.hyperframes.insert"
-                | "app.state.read"
-                | "history.undo"
-                | "history.redo"
-        ) {
-            return Err(js_error(
-                "This capability is not an immediate Classic transaction; use invoke()",
-            ));
+        let descriptor = self
+            .runtime
+            .registry()
+            .descriptor(&capability_id)
+            .map_err(js_error)?
+            .ok_or_else(|| js_error("Unknown capability"))?;
+        if descriptor.execution != opencut_editor_api::CapabilityExecution::Immediate {
+            return Err(js_error("This capability may suspend; use invoke()"));
         }
-        let input = serde_wasm_bindgen::from_value(input).map_err(js_error)?;
+        let input = from_json_input(input)?;
         let mut context = invocation_context(context)?;
         if self.transaction.borrow().is_some() {
             let descriptor = self
@@ -181,7 +212,7 @@ impl CanonicalEditorRuntime {
         let host_context = if host_context.is_null() || host_context.is_undefined() {
             Map::new()
         } else {
-            serde_wasm_bindgen::from_value(host_context).map_err(js_error)?
+            from_json_input(host_context)?
         };
         let checkpoint = self
             .transaction
@@ -215,6 +246,27 @@ impl CanonicalEditorRuntime {
 
     pub fn capabilities(&self) -> Result<JsValue, JsValue> {
         to_js(&self.runtime.registry().snapshot().map_err(js_error)?)
+    }
+
+    /// Host-only renderer metadata. The agent cannot register implementations.
+    #[wasm_bindgen(js_name = setEffectCatalog)]
+    pub fn set_effect_catalog(&self, definitions: JsValue) -> Result<JsValue, JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error("Finish the transaction before changing renderer definitions"));
+        }
+        to_js(&self.runtime.classic_effect_catalog().replace(from_json_input(definitions)?).map_err(js_error)?)
+    }
+
+    #[wasm_bindgen(js_name = setMaskCatalog)]
+    pub fn set_mask_catalog(&self, definitions: JsValue) -> Result<JsValue, JsValue> {
+        if self.transaction.borrow().is_some() { return Err(js_error("Cannot replace mask catalog during a transaction")); }
+        to_js(&self.runtime.classic_mask_catalog().replace(from_json_input(definitions)?).map_err(js_error)?)
+    }
+
+    #[wasm_bindgen(js_name = setAnimationCatalog)]
+    pub fn set_animation_catalog(&self, definitions: JsValue) -> Result<JsValue, JsValue> {
+        if self.transaction.borrow().is_some() { return Err(js_error("Cannot replace animation catalog during a transaction")); }
+        to_js(&self.runtime.classic_animation_catalog().replace(from_json_input(definitions)?).map_err(js_error)?)
     }
 
     /// The host persists these bytes through its existing storage service.
@@ -270,12 +322,58 @@ impl CanonicalEditorRuntime {
             .bytes
             .to_vec())
     }
+    #[wasm_bindgen(js_name=pinArtifact)]
+    pub fn pin_artifact(&self,id:&str)->Result<(),JsValue>{self.runtime.artifacts().pin(id).map_err(js_error)}
+    #[wasm_bindgen(js_name=artifactMetadata)]
+    pub fn artifact_metadata(&self,id:&str)->Result<JsValue,JsValue>{to_js(&self.runtime.artifacts().get(id).map_err(js_error)?.metadata)}
+}
+
+#[wasm_bindgen(js_name = hyperframesEmbeddingPlan)]
+pub fn hyperframes_embedding_plan(request: JsValue) -> Result<JsValue, JsValue> {
+    to_js(&opencut_editor_api::hyperframes_embedding_plan(from_json_input(request)?).map_err(js_error)?)
+}
+
+#[wasm_bindgen(js_name = ownedProjectRead)]
+pub fn owned_project_read(request: JsValue, project: JsValue, media: JsValue) -> Result<JsValue, JsValue> {
+    let project = if project.is_null() || project.is_undefined() { None } else { Some(from_json_input(project)?) };
+    to_js(&opencut_editor_api::owned_project_read(from_json_input(request)?, project, from_json_input(media)?).map_err(js_error)?)
+}
+
+#[wasm_bindgen(js_name = ownedMediaTransferPlan)]
+pub fn owned_media_transfer_plan(request: JsValue, media: JsValue, sha256: String, byte_size: f64) -> Result<JsValue, JsValue> {
+    if !byte_size.is_finite() || byte_size < 1.0 || byte_size > 268_435_456.0 || byte_size.fract()!=0.0 {return Err(js_error("Invalid owned transfer byte size"));}
+    to_js(&opencut_editor_api::owned_media_transfer_plan(from_json_input(request)?,from_json_input(media)?,&sha256,byte_size as u64).map_err(js_error)?)
+}
+
+#[wasm_bindgen(js_name = subscriptionImagePlan)]
+pub fn subscription_image_plan(request: JsValue, saved: JsValue, completed: JsValue, now_ms: f64) -> Result<JsValue, JsValue> {
+    if !now_ms.is_finite() || now_ms<0.0 || now_ms>9_007_199_254_740_991.0 || now_ms.fract()!=0.0 {return Err(js_error("Invalid image host clock"));}
+    let optional=|value:JsValue| if value.is_null() || value.is_undefined() {Ok(None)}else{from_json_input(value).map(Some)};
+    to_js(&opencut_editor_api::subscription_image_plan(from_json_input(request)?,optional(saved)?,optional(completed)?,now_ms as u64).map_err(js_error)?)
+}
+
+/// Packaged-reference policy shared by the authenticated server and native hosts.
+#[wasm_bindgen(js_name = hyperframesReferenceSource)]
+pub fn hyperframes_reference_source(request: JsValue, source: Option<String>) -> Result<JsValue, JsValue> {
+    let request = serde_wasm_bindgen::from_value(request).map_err(js_error)?;
+    to_js(&opencut_editor_api::hyperframes_reference_source(request, source.as_deref()).map_err(js_error)?)
 }
 
 fn to_js(value: &impl Serialize) -> Result<JsValue, JsValue> {
     value
         .serialize(&serde_wasm_bindgen::Serializer::json_compatible())
         .map_err(js_error)
+}
+
+/// Registry contracts use JSON, including its distinction between an omitted
+/// object property and an explicit null. serde_wasm_bindgen maps JavaScript
+/// undefined values to null in Value, which changes optional Classic fields
+/// across undo, persistence and otherwise unrelated edits.
+fn from_json_input<T: serde::de::DeserializeOwned>(value: JsValue) -> Result<T, JsValue> {
+    let json = js_sys::JSON::stringify(&value)?
+        .as_string()
+        .ok_or_else(|| js_error("Capability input must be JSON serializable"))?;
+    serde_json::from_str(&json).map_err(js_error)
 }
 
 fn js_error(error: impl std::fmt::Display) -> JsValue {
@@ -286,7 +384,7 @@ fn invocation_context(value: JsValue) -> Result<InvocationContext, JsValue> {
     let options: InvocationOptions = if value.is_null() || value.is_undefined() {
         InvocationOptions::default()
     } else {
-        serde_wasm_bindgen::from_value(value).map_err(js_error)?
+        from_json_input(value)?
     };
     Ok(InvocationContext {
         source: "classic.web".into(),

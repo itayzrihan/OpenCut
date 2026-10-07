@@ -14,33 +14,25 @@ import {
 	buildFreeformPath2D,
 	buildFreeformSvgPath,
 	freeformCanvasPointToLocal,
-	findClosestPointOnFreeformSegment,
 	getFreeformCanvasSegments,
 	getFreeformCanvasGeometry,
 	getFreeformLocalBounds,
-	getFreeformSegmentCount,
-	insertPointIntoFreeformSegment,
 	recenterFreeformPath,
 	type FreeformPathPoint,
 } from "@/masks/freeform/path";
 import { getBoxMaskHandlePositions } from "@/masks/handle-positions";
 import { computeFeatherUpdate } from "@/masks/param-update";
-import {
-	setMaskLocalCenter,
-	toGlobalMaskSnapLines,
-} from "@/masks/geometry";
-import {
-	snapPosition,
-	snapRotation,
-	snapScale,
-} from "@/preview/preview-snap";
+import { setMaskLocalCenter, toGlobalMaskSnapLines } from "@/masks/geometry";
+import { snapPosition, snapRotation, snapScale } from "@/preview/preview-snap";
 
 const PERCENTAGE_DISPLAY = {
 	displayMultiplier: 100,
 	step: 1,
 } as const;
 
-const FREEFORM_PATH_MASK_PARAMS: ParamDefinition<keyof FreeformPathMaskParams & string>[] = [
+const FREEFORM_PATH_MASK_PARAMS: ParamDefinition<
+	keyof FreeformPathMaskParams & string
+>[] = [
 	{
 		key: "centerX",
 		label: "X",
@@ -132,16 +124,18 @@ function getFreeformDisplayHandles({
 				scale: params.scale,
 				bounds,
 				closed: true,
-			}).map((segment): MaskOverlay => ({
-				id: `segment:${segment.index}`,
-				type: "canvas-path" as const,
-				pathData: segment.pathData,
-				coordinateSpace: "canvas" as const,
-				handleId: { kind: "segment", index: segment.index },
-				cursor: PEN_CURSOR,
-				strokeOpacity: 0,
-				strokeWidth: segmentStrokeWidth,
-			})),
+			}).map(
+				(segment): MaskOverlay => ({
+					id: `segment:${segment.index}`,
+					type: "canvas-path" as const,
+					pathData: segment.pathData,
+					coordinateSpace: "canvas" as const,
+					handleId: { kind: "segment", index: segment.index },
+					cursor: PEN_CURSOR,
+					strokeOpacity: 0,
+					strokeWidth: segmentStrokeWidth,
+				}),
+			),
 		);
 	}
 
@@ -570,69 +564,5 @@ export function appendPointToFreeformPathMask({
 		centerX: recentered.centerX,
 		centerY: recentered.centerY,
 		path: recentered.points,
-	};
-}
-
-export function insertPointOnFreeformSegment({
-	params,
-	segmentIndex,
-	canvasPoint,
-	bounds,
-	pointId = generateUUID(),
-}: {
-	params: FreeformPathMaskParams;
-	segmentIndex: number;
-	canvasPoint: { x: number; y: number };
-	bounds: ElementBounds;
-	pointId?: string;
-}): { params: FreeformPathMaskParams; pointId: string } | null {
-	const points = params.path;
-	if (getFreeformSegmentCount({ points, closed: params.closed }) === 0) {
-		return null;
-	}
-
-	const closestPoint = findClosestPointOnFreeformSegment({
-		points,
-		segmentIndex,
-		canvasPoint,
-		centerX: params.centerX,
-		centerY: params.centerY,
-		rotation: params.rotation,
-		scale: params.scale,
-		bounds,
-		closed: params.closed,
-	});
-	if (!closestPoint) {
-		return null;
-	}
-
-	const nextPoints = insertPointIntoFreeformSegment({
-		points,
-		segmentIndex,
-		pointId,
-		t: closestPoint.t,
-		closed: params.closed,
-	});
-	if (nextPoints.length === points.length) {
-		return null;
-	}
-
-	const recentered = recenterFreeformPath({
-		points: nextPoints,
-		centerX: params.centerX,
-		centerY: params.centerY,
-		rotation: params.rotation,
-		scale: params.scale,
-		bounds,
-	});
-
-	return {
-		pointId,
-		params: {
-			...params,
-			centerX: recentered.centerX,
-			centerY: recentered.centerY,
-			path: recentered.points,
-		},
 	};
 }

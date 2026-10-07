@@ -72,29 +72,29 @@ export async function startMigration() {
 		id = account.id;
 	if (jobs.get(id)?.state.status === "running")
 		throw new Error("Import is already running");
-	await markAccountImport(id, true);
+	await markAccountImport({ id: id, active: true });
 	const state: Job = { status: "running", files: 0, total: 0 },
 		controller = new AbortController();
 	try {
 		await persist(state);
 	} catch (error) {
-		await markAccountImport(id, false);
+		await markAccountImport({ id: id, active: false });
 		throw error;
 	}
 	jobs.set(id, { state, controller });
 	void (async () => {
 		let status: Job["status"] = "complete";
 		try {
-			state.result = await importLegacyAccount((files, total) => {
+			state.result = await importLegacyAccount({ onProgress: (files, total) => {
 				state.files = files;
 				state.total = total;
-			}, controller.signal);
+			}, signal: controller.signal });
 		} catch (error) {
 			status = controller.signal.aborted ? "cancelled" : "failed";
 			state.error = error instanceof Error ? error.message : String(error);
 		}
 		try {
-			await markAccountImport(id, false);
+			await markAccountImport({ id: id, active: false });
 			state.status = status;
 			await accountScope.run(account, () => persist(state));
 		} catch (error) {

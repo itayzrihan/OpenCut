@@ -97,13 +97,12 @@ async fn source_is_shared_in_memory_and_archived_once_across_history() {
         .unwrap();
     assert_eq!(reopened.snapshot().unwrap().revision, 0);
     call(&reopened, "project.classic.session.restore", input).await;
-    let mut restored = call(
+    let restored = call(
         &reopened,
         "project.classic.session.read",
         json!({"projectId":"classic-project"}),
     )
     .await;
-    restored["revision"] = session["revision"].clone();
     assert_eq!(restored, session);
     call(&reopened, "history.redo", json!({})).await;
     call(&reopened, "history.undo", json!({})).await;

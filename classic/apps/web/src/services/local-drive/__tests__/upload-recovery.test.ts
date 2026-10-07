@@ -1,11 +1,14 @@
 /* eslint-disable opencut/prefer-object-params -- Test helpers preserve Bun and filesystem signatures. */
 import { spawn } from "node:child_process";
+import "../../../../test-support/session-policy";
 import {
 	mkdtemp,
+	mkdir,
 	readFile,
 	readdir,
 	rename,
 	rm,
+	rmdir,
 	stat,
 	writeFile,
 } from "node:fs/promises";
@@ -13,11 +16,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, mock, test as runTest } from "bun:test";
+import type { HyperframesImportDraft } from "@/hyperframes/import-recovery-types";
 import { accountScope } from "@/accounts/server";
 
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
+	batchEditIsLocked: () => false,
+	batchEditTransition: () => "",
+	fullAutoEditStages: () => [],
 }));
 const {
 	storeUploadedMedia,
@@ -35,7 +42,13 @@ const webRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 type Journal = {
 	version: number;
 	state: string;
-	files: Array<{ mediaId: string; fileName: string; temporaryId: string }>;
+	cleanupFiles?: string[];
+	files: Array<{
+		mediaId: string;
+		fileName: string;
+		temporaryId: string;
+		isolated?: true;
+	}>;
 };
 const test = (name: string, body: (directory: string) => Promise<void>) =>
 	runTest(
@@ -72,7 +85,7 @@ async function journal(directory: string, token: string): Promise<Journal> {
 function upload(
 	mediaId: string,
 	uploadToken?: string,
-	body = new Blob(["bytes"]).stream(),
+	body: ReadableStream<Uint8Array> = new Blob(["bytes"]).stream(),
 ) {
 	return storeUploadedMedia({
 		projectId: "project",
@@ -87,7 +100,7 @@ function upload(
 	});
 }
 
-function draft(ids = ["one", "two"]) {
+function draft(ids = ["one", "two"]): HyperframesImportDraft {
 	return {
 		kind: "hyperframes",
 		name: "Recover me",
@@ -172,7 +185,9 @@ test("a new process resumes an unindexed partial file using the original attempt
 	expect(
 		(await readMediaUpload("project", "crashed-attempt")).readyAssetIds,
 	).toEqual(["interrupted"]);
-	expect(await readFile(destination, "utf8")).toBe("finish");
+	const recovered = (await getMediaFile("project", "interrupted"))!;
+	expect(await readFile(recovered.path, "utf8")).toBe("finish");
+	expect(await stat(destination).catch(() => null)).toBeNull();
 	expect(await stat(temporaryPath).catch(() => null)).toBeNull();
 });
 
@@ -240,9 +255,19 @@ async function crashDuringUpload(directory: string) {
 		const destination = join(
 			root(directory),
 			"files",
-			`${file.mediaId}--crashed-attempt--${file.fileName}`,
+			`${file.mediaId}--crashed-attempt--${file.isolated ? `${file.temporaryId}--` : ""}${file.fileName}`,
 		);
-		const temporaryPath = `${destination}.${file.temporaryId}.tmp`;
+		await mkdir(join(root(directory), "files"), { recursive: true });
+		const temporaryPath = file.isolated
+			? join(
+					directory,
+					"data",
+					account.id,
+					"staging",
+					"media",
+					`${file.temporaryId}.tmp`,
+				)
+			: `${destination}.${file.temporaryId}.tmp`;
 		for (let tries = 0; tries < 100; tries++) {
 			if ((await stat(temporaryPath).catch(() => null))?.size === 4) break;
 			await new Promise((resolve) => setTimeout(resolve, 10));
@@ -279,7 +304,7 @@ for (const phase of ["during copy", "after rename before indexing"]) {
 	});
 }
 
-test("discard waits for an active copy and rejects a delayed upload after closure", async (directory) => {
+test("discard closes an active copy without waiting for its stream and rejects delayed publication", async (directory) => {
 	let copied!: () => void;
 	const started = new Promise<void>((resolve) => {
 		copied = resolve;
@@ -303,12 +328,15 @@ test("discard waits for an active copy and rejects a delayed upload after closur
 			{ highWaterMark: 0 },
 		),
 	);
+	void saving.catch(() => {});
 	await started;
-	const discard = finishMediaUpload("project", "attempt", true);
+	await finishMediaUpload("project", "attempt", true);
 	resume();
-	await Promise.all([saving, discard]);
+	await expect(saving).rejects.toThrow();
 	expect(await listMedia("project")).toEqual([]);
-	expect(await readdir(join(root(directory), "files"))).toEqual([]);
+	expect(await readdir(join(root(directory), "files")).catch(() => [])).toEqual(
+		[],
+	);
 	await expect(upload("too-late", "attempt")).rejects.toThrow("already closed");
 });
 
@@ -393,6 +421,74 @@ test("legacy uploads without a journal still finalize and discard by index owner
 	await finishMediaUpload("project", "old-attempt", true);
 	expect(await stat(file.path).catch(() => null)).toBeNull();
 	expect(await listMedia("project")).toEqual([]);
+});
+
+test("legacy journal paths remain recoverable after upgrading to isolated staging", async (directory) => {
+	await mkdir(join(root(directory), "files"), { recursive: true });
+	await mkdir(join(root(directory), "uploads"), { recursive: true });
+	const legacy = {
+		mediaId: "legacy-partial",
+		fileName: "resource.bin",
+		temporaryId: "old-temp",
+	};
+	const destination = join(
+		root(directory),
+		"files",
+		"legacy-partial--old-journal--resource.bin",
+	);
+	const temporary = `${destination}.old-temp.tmp`;
+	await writeFile(destination, "part");
+	await writeFile(temporary, "part");
+	await writeFile(
+		journalPath(directory, "old-journal"),
+		JSON.stringify({ version: 1, state: "open", files: [legacy] }),
+	);
+	await upload("legacy-partial", "old-journal");
+	const recovered = (await getMediaFile("project", "legacy-partial"))!;
+	expect(await readFile(recovered.path, "utf8")).toBe("bytes");
+	expect(await stat(destination).catch(() => null)).toBeNull();
+	expect(await stat(temporary).catch(() => null)).toBeNull();
+	await finishMediaUpload("project", "old-journal", true);
+	expect(await stat(recovered.path).catch(() => null)).toBeNull();
+});
+
+test("legacy discard persists cleanup paths before removing index ownership", async (directory) => {
+	await upload("legacy", "old-attempt");
+	const file = (await getMediaFile("project", "legacy"))!;
+	await rm(journalPath(directory, "old-attempt"));
+	// Force file collection to fail after the index has been published. Reopening
+	// the service must recover from the journal alone, with no index owner left.
+	const backup = `${file.path}.fixture-backup`;
+	await rename(file.path, backup);
+	await mkdir(file.path);
+	const obstacle = join(file.path, "obstacle");
+	await writeFile(obstacle, "prevent collection");
+	await expect(finishMediaUpload("project", "old-attempt", true)).rejects.toThrow();
+	expect(await listMedia("project")).toEqual([]);
+	const intent = await journal(directory, "old-attempt");
+	expect(intent.state).toBe("discarding");
+	expect(intent.cleanupFiles).toHaveLength(1);
+	await rm(obstacle);
+	await rmdir(file.path);
+	await rename(backup, file.path);
+	await finishMediaUpload("project", "old-attempt", true);
+	expect(await stat(file.path).catch(() => null)).toBeNull();
+	expect((await journal(directory, "old-attempt")).cleanupFiles).toBeUndefined();
+});
+
+test("cleanup intents reject paths outside media files before mutating the index", async (directory) => {
+	await upload("staged", "attempt");
+	const bytes = (await getMediaFile("project", "staged"))!.path;
+	const saved = await journal(directory, "attempt");
+	for (const name of ["../index.json", "..", ".", "C:\\outside", "file:stream"]) {
+		saved.cleanupFiles = [name];
+		await writeFile(journalPath(directory, "attempt"), JSON.stringify(saved));
+		await expect(finishMediaUpload("project", "attempt", true)).rejects.toThrow(
+			"Invalid upload cleanup filename",
+		);
+		expect(await readFile(bytes, "utf8")).toBe("bytes");
+		expect((await listMedia("project")).map((record) => record.id)).toEqual(["staged"]);
+	}
 });
 
 test("discard intent resumes after bytes were removed but the index was not saved", async (directory) => {

@@ -1,0 +1,42 @@
+{
+  "id": "halftone-field",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "09cb44bab552cc9af57478cce6cd90c9768368a0601bff7f3a05c6e63f5555cf",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "halftone-field.html",
+  "durationSeconds": 10,
+  "frames": [
+    {
+      "timeSeconds": 1.5,
+      "sha256": "1243f029888871f4d719f09a3116e89fc6c7dcfdf67fdbea2f003cbacbcec6cc",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5,
+      "sha256": "c16282536682e50d90a7a1bab7e705a443edf97c39baf023436226651eeb540e",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 8.5,
+      "sha256": "20b7b981b57b989d822c276fd340c73b16338f249b82295f43642e448abee1f4",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5,
+      "sha256": "c16282536682e50d90a7a1bab7e705a443edf97c39baf023436226651eeb540e",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

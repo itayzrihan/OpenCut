@@ -41,7 +41,7 @@ export function useKeyframeDrag({
 		setKeyframeSelection,
 		toggleKeyframeSelection,
 		selectKeyframeRange,
-		executeCommand: (command) => editor.command.execute({ command }),
+		prepareEdit: () => editor.command.prepareClassicKeyframeEdit(),
 		seek: ({ time }) => editor.playback.seek({ time }),
 		getTotalDuration: () => editor.timeline.getTotalDuration(),
 	};

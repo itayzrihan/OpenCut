@@ -4,8 +4,6 @@ import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo } from "react";
 import { ClassicZooms } from "./classic-zooms";
-import { BatchCommand } from "@/commands";
-import { InsertElementCommand } from "@/commands/timeline";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { useEditor } from "@/editor/use-editor";
@@ -151,17 +149,14 @@ function OverlayMovementItem({ preset }: { preset: OverlayMovementPreset }) {
 
 	const handleAddToTimeline = () => {
 		if (hasAutoSfx) {
-			const commands = buildOverlayMovementTimelineItems({
+			const clips = buildOverlayMovementTimelineItems({
 				preset,
 				startTime: editor.playback.getCurrentTime(),
-			}).map(
-				({ element, trackType }) =>
-					new InsertElementCommand({
-						element,
-						placement: { mode: "auto", trackType },
-					}),
-			);
-			editor.command.execute({ command: new BatchCommand(commands) });
+			}).map(({ element, trackType }) => ({
+				element,
+				placement: { mode: "auto" as const, trackType },
+			}));
+			editor.command.insertClassicTimelineElements(clips);
 			return;
 		}
 		const element = buildEffectElement({

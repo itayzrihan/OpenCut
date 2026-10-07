@@ -1,0 +1,74 @@
+name: Classic editor architecture
+
+on:
+  pull_request:
+    paths:
+      - "classic/**"
+      - "crates/editor-api/**"
+      - "crates/editor-agent/**"
+      - ".github/workflows/editor-architecture.yml"
+  push:
+    branches: [main]
+    paths:
+      - "classic/**"
+      - "crates/editor-api/**"
+      - "crates/editor-agent/**"
+      - ".github/workflows/editor-architecture.yml"
+
+jobs:
+  legacy-command-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      # This scanner resolves repository imports without loading application
+      # dependencies. No Rust build, credentials or local WASM artifacts needed.
+      - name: Install isolated scanner dependencies
+        run: npm ci --prefix classic/scripts/editor-architecture --ignore-scripts --no-audit --no-fund --workspaces=false
+      - name: Test architecture scanner
+        run: node --test classic/scripts/editor-architecture/inventory.test.mjs
+      - name: Check legacy command boundary and inventory source
+        run: node classic/scripts/editor-architecture/check.mjs
+      - name: Upload inventory (candidate paths, not parity proof)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor-architecture-inventory
+          path: .local/editor-architecture/inventory.json
+          if-no-files-found: ignore
+
+  compiled-capability-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: classic -> target
+      - name: Install WASM builder
+        run: cargo install wasm-pack --locked --version 0.13.1
+      - name: Build canonical runtime and agent
+        working-directory: classic
+        run: wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg --no-pack
+      - name: Install isolated scanner dependencies
+        run: npm ci --prefix classic/scripts/editor-architecture --ignore-scripts --no-audit --no-fund --workspaces=false
+      - name: Validate UI contracts against the compiled registry
+        run: node classic/scripts/editor-architecture/check.mjs --with-runtime
+      - name: Exercise canonical registry and agent contracts
+        run: cargo test --locked -j 2 -p opencut-editor-api -p opencut-editor-agent -p opencut-mcp --tests
+      - name: Upload compiled registry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor-compiled-capabilities
+          path: |
+            .local/editor-architecture/inventory.json
+            EDITOR-FEATURE-COVERAGE.md
+          if-no-files-found: ignore

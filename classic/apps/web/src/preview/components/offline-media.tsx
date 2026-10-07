@@ -19,7 +19,15 @@ export function OfflineMediaPanel() {
 		(asset) => asset.missing || asset.canUndoRelink,
 	);
 	if (!relevant.length || !projectId) return null;
-	async function link(id: string, source: string, undo = false) {
+	async function link({
+		id,
+		source,
+		undo = false,
+	}: {
+		id: string;
+		source: string;
+		undo?: boolean;
+	}) {
 		setBusy(true);
 		setError("");
 		try {
@@ -69,7 +77,12 @@ export function OfflineMediaPanel() {
 									/>
 									<button
 										disabled={busy || !paths[asset.id]?.trim()}
-										onClick={() => void link(asset.id, paths[asset.id].trim())}
+										onClick={() =>
+											void link({
+												id: asset.id,
+												source: paths[asset.id].trim(),
+											})
+										}
 									>
 										Link file
 									</button>
@@ -79,7 +92,9 @@ export function OfflineMediaPanel() {
 								<button
 									className="underline"
 									disabled={busy}
-									onClick={() => void link(asset.id, "", true)}
+									onClick={() =>
+										void link({ id: asset.id, source: "", undo: true })
+									}
 								>
 									Undo last relink
 								</button>

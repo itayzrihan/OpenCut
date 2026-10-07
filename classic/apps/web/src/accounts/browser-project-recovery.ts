@@ -19,32 +19,47 @@ type Projection = (options: {
 	destinationId: string;
 }) => string;
 // Host-only copy adapter. The Rust projection owns document/history rebinding.
-async function copyDirectory(source: string, destination: string) {
+async function copyDirectory({
+	source,
+	destination,
+}: {
+	source: string;
+	destination: string;
+}) {
 	await mkdir(destination, { recursive: true });
 	for (const entry of await readdir(source, { withFileTypes: true })) {
 		if (entry.isSymbolicLink())
 			throw new Error("Resolve symbolic links before browser recovery");
 		const from = join(source, entry.name),
 			to = join(destination, entry.name);
-		if (entry.isDirectory()) await copyDirectory(from, to);
+		if (entry.isDirectory())
+			await copyDirectory({ source: from, destination: to });
 		else if (entry.isFile()) {
 			await copyFile(from, to);
-			if ((await hashFile(from)) !== (await hashFile(to)))
+			if ((await hashFile({ path: from })) !== (await hashFile({ path: to })))
 				throw new Error(
 					`Browser recovery copy verification failed: ${entry.name}`,
 				);
 		}
 	}
 }
-export async function prepareBrowserProjectRecovery(
-	sourceId: string,
-	destinationId: string,
-	project: unknown,
-	history: unknown,
-	media: unknown,
-	fonts: unknown,
-	projection: Projection,
-) {
+export async function prepareBrowserProjectRecovery({
+	sourceId,
+	destinationId,
+	project,
+	history,
+	media,
+	fonts,
+	projection,
+}: {
+	sourceId: string;
+	destinationId: string;
+	project: unknown;
+	history: unknown;
+	media: unknown;
+	fonts: unknown;
+	projection: Projection;
+}) {
 	if (
 		![sourceId, destinationId].every((id) =>
 			/^[A-Za-z0-9_-]{1,160}$/.test(id),
@@ -87,7 +102,10 @@ export async function prepareBrowserProjectRecovery(
 		"browser-recovery-staging",
 		randomUUID(),
 	);
-	await copyDirectory(join(projects, sourceId), staging);
+	await copyDirectory({
+		source: join(projects, sourceId),
+		destination: staging,
+	});
 	// Keep exact browser inputs independently of the editable recovered version.
 	await mkdir(join(staging, "browser-originals"), { recursive: true });
 	await writeFile(

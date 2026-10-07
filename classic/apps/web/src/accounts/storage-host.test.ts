@@ -42,10 +42,7 @@ test("offline sources survive encrypted snapshots and metadata-only restore pres
 	const previous = process.env.OPENCUT_ACCOUNTS_DIR;
 	process.env.OPENCUT_ACCOUNTS_DIR = join(root, "host");
 	try {
-		const { account } = await registerAccount(
-			"offline-owner",
-			"Offline Owner",
-			"offline testing password",
+		const { account } = await registerAccount({ login: "offline-owner", displayName: "Offline Owner", password: "offline testing password" }
 		);
 		await mkdir(join(root, "external"));
 		await accountScope.run(account, async () => {
@@ -78,16 +75,10 @@ test("offline sources survive encrypted snapshots and metadata-only restore pres
 				join(data, "projects", "one", "media", "files", "present.wav"),
 				"media bytes",
 			);
-			await configureStorageFolder(join(root, "external"), policy, true);
-			const snapshot = await publishAccountSnapshot(policy);
+			await configureStorageFolder({ folder: join(root, "external"), policy: policy, automaticSnapshots: true });
+			const snapshot = await publishAccountSnapshot({ policy: policy });
 			expect(await accountSnapshotNeeded()).toBe(false);
-			const restored = await restoreAccountSnapshot(
-				snapshot.snapshotId,
-				policy,
-				undefined,
-				undefined,
-				true,
-				true,
+			const restored = await restoreAccountSnapshot({ snapshotId: snapshot.snapshotId, policy: policy, progress: undefined, signal: undefined, preserveExisting: true, metadataOnly: true }
 			);
 			expect(restored.deferredMedia).toBe(1);
 			expect(
@@ -103,12 +94,7 @@ test("offline sources survive encrypted snapshots and metadata-only restore pres
 					join(data, "projects", "one", "media", "files", "present.wav"),
 				),
 			).rejects.toThrow();
-			await restoreAccountSnapshot(
-				snapshot.snapshotId,
-				policy,
-				undefined,
-				undefined,
-				true,
+			await restoreAccountSnapshot({ snapshotId: snapshot.snapshotId, policy: policy, progress: undefined, signal: undefined, preserveExisting: true }
 			);
 			expect(
 				await readFile(
@@ -128,10 +114,7 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 		previous = process.env.OPENCUT_ACCOUNTS_DIR;
 	process.env.OPENCUT_ACCOUNTS_DIR = join(root, "host");
 	try {
-		const { account } = await registerAccount(
-			"snapshot-owner",
-			"Snapshot Owner",
-			"snapshot adapter test password",
+		const { account } = await registerAccount({ login: "snapshot-owner", displayName: "Snapshot Owner", password: "snapshot adapter test password" }
 		);
 		await mkdir(join(root, "external"));
 		await accountScope.run(account, async () => {
@@ -141,23 +124,23 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 				'{"metadata":{"id":"one"},"unknownFields":{"preserve":true}}';
 			await writeFile(join(data, "projects", "one", "project.json"), original);
 			await writeFile(join(data, "empty.bin"), "");
-			await configureStorageFolder(join(root, "external"), policy, true);
+			await configureStorageFolder({ folder: join(root, "external"), policy: policy, automaticSnapshots: true });
 			expect(await accountSnapshotNeeded()).toBe(true);
-			const first = await publishAccountSnapshot(policy),
-				second = await publishAccountSnapshot(policy);
+			const first = await publishAccountSnapshot({ policy: policy }),
+				second = await publishAccountSnapshot({ policy: policy });
 			expect(await accountSnapshotNeeded()).toBe(false);
 			expect(first.snapshotId).not.toBe(second.snapshotId);
 			const vault = join(root, "external", "OpenCut Vaults", account.id);
 			expect(await readdir(join(vault, "objects"))).toHaveLength(2);
 			expect(await listAccountSnapshots(policy)).toHaveLength(2);
 			await expect(
-				publishAccountSnapshot(policy, (done) => {
+				publishAccountSnapshot({ policy: policy, progress: (done) => {
 					if (done === 1)
 						writeFileSync(
 							join(data, "projects", "one", "project.json"),
 							"edits made while encrypting",
 						);
-				}),
+				} }),
 			).rejects.toThrow();
 			expect(await listAccountSnapshots(policy)).toHaveLength(2);
 			expect(
@@ -169,10 +152,10 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 			);
 			expect(sealed.includes(Buffer.from("project.json"))).toBe(false);
 			await expect(
-				restoreAccountSnapshot(first.snapshotId, policy),
+				restoreAccountSnapshot({ snapshotId: first.snapshotId, policy: policy }),
 			).rejects.toThrow("empty workspace");
 			await rename(data, `${data}.original`);
-			await restoreAccountSnapshot(first.snapshotId, policy);
+			await restoreAccountSnapshot({ snapshotId: first.snapshotId, policy: policy });
 			expect(
 				await readFile(join(data, "projects", "one", "project.json"), "utf8"),
 			).toBe(original);
@@ -182,23 +165,13 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 				"new local work",
 			);
 			expect(await accountSnapshotNeeded()).toBe(true);
-			const switched = await restoreAccountSnapshot(
-				first.snapshotId,
-				policy,
-				undefined,
-				undefined,
-				true,
+			const switched = await restoreAccountSnapshot({ snapshotId: first.snapshotId, policy: policy, progress: undefined, signal: undefined, preserveExisting: true }
 			);
 			expect(switched.savedCurrent).toBeDefined();
 			expect(
 				await readFile(join(data, "projects", "one", "project.json"), "utf8"),
 			).toBe(original);
-			await restoreAccountSnapshot(
-				switched.savedCurrent!,
-				policy,
-				undefined,
-				undefined,
-				true,
+			await restoreAccountSnapshot({ snapshotId: switched.savedCurrent!, policy: policy, progress: undefined, signal: undefined, preserveExisting: true }
 			);
 			expect(
 				await readFile(join(data, "projects", "one", "project.json"), "utf8"),
@@ -206,12 +179,7 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 			const cancelled = new AbortController();
 			cancelled.abort();
 			await expect(
-				restoreAccountSnapshot(
-					first.snapshotId,
-					policy,
-					undefined,
-					cancelled.signal,
-					true,
+				restoreAccountSnapshot({ snapshotId: first.snapshotId, policy: policy, progress: undefined, signal: cancelled.signal, preserveExisting: true }
 				),
 			).rejects.toThrow();
 			expect(
@@ -224,7 +192,7 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 			bytes[20] ^= 0xff;
 			await writeFile(objectPath, bytes);
 			await expect(
-				restoreAccountSnapshot(first.snapshotId, policy),
+				restoreAccountSnapshot({ snapshotId: first.snapshotId, policy: policy }),
 			).rejects.toThrow();
 			expect(await readdir(data).catch(() => [])).toEqual([]);
 			expect(
@@ -236,7 +204,7 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 			await rename(join(root, "external"), join(root, "unplugged"));
 			expect((await readStorageConnection(policy)).status).toBe("unavailable");
 			expect((await readStorageProfile()).folder).toBe(join(root, "external"));
-			await configureStorageFolder(null, policy, false, { mode: "localOnly" });
+			await configureStorageFolder({ folder: null, policy: policy, automaticSnapshots: false, options: { mode: "localOnly" } });
 			expect((await readStorageConnection(policy)).status).toBe("local");
 		});
 	} finally {

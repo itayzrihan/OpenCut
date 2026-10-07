@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, mock, test } from "bun:test";
 import type { SceneTracks, TextTrack, VideoTrack } from "@/timeline/types";
 import { DEFAULT_CAPTION_LAYOUT } from "@/subtitles/caption-layout";

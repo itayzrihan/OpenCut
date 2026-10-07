@@ -1,5 +1,5 @@
 import { withAccount } from "@/accounts/server";
-import { assertBatchProjectWrite } from "@/batch/server";
+import { withProjectWriteRequest } from "@/editor-agent/server/project-write";
 /* eslint-disable opencut/prefer-object-params -- Route helpers mirror URL parameter access. */
 import { createReadStream } from "node:fs";
 import { Readable } from "node:stream";
@@ -50,16 +50,17 @@ async function POSTHandler(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
 		const url = new URL(request.url);
-		await assertBatchProjectWrite({
-			projectId: required(url.searchParams, "projectId"),
-			token: request.headers.get("X-OpenCut-Batch-Token"),
-		});
 		if (!request.body) throw new Error("Font request body is required");
-		const storedPath = await storeUploadedFont({
-			projectId: required(url.searchParams, "projectId"),
-			fontId: required(url.searchParams, "id"),
-			fileName: required(url.searchParams, "fileName"),
-			body: request.body,
+		const body = request.body;
+		const storedPath = await withProjectWriteRequest({
+			request,
+			run: () =>
+				storeUploadedFont({
+					projectId: required(url.searchParams, "projectId"),
+					fontId: required(url.searchParams, "id"),
+					fileName: required(url.searchParams, "fileName"),
+					body,
+				}),
 		});
 		return NextResponse.json({ storedPath });
 	} catch (error) {

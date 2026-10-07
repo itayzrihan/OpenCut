@@ -1,4 +1,3 @@
-import { PasteCommand } from "@/commands/timeline";
 import type { ClipboardHandler } from "../types";
 
 export const ElementsClipboardHandler = {
@@ -13,17 +12,8 @@ export const ElementsClipboardHandler = {
 			return null;
 		}
 
-		const results = editor.timeline.getElementsWithTracks({
-			elements: selectedElements,
-		});
-		const items = results.map(({ track, element }) => {
-			const { id: _elementId, ...elementWithoutId } = element;
-			return {
-				trackId: track.id,
-				trackType: track.type,
-				element: elementWithoutId,
-			};
-		});
+		const { items, sourceProjectId } =
+			editor.command.copyClassicTimelineElements(selectedElements);
 
 		if (items.length === 0) {
 			return null;
@@ -31,6 +21,7 @@ export const ElementsClipboardHandler = {
 
 		return {
 			type: "elements",
+			sourceProjectId,
 			items,
 		};
 	},
@@ -40,9 +31,13 @@ export const ElementsClipboardHandler = {
 			return null;
 		}
 
-		return new PasteCommand({
-			time: context.time,
-			clipboardItems: entry.items,
-		});
+		return {
+			executeCanonical: () =>
+				context.editor.command.pasteClassicTimelineElements({
+					time: context.time,
+					items: entry.items,
+					sourceProjectId: entry.sourceProjectId,
+				}),
+		};
 	},
 } satisfies ClipboardHandler<"elements">;

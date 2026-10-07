@@ -1,0 +1,42 @@
+{
+  "id": "news-ticker",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "5a7fcedcc759415db4af17f51d94a8e5a1d8d044a757e2f2702c4d0d616bb55d",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "news-ticker.html",
+  "durationSeconds": 7,
+  "frames": [
+    {
+      "timeSeconds": 1.05,
+      "sha256": "d3277affef30c543b9dc2b190075202c019c1b79a5b5c4629e7872a7189d0616",
+      "file": "frame-0.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 3.5,
+      "sha256": "b9aad9f9d85cb8db461888ef967220a70ecb05b41aa4fdf4e0bdd505d0673bb0",
+      "file": "frame-1.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 5.95,
+      "sha256": "1328bccd037e3ca945b710e316001b8b88949e788dab773ac7aecee75190c76a",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 3.5,
+      "sha256": "b9aad9f9d85cb8db461888ef967220a70ecb05b41aa4fdf4e0bdd505d0673bb0",
+      "file": "frame-3.png",
+      "transparentPixels": true
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

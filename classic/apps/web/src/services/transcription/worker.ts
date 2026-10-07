@@ -32,11 +32,15 @@ env.useBrowserCache = true;
 // Single-thread WASM also works on HTTPS deployments without COOP/COEP.
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1;
 
-const report = (
-	status: TranscriptionProgress["status"],
-	progress: number,
-	message: string,
-) =>
+const report = ({
+	status,
+	progress,
+	message,
+}: {
+	status: TranscriptionProgress["status"];
+	progress: number;
+	message: string;
+}) =>
 	self.postMessage({
 		type: "progress",
 		progress: { status, progress, message },
@@ -53,11 +57,11 @@ self.onmessage = async ({
 			device === "webgpu"
 				? "GPU · WebGPU"
 				: "CPU · WebAssembly (WebGPU fp16 unavailable; slower)";
-		report(
-			"loading-model",
-			0,
-			`Loading ivrit-ai Large v3 Turbo on your ${label}. First download is approximately 1.6 GB…`,
-		);
+		report({
+			status: "loading-model",
+			progress: 0,
+			message: `Loading ivrit-ai Large v3 Turbo on your ${label}. First download is approximately 1.6 GB…`,
+		});
 		const files = new Map<string, { loaded: number; total: number }>();
 		let lastReport = 0;
 		transcriber = (await pipeline<"automatic-speech-recognition">(
@@ -84,16 +88,20 @@ self.onmessage = async ({
 						loaded += value.loaded;
 						total += value.total;
 					}
-					report(
-						"loading-model",
-						total ? (100 * loaded) / total : 0,
-						`Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
-					);
+					report({
+						status: "loading-model",
+						progress: total ? (100 * loaded) / total : 0,
+						message: `Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
+					});
 				},
 			},
 		)) as AutomaticSpeechRecognitionPipeline;
 		if (device === "webgpu") boundWhisperGpuOutputs(transcriber.model);
-		report("transcribing", 0, `Transcribing on your ${label}…`);
+		report({
+			status: "transcribing",
+			progress: 0,
+			message: `Transcribing on your ${label}…`,
+		});
 		let tokens = 0;
 		const started = Date.now();
 		const streamer = new TextStreamer(transcriber.tokenizer, {
@@ -103,11 +111,11 @@ self.onmessage = async ({
 				tokens++;
 				if (Date.now() - lastReport < 500) return;
 				lastReport = Date.now();
-				report(
-					"transcribing",
-					0,
-					`Transcribing on your ${label} · ${Math.round((Date.now() - started) / 1000)}s · ${tokens} text fragments`,
-				);
+				report({
+					status: "transcribing",
+					progress: 0,
+					message: `Transcribing on your ${label} · ${Math.round((Date.now() - started) / 1000)}s · ${tokens} text fragments`,
+				});
 			},
 		});
 		const output = await transcriber(audio, {

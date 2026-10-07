@@ -1,6 +1,10 @@
 import type { EditorCore } from "@/core";
 import { canonicalMediaBindings } from "@/core/canonical-classic-session";
 import { storageService } from "@/services/storage/service";
+import {
+	captureLocalDriveWriteScope,
+	assertLocalDriveWriteScope,
+} from "@/services/local-drive/client";
 import { generateUUID } from "@/utils/id";
 import type { PreparedHyperframesFolder } from "./folder";
 import { HyperframesRenderClient } from "./render-client";
@@ -56,7 +60,12 @@ async function runImport({
 	if (!projectId || !sceneId || !accountId)
 		throw new Error("Open a project before importing a HyperFrames folder");
 	const target = { projectId, sceneId, signal };
-	const scope = { accountId, signal, uploadToken };
+	const scope = {
+		...captureLocalDriveWriteScope({ projectId, accountId }),
+		signal,
+		uploadToken,
+	};
+	const cleanupScope = { ...scope, signal: undefined };
 	const resources = folder.resources.map((asset) => ({ ...asset }));
 	const staged: string[] = [];
 	let committed = false;
@@ -66,6 +75,7 @@ async function runImport({
 	signal?.addEventListener("abort", cancel, { once: true });
 	const assertTarget = () => {
 		signal?.throwIfAborted();
+		assertLocalDriveWriteScope({ projectId, scope });
 		if (
 			window.__opencutAccountId !== accountId ||
 			editor.project.getActiveOrNull()?.metadata.id !== projectId ||
@@ -90,6 +100,7 @@ async function runImport({
 		report({ phase: "saving", completed: resources.length });
 		let saveError: string | undefined;
 		try {
+			assertLocalDriveWriteScope({ projectId, scope });
 			if (
 				window.__opencutAccountId !== accountId ||
 				editor.project.getActiveOrNull()?.metadata.id !== projectId
@@ -102,7 +113,7 @@ async function runImport({
 				projectId,
 				uploadToken,
 				discard: false,
-				scope: { accountId },
+				scope: cleanupScope,
 			});
 		} catch (error) {
 			saveError = error instanceof Error ? error.message : String(error);
@@ -212,7 +223,7 @@ async function runImport({
 					projectId,
 					uploadToken,
 					discard: true,
-					scope: { accountId },
+					scope: cleanupScope,
 				});
 			} catch (cleanupError) {
 				throw new AggregateError(

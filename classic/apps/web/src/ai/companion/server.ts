@@ -32,14 +32,18 @@ export type CompanionHandler = (
 	body: Uint8Array,
 	signal: AbortSignal,
 ) => Promise<Response>;
-export function createCompanionServer(
-	pair: Pairing,
-	handle: CompanionHandler,
+export function createCompanionServer({
+	pair,
+	handle,
 	port = 43127,
-) {
+}: {
+	pair: Pairing;
+	handle: CompanionHandler;
+	port?: number;
+}) {
 	validatePairing(pair);
 	return createServer(async (req, res) => {
-		const fail = (status: number, error: string) => {
+		const fail = ({ status, error }: { status: number; error: string }) => {
 			res.writeHead(status, {
 				"Content-Type": "application/json",
 				"Cache-Control": "no-store",
@@ -47,7 +51,7 @@ export function createCompanionServer(
 			res.end(JSON.stringify({ error }));
 		};
 		if (req.headers.host !== `127.0.0.1:${port}`)
-			return fail(403, "Unexpected local host");
+			return fail({ status: 403, error: "Unexpected local host" });
 		if (req.method === "GET" && req.url?.startsWith("/?ai_oauth=error")) {
 			res.writeHead(400, {
 				"Content-Type": "text/html; charset=utf-8",
@@ -63,7 +67,7 @@ export function createCompanionServer(
 			/^\/api\/ai\/oauth\/complete\?handoff=[a-f0-9-]{36}$/.test(req.url || "");
 		if (!callback) {
 			if (req.headers.origin !== pair.origin)
-				return fail(403, "This app origin is not paired");
+				return fail({ status: 403, error: "This app origin is not paired" });
 			res.setHeader("Access-Control-Allow-Origin", pair.origin);
 			res.setHeader("Vary", "Origin");
 			res.setHeader("Access-Control-Allow-Private-Network", "true");
@@ -83,7 +87,10 @@ export function createCompanionServer(
 				!timingSafeEqual(Buffer.from(token), Buffer.from(pair.token)) ||
 				req.headers["x-opencut-account"] !== pair.accountId
 			)
-				return fail(401, "This OpenCut account is not paired with this device");
+				return fail({
+					status: 401,
+					error: "This OpenCut account is not paired with this device",
+				});
 			const allowed =
 				req.method === "GET"
 					? ["/api/ai/oauth/status", "/api/ai/models"]
@@ -91,7 +98,7 @@ export function createCompanionServer(
 						? ["/api/ai/oauth/start", "/api/ai/oauth/logout", "/api/ai/chat"]
 						: [];
 			if (!allowed.includes(req.url || ""))
-				return fail(404, "Unsupported local AI operation");
+				return fail({ status: 404, error: "Unsupported local AI operation" });
 		}
 		const controller = new AbortController();
 		res.on("close", () => {
@@ -114,10 +121,11 @@ export function createCompanionServer(
 			res.end(Buffer.from(await response.arrayBuffer()));
 		} catch (error) {
 			if (!res.headersSent)
-				fail(
-					400,
-					error instanceof Error ? error.message : "Local AI request failed",
-				);
+				fail({
+					status: 400,
+					error:
+						error instanceof Error ? error.message : "Local AI request failed",
+				});
 		}
 	});
 }

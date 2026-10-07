@@ -3,12 +3,8 @@ import type {
 	AnimationPath,
 	NumericSpec,
 } from "@/animation/types";
-import {
-	parseEffectParamPath,
-} from "@/animation/effect-param-channel";
-import {
-	parseGraphicParamPath,
-} from "@/animation/graphic-param-channel";
+import { parseEffectParamPath } from "@/animation/effect-param-channel";
+import { parseGraphicParamPath } from "@/animation/graphic-param-channel";
 import { getEffectDefinition, registerDefaultEffects } from "@/effects";
 import { getGraphicDefinition } from "@/graphics";
 import {
@@ -21,13 +17,10 @@ import {
 	type ParamValue,
 	type ParamValues,
 } from "@/params";
-import {
-	getElementParam,
-} from "@/params/registry";
+import { getElementParam } from "@/params/registry";
 import type { TimelineElement } from "@/timeline";
 import { isVisualElement } from "@/timeline/element-utils";
-import { PARALLAX_CAMERA_KEYFRAME_PARAMS } from "@/parallax-story-teller/camera-keyframes";
-import { PARALLAX_CAMERA_GUIDE_KIND } from "@/parallax-story-teller/model";
+import { specializedAnimationTargets } from "@/animation/target-registry";
 
 export interface AnimationPathDescriptor {
 	channelLayout: ParamChannelLayout;
@@ -104,31 +97,35 @@ function buildElementParamDescriptor({
 	});
 }
 
-function buildParallaxCameraParamDescriptor({
+function buildSpecializedParamDescriptor({
 	element,
-	paramKey,
+	path,
 }: {
 	element: TimelineElement;
-	paramKey: string;
+	path: string;
 }): AnimationPathDescriptor | null {
-	if (
-		element.type !== "effect" ||
-		(element.params.kind !== "parallax-story-teller" &&
-			element.params.kind !== PARALLAX_CAMERA_GUIDE_KIND)
-	) {
-		return null;
+	for (const target of specializedAnimationTargets.getAll()) {
+		if (
+			element.type !== target.elementType ||
+			(target.paramKind !== undefined &&
+				element.params.kind !== target.paramKind) ||
+			(target.definitionId !== undefined &&
+				(!("definitionId" in element) ||
+					element.definitionId !== target.definitionId)) ||
+			!path.startsWith(target.pathPrefix)
+		)
+			continue;
+		const param = target.params.find(
+			(candidate) => candidate.key === path.slice(target.pathPrefix.length),
+		);
+		if (!param || param.keyframable === false) continue;
+		return buildParamDescriptor({
+			param,
+			baseParams: element.params,
+			setParams: (params) => ({ ...element, params }),
+		});
 	}
-
-	const param = PARALLAX_CAMERA_KEYFRAME_PARAMS.find(
-		(candidate) => candidate.key === paramKey,
-	);
-	if (!param) return null;
-
-	return buildParamDescriptor({
-		param,
-		baseParams: element.params,
-		setParams: (params) => ({ ...element, params }),
-	});
+	return null;
 }
 
 function buildGraphicParamDescriptor({
@@ -145,7 +142,9 @@ function buildGraphicParamDescriptor({
 	const definition = getGraphicDefinition({
 		definitionId: element.definitionId,
 	});
-	const param = definition.params.find((candidate) => candidate.key === paramKey);
+	const param = definition.params.find(
+		(candidate) => candidate.key === paramKey,
+	);
 	if (!param) {
 		return null;
 	}
@@ -173,14 +172,18 @@ function buildEffectParamDescriptor({
 		return null;
 	}
 
-	const effect = element.effects?.find((candidate) => candidate.id === effectId);
+	const effect = element.effects?.find(
+		(candidate) => candidate.id === effectId,
+	);
 	if (!effect) {
 		return null;
 	}
 
 	registerDefaultEffects();
 	const definition = getEffectDefinition(effect.type);
-	const param = definition.params.find((candidate) => candidate.key === paramKey);
+	const param = definition.params.find(
+		(candidate) => candidate.key === paramKey,
+	);
 	if (!param) {
 		return null;
 	}
@@ -210,13 +213,8 @@ export function resolveAnimationTarget({
 	element: TimelineElement;
 	path: AnimationPath;
 }): AnimationPathDescriptor | null {
-	const parallaxCameraTarget = buildParallaxCameraParamDescriptor({
-		element,
-		paramKey: path.startsWith("params.")
-			? path.slice("params.".length)
-			: "",
-	});
-	if (parallaxCameraTarget) return parallaxCameraTarget;
+	const specializedTarget = buildSpecializedParamDescriptor({ element, path });
+	if (specializedTarget) return specializedTarget;
 
 	const elementParamTarget = buildElementParamDescriptor({
 		element,

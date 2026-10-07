@@ -1,0 +1,42 @@
+{
+  "id": "camera-rig-depth-stack",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "32666be621a299b5a01990be21fd5337647cf5e9e7039d15f1911ecca8daae83",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "a52afe79e6059aa02c2c57547b919bab6693a4882d3c17f4b97b7bf0197140e5",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "b581e4fdecdd88a1f72ad89f41405ad42e263a7f885e1e17637cc92ecf482295",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "b581e4fdecdd88a1f72ad89f41405ad42e263a7f885e1e17637cc92ecf482295",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "b581e4fdecdd88a1f72ad89f41405ad42e263a7f885e1e17637cc92ecf482295",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

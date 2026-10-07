@@ -3,7 +3,6 @@ import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream, existsSync } from "node:fs";
 import {
-	copyFile,
 	mkdir,
 	readdir,
 	readFile,
@@ -15,6 +14,12 @@ import {
 } from "node:fs/promises";
 import { platform } from "node:os";
 import { accountDataRoot } from "@/accounts/server";
+import { withEditorProjectWrite } from "@/editor-agent/server/project-write";
+import { createCancellationSafeFileStream } from "./file-stream";
+import {
+	withProjectStorageLock,
+	EDITOR_SESSION_FIELD,
+} from "./project-transaction";
 import { assertAccountMediaSource } from "@/accounts/media-source";
 import { hyperframesImportDraftSchema } from "@/hyperframes/import-recovery-schema";
 import type {
@@ -84,8 +89,15 @@ interface StoredFontRecord extends ProjectFontData {
 interface MediaUploadJournal {
 	version: 1;
 	state: "open" | "retained" | "discarding" | "discarded";
-	files: Array<{ mediaId: string; fileName: string; temporaryId: string }>;
+	files: Array<{
+		mediaId: string;
+		fileName: string;
+		temporaryId: string;
+		isolated?: true;
+	}>;
 	createdAt?: string;
+	/** Basenames of legacy indexed files, persisted before removing index ownership. */
+	cleanupFiles?: string[];
 	draft?: HyperframesImportRecovery["draft"];
 }
 
@@ -216,9 +228,11 @@ async function readJson<T>({
 async function writeJsonAtomic({
 	path,
 	value,
+	beforePublish,
 }: {
 	path: string;
 	value: unknown;
+	beforePublish?: () => void;
 }) {
 	await mkdir(resolve(path, ".."), { recursive: true });
 	const temporaryPath = `${path}.${randomUUID()}.tmp`;
@@ -227,6 +241,7 @@ async function writeJsonAtomic({
 			encoding: "utf8",
 			flag: "wx",
 		});
+		beforePublish?.();
 		await rename(temporaryPath, path);
 	} catch (error) {
 		await unlink(temporaryPath).catch(() => undefined);
@@ -424,17 +439,20 @@ function mediaUploadPaths(
 	assertId(file.temporaryId, "temporary id");
 	if (
 		typeof file.fileName !== "string" ||
+		(file.isolated !== undefined && file.isolated !== true) ||
 		safeFileName(file.fileName, file.mediaId) !== file.fileName
 	)
 		throw new Error("Invalid upload journal filename");
 	const destination = join(
 		mediaRoot(projectId),
 		"files",
-		`${file.mediaId}--${assertId(uploadToken, "upload token")}--${file.fileName}`,
+		`${file.mediaId}--${assertId(uploadToken, "upload token")}--${file.isolated ? `${file.temporaryId}--` : ""}${file.fileName}`,
 	);
 	return {
 		destination,
-		temporaryPath: `${destination}.${file.temporaryId}.tmp`,
+		temporaryPath: file.isolated
+			? join(driveRoot(), "staging", "media", `${file.temporaryId}.tmp`)
+			: `${destination}.${file.temporaryId}.tmp`,
 	};
 }
 
@@ -452,7 +470,24 @@ async function readMediaUploadJournal(projectId: string, uploadToken: string) {
 	// Validate every path before any cleanup, including entries not in the index.
 	for (const file of journal.files)
 		mediaUploadPaths(projectId, uploadToken, file);
+	if (journal.cleanupFiles !== undefined) {
+		if (!Array.isArray(journal.cleanupFiles))
+			throw new Error("Invalid upload cleanup files");
+		for (const name of journal.cleanupFiles) mediaCleanupPath(projectId, name);
+	}
 	return journal;
+}
+
+function mediaCleanupPath(projectId: string, name: string): string {
+	if (
+		typeof name !== "string" ||
+		name === "." ||
+		name === ".." ||
+		safeFileName(name, "") !== name ||
+		!name
+	)
+		throw new Error("Invalid upload cleanup filename");
+	return join(mediaRoot(projectId), "files", name);
 }
 
 function fontIndexPath(projectId: string): string {
@@ -465,24 +500,28 @@ export async function beginMediaUpload(
 	input: unknown,
 ) {
 	const draft = hyperframesImportDraftSchema.parse(input);
-	if (!(await getProject(projectId)))
-		throw new Error("The import project is unavailable");
 	const path = mediaUploadJournalPath(projectId, uploadToken);
-	await withMutationLock(path, async () => {
-		const journal = await readMediaUploadJournal(projectId, uploadToken);
-		if (journal.state !== "open")
-			throw new Error("This import attempt is already closed");
-		if (journal.draft) {
-			if (JSON.stringify(journal.draft) !== JSON.stringify(draft))
-				throw new Error("The saved import does not match this request");
-			return;
-		}
-		if (journal.files.length)
-			throw new Error("This upload has no recoverable import plan");
-		await writeJsonAtomic({
-			path,
-			value: { ...journal, createdAt: new Date().toISOString(), draft },
-		});
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			if (!(await getProject(projectId)))
+				throw new Error("The import project is unavailable");
+			const journal = await readMediaUploadJournal(projectId, uploadToken);
+			if (journal.state !== "open")
+				throw new Error("This import attempt is already closed");
+			if (journal.draft) {
+				if (JSON.stringify(journal.draft) !== JSON.stringify(draft))
+					throw new Error("The saved import does not match this request");
+				return;
+			}
+			if (journal.files.length)
+				throw new Error("This upload has no recoverable import plan");
+			await writeJsonAtomic({
+				path,
+				value: { ...journal, createdAt: new Date().toISOString(), draft },
+				beforePublish: assertWrite,
+			});
+		},
 	});
 }
 
@@ -547,8 +586,13 @@ async function readMediaIndex(projectId: string): Promise<StoredMediaRecord[]> {
 async function writeMediaIndex(
 	projectId: string,
 	records: StoredMediaRecord[],
+	assertWrite: () => void,
 ): Promise<void> {
-	await writeJsonAtomic({ path: mediaIndexPath(projectId), value: records });
+	await writeJsonAtomic({
+		path: mediaIndexPath(projectId),
+		value: records,
+		beforePublish: assertWrite,
+	});
 }
 
 async function readFontIndex(projectId: string): Promise<StoredFontRecord[]> {
@@ -558,8 +602,13 @@ async function readFontIndex(projectId: string): Promise<StoredFontRecord[]> {
 async function writeFontIndex(
 	projectId: string,
 	records: StoredFontRecord[],
+	assertWrite: () => void,
 ): Promise<void> {
-	await writeJsonAtomic({ path: fontIndexPath(projectId), value: records });
+	await writeJsonAtomic({
+		path: fontIndexPath(projectId),
+		value: records,
+		beforePublish: assertWrite,
+	});
 }
 
 const mutationQueues = new Map<string, Promise<void>>();
@@ -588,9 +637,12 @@ async function mutateMediaIndex(
 		records: StoredMediaRecord[],
 	) => Promise<StoredMediaRecord[]> | StoredMediaRecord[],
 ): Promise<void> {
-	await withMutationLock(mediaIndexPath(projectId), async () => {
-		const records = await readMediaIndex(projectId);
-		await writeMediaIndex(projectId, await mutate(records));
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			const records = await readMediaIndex(projectId);
+			await writeMediaIndex(projectId, await mutate(records), assertWrite);
+		},
 	});
 }
 
@@ -600,9 +652,12 @@ async function mutateFontIndex(
 		records: StoredFontRecord[],
 	) => Promise<StoredFontRecord[]> | StoredFontRecord[],
 ): Promise<void> {
-	await withMutationLock(fontIndexPath(projectId), async () => {
-		const records = await readFontIndex(projectId);
-		await writeFontIndex(projectId, await mutate(records));
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			const records = await readFontIndex(projectId);
+			await writeFontIndex(projectId, await mutate(records), assertWrite);
+		},
 	});
 }
 
@@ -679,12 +734,7 @@ export async function listProjects(): Promise<unknown[]> {
 	const projects = await Promise.all(
 		entries
 			.filter((entry) => entry.isDirectory() && SAFE_ID.test(entry.name))
-			.map((entry) =>
-				readJson<unknown | null>({
-					path: join(projectsRoot(), entry.name, PROJECT_FILE),
-					fallback: null,
-				}),
-			),
+			.map((entry) => getProject(entry.name)),
 	);
 	return projects.filter((project) => project !== null);
 }
@@ -735,48 +785,65 @@ export async function listOutdatedProjects(
 }
 
 export async function getProject(projectId: string): Promise<unknown | null> {
-	return readJson({
+	const project = await readJson<unknown>({
 		path: projectFilePath(projectId),
 		fallback: null,
 	});
+	if (!isRecord(project)) return project;
+	const view = { ...project };
+	delete view[EDITOR_SESSION_FIELD];
+	return view;
 }
 
 export async function putProject(projectId: string, project: unknown) {
 	const path = projectFilePath(projectId);
-	await withMutationLock(path, async () => {
-		const libraryEntry = await createProjectLibraryEntry({
-			projectId,
-			project,
-			sourceSize: 0,
-			sourceMtimeMs: Date.now(),
-		});
-		let storedProject = project;
-		if (
-			isRecord(project) &&
-			isRecord(project.metadata) &&
-			typeof project.metadata.thumbnail === "string" &&
-			project.metadata.thumbnail.startsWith("data:")
-		) {
-			const indexedMetadata = isRecord(libraryEntry.project.metadata)
-				? libraryEntry.project.metadata
-				: null;
-			const metadata = { ...project.metadata };
-			if (typeof indexedMetadata?.thumbnail === "string") {
-				metadata.thumbnail = indexedMetadata.thumbnail;
-			} else {
-				delete metadata.thumbnail;
+	await withProjectStorageLock({
+		projectId,
+		write: async ({ assertLock }) => {
+			const existing = await readJson<unknown>({ path, fallback: null });
+			if (isRecord(existing) && EDITOR_SESSION_FIELD in existing)
+				throw new Error(
+					"This project uses atomic editor sessions; save its canonical project, history and checkpoint together",
+				);
+			if (isRecord(project) && EDITOR_SESSION_FIELD in project)
+				throw new Error(
+					"Editor ownership records cannot be supplied through a legacy project save",
+				);
+			const libraryEntry = await createProjectLibraryEntry({
+				projectId,
+				project,
+				sourceSize: 0,
+				sourceMtimeMs: Date.now(),
+			});
+			let storedProject = project;
+			if (
+				isRecord(project) &&
+				isRecord(project.metadata) &&
+				typeof project.metadata.thumbnail === "string" &&
+				project.metadata.thumbnail.startsWith("data:")
+			) {
+				const indexedMetadata = isRecord(libraryEntry.project.metadata)
+					? libraryEntry.project.metadata
+					: null;
+				const metadata = { ...project.metadata };
+				if (typeof indexedMetadata?.thumbnail === "string") {
+					metadata.thumbnail = indexedMetadata.thumbnail;
+				} else {
+					delete metadata.thumbnail;
+				}
+				storedProject = { ...project, metadata };
 			}
-			storedProject = { ...project, metadata };
-		}
 
-		await writeJsonAtomic({ path, value: storedProject });
-		const sourceStat = await stat(path);
-		libraryEntry.sourceSize = sourceStat.size;
-		libraryEntry.sourceMtimeMs = sourceStat.mtimeMs;
-		await writeJsonAtomic({
-			path: projectLibraryPath(projectId),
-			value: libraryEntry,
-		});
+			assertLock();
+			await writeJsonAtomic({ path, value: storedProject });
+			const sourceStat = await stat(path);
+			libraryEntry.sourceSize = sourceStat.size;
+			libraryEntry.sourceMtimeMs = sourceStat.mtimeMs;
+			await writeJsonAtomic({
+				path: projectLibraryPath(projectId),
+				value: libraryEntry,
+			});
+		},
 	});
 }
 
@@ -805,6 +872,30 @@ export async function deleteProject(projectId: string) {
 }
 
 export async function getHistory(projectId: string): Promise<unknown | null> {
+	const project = await readJson<unknown>({
+		path: projectFilePath(projectId),
+		fallback: null,
+	});
+	if (isRecord(project) && typeof project[EDITOR_SESSION_FIELD] === "string") {
+		const record: unknown = JSON.parse(project[EDITOR_SESSION_FIELD]);
+		if (
+			isRecord(record) &&
+			isRecord(record.saved) &&
+			isRecord(record.saved.bundle)
+		)
+			return {
+				projectId,
+				schemaVersion: 2,
+				undoStack: [],
+				redoStack: [],
+				canonicalArchive: record.saved.bundle.archive,
+				agentCheckpoint: record.saved.bundle.agentCheckpoint,
+				atomicSession: true,
+				updatedAt: isRecord(project.metadata)
+					? project.metadata.updatedAt
+					: new Date().toISOString(),
+			};
+	}
 	return readJson({
 		path: join(projectRoot(projectId), HISTORY_FILE),
 		fallback: null,
@@ -812,14 +903,34 @@ export async function getHistory(projectId: string): Promise<unknown | null> {
 }
 
 export async function putHistory(projectId: string, history: unknown) {
-	await writeJsonAtomic({
-		path: join(projectRoot(projectId), HISTORY_FILE),
-		value: history,
+	await withProjectStorageLock({
+		projectId,
+		write: async ({ path, assertLock }) => {
+			const project = await readJson<unknown>({ path, fallback: null });
+			if (isRecord(project) && EDITOR_SESSION_FIELD in project)
+				throw new Error(
+					"Canonical history must be saved atomically with its editor session",
+				);
+			assertLock();
+			await writeJsonAtomic({
+				path: join(projectRoot(projectId), HISTORY_FILE),
+				value: history,
+			});
+		},
 	});
 }
 
 export async function deleteHistory(projectId: string) {
-	await rm(join(projectRoot(projectId), HISTORY_FILE), { force: true });
+	await withProjectStorageLock({
+		projectId,
+		write: async ({ path, assertLock }) => {
+			const project = await readJson<unknown>({ path, fallback: null });
+			if (isRecord(project) && EDITOR_SESSION_FIELD in project)
+				throw new Error("Clear canonical history through the editor session");
+			assertLock();
+			await rm(join(projectRoot(projectId), HISTORY_FILE), { force: true });
+		},
+	});
 }
 
 function storedMediaPath(projectId: string, record: StoredMediaRecord): string {
@@ -994,9 +1105,9 @@ export async function registerMediaPath({
 	preserveLink?: boolean;
 }): Promise<LocalDriveMediaRecord> {
 	assertId(record.id, "media id");
-	if (!record.sourcePath || !isAbsolute(record.sourcePath)) {
+	await withEditorProjectWrite({ projectId, write: async () => {} });
+	if (!record.sourcePath || !isAbsolute(record.sourcePath))
 		throw new Error("A valid absolute source path is required");
-	}
 	const sourcePath = await assertAccountMediaSource(record.sourcePath);
 	const sourceStat = await stat(sourcePath);
 	if (!sourceStat.isFile()) throw new Error("Media source is not a file");
@@ -1014,45 +1125,37 @@ export async function registerMediaPath({
 		storageKind: storageDisposition === "link" ? "linked" : "copied",
 	};
 	delete (baseRecord as Partial<LocalDriveMediaRecord>).missing;
-
+	delete baseRecord.uploadToken;
 	if (storageDisposition === "link") {
 		baseRecord.sourcePath = sourcePath;
 		delete baseRecord.storedPath;
-	} else {
-		const fileName = `${record.id}--${safeFileName(baseRecord.fileName, record.id)}`;
-		const destination = join(mediaRoot(projectId), "files", fileName);
-		await mkdir(resolve(destination, ".."), { recursive: true });
-		if (resolve(sourcePath) !== resolve(destination)) {
-			await copyFile(sourcePath, destination);
-		}
-		baseRecord.storedPath = relative(
-			projectRoot(projectId),
-			destination,
-		).replaceAll("\\", "/");
-		delete baseRecord.sourcePath;
+		await mutateMediaIndex(projectId, (records) => [
+			...records.filter((item) => item.id !== record.id),
+			baseRecord,
+		]);
+		// Retain previous copied bytes for Undo and saved source references.
+		return clientMediaRecord(projectId, baseRecord);
 	}
-
-	await mutateMediaIndex(projectId, async (records) => {
-		const oldRecord = records.find((item) => item.id === record.id);
-		if (
-			oldRecord?.storageKind === "copied" &&
-			oldRecord.storedPath &&
-			oldRecord.storedPath !== baseRecord.storedPath
-		) {
-			await rm(
-				assertContainedPath({
-					root: mediaRoot(projectId),
-					path: join(
-						projectRoot(projectId),
-						oldRecord.storedPath.replaceAll("\\", "/"),
-					),
-				}),
-				{ force: true },
-			).catch(() => undefined);
-		}
-		return [...records.filter((item) => item.id !== record.id), baseRecord];
+	const stream = createCancellationSafeFileStream({
+		path: sourcePath,
+		start: 0,
+		end: sourceStat.size - 1,
 	});
-	return clientMediaRecord(projectId, baseRecord);
+	try {
+		return await storeUploadedMedia({
+			projectId,
+			mediaId: record.id,
+			fileName: baseRecord.fileName,
+			mimeType: baseRecord.mimeType,
+			lastModified: baseRecord.lastModified,
+			size: sourceStat.size,
+			allowLargeCopy: true,
+			metadata: baseRecord,
+			body: stream,
+		});
+	} finally {
+		if (!stream.locked) await stream.cancel();
+	}
 }
 
 export async function storeUploadedMedia({
@@ -1065,6 +1168,7 @@ export async function storeUploadedMedia({
 	body,
 	allowLargeCopy,
 	uploadToken,
+	metadata,
 }: {
 	projectId: string;
 	mediaId: string;
@@ -1075,113 +1179,192 @@ export async function storeUploadedMedia({
 	body: ReadableStream<Uint8Array>;
 	allowLargeCopy: boolean;
 	uploadToken?: string;
-}): Promise<void> {
+	/** Internal path-copy metadata, not accepted by the upload HTTP route. */
+	metadata?: StoredMediaRecord;
+}): Promise<LocalDriveMediaRecord> {
 	assertId(mediaId, "media id");
+	if (!Number.isSafeInteger(size) || size < 0)
+		throw new Error("Invalid media size");
 	if (
 		!allowLargeCopy &&
 		disposition({ size, hasSourcePath: false }) === "sourcePathRequired"
-	) {
+	)
 		throw new Error(
 			"Files larger than 1 GB must be imported with the drive picker",
 		);
-	}
 	const cleanedName = safeFileName(fileName, mediaId);
-	const file = { mediaId, fileName: cleanedName, temporaryId: randomUUID() };
-	const destination = uploadToken
-		? mediaUploadPaths(projectId, uploadToken, file).destination
-		: join(mediaRoot(projectId), "files", `${mediaId}--${cleanedName}`);
-	const temporaryPath = `${destination}.${file.temporaryId}.tmp`;
-	// Copy and finish share this attempt's lock. Unrelated uploads can stream
-	// concurrently; only index publication needs the project-wide index lock.
-	const lockKey = uploadToken
-		? mediaUploadJournalPath(projectId, uploadToken)
-		: `${mediaIndexPath(projectId)}:${mediaId}`;
-	await withMutationLock(lockKey, async () => {
-		await mkdir(resolve(destination, ".."), { recursive: true });
-		if (uploadToken) {
-			const journal = await readMediaUploadJournal(projectId, uploadToken);
+	// Even a one-file upload has an intent. Clearing media or superseding a retry
+	// removes that intent, so an old stream cannot recreate the cleared library.
+	const attempt = uploadToken ?? randomUUID();
+	const file = {
+		mediaId,
+		fileName: cleanedName,
+		temporaryId: randomUUID(),
+		isolated: true as const,
+	};
+	const { destination, temporaryPath } = mediaUploadPaths(
+		projectId,
+		attempt,
+		file,
+	);
+	const journalPath = mediaUploadJournalPath(projectId, attempt);
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			const journal = await readMediaUploadJournal(projectId, attempt);
 			if (journal.state !== "open")
 				throw new Error("This media upload attempt is already closed");
-			if (
-				(await readMediaIndex(projectId)).some(
-					(record) => record.id === mediaId,
-				)
-			)
+			const records = await readMediaIndex(projectId);
+			if (uploadToken && records.some((record) => record.id === mediaId))
 				throw new Error("A staged upload cannot replace existing media");
-			// A retry may replace only this attempt's unindexed partial copy.
-			for (const previous of journal.files.filter(
-				(file) => file.mediaId === mediaId,
-			)) {
-				const paths = mediaUploadPaths(projectId, uploadToken, previous);
-				await rm(paths.temporaryPath, { force: true });
-				await rm(paths.destination, { force: true });
-			}
-			journal.files = journal.files.filter((file) => file.mediaId !== mediaId);
-			// Deleted media keeps its bytes for Undo, even without an index record.
+			// Only this attempt's unindexed published files are retry debris. Current
+			// streams own their isolated staging files and clean them on completion.
+			const previous = journal.files.filter(
+				(entry) => entry.mediaId === mediaId,
+			);
+			const previousPaths = new Set(
+				previous.flatMap((entry) => {
+					const paths = mediaUploadPaths(projectId, attempt, entry);
+					return [paths.destination, paths.temporaryPath];
+				}),
+			);
+			const retained = await readdir(join(mediaRoot(projectId), "files")).catch(
+				(error: NodeJS.ErrnoException) => {
+					if (error.code === "ENOENT") return [];
+					throw error;
+				},
+			);
 			if (
-				(await readdir(join(mediaRoot(projectId), "files"))).some((name) =>
-					name.startsWith(`${mediaId}--`),
+				uploadToken &&
+				retained.some(
+					(name) =>
+						name.startsWith(`${mediaId}--`) &&
+						!previousPaths.has(join(mediaRoot(projectId), "files", name)),
 				)
 			)
 				throw new Error("A staged upload cannot replace retained media bytes");
+			// Keep superseded intents until their published debris is collected. If
+			// cleanup fails, the next retry still knows which files belong to it.
 			journal.files.push(file);
 			await writeJsonAtomic({
-				path: mediaUploadJournalPath(projectId, uploadToken),
+				path: journalPath,
 				value: journal,
+				beforePublish: assertWrite,
 			});
-		}
-		let renamed = false;
-		try {
-			await pipeline(
-				Readable.fromWeb(body as never),
-				createWriteStream(temporaryPath, { flags: "wx" }),
-			);
-			const written = await stat(temporaryPath);
-			if (Number.isFinite(size) && size >= 0 && written.size !== size) {
-				throw new Error("Uploaded media size did not match the file metadata");
+			for (const entry of previous) {
+				const old = mediaUploadPaths(projectId, attempt, entry);
+				assertWrite();
+				await rm(old.temporaryPath, { force: true });
+				if (
+					!records.some(
+						(record) =>
+							record.storageKind === "copied" &&
+							storedMediaPath(projectId, record) === old.destination,
+					)
+				) {
+					assertWrite();
+					await rm(old.destination, { force: true });
+				}
 			}
-			await rename(temporaryPath, destination);
-			renamed = true;
-			const resolvedMimeType =
-				mimeType && mimeType !== "application/octet-stream"
-					? mimeType
-					: mimeTypeForPath(cleanedName);
-			const base: StoredMediaRecord = {
-				...(uploadToken && { uploadToken }),
-				id: mediaId,
-				name: cleanedName,
-				type: resolvedMimeType.startsWith("image/")
-					? "image"
-					: resolvedMimeType.startsWith("audio/")
-						? "audio"
-						: resolvedMimeType.startsWith("video/")
-							? "video"
-							: "file",
-				size: written.size,
-				lastModified,
-				fileName: cleanedName,
-				mimeType: resolvedMimeType,
-				storageKind: "copied",
-				storedPath: relative(projectRoot(projectId), destination).replaceAll(
-					"\\",
-					"/",
-				),
-			};
-			await mutateMediaIndex(projectId, (records) => {
-				// Another attempt may have published this ID while bytes streamed.
-				// Its token-specific path cannot be overwritten or removed by us.
+			journal.files = [
+				...journal.files.filter((entry) => entry.mediaId !== mediaId),
+				file,
+			];
+			await writeJsonAtomic({
+				path: journalPath,
+				value: journal,
+				beforePublish: assertWrite,
+			});
+		},
+	});
+	await mkdir(resolve(temporaryPath, ".."), { recursive: true, mode: 0o700 });
+	try {
+		await pipeline(
+			Readable.fromWeb(body as never),
+			createWriteStream(temporaryPath, { flags: "wx", mode: 0o600 }),
+		);
+		const written = await stat(temporaryPath);
+		if (written.size !== size)
+			throw new Error("Uploaded media size did not match the file metadata");
+		return await withEditorProjectWrite({
+			projectId,
+			write: async ({ assertWrite }) => {
+				const journal = await readMediaUploadJournal(projectId, attempt);
+				if (journal.state !== "open")
+					throw new Error("This media upload attempt is already closed");
+				if (
+					journal.files.filter((entry) => entry.mediaId === mediaId).at(-1)
+						?.temporaryId !== file.temporaryId
+				)
+					throw new Error("This media upload was superseded or cleared");
+				const records = await readMediaIndex(projectId);
 				if (uploadToken && records.some((record) => record.id === mediaId))
 					throw new Error("A staged upload cannot replace existing media");
-				return [...records.filter((item) => item.id !== mediaId), base];
-			});
-		} catch (error) {
-			await unlink(temporaryPath).catch(() => undefined);
-			// A new staged upload may have renamed its bytes before indexing failed.
-			if (uploadToken && renamed)
-				await unlink(destination).catch(() => undefined);
-			throw error;
-		}
-	});
+				// Recheck retained bytes after streaming: another attempt or a delete
+				// preserving Undo bytes may have completed during the transfer.
+				const names = await readdir(join(mediaRoot(projectId), "files")).catch(
+					(error: NodeJS.ErrnoException) => {
+						if (error.code === "ENOENT") return [];
+						throw error;
+					},
+				);
+				if (
+					uploadToken &&
+					names.some((name) => name.startsWith(`${mediaId}--`))
+				)
+					throw new Error(
+						"A staged upload cannot replace retained media bytes",
+					);
+				const resolvedMimeType =
+					mimeType && mimeType !== "application/octet-stream"
+						? mimeType
+						: mimeTypeForPath(cleanedName);
+				const base: StoredMediaRecord = {
+					...metadata,
+					...(uploadToken && { uploadToken }),
+					id: mediaId,
+					name: metadata?.name ?? cleanedName,
+					type: resolvedMimeType.startsWith("image/")
+						? "image"
+						: resolvedMimeType.startsWith("audio/")
+							? "audio"
+							: resolvedMimeType.startsWith("video/")
+								? "video"
+								: "file",
+					size: written.size,
+					lastModified,
+					fileName: cleanedName,
+					mimeType: resolvedMimeType,
+					storageKind: "copied",
+					storedPath: relative(projectRoot(projectId), destination).replaceAll(
+						"\\",
+						"/",
+					),
+				};
+				delete base.sourcePath;
+				if (!uploadToken) delete base.uploadToken;
+				await mkdir(resolve(destination, ".."), { recursive: true });
+				assertWrite();
+				await rename(temporaryPath, destination);
+				// Keep final bytes on an uncertain index outcome. The journal records
+				// their ownership for retry/discard; deleting here could erase a commit.
+				await writeMediaIndex(
+					projectId,
+					[...records.filter((item) => item.id !== mediaId), base],
+					assertWrite,
+				);
+				if (!uploadToken) {
+					assertWrite();
+					await unlink(journalPath);
+				}
+				return clientMediaRecord(projectId, base);
+			},
+		});
+	} finally {
+		await unlink(temporaryPath).catch((error: NodeJS.ErrnoException) => {
+			if (error.code !== "ENOENT") throw error;
+		});
+	}
 }
 
 /** Finalize only files owned by this import attempt. Ordinary deletion retains Undo bytes. */
@@ -1191,8 +1374,9 @@ export async function finishMediaUpload(
 	discard: boolean,
 ) {
 	assertId(uploadToken, "upload token");
-	await withMutationLock(mediaUploadJournalPath(projectId, uploadToken), () =>
-		withMutationLock(mediaIndexPath(projectId), async () => {
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
 			const journal = await readMediaUploadJournal(projectId, uploadToken);
 			if (journal.state === "discarded") {
 				if (!discard) throw new Error("This media upload was discarded");
@@ -1207,14 +1391,18 @@ export async function finishMediaUpload(
 			const path = mediaUploadJournalPath(projectId, uploadToken);
 			if (discard && journal.state !== "retained") {
 				const paths = new Set<string>();
+				const cleanupFiles = new Set(journal.cleanupFiles ?? []);
+				for (const name of cleanupFiles)
+					paths.add(mediaCleanupPath(projectId, name));
 				for (const file of journal.files) {
 					const { destination, temporaryPath } = mediaUploadPaths(
 						projectId,
 						uploadToken,
 						file,
 					);
+					// The closing journal fences publication even if this stream has
+					// not finished. Its finally block also cleans the private staging path.
 					paths.add(temporaryPath);
-					// Another registration may now own the bytes; never discard those.
 					if (
 						!records.some(
 							(record) =>
@@ -1229,30 +1417,60 @@ export async function finishMediaUpload(
 				for (const record of owned) {
 					if (record.storageKind !== "copied")
 						throw new Error("Only copied uploads can be discarded");
-					paths.add(storedMediaPath(projectId, record));
+					const name = relative(
+						join(mediaRoot(projectId), "files"),
+						storedMediaPath(projectId, record),
+					);
+					paths.add(mediaCleanupPath(projectId, name));
+					cleanupFiles.add(name);
 				}
+				// Retry cleanup must also respect files retained by a different record.
+				for (const record of records) {
+					if (record.uploadToken !== uploadToken && record.storageKind === "copied")
+						paths.delete(storedMediaPath(projectId, record));
+				}
+				journal.cleanupFiles = [...cleanupFiles];
 				journal.state = "discarding";
-				await writeJsonAtomic({ path, value: journal });
-				for (const file of paths) await rm(file, { force: true });
+				await writeJsonAtomic({
+					path,
+					value: journal,
+					beforePublish: assertWrite,
+				});
+				// Publish index removal before collecting bytes, and retain the
+				// discarding intent until every file has been collected.
 				await writeMediaIndex(
 					projectId,
 					records.filter((record) => record.uploadToken !== uploadToken),
+					assertWrite,
 				);
+				for (const file of paths) {
+					assertWrite();
+					await rm(file, { force: true });
+				}
 				journal.state = "discarded";
 				journal.files = [];
+				delete journal.cleanupFiles;
 				delete journal.draft;
-				await writeJsonAtomic({ path, value: journal });
+				await writeJsonAtomic({
+					path,
+					value: journal,
+					beforePublish: assertWrite,
+				});
 				return;
 			}
-			// Record retention before clearing index ownership. A crash between the
-			// two writes must not let a delayed discard erase saved project media.
+			// Retention must precede clearing index ownership: delayed discard may
+			// never erase bytes that a saved canonical project now references.
 			journal.state = "retained";
 			delete journal.draft;
-			await writeJsonAtomic({ path, value: journal });
+			await writeJsonAtomic({
+				path,
+				value: journal,
+				beforePublish: assertWrite,
+			});
 			for (const record of owned) delete record.uploadToken;
-			await writeMediaIndex(projectId, records);
-		}),
-	);
+			await writeMediaIndex(projectId, records, assertWrite);
+		},
+	});
 }
 
 export async function deleteMedia(projectId: string, mediaId: string) {
@@ -1266,7 +1484,13 @@ export async function deleteMedia(projectId: string, mediaId: string) {
 }
 
 export async function clearMedia(projectId: string) {
-	await rm(mediaRoot(projectId), { recursive: true, force: true });
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			assertWrite();
+			await rm(mediaRoot(projectId), { recursive: true, force: true });
+		},
+	});
 }
 
 export async function chooseFiles(): Promise<string[]> {
@@ -1410,23 +1634,37 @@ export async function storeUploadedFont({
 	body: ReadableStream<Uint8Array>;
 }) {
 	assertId(fontId, "font id");
+	await withEditorProjectWrite({ projectId, write: async () => {} });
+	const staging = join(driveRoot(), "staging", "fonts");
+	await mkdir(staging, { recursive: true, mode: 0o700 });
+	const uploadId = randomUUID();
 	const destination = join(
 		fontRoot(projectId),
 		"files",
-		`${fontId}--${safeFileName(fileName, fontId)}`,
+		`${fontId}--${uploadId}--${safeFileName(fileName, fontId)}`,
 	);
-	const temporaryPath = `${destination}.${randomUUID()}.tmp`;
-	await mkdir(resolve(destination, ".."), { recursive: true });
+	const temporaryPath = join(staging, `${uploadId}.tmp`);
 	try {
 		await pipeline(
 			Readable.fromWeb(body as never),
-			createWriteStream(temporaryPath, { flags: "wx" }),
+			createWriteStream(temporaryPath, { flags: "wx", mode: 0o600 }),
 		);
-		await rename(temporaryPath, destination);
-		return relative(projectRoot(projectId), destination).replaceAll("\\", "/");
-	} catch (error) {
-		await unlink(temporaryPath).catch(() => undefined);
-		throw error;
+		return await withEditorProjectWrite({
+			projectId,
+			write: async ({ assertWrite }) => {
+				await mkdir(resolve(destination, ".."), { recursive: true });
+				assertWrite();
+				await rename(temporaryPath, destination);
+				return relative(projectRoot(projectId), destination).replaceAll(
+					"\\",
+					"/",
+				);
+			},
+		});
+	} finally {
+		await unlink(temporaryPath).catch((error: NodeJS.ErrnoException) => {
+			if (error.code !== "ENOENT") throw error;
+		});
 	}
 }
 
@@ -1452,26 +1690,43 @@ export async function putFontMetadata(
 }
 
 export async function deleteFont(projectId: string, fontId: string) {
-	await mutateFontIndex(projectId, async (records) => {
-		const record = records.find((item) => item.id === fontId);
-		if (record) {
-			await rm(
-				assertContainedPath({
-					root: fontRoot(projectId),
-					path: join(
-						projectRoot(projectId),
-						record.storedPath.replaceAll("\\", "/"),
-					),
-				}),
-				{ force: true },
+	assertId(fontId, "font id");
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			const records = await readFontIndex(projectId);
+			const record = records.find((item) => item.id === fontId);
+			// Publish removal before collecting the now-unreferenced file. A failed
+			// metadata commit must not leave a live font pointing at deleted bytes.
+			await writeFontIndex(
+				projectId,
+				records.filter((item) => item.id !== fontId),
+				assertWrite,
 			);
-		}
-		return records.filter((item) => item.id !== fontId);
+			if (record) {
+				await rm(
+					assertContainedPath({
+						root: fontRoot(projectId),
+						path: join(
+							projectRoot(projectId),
+							record.storedPath.replaceAll("\\", "/"),
+						),
+					}),
+					{ force: true },
+				);
+			}
+		},
 	});
 }
 
 export async function clearFonts(projectId: string) {
-	await rm(fontRoot(projectId), { recursive: true, force: true });
+	await withEditorProjectWrite({
+		projectId,
+		write: async ({ assertWrite }) => {
+			assertWrite();
+			await rm(fontRoot(projectId), { recursive: true, force: true });
+		},
+	});
 }
 
 export async function getSavedSounds(): Promise<unknown | null> {

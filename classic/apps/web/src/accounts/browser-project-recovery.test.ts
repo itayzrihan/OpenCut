@@ -15,10 +15,7 @@ test("browser recovery preserves original disk bytes and exact browser inputs, a
 		previous = process.env.OPENCUT_ACCOUNTS_DIR;
 	process.env.OPENCUT_ACCOUNTS_DIR = root;
 	try {
-		const { account } = await registerAccount(
-			"browser-owner",
-			"Browser Owner",
-			"browser recovery test password",
+		const { account } = await registerAccount({ login: "browser-owner", displayName: "Browser Owner", password: "browser recovery test password" }
 		);
 		await accountScope.run(account, async () => {
 			const source = join(accountDataRoot(), "projects", "old");
@@ -44,14 +41,7 @@ test("browser recovery preserves original disk bytes and exact browser inputs, a
 					},
 					history: { ...history, projectId: "new" },
 				});
-			await prepareBrowserProjectRecovery(
-				"old",
-				"new",
-				browser,
-				history,
-				[{ id: "media" }],
-				[],
-				projection,
+			await prepareBrowserProjectRecovery({ sourceId: "old", destinationId: "new", project: browser, history: history, media: [{ id: "media" }], fonts: [], projection: projection }
 			);
 			expect(await readFile(join(source, "project.json"), "utf8")).toBe(
 				original,
@@ -77,36 +67,15 @@ test("browser recovery preserves original disk bytes and exact browser inputs, a
 				),
 			).toEqual(history);
 			await expect(
-				prepareBrowserProjectRecovery(
-					"old",
-					"new",
-					browser,
-					history,
-					[{ id: "media" }],
-					[],
-					projection,
+				prepareBrowserProjectRecovery({ sourceId: "old", destinationId: "new", project: browser, history: history, media: [{ id: "media" }], fonts: [], projection: projection }
 				),
 			).resolves.toEqual({ projectId: "new" });
 			await expect(
-				prepareBrowserProjectRecovery(
-					"old",
-					"new",
-					{ ...browser, changed: true },
-					history,
-					[],
-					[],
-					projection,
+				prepareBrowserProjectRecovery({ sourceId: "old", destinationId: "new", project: { ...browser, changed: true }, history: history, media: [], fonts: [], projection: projection }
 				),
 			).rejects.toThrow("source changed");
 			await expect(
-				prepareBrowserProjectRecovery(
-					"old",
-					"../outside",
-					browser,
-					history,
-					[],
-					[],
-					projection,
+				prepareBrowserProjectRecovery({ sourceId: "old", destinationId: "../outside", project: browser, history: history, media: [], fonts: [], projection: projection }
 				),
 			).rejects.toThrow("Invalid");
 		});

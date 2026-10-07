@@ -1,0 +1,42 @@
+{
+  "id": "char-slam-explode",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "6be2ddcb3d3d482537ab795a94b56a8b9eb740af3865681c243d6a91d8ee6178",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 3.5,
+  "frames": [
+    {
+      "timeSeconds": 0.525,
+      "sha256": "d4ad5d9f7d50b47e5e9f248f31a8414b09b3b6150149af2898d38b0069fff99a",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "99ce7d5ac1edde0d14c259d7d9e40c90158fd5874d2f7231694c98a3dfd0f886",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.975,
+      "sha256": "a3e1bfc98d3ae8851f29087e6afb08d50270af8ab18c0e6f8c710b057846f8d5",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "99ce7d5ac1edde0d14c259d7d9e40c90158fd5874d2f7231694c98a3dfd0f886",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

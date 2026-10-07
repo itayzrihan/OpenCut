@@ -14,21 +14,23 @@ import {
 import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
 import { timelineTimeToSnappedPixels } from "@/timeline";
 import { getKeyframeById } from "@/animation";
-import { RetimeKeyframeCommand } from "@/commands/timeline/element/keyframes/retime-keyframe";
-import { BatchCommand } from "@/commands";
 import type { SelectedKeyframeRef } from "@/animation/types";
 import type { TimelineElement } from "@/timeline";
-import type { Command } from "@/commands/base-command";
+import type { ClassicKeyframeEdit } from "@/core/canonical-classic-session";
+
+type CommitEdit = (edits: ClassicKeyframeEdit[]) => void;
 
 // --- Session ---
 
 interface PendingSession {
+	commit: CommitEdit;
 	kind: "pending";
 	keyframeRefs: SelectedKeyframeRef[];
 	startMouseX: number;
 }
 
 interface ActiveSession {
+	commit: CommitEdit;
 	kind: "active";
 	keyframeRefs: SelectedKeyframeRef[];
 	startMouseX: number;
@@ -70,7 +72,7 @@ export interface KeyframeDragConfig {
 		targetKeyframes: SelectedKeyframeRef[];
 		isAdditive: boolean;
 	}) => void;
-	executeCommand: (command: Command) => void;
+	prepareEdit: () => CommitEdit;
 	seek: (args: { time: MediaTime }) => void;
 	getTotalDuration: () => MediaTime;
 }
@@ -154,6 +156,7 @@ export class KeyframeDragController {
 
 		this.session = {
 			kind: "pending",
+			commit: this.config.prepareEdit(),
 			keyframeRefs: anySelected ? this.config.selectedKeyframes : keyframes,
 			startMouseX: event.clientX,
 		};
@@ -264,12 +267,14 @@ export class KeyframeDragController {
 	private commitDrag({
 		keyframeRefs,
 		deltaTicks,
+		commit,
 	}: {
 		keyframeRefs: SelectedKeyframeRef[];
 		deltaTicks: number;
+		commit: CommitEdit;
 	}): void {
 		const { element } = this.config;
-		const commands: Command[] = keyframeRefs.flatMap((ref) => {
+		const edits: ClassicKeyframeEdit[] = keyframeRefs.flatMap((ref) => {
 			const keyframe = getKeyframeById({
 				animations: element.animations,
 				propertyPath: ref.propertyPath,
@@ -277,30 +282,27 @@ export class KeyframeDragController {
 			});
 			if (!keyframe) return [];
 			return [
-				new RetimeKeyframeCommand({
+				{
 					trackId: ref.trackId,
 					elementId: ref.elementId,
 					propertyPath: ref.propertyPath,
 					keyframeId: ref.keyframeId,
-				nextTime: clampMediaTime({
-					time: addMediaTime({
-						a: keyframe.time,
-						b: mediaTime({ ticks: deltaTicks }),
-					}),
-					min: ZERO_MEDIA_TIME,
-					max: element.duration,
-				}),
-				}),
+					change: {
+						type: "retime",
+						time: clampMediaTime({
+							time: addMediaTime({
+								a: keyframe.time,
+								b: mediaTime({ ticks: deltaTicks }),
+							}),
+							min: ZERO_MEDIA_TIME,
+							max: element.duration,
+						}),
+					},
+				},
 			];
 		});
 
-		const [first, ...rest] = commands;
-		if (!first) return;
-		if (rest.length === 0) {
-			this.config.executeCommand(first);
-		} else {
-			this.config.executeCommand(new BatchCommand([first, ...rest]));
-		}
+		if (edits.length) commit(edits);
 	}
 
 	private handleMouseMove({ clientX }: MouseEvent): void {
@@ -310,6 +312,7 @@ export class KeyframeDragController {
 
 			this.session = {
 				kind: "active",
+				commit: this.session.commit,
 				keyframeRefs: this.session.keyframeRefs,
 				startMouseX: this.session.startMouseX,
 				deltaTicks: 0,
@@ -342,16 +345,18 @@ export class KeyframeDragController {
 		if (this.session.kind !== "active") return;
 
 		const { selectedKeyframes, element } = this.config;
-		const { keyframeRefs, deltaTicks } = this.session;
+		const { keyframeRefs, deltaTicks, commit } = this.session;
 		const draggingIds = new Set(keyframeRefs.map((r) => r.keyframeId));
 		const draggingRefs = selectedKeyframes.filter(
 			(kf) => kf.elementId === element.id && draggingIds.has(kf.keyframeId),
 		);
 
-		if (draggingRefs.length > 0 && deltaTicks !== 0) {
-			this.commitDrag({ keyframeRefs: draggingRefs, deltaTicks });
+		try {
+			if (draggingRefs.length > 0 && deltaTicks !== 0) {
+				this.commitDrag({ keyframeRefs: draggingRefs, deltaTicks, commit });
+			}
+		} finally {
+			this.finishSession();
 		}
-
-		this.finishSession();
 	}
 }

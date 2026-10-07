@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { renderRetimedBuffer } from "../audio-stretch";
 
-function buffer(length: number, sampleRate: number): AudioBuffer {
+function buffer({
+	length,
+	sampleRate,
+}: {
+	length: number;
+	sampleRate: number;
+}): AudioBuffer {
 	const samples = new Float32Array(length);
 	return {
 		length,
@@ -15,14 +21,16 @@ function buffer(length: number, sampleRate: number): AudioBuffer {
 describe("sync source handles", () => {
 	for (const advance of [0.1, 0.3]) {
 		test(`reads the full source past the video cut with ${advance}s advance`, async () => {
-			const source = buffer(10000, 1000);
+			const source = buffer({ length: 10000, sampleRate: 1000 });
 			// Distinct nonzero samples expose truncation, repetition or padding.
 			for (let i = 0; i < source.length; i++)
 				source.getChannelData(0)[i] = (i + 1) / 10000;
 			const context = {
 				sampleRate: 1000,
+				// AudioContext.createBuffer has a fixed positional Web Audio contract.
+				// eslint-disable-next-line opencut/prefer-object-params
 				createBuffer: (_: number, length: number, rate: number) =>
-					buffer(length, rate),
+					buffer({ length: length, sampleRate: rate }),
 			} as unknown as AudioContext;
 			for (const duration of [2, 0.08]) {
 				const result = await renderRetimedBuffer({

@@ -1,7 +1,8 @@
 /** Classic host queue. Editing always happens through the canonical EditorCore worker. */
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
+import { mkdir, readFile, open, rename, unlink } from "node:fs/promises";
 import { join } from "node:path";
+import lockfile from "proper-lockfile";
 import {
 	batchEditIsLocked,
 	batchEditTransition,
@@ -13,47 +14,88 @@ import type { FullAutoOptions } from "@/ai/full-auto-edit";
 type StoredRun = BatchRun & { token: string; heartbeat: number };
 type Store = { runs: StoredRun[] };
 const host = globalThis as typeof globalThis & {
-	__opencutBatchQueue?: Promise<unknown>;
+	__opencutBatchQueues?: Map<string, Promise<unknown>>;
 };
+const queues = (host.__opencutBatchQueues ??= new Map<string, Promise<unknown>>());
 const leaseMs = 180_000;
 async function transaction<T>(
-	action: (store: Store) => Promise<T> | T,
+	action: (store: Store, assertLock: () => void) => Promise<T> | T,
 ): Promise<T> {
-	const pending = (host.__opencutBatchQueue ?? Promise.resolve())
+	// Resolve the authenticated account before queuing. Other accounts have
+	// independent queues; another server process uses the same filesystem lock.
+	const root = join((await getLocalDriveStatus()).rootPath, "batch");
+	const pending = (queues.get(root) ?? Promise.resolve())
 		.catch(() => {})
 		.then(async () => {
-			const root = join((await getLocalDriveStatus()).rootPath, "batch");
 			const path = join(root, "queue.json");
-			await mkdir(root, { recursive: true });
-			const store: Store = await readFile(path, "utf8")
-				.then(JSON.parse)
-				.catch((e) => {
-					if (e.code === "ENOENT") return { runs: [] };
-					throw e;
-				});
-			const original = JSON.stringify(store);
-			for (const run of store.runs)
-				if (Date.now() - run.heartbeat > leaseMs) {
-					for (const job of run.jobs)
-						if (batchEditIsLocked({ status: job.status })) {
-							job.status = batchEditTransition({
-								status: job.status,
-								event: "interrupt",
-							}) as BatchJobStatus;
-							job.message =
-								"Worker disconnected. Completed edits were preserved; review this project before restarting in a fresh project.";
-							run.updatedAt = Date.now();
-						}
+			await mkdir(root, { recursive: true, mode: 0o700 });
+			let compromised = false;
+			const release = await lockfile.lock(root, {
+				realpath: false,
+				stale: 60_000,
+				update: 10_000,
+				retries: { retries: 120, minTimeout: 50, maxTimeout: 500 },
+				onCompromised: () => {
+					compromised = true;
+				},
+			});
+			const assertLock = () => {
+				if (compromised)
+					throw new Error(
+						"Batch storage lock was lost; reconcile the last operation",
+					);
+			};
+			try {
+				const store: Store = await readFile(path, "utf8")
+					.then(JSON.parse)
+					.catch((e) => {
+						if (e.code === "ENOENT") return { runs: [] };
+						throw e;
+					});
+				const original = JSON.stringify(store);
+				for (const run of store.runs)
+					if (Date.now() - run.heartbeat > leaseMs) {
+						for (const job of run.jobs)
+							if (batchEditIsLocked({ status: job.status })) {
+								job.status = batchEditTransition({
+									status: job.status,
+									event: "interrupt",
+								}) as BatchJobStatus;
+								job.message =
+									"Worker disconnected. Completed edits were preserved; review this project before restarting in a fresh project.";
+								run.updatedAt = Date.now();
+							}
+					}
+				const result = await action(store, assertLock);
+				assertLock();
+				if (JSON.stringify(store) === original) return result;
+				const temp = join(root, `queue-${randomUUID()}.tmp`);
+				try {
+					const file = await open(temp, "wx", 0o600);
+					try {
+						await file.writeFile(JSON.stringify(store));
+						await file.sync();
+					} finally {
+						await file.close();
+					}
+					assertLock();
+					await rename(temp, path);
+				} finally {
+					await unlink(temp).catch((error: NodeJS.ErrnoException) => {
+						if (error.code !== "ENOENT") throw error;
+					});
 				}
-			const result = await action(store);
-			if (JSON.stringify(store) === original) return result;
-			const temp = join(root, `queue-${randomUUID()}.tmp`);
-			await writeFile(temp, JSON.stringify(store));
-			await rename(temp, path);
-			return result;
+				return result;
+			} finally {
+				await release();
+			}
 		});
-	host.__opencutBatchQueue = pending;
-	return pending;
+	queues.set(root, pending);
+	try {
+		return await pending;
+	} finally {
+		if (queues.get(root) === pending) queues.delete(root);
+	}
 }
 const publicState = (s: Store): BatchState => ({
 	executionRunId: [...s.runs]
@@ -269,6 +311,9 @@ export async function cancelBatch({
 		return publicState(s);
 	});
 }
+/** A policy rejection before the write callback ran, unlike uncertain IO. */
+export class BatchWriteRejected extends Error {}
+
 function checkProjectWrite({
 	s,
 	projectId,
@@ -285,9 +330,11 @@ function checkProjectWrite({
 		),
 	);
 	if (token && (!activeRun || activeRun.token !== token))
-		throw new Error("Expired batch writer; write rejected");
+		throw new BatchWriteRejected("Expired batch writer; write rejected");
 	if (activeRun && token !== activeRun.token)
-		throw new Error("Project is locked while Full Auto Edit is working");
+		throw new BatchWriteRejected(
+			"Project is locked while Full Auto Edit is working",
+		);
 }
 export async function assertBatchProjectWrite({
 	projectId,
@@ -298,7 +345,8 @@ export async function assertBatchProjectWrite({
 }) {
 	return transaction((s) => checkProjectWrite({ s, projectId, token }));
 }
-/** Hold the queue mutex across document/history writes so enqueue cannot overtake an in-flight save. */
+/** Lock order is account batch queue, then project storage. Hold the queue lock
+ * across publication so enqueue in any host cannot overtake an in-flight save. */
 export async function withBatchProjectWrite<T>({
 	projectId,
 	token,
@@ -306,11 +354,11 @@ export async function withBatchProjectWrite<T>({
 }: {
 	projectId: string;
 	token: string | null;
-	write: () => Promise<T>;
+	write: (context: { assertLock: () => void }) => Promise<T>;
 }) {
-	return transaction(async (s) => {
+	return transaction(async (s, assertLock) => {
 		checkProjectWrite({ s, projectId, token });
-		return await write();
+		return await write({ assertLock });
 	});
 }
 export async function assertNoActiveBatch() {

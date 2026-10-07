@@ -62,7 +62,7 @@ export const POST = withAccount(async (request) => {
 		const input = requestSchema.parse(
 			JSON.parse(
 				new TextDecoder().decode(
-					await readBoundedBody(request, 100 * 1024 * 1024),
+					await readBoundedBody({ request: request, maximumBytes: 100 * 1024 * 1024 }),
 				),
 			),
 		);

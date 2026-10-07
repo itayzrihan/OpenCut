@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useBatchEdit } from "@/batch/provider";
 import { batchEditIsLocked } from "opencut-wasm";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
 	ResizablePanelGroup,
 	ResizablePanel,
@@ -28,10 +28,14 @@ import { Button } from "@/components/ui/button";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
 import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
+import { EditorAgentWorkspace } from "@/editor-agent/overlay";
+import { HyperframesExamplesLibrary } from "@/hyperframes/examples-library";
 
 export default function Editor() {
 	const params = useParams();
 	const projectId = params.project_id as string;
+	const search = useSearchParams();
+	const router = useRouter();
 	const batch = useBatchEdit();
 	const job = batch.state.runs
 		.flatMap((r) => r.jobs)
@@ -58,13 +62,26 @@ export default function Editor() {
 				)}
 				<div
 					inert={readOnly}
+					data-opencut-editor-project={projectId}
 					className="bg-background flex h-screen w-screen flex-col overflow-hidden"
 					style={readOnly ? { paddingTop: 48 } : undefined}
 				>
 					<DegradedRendererBanner />
 					<EditorHeader />
 					<div className="min-h-0 min-w-0 flex-1">
-						<EditorLayout />
+						<EditorAgentWorkspace>
+							{search.get("view") === "examples" ? (
+								<HyperframesExamplesLibrary
+									projectId={projectId}
+									presentation="page"
+									onClose={() =>
+										router.push(`/editor/${encodeURIComponent(projectId)}`)
+									}
+								/>
+							) : (
+								<EditorLayout />
+							)}
+						</EditorAgentWorkspace>
 					</div>
 					<Onboarding />
 					<MigrationDialog />
