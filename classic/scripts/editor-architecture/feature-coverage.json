@@ -553,7 +553,7 @@
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
 				"classic/apps/web/src/editor-agent/__tests__/project-media-ownership.test.ts"
 			],
-			"gap": "Ordinary MediaManager import saves bytes before canonical bounded metadata registration and rational FPS adjustment, fenced by session/account/revision. Registration and membership removal are undoable and retain bytes. Retained HyperFrames/compound/nested dependencies reject removal. Legacy paste/TTS import commands, relink, compound dependency validation, permanent deletion/GC and broader live acceptance remain.",
+			"gap": "Browser file upload, clipboard media paste and generated voiceover save bytes before canonical metadata registration, fenced by session/account/revision. Paste groups registration/insertion into one rollback-safe Undo. Removal retains durable bytes; retained HyperFrames/compound/nested dependencies reject removal. Relink, compound dependency validation, permanent deletion/GC and broader live acceptance remain. The unused legacy AddMediaAssetCommand definition is retained until the removal gate.",
 			"actions": [
 				"remove-media-asset",
 				"remove-media-assets"
