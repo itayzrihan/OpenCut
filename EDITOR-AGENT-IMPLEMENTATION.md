@@ -195,6 +195,18 @@ passing unit test does not establish full product completion.
   reload restore exact content. Aggregate: **8 successes in 8 attempted cases,
   zero unsupported claims, 12 unattempted**; the 18/20 release gate is still open.
   Evidence: `.local/editor-agent-qa-live/{he-clipboard,en-source-audio}`.
+- Canonical source-audio extraction now also preserves `audioSyncOffset`,
+  `fadeInDuration` and `fadeOutDuration`. Previously it discarded those fields,
+  changing the extracted sound's timing/gain. The native regression compares
+  positive/negative-offset playback/export timing and exact Undo/Redo; the
+  actual-WASM host parity case deliberately corrects the frozen legacy builder's
+  loss. Five native audio tests, 73 CommandManager tests (zero skips), both
+  TypeScript configurations, browser production build, scoped lint and compiled
+  architecture inventory pass. A live UI extraction retains 0.15-second offset
+  and 0.4/0.6-second fades. The first host-suite attempt hit its 120-second
+  deadline during concurrent compilation; the isolated retry passed in 236.9s.
+  Evidence: `.local/source-audio-offset-{native.log,host-final/summary.json,
+  test-ts.log,browser-build.log,lint.log,architecture.log,live.json}`.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the

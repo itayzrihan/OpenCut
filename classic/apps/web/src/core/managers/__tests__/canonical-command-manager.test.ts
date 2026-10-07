@@ -13,6 +13,7 @@ import { getDefaultInsertIndexForTrack } from "@/timeline/placement/insert-index
 import { splitTrackByType, withReorderedTrack } from "@/timeline/track-order";
 import { pruneEmptyElementTracks } from "@/timeline/prune-empty-tracks";
 import { buildSeparatedAudioElement } from "./legacy-source-audio-fixture";
+import { getClipAudioTiming } from "@/media/audio-sync";
 import { insertPointOnFreeformSegment } from "@/masks/__tests__/legacy-freeform-insert";
 import type { FreeformPathMask } from "@/masks/types";
 import {
@@ -2481,6 +2482,9 @@ test(
 				.elements[0] as VideoElement;
 			source.params.volume = -6;
 			source.params.muted = true;
+			source.params.audioSyncOffset = 1.25;
+			source.params.fadeInDuration = 0.4;
+			source.params.fadeOutDuration = 0.6;
 			source.sourceDuration = mediaTime({ ticks: 1_920_000 });
 			// Older serialized projects can carry an explicit null optional duration.
 			if (placement === "displayOrder")
@@ -2565,6 +2569,13 @@ test(
 			const expectedAudio = buildSeparatedAudioElement({
 				sourceElement: source,
 			});
+			// The frozen legacy builder dropped sync offsets and fades. Canonical
+			// extraction deliberately fixes that loss while preserving its layout.
+			Object.assign(expectedAudio.params, {
+				audioSyncOffset: 1.25,
+				fadeInDuration: 0.4,
+				fadeOutDuration: 0.6,
+			});
 			const expectedPlacement = resolveTrackPlacement({
 				tracks: before.scenes[0].tracks,
 				trackType: "audio",
@@ -2586,6 +2597,7 @@ test(
 				),
 			)!;
 			const audio = target.elements.at(-1)!;
+			expect(getClipAudioTiming(audio)).toEqual(getClipAudioTiming(source));
 			expect(withoutKeyframeIds(audio)).toEqual(
 				withoutKeyframeIds(
 					JSON.parse(JSON.stringify({ ...expectedAudio, id: audio.id })),

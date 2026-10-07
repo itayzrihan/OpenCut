@@ -4,6 +4,44 @@ use serde_json::{Value, json};
 const AUDIO: &str = "timeline.classic.audio.source.edit";
 
 #[tokio::test]
+async fn extraction_preserves_sync_offsets_and_audio_fades_for_playback_and_export() {
+    for offset in [-0.25, 1.25] {
+        let mut classic = fixture();
+        let source = &mut classic["document"]["scenes"][0]["tracks"]["main"]["elements"][0];
+        source["params"]["audioSyncOffset"] = json!(offset);
+        source["params"]["fadeInDuration"] = json!(0.4);
+        source["params"]["fadeOutDuration"] = json!(0.6);
+        let runtime = attached(classic).await;
+        let original = read(&runtime).await;
+        call(&runtime, AUDIO, input(&original, "extract")).await;
+        let edited = read(&runtime).await;
+        let tracks = &edited["project"]["classic"]["document"]["scenes"][0]["tracks"];
+        let video = &tracks["main"]["elements"][0];
+        let audio = &tracks["audio"][0]["elements"][0];
+        for key in ["audioSyncOffset", "fadeInDuration", "fadeOutDuration"] {
+            assert_eq!(audio["params"][key], video["params"][key]);
+        }
+        let timing = |clip: &Value| {
+            serde_json::to_value(classic_timeline::resolve_clip_audio_timing(
+                classic_timeline::ClipAudioTimingOptions {
+                    start_time: clip["startTime"].as_f64().unwrap() / 120000.0,
+                    duration: clip["duration"].as_f64().unwrap() / 120000.0,
+                    trim_start: clip["trimStart"].as_f64().unwrap() / 120000.0,
+                    rate: clip["retime"]["rate"].as_f64().unwrap(),
+                    offset_seconds: clip["params"]["audioSyncOffset"].as_f64().unwrap(),
+                },
+            ))
+            .unwrap()
+        };
+        assert_eq!(timing(audio), timing(video));
+        call(&runtime, "history.undo", json!({})).await;
+        assert_eq!(read(&runtime).await["project"], original["project"]);
+        call(&runtime, "history.redo", json!({})).await;
+        assert_eq!(read(&runtime).await["project"], edited["project"]);
+    }
+}
+
+#[tokio::test]
 async fn empty_and_composite_volume_channels_preserve_defaults_and_shared_new_key_ids() {
     for volume in [
         Value::Null,
@@ -150,7 +188,10 @@ async fn extraction_preserves_source_and_volume_curves_with_independent_ids_and_
     ] {
         assert_eq!(audio[key], source[key]);
     }
-    assert_eq!(audio["params"], json!({"volume":-6,"muted":true}));
+    assert_eq!(
+        audio["params"],
+        json!({"volume":-6,"muted":true,"audioSyncOffset":0.1})
+    );
     assert_eq!(audio["sourceType"], "upload");
     assert!(audio.get("masks").is_none() && audio.get("effects").is_none());
     assert!(audio["animations"].get("opacity").is_none());
