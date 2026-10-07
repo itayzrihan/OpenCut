@@ -123,7 +123,19 @@ export class VideoCache {
 		const current = previous.then(async () => {
 			if (this.sinks.get(sinkKey) !== sinkData) return null;
 			const frame = await this.resolveFrame({ sinkData, time });
-			return this.sinks.get(sinkKey) === sinkData ? frame : null;
+			if (this.sinks.get(sinkKey) !== sinkData || !frame) return null;
+			// CanvasSink recycles its decode pool, including during prefetch.
+			// Metadata/version checks cannot detect pixels silently overwritten by
+			// a future decode. Cache and consumers own an immutable pixel snapshot.
+			const canvas = new OffscreenCanvas(
+				frame.canvas.width,
+				frame.canvas.height,
+			);
+			const context = canvas.getContext("2d");
+			if (!context)
+				throw new Error("Could not snapshot the decoded video frame");
+			context.drawImage(frame.canvas, 0, 0);
+			return { ...frame, canvas };
 		});
 		this.frameChain.set(
 			sinkKey,
