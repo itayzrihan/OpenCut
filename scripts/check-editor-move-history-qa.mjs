@@ -1,12 +1,12 @@
 import {readFile,writeFile,realpath} from "node:fs/promises";
 import {basename,join,resolve} from "node:path";
 import assert from "node:assert/strict";
-const [projectArg,rootArg,mode]=process.argv.slice(2);if(!projectArg||!rootArg||!["undo","redo","reopen"].includes(mode))throw new Error("Expected project, evidence root and history mode");
-const directory=await realpath(projectArg),folder=join(resolve(rootArg),"en-move"),projectId=basename(directory);
+const [projectArg,rootArg,mode,taskId="en-move",baselineName="baseline.json"]=process.argv.slice(2);if(!projectArg||!rootArg||!["undo","redo","reopen"].includes(mode)||!['en-move','he-split'].includes(taskId)||!['baseline.json','rerun-baseline.json'].includes(baselineName))throw new Error("Expected project, evidence root, history mode and an accepted scoped fixture");
+const directory=await realpath(projectArg),folder=join(resolve(rootArg),taskId),projectId=basename(directory);
 const saved=JSON.parse(await readFile(join(directory,"project.json"),"utf8"));assert.equal(saved.metadata.id,projectId);
 const bundle=JSON.parse(saved.__opencutEditorSession).saved.bundle,run=JSON.parse(bundle.agentCheckpoint).run;
 const completion=JSON.parse(await readFile(join(folder,"completion.json"),"utf8"));assert.equal(run.scope.runId,completion.runId);assert.equal(run.phase,"completed");
-const expected=mode==="undo"?JSON.parse(await readFile(join(folder,"baseline.json"),"utf8")).classic:JSON.parse(await readFile(join(folder,"canonical-before-history-qa.json"),"utf8"));
+const expected=mode==="undo"?JSON.parse(await readFile(join(folder,baselineName),"utf8")).classic:JSON.parse(await readFile(join(folder,"canonical-before-history-qa.json"),"utf8"));
 assert.deepEqual(bundle.archive.classic,expected,"History must restore exact project content, including media, effect and animation identities");
 if(mode==="reopen")assert.ok(bundle.archive.revision>=completion.finalRevision+2,"Rehydrated catalog/workspace revisions may advance; Classic content must remain exact");
 else assert.equal(bundle.archive.revision,completion.finalRevision+(mode==="undo"?1:2));

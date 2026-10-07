@@ -166,6 +166,20 @@ passing unit test does not establish full product completion.
   `.local/media-completion-browser-build-final.log`,
   `.local/media-completion-test-ts.log`, `.local/media-completion-lint-final.log`,
   `.local/media-completion-architecture.log`, `.local/exact-video-frame-host-final/summary.json`.
+- The first `he-split` live run correctly split at 210000 timeline ticks with
+  1.5x retime/source boundary 315000 and preserved Bezier geometry, but repeated
+  rendering exposed recycled decode-canvas pixels. The agent reported Failed
+  without a success claim. VideoCache now snapshots the returned pixels into
+  an owned OffscreenCanvas; cached metadata cannot retain a decoder pool surface
+  silently overwritten by later seeks/prefetch. A pooled-canvas regression,
+  production build, both TypeScript configurations and scoped lint pass.
+  The rerun completed with the exact frozen prompt and failed-history context:
+  1001 independent curve samples show maximum opacity error 1.252e-7; source
+  ranges join at 2.625 seconds, six frames have correct source clocks, and
+  single Undo/Redo/reopen retain full content and the public conversation.
+  The original failed attempt remains in previousAttempts. Aggregate now records
+  **6 accepted cases, 6 successes, zero unsupported success claims**, 14
+  unattempted; the complete 18/20 and packaged release gates remain open.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
