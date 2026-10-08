@@ -207,6 +207,17 @@ passing unit test does not establish full product completion.
   deadline during concurrent compilation; the isolated retry passed in 236.9s.
   Evidence: `.local/source-audio-offset-{native.log,host-final/summary.json,
   test-ts.log,browser-build.log,lint.log,architecture.log,live.json}`.
+- `en-transitions` passed a 19-round live run: catalog discovery preceded one
+  atomic fade/slide application, with complete audio tracks, automation and
+  offset/fade parameters unchanged. The actor rendered both transition midpoints
+  through `editor.preview.render`; the generic receipt-image mechanism actually
+  supplied those JPEGs to its model. Independent stored-image inspection verifies
+  partial fade (maximum RGB 165 versus 255 in a full-brightness sample) and
+  rightward title displacement. The reviewer initially received only ordinary
+  clip anchors, motivating the separate native motion-sampling improvement.
+  Aggregate: **9 accepted cases, 9 successes, zero unsupported success claims,
+  11 unattempted**. The 18/20 and packaged release gates remain open.
+  Evidence: `.local/editor-agent-qa-live/en-transitions`.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
