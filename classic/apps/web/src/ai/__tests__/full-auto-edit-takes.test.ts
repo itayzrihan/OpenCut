@@ -61,7 +61,8 @@ mock.module("@/ai/subject-framing", () => ({
 }));
 mock.module("@/subtitles/auto-texts", () => ({
 	runAutoTexts: async ({ editor }: { editor: EditorCore }) => {
-		expect(editor.scenes.getActiveScene().tracks.overlay).toEqual([]);
+		if (calls.includes("prepare"))
+			expect(editor.scenes.getActiveScene().tracks.overlay).toEqual([]);
 		calls.push("fresh transcription");
 	},
 }));
@@ -229,3 +230,25 @@ test("bundled font failure and stale context leave selected takes and captions i
 		expect(scene.tracks.overlay).toHaveLength(1);
 	}
 });
+
+for (const checkpoint of [3, 4]) {
+	test(`resume at checkpoint ${checkpoint} preserves cuts and skips completed stages`, async () => {
+		const { editor, scene } = setup();
+		scene.takeAssembly = undefined;
+		const before = JSON.stringify(scene.tracks.main);
+		await runFullAutoEdit({
+			editor,
+			options,
+			signal: new AbortController().signal,
+			onProgress: () => {},
+			resumeFromStage: checkpoint,
+		});
+		expect(calls).not.toContain("prepare");
+		expect(calls).not.toContain("framing");
+		expect(calls).not.toContain("silence");
+		expect(calls.includes("fresh transcription")).toBe(checkpoint === 3);
+		expect(calls).toContain("finish");
+		expect(loadedSources).toHaveLength(1);
+		expect(JSON.stringify(scene.tracks.main)).toBe(before);
+	});
+}

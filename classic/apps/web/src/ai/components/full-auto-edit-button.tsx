@@ -31,7 +31,7 @@ export function FullAutoEditButton({
 	);
 	const previousJob = previous?.jobs.find((j) => j.projectId === projectId);
 	const resumable =
-		previousJob?.status === "failed" && previousJob.completedStages >= 5;
+		previousJob?.status === "failed" && previousJob.completedStages >= 3;
 	const [open, setOpen] = useState(false);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
@@ -68,20 +68,13 @@ export function FullAutoEditButton({
 			<Button
 				className="w-full"
 				disabled={disabled || running}
-				onClick={() => setOpen(true)}
+				onClick={() => (resumable ? void run(true) : setOpen(true))}
 			>
-				<WandSparkles /> Full Auto Edit
+				<WandSparkles />{" "}
+				{resumable
+					? `Resume Full Auto Edit · stage ${previousJob.completedStages + 1}`
+					: "Full Auto Edit"}
 			</Button>
-			{resumable && (
-				<Button
-					className="w-full"
-					variant="outline"
-					disabled={disabled || running}
-					onClick={() => void run(true)}
-				>
-					Resume from stage {previousJob.completedStages + 1}
-				</Button>
-			)}
 			<p className="text-xs text-muted-foreground">
 				Vertical framing, silence removal, complete Hebrew Auto Texts and
 				finishing.

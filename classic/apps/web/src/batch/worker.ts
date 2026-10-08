@@ -244,7 +244,9 @@ export async function executeBatch({
 				await send({
 					projectId: current,
 					event: "run",
-					message: "Starting Full Auto Edit…",
+					message: job.resumeFromStage
+						? `Resuming Full Auto Edit from stage ${job.resumeFromStage + 1}…`
+						: "Starting Full Auto Edit…",
 				});
 				if (!(await editor.project.loadProject({ id: current })))
 					throw new Error("Imported project is unavailable");

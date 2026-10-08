@@ -104,16 +104,16 @@ test("resume executes only remaining finishing stages on the same project", asyn
 	expect(Math.min(...completed)).toBe(5);
 	expect(completed.at(-1)).toBe(10);
 });
-test("resume rejects incomplete caption checkpoints", async () => {
+test("resume rejects checkpoints before saved framing and silence", async () => {
 	await expect(
 		runFullAutoEdit({
 			editor,
 			options,
 			signal: new AbortController().signal,
-			resumeFromStage: 3,
+			resumeFromStage: 2,
 			onProgress: () => {},
 		}),
-	).rejects.toThrow("Invalid finishing checkpoint");
+	).rejects.toThrow("Invalid automatic editing checkpoint");
 });
 
 test("a rejected stage checkpoint never reports completion or starts the next stage", async () => {

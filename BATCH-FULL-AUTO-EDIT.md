@@ -87,3 +87,20 @@ also saved an in-memory copy of the affected project's 72 MB session archive,
 then acknowledged the same request 80 seconds later without a second revision
 and retained ownership another 80 seconds later. No project file was written by
 that diagnostic. The full ten-stage AI recipe was not rerun for this check.
+
+## Resume after silence removal
+
+The latest failed run can now resume from checkpoint 3 or 4 as well as the later
+finishing checkpoints. Full Auto Edit presents Resume as its primary action for
+these runs, preserves the original options, and starts with the first unfinished
+stage. Completed framing, Smart Takes preparation and silence removal are skipped.
+The caption font is loaded again because font availability belongs to the browser,
+without applying preflight timeline mutations.
+
+When resuming Auto Texts, its saved caption source is reused if present: no second
+transcription or duplicate caption tracks. Correction and row arrangement continue
+against those saved words; if no transcript was committed, transcription is retried.
+This resumes at the stage boundary, not an arbitrary point inside an AI request.
+The interrupted user project was verified to contain 418 timed words and its
+39 selected/trimmed video segments. Checks cover early-stage skipping, unchanged
+cuts, font reload, transcript reuse, missing transcript, and queue/recipe guards.

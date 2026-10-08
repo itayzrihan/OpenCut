@@ -54,10 +54,10 @@ export async function runFullAutoEdit({
 	if (
 		resumeFromStage !== 0 &&
 		(!Number.isInteger(resumeFromStage) ||
-			resumeFromStage < 5 ||
+			resumeFromStage < 3 ||
 			resumeFromStage >= steps.length)
 	)
-		throw new Error("Invalid finishing checkpoint");
+		throw new Error("Invalid automatic editing checkpoint");
 	const assertContext = () => {
 		signal.throwIfAborted();
 		if (
@@ -66,6 +66,31 @@ export async function runFullAutoEdit({
 		)
 			throw new Error("Project or scene changed; Full Auto Edit stopped");
 	};
+	const loadCaptionFont = async () => {
+		const font =
+			editor.project
+				.getActive()
+				.customFonts?.find((f) => /^assistant[ _-]*bold$/i.test(f.family)) ??
+			editor.project
+				.getActive()
+				.customFonts?.find((f) =>
+					/^assistant[ _-]*extra[ _-]*bold$/i.test(f.family),
+				);
+		if (font) {
+			await loadProjectFont({ font });
+			if (!isProjectFontLoaded({ family: font.family }))
+				throw new Error("The custom Assistant font file is unavailable");
+			fontFamily = font.family;
+		} else {
+			onProgress("Loading included Assistant Bold caption font…");
+			fontFamily = await loadBundledAssistantBold();
+		}
+	};
+	// Resuming skips timeline preparation, but font availability is browser-local.
+	if (resumeFromStage > 0 && resumeFromStage <= 4) {
+		await loadCaptionFont();
+		assertContext();
+	}
 	const compileAndApply = async ({
 		stage,
 		framing = [],
@@ -134,26 +159,7 @@ export async function runFullAutoEdit({
 						throw new Error(
 							"Full Auto Edit starts with imported main-track video. This scene already contains edits; use a fresh project to avoid replacing them.",
 						);
-					const font =
-						editor.project
-							.getActive()
-							.customFonts?.find((f) =>
-								/^assistant[ _-]*bold$/i.test(f.family),
-							) ??
-						editor.project
-							.getActive()
-							.customFonts?.find((f) =>
-								/^assistant[ _-]*extra[ _-]*bold$/i.test(f.family),
-							);
-					if (font) {
-						await loadProjectFont({ font });
-						if (!isProjectFontLoaded({ family: font.family }))
-							throw new Error("The custom Assistant font file is unavailable");
-						fontFamily = font.family;
-					} else {
-						progress("Loading included Assistant Bold caption font…");
-						fontFamily = await loadBundledAssistantBold();
-					}
+					await loadCaptionFont();
 					assertBrowserTranscriptionAvailable();
 					assertContext();
 					if (editor.command.getStateRevision() !== revision)
@@ -203,6 +209,7 @@ export async function runFullAutoEdit({
 				}
 				case "auto-texts":
 					await runAutoTexts({
+						resumeTranscript: resumeFromStage === index,
 						editor,
 						signal,
 						onProgress: progress,

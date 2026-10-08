@@ -362,6 +362,69 @@ test("resume preserves a failed finishing checkpoint and rejects stale or change
 	).rejects.toThrow("latest failed");
 });
 
+test("resume preserves a failed caption checkpoint and rejects stale or changed recipes", async () => {
+	const projectId = "resume-caption-project",
+		stamp = "2026-09-29T10:00:00.000Z";
+	projects.set(projectId, { metadata: { name: "Resume", updatedAt: stamp } });
+	const original = await createProjectEdit({
+		id: "resume-caption-original",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	await updateBatch({
+		id: original.run.id,
+		token: original.token,
+		projectId,
+		event: "run",
+	});
+	await updateBatch({
+		id: original.run.id,
+		token: original.token,
+		projectId,
+		event: "fail",
+		completedStages: 3,
+	});
+	const input = {
+		id: "resume-caption-next",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+		resumeRunId: original.run.id,
+	};
+	await expect(
+		createProjectEdit({ ...input, expectedUpdatedAt: "stale" }),
+	).rejects.toThrow("Project changed");
+	await expect(
+		createProjectEdit({ ...input, options: { ...options, zoom: false } }),
+	).rejects.toThrow("original recipe");
+	const resumed = await createProjectEdit(input);
+	expect(resumed.run.jobs[0]).toMatchObject({
+		source: "existing",
+		status: "ready",
+		completedStages: 3,
+		resumeFromStage: 3,
+	});
+	await expect(
+		createProjectEdit({ ...input, id: "duplicate-resume" }),
+	).rejects.toThrow("active automatic edit");
+	await updateBatch({
+		id: resumed.run.id,
+		token: resumed.token,
+		projectId,
+		event: "run",
+	});
+	await updateBatch({
+		id: resumed.run.id,
+		token: resumed.token,
+		projectId,
+		event: "complete",
+	});
+	await expect(
+		createProjectEdit({ ...input, id: "old-checkpoint" }),
+	).rejects.toThrow("latest failed");
+});
+
 test("an existing project whose worker never started cancels immediately and rejects late writes", async () => {
     const projectId = "lost-before-start";
     const stamp = "2026-10-08T10:00:00.000Z";

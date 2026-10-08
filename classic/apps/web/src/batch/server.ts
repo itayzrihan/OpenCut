@@ -156,11 +156,11 @@ export async function createProjectEdit({
 			if (
 				previous?.id !== resumeRunId ||
 				job?.status !== "failed" ||
-				job.completedStages < 5 ||
+				job.completedStages < 3 ||
 				job.completedStages >= fullAutoEditStages(previous.options).length
 			)
 				throw new Error(
-					"Only the latest failed finishing stage can be resumed",
+					"Only the latest failed caption or finishing stage can be resumed",
 				);
 			for (const key of [
 				"zoom",
@@ -187,7 +187,9 @@ export async function createProjectEdit({
 					fileName: project.metadata.name ?? "Project",
 					source: "existing",
 					status: "ready",
-					message: "Queued for background Full Auto Edit",
+					message: resumeRunId
+						? `Queued to resume Full Auto Edit from stage ${resumeFromStage + 1}`
+						: "Queued for background Full Auto Edit",
 					cancelRequested: false,
 					created: true,
 					completedStages: resumeFromStage,
