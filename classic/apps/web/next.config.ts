@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
 		NEXT_PUBLIC_OPENCUT_RUNTIME_TARGET: runtimeTarget,
 	},
 	experimental: {
+		// Windows page workers each load the canonical WASM runtime. Bound build
+		// concurrency so QA/browser sessions do not exhaust the paging file.
+		cpus: process.platform === "win32" ? 2 : undefined,
 		optimizePackageImports: [
 			"@hugeicons/react",
 			"@radix-ui/react-icons",

@@ -218,6 +218,20 @@ passing unit test does not establish full product completion.
   Aggregate: **9 accepted cases, 9 successes, zero unsupported success claims,
   11 unattempted**. The 18/20 and packaged release gates remain open.
   Evidence: `.local/editor-agent-qa-live/en-transitions`.
+- The native reviewer now samples transition starts/midpoints/ends and scalar,
+  discrete or composite keyframe segment midpoints, with a strict eight-image
+  budget. Global scene bounds remain sampled; short transitions take priority
+  over other animation and ordinary clip anchors. Hidden elements are excluded,
+  and empty-scene background/settings edits request the canvas at time zero.
+  All 48 editor-agent native tests pass; three actual-WASM cases cover short
+  transitions, empty-canvas edits and exact JPEG facts/rejection. Both TypeScript
+  configurations and the production browser build pass. The first parallel
+  build exhausted Windows virtual memory; the serial build succeeds with two
+  Windows page workers. Saved completed QA tabs were released to recover memory.
+  Evidence: `.local/motion-review-{agent-full.log,host-final/summary.json,
+  test-ts-final.log,browser-build-final.log}`. Follow-up QA is not yet accepted:
+  its prepared source is backed up, but its durable save and Chrome-control
+  timeout still need investigation. No model run has started for that case.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
