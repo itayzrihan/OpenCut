@@ -32,6 +32,7 @@ for (const mode of ["standard", "experimental"] as const) {
 			{ text: "welcome", start: 2, end: 4 },
 			{ text: "end", start: 5, end: 6 },
 		];
+		original.document.scenes[0].tracks.main.elements[0].retime = { rate: 1 };
 		session.attach({ classic: original });
 		const prepared = session.prepareTakes({
 			sceneId: "main-scene",
@@ -133,6 +134,20 @@ for (const mode of ["standard", "experimental"] as const) {
 		).toBe(1);
 		reopened.undo();
 		expect(reopened.read()).toEqual(assembled);
+
+		session.begin();
+		session.prepareTakesForAutoEdit({ sceneId: "main-scene" });
+		session.commit({ label: "Prepare Full Auto Edit", hostContext: {} });
+		const clean = session.read().document.scenes[0];
+		expect(clean.takeAssembly).toBeUndefined();
+		expect(clean.tracks.overlay).toHaveLength(0);
+		expect(clean.tracks.main.elements).toEqual(
+			assembled.document.scenes[0].tracks.main.elements.map(
+				({ takeGroup: _takeGroup, ...clip }) => clip,
+			),
+		);
+		session.undo();
+		expect(session.read()).toEqual(assembled);
 		session.undo();
 		expect(session.read()).toEqual(original);
 	});

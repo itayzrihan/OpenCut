@@ -803,3 +803,158 @@ async fn experimental_review_rejects_invalid_patches_and_stale_or_incomplete_evi
         .await
         .is_err());
 }
+
+const AUTO_EDIT: &str = "timeline.classic.takes.prepare_auto_edit";
+fn auto_edit_input(state: &Value) -> Value {
+    json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":state["revision"]})
+}
+#[tokio::test]
+async fn auto_edit_preparation_keeps_chosen_cuts_and_audio_clears_text_and_is_undoable() {
+    let fixture = setup().await;
+    let mut classic = read(&fixture).await["project"]["classic"].clone();
+    classic["document"]["scenes"][0]["tracks"]["main"]["elements"][0]["retime"] = json!({"rate":1});
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let original = read(&r).await;
+    call(&r, EDIT, assemble(&original)).await;
+    call(
+        &r,
+        EDIT,
+        input(
+            &read(&r).await,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    let assembled = read(&r).await;
+    let request = auto_edit_input(&assembled);
+    r.registry()
+        .invoke(
+            AUTO_EDIT,
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            request.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(read(&r).await, assembled);
+    let context = InvocationContext::default();
+    context.cancellation.cancel();
+    assert!(
+        r.registry()
+            .invoke(AUTO_EDIT, context, request.clone())
+            .await
+            .is_err()
+    );
+    assert_eq!(read(&r).await, assembled);
+    assert!(
+        r.registry()
+            .invoke(
+                AUTO_EDIT,
+                InvocationContext::default(),
+                auto_edit_input(&original)
+            )
+            .await
+            .is_err()
+    );
+    let mut context = InvocationContext::default();
+    context
+        .metadata
+        .insert("opencut/idempotencyKey".into(), json!("prepare-full-auto"));
+    r.registry()
+        .invoke(AUTO_EDIT, context.clone(), request.clone())
+        .await
+        .unwrap();
+    let prepared = read(&r).await;
+    r.registry()
+        .invoke(AUTO_EDIT, context, request)
+        .await
+        .unwrap();
+    assert_eq!(read(&r).await, prepared);
+    let mut expected = scene(&assembled).clone();
+    expected.as_object_mut().unwrap().remove("takeAssembly");
+    expected["tracks"]["overlay"] = json!([]);
+    expected["tracks"]["order"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|id| id != "titles");
+    for clip in expected["tracks"]["main"]["elements"]
+        .as_array_mut()
+        .unwrap()
+    {
+        clip.as_object_mut().unwrap().remove("takeGroup");
+    }
+    assert_eq!(scene(&prepared), &expected);
+    assert!(!scene(&prepared).to_string().contains("captionSource"));
+    assert_eq!(
+        prepared["project"]["classic"]["mediaAssets"],
+        assembled["project"]["classic"]["mediaAssets"]
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(scene(&read(&r).await), scene(&assembled));
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(scene(&read(&r).await), scene(&prepared));
+}
+
+#[tokio::test]
+async fn auto_edit_preparation_fails_atomically_for_unsupported_scene() {
+    let r = setup().await;
+    let state = read(&r).await;
+    assert!(
+        r.registry()
+            .invoke(
+                AUTO_EDIT,
+                InvocationContext::default(),
+                auto_edit_input(&state)
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(read(&r).await, state);
+    call(&r, EDIT, assemble(&state)).await;
+    let assembled = read(&r).await;
+    for variant in ["retime", "overlay"] {
+        let mut classic = assembled["project"]["classic"].clone();
+        let scene = &mut classic["document"]["scenes"][0];
+        if variant == "retime" {
+            scene["tracks"]["main"]["elements"][0]["retime"] = json!({"rate":2});
+        } else {
+            let clip = scene["tracks"]["main"]["elements"][0].clone();
+            scene["tracks"]["overlay"].as_array_mut().unwrap().push(
+                json!({"id":"overlay-video","type":"video","name":"Overlay","elements":[clip]}),
+            );
+            scene["tracks"]["overlay"]
+                .as_array_mut()
+                .unwrap()
+                .last_mut()
+                .unwrap()["elements"][0]["id"] = json!("overlay-clip");
+        }
+        let reopened = OpenCutRuntime::default();
+        call(
+            &reopened,
+            "project.classic.session.attach",
+            json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+        )
+        .await;
+        let before = read(&reopened).await;
+        assert!(
+            reopened
+                .registry()
+                .invoke(
+                    AUTO_EDIT,
+                    InvocationContext::default(),
+                    auto_edit_input(&before)
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&reopened).await, before);
+    }
+}

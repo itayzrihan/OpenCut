@@ -1360,7 +1360,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			category: "smart takes task",
 			keywords: ["best takes", "filming notes", "assemble takes"],
 			description:
-				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to standard; experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
+				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to experimental (fast); standard retains the original full review. Experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
 			parameters: objectSchema({
 				properties: {
 					elementIds: {

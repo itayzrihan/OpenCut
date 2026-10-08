@@ -123,10 +123,12 @@ export async function runFullAutoEdit({
 						"Checking imported video, custom font, AI and Hebrew model…",
 					);
 					const scene = editor.scenes.getActiveScene();
+					const revision = editor.command.getStateRevision();
 					if (
 						!scene.tracks.main.elements.length ||
-						scene.tracks.overlay.some((t) => t.elements.length > 0) ||
-						scene.tracks.audio.some((t) => t.elements.length > 0)
+						(!scene.takeAssembly &&
+							(scene.tracks.overlay.some((t) => t.elements.length > 0) ||
+								scene.tracks.audio.some((t) => t.elements.length > 0)))
 					)
 						throw new Error(
 							"Full Auto Edit starts with imported main-track video. This scene already contains edits; use a fresh project to avoid replacing them.",
@@ -151,6 +153,19 @@ export async function runFullAutoEdit({
 						throw new Error("The custom Assistant font file is unavailable");
 					fontFamily = font.family;
 					assertBrowserTranscriptionAvailable();
+					assertContext();
+					if (editor.command.getStateRevision() !== revision)
+						throw new Error(
+							"Timeline changed during preflight; no preparation was applied",
+						);
+					if (scene.takeAssembly) {
+						progress(
+							"Preparing selected Smart Takes · clearing old text · no video render…",
+						);
+						editor.command.prepareSmartTakesForAutoEdit();
+						// Persist the caption-free cut sequence before the asynchronous stages.
+						await editor.save.flush();
+					}
 					break;
 				}
 				case "framing": {

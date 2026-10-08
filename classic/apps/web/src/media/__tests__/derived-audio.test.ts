@@ -117,3 +117,70 @@ test("derived compound audio joins native collection, decodes once across cuts a
 		}),
 	).rejects.toThrow("mixer failed");
 });
+
+test("transcription audio uses retained cuts in timeline order with source trims and one decode", async () => {
+	const clip = {
+		id: "late",
+		type: "video" as const,
+		name: "Chosen take",
+		mediaId: "source",
+		startTime: mediaTime({ ticks: 0 }),
+		duration: mediaTime({ ticks: 240000 }),
+		trimStart: mediaTime({ ticks: 12000000 }),
+		trimEnd: mediaTime({ ticks: 0 }),
+		params: {},
+	};
+	const tracks: SceneTracks = {
+		main: {
+			id: "main",
+			name: "Video",
+			type: "video",
+			hidden: false,
+			muted: false,
+			elements: [
+				clip,
+				{
+					...clip,
+					id: "early",
+					startTime: mediaTime({ ticks: 240000 }),
+					trimStart: mediaTime({ ticks: 1200000 }),
+					duration: mediaTime({ ticks: 120000 }),
+				},
+			],
+		},
+		overlay: [],
+		audio: [],
+	};
+	const mediaAssets = [
+		{
+			id: "source",
+			name: "Original",
+			type: "video" as const,
+			hasAudio: true,
+			duration: 120,
+			file: new File(["audio"], "source.mp4"),
+		},
+	];
+	let decodes = 0;
+	const clips = await collectAudioElements({
+		tracks,
+		mediaAssets,
+		audioContext: {} as AudioContext,
+		resolveAssetAudio: async () => {
+			decodes++;
+			return {} as AudioBuffer;
+		},
+	});
+	expect(decodes).toBe(1);
+	expect(
+		clips.map(({ timelineElement, startTime, duration, trimStart }) => ({
+			id: timelineElement.id,
+			startTime,
+			duration,
+			trimStart,
+		})),
+	).toEqual([
+		{ id: "late", startTime: 0, duration: 2, trimStart: 100 },
+		{ id: "early", startTime: 2, duration: 1, trimStart: 10 },
+	]);
+});

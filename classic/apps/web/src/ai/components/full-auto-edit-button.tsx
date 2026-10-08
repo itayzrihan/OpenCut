@@ -103,8 +103,10 @@ export function FullAutoEditButton({
 					<DialogHeader>
 						<DialogTitle>Full Auto Edit</DialogTitle>
 						<DialogDescription>
-							Start from imported video in this project. Choose any optional
-							finishing steps, or leave all options off.
+							Start from imported video or your selected Smart Takes. Smart
+							Takes keeps its selected cuts without rendering; existing text and
+							take alternatives are cleared, then speech is transcribed afresh.
+							Undo restores the assembly. Choose any optional finishing steps.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3">

@@ -727,6 +727,19 @@ export class CommandManager {
 		});
 	}
 
+	prepareSmartTakesForAutoEdit(): void {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the canonical editor before preparing takes");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.prepareTakesForAutoEdit({ sceneId });
+				this.publishCanonical();
+			},
+		});
+	}
+
 	prepareSmartTakes(elementIds: string[]) {
 		const session = this.canonical;
 		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;

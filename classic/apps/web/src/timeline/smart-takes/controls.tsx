@@ -1,7 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { FlaskConical, Layers, Sparkles, X } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { ChevronDown, Layers, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import {
 	useEditor,
@@ -9,6 +9,14 @@ import {
 	useEditorTimelineSelection,
 } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
+import type { SmartTakeMode } from "./types";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Tooltip,
@@ -26,6 +34,7 @@ import type { TimelineElement } from "@/timeline/types";
 
 export function SmartTakesControl() {
 	const editor = useEditor();
+	const [mode, setMode] = useState<SmartTakeMode>("experimental");
 	const scene = useEditorTimelineScenes((e) => e.scenes.getActiveSceneOrNull());
 	const selection = useEditorTimelineSelection((e) =>
 		e.selection.getSelectedElements(),
@@ -50,7 +59,7 @@ export function SmartTakesControl() {
 		!ids.length ||
 		!!scene?.takeAssembly ||
 		!scene?.tracks.overlay.some((t) => t.type === "text" && t.captionSource);
-	const run = (mode: "standard" | "experimental" = "standard") => {
+	const run = () => {
 		try {
 			task.start({ elementIds: ids, requestId: crypto.randomUUID(), mode });
 		} catch (error) {
@@ -66,18 +75,19 @@ export function SmartTakesControl() {
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<Button
-						variant="ghost"
+						variant="outline"
+						className="rounded-r-none"
 						size="sm"
 						disabled={disabled || !!stage}
 						onClick={() => void run()}
-						aria-label="Smart takes — choose the best takes"
+						aria-label={`Smart takes — ${mode === "experimental" ? "fast" : "classic"}`}
 					>
 						{stage ? (
 							<Spinner className="size-3.5" />
 						) : (
 							<Sparkles className="size-3.5" />
 						)}{" "}
-						Smart takes
+						Smart takes · {mode === "experimental" ? "מהיר" : "קלאסי"}
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>
@@ -86,23 +96,35 @@ export function SmartTakesControl() {
 						: "Select transcribed main-track videos. Infer story order, remove filming notes and keep alternative takes."}
 				</TooltipContent>
 			</Tooltip>
-			<Tooltip>
-				<TooltipTrigger asChild>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
 					<Button
 						variant="outline"
 						size="sm"
-						disabled={disabled || !!stage}
-						onClick={() => run("experimental")}
-						aria-label="Smart takes — experimental focused review"
+						className="-ml-1 rounded-l-none px-2"
+						disabled={!!stage}
+						aria-label="Choose Smart takes mode"
 					>
-						<FlaskConical className="size-3.5" /> Smart takes · ניסוי
+						<ChevronDown className="size-3.5" />
 					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					מצב ניסוי: ביקורת ממוקדת לקיצור זמן הריצה. איכות וזמן עדיין בהשוואה;
-					Smart takes הרגיל נשאר ללא שינוי.
-				</TooltipContent>
-			</Tooltip>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="start">
+					<DropdownMenuRadioGroup
+						value={mode}
+						onValueChange={(value) => {
+							if (value === "experimental" || value === "standard")
+								setMode(value);
+						}}
+					>
+						<DropdownMenuRadioItem value="experimental">
+							חדש ומהיר · ברירת מחדל
+						</DropdownMenuRadioItem>
+						<DropdownMenuRadioItem value="standard">
+							קלאסי · איטי יותר
+						</DropdownMenuRadioItem>
+					</DropdownMenuRadioGroup>
+				</DropdownMenuContent>
+			</DropdownMenu>
 			{!stage && status.elapsedMs !== undefined && status.status !== "idle" && (
 				<span
 					className="text-xs text-muted-foreground"
@@ -111,7 +133,7 @@ export function SmartTakesControl() {
 						?.map((s) => `${s.stage}: ${(s.durationMs / 1000).toFixed(1)}s`)
 						.join("\n")}
 				>
-					{status.mode === "experimental" ? "ניסוי" : "Smart takes"} ·{" "}
+					{status.mode === "experimental" ? "מהיר" : "קלאסי"} ·{" "}
 					{(status.elapsedMs / 1000).toFixed(1)}s
 				</span>
 			)}

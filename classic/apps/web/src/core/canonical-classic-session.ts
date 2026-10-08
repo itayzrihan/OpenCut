@@ -747,6 +747,17 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	prepareTakesForAutoEdit({ sceneId }: { sceneId: string }): void {
+		this.call({
+			capability: "timeline.classic.takes.prepare_auto_edit",
+			input: {
+				projectId: this.projectId,
+				sceneId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	prepareTakes({
 		sceneId,
 		elementIds,

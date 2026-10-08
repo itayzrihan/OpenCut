@@ -5,6 +5,7 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
+mod auto_edit;
 mod quality;
 mod review;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
@@ -493,6 +494,7 @@ pub(super) fn register_classic_takes(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    auto_edit::register_auto_edit(registry, state.clone(), events.clone())?;
     review::register_review(registry, state.clone())?;
     let read_state = state.clone();
     register::<Prepare, Prepared, _, _>(

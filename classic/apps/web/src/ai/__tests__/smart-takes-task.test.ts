@@ -102,7 +102,11 @@ test("start is nonblocking and idempotent; a failed apply resumes the saved plan
 		throw new Error("invalid input: overlap");
 	});
 	const task = new SmartTakesTask(editor);
-	const input = { elementIds: ["clip"], requestId: "request-1" };
+	const input = {
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "request-1",
+	};
 	expect(task.start(input).status).toBe("running");
 	expect(task.start(input).status).toBe("running");
 	expect(() => task.start({ ...input, elementIds: ["different"] })).toThrow(
@@ -129,14 +133,22 @@ test("start is nonblocking and idempotent; a failed apply resumes the saved plan
 test("changed source invalidates saved output; another account cannot read diagnostics", async () => {
 	const { editor, scene, requests } = setup();
 	const task = new SmartTakesTask(editor);
-	task.start({ elementIds: ["clip"], requestId: "first" });
+	task.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "first",
+	});
 	await finished(task);
 	window.__opencutAccountId = "other";
 	expect(task.read(true)).toEqual({ status: "idle" });
 	window.__opencutAccountId = "account";
 	scene.tracks.main.elements.push({ id: "new-clip" });
 	const reopened = new SmartTakesTask(editor);
-	reopened.start({ elementIds: ["clip"], requestId: "second" });
+	reopened.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "second",
+	});
 	await finished(reopened);
 	// Provider deliberately supplies models only once: requesting them again
 	// proves the final plan was invalidated before any second application.
@@ -154,7 +166,11 @@ test("cancelling analysis prevents apply", async () => {
 			}),
 	) as unknown as typeof fetch;
 	const task = new SmartTakesTask(editor);
-	task.start({ elementIds: ["clip"], requestId: "cancel" });
+	task.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "cancel",
+	});
 	task.cancel();
 	await finished(task);
 	expect(task.read()).toMatchObject({ status: "cancelled" });
@@ -167,7 +183,11 @@ test("audio decode failure leaves the timeline untouched and retries the saved p
 		throw new Error("Source audio unavailable");
 	});
 	const task = new SmartTakesTask(editor);
-	task.start({ elementIds: ["clip"], requestId: "audio-failure" });
+	task.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "audio-failure",
+	});
 	await finished(task);
 	expect(task.read()).toMatchObject({
 		status: "failed",
@@ -176,7 +196,11 @@ test("audio decode failure leaves the timeline untouched and retries the saved p
 	});
 	expect(apply).not.toHaveBeenCalled();
 	analyzeAudio.mockImplementation(async () => []);
-	task.start({ elementIds: ["clip"], requestId: "audio-retry" });
+	task.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "audio-retry",
+	});
 	await finished(task);
 	expect(task.read()).toMatchObject({ status: "succeeded" });
 	expect(requests()).toBe(4);
@@ -204,7 +228,11 @@ test("cancelling during audio analysis never applies the completed AI plan", asy
 		});
 	});
 	const task = new SmartTakesTask(editor);
-	task.start({ elementIds: ["clip"], requestId: "cancel-audio" });
+	task.start({
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "cancel-audio",
+	});
 	await decoding;
 	task.cancel();
 	release([]);
@@ -219,7 +247,11 @@ test("cancelling during audio analysis never applies the completed AI plan", asy
 test("mode is part of retry identity and checkpoints stay isolated across modes", async () => {
 	const { editor, requests } = setup();
 	const task = new SmartTakesTask(editor);
-	const input = { elementIds: ["clip"], requestId: "standard" };
+	const input = {
+		mode: "standard" as const,
+		elementIds: ["clip"],
+		requestId: "standard",
+	};
 	task.start(input);
 	expect(() => task.start({ ...input, mode: "experimental" })).toThrow(
 		"different inputs",
@@ -241,4 +273,14 @@ test("mode is part of retry identity and checkpoints stay isolated across modes"
 	// standard checkpoint was not reused by experimental mode.
 	expect(requests()).toBe(5);
 	expect(next.read()).toMatchObject({ mode: "experimental", status: "failed" });
+});
+
+test("new runs default to the faster mode", async () => {
+	const { editor } = setup();
+	const task = new SmartTakesTask(editor);
+	expect(
+		task.start({ elementIds: ["clip"], requestId: "fast-default" }).mode,
+	).toBe("experimental");
+	task.cancel();
+	await finished(task);
 });

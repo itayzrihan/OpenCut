@@ -96,7 +96,7 @@ export class SmartTakesTask {
 	start({
 		elementIds,
 		requestId,
-		mode = "standard",
+		mode = "experimental",
 	}: {
 		elementIds: string[];
 		requestId: string;
