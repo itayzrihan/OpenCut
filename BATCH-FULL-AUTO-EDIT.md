@@ -34,3 +34,15 @@ UI verification covered dragging with the expanded following panel, navigating i
 Checks: 102 native timeline tests, 9 scoped host/worker/save tests; scoped ESLint has no errors (existing/type-assertion warnings remain). Whole-app TypeScript still reports unrelated existing errors; none were reported in the changed Batch/Full Auto/provider/project-manager surfaces.
 
 See [BACKGROUND-AUTOMATION-QA.md](BACKGROUND-AUTOMATION-QA.md) for the expanded background-execution regression audit.
+
+## Existing-project handoff (October 2026)
+
+The editor remains mounted and inert under a saving banner during handoff. Switching to a locked preview preserves its canonical scene, media handles and renderer; the visible host stops its ownership heartbeat locally instead of reloading the project or making a lease-release request after the queue has fenced ordinary writes. When automation ends, the normal full reload reacquires the latest saved document before editing is enabled.
+
+An idle worker iframe warms the browser route and confirms its ready handshake before a request can save/lock/queue a project. Its React host key is retained when it receives the first job, so handoff does not navigate a second iframe. This prevents first-use development route compilation from triggering Fast Refresh while a newly queued job is protected by the unload guard. A failed startup leaves no queued job. Intentional reload/closing during a running edit still prompts because it terminates the browser worker; the saved project survives and the queue lease eventually expires. This change does not claim reload-resume support.
+
+An existing-project job still in `ready` can be cancelled immediately without an available worker. The canonical `cancel` transition releases its queue lock and invalidates late worker writes. Once `running`, cancellation remains cooperative until completed changes are saved. Import jobs retain their existing cancellation flow.
+
+Capability status: classic-only host orchestration around the existing canonical runtime and Rust batch transitions; no duplicate project state or new transport-specific editor mutation.
+
+Canonical session archive commits now allow up to 120 seconds for validation and durable storage; lease/read requests keep the 30-second default. Explicit transport timeouts still apply to all requests, and timeout recovery retains the exact idempotent pending save. This accommodates large Smart Takes history archives without treating a valid slow save as a lost acknowledgement.

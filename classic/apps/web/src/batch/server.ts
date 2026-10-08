@@ -305,8 +305,22 @@ export async function cancelBatch({
 			if (
 				(!projectId || j.projectId === projectId) &&
 				batchEditIsLocked({ status: j.status })
-			)
+			) {
 				j.cancelRequested = true;
+				// Existing-source jobs cannot mutate before the ready -> run
+				// transition. Cancel them even if their iframe disappeared.
+				if (j.source === "existing" && j.status === "ready") {
+					const status = batchEditTransition({
+						status: j.status,
+						event: "cancel",
+					});
+					if (status !== "cancelled")
+						throw new Error("Invalid cancellation transition");
+					j.status = status;
+					j.message =
+						"Cancelled before editing; the saved project was preserved.";
+				}
+			}
 		run.updatedAt = Date.now();
 		return publicState(s);
 	});

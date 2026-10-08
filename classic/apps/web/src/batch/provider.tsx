@@ -31,6 +31,7 @@ import { batchRequest } from "./client";
 import { setBatchReadOnlyProjects, beginAutomationHandoff } from "./read-only";
 import { AutomationProgress } from "./automation-progress";
 import { AutomationWorkerHost, type AutomationWorkerTask } from "./worker-host";
+import { createWorkerReadiness } from "./worker-readiness";
 type StartProject = (input: {
 	resumeRunId?: string;
 	editor: EditorCore;
@@ -71,11 +72,15 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		music: false,
 	});
 	const [starting, setStarting] = useState(false);
-	const [workers, setWorkers] = useState<AutomationWorkerTask[]>([]);
+	const [workers, setWorkers] = useState<
+		Array<AutomationWorkerTask & { hostKey: string }>
+	>([]);
+	const [idleHostKey, setIdleHostKey] = useState(() => crypto.randomUUID());
 	const [preparingProjectId, setPreparingProjectId] = useState<string | null>(
 		null,
 	);
 	const preparing = useRef(false);
+	const [workerReadiness] = useState(createWorkerReadiness);
 	const requestVersion = useRef(0);
 	const latestState = useRef<BatchState>({ runs: [] });
 	const input = useRef<HTMLInputElement>(null);
@@ -144,7 +149,10 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				...latestState.current.runs.filter((r) => r.id !== task.run.id),
 			],
 		});
-		setWorkers((prev) => [...prev, task]);
+		// Promote the already-loaded iframe without navigating it again.
+		const hostKey = idleHostKey;
+		setIdleHostKey(crypto.randomUUID());
+		setWorkers((prev) => [...prev, { ...task, hostKey }]);
 		void refresh().catch(() => {});
 	};
 	const checkModel = async () => {
@@ -160,11 +168,17 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				"Another project is being handed off. Please try again in a moment.",
 			);
 		const projectId = editor.project.getActive().metadata.id;
-		const release = beginAutomationHandoff(projectId);
+		let release: (() => void) | undefined;
 		preparing.current = true;
-		setPreparingProjectId(projectId);
 		try {
 			await checkModel();
+			// Compiling the first worker route can reload a development page.
+			// Do this before installing the unload guard or creating a durable job.
+			await workerReadiness.wait();
+			if (editor.project.getActive().metadata.id !== projectId)
+				throw new Error("Project changed before handoff. Nothing was queued.");
+			release = beginAutomationHandoff(projectId);
+			setPreparingProjectId(projectId);
 			await editor.save.flush();
 			await editor.command.flushHistory();
 			const project = editor.project.getActive();
@@ -181,7 +195,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 			await launch({ ...result, files: [] });
 			toast.success("Full Auto Edit queued. You can work in another project.");
 		} finally {
-			release();
+			release?.();
 			preparing.current = false;
 			setPreparingProjectId(null);
 		}
@@ -198,6 +212,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		setStarting(true);
 		try {
 			await checkModel();
+			await workerReadiness.wait();
 			const result = await batchRequest<{ run: BatchRun; token: string }>({
 				action: "create",
 				id: crypto.randomUUID(),
@@ -242,13 +257,22 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 			}}
 		>
 			{children}
-			{workers.map((worker) => (
-				<AutomationWorkerHost
-					key={worker.run.id}
-					task={worker}
-					onFinished={finishWorker}
-				/>
-			))}
+			{workers.length
+				? workers.map((worker) => (
+						<AutomationWorkerHost
+							key={worker.hostKey}
+							task={worker}
+							onFinished={finishWorker}
+							onReady={workerReadiness.markReady}
+						/>
+					))
+				: [
+						<AutomationWorkerHost
+							key={idleHostKey}
+							onFinished={finishWorker}
+							onReady={workerReadiness.markReady}
+						/>,
+					]}
 			<AutomationProgress
 				state={state}
 				onOpenBatch={() => setOpen(true)}

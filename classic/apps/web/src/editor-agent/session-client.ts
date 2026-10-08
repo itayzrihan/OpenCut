@@ -74,7 +74,7 @@ export class EditorSessionClient {
 		projectId,
 		sessionId = crypto.randomUUID(),
 		exchange,
-		requestTimeoutMs = 30_000,
+		requestTimeoutMs,
 	}: {
 		accountId: string;
 		projectId: string;
@@ -83,9 +83,10 @@ export class EditorSessionClient {
 		requestTimeoutMs?: number;
 	}) {
 		if (
-			!Number.isInteger(requestTimeoutMs) ||
-			requestTimeoutMs < 1 ||
-			requestTimeoutMs > 120_000
+			requestTimeoutMs !== undefined &&
+			(!Number.isInteger(requestTimeoutMs) ||
+				requestTimeoutMs < 1 ||
+				requestTimeoutMs > 120_000)
 		)
 			throw new RangeError(
 				"Editor storage timeout must be between 1 and 120000 ms",
@@ -97,7 +98,11 @@ export class EditorSessionClient {
 			exchange ??
 			(async (request) => {
 				const controller = new AbortController();
-				const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
+				// A full canonical undo archive can take longer than a small lease
+				// request to validate and durably persist. Keep both bounded.
+				const timeoutMs =
+					requestTimeoutMs ?? (request.type === "commit" ? 120_000 : 30_000);
+				const timeout = setTimeout(() => controller.abort(), timeoutMs);
 				try {
 					const assertAccount = () => {
 						if ((window.__opencutAccountId ?? "local") !== accountId)

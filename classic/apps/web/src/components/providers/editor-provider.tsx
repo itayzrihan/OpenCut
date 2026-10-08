@@ -49,6 +49,13 @@ export function EditorProvider({
 
 		const loadProject = async () => {
 			try {
+				setError(null);
+				// A handoff changes ownership, not the visible project. Keep its
+				// preview mounted while the isolated worker edits the saved copy.
+				if (readOnly && editor.project.observeBatchPreview({ id: projectId })) {
+					setIsLoading(false);
+					return;
+				}
 				setIsLoading(true);
 				const gpuInitialization = initializeGpuRenderer();
 				const projectLoad = editor.project.loadProject({ id: projectId });

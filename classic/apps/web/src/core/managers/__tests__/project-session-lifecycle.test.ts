@@ -1,3 +1,4 @@
+import { setBatchReadOnlyProjects, acknowledgeAutomationReload, automationReadVersion } from "@/batch/read-only";
 import { mockFetch } from "@/test-support/mock-fetch";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Minimal browser/renderer fixtures; canonical state and storage policy use real WASM. */
 import { beforeAll, expect, mock, spyOn, test } from "bun:test";
@@ -95,6 +96,9 @@ mock.module("@/fonts/custom-fonts", () => ({
 	getSupportedFontMimeType: () => null,
 	isSupportedFontFile: () => false,
 	loadProjectFont: async () => {},
+}));
+mock.module("@/timeline/smart-takes/audio-evidence", () => ({
+	collectTakeAudioEvidence: () => { throw new Error("No audio analysis during session handoff"); },
 }));
 mock.module("@/timeline/element-utils", () => ({
 	getElementFontFamilies: () => [],
@@ -372,10 +376,36 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 		);
 		expect(record).toBe(savedBeforeStaleWrite);
 		expect(second.project.getSessionReadOnlyReason()).toContain("ownership");
+        // The fixture hosts share a JS ownership-guard map; real worker/viewer
+        // windows do not. Dispose the stale fixture before observing the owner.
+        second.dispose();
+        await third.project.saveCurrentProject();
+        await third.command.flushHistory();
+        const visibleProject = third.project.getActive();
+        const visibleScenes = third.editor.scenes.getScenes();
+        const visibleAssets = third.editor.media.getAssets();
+        const requestsBeforeHandoff = calls.length;
+        expect(third.project.observeBatchPreview({id:"classic-project"})).toBe(false);
+        setBatchReadOnlyProjects(["classic-project"]);
+        expect(third.project.observeBatchPreview({id:"classic-project"})).toBe(true);
+        expect(third.project.getIsLoading()).toBe(false);
+        expect(third.project.getActive()).toBe(visibleProject);
+        expect(third.editor.scenes.getScenes()).toBe(visibleScenes);
+        expect(third.editor.media.getAssets()).toBe(visibleAssets);
+        expect(calls.length).toBe(requestsBeforeHandoff);
+        expect(() => third.command.undo()).toThrow();
+        // The fixture hosts share a JS ownership-guard map; real worker/viewer
+        // windows do not. Dispose the stale fixture before observing the owner.
+        second.dispose();
+        await third.project.saveCurrentProject();
+        expect(calls.length).toBe(requestsBeforeHandoff);
+
 	} finally {
 		first.dispose();
 		second.dispose();
 		third.dispose();
+        setBatchReadOnlyProjects([]);
+        acknowledgeAutomationReload({projectId:"classic-project",version:automationReadVersion("classic-project")});
 		fetchMock.mockRestore();
 		if (originalWindow)
 			Object.defineProperty(globalThis, "window", originalWindow);

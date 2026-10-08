@@ -41,30 +41,29 @@ export default function Editor() {
 		.flatMap((r) => r.jobs)
 		.find((j) => j.projectId === projectId);
 	const readOnly = !!job && batchEditIsLocked({ status: job.status });
-	if (batch.preparingProjectId === projectId)
-		return <p className="p-8">Saving project for background editing...</p>;
+	const preparing = batch.preparingProjectId === projectId;
 	if (!batch.loaded) return <p className="p-8">Checking project status…</p>;
 
 	return (
 		<MobileGate>
-			<EditorProvider
-				key={`${projectId}:${readOnly}`}
-				projectId={projectId}
-				readOnly={readOnly}
-			>
-				{readOnly && (
+			<EditorProvider key={projectId} projectId={projectId} readOnly={readOnly}>
+				{(readOnly || preparing) && (
 					<div className="fixed top-0 inset-x-0 z-100 bg-background border-b p-3 flex justify-between gap-4 text-sm">
-						<span role="status">Auto Edit · Read-only · {job?.message}</span>
+						<span role="status">
+							{preparing
+								? "Saving project for background editing… Your timeline stays open."
+								: `Auto Edit · Read-only · ${job?.message ?? ""}`}
+						</span>
 						<Link href="/projects" className="underline shrink-0">
 							Back to Projects
 						</Link>
 					</div>
 				)}
 				<div
-					inert={readOnly}
+					inert={readOnly || preparing}
 					data-opencut-editor-project={projectId}
 					className="bg-background flex h-screen w-screen flex-col overflow-hidden"
-					style={readOnly ? { paddingTop: 48 } : undefined}
+					style={readOnly || preparing ? { paddingTop: 48 } : undefined}
 				>
 					<DegradedRendererBanner />
 					<EditorHeader />

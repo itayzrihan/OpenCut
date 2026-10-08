@@ -361,3 +361,23 @@ test("resume preserves a failed finishing checkpoint and rejects stale or change
 		createProjectEdit({ ...input, id: "old-checkpoint" }),
 	).rejects.toThrow("latest failed");
 });
+
+test("an existing project whose worker never started cancels immediately and rejects late writes", async () => {
+    const projectId = "lost-before-start";
+    const stamp = "2026-10-08T10:00:00.000Z";
+    projects.set(projectId, {metadata:{name:"Lost worker",updatedAt:stamp}});
+    const started = await createProjectEdit({id:"lost-worker-run", projectId, expectedUpdatedAt:stamp, options});
+    const cancelled = await cancelBatch({id:started.run.id});
+    expect(cancelled.runs.find(r=>r.id===started.run.id)?.jobs[0].status).toBe("cancelled");
+    await assertBatchProjectWrite({projectId,token:null});
+    await expect(assertBatchProjectWrite({projectId,token:started.token})).rejects.toThrow("Expired");
+    await expect(updateBatch({id:started.run.id,token:started.token,projectId,event:"run"})).rejects.toThrow();
+    expect(projects.get(projectId)?.metadata.updatedAt).toBe(stamp);
+    const retry = await createProjectEdit({id:"replacement-worker-run",projectId,expectedUpdatedAt:stamp,options});
+    await updateBatch({id:retry.run.id,token:retry.token,projectId,event:"run"});
+    const cancelling = await cancelBatch({id:retry.run.id});
+    expect(cancelling.runs.find(r=>r.id===retry.run.id)?.jobs[0]).toMatchObject({status:"running",cancelRequested:true});
+    // Already-running workers must flush before releasing the project lock.
+    await expect(assertBatchProjectWrite({projectId,token:null})).rejects.toThrow("locked");
+    await updateBatch({id:retry.run.id,token:retry.token,projectId,event:"cancel"});
+});

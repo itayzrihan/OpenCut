@@ -395,6 +395,21 @@ export class ProjectManager {
 		}
 	}
 
+	/** Host ownership handoff only: retain the canonical scene and media handles. */
+	observeBatchPreview({ id }: { id: string }): boolean {
+		if (this.active?.metadata.id !== id || this.isLoading || !isBatchReadOnly(id))
+			return false;
+		// The handoff already flushed the project and history. The queue now
+		// fences ordinary writes; the worker acquires the next ownership generation.
+		if (this.sessionTimer) clearInterval(this.sessionTimer);
+		this.sessionTimer = null;
+		this.editorSession?.dispose();
+		this.editorSession = null;
+		this.editor.save.pause();
+		this.setSessionReadOnly({ reason: "Full Auto Edit is working on this project" });
+		return true;
+	}
+
 	/** Refresh a locked viewer without clearing its active scene or editor history. */
 	async refreshBatchPreview({ id }: { id: string }): Promise<void> {
 		if (

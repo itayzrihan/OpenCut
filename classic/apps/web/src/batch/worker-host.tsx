@@ -12,9 +12,11 @@ export interface AutomationWorkerTask {
 export function AutomationWorkerHost({
 	task,
 	onFinished,
+	onReady,
 }: {
-	task: AutomationWorkerTask;
+	task?: AutomationWorkerTask;
 	onFinished: (id: string) => void;
+	onReady?: () => void;
 }) {
 	const frame = useRef<HTMLIFrameElement>(null);
 	const finish = useRef(onFinished);
@@ -30,7 +32,13 @@ export function AutomationWorkerHost({
 				event.source !== frame.current?.contentWindow
 			)
 				return;
-			if (event.data?.type === "opencut-batch-ready" && !started && !ended) {
+			if (event.data?.type === "opencut-batch-ready") onReady?.();
+			if (
+				task &&
+				event.data?.type === "opencut-batch-ready" &&
+				!started &&
+				!ended
+			) {
 				started = true;
 				clearTimeout(deadline);
 				frame.current.contentWindow?.postMessage(
@@ -39,6 +47,7 @@ export function AutomationWorkerHost({
 				);
 			}
 			if (
+				task &&
 				event.data?.type === "opencut-batch-finished" &&
 				event.data.id === task.run.id &&
 				!ended
@@ -48,7 +57,7 @@ export function AutomationWorkerHost({
 			}
 		};
 		const deadline = setTimeout(async () => {
-			if (started || ended) return;
+			if (!task || started || ended) return;
 			ended = true;
 			for (const job of task.run.jobs) {
 				await fetch("/api/batch-edit", {
@@ -74,12 +83,16 @@ export function AutomationWorkerHost({
 			clearTimeout(deadline);
 			window.removeEventListener("message", receive);
 		};
-	}, [task]);
+	}, [task, onReady]);
 	return (
 		<iframe
 			ref={frame}
 			src="/batch-worker"
-			title="Full Auto Edit background worker"
+			title={
+				task
+					? "Full Auto Edit background worker"
+					: "Preparing Full Auto Edit worker"
+			}
 			aria-hidden
 			tabIndex={-1}
 			style={{
