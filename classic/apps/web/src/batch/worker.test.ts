@@ -9,6 +9,8 @@ const options = {
 let active = "",
 	playing = 0,
 	maxPlaying = 0;
+let failEditing = false;
+const lifecycle: string[] = [];
 const created: string[] = [],
 	edits: string[] = [],
 	saved: string[] = [];
@@ -46,6 +48,7 @@ mock.module("@/core", () => ({
 				updateThumbnail: async () => {},
 				prepareExit: async () => {
 					saved.push(active);
+					lifecycle.push(`release:${active}`);
 				},
 			},
 			media: {
@@ -94,6 +97,8 @@ mock.module("./client", () => ({
 	}): Promise<BatchState> => {
 		const job = run.jobs.find((j) => j.projectId === data.projectId);
 		if (job) {
+			if (data.event === "complete" || data.event === "fail")
+				lifecycle.push(`terminal:${data.event}`);
 			if (data.created) job.created = true;
 			if (data.message) job.message = data.message;
 			if (data.completedStages !== undefined)
@@ -122,6 +127,7 @@ mock.module("@/ai/full-auto-edit", () => ({
 		onStep: (p: unknown) => void;
 	}) => {
 		expect(actual).toEqual(options);
+		if (failEditing) throw new Error("preflight: missing font");
 		playing++;
 		maxPlaying = Math.max(maxPlaying, playing);
 		edits.push(active);
@@ -205,7 +211,14 @@ test("existing-project worker never recreates or imports the project", async () 
 		expect(edits.at(-1)).toBe("original");
 		expect(saved.at(-1)).toBe("original");
 		expect(run.jobs[0].status).toBe("completed");
+		failEditing = true;
+		run.jobs[0].status = "ready";
+		await executeBatch({ run, token: "existing-token", files: [] });
+		expect(run.jobs[0].status).toBe("failed");
+		expect(run.jobs[0].message).toContain("missing font");
+		expect(lifecycle.slice(-2)).toEqual(["release:original", "terminal:fail"]);
 	} finally {
+		failEditing = false;
 		run = oldRun;
 		Object.assign(globals, old);
 	}

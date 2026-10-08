@@ -216,9 +216,9 @@ export async function executeBatch({
 					message: ["Ready for review", ...notes].join(" · ").slice(0, 4000),
 				});
 			} catch (e) {
-				// Retain all completed stages and persist undo history before releasing the lock.
-				await editor.save.flush();
-				await editor.command.flushHistory();
+				// Save and release editor ownership while the batch token is still
+				// valid, before the terminal transition unlocks the visible editor.
+				await editor.project.prepareExit();
 				await send({
 					projectId: current,
 					event: abort.signal.aborted ? "cancel" : "fail",
