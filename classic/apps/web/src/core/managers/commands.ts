@@ -942,6 +942,88 @@ export class CommandManager {
 		});
 	}
 
+	prepareClassicMediaImport({
+		projectId,
+		assets,
+		afterRegister,
+	}: {
+		projectId: string;
+		assets: MediaAsset[];
+		/** Synchronous canonical follow-up, grouped with registration in one Undo. */
+		afterRegister?: () => undefined;
+	}): () => void {
+		const session = this.canonical;
+		const expectedRevision = session?.status().revision;
+		if (!session || expectedRevision === undefined)
+			throw new Error("Open the canonical editor before importing media");
+		const accountId =
+			typeof window === "undefined" ? null : window.__opencutAccountId;
+		this.registerClassicMedia({
+			projectId,
+			assets,
+			expectedRevision,
+			dryRun: true,
+		});
+		return () => {
+			if (
+				this.canonical !== session ||
+				(typeof window === "undefined" ? null : window.__opencutAccountId) !==
+					accountId
+			)
+				throw new Error(
+					"Media import account or editor session changed before publication",
+				);
+			this.executeTransaction({
+				execute: () => {
+					this.registerClassicMedia({ projectId, assets, expectedRevision });
+					afterRegister?.();
+				},
+			});
+		};
+	}
+
+	registerClassicMedia({
+		projectId,
+		assets,
+		expectedRevision,
+		dryRun = false,
+	}: {
+		projectId: string;
+		assets: MediaAsset[];
+		expectedRevision: number;
+		dryRun?: boolean;
+	}): void {
+		assertBatchEditable(projectId);
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId
+		)
+			throw new Error(
+				"Open the canonical target project before registering media",
+			);
+		if (dryRun) {
+			this.canonical.registerMedia({
+				assets: canonicalMediaBindings(assets),
+				expectedRevision,
+				dryRun,
+			});
+			return;
+		}
+		this.executeTransaction({
+			execute: () => {
+				this.canonical!.registerMedia({
+					assets: canonicalMediaBindings(assets),
+					expectedRevision,
+				});
+				for (const asset of assets)
+					this.canonicalMediaHandles.set(asset.id, asset);
+				this.publishCanonical();
+				this.runReactors();
+			},
+		});
+	}
+
 	removeClassicMedia({
 		projectId,
 		mediaIds,

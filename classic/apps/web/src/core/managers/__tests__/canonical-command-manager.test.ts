@@ -13,6 +13,7 @@ import { getDefaultInsertIndexForTrack } from "@/timeline/placement/insert-index
 import { splitTrackByType, withReorderedTrack } from "@/timeline/track-order";
 import { pruneEmptyElementTracks } from "@/timeline/prune-empty-tracks";
 import { buildSeparatedAudioElement } from "./legacy-source-audio-fixture";
+import { getClipAudioTiming } from "@/media/audio-sync";
 import { insertPointOnFreeformSegment } from "@/masks/__tests__/legacy-freeform-insert";
 import type { FreeformPathMask } from "@/masks/types";
 import {
@@ -109,8 +110,15 @@ function knowledgeFixtureResponse() {
 		},
 	});
 }
+let saveImportedMedia = async (_input: {
+	projectId: string;
+	mediaAsset: MediaAsset;
+}) => {};
 mock.module("@/services/storage/service", () => ({
 	storageService: {
+		saveMediaAsset: (input: { projectId: string; mediaAsset: MediaAsset }) =>
+			saveImportedMedia(input),
+		isQuotaExceededError: () => false,
 		saveCommandHistory: async ({
 			history,
 		}: {
@@ -164,6 +172,7 @@ beforeAll(async () => {
 });
 beforeEach(() => {
 	saved = null;
+	saveImportedMedia = async () => {};
 });
 
 function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
@@ -262,6 +271,213 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 }
 
 test(
+	"media import publishes only after saved bytes and keeps canonical FPS/resources through history",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		let bundle: EditorSessionBundle | null = null;
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({
+			runtime,
+			persistSession: async (capture) => {
+				bundle = structuredClone(capture());
+			},
+		});
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		const importer = new MediaManager(host.editor);
+		const file = new File([new Uint8Array([1, 2, 3])], "import.mp4", {
+			type: "video/mp4",
+		});
+		const asset: MediaAsset = {
+			id: "import-native",
+			name: "Imported",
+			type: "video",
+			fps: 59.94,
+			duration: 3,
+			file,
+			url: "blob:import-native",
+			storageKind: "copied",
+		};
+		let finishSave: (() => void) | undefined;
+		saveImportedMedia = async () => {
+			expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+			await new Promise<void>((resolve) => {
+				finishSave = resolve;
+			});
+		};
+		const pending = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		finishSave!();
+		expect(await pending).toEqual(asset);
+		expect(host.media().at(-1)?.file).toBe(file);
+		expect(host.project().settings.fps).toEqual({
+			numerator: 60000,
+			denominator: 1001,
+		});
+		host.manager.undo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		host.manager.redo();
+		expect(host.media().at(-1)?.file).toBe(file);
+		expect(host.media().at(-1)?.url).toBe(asset.url);
+		await host.manager.persistEditingSession();
+		host.manager.detachCanonical();
+		const reopened = createHost({
+			project: host.project(),
+			media: host.media(),
+		});
+		await reopened.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			atomicBundle: bundle!,
+			persistSession: async () => {},
+		});
+		reopened.manager.undo();
+		expect(reopened.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(reopened.media())).toEqual(beforeMedia);
+		reopened.manager.redo();
+		expect(reopened.media().at(-1)?.file).toBe(file);
+		reopened.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"failed, stale or detached media import leaves project membership and FPS unchanged",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+		});
+		const importer = new MediaManager(host.editor);
+		const asset: MediaAsset = {
+			id: "import-stale",
+			name: "Imported",
+			type: "video",
+			fps: 60,
+			file: new File(["x"], "import.mp4"),
+		};
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		saveImportedMedia = async () => {
+			throw new Error("storage unavailable");
+		};
+		expect(
+			await importer.addMediaAsset({ projectId: "classic-project", asset }),
+		).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		let finishSave: (() => void) | undefined;
+		saveImportedMedia = async () => {
+			await new Promise<void>((resolve) => {
+				finishSave = resolve;
+			});
+		};
+		const stale = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		host.manager.registerClassicMedia({
+			projectId: "classic-project",
+			assets: [{ id: "other", name: "Other", type: "image" }],
+			expectedRevision: host.manager.getCanonicalRevision()!,
+		});
+		const afterConcurrent = host.manager.captureProjectSnapshot();
+		finishSave!();
+		expect(await stale).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(afterConcurrent);
+		expect(host.media().map((asset) => asset.id)).not.toContain(asset.id);
+		const detached = importer.addMediaAsset({
+			projectId: "classic-project",
+			asset,
+		});
+		host.manager.detachCanonical();
+		finishSave!();
+		expect(await detached).toBeNull();
+		expect(host.media().map((asset) => asset.id)).not.toContain(asset.id);
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"import plus canonical insertion is one undo and a failed insertion rolls back membership and FPS",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		const importer = new MediaManager(host.editor);
+		const before = host.manager.captureProjectSnapshot();
+		const beforeMedia = canonicalMediaBindings(host.media());
+		const asset: MediaAsset = {
+			id: "pasted-file",
+			name: "Pasted",
+			type: "video",
+			fps: 60,
+			duration: 1,
+			file: new File(["x"], "paste.mp4"),
+			url: "blob:pasted-file",
+		};
+		const afterRegister = (registered: MediaAsset): undefined => {
+			host.manager.insertClassicTimelineElements([
+				{
+					element: {
+						type: "video",
+						name: "Pasted",
+						mediaId: registered.id,
+						startTime: mediaTime({ ticks: 600000 }),
+						duration: mediaTime({ ticks: 120000 }),
+						trimStart: mediaTime({ ticks: 0 }),
+						trimEnd: mediaTime({ ticks: 0 }),
+						params: {},
+					},
+					placement: { mode: "auto", trackType: "video" },
+				},
+			]);
+		};
+		expect(
+			await importer.addMediaAsset({
+				projectId: "classic-project",
+				asset,
+				afterRegister,
+			}),
+		).not.toBeNull();
+		const after = host.manager.captureProjectSnapshot();
+		expect(host.media().at(-1)?.id).toBe(asset.id);
+		expect(host.project().settings.fps).toEqual({
+			numerator: 60,
+			denominator: 1,
+		});
+		host.manager.undo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		host.manager.redo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		host.manager.undo();
+		expect(
+			await importer.addMediaAsset({
+				projectId: "classic-project",
+				asset: { ...asset, id: "pasted-failure" },
+				afterRegister: () => {
+					throw new Error("Follow-up insertion rejected");
+				},
+			}),
+		).toBeNull();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(canonicalMediaBindings(host.media())).toEqual(beforeMedia);
+		// A failed follow-up does not consume the prior successful transaction's Redo.
+		host.manager.redo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
 	"history subscribers see committed Undo and Redo availability",
 	async () => {
 		const host = createHost();
@@ -276,7 +492,11 @@ test(
 		try {
 			expect(availability.at(-1)).toEqual([false, false]);
 			const sceneId = host.project().scenes[0].id;
-			host.manager.editClassicScene({ type: "rename", sceneId, name: "Edited" });
+			host.manager.editClassicScene({
+				type: "rename",
+				sceneId,
+				name: "Edited",
+			});
 			expect(availability.at(-1)).toEqual([true, false]);
 			host.manager.undo();
 			expect(availability.at(-1)).toEqual([false, true]);
@@ -284,13 +504,21 @@ test(
 			expect(availability.at(-1)).toEqual([true, false]);
 			expect(host.project().scenes[0].name).toBe("Edited");
 			host.manager.undo();
-			host.manager.editClassicScene({ type: "rename", sceneId, name: "New edit" });
+			host.manager.editClassicScene({
+				type: "rename",
+				sceneId,
+				name: "New edit",
+			});
 			expect(availability.at(-1)).toEqual([true, false]);
 			host.manager.clear({ persist: false });
 			expect(availability.at(-1)).toEqual([false, false]);
 			unsubscribe();
 			const notificationCount = availability.length;
-			host.manager.editClassicScene({ type: "rename", sceneId, name: "Unsubscribed" });
+			host.manager.editClassicScene({
+				type: "rename",
+				sceneId,
+				name: "Unsubscribed",
+			});
 			expect(host.manager.canUndo()).toBe(true);
 			expect(availability).toHaveLength(notificationCount);
 		} finally {
@@ -2307,6 +2535,9 @@ test(
 				.elements[0] as VideoElement;
 			source.params.volume = -6;
 			source.params.muted = true;
+			source.params.audioSyncOffset = 1.25;
+			source.params.fadeInDuration = 0.4;
+			source.params.fadeOutDuration = 0.6;
 			source.sourceDuration = mediaTime({ ticks: 1_920_000 });
 			// Older serialized projects can carry an explicit null optional duration.
 			if (placement === "displayOrder")
@@ -2391,6 +2622,13 @@ test(
 			const expectedAudio = buildSeparatedAudioElement({
 				sourceElement: source,
 			});
+			// The frozen legacy builder dropped sync offsets and fades. Canonical
+			// extraction deliberately fixes that loss while preserving its layout.
+			Object.assign(expectedAudio.params, {
+				audioSyncOffset: 1.25,
+				fadeInDuration: 0.4,
+				fadeOutDuration: 0.6,
+			});
 			const expectedPlacement = resolveTrackPlacement({
 				tracks: before.scenes[0].tracks,
 				trackType: "audio",
@@ -2412,6 +2650,7 @@ test(
 				),
 			)!;
 			const audio = target.elements.at(-1)!;
+			expect(getClipAudioTiming(audio)).toEqual(getClipAudioTiming(source));
 			expect(withoutKeyframeIds(audio)).toEqual(
 				withoutKeyframeIds(
 					JSON.parse(JSON.stringify({ ...expectedAudio, id: audio.id })),
@@ -3860,9 +4099,21 @@ test(
 			value: {
 				capturePreviewFrameAt: async () => ({
 					success: true,
-					blob: new Blob([Uint8Array.of(255, 216, 255, 217)], {
-						type: "image/jpeg",
-					}),
+					blob: new Blob(
+						[
+							new Uint8Array(
+								readFileSync(
+									new URL(
+										"../../../../../../../crates/editor-agent/tests/fixtures/color-frame.jpg",
+										import.meta.url,
+									),
+								),
+							),
+						],
+						{
+							type: "image/jpeg",
+						},
+					),
 					filename: "test.jpg",
 				}),
 			},

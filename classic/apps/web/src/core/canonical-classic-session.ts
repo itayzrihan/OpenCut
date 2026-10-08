@@ -255,7 +255,9 @@ export class CanonicalClassicSession {
 	providerRetryPlan(
 		failure: import("@/editor-agent/transport").ProviderFailureInput,
 	): import("@/editor-agent/transport").ProviderRetryPlan {
-		return this.runtime.providerRetryPlan(failure) as import("@/editor-agent/transport").ProviderRetryPlan;
+		return this.runtime.providerRetryPlan(
+			failure,
+		) as import("@/editor-agent/transport").ProviderRetryPlan;
 	}
 
 	setEffectCatalog(definitions: unknown): void {
@@ -996,6 +998,22 @@ export class CanonicalClassicSession {
 				mediaIds,
 				cascade,
 			},
+		});
+	}
+
+	registerMedia({
+		assets,
+		expectedRevision,
+		dryRun = false,
+	}: {
+		assets: CanonicalClassicSnapshot["mediaAssets"];
+		expectedRevision: number;
+		dryRun?: boolean;
+	}): void {
+		this.call({
+			capability: "media.classic.register",
+			input: { projectId: this.projectId, expectedRevision, assets },
+			context: { dryRun },
 		});
 	}
 

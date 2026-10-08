@@ -722,6 +722,7 @@ function ProjectItem({
 					{project.thumbnail ? (
 						<Image
 							src={project.thumbnail}
+							unoptimized={project.thumbnail.startsWith("/api/local-drive/")}
 							alt="Project thumbnail"
 							fill
 							loading={prioritizeThumbnail ? "eager" : "lazy"}
@@ -761,6 +762,7 @@ function ProjectItem({
 				{project.thumbnail ? (
 					<Image
 						src={project.thumbnail}
+						unoptimized={project.thumbnail.startsWith("/api/local-drive/")}
 						alt="Project thumbnail"
 						fill
 						loading={prioritizeThumbnail ? "eager" : "lazy"}

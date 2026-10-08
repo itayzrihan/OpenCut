@@ -301,7 +301,7 @@ function MediaViewContent() {
 		}
 	};
 
-	const { isDragOver, dragProps, fileInputProps } = useFileUpload({
+	const { isDragOver, dragProps, fileInputProps, openFilePicker } = useFileUpload({
 		accept: "image/*,video/*,audio/*",
 		multiple: true,
 		onFilesSelected: (files) => processFiles({ files }),
@@ -553,6 +553,7 @@ function MediaViewContent() {
 						sortOrder={mediaSortOrder}
 						onSort={handleSort}
 						onImport={() => void importFromDrive()}
+						onImportBrowser={openFilePicker}
 						onImportHyperframes={() => setHyperframesImportOpen(true)}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
@@ -1303,6 +1304,7 @@ function MediaActions({
 	sortOrder,
 	onSort,
 	onImport,
+	onImportBrowser,
 	onImportHyperframes,
 	selectedCount,
 	onPodcastSync,
@@ -1316,6 +1318,7 @@ function MediaActions({
 	sortOrder: MediaSortOrder;
 	onSort: ({ key }: { key: MediaSortKey }) => void;
 	onImport: () => void;
+	onImportBrowser: () => void;
 	onImportHyperframes: () => void;
 	selectedCount: number;
 	onPodcastSync: () => void;
@@ -1459,6 +1462,9 @@ function MediaActions({
 					<DropdownMenuContent align="end">
 						<DropdownMenuItem onSelect={onImport}>
 							Media files…
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={onImportBrowser}>
+							Upload media files…
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={onImportHyperframes}>
 							HyperFrames project folder…

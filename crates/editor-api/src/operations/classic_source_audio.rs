@@ -53,7 +53,7 @@ pub(super) fn register_classic_source_audio(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.audio.source.edit",
         "Extract or recover Classic source audio",
-        "Extract a video's embedded audio into the first non-overlapping audio track in display order, or create an Audio track at the top. Copies media binding, timeline ticks, trims, source duration, speed/pitch, volume/mute and volume keyframes with independent IDs; disables embedded audio on the video. Recover only re-enables embedded audio and retains extracted clips, so both can play; it is not a merge or deletion. Prefer explicit extract/recover for plans; toggle is for UI gestures. Extract requires a media binding whose hasAudio is not false, positive duration and enabled source audio. Read explicit scene/track/element IDs via app.state.read. Returns created IDs, supports dry run, registry retries, revision checks, transactions and undo/redo. Does not decode or write media files.",
+        "Extract a video's embedded audio into the first non-overlapping audio track in display order, or create an Audio track at the top. Copies media binding, timeline ticks, trims, source duration, speed/pitch, audio sync offset, fades, volume/mute and volume keyframes with independent IDs; disables embedded audio on the video. Recover only re-enables embedded audio and retains extracted clips, so both can play; it is not a merge or deletion. Prefer explicit extract/recover for plans; toggle is for UI gestures. Extract requires a media binding whose hasAudio is not false, positive duration and enabled source audio. Read explicit scene/track/element IDs via app.state.read. Returns created IDs, supports dry run, registry retries, revision checks, transactions and undo/redo. Does not decode or write media files.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -157,7 +157,6 @@ fn source_mut<'a>(
         .ok_or_else(|| invalid("source video not found in target track"))
 }
 
-
 fn apply_source_audio(
     document: &mut EditorDocument,
     input: &SourceAudioInput,
@@ -211,6 +210,14 @@ fn apply_source_audio(
         "trimStart":source["trimStart"], "trimEnd":source["trimEnd"],
         "params":{"volume":source["params"].get("volume").filter(|v| v.is_number()).cloned().unwrap_or(json!(0)), "muted":source["params"]["muted"] == true}
     });
+    // These parameters feed the same native timing/gain adapters in playback
+    // and export. Dropping an offset changes the source sample after extraction;
+    // dropping fades makes an otherwise identical source audible differently.
+    for key in ["audioSyncOffset", "fadeInDuration", "fadeOutDuration"] {
+        if let Some(value) = source["params"].get(key) {
+            audio["params"][key] = value.clone();
+        }
+    }
     if let Some(value) = source.get("sourceDuration") {
         audio["sourceDuration"] = value.clone();
     }

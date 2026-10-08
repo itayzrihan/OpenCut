@@ -358,7 +358,10 @@ async fn knowledge_registry_round_reconciles_a_lost_durable_response_while_pause
     assert_eq!(settled.phase, RunPhase::Paused);
     assert_eq!(settled.activities.len(), 1);
     assert!(settled.activities[0].ok);
-    assert_eq!(settled.activities[0].status, Some(ActivityStatus::Completed));
+    assert_eq!(
+        settled.activities[0].status,
+        Some(ActivityStatus::Completed)
+    );
     assert!(settled.activities[0].duration_ms.is_some());
     assert!(agent.run().receipts().last().unwrap().committed);
     assert!(agent.run().receipts().last().unwrap().external_only);
@@ -720,7 +723,13 @@ async fn rendered_review_is_bound_to_current_revision_and_cannot_self_attest_wit
     );
     let artifact = runtime
         .artifacts()
-        .put(vec![1, 2, 3], "image/jpeg", None, None, None)
+        .put(
+            include_bytes!("fixtures/color-frame.jpg").to_vec(),
+            "image/jpeg",
+            None,
+            None,
+            None,
+        )
         .unwrap();
     let frames: Vec<ReviewFrame> = plan
         .times
@@ -735,6 +744,7 @@ async fn rendered_review_is_bound_to_current_revision_and_cannot_self_attest_wit
         .unwrap();
     assert!(request.body["tools"].as_array().unwrap().is_empty());
     assert!(request.body.to_string().contains("data:image/jpeg;base64,"));
+    assert!(request.body.to_string().contains("nativePixelEvidence"));
     let review = json!({"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":json!({"issues":[],"summary":"The new name matches canonical state; rendered samples are readable."}).to_string()}]}]});
     // Human edits between capture and the review response invalidate evidence.
     classic["document"]["metadata"]["name"] = json!("User changed it again");
@@ -792,6 +802,34 @@ async fn rendered_review_is_bound_to_current_revision_and_cannot_self_attest_wit
             .to_string()
             .contains("Name differs")
     );
+}
+
+#[tokio::test]
+async fn short_transitions_are_reviewed_inside_the_motion_instead_of_only_at_clip_anchors() {
+    let (_, mut agent) = setup().await;
+    let epoch = agent.run().epoch();
+    agent.plan(epoch,vec![PlanStep { title:"Apply and inspect both short transitions".into(), status:PlanStatus::InProgress }]).unwrap();
+    agent
+        .describe(epoch, "timeline.classic.transitions.apply")
+        .unwrap();
+    agent.invoke_immediate(epoch, "transitions", "timeline.classic.transitions.apply", json!({
+        "sceneId":"main-scene", "applications":[
+            {"trackId":"video-track","elementId":"item-2","presetId":"fade","side":"in","duration":36000},
+            {"trackId":"titles","elementId":"text-1","presetId":"slide-right","side":"out","duration":18000}
+        ]
+    })).unwrap();
+    let plan = agent.review_plan().unwrap();
+    assert!(plan.times.len() <= 8);
+    assert!(
+        plan.times.contains(&18000),
+        "Inspect the middle of the 0.3s fade"
+    );
+    assert!(
+        plan.times.contains(&111000),
+        "Inspect the middle of the 0.15s slide"
+    );
+    assert_eq!(plan.times.first(), Some(&0));
+    assert_eq!(plan.times.last(), Some(&1199999));
 }
 
 #[tokio::test]

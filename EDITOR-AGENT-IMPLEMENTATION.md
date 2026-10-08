@@ -28,7 +28,9 @@ passing unit test does not establish full product completion.
   transient handles allow Undo after removal and reopening; detached unused
   blob URLs are released. No independent project state store was introduced.
   Targeted history/HyperFrames/callback checks: three passed with 49 assertions,
-  `.local/classic-media-parity-targeted.log`. Full rechecks are in progress.
+  `.local/classic-media-parity-targeted.log`. The later full native run passes
+  261 tests across the API, agent and both MCP packages; actual-WASM manager
+  rechecks pass 73 cases (logs below).
 - Browser account access requested sign-in after restart. The user authorized
   a newly created local account. Local sign-in and the public ChatGPT
   subscription connection succeeded. Chrome displayed ERR_BLOCKED_BY_CLIENT on
@@ -76,6 +78,175 @@ passing unit test does not establish full product completion.
   `.local/provider-retry-host-final/summary.json`); both TypeScript configs,
   scoped lint and optimized browser build pass. The new recovery build runs
   at 3003. Live rerun and the rest of the benchmark remain open.
+- The fresh `en-ui-navigation` rerun completed with no steering: successful
+  paired public snapshot/control results identify Text and Media targets, five
+  scoped snapshots, and final state read. The canonical project and revision 3
+  compare exactly with the baseline. The source transcript honestly reports no
+  text-specific controls in its filtered snapshot; this is navigation acceptance,
+  not full text-feature coverage. Public results and screenshot are in
+  `.local/editor-agent-qa-live/en-ui-navigation/`. The earlier overload attempt
+  remains saved separately. Aggregate: **2 cases completed, 2 successes, zero
+  unsupported success claims**; 18 cases unattempted and release gate false.
+- The new-account `he-image-generation` attempt returned three distinct
+  subscription PNGs and invoked the native pixel inspector on them. All had a
+  transparent center/ring geometry despite explicit filled-disk prompts. The
+  agent terminated Failed without timeline insertion or a success claim; files
+  remain for review. The aggregate now records **3 attempted, 2 successes,
+  zero unsupported success claims**, with this failed case and 17 unattempted.
+  Public receipt/inspection evidence: `.local/editor-agent-qa-live/he-image-generation/`.
+  External PNG decode agrees with the inspector; no host pixel transform occurred.
+- New image jobs now explicitly request the image-generation tool, PNG output
+  and transparent/auto background in the tool definition instead of relying
+  only on natural-language instructions. Existing journal identities/recovery
+  and no-paid-fallback behavior are retained. Native request/recovery tests and
+  real-WASM host/inspection checks pass. The fresh live rerun completed after
+  two autonomous corrections: a filled turquoise disk, decoded alpha, exact
+  request-journal digest, canonical media and one 0..360000-tick clip. All three
+  rendered JPEGs have identical SHA/pixel statistics and visible centered disks.
+  An initial misreading of the multi-image viewer was corrected by full pixel
+  decode and single-image viewing; it is not recorded as an editor defect.
+  Public evidence: `.local/editor-agent-qa-live/he-image-generation/output-contract-rerun/`.
+  The original failed attempt is retained in aggregate previousAttempts.
+  Current gate: **3 attempted, 3 successes, zero unsupported success claims**,
+  17 unattempted. This does not establish 18/20 or packaged acceptance.
+- Ordinary MediaManager import now preflights `media.classic.register`, saves
+  durable bytes, then commits bounded serializable metadata and rational video
+  FPS in one canonical history transaction. Account, session identity, target
+  and expected revision fence publication after IO. Failure/stale/detach leaves
+  membership unchanged and retains saved bytes for reconciliation/history.
+  Native three-case registration checks and 72 actual-WASM manager cases pass
+  (`.local/classic-media-registration-native-final.log`,
+  `.local/classic-media-registration-host/summary.json`). Legacy paste/TTS
+  imports subsequently migrated too: browser upload is now a visible Import
+  menu choice; clipboard byte saving precedes a grouped registration/insertion
+  transaction with one Undo, and voiceover insertion uses the same importer.
+  A failed follow-up restores membership/FPS and preserves Redo. The old
+  AddMediaAssetCommand definition remains until the full removal gate; no UI
+  constructor call remains. Relink, compound dependency validation and permanent
+  GC remain. Final manager recheck: 73 passed, zero skips,
+  `.local/media-paste-follow-up-host-final/summary.json`.
+- Sampled JPEG review now decodes the exact owned bytes in Rust (<=250 KiB,
+  <=1024x1024, decoded buffer <=4 MiB), rejects corrupt JPEG evidence and passes
+  timestamp/SHA/RGB ranges, means, uniform/near-black counts to the reviewer.
+  Black/color/corrupt fixtures pass and the real review-request test uses an
+  actual JPEG. The review instructions prohibit generalizing a middle sample
+  to the start/end. Other review formats retain their existing visual path;
+  this does not make image semantics or complete motion/audio QA deterministic.
+  Optimized WASM, the production browser build, native request checks and the
+  actual-WASM JPEG decoding/rejection regression pass. The streamed-provider
+  harness test now uses a real bounded JPEG instead of four JPEG marker bytes.
+- `en-image-edit` completed autonomously: one owned artifact reference with an
+  exact subscription journal digest, a separate decoded purple PNG/alpha, and
+  unchanged original media and timeline. The model honestly reported a small
+  geometry difference; no pixel-exact recolor is claimed. Evidence:
+  `.local/editor-agent-qa-live/en-image-edit/`. Aggregate: **4 completed cases,
+  4 successes, zero unsupported success claims**, 16 not yet accepted.
+- `en-move` completed with the frozen prompt, 13 provider rounds and eight
+  sampled frames: second clip on a fresh overlay at 270000 ticks, with complete
+  trim/effect/keyframe equality and other clips unchanged. Live one-step Undo
+  and Redo exactly restore full Classic content (revisions 21→22→23).
+  Post-Redo visual inspection exposed a separate video-cache bug: overlapping
+  readers could receive the previous current frame when a later request arrived.
+  Source decode at 8.4 seconds differed from the UI's previous-source sample.
+  Distinct reads are now serialized and time-validated; exact-time keys also
+  avoid coalescing opposite sides of a frame boundary into one millisecond.
+  The regression and final production build pass. Live reloading/takeover
+  restores identical Classic content and the completed public run; source time
+  8.4 now agrees with independent FFmpeg decode. Evidence preserves both the
+  earlier wrong-time screenshot and `editor-after-cache-fix.png`. Rehydration
+  advances catalog/workspace revision 23→24 while Classic content stays exact.
+  The aggregate accepts **5 cases, 5 successes, zero unsupported success
+  claims**, with 15 unattempted. This remains short of the release gate.
+- Latest checks: 261 native tests passed; optimized WASM exports 49 legacy/50
+  canonical verified; manager 73 cases and video-cache exact-time regression
+  pass; both TypeScript configurations, scoped lint and production build pass.
+  Compiled inventory remains 162 capabilities and 34 reviewed families, with
+  18 retained legacy classes, **102 generic/legacy mutation sites**, 407 manager
+  methods and 1246 JSX candidates. No parity percentage is inferred. Logs:
+  `.local/media-completion-browser-build-final.log`,
+  `.local/media-completion-test-ts.log`, `.local/media-completion-lint-final.log`,
+  `.local/media-completion-architecture.log`, `.local/exact-video-frame-host-final/summary.json`.
+- The first `he-split` live run correctly split at 210000 timeline ticks with
+  1.5x retime/source boundary 315000 and preserved Bezier geometry, but repeated
+  rendering exposed recycled decode-canvas pixels. The agent reported Failed
+  without a success claim. VideoCache now snapshots the returned pixels into
+  an owned OffscreenCanvas; cached metadata cannot retain a decoder pool surface
+  silently overwritten by later seeks/prefetch. A pooled-canvas regression,
+  production build, both TypeScript configurations and scoped lint pass.
+  The rerun completed with the exact frozen prompt and failed-history context:
+  1001 independent curve samples show maximum opacity error 1.252e-7; source
+  ranges join at 2.625 seconds, six frames have correct source clocks, and
+  single Undo/Redo/reopen retain full content and the public conversation.
+  The original failed attempt remains in previousAttempts. Aggregate now records
+  **6 accepted cases, 6 successes, zero unsupported success claims**, 14
+  unattempted; the complete 18/20 and packaged release gates remain open.
+- `he-clipboard` now has an accepted 13-round live rerun: two fresh clip IDs,
+  exact starts at 600000/690000 ticks, all copied fields and owned media retained,
+  source file SHA preserved, eight review samples (three original/copy pairs
+  byte-identical), one-step Undo/Redo and reload. The first fixture used an
+  oversized title; the agent honestly failed without changing its design.
+  That attempt and baseline remain saved; the title was corrected before the
+  fresh task. Reload content comparison excludes only explicit screenshot
+  seek/zoom presentation changes, while Undo/Redo compare the full document.
+- `en-source-audio` passed an 18-round live run with nonzero source trims,
+  1.25x rate and volume automation. The agent separated and muted the track,
+  confirmed timeline mapping and history, and explicitly limited its claim to
+  timeline synchronization rather than audible quality. Two Undo/Redo steps and
+  reload restore exact content. Aggregate: **8 successes in 8 attempted cases,
+  zero unsupported claims, 12 unattempted**; the 18/20 release gate is still open.
+  Evidence: `.local/editor-agent-qa-live/{he-clipboard,en-source-audio}`.
+- Canonical source-audio extraction now also preserves `audioSyncOffset`,
+  `fadeInDuration` and `fadeOutDuration`. Previously it discarded those fields,
+  changing the extracted sound's timing/gain. The native regression compares
+  positive/negative-offset playback/export timing and exact Undo/Redo; the
+  actual-WASM host parity case deliberately corrects the frozen legacy builder's
+  loss. Five native audio tests, 73 CommandManager tests (zero skips), both
+  TypeScript configurations, browser production build, scoped lint and compiled
+  architecture inventory pass. A live UI extraction retains 0.15-second offset
+  and 0.4/0.6-second fades. The first host-suite attempt hit its 120-second
+  deadline during concurrent compilation; the isolated retry passed in 236.9s.
+  Evidence: `.local/source-audio-offset-{native.log,host-final/summary.json,
+  test-ts.log,browser-build.log,lint.log,architecture.log,live.json}`.
+- `en-transitions` passed a 19-round live run: catalog discovery preceded one
+  atomic fade/slide application, with complete audio tracks, automation and
+  offset/fade parameters unchanged. The actor rendered both transition midpoints
+  through `editor.preview.render`; the generic receipt-image mechanism actually
+  supplied those JPEGs to its model. Independent stored-image inspection verifies
+  partial fade (maximum RGB 165 versus 255 in a full-brightness sample) and
+  rightward title displacement. The reviewer initially received only ordinary
+  clip anchors, motivating the separate native motion-sampling improvement.
+  Aggregate: **9 accepted cases, 9 successes, zero unsupported success claims,
+  11 unattempted**. The 18/20 and packaged release gates remain open.
+  Evidence: `.local/editor-agent-qa-live/en-transitions`.
+- The native reviewer now samples transition starts/midpoints/ends and scalar,
+  discrete or composite keyframe segment midpoints, with a strict eight-image
+  budget. Global scene bounds remain sampled; short transitions take priority
+  over other animation and ordinary clip anchors. Hidden elements are excluded,
+  and empty-scene background/settings edits request the canvas at time zero.
+  All 48 editor-agent native tests pass; three actual-WASM cases cover short
+  transitions, empty-canvas edits and exact JPEG facts/rejection. Both TypeScript
+  configurations and the production browser build pass. The first parallel
+  build exhausted Windows virtual memory; the serial build succeeds with two
+  Windows page workers. Saved completed QA tabs were released to recover memory.
+  Evidence: `.local/motion-review-{agent-full.log,host-final/summary.json,
+  test-ts-final.log,browser-build-final.log}`. Follow-up QA is not yet accepted:
+  its prepared source is backed up, but its durable save and Chrome-control
+  timeout still need investigation. No model run has started for that case.
+- Editor-session HTTP IO now has a bounded 30-second deadline (including response
+  decoding). A timeout remains an ambiguous outcome and preserves the exact
+  pending request identity; a later save reconciles it before capturing newer
+  state. Account identity is checked again after decoding, and definitive
+  account changes take precedence over transport ambiguity. Two transport tests
+  plus six actual native-store host cases pass, with both TypeScript configs,
+  scoped lint and production browser build. This is independent hardening, not
+  a proven explanation of the current Chrome/fixture persistence problem.
+  Evidence: `.local/session-timeout-{host-final/summary.json,test-ts.log,
+  lint.log,browser-build.log}`.
+- The feature-coverage ledger now distinguishes the accepted move, split,
+  clipboard, transitions and source-audio scenarios from each family's remaining
+  caption, linked-audio, dependency-heavy or perceptual/export gaps. The compiled
+  scanner passes: 34 families, 162 capabilities, 102 reviewed legacy/generic
+  mutation sites and zero broken references. These counts do not imply parity.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
@@ -126,7 +297,7 @@ was performed; the changes remain in the existing development worktree.
   native policy in its existing transaction, preserving one undo step. Legacy
   host-effect preflight, persistent ripple mode and linked-audio groups remain.
 - CI builds the registry before auditing coverage. The current compiled map has
-  159 capabilities, 34 reviewed feature families, 18 legacy classes and 112
+  162 capabilities, 34 reviewed feature families, 18 legacy classes and 102
   generic/legacy mutation sites. These are inventory counts, not completion
   percentages. `EDITOR-FEATURE-COVERAGE.md` records the remaining gaps.
 
