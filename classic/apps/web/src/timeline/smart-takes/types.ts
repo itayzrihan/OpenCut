@@ -63,6 +63,7 @@ export interface PreparedTakes {
 	words: SmartTakeWord[];
 }
 export interface TakeAssembly {
+	selectionOnly?: boolean;
 	version: 1 | 2;
 	mode?: SmartTakeMode;
 	runMetrics?: TakeRunMetrics;

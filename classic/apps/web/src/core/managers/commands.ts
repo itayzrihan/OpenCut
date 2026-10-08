@@ -740,6 +740,74 @@ export class CommandManager {
 		});
 	}
 
+	preparePodcast(elementIds: string[]) {
+		const session = this.canonical;
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!session || !sceneId || this.transactionDepth > 0)
+			throw new Error("Open the editor before extracting podcast clips");
+		this.synchronizeCanonicalViews();
+		const account = this.agentAccountId();
+		const source = session.preparePodcast({ sceneId, elementIds });
+		const assertCurrent = () => {
+			if (
+				this.canonical !== session ||
+				this.agentAccountId() !== account ||
+				this.editor.scenes.getActiveSceneOrNull()?.id !== sceneId ||
+				session.status().revision !== source.revision
+			)
+				throw new Error(
+					"The source changed during analysis. Nothing was applied; analyze the episode again.",
+				);
+		};
+		return {
+			...source,
+			review: ({
+				options,
+				videos,
+			}: {
+				options: import("@/ai/podcast-types").PodcastOptions;
+				videos: import("@/ai/podcast-types").PodcastVideo[];
+			}) => {
+				assertCurrent();
+				session.podcast({
+					sceneId,
+					elementIds,
+					expectedRevision: source.revision,
+					options,
+					videos,
+					review: true,
+				});
+			},
+			analyzeAudio: (signal: AbortSignal) => {
+				assertCurrent();
+				return collectTakeAudioEvidence({
+					editor: this.editor,
+					elementIds,
+					signal,
+					boundedFrames: true,
+				});
+			},
+			apply: (input: {
+				options: import("@/ai/podcast-types").PodcastOptions;
+				videos: import("@/ai/podcast-types").PodcastVideo[];
+				audioEvidence: import("@/timeline/smart-takes/types").TakeAudioEvidence[];
+			}) => {
+				assertCurrent();
+				this.executeTransaction({
+					execute: () => {
+						session.podcast({
+							...input,
+							sceneId,
+							elementIds,
+							expectedRevision: source.revision,
+						});
+						this.publishCanonical();
+					},
+				});
+			},
+		};
+	}
+
 	prepareSmartTakes(elementIds: string[]) {
 		const session = this.canonical;
 		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
@@ -751,7 +819,9 @@ export class CommandManager {
 		return {
 			...prepared,
 			review: (
-				input: Parameters<import("@/timeline/smart-takes/types").ReviewTakes>[0],
+				input: Parameters<
+					import("@/timeline/smart-takes/types").ReviewTakes
+				>[0],
 			) =>
 				session.reviewTakes({
 					...input,

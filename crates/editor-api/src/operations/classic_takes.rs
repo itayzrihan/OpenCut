@@ -6,6 +6,7 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
 mod auto_edit;
+mod podcast;
 mod quality;
 mod review;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
@@ -13,9 +14,9 @@ const TPS: f64 = 120_000.0;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct Part {
-    #[schemars(range(max = 14999))]
+    #[schemars(range(max = 59999))]
     pub first_word: usize,
-    #[schemars(range(max = 14999))]
+    #[schemars(range(max = 59999))]
     pub last_word: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -40,9 +41,9 @@ pub(crate) struct Group {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct Discard {
-    #[schemars(range(max = 14999))]
+    #[schemars(range(max = 59999))]
     pub first_word: usize,
-    #[schemars(range(max = 14999))]
+    #[schemars(range(max = 59999))]
     pub last_word: usize,
     pub reason: String,
 }
@@ -68,6 +69,8 @@ struct Word {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Assembly {
     version: u32,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    selection_only: bool,
     #[serde(default)]
     mode: review::Mode,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -297,9 +300,9 @@ fn inventory(
     for (i, w) in words.iter_mut().enumerate() {
         w.id = i;
     }
-    if words.is_empty() || words.len() > 15000 {
+    if words.is_empty() || words.len() > 60000 {
         return Err(invalid(
-            "Select transcribed footage containing 1..15000 words",
+            "Select transcribed footage containing 1..60000 words",
         ));
     }
     // Manual text within the edited region cannot safely be re-attributed to new spoken words.
@@ -421,6 +424,7 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
 }
 /// Called by ClassicProject::validate, including app.state.patch and session restoration.
 pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result<(), String> {
+    podcast::validate_metadata(scene)?;
     let Some(value) = scene.get("takeAssembly") else {
         return Ok(());
     };
@@ -496,6 +500,7 @@ pub(super) fn register_classic_takes(
 ) -> Result<(), RegistryError> {
     auto_edit::register_auto_edit(registry, state.clone(), events.clone())?;
     review::register_review(registry, state.clone())?;
+    podcast::register_podcast(registry, state.clone(), events.clone())?;
     let read_state = state.clone();
     register::<Prepare, Prepared, _, _>(
         registry,
@@ -503,7 +508,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.prepare",
         "Read smart-take source words",
-        "Read bounded word-indexed source evidence for selected main-track videos. Returns revision and word IDs with original clip identity and absolute integer tick timing. No inference or IO; generated transcript reconciled with valid source-caption word clocks, preserving source text corrections. Contiguous selection (gaps allowed), one caption source. Use the returned revision for takes.edit. Up to 15000 words. Cancellation supported.",
+        "Read bounded word-indexed source evidence for selected main-track videos. Returns revision and word IDs with original clip identity and absolute integer tick timing. No inference or IO; generated transcript reconciled with valid source-caption word clocks, preserving source text corrections. Contiguous selection (gaps allowed), one caption source. Use the returned revision for takes.edit. Up to 60000 words. Cancellation supported.",
         "timeline",
         AccessLevel::Read,
         true,
@@ -578,7 +583,9 @@ pub(super) fn register_classic_takes(
                                 mode,
                                 run_metrics,
                             } => {
-                                if let Some(metrics) = &run_metrics { metrics.validate().map_err(invalid)?; }
+                                if let Some(metrics) = &run_metrics {
+                                    metrics.validate().map_err(invalid)?;
+                                }
                                 if scene.get("takeAssembly").is_some() {
                                     return Err(invalid(
                                         "This scene already has take alternatives. Undo the assembly or use a new scene to analyze again",
@@ -600,6 +607,7 @@ pub(super) fn register_classic_takes(
                                     )?,
                                     quality: QualityReport::default(),
                                     version: 2,
+                                    selection_only: false,
                                     id: format!("takes-{}", document.revision),
                                     element_ids,
                                     source_tracks: scene["tracks"].clone(),
@@ -757,7 +765,7 @@ fn render(
     context: &InvocationContext,
 ) -> Result<(Value, Value), CapabilityError> {
     let mut spans = vec![];
-    if start > 0 {
+    if !a.selection_only && start > 0 {
         spans.push(Span {
             from: 0,
             to: start,
@@ -766,7 +774,7 @@ fn render(
             word_indices: None,
         });
     }
-    let mut cursor = start;
+    let mut cursor = if a.selection_only { 0 } else { start };
     for (gi, g) in a.plan.groups.iter().enumerate() {
         let parts = if a.version >= 2 {
             quality::merged(&g.alternatives[g.selected].parts, words)
@@ -816,7 +824,7 @@ fn render(
             .ok_or_else(|| invalid("Bookmark range exceeds safe take timing"))?;
         max_end = max_end.max(bound);
     }
-    if max_end > end {
+    if !a.selection_only && max_end > end {
         spans.push(Span {
             from: end,
             to: max_end,

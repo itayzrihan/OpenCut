@@ -747,6 +747,40 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	preparePodcast(input: {
+		sceneId: string;
+		elementIds: string[];
+	}): import("@/ai/podcast-types").PodcastSource {
+		return this.call({
+			capability: "timeline.classic.podcast.prepare",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
+	podcast({
+		review = false,
+		...input
+	}: {
+		review?: boolean;
+		sceneId: string;
+		elementIds: string[];
+		expectedRevision: number;
+		options: import("@/ai/podcast-types").PodcastOptions;
+		videos: import("@/ai/podcast-types").PodcastVideo[];
+		audioEvidence?: import("@/timeline/smart-takes/types").TakeAudioEvidence[];
+	}): void {
+		this.call({
+			capability: review
+				? "timeline.classic.podcast.review"
+				: "timeline.classic.podcast.extract",
+			input: { ...input, projectId: this.projectId },
+		});
+	}
+
 	prepareTakesForAutoEdit({ sceneId }: { sceneId: string }): void {
 		this.call({
 			capability: "timeline.classic.takes.prepare_auto_edit",

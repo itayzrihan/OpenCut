@@ -63,7 +63,7 @@ has not been measured or established.** Confidence is a model's semantic
 assessment, not a calibrated success probability.
 
 The initial version accepts 1–1000 nonoverlapping main-track videos with a single
-caption source, at most 15000 selected words and 20 alternatives per story group.
+caption source, at most 60000 selected words and 20 alternatives per story group.
 There is one assembly per scene. It operates on the currently retained footage;
 material already removed by earlier edits cannot be inferred from its transcript.
 

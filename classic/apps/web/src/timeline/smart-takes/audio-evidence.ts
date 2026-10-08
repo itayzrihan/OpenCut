@@ -9,10 +9,12 @@ export async function collectTakeAudioEvidence({
 	editor,
 	elementIds,
 	signal,
+	boundedFrames = false,
 }: {
 	editor: EditorCore;
 	elementIds: string[];
 	signal: AbortSignal;
+	boundedFrames?: boolean;
 }): Promise<TakeAudioEvidence[]> {
 	const scene = editor.scenes.getActiveScene();
 	const assets = new Map(
@@ -23,6 +25,10 @@ export async function collectTakeAudioEvidence({
 		Awaited<ReturnType<typeof decodeAudioToFloat32>>
 	>();
 	const evidence: TakeAudioEvidence[] = [];
+	const selectedSeconds = scene.tracks.main.elements
+		.filter((e) => elementIds.includes(e.id))
+		.reduce((sum, e) => sum + e.duration / 120000, 0);
+	const minFrame = boundedFrames ? Math.max(0.01, selectedSeconds / 340000) : 0;
 	for (const clip of scene.tracks.main.elements) {
 		if (clip.type !== "video" || !elementIds.includes(clip.id)) continue;
 		signal.throwIfAborted();
@@ -49,7 +55,7 @@ export async function collectTakeAudioEvidence({
 			sourceStartSeconds: timing.trimStart,
 			sourceEndSeconds: timing.trimStart + timing.duration * rate,
 			playbackRate: rate,
-			frameDurationSeconds: 0.01 * Math.min(1, rate),
+			frameDurationSeconds: Math.max(minFrame, 0.01 * Math.min(1, rate)),
 			yieldControl: async () => {
 				await new Promise<void>((resolve) => setTimeout(resolve, 0));
 				signal.throwIfAborted();

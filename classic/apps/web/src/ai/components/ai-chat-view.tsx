@@ -26,6 +26,7 @@ import { AiPlanReview } from "./ai-plan-review";
 import { useAiOAuthStatus } from "./use-ai-oauth-status";
 import { LocalSubjectFramingButton } from "./local-subject-framing-button";
 import { AutomaticMusicButton } from "./automatic-music-button";
+import { PodcastControls } from "./podcast-controls";
 import { FullAutoEditButton } from "./full-auto-edit-button";
 import { AutomaticWordAnimationButton } from "./automatic-word-animation-button";
 import { AutomaticZoomButton } from "./automatic-zoom-button";
@@ -382,6 +383,10 @@ export function AiChatView() {
 					disabled={
 						isRunning || isApplying || automaticRunning || !status.authenticated
 					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<PodcastControls
+					disabled={isRunning || isApplying || automaticRunning || !status.authenticated}
 					onRunningChange={setAutomaticRunning}
 				/>
 				<FullAutoEditButton
