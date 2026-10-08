@@ -14,6 +14,7 @@ import { runAutomaticZoom } from "./automatic-zoom";
 import { runAutomaticTextTransitions } from "./automatic-text-transitions";
 import { runAutomaticWordAnimation } from "./automatic-word-animation";
 import { loadProjectFont, isProjectFontLoaded } from "@/fonts/custom-fonts";
+import { loadBundledAssistantBold } from "@/fonts/bundled-fonts";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
@@ -120,7 +121,7 @@ export async function runFullAutoEdit({
 			switch (stage) {
 				case "preflight": {
 					progress(
-						"Checking imported video, custom font, AI and Hebrew model…",
+						"Checking imported video, caption font, AI and Hebrew model…",
 					);
 					const scene = editor.scenes.getActiveScene();
 					const revision = editor.command.getStateRevision();
@@ -144,14 +145,15 @@ export async function runFullAutoEdit({
 							.customFonts?.find((f) =>
 								/^assistant[ _-]*extra[ _-]*bold$/i.test(f.family),
 							);
-					if (!font)
-						throw new Error(
-							"Import Assistant Bold or Assistant ExtraBold into Custom Fonts first",
-						);
-					await loadProjectFont({ font });
-					if (!isProjectFontLoaded({ family: font.family }))
-						throw new Error("The custom Assistant font file is unavailable");
-					fontFamily = font.family;
+					if (font) {
+						await loadProjectFont({ font });
+						if (!isProjectFontLoaded({ family: font.family }))
+							throw new Error("The custom Assistant font file is unavailable");
+						fontFamily = font.family;
+					} else {
+						progress("Loading included Assistant Bold caption font…");
+						fontFamily = await loadBundledAssistantBold();
+					}
 					assertBrowserTranscriptionAvailable();
 					assertContext();
 					if (editor.command.getStateRevision() !== revision)

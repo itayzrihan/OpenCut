@@ -4,6 +4,8 @@ import type { EditorCore } from "@/core";
 const calls: string[] = [];
 let fontAvailable = true;
 let duringFont: () => void = () => {};
+let customFonts = [{ family: "Assistant Bold" }];
+const loadedSources: Array<{ family: string; sourceUrl?: string }> = [];
 const main = {
 	id: "main",
 	elements: [
@@ -67,7 +69,12 @@ mock.module("@/subtitles/caption-layout", () => ({
 	DEFAULT_CAPTION_LAYOUT: {},
 }));
 mock.module("@/fonts/custom-fonts", () => ({
-	loadProjectFont: async () => {
+	loadProjectFont: async ({
+		font,
+	}: {
+		font: { family: string; sourceUrl?: string };
+	}) => {
+		loadedSources.push(font);
 		duringFont();
 	},
 	isProjectFontLoaded: () => fontAvailable,
@@ -87,6 +94,8 @@ const { runFullAutoEdit } = await import("../full-auto-edit");
 function setup() {
 	calls.length = 0;
 	fontAvailable = true;
+	customFonts = [{ family: "Assistant Bold" }];
+	loadedSources.length = 0;
 	duringFont = () => {};
 	let revision = 1;
 	const scene = {
@@ -102,7 +111,7 @@ function setup() {
 		project: {
 			getActive: () => ({
 				metadata: { id: "p" },
-				customFonts: [{ family: "Assistant Bold" }],
+				customFonts,
 			}),
 			updateSettings: async () => {},
 		},
@@ -185,4 +194,32 @@ test("ordinary edited scenes are still rejected before any mutation", async () =
 	scene.takeAssembly = undefined;
 	await expect(run({ editor })).rejects.toThrow("already contains edits");
 	expect(calls).toEqual([]);
+});
+test("missing custom font loads the included bold face and continues past preflight", async () => {
+	const { editor } = setup();
+	customFonts = [];
+	await run({ editor });
+	expect(loadedSources).toEqual([
+		{
+			family: "Assistant Bold",
+			sourceUrl: "/fonts/assistant/Assistant-Bold.ttf",
+		},
+	]);
+	expect(calls).toContain("prepare");
+	expect(calls).toContain("fresh transcription");
+	expect(calls).toContain("finish");
+});
+test("bundled font failure and stale context leave selected takes and captions intact", async () => {
+	for (const failure of ["font", "cancel", "stale"]) {
+		const { editor, scene, changeRevision } = setup();
+		customFonts = [];
+		const controller = new AbortController();
+		if (failure === "font") fontAvailable = false;
+		if (failure === "cancel") duringFont = () => controller.abort();
+		if (failure === "stale") duringFont = changeRevision;
+		await expect(run({ editor, signal: controller.signal })).rejects.toThrow();
+		expect(calls).toEqual([]);
+		expect(scene.takeAssembly).toEqual({});
+		expect(scene.tracks.overlay).toHaveLength(1);
+	}
 });

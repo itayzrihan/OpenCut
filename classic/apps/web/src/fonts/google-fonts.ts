@@ -2,6 +2,7 @@ import type { FontAtlas } from "@/fonts/types";
 import { loadDocumentFontSamples } from "@/fonts/font-loading";
 import { SYSTEM_FONTS } from "@/fonts/system-fonts";
 import { loadTypekitFont, loadTypekitFonts } from "@/fonts/typekit-fonts";
+import { BUNDLED_ASSISTANT_BOLD, loadBundledAssistantBold } from "./bundled-fonts";
 
 const GOOGLE_FONTS_CSS = "https://fonts.googleapis.com/css2";
 const FONT_ATLAS_PATH = "/fonts/font-atlas.json";
@@ -137,6 +138,10 @@ export async function loadFullFont({
 	weights?: number[];
 	variants?: GoogleFontVariant[];
 }): Promise<void> {
+	if (family === BUNDLED_ASSISTANT_BOLD) {
+		await loadBundledAssistantBold();
+		return;
+	}
 	if (fullLoaded.has(family)) return;
 
 	const atlas = cachedAtlas ?? (await loadFontAtlas());
@@ -176,7 +181,11 @@ export async function loadFonts({
 }: {
 	families: string[];
 }): Promise<void> {
-	const nonSystemFonts = families.filter((family) => !SYSTEM_FONTS.has(family));
+	if (families.includes(BUNDLED_ASSISTANT_BOLD))
+		await loadBundledAssistantBold();
+	const nonSystemFonts = families.filter(
+		(family) => !SYSTEM_FONTS.has(family) && family !== BUNDLED_ASSISTANT_BOLD,
+	);
 	if (nonSystemFonts.length === 0) return;
 
 	const typekitFonts = await loadTypekitFonts();

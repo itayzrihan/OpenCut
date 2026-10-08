@@ -6,7 +6,17 @@ Scope: **classic-only**. The rewrite is not modified or represented as feature-p
 
 Projects → **Batch** → choose videos (or **Import from drive** for large local sources). Each video gets a new project. Choose any combination of Automatic Zoom, Automatic Transition Edit, Automatic Word Animation and Reveal, and Automatic Music, then start.
 
-The mandatory recipe comes from Rust `fullAutoEditStages`: vertical cover, local face/body framing, silence removal at 0.3 seconds, Hebrew ivrit-ai Whisper large-v3 and one-row Auto Texts, caption finishing at 60% / 25%, Assistant bold custom font, punctuation hidden, centered text, black edge feather, then optional additions and save. The existing transcription and AI prerequisites still apply. No export runs automatically.
+The mandatory recipe comes from Rust `fullAutoEditStages`: vertical cover, local face/body framing, silence removal at 0.3 seconds, Hebrew ivrit-ai Whisper large-v3 and one-row Auto Texts, caption finishing at 60% / 25%, Assistant bold font, punctuation hidden, centered text, black edge feather, then optional additions and save. The existing transcription and AI prerequisites still apply. No export runs automatically.
+
+Full Auto prefers an imported Assistant Bold/ExtraBold when present. Otherwise
+preflight loads the included static Assistant Bold face from the app's own font
+assets; manual font import is no longer a prerequisite. Saved caption families
+resolve to that same bundled font on reopen, without a Google Fonts request.
+The font uses the accompanying SIL Open Font License. This is a Classic platform
+font-loading fix; caption style and project mutations remain canonical. Font
+load failure, cancellation and stale revision still stop before Smart Takes
+caption cleanup. Tests cover missing custom fonts, bundled asset weight/Hebrew
+coverage, reopening font resolution and preflight failure without edits.
 
 A draggable floating progress control serves both single and batch edits. The ring measures completed recipe stages, not estimated elapsed time. Click opens the current video's stage list and completed-video count. The panel follows the dragged control with a damped spring; reduced-motion preferences disable the trailing motion. Arrow keys reposition the control; Enter opens details; Escape closes them. Failure/cancellation remains visible and never counts as successful completion.
 
