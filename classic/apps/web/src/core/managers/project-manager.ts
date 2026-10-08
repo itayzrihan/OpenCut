@@ -503,6 +503,8 @@ export class ProjectManager {
 					? null
 					: "This project is open in another editor. Take ownership to edit its latest saved version.",
 			});
+			// Keep ownership alive while fonts, media and the archive hydrate.
+			if (canAcquire) this.startSessionHeartbeat();
 			// Rust validates saved projects and archives. Legacy data goes through
 			// the same canonical attachment validation before its first commit.
 			const project = deserializeProject(
@@ -583,7 +585,6 @@ export class ProjectManager {
 			});
 			if (canAcquire) {
 				await this.editor.command.flushHistory();
-				this.startSessionHeartbeat();
 			}
 			this.editor.save.discardPending();
 			acknowledgeAutomationReload({
@@ -607,6 +608,8 @@ export class ProjectManager {
 			}
 			return true;
 		} catch (error) {
+			if (this.sessionTimer) clearInterval(this.sessionTimer);
+			this.sessionTimer = null;
 			console.error("Failed to load project:", error);
 			throw error;
 		} finally {

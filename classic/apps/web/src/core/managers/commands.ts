@@ -2132,7 +2132,9 @@ export class CommandManager {
 			this.canonicalCallbacks.clear();
 			throw error;
 		}
-		if (persistInitial) this.persistHistory();
+		// An atomic restore is already durable. Rewriting its entire undo archive
+		// during open can time out before a background resume even starts.
+		if (persistInitial && !atomicBundle) this.persistHistory();
 		else this.notifyHistoryChange();
 	}
 

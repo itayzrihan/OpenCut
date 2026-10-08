@@ -7001,3 +7001,20 @@ test(
 	},
 	INTEGRATION_TIMEOUT,
 );
+
+test("reopening an atomic checkpoint does not rewrite its archive before the next edit", async () => {
+ const source = createHost();
+ let bundle: EditorSessionBundle | null = null;
+ await source.manager.enableCanonical({runtime: await createCanonicalTestRuntime(), persistSession: async (capture) => { bundle = structuredClone(capture()); }});
+ await source.manager.flushHistory();
+ expect(bundle).not.toBeNull();
+ source.manager.detachCanonical();
+ const reopened = createHost();
+ let writes = 0;
+ await reopened.manager.enableCanonical({runtime: await createCanonicalTestRuntime(), atomicBundle: bundle!, persistSession: async () => { writes++; }});
+ await reopened.manager.flushHistory();
+ expect(writes).toBe(0);
+ await reopened.manager.persistEditingSession();
+ expect(writes).toBe(1);
+ reopened.manager.detachCanonical();
+}, INTEGRATION_TIMEOUT);

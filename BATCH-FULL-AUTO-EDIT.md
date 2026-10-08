@@ -104,3 +104,10 @@ This resumes at the stage boundary, not an arbitrary point inside an AI request.
 The interrupted user project was verified to contain 418 timed words and its
 39 selected/trimmed video segments. Checks cover early-stage skipping, unchanged
 cuts, font reload, transcript reuse, missing transcript, and queue/recipe guards.
+
+Opening a saved atomic session no longer re-commits its unchanged undo archive.
+The editor lease now renews during asynchronous font/media hydration, with the
+renewal timer stopped if opening fails. This removes a redundant large save that
+could block the resume button with a storage timeout. All 75 canonical command
+manager tests pass, including restoration with zero writes followed by an
+explicit successful save.
