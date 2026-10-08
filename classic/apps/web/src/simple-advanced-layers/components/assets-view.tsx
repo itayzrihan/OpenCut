@@ -1,4 +1,5 @@
 "use client";
+import { PushBrollCards } from "./push-broll-controls";
 
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -15,6 +16,7 @@ export function SimpleAdvancedLayersView() {
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
 			>
+				<PushBrollCards />
 				{SIMPLE_ADVANCED_LAYER_PRESETS.map((preset) => (
 					<SimpleAdvancedLayerItem key={preset.id} preset={preset} />
 				))}

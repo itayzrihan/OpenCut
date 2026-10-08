@@ -45,6 +45,10 @@ export interface CaptionLayoutSettings {
 	 * captions according to the configured rows value.
 	 */
 	rowBreaks?: number[];
+	/** Preserve source word clocks when captions follow a take assembly. */
+	exactWordTimings?: boolean;
+	/** End-exclusive word indexes of source edits; cues cannot cross them. */
+	segmentBreaks?: number[];
 	inPaddingPercent: number;
 	outPaddingPercent: number;
 	/**

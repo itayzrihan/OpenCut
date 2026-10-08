@@ -243,6 +243,7 @@ impl ClassicProject {
             }
         }
         for scene in scenes {
+            crate::operations::classic_takes::validate_scene(scene, &asset_ids).map_err(|e| invalid(&e))?;
             if !scene_ids.insert(string_at(scene, "id")?) {
                 return Err(invalid("duplicate scene id"));
             }
@@ -309,6 +310,25 @@ impl ClassicProject {
                         return Err(invalid("duplicate track or element id"));
                     }
                     string_at(element, "type")?;
+                    if element["params"].get("textGraphicsSceneId").is_some() {
+                        let p = &element["params"];
+                        if element["type"] != "text" || !matches!(p["textGraphicsEdge"].as_str(),Some("top"|"bottom"))
+                            || !p["textGraphicsSizePercent"].as_f64().is_some_and(|n| n.is_finite() && (1.0..=60.0).contains(&n))
+                            || !p["textGraphicsTransitionSeconds"].as_f64().is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
+                            || !p["textGraphicsSceneId"].as_str().is_some_and(|id| id != scene["id"].as_str().unwrap_or_default() && scenes.iter().any(|s|s["id"]==id)) {
+                            return Err(invalid("Invalid text graphics attachment"));
+                        }
+                    }
+                    if element["effectType"] == "push-broll" {
+                        let params = &element["params"];
+                        if !matches!(params["edge"].as_str(), Some("top" | "bottom"))
+                            || !params["screenPercent"].as_f64().is_some_and(|n| n.is_finite() && (1.0..=90.0).contains(&n))
+                            || !params["transitionSeconds"].as_f64().is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
+                            || !params["brollSceneId"].as_str().is_some_and(|id| id != scene["id"].as_str().unwrap_or_default() && self.document.get("scenes").unwrap().as_array().unwrap().iter().any(|s| s["id"] == id)) {
+                            return Err(invalid("Invalid push B-roll settings or nested scene"));
+                        }
+                    }
+
                     crate::classic_effects::validate_effects(element)
                         .map_err(|e| invalid(&e.to_string()))?;
                     if element

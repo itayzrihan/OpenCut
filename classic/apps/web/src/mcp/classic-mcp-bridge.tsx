@@ -87,7 +87,7 @@ async function createBridgeToolRuntime({
 			includeMediaAccess: true,
 			includePreviewImage: true,
 			includeAppControlAccess: true,
-			includeNetworkAccess: false,
+			includeNetworkAccess: !toolName || toolName === "smart_takes.start",
 		},
 	});
 }

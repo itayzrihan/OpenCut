@@ -1,4 +1,9 @@
-import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
+import {
+	PushBrollNode,
+	TextGraphicsNode,
+	pushBrollProgress,
+} from "./nodes/push-broll-node";
+import { TICKS_PER_SECOND, mediaTimeToSeconds, roundMediaTime } from "@/wasm";
 import { getHyperframesPreviewScale } from "@/hyperframes/preview-scale";
 import {
 	getElementLocalTime,
@@ -164,6 +169,14 @@ async function resolveNode({
 		node.resolved = await resolvePersonCutoutLayerNode({ node, context });
 	} else if (node instanceof EffectLayerNode) {
 		node.resolved = resolveEffectLayerNode({ node, context });
+	} else if (node instanceof PushBrollNode) {
+		const progress = pushBrollProgress({
+			time: context.time,
+			start: node.params.timeOffset,
+			duration: node.params.duration,
+			transition: node.params.transitionSeconds * TICKS_PER_SECOND,
+		});
+		node.resolved = progress > 0 ? { progress } : null;
 	} else if (node instanceof ParallaxSceneNode) {
 		node.resolved = resolveParallaxSceneNode({ node, context });
 	}
@@ -179,20 +192,28 @@ async function resolveNode({
 	}
 
 	const childContext =
-		node instanceof ParallaxSceneNode
-			? {
-					...context,
-					time: mapParallaxParentTimeToSourceTime({
-						time: context.time,
-						timeOffset: node.params.timeOffset,
-						duration: node.params.duration,
-						sourceDuration: node.params.sourceDuration,
-					}),
-				}
-			: context;
+		node instanceof PushBrollNode
+			? { ...context, time: Math.max(0, context.time - node.params.timeOffset) }
+			: node instanceof ParallaxSceneNode
+				? {
+						...context,
+						time: mapParallaxParentTimeToSourceTime({
+							time: context.time,
+							timeOffset: node.params.timeOffset,
+							duration: node.params.duration,
+							sourceDuration: node.params.sourceDuration,
+						}),
+					}
+				: context;
 	await Promise.all(
-		node.children.map((child) =>
-			resolveNode({ node: child, context: childContext }),
+		node.children.map((child, index) =>
+			resolveNode({
+				node: child,
+				context:
+					node instanceof TextGraphicsNode && index === 0
+						? context
+						: childContext,
+			}),
 		),
 	);
 }

@@ -28,6 +28,10 @@ pub enum FrameItemDescriptor {
         opacity: f32,
         #[serde(rename = "blendMode")]
         blend_mode: BlendMode,
+        #[serde(default)]
+        transform: Option<QuadTransformDescriptor>,
+        #[serde(default)]
+        clip: Option<[f32; 4]>,
     },
     SceneEffect {
         effect_pass_groups: Vec<Vec<EffectPassDescriptor>>,
@@ -119,9 +123,13 @@ mod tests {
                     items: vec![],
                     opacity: 0.75,
                     blend_mode: crate::BlendMode::Screen,
+                    transform: None,
+                    clip: None,
                 }],
                 opacity: 0.5,
                 blend_mode: crate::BlendMode::Normal,
+                transform: None,
+                clip: None,
             }],
         };
 

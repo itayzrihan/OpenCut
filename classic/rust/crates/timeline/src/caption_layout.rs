@@ -108,6 +108,12 @@ pub fn normalize_caption_layout_settings(
     if !row_breaks.is_empty() {
         output["rowBreaks"] = serde_json::json!(row_breaks);
     }
+    if settings["exactWordTimings"] == true {
+        output["exactWordTimings"] = Value::Bool(true);
+    }
+    if let Some(segments) = settings.get("segmentBreaks") {
+        output["segmentBreaks"] = segments.clone();
+    }
     output.to_string()
 }
 #[derive(Clone)]
@@ -158,14 +164,45 @@ pub fn build_caption_cue_plan(
             .chain(std::iter::once(words.len()))
             .collect();
     }
+    let exact = settings["exactWordTimings"] == true;
+    let mut segments: Vec<usize> = settings["segmentBreaks"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_u64)
+        .map(|v| v as usize)
+        .filter(|i| *i > 0 && *i < words.len())
+        .collect();
+    segments.sort_unstable();
+    segments.dedup();
+    // Reflow row lengths within each edit segment; no cue may straddle a cut.
+    if !segments.is_empty() {
+        let mut start = 0;
+        breaks.clear();
+        for end in segments.iter().copied().chain(std::iter::once(words.len())) {
+            breaks.extend((start + per_row..end).step_by(per_row));
+            breaks.push(end);
+            start = end;
+        }
+    }
     let mut rows = Vec::new();
     let mut start = 0;
     for end in breaks {
         rows.push((start..end).collect::<Vec<_>>());
         start = end;
     }
-    let groups: Vec<Group> = rows
-        .chunks(row_count)
+    let mut row_groups: Vec<Vec<Vec<usize>>> = Vec::new();
+    for row in rows {
+        let boundary = row
+            .first()
+            .is_some_and(|i| segments.binary_search(i).is_ok());
+        if boundary || row_groups.last().is_none_or(|g| g.len() >= row_count) {
+            row_groups.push(vec![]);
+        }
+        row_groups.last_mut().unwrap().push(row);
+    }
+    let groups: Vec<Group> = row_groups
+        .iter()
         .map(|rows| {
             let indices: Vec<usize> = rows.iter().flatten().copied().collect();
             Group {
@@ -180,9 +217,10 @@ pub fn build_caption_cue_plan(
                     .collect::<Vec<_>>()
                     .join("\n"),
                 start: words[indices[0]].start,
-                end: words[*indices.last().unwrap()]
-                    .end
-                    .max(words[indices[0]].start + 0.1),
+                end: indices.iter().map(|i| words[*i].end).fold(
+                    words[indices[0]].start + if exact { 0.000_001 } else { 0.1 },
+                    f64::max,
+                ),
                 indices,
             }
         })
@@ -209,7 +247,7 @@ pub fn build_caption_cue_plan(
             });
             let mut readable_start = group.start;
             let mut readable_end = group.end.max(group.start + 0.001);
-            if group.indices.len() == 1 {
+            if !exact && group.indices.len() == 1 {
                 let earliest = previous_boundary.unwrap_or(0.0).max(0.0);
                 let latest = next_boundary.unwrap_or(readable_end).max(readable_end);
                 let missing = (0.6 - (readable_end - group.start)).max(0.0);
@@ -218,9 +256,10 @@ pub fn build_caption_cue_plan(
                 readable_end = (readable_end + remaining).min(latest);
             }
             let duration = (readable_end - readable_start).max(0.001);
-            let mut start = (readable_start - duration * lead).max(0.0);
-            let mut end = (readable_end + duration * tail).max(start + 0.001);
-            if group.indices.len() == 1 {
+            let mut start = (readable_start - duration * if exact { 0.0 } else { lead }).max(0.0);
+            let mut end =
+                (readable_end + duration * if exact { 0.0 } else { tail }).max(start + 0.000_001);
+            if !exact && group.indices.len() == 1 {
                 if let Some(boundary) = previous_boundary {
                     start = start.max(boundary);
                 }
@@ -308,10 +347,9 @@ mod tests {
                 .into(),
         });
         assert_eq!(cues.len(), 4);
-        assert!(
-            cues.windows(2)
-                .all(|pair| pair[0].start_time + pair[0].duration <= pair[1].start_time)
-        );
+        assert!(cues
+            .windows(2)
+            .all(|pair| pair[0].start_time + pair[0].duration <= pair[1].start_time));
         assert_eq!(cues[2].word_indices, vec![2]);
     }
     #[test]

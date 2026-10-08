@@ -341,3 +341,49 @@ async fn invalid_bookmarks_fail_without_changing_any_scene_or_history() {
     assert!(runtime.registry().invoke("project.classic.commit", InvocationContext::default(), json!({"projectId":"classic-project", "expectedRevision":before["revision"], "classic":invalid})).await.is_err());
     assert_eq!(read(&runtime).await, before);
 }
+
+#[tokio::test]
+async fn push_broll_creates_nested_scene_atomically() {
+    let runtime = attached().await;
+    let original = read(&runtime).await;
+    let request = json!({"projectId":"classic-project", "expectedRevision":original["revision"], "sceneId":"main-scene", "edge":"top", "startTime":120000,"duration":600000});
+    runtime.registry().invoke("timeline.classic.push-broll.create", InvocationContext {dry_run:true, ..Default::default()}, request.clone()).await.unwrap();
+    assert_eq!(read(&runtime).await, original);
+    call(&runtime,"timeline.classic.push-broll.create",request).await;
+    let state = read(&runtime).await;
+    let scenes = state["project"]["classic"]["document"]["scenes"].as_array().unwrap();
+    let parent = scenes.iter().find(|s|s["id"]=="main-scene").unwrap();
+    let layer = &parent["tracks"]["overlay"][0]["elements"][0];
+    assert_eq!(layer["effectType"], "push-broll");
+    assert_eq!(layer["params"]["screenPercent"],40.0);
+    let nested = scenes.iter().find(|s|s["id"] == layer["params"]["brollSceneId"]).unwrap();
+    assert_eq!(nested["tracks"]["main"]["elements"],json!([]));
+    assert_eq!(state["project"]["classic"]["document"]["currentSceneId"],"main-scene");
+    let bad = json!({"projectId":"classic-project", "expectedRevision":state["revision"], "sceneId":"main-scene", "edge":"bottom", "startTime":0,"duration":600000,"screenPercent":101});
+    assert!(runtime.registry().invoke("timeline.classic.push-broll.create",InvocationContext::default(),bad).await.is_err());
+    assert_eq!(read(&runtime).await,state);
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(ignore_project_time(read(&runtime).await["project"].clone()), ignore_project_time(original["project"].clone()));
+}
+
+#[tokio::test]
+async fn text_graphics_attach_populate_and_undo_through_registry() {
+ let runtime=attached().await;let original=read(&runtime).await;
+ let request=json!({"projectId":"classic-project","expectedRevision":original["revision"],"sceneId":"main-scene","trackId":"titles","elementId":"text-1","edge":"bottom"});
+ runtime.registry().invoke("timeline.classic.text-graphics.create",InvocationContext{dry_run:true,..Default::default()},request.clone()).await.unwrap();
+ assert_eq!(read(&runtime).await,original);
+ call(&runtime,"timeline.classic.text-graphics.create",request).await;
+ let attached=read(&runtime).await;
+ let text=&attached["project"]["classic"]["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0];
+ assert_eq!(text["params"]["textGraphicsEdge"],"bottom");
+ assert_eq!(text["duration"],original["project"]["classic"]["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"][0]["duration"]);
+ let scene_id=text["params"]["textGraphicsSceneId"].clone();
+ call(&runtime,"timeline.classic.elements.insert",json!({"projectId":"classic-project","expectedRevision":attached["revision"],"sceneId":scene_id,"clips":[{"element":{"type":"video","name":"Graphic content video","mediaId":"video-asset","startTime":0,"duration":120000,"params":{}},"placement":{"mode":"auto"}}]})).await;
+ let populated=read(&runtime).await;
+ let nested=populated["project"]["classic"]["document"]["scenes"].as_array().unwrap().iter().find(|s|s["id"]==scene_id).unwrap();
+ assert_eq!(nested["tracks"]["main"]["elements"][0]["mediaId"],"video-asset");
+ assert_eq!(populated["project"]["classic"]["document"]["settings"],original["project"]["classic"]["document"]["settings"]);
+ call(&runtime,"history.undo",json!({})).await;
+ call(&runtime,"history.undo",json!({})).await;
+ assert_eq!(ignore_project_time(read(&runtime).await["project"].clone()),ignore_project_time(original["project"].clone()));
+}

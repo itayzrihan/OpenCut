@@ -747,6 +747,44 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	prepareTakes({
+		sceneId,
+		elementIds,
+	}: {
+		sceneId: string;
+		elementIds: string[];
+	}): import("@/timeline/smart-takes/types").PreparedTakes {
+		return this.call({
+			capability: "timeline.classic.takes.prepare",
+			input: {
+				projectId: this.projectId,
+				sceneId,
+				elementIds,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
+	editTakes({
+		sceneId,
+		change,
+		expectedRevision = this.status().revision,
+	}: {
+		sceneId: string;
+		change: import("@/timeline/smart-takes/types").TakeChange;
+		expectedRevision?: number;
+	}): void {
+		this.call({
+			capability: "timeline.classic.takes.edit",
+			input: {
+				projectId: this.projectId,
+				sceneId,
+				change,
+				expectedRevision,
+			},
+		});
+	}
+
 	editBookmarks({
 		sceneId,
 		change,

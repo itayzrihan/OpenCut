@@ -126,8 +126,7 @@ mock.module("opencut-wasm", () => ({
 		temporalSmoothing: 0,
 		blurStrength: 0,
 	}),
-	removeCaptionWordTimeRanges: <T extends { words: unknown[] }>(options: T) =>
-		options.words,
+	removeCaptionWordTimeRanges: wasm.removeCaptionWordTimeRanges,
 	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(
 		options: T,
 	) => ({
@@ -251,43 +250,52 @@ describe("TranscriptionManager", () => {
 		expect(state.task.error).toContain("timeline changed");
 		expect(inserted).toBe(false);
 	});
-	test("runs a durable transcription task and retains only safe result handles", async () => {
-		const inserted: Array<Record<string, unknown>> = [];
-		const manager = new TranscriptionManager({
-			editor: createEditor(),
-			dependencies: {
-				extractAudio: async () => new Blob(["audio"]),
-				transcribe: async () => ({
-					text: "Hello world",
-					segments: [{ text: "Hello world", start: 0, end: 1 }],
-					words: [
-						{ text: "Hello", start: 0, end: 0.5 },
-						{ text: "world", start: 0.5, end: 1 },
-					],
-					language: "en",
-				}),
-				insertCaptions: (options) => {
-					inserted.push(options as unknown as Record<string, unknown>);
-					return ["captions-1", "captions-2"];
+	test.each([0.5, 0, 0.0000001])(
+		"normalizes provider word duration %s before durable transcript insertion",
+		async (firstEnd) => {
+			const inserted: Array<Record<string, unknown>> = [];
+			const manager = new TranscriptionManager({
+				editor: createEditor(),
+				dependencies: {
+					extractAudio: async () => new Blob(["audio"]),
+					transcribe: async () => ({
+						text: "Hello world",
+						segments: [{ text: "Hello world", start: 0, end: 1 }],
+						words: [
+							{ text: "Hello", start: 0, end: firstEnd },
+							{ text: "world", start: 0.5, end: 1 },
+						],
+						language: "en",
+					}),
+					insertCaptions: (options) => {
+						inserted.push(options as unknown as Record<string, unknown>);
+						return ["captions-1", "captions-2"];
+					},
+					generateId: () => "task-1",
+					transitionTask: transitionTaskForTest,
 				},
-				generateId: () => "task-1",
-				transitionTask: transitionTaskForTest,
-			},
-		});
+			});
 
-		const state = await manager.start({ language: "en" });
+			const state = await manager.start({ language: "en" });
 
-		expect(state.task).toMatchObject({
-			taskId: "task-1",
-			kind: "transcription",
-			status: "succeeded",
-			progressBasisPoints: 10_000,
-		});
-		expect(state.insertedTrackIds).toEqual(["captions-1", "captions-2"]);
-		expect(inserted).toHaveLength(1);
-		expect(JSON.stringify(state)).not.toContain("Hello world");
-		expect(getAutoTextsTranscriptionError(state)).toBeNull();
-	});
+			expect(state.task).toMatchObject({
+				taskId: "task-1",
+				kind: "transcription",
+				status: "succeeded",
+				progressBasisPoints: 10_000,
+			});
+			expect(state.insertedTrackIds).toEqual(["captions-1", "captions-2"]);
+			expect(inserted).toHaveLength(1);
+			expect(inserted[0].captionSource).toMatchObject({
+				words: [
+					{ text: "Hello", start: 0, end: firstEnd === 0.5 ? 0.5 : 0.001 },
+					{ text: "world", start: 0.5, end: 1 },
+				],
+			});
+			expect(JSON.stringify(state)).not.toContain("Hello world");
+			expect(getAutoTextsTranscriptionError(state)).toBeNull();
+		},
+	);
 
 	test("retains a service failure for Auto Texts and does not insert captions", async () => {
 		const serviceError =

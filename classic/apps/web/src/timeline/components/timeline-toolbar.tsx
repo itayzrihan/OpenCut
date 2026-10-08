@@ -1,4 +1,6 @@
+import { SmartTakesControl } from "@/timeline/smart-takes/controls";
 import {
+	useEditorHistory,
 	useEditorMediaAsset,
 	useEditorPlayback,
 	useEditorProject,
@@ -63,6 +65,7 @@ import {
 	ArrangeIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { Undo2, Redo2 } from "lucide-react";
 import { OcRippleIcon } from "@/components/icons";
 import { GraphEditorPopover } from "./graph-editor/popover";
 import { PopoverTrigger } from "@/components/ui/popover";
@@ -127,6 +130,10 @@ export function TimelineToolbar({
 function ToolbarLeftSection() {
 	const timeline = useEditorTimelineScenes((editor) => editor.timeline);
 	const commandManager = useEditorTimelineScenes((editor) => editor.command);
+	const { canUndo, canRedo } = useEditorHistory((editor) => ({
+		canUndo: !editor.project.getIsLoading() && editor.command.canUndo(),
+		canRedo: !editor.project.getIsLoading() && editor.command.canRedo(),
+	}));
 	const activeSceneTracks = useEditorTimelineScenes(
 		(editor) => editor.scenes.getActiveScene().tracks,
 	);
@@ -182,6 +189,21 @@ function ToolbarLeftSection() {
 		<div className="flex items-center gap-1">
 			<TooltipProvider delayDuration={500}>
 				<ToolbarButton
+					icon={<Undo2 />}
+					label="Undo"
+					tooltip="Undo"
+					disabled={!canUndo}
+					onClick={({ event }) => handleAction({ action: "undo", event })}
+				/>
+				<ToolbarButton
+					icon={<Redo2 />}
+					label="Redo"
+					tooltip="Redo"
+					disabled={!canRedo}
+					onClick={({ event }) => handleAction({ action: "redo", event })}
+				/>
+				<div className="bg-border mx-1 h-6 w-px shrink-0" />
+				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
 					tooltip="Split element"
 					onClick={({ event }) => handleAction({ action: "split", event })}
@@ -190,6 +212,7 @@ function ToolbarLeftSection() {
 					hasSelectedVideo={hasSelectedVideo}
 					removeAllSilence={(options) => timeline.removeAllSilence(options)}
 				/>
+				<SmartTakesControl />
 				<ReorganizeTakesToolbarControl
 					hasSelectedVideo={hasSelectedVideo}
 					hasTranscribedSelection={hasTranscribedSelection}
@@ -733,6 +756,7 @@ function ToolbarRightSection({
 
 function ToolbarButton({
 	icon,
+	label,
 	tooltip,
 	onClick,
 	disabled,
@@ -741,6 +765,7 @@ function ToolbarButton({
 	className,
 }: {
 	icon: React.ReactNode;
+	label?: string;
 	tooltip: string;
 	onClick?: ({ event }: { event: React.MouseEvent }) => void;
 	disabled?: boolean;
@@ -751,7 +776,7 @@ function ToolbarButton({
 	const button = (
 		<Button
 			variant={isActive ? "secondary" : "text"}
-			size="icon"
+			size={label ? "sm" : "icon"}
 			aria-label={tooltip}
 			disabled={disabled}
 			onClick={onClick ? (event) => onClick({ event }) : undefined}
@@ -762,6 +787,7 @@ function ToolbarButton({
 			)}
 		>
 			{icon}
+			{label}
 		</Button>
 	);
 	const trigger = disabled ? (

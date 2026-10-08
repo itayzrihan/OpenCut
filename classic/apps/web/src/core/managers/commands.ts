@@ -1,3 +1,4 @@
+import { collectTakeAudioEvidence } from "@/timeline/smart-takes/audio-evidence";
 import { assertBatchEditable } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type { Command, CommandResult } from "@/commands";
@@ -61,6 +62,7 @@ export class CommandManager {
 	public isRippleEnabled = false;
 	private history: CommandHistoryEntry[] = [];
 	private redoStack: CommandHistoryEntry[] = [];
+	private historyListeners = new Set<() => void>();
 	private reactors: Array<() => void> = [];
 	private activeProjectId: string | null = null;
 	private historySaveQueue: Promise<void> = Promise.resolve();
@@ -92,6 +94,13 @@ export class CommandManager {
 	} | null = null;
 
 	constructor(private editor: EditorCore) {}
+
+	subscribeHistory(listener: () => void): () => void {
+		this.historyListeners.add(listener);
+		return () => {
+			this.historyListeners.delete(listener);
+		};
+	}
 
 	execute({
 		command,
@@ -384,6 +393,8 @@ export class CommandManager {
 			this.history = [];
 			this.redoStack = [];
 			this.stateRevision += 1;
+		} finally {
+			this.notifyHistoryChange();
 		}
 	}
 
@@ -397,6 +408,7 @@ export class CommandManager {
 		this.history = [];
 		this.redoStack = [];
 		this.stateRevision += 1;
+		this.notifyHistoryChange();
 		try {
 			await storageService.saveCommandHistory({
 				history: this.serializeHistory({ projectId }),
@@ -508,6 +520,8 @@ export class CommandManager {
 		this.stateRevision += 1;
 		if (persist) {
 			this.persistHistory();
+		} else {
+			this.notifyHistoryChange();
 		}
 	}
 
@@ -657,6 +671,48 @@ export class CommandManager {
 		}
 	}
 
+	createTextGraphics(input: {
+		trackId: string;
+		elementId: string;
+		edge: "top" | "bottom";
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before adding graphics");
+		const sceneId = this.editor.scenes.getActiveScene().id;
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.text-graphics.create",
+					input: { ...input, sceneId },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
+	createPushBroll(input: {
+		edge: "top" | "bottom";
+		startTime: number;
+		duration: number;
+		screenPercent?: number;
+		transitionSeconds?: number;
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before adding B-roll");
+		const sceneId = this.editor.scenes.getActiveScene().id;
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.push-broll.create",
+					input: { ...input, sceneId },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	editClassicScene(
 		change: import("@/core/canonical-classic-session").ClassicSceneChange,
 	): void {
@@ -666,6 +722,71 @@ export class CommandManager {
 			execute: () => {
 				this.synchronizeCanonicalViews();
 				this.canonical!.editScene(change);
+				this.publishCanonical();
+			},
+		});
+	}
+
+	prepareSmartTakes(elementIds: string[]) {
+		const session = this.canonical;
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!session || !sceneId || this.transactionDepth > 0)
+			throw new Error("Open the canonical editor before analyzing takes");
+		this.synchronizeCanonicalViews();
+		const account = this.agentAccountId();
+		const prepared = session.prepareTakes({ sceneId, elementIds });
+		return {
+			...prepared,
+			analyzeAudio: (signal: AbortSignal) =>
+				collectTakeAudioEvidence({ editor: this.editor, elementIds, signal }),
+			apply: (
+				plan: import("@/timeline/smart-takes/types").SmartTakePlan,
+				audioEvidence?: import("@/timeline/smart-takes/types").TakeAudioEvidence[],
+			) => {
+				if (
+					this.canonical !== session ||
+					this.agentAccountId() !== account ||
+					this.editor.scenes.getActiveSceneOrNull()?.id !== sceneId ||
+					session.status().revision !== prepared.revision
+				)
+					throw new Error(
+						"The project changed during analysis. Nothing was applied; run Smart takes again.",
+					);
+				this.executeTransaction({
+					execute: () => {
+						session.editTakes({
+							sceneId,
+							change: { type: "assemble", elementIds, plan, audioEvidence },
+							expectedRevision: prepared.revision,
+						});
+						this.publishCanonical();
+					},
+				});
+			},
+		};
+	}
+
+	selectSmartTake({
+		groupIndex,
+		alternativeIndex,
+	}: {
+		groupIndex: number;
+		alternativeIndex: number;
+	}): void {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the canonical editor before selecting takes");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.editTakes({
+					sceneId,
+					change: {
+						type: "select",
+						groupIndex,
+						alternativeIndex,
+					},
+				});
 				this.publishCanonical();
 			},
 		});
@@ -1746,6 +1867,7 @@ export class CommandManager {
 	}
 	detachCanonical(): void {
 		this.releaseCanonical();
+		this.notifyHistoryChange();
 	}
 
 	async enableCanonical({
@@ -1905,6 +2027,7 @@ export class CommandManager {
 			throw error;
 		}
 		if (persistInitial) this.persistHistory();
+		else this.notifyHistoryChange();
 	}
 
 	/** ProjectManager publishes this view only after canonical validation succeeds. */
@@ -2687,7 +2810,14 @@ export class CommandManager {
 		}
 	}
 
+	private notifyHistoryChange(): void {
+		for (const listener of this.historyListeners) listener();
+	}
+
 	private persistHistory(): void {
+		// Views may be published before the canonical history transaction commits.
+		// Notify here so controls read the final Undo/Redo availability.
+		this.notifyHistoryChange();
 		if (this.sessionPersistence) {
 			void this.persistEditingSession().catch((error) => {
 				console.error("Failed to persist the editor session:", error);

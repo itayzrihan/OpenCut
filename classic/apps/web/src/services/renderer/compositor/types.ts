@@ -24,6 +24,8 @@ export type FrameItemDescriptor =
 	| ({ type: "layer" } & LayerDescriptor)
 	| {
 			type: "group";
+			transform?: QuadTransformDescriptor;
+			clip?: [number, number, number, number];
 			items: FrameItemDescriptor[];
 			opacity: number;
 			blendMode: BlendMode;

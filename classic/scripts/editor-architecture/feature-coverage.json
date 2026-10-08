@@ -735,6 +735,31 @@
 			"gap": "Saved owned project/scene/clip reads and one-file image/video/audio transfers use native projection, current target fences, durable content-bound IDs/checksums, cancellation and one canonical media Undo. General clip insertion maps media/clip identities. Full dependency transfer for custom fonts, HyperFrames, linked groups, compound media and complex Parallax remains; no full-project migration claim or live model acceptance yet.",
 			"actions": [],
 			"sources": ["crates/editor-api/src/operations/owned_projects.rs", "classic/apps/web/src/editor-agent/server/owned-projects.ts"]
+		},
+		{
+			"id": "smart-takes",
+			"title": "Semantic take assembly and alternatives",
+			"managers": [
+				"CommandManager.prepareSmartTakes",
+				"CommandManager.selectSmartTake"
+			],
+			"contracts": [
+				"timeline.classic.takes.prepare",
+				"timeline.classic.takes.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_takes.rs",
+				"classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts",
+				"classic/apps/web/src/ai/__tests__/smart-takes-plan.test.ts"
+			],
+			"gap": "Bridged: Classic UI, canonical Rust state and editing. Transcript-only recommendations; real footage quality/90% target and full desktop playback acceptance remain. Subsequent manual timeline edits require undo before alternative selection.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts",
+				"classic/apps/web/src/core/canonical-classic-session.ts",
+				"classic/apps/web/src/timeline/smart-takes/controls.tsx",
+				"classic/apps/web/src/ai/smart-takes-plan.ts"
+			]
 		}
 	]
 }
