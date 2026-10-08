@@ -74,49 +74,79 @@ export class EditorSessionClient {
 		projectId,
 		sessionId = crypto.randomUUID(),
 		exchange,
+		requestTimeoutMs = 30_000,
 	}: {
 		accountId: string;
 		projectId: string;
 		sessionId?: string;
 		exchange?: Exchange;
+		requestTimeoutMs?: number;
 	}) {
+		if (
+			!Number.isInteger(requestTimeoutMs) ||
+			requestTimeoutMs < 1 ||
+			requestTimeoutMs > 120_000
+		)
+			throw new RangeError(
+				"Editor storage timeout must be between 1 and 120000 ms",
+			);
 		this.sessionId = sessionId;
 		this.accountId = accountId;
 		this.projectId = projectId;
 		this.exchange =
 			exchange ??
 			(async (request) => {
-				const assertAccount = () => {
-					if ((window.__opencutAccountId ?? "local") !== accountId)
-						throw new EditorSessionFailure({
-							message: "The active account changed",
-							definitive: true,
-						});
-				};
-				assertAccount();
-				const response = await fetch("/api/editor-session", {
-					method: "POST",
-					credentials: "same-origin",
-					cache: "no-store",
-					headers: {
-						"Content-Type": "application/json",
-						"X-OpenCut-Account": accountId,
-						...batchWriteHeaders(),
-					},
-					body: JSON.stringify({ projectId, request }),
-				});
-				assertAccount();
-				const data: unknown = await response.json();
-				if (!response.ok) {
-					const failure = z
-						.object({ error: z.string(), definitive: z.boolean() })
-						.safeParse(data).data;
-					throw new EditorSessionFailure({
-						message: failure?.error ?? "Editor session request failed",
-						definitive: failure?.definitive ?? false,
+				const controller = new AbortController();
+				const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
+				try {
+					const assertAccount = () => {
+						if ((window.__opencutAccountId ?? "local") !== accountId)
+							throw new EditorSessionFailure({
+								message: "The active account changed",
+								definitive: true,
+							});
+					};
+					assertAccount();
+					const response = await fetch("/api/editor-session", {
+						signal: controller.signal,
+						method: "POST",
+						credentials: "same-origin",
+						cache: "no-store",
+						headers: {
+							"Content-Type": "application/json",
+							"X-OpenCut-Account": accountId,
+							...batchWriteHeaders(),
+						},
+						body: JSON.stringify({ projectId, request }),
 					});
+					assertAccount();
+					const data: unknown = await response.json();
+					assertAccount();
+					if (!response.ok) {
+						const failure = z
+							.object({ error: z.string(), definitive: z.boolean() })
+							.safeParse(data).data;
+						throw new EditorSessionFailure({
+							message: failure?.error ?? "Editor session request failed",
+							definitive: failure?.definitive ?? false,
+						});
+					}
+					return data;
+				} catch (error) {
+					if (error instanceof EditorSessionFailure && error.definitive)
+						throw error;
+					if (controller.signal.aborted)
+						throw new EditorSessionFailure({
+							message:
+								request.type === "commit"
+									? "Editor storage timed out; the save outcome is unknown. Retry the pending save before further changes."
+									: "Editor storage timed out. Please retry.",
+							definitive: false,
+						});
+					throw error;
+				} finally {
+					clearTimeout(timeout);
 				}
-				return data;
 			});
 	}
 	private serialize<T>(operation: () => Promise<T>): Promise<T> {

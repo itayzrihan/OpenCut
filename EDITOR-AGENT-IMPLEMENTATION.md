@@ -232,6 +232,21 @@ passing unit test does not establish full product completion.
   test-ts-final.log,browser-build-final.log}`. Follow-up QA is not yet accepted:
   its prepared source is backed up, but its durable save and Chrome-control
   timeout still need investigation. No model run has started for that case.
+- Editor-session HTTP IO now has a bounded 30-second deadline (including response
+  decoding). A timeout remains an ambiguous outcome and preserves the exact
+  pending request identity; a later save reconciles it before capturing newer
+  state. Account identity is checked again after decoding, and definitive
+  account changes take precedence over transport ambiguity. Two transport tests
+  plus six actual native-store host cases pass, with both TypeScript configs,
+  scoped lint and production browser build. This is independent hardening, not
+  a proven explanation of the current Chrome/fixture persistence problem.
+  Evidence: `.local/session-timeout-{host-final/summary.json,test-ts.log,
+  lint.log,browser-build.log}`.
+- The feature-coverage ledger now distinguishes the accepted move, split,
+  clipboard, transitions and source-audio scenarios from each family's remaining
+  caption, linked-audio, dependency-heavy or perceptual/export gaps. The compiled
+  scanner passes: 34 families, 162 capabilities, 102 reviewed legacy/generic
+  mutation sites and zero broken references. These counts do not imply parity.
 
 The local changes below implement a substantial part of the accepted plan. This
 checkpoint is **not full completion**. Existing local migration work and the
