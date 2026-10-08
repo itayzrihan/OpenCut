@@ -658,6 +658,7 @@ export async function createTimelineToolRuntime({
 					.object({
 						elementIds: z.array(z.string().min(1)).min(1).max(1000),
 						requestId: z.string().min(1).max(200),
+						mode: z.enum(["standard", "experimental"]).optional(),
 					})
 					.strict()
 					.parse(toolCall.arguments);
@@ -1359,7 +1360,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			category: "smart takes task",
 			keywords: ["best takes", "filming notes", "assemble takes"],
 			description:
-				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged.",
+				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to standard; experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
 			parameters: objectSchema({
 				properties: {
 					elementIds: {
@@ -1369,6 +1370,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 						items: { type: "string" },
 					},
 					requestId: { type: "string", minLength: 1, maxLength: 200 },
+					mode: { type: "string", enum: ["standard", "experimental"] },
 				},
 				required: ["elementIds", "requestId"],
 			}),

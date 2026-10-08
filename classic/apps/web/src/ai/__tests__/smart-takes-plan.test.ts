@@ -180,3 +180,87 @@ test("a cancelled request cannot return a cached final plan", async () => {
 		}),
 	).rejects.toThrow();
 });
+
+test("experimental review sends compact context and accepts only a canonical selection result", async () => {
+	windowStub();
+	const requests: string[] = [];
+	globalThis.fetch = mock(async (_url, init) => {
+		requests.push(String(init?.body));
+		return requests.length === 1
+			? Response.json({ models: [{ id: "model" }] })
+			: stream(JSON.stringify({ requiresFullReview: false, selections: [] }));
+	}) as unknown as typeof fetch;
+	const review = mock(() => ({
+		plan,
+		story: [{ groupIndex: 0, label: "Opening", selected: 0, dialogue: "שלום" }],
+		groups: [],
+		discarded: [],
+	}));
+	const result = await requestSmartTakePlan({
+		words,
+		signal: new AbortController().signal,
+		onStage: () => {},
+		mode: "experimental",
+		review,
+		checkpoint: { analysis: "cached", draft: plan },
+	});
+	expect(result).toEqual(plan);
+	expect(review).toHaveBeenCalledTimes(2);
+	expect(requests).toHaveLength(2);
+	expect(requests[1]).toContain("flaggedGroups");
+	expect(requests[1]).not.toContain("sourceIndex");
+});
+
+for (const response of [
+	JSON.stringify({ requiresFullReview: true, selections: [] }),
+	"invalid JSON",
+]) {
+	test(`experimental review falls back to full audit for ${response}`, async () => {
+		windowStub();
+		const prompts: string[] = [];
+		globalThis.fetch = mock(async (_url, init) => {
+			prompts.push(String(init?.body));
+			return prompts.length === 1
+				? Response.json({ models: [{ id: "model" }] })
+				: stream(prompts.length === 2 ? response : JSON.stringify(plan));
+		}) as unknown as typeof fetch;
+		const stages: string[] = [];
+		const review = () => ({ plan, story: [], groups: [], discarded: [] });
+		expect(
+			await requestSmartTakePlan({
+				words,
+				signal: new AbortController().signal,
+				onStage: (s) => stages.push(s),
+				mode: "experimental",
+				review,
+				checkpoint: { analysis: "cached", draft: plan },
+			}),
+		).toEqual(plan);
+		expect(prompts).toHaveLength(3);
+		expect(prompts[2]).toContain("Source words");
+		expect(stages).toContain("3/3 · Full review fallback (experimental)");
+	});
+}
+
+test("cancellation during focused review never invokes fallback or returns a plan", async () => {
+	windowStub();
+	const controller = new AbortController();
+	let count = 0;
+	globalThis.fetch = mock(async () => {
+		count++;
+		if (count === 1) return Response.json({ models: [{ id: "model" }] });
+		controller.abort();
+		return stream(JSON.stringify({ requiresFullReview: true, selections: [] }));
+	}) as unknown as typeof fetch;
+	await expect(
+		requestSmartTakePlan({
+			words,
+			signal: controller.signal,
+			onStage: () => {},
+			mode: "experimental",
+			review: () => ({ plan, story: [], groups: [], discarded: [] }),
+			checkpoint: { analysis: "cached", draft: plan },
+		}),
+	).rejects.toThrow();
+	expect(count).toBe(2);
+});

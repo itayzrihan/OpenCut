@@ -737,12 +737,29 @@ export class CommandManager {
 		const prepared = session.prepareTakes({ sceneId, elementIds });
 		return {
 			...prepared,
+			review: (
+				input: Parameters<import("@/timeline/smart-takes/types").ReviewTakes>[0],
+			) =>
+				session.reviewTakes({
+					...input,
+					sceneId,
+					elementIds,
+					expectedRevision: prepared.revision,
+				}),
 			analyzeAudio: (signal: AbortSignal) =>
 				collectTakeAudioEvidence({ editor: this.editor, elementIds, signal }),
-			apply: (
-				plan: import("@/timeline/smart-takes/types").SmartTakePlan,
-				audioEvidence?: import("@/timeline/smart-takes/types").TakeAudioEvidence[],
-			) => {
+			apply: ({
+				plan,
+				audioEvidence,
+				execution,
+			}: {
+				plan: import("@/timeline/smart-takes/types").SmartTakePlan;
+				audioEvidence?: import("@/timeline/smart-takes/types").TakeAudioEvidence[];
+				execution?: {
+					mode: import("@/timeline/smart-takes/types").SmartTakeMode;
+					runMetrics: import("@/timeline/smart-takes/types").TakeRunMetrics;
+				};
+			}) => {
 				if (
 					this.canonical !== session ||
 					this.agentAccountId() !== account ||
@@ -756,7 +773,13 @@ export class CommandManager {
 					execute: () => {
 						session.editTakes({
 							sceneId,
-							change: { type: "assemble", elementIds, plan, audioEvidence },
+							change: {
+								type: "assemble",
+								elementIds,
+								plan,
+								audioEvidence,
+								...execution,
+							},
 							expectedRevision: prepared.revision,
 						});
 						this.publishCanonical();

@@ -1,5 +1,35 @@
 import type { Bookmark, SceneTracks } from "@/timeline/types";
 
+export type SmartTakeMode = "standard" | "experimental";
+export interface TakeRunMetrics {
+	elapsedMs: number;
+	stages: { stage: string; durationMs: number }[];
+}
+export interface TakeReview {
+	plan: SmartTakePlan;
+	story: {
+		groupIndex: number;
+		label: string;
+		selected: number;
+		dialogue: string;
+	}[];
+	groups: {
+		groupIndex: number;
+		reasons: string[];
+		alternatives: {
+			alternativeIndex: number;
+			label: string;
+			dialogue: string;
+			parts: TakePart[];
+		}[];
+	}[];
+	discarded: (TakePart & { reason: string; dialogue: string })[];
+}
+export type ReviewTakes = (input: {
+	plan: SmartTakePlan;
+	selections?: { groupIndex: number; alternativeIndex: number }[];
+}) => TakeReview;
+
 export interface TakePart {
 	firstWord: number;
 	lastWord: number;
@@ -34,6 +64,8 @@ export interface PreparedTakes {
 }
 export interface TakeAssembly {
 	version: 1 | 2;
+	mode?: SmartTakeMode;
+	runMetrics?: TakeRunMetrics;
 	quality?: {
 		shortParts: number;
 		repeatedPhrases: number;
@@ -72,6 +104,8 @@ export type TakeChange =
 			type: "assemble";
 			elementIds: string[];
 			plan: SmartTakePlan;
+			mode?: SmartTakeMode;
+			runMetrics?: TakeRunMetrics;
 			audioEvidence?: TakeAudioEvidence[];
 	  }
 	| { type: "select"; groupIndex: number; alternativeIndex: number };

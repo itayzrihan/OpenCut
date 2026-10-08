@@ -6,6 +6,7 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
 mod quality;
+mod review;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
 const TPS: f64 = 120_000.0;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -66,6 +67,10 @@ struct Word {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Assembly {
     version: u32,
+    #[serde(default)]
+    mode: review::Mode,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    run_metrics: Option<review::RunMetrics>,
     id: String,
     element_ids: Vec<String>,
     source_tracks: Value,
@@ -101,6 +106,10 @@ enum Change {
         #[serde(rename = "elementIds")]
         element_ids: Vec<String>,
         plan: Plan,
+        #[serde(default)]
+        mode: review::Mode,
+        #[serde(default, rename = "runMetrics")]
+        run_metrics: Option<review::RunMetrics>,
         #[serde(default, rename = "audioEvidence")]
         audio_evidence: Vec<AudioEvidence>,
     },
@@ -418,6 +427,9 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
     if !matches!(a.version, 1 | 2) || !label(&a.id) || a.applied_digest.len() != 64 {
         return Err("Invalid take assembly version/identity".into());
     }
+    if let Some(metrics) = &a.run_metrics {
+        metrics.validate()?;
+    }
     let archive_scene = json!({"tracks":a.source_tracks});
     let tracks = crate::classic::tracks(&archive_scene).map_err(|e| e.to_string())?;
     let mut ids = HashSet::new();
@@ -481,6 +493,7 @@ pub(super) fn register_classic_takes(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    review::register_review(registry, state.clone())?;
     let read_state = state.clone();
     register::<Prepare, Prepared, _, _>(
         registry,
@@ -560,13 +573,18 @@ pub(super) fn register_classic_takes(
                                 element_ids,
                                 plan,
                                 audio_evidence,
+                                mode,
+                                run_metrics,
                             } => {
+                                if let Some(metrics) = &run_metrics { metrics.validate().map_err(invalid)?; }
                                 if scene.get("takeAssembly").is_some() {
                                     return Err(invalid(
                                         "This scene already has take alternatives. Undo the assembly or use a new scene to analyze again",
                                     ));
                                 }
                                 Assembly {
+                                    mode,
+                                    run_metrics,
                                     source_words: vec![],
                                     recommendations: plan
                                         .groups

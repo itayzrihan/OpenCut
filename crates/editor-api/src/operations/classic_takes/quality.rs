@@ -276,7 +276,7 @@ pub(super) fn merged(parts: &[Part], words: &[Word]) -> Vec<Part> {
     }
     result
 }
-fn repeats(alt: &Alternative, words: &[Word]) -> usize {
+pub(super) fn repeats(alt: &Alternative, words: &[Word]) -> usize {
     let tokens: Vec<_> = alt
         .parts
         .iter()
@@ -292,7 +292,7 @@ fn repeats(alt: &Alternative, words: &[Word]) -> usize {
         })
         .count()
 }
-fn short(alt: &Alternative, words: &[Word]) -> usize {
+pub(super) fn short(alt: &Alternative, words: &[Word]) -> usize {
     if alt.parts.len() < 2 {
         return 0;
     }

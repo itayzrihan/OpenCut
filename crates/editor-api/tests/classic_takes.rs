@@ -714,3 +714,92 @@ async fn corrected_caption_word_missing_from_stale_transcript_is_recovered_once(
     );
     assert_eq!(read(&opened).await, state);
 }
+
+#[tokio::test]
+async fn experimental_review_is_read_only_and_mode_metrics_survive_assembly_and_reopen() {
+    let r = setup().await;
+    let before = read(&r).await;
+    let review_input = json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":before["revision"],"elementIds":["item-2","second"],"plan":plan(),"selections":[{"groupIndex":0,"alternativeIndex":1}]});
+    let reviewed = call(&r, "timeline.classic.takes.review", review_input).await;
+    assert_eq!(reviewed["plan"]["groups"][0]["selected"], 1);
+    assert_eq!(reviewed["story"][0]["dialogue"], "Welcome | dear world");
+    assert_eq!(reviewed["groups"].as_array().unwrap().len(), 2);
+    assert_eq!(read(&r).await, before);
+    let mut request = assemble(&before);
+    request["change"]["plan"] = reviewed["plan"].clone();
+    request["change"]["mode"] = json!("experimental");
+    request["change"]["runMetrics"] =
+        json!({"elapsedMs":1200,"stages":[{"stage":"Focused review","durationMs":700}]});
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    assert_eq!(scene(&after)["takeAssembly"]["mode"], "experimental");
+    assert_eq!(
+        scene(&after)["takeAssembly"]["runMetrics"]["elapsedMs"],
+        1200
+    );
+    let reopened = OpenCutRuntime::default();
+    call(&reopened, "project.classic.session.attach", json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
+    assert_eq!(
+        scene(&read(&reopened).await)["takeAssembly"],
+        scene(&after)["takeAssembly"]
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+    let state = read(&r).await;
+    call(&r, EDIT, assemble(&state)).await;
+    assert_eq!(scene(&read(&r).await)["takeAssembly"]["mode"], "standard");
+}
+
+#[tokio::test]
+async fn experimental_review_rejects_invalid_patches_and_stale_or_incomplete_evidence() {
+    let r = setup().await;
+    let before = read(&r).await;
+    let base = json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":before["revision"],"elementIds":["item-2","second"],"plan":plan()});
+    let mut variants = vec![];
+    let mut stale = base.clone();
+    stale["expectedRevision"] = json!(999);
+    variants.push(stale);
+    let mut missing = base.clone();
+    missing["plan"]["discarded"] = json!([]);
+    variants.push(missing);
+    let mut duplicate = base.clone();
+    duplicate["selections"] =
+        json!([{"groupIndex":0,"alternativeIndex":1},{"groupIndex":0,"alternativeIndex":0}]);
+    variants.push(duplicate);
+    let mut outside = base.clone();
+    outside["selections"] = json!([{"groupIndex":0,"alternativeIndex":99}]);
+    variants.push(outside);
+    let mut clean = base.clone();
+    clean["plan"] = json!({"groups":[{"label":"Whole","confidence":0.99,"selected":0,"alternatives":[{"label":"First","reason":"Complete","parts":[{"firstWord":0,"lastWord":5}]},{"label":"Second","reason":"Complete","parts":[{"firstWord":6,"lastWord":11}]}]}],"discarded":[]});
+    let output = call(&r, "timeline.classic.takes.review", clean.clone()).await;
+    assert!(output["groups"].as_array().unwrap().is_empty());
+    assert_eq!(output["story"].as_array().unwrap().len(), 1);
+    clean["selections"] = json!([{"groupIndex":0,"alternativeIndex":1}]);
+    variants.push(clean);
+    for v in variants {
+        assert!(r
+            .registry()
+            .invoke(
+                "timeline.classic.takes.review",
+                InvocationContext::default(),
+                v
+            )
+            .await
+            .is_err());
+        assert_eq!(read(&r).await, before);
+    }
+    let cancelled = InvocationContext::default();
+    cancelled.cancellation.cancel();
+    assert!(r
+        .registry()
+        .invoke("timeline.classic.takes.review", cancelled, base)
+        .await
+        .is_err());
+    let mut invalid_mode = assemble(&before);
+    invalid_mode["change"]["mode"] = json!("turbo");
+    assert!(r
+        .registry()
+        .invoke(EDIT, InvocationContext::default(), invalid_mode)
+        .await
+        .is_err());
+}

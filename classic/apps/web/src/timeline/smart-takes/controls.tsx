@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Layers, Sparkles, X } from "lucide-react";
+import { FlaskConical, Layers, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import {
 	useEditor,
@@ -50,9 +50,9 @@ export function SmartTakesControl() {
 		!ids.length ||
 		!!scene?.takeAssembly ||
 		!scene?.tracks.overlay.some((t) => t.type === "text" && t.captionSource);
-	const run = () => {
+	const run = (mode: "standard" | "experimental" = "standard") => {
 		try {
-			task.start({ elementIds: ids, requestId: crypto.randomUUID() });
+			task.start({ elementIds: ids, requestId: crypto.randomUUID(), mode });
 		} catch (error) {
 			toast.error("Could not assemble takes", {
 				description: error instanceof Error ? error.message : String(error),
@@ -86,6 +86,35 @@ export function SmartTakesControl() {
 						: "Select transcribed main-track videos. Infer story order, remove filming notes and keep alternative takes."}
 				</TooltipContent>
 			</Tooltip>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={disabled || !!stage}
+						onClick={() => run("experimental")}
+						aria-label="Smart takes — experimental focused review"
+					>
+						<FlaskConical className="size-3.5" /> Smart takes · ניסוי
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					מצב ניסוי: ביקורת ממוקדת לקיצור זמן הריצה. איכות וזמן עדיין בהשוואה;
+					Smart takes הרגיל נשאר ללא שינוי.
+				</TooltipContent>
+			</Tooltip>
+			{!stage && status.elapsedMs !== undefined && status.status !== "idle" && (
+				<span
+					className="text-xs text-muted-foreground"
+					role="status"
+					title={status.stageTimings
+						?.map((s) => `${s.stage}: ${(s.durationMs / 1000).toFixed(1)}s`)
+						.join("\n")}
+				>
+					{status.mode === "experimental" ? "ניסוי" : "Smart takes"} ·{" "}
+					{(status.elapsedMs / 1000).toFixed(1)}s
+				</span>
+			)}
 			{stage && (
 				<>
 					<span

@@ -180,7 +180,14 @@ test("audio decode failure leaves the timeline untouched and retries the saved p
 	await finished(task);
 	expect(task.read()).toMatchObject({ status: "succeeded" });
 	expect(requests()).toBe(4);
-	expect(apply).toHaveBeenCalledWith(plan, []);
+	expect(apply).toHaveBeenCalledWith({
+		plan,
+		audioEvidence: [],
+		execution: expect.objectContaining({
+			mode: "standard",
+			runMetrics: expect.objectContaining({ elapsedMs: expect.any(Number) }),
+		}),
+	});
 });
 
 test("cancelling during audio analysis never applies the completed AI plan", async () => {
@@ -207,4 +214,31 @@ test("cancelling during audio analysis never applies the completed AI plan", asy
 		hasCheckpoint: true,
 	});
 	expect(apply).not.toHaveBeenCalled();
+});
+
+test("mode is part of retry identity and checkpoints stay isolated across modes", async () => {
+	const { editor, requests } = setup();
+	const task = new SmartTakesTask(editor);
+	const input = { elementIds: ["clip"], requestId: "standard" };
+	task.start(input);
+	expect(() => task.start({ ...input, mode: "experimental" })).toThrow(
+		"different inputs",
+	);
+	await finished(task);
+	expect(task.read()).toMatchObject({
+		mode: "standard",
+		elapsedMs: expect.any(Number),
+	});
+	expect(
+		task
+			.getSnapshot()
+			.stageTimings?.some((s) => s.stage === "Applying take plan"),
+	).toBe(true);
+	const next = new SmartTakesTask(editor);
+	next.start({ ...input, requestId: "experimental", mode: "experimental" });
+	await finished(next);
+	// This stub only supplies models once: a new model request proves that the
+	// standard checkpoint was not reused by experimental mode.
+	expect(requests()).toBe(5);
+	expect(next.read()).toMatchObject({ mode: "experimental", status: "failed" });
 });

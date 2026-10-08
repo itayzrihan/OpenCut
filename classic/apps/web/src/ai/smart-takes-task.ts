@@ -1,4 +1,8 @@
 import { z } from "zod";
+import type {
+	SmartTakeMode,
+	TakeRunMetrics,
+} from "@/timeline/smart-takes/types";
 import { toast } from "sonner";
 import type { EditorCore } from "@/core";
 import {
@@ -29,6 +33,9 @@ const checkpointSchema = z.object({
 	}),
 });
 type Status = {
+	mode?: SmartTakeMode;
+	elapsedMs?: number;
+	stageTimings?: TakeRunMetrics["stages"];
 	quality?: import("@/timeline/smart-takes/types").TakeAssembly["quality"];
 	status: "idle" | "running" | "succeeded" | "failed" | "cancelled";
 	requestId?: string;
@@ -89,10 +96,14 @@ export class SmartTakesTask {
 	start({
 		elementIds,
 		requestId,
+		mode = "standard",
 	}: {
 		elementIds: string[];
 		requestId: string;
+		mode?: SmartTakeMode;
 	}) {
+		if (mode !== "standard" && mode !== "experimental")
+			throw new Error("Unknown Smart takes mode");
 		const projectId = this.editor.project.getActive().metadata.id;
 		const scene = this.editor.scenes.getActiveScene();
 		const account = window.__opencutAccountId;
@@ -106,7 +117,8 @@ export class SmartTakesTask {
 		) {
 			if (
 				JSON.stringify(this.elementIds) !== JSON.stringify(elementIds) ||
-				this.state.sceneId !== scene.id
+				this.state.sceneId !== scene.id ||
+				this.state.mode !== mode
 			)
 				throw new Error(
 					"Smart takes requestId was reused with different inputs",
@@ -116,7 +128,7 @@ export class SmartTakesTask {
 		if (this.controller) throw new Error("Smart takes is already running");
 		const prepared = this.editor.command.prepareSmartTakes(elementIds);
 		const source = sourceKey({ scene, elementIds, words: prepared.words });
-		const key = `opencut:smart-takes:v2:${account}:${projectId}:${scene.id}`;
+		const key = `opencut:smart-takes:v2:${mode === "experimental" ? "experimental:" : ""}${account}:${projectId}:${scene.id}`;
 		let checkpoint: SmartTakeCheckpoint = {};
 		try {
 			const saved = checkpointSchema.safeParse(
@@ -133,6 +145,9 @@ export class SmartTakesTask {
 		this.words = prepared.words;
 		this.state = {
 			status: "running",
+			mode,
+			elapsedMs: 0,
+			stageTimings: [],
 			requestId,
 			projectId,
 			sceneId: scene.id,
@@ -144,6 +159,7 @@ export class SmartTakesTask {
 		this.controller = controller;
 		this.update({});
 		void this.run({
+			mode,
 			prepared,
 			controller,
 			checkpoint,
@@ -163,30 +179,65 @@ export class SmartTakesTask {
 		return this.state;
 	}
 	private async run({
+		mode,
 		prepared,
 		controller,
 		checkpoint,
 		save,
 	}: {
+		mode: SmartTakeMode;
 		prepared: ReturnType<EditorCore["command"]["prepareSmartTakes"]>;
 		controller: AbortController;
 		checkpoint: SmartTakeCheckpoint;
 		save: (value: SmartTakeCheckpoint) => void;
 	}) {
+		const started = performance.now();
+		let phaseStarted = started;
+		let phase = "Preparing transcript";
+		const stageTimings: TakeRunMetrics["stages"] = [];
+		const recordStage = () => {
+			const now = performance.now();
+			stageTimings.push({
+				stage: phase,
+				durationMs: Math.round(now - phaseStarted),
+			});
+			phaseStarted = now;
+		};
+		const onStage = (stage: string) => {
+			recordStage();
+			phase = stage;
+			this.update({
+				stage,
+				elapsedMs: Math.round(performance.now() - started),
+				stageTimings: [...stageTimings],
+			});
+		};
 		try {
 			const plan = await requestSmartTakePlan({
+				mode,
+				review: prepared.review,
 				words: prepared.words,
 				signal: controller.signal,
 				checkpoint,
 				onCheckpoint: save,
-				onStage: (stage) => this.update({ stage }),
+				onStage,
 			});
 			controller.signal.throwIfAborted();
-			this.update({ stage: "Checking audio and protecting word boundaries" });
+			onStage("Checking audio and protecting word boundaries");
 			const audioEvidence = await prepared.analyzeAudio(controller.signal);
 			controller.signal.throwIfAborted();
-			this.update({ stage: "Applying take plan" });
-			prepared.apply(plan, audioEvidence);
+			onStage("Applying take plan");
+			prepared.apply({
+				plan,
+				audioEvidence,
+				execution: {
+					mode,
+					runMetrics: {
+						elapsedMs: Math.round(performance.now() - started),
+						stages: [...stageTimings],
+					},
+				},
+			});
 			const quality = this.editor.scenes.getActiveScene().takeAssembly?.quality;
 			this.update({
 				status: "succeeded",
@@ -198,12 +249,17 @@ export class SmartTakesTask {
 				(quality.unverifiedBoundaries > 0 ||
 					quality.shortParts > 0 ||
 					quality.repeatedPhrases > 0);
-			(needsReview ? toast.warning : toast.success)("Smart takes assembled", {
-				description: needsReview
-					? `${plan.groups.length} story groups. Review ${quality.unverifiedBoundaries} cuts without verified silence, ${quality.shortParts} short parts and ${quality.repeatedPhrases} possible repetitions. Right-click to choose alternatives.`
-					: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
-				action: { label: "Undo", onClick: () => this.editor.command.undo() },
-			});
+			(needsReview ? toast.warning : toast.success)(
+				mode === "experimental"
+					? "Experimental Smart takes assembled"
+					: "Smart takes assembled",
+				{
+					description: needsReview
+						? `${plan.groups.length} story groups. Review ${quality.unverifiedBoundaries} cuts without verified silence, ${quality.shortParts} short parts and ${quality.repeatedPhrases} possible repetitions. Right-click to choose alternatives.`
+						: `${plan.groups.length} story groups. Right-click a take to choose an alternative.`,
+					action: { label: "Undo", onClick: () => this.editor.command.undo() },
+				},
+			);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			this.update({
@@ -222,6 +278,11 @@ export class SmartTakesTask {
 				});
 			}
 		} finally {
+			recordStage();
+			this.update({
+				elapsedMs: Math.round(performance.now() - started),
+				stageTimings: [...stageTimings],
+			});
 			this.controller = null;
 		}
 	}

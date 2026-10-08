@@ -763,6 +763,19 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	reviewTakes(input: {
+		sceneId: string;
+		elementIds: string[];
+		expectedRevision: number;
+		plan: import("@/timeline/smart-takes/types").SmartTakePlan;
+		selections?: { groupIndex: number; alternativeIndex: number }[];
+	}): import("@/timeline/smart-takes/types").TakeReview {
+		return this.call({
+			capability: "timeline.classic.takes.review",
+			input: { ...input, projectId: this.projectId },
+		});
+	}
+
 	editTakes({
 		sceneId,
 		change,
