@@ -75,7 +75,7 @@
 				"crates/editor-api/tests/classic_move.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
 			],
-			"gap": "Ordinary UI moves and agent share the exact-tick contract. Generated caption UI moves retain their reviewed legacy bridge until font-measured reflow parity is implemented; the contract updates transcript timing without regenerating visual layout. Live acceptance remains.",
+			"gap": "Ordinary UI moves and agent share the exact-tick contract. Live en-move passed with preserved trims, effects and keyframes plus exact Undo/Redo/reopen. Generated caption UI moves retain their reviewed bridge until font-measured visual reflow parity; broader move acceptance remains.",
 			"actions": [],
 			"sources": [
 				"classic/apps/web/src/core/managers/timeline-manager.ts",
@@ -96,7 +96,7 @@
 				"crates/editor-api/tests/classic_split.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
 			],
-			"gap": "Ordinary UI and agent use the same exact-tick split contract including retime source rounding and Bezier/text boundaries. Generated caption visual reflow retains the legacy bridge; linked-audio automation and live acceptance remain.",
+			"gap": "Ordinary UI and agent share exact-tick split semantics, retime source rounding and Bezier/text boundaries. Live he-split passed with source continuity, independent 1001-point curve comparison and Undo/Redo/reopen. Generated caption reflow and linked-audio automation remain.",
 			"actions": [
 				"split",
 				"split-left",
@@ -169,7 +169,7 @@
 				"crates/editor-api/tests/classic_clipboard.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
 			],
-			"gap": "Ordinary UI copy/paste shares bounded project-scoped snapshots, owned media validation, exact relative ticks, canonical placement, fresh animation IDs and Undo/Redo. Foreign clipboard identities remain rejected. Owned saved-project/media inspection and explicit one-file transfer now have separate contracts; drafts use the mapped media ID and ordinary canonical insertion. Dependency-heavy copying and full live acceptance remain.",
+			"gap": "Ordinary UI copy/paste shares scoped snapshots, owned-media validation, relative ticks, placement and fresh identities. Live he-clipboard passed with exact field/media-byte preservation and one-step Undo/Redo/reopen. Foreign clipboard identities remain rejected; owned one-file transfer has separate contracts. Dependency-heavy copying and cross-project live acceptance remain.",
 			"actions": [
 				"copy-selected",
 				"paste-copied"
@@ -217,7 +217,7 @@
 				"crates/editor-api/tests/classic_transitions.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
 			],
-			"gap": "Ordinary and managed text/SFX UI application use the atomic registry contract and shared preset feature files. Exact authored timing and Undo/Redo parity passed; overlap rearrangement and rendered/audio acceptance remain.",
+			"gap": "UI and agent share atomic transitions and immutable preset definitions, including managed text/SFX. Live en-transitions passed with preset discovery, actual midpoint renders and unchanged audio automation/settings. Overlap rearrangement, managed SFX availability and rendered audio acceptance remain.",
 			"actions": [],
 			"sources": [
 				"classic/apps/web/src/core/managers/timeline-manager.ts",
@@ -323,7 +323,7 @@
 			"tests": [
 				"crates/editor-api/tests/classic_source_audio.rs"
 			],
-			"gap": "Actual audio and export acceptance remain.",
+			"gap": "Live en-source-audio passed with retained trims, speed, volume automation, track mute and exact Undo/Redo/reopen. Sync offsets and audio fades now survive extraction, verified natively, through real WASM and live UI. Audible playback/sync quality and actual export acceptance remain.",
 			"actions": [
 				"toggle-source-audio"
 			],
