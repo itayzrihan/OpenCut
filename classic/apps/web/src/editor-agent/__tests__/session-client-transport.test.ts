@@ -146,7 +146,7 @@ test("hung HTTP saves abort without discarding the exact pending request or capt
 		expect(commits.map((request) => request.expectedStorageRevision)).toEqual([
 			0, 0, 1,
 		]);
-		// Default leases remain short; large archive commits get a bounded
+		// Default renewals remain short; archive acquisitions and commits get a bounded
 		// two-minute window. Explicit timeouts above still govern all requests.
 		const originalSetTimeout = globalThis.setTimeout;
 		const deadlines: number[] = [];
@@ -162,7 +162,7 @@ test("hung HTTP saves abort without discarding the exact pending request or capt
 		try {
 			await defaultClient.acquire({ expectedGeneration: 0 });
 			await defaultClient.save(capture);
-			expect(deadlines).toEqual([30_000, 120_000]);
+			expect(deadlines).toEqual([120_000, 120_000]);
 		} finally {
 			globalThis.setTimeout = originalSetTimeout;
 			defaultClient.dispose();

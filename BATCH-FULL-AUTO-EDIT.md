@@ -111,3 +111,8 @@ renewal timer stopped if opening fails. This removes a redundant large save that
 could block the resume button with a storage timeout. All 75 canonical command
 manager tests pass, including restoration with zero writes followed by an
 explicit successful save.
+
+Large archive reads/acquisitions now use the same bounded 120-second transport
+window as commits. Renewal and release remain at 30 seconds; explicit timeout
+overrides are unchanged. Live opening of the affected project exceeded 40 seconds
+on the local host, so the old 30-second read timeout prevented reaching Resume.

@@ -99,10 +99,13 @@ export class EditorSessionClient {
 			exchange ??
 			(async (request) => {
 				const controller = new AbortController();
-				// A full canonical undo archive can take longer than a small lease
-				// request to validate and durably persist. Keep both bounded.
+				// Reads/acquisitions return the full archive too. Large project opens
+				// need the same bounded window as saves; renew/release stay short.
+				const transfersArchive = ["read", "acquire", "commit"].includes(
+					String(request.type),
+				);
 				const timeoutMs =
-					requestTimeoutMs ?? (request.type === "commit" ? 120_000 : 30_000);
+					requestTimeoutMs ?? (transfersArchive ? 120_000 : 30_000);
 				const timeout = setTimeout(() => controller.abort(), timeoutMs);
 				try {
 					const assertAccount = () => {
