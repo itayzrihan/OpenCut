@@ -53,6 +53,61 @@ export async function executeBatch({
 			() => abort?.abort(),
 		);
 	};
+	const errorMessage = (error: unknown) =>
+		error instanceof Error ? error.message : String(error);
+	// Keep the canonical editor and batch write authority alive until its final
+	// save is acknowledged. Never discard a dirty worker or silently take over
+	// another editor's lease to make an exit succeed.
+	const prepareExit = async (originalError?: unknown) => {
+		let attempt = 0;
+		while (true) {
+			try {
+				await editor.project.prepareExit();
+				parent.postMessage(
+					{ type: "opencut-batch-recovered", id: run.id },
+					location.origin,
+				);
+				return;
+			} catch (saveError) {
+				console.error("Background edit could not be saved", {
+					projectId: current,
+					originalError,
+					saveError,
+				});
+				// A transient failure may have committed without delivering its
+				// response. The session client reconciles that exact request first.
+				if (attempt++ === 0) continue;
+				const message = [
+					originalError
+						? errorMessage(originalError)
+						: "Background edit paused",
+					`Save failed: ${errorMessage(saveError)}`,
+					"Unsaved changes are retained in this tab. Keep it open and retry saving.",
+				]
+					.join(" · ")
+					.slice(0, 4000);
+				await send({ projectId: current, message }).catch(() => {});
+				await new Promise<void>((resolve) => {
+					const retry = (event: MessageEvent) => {
+						if (
+							event.origin !== location.origin ||
+							event.source !== parent ||
+							event.data?.type !== "opencut-batch-retry-save" ||
+							event.data.id !== run.id
+						)
+							return;
+						window.removeEventListener("message", retry);
+						resolve();
+					};
+					window.addEventListener("message", retry);
+					parent.postMessage(
+						{ type: "opencut-batch-save-blocked", id: run.id, message },
+						location.origin,
+					);
+				});
+			}
+		}
+	};
 	const stop = () => abort?.abort();
 	window.addEventListener("pagehide", stop);
 	try {
@@ -161,15 +216,14 @@ export async function executeBatch({
 					message: "Imported · waiting for Full Auto Edit",
 				});
 			} catch (e) {
-				await editor.save.flush();
-				await editor.command.flushHistory();
+				await prepareExit(e);
 				await send({
 					projectId: current,
 					event: abort.signal.aborted ? "cancel" : "fail",
 					message: e instanceof Error ? e.message : "Import failed",
 				});
 			} finally {
-				editor.project.closeProject();
+				if (!editor.save.getIsDirty()) editor.project.closeProject();
 			}
 		}
 		for (const job of run.jobs) {
@@ -209,7 +263,7 @@ export async function executeBatch({
 					resumeFromStage: job.resumeFromStage,
 				});
 				abort.signal.throwIfAborted();
-				await editor.project.prepareExit();
+				await prepareExit();
 				await send({
 					projectId: current,
 					event: "complete",
@@ -218,7 +272,7 @@ export async function executeBatch({
 			} catch (e) {
 				// Save and release editor ownership while the batch token is still
 				// valid, before the terminal transition unlocks the visible editor.
-				await editor.project.prepareExit();
+				await prepareExit(e);
 				await send({
 					projectId: current,
 					event: abort.signal.aborted ? "cancel" : "fail",
@@ -228,10 +282,11 @@ export async function executeBatch({
 					).slice(0, 4000),
 				});
 			} finally {
-				editor.project.closeProject();
+				if (!editor.save.getIsDirty()) editor.project.closeProject();
 			}
 		}
 	} catch (e) {
+		await prepareExit(e);
 		const message = e instanceof Error ? e.message : "Batch worker stopped";
 		for (const job of state.jobs)
 			if (batchEditIsLocked({ status: job.status })) {

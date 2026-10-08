@@ -175,3 +175,42 @@ test("hung HTTP saves abort without discarding the exact pending request or capt
 		else Reflect.deleteProperty(globalThis, "window");
 	}
 }, 20000);
+
+test("later save and renewal attempts preserve the original definitive storage rejection", async () => {
+	const rejection = new EditorSessionFailure({
+		message: "Editor ownership expired",
+		definitive: true,
+	});
+	let commits = 0;
+	const client = new EditorSessionClient({
+		accountId: "alice",
+		projectId: "classic-project",
+		sessionId: "tab",
+		exchange: async (request) => {
+			if (request.type === "acquire")
+				return {
+					storageRevision: 0,
+					generation: 1,
+					lease: { sessionId: "tab", generation: 1, expiresAtMs: 90000 },
+					saved: null,
+					legacyProject: null,
+					legacyHistory: null,
+				};
+			commits++;
+			throw rejection;
+		},
+	});
+	try {
+		await client.acquire({ expectedGeneration: 0 });
+		const capture = () => ({
+			archive: {} as CanonicalHistoryArchive,
+			agentCheckpoint: null,
+		});
+		await expect(client.save(capture)).rejects.toBe(rejection);
+		await expect(client.save(capture)).rejects.toBe(rejection);
+		await expect(client.renew()).rejects.toBe(rejection);
+		expect(commits).toBe(1);
+	} finally {
+		client.dispose();
+	}
+});

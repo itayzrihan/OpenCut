@@ -469,3 +469,19 @@ async fn invalid_archive_or_mismatched_checkpoint_cannot_partially_commit() {
     );
     assert_eq!(record.to_json().unwrap(), before);
 }
+
+#[tokio::test]
+async fn successful_saves_keep_the_current_owner_alive_without_reviving_expired_fences() {
+    let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
+    let bundle = bundle().await;
+    apply(&mut record, acquire("tab-a", 0, false), 100).unwrap();
+    apply(&mut record, commit(bundle.clone(), "save", 0, 1), 80_000).unwrap();
+    // An idempotent retry also proves live owner activity; no second write.
+    apply(&mut record, commit(bundle.clone(), "save", 0, 1), 160_000).unwrap();
+    assert_eq!(record.storage_revision, 1);
+    let view = apply(&mut record, SessionRequest::Read, 240_000).unwrap();
+    assert_eq!(view["lease"]["expiresAtMs"], 250_000);
+    let before = record.to_json().unwrap();
+    assert!(apply(&mut record, commit(bundle, "save", 0, 1), 250_000).is_err());
+    assert_eq!(record.to_json().unwrap(), before);
+}

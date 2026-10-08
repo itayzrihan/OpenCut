@@ -253,6 +253,9 @@ export async function runFullAutoEdit({
 					await editor.save.flush();
 					break;
 			}
+			// A stage is complete only once its canonical project and history are durable.
+			if (stage !== "save") await editor.save.flush();
+			await editor.command.flushHistory();
 			onStep?.({
 				completedStages: index + 1,
 				totalStages: steps.length,

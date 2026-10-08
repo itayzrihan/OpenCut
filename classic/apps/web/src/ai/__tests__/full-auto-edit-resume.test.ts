@@ -64,6 +64,7 @@ mock.module("@/ai/automatic-music", () => ({
 }));
 const { runFullAutoEdit } = await import("../full-auto-edit");
 const editor = {
+	command: { flushHistory: async () => {} },
 	project: { getActive: () => ({ metadata: { id: "original" } }) },
 	scenes: { getActiveScene: () => ({ id: "scene" }) },
 	save: {
@@ -91,9 +92,13 @@ test("resume executes only remaining finishing stages on the same project", asyn
 	});
 	expect(calls).toEqual([
 		"zoom",
+		"save",
 		"transitions",
+		"save",
 		"word-animation",
+		"save",
 		"music",
+		"save",
 		"save",
 	]);
 	expect(Math.min(...completed)).toBe(5);
@@ -109,4 +114,31 @@ test("resume rejects incomplete caption checkpoints", async () => {
 			onProgress: () => {},
 		}),
 	).rejects.toThrow("Invalid finishing checkpoint");
+});
+
+test("a rejected stage checkpoint never reports completion or starts the next stage", async () => {
+	calls.length = 0;
+	const completed: number[] = [];
+	const originalFlush = editor.save.flush;
+	editor.save.flush = async () => {
+		throw new Error("storage unavailable");
+	};
+	try {
+		await expect(
+			runFullAutoEdit({
+				editor,
+				options,
+				signal: new AbortController().signal,
+				resumeFromStage: 5,
+				onProgress: () => {},
+				onStep: (p) => {
+					completed.push(p.completedStages);
+				},
+			}),
+		).rejects.toThrow("zoom: storage unavailable");
+		expect(calls).toEqual(["zoom"]);
+		expect(completed).toEqual([5]);
+	} finally {
+		editor.save.flush = originalFlush;
+	}
 });

@@ -69,6 +69,7 @@ export class EditorSessionClient {
 	private readonly projectId: string;
 	private unbindAuthority: (() => void) | null = null;
 	private disposed = false;
+	private leaseFailure: Error | null = null;
 	constructor({
 		accountId,
 		projectId,
@@ -194,6 +195,7 @@ export class EditorSessionClient {
 				throw new Error("The host did not grant this editor ownership");
 			this.assertLive();
 			this.lease = view.lease;
+			this.leaseFailure = null;
 			this.unbindAuthority?.();
 			this.unbindAuthority = bindEditorWriteAuthority({
 				accountId: this.accountId,
@@ -223,8 +225,10 @@ export class EditorSessionClient {
 				this.assertLive();
 				this.lease = result.lease;
 			} catch (error) {
-				if (error instanceof EditorSessionFailure && error.definitive)
+				if (error instanceof EditorSessionFailure && error.definitive) {
 					this.lease = null;
+					this.leaseFailure = error;
+				}
 				throw error;
 			}
 		});
@@ -282,6 +286,7 @@ export class EditorSessionClient {
 			if (error instanceof EditorSessionFailure && error.definitive) {
 				this.pending = null;
 				this.lease = null;
+				this.leaseFailure = error;
 			}
 			throw error;
 		}
@@ -316,7 +321,10 @@ export class EditorSessionClient {
 	private requireLease() {
 		this.assertLive();
 		if (!this.lease)
-			throw new Error("Reopen the latest project to acquire editor ownership");
+			throw (
+				this.leaseFailure ??
+				new Error("Reopen the latest project to acquire editor ownership")
+			);
 		return this.lease;
 	}
 }

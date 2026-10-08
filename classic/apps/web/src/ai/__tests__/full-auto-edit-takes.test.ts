@@ -121,6 +121,7 @@ function setup() {
 			setScenes: () => {},
 		},
 		command: {
+			flushHistory: async () => {},
 			getStateRevision: () => revision,
 			prepareSmartTakesForAutoEdit: () => {
 				calls.push("prepare");
@@ -169,10 +170,15 @@ test("chosen cuts run through all base stages without exporting or reusing old c
 	expect(calls).toEqual([
 		"prepare",
 		"save",
+		"save",
 		"framing",
+		"save",
 		"silence",
+		"save",
 		"fresh transcription",
+		"save",
 		"finish",
+		"save",
 		"save",
 	]);
 });

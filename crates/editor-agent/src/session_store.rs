@@ -292,6 +292,9 @@ impl SessionRecord {
                             "save request identity was reused with different data",
                         ));
                     }
+                    // Successful owner activity must not expire behind queued saves.
+                    self.lease.as_mut().expect("validated lease").expires_at_ms = now + LEASE_MS;
+                    self.last_host_time_ms = now;
                     return serde_json::to_value(&retry.receipt).map_err(error);
                 }
                 if expected_storage_revision != self.storage_revision {
@@ -326,6 +329,7 @@ impl SessionRecord {
                 if self.retries.len() > 128 {
                     self.retries.remove(0);
                 }
+                self.lease.as_mut().expect("validated lease").expires_at_ms = now + LEASE_MS;
                 serde_json::to_value(receipt).map_err(error)?
             }
         };

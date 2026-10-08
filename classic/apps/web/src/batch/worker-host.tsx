@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import type { BatchRun, BatchSource } from "./types";
 
 export interface AutomationWorkerTask {
@@ -18,6 +19,8 @@ export function AutomationWorkerHost({
 	onFinished: (id: string) => void;
 	onReady?: () => void;
 }) {
+	const [saveFailure, setSaveFailure] = useState("");
+	const [retrying, setRetrying] = useState(false);
 	const frame = useRef<HTMLIFrameElement>(null);
 	const finish = useRef(onFinished);
 	useEffect(() => {
@@ -32,6 +35,19 @@ export function AutomationWorkerHost({
 				event.source !== frame.current?.contentWindow
 			)
 				return;
+			if (task && event.data?.id === task.run.id) {
+				if (
+					event.data.type === "opencut-batch-save-blocked" &&
+					typeof event.data.message === "string"
+				) {
+					setSaveFailure(event.data.message);
+					setRetrying(false);
+				}
+				if (event.data.type === "opencut-batch-recovered") {
+					setSaveFailure("");
+					setRetrying(false);
+				}
+			}
 			if (event.data?.type === "opencut-batch-ready") onReady?.();
 			if (
 				task &&
@@ -85,23 +101,45 @@ export function AutomationWorkerHost({
 		};
 	}, [task, onReady]);
 	return (
-		<iframe
-			ref={frame}
-			src="/batch-worker"
-			title={
-				task
-					? "Full Auto Edit background worker"
-					: "Preparing Full Auto Edit worker"
-			}
-			aria-hidden
-			tabIndex={-1}
-			style={{
-				position: "fixed",
-				left: -10000,
-				width: 640,
-				height: 360,
-				pointerEvents: "none",
-			}}
-		/>
+		<>
+			{saveFailure && task && (
+				<div
+					role="alert"
+					className="fixed bottom-4 right-4 z-50 max-w-lg rounded-lg border bg-background p-4 shadow-lg"
+				>
+					<p className="mb-3 text-sm">{saveFailure}</p>
+					<Button
+						disabled={retrying}
+						onClick={() => {
+							setRetrying(true);
+							frame.current?.contentWindow?.postMessage(
+								{ type: "opencut-batch-retry-save", id: task.run.id },
+								location.origin,
+							);
+						}}
+					>
+						{retrying ? "Saving…" : "Retry saving"}
+					</Button>
+				</div>
+			)}
+			<iframe
+				ref={frame}
+				src="/batch-worker"
+				title={
+					task
+						? "Full Auto Edit background worker"
+						: "Preparing Full Auto Edit worker"
+				}
+				aria-hidden
+				tabIndex={-1}
+				style={{
+					position: "fixed",
+					left: -10000,
+					width: 640,
+					height: 360,
+					pointerEvents: "none",
+				}}
+			/>
+		</>
 	);
 }
