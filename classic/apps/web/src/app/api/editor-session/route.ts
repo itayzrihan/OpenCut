@@ -15,7 +15,14 @@ export const POST = withAccount(async (request) => {
 				projectId: z.string().regex(/^[A-Za-z0-9_-]{1,160}$/),
 				request: z
 					.object({
-						type: z.enum(["read", "acquire", "renew", "release", "commit"]),
+						type: z.enum([
+							"read",
+							"inspect",
+							"acquire",
+							"renew",
+							"release",
+							"commit",
+						]),
 					})
 					.passthrough(),
 			})
@@ -23,20 +30,22 @@ export const POST = withAccount(async (request) => {
 			.parse(
 				JSON.parse(
 					new TextDecoder().decode(
-						await readBoundedBody({ request: request, maximumBytes: 128 * 1024 * 1024 }),
+						await readBoundedBody({
+							request: request,
+							maximumBytes: 128 * 1024 * 1024,
+						}),
 					),
 				),
 			);
 		const write = (context?: { assertLock: () => void }) =>
 			operateEditorSession({ ...input, assertHostLock: context?.assertLock });
-		const result =
-			input.request.type === "read"
-				? await write()
-				: await withBatchProjectWrite({
-						projectId: input.projectId,
-						token: request.headers.get("X-OpenCut-Batch-Token"),
-						write,
-					});
+		const result = ["read", "inspect"].includes(input.request.type)
+			? await write()
+			: await withBatchProjectWrite({
+					projectId: input.projectId,
+					token: request.headers.get("X-OpenCut-Batch-Token"),
+					write,
+				});
 		return Response.json(result, { headers: { "Cache-Control": "no-store" } });
 	} catch (error) {
 		const definitive =

@@ -173,7 +173,16 @@ export class EditorSessionClient {
 			viewSchema.parse(await this.exchange({ type: "read" })),
 		);
 	}
-	isCurrentOwner(view: EditorSessionView): boolean {
+	inspect(): Promise<
+		Pick<EditorSessionView, "storageRevision" | "generation" | "lease">
+	> {
+		return this.serialize(async () =>
+			viewSchema
+				.pick({ storageRevision: true, generation: true, lease: true })
+				.parse(await this.exchange({ type: "inspect" })),
+		);
+	}
+	isCurrentOwner(view: Pick<EditorSessionView, "lease">): boolean {
 		return view.lease?.sessionId === this.sessionId;
 	}
 	acquire({

@@ -27,7 +27,12 @@ export async function operateEditorSession({
 	request: unknown;
 	/** The outer batch transaction must still own its lock at publication. */
 	assertHostLock?: () => void;
-}): Promise<Record<string, unknown> & {legacyProject: Record<string, unknown> | null; legacyHistory: unknown}> {
+}): Promise<
+	Record<string, unknown> & {
+		legacyProject: Record<string, unknown> | null;
+		legacyHistory: unknown;
+	}
+> {
 	const accountId = requireAccount().id;
 	return withProjectStorageLock({
 		projectId,
@@ -78,7 +83,7 @@ export async function operateEditorSession({
 			assertLock();
 			assertHostLock();
 			const reading = z
-				.object({ type: z.literal("read") })
+				.object({ type: z.enum(["read", "inspect"]) })
 				.passthrough()
 				.safeParse(request).success;
 			if (next.record !== previous && !(reading && previous === undefined)) {

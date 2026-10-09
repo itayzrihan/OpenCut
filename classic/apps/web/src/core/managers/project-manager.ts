@@ -23,6 +23,7 @@ import {
 	EditorSessionClient,
 	EditorSessionFailure,
 	type EditorSessionBundle,
+	type EditorSessionView,
 } from "@/editor-agent/session-client";
 import {
 	setEditorOwnershipGuard,
@@ -557,20 +558,23 @@ export class ProjectManager {
 				projectId: id,
 				sessionId,
 			});
-			let view = await session.read();
+			const initialView = await session.inspect();
+			let view: EditorSessionView;
 			let canAcquire =
 				!isBatchProjectLocked(id) &&
-				(!view.lease ||
-					session.isCurrentOwner(view) ||
+				(!initialView.lease ||
+					session.isCurrentOwner(initialView) ||
 					takeOver ||
 					batchWorker);
 			if (canAcquire) {
 				const outcome = await session.acquireOrObserve({
-					expectedGeneration: view.generation,
+					expectedGeneration: initialView.generation,
 					takeOver: takeOver || batchWorker,
 				});
 				view = outcome.view;
 				canAcquire = outcome.acquired;
+			} else {
+				view = await session.read();
 			}
 			this.editorSession = session;
 			this.sessionProjectId = id;
@@ -666,6 +670,10 @@ export class ProjectManager {
 				await this.editor.command.flushHistory();
 			}
 			this.editor.save.discardPending();
+			// Upgrade storage encoding through the normal fenced save queue after
+			// opening. This preserves every boundary and does not create an edit.
+			if (canAcquire && atomicBundle && atomicBundle.archive.schemaVersion < 3)
+				this.editor.save.markDirty({ force: true });
 			acknowledgeAutomationReload({
 				projectId: id,
 				version: automationVersion,

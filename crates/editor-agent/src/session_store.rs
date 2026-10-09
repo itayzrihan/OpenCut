@@ -62,7 +62,7 @@ struct Retry {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SessionRecord {
+pub struct SessionRecord<S = SavedSession> {
     schema_version: u32,
     account_id: String,
     project_id: String,
@@ -70,7 +70,7 @@ pub struct SessionRecord {
     pub generation: u64,
     pub lease: Option<SessionLease>,
     last_host_time_ms: u64,
-    pub saved: Option<SavedSession>,
+    pub saved: Option<S>,
     retries: Vec<Retry>,
 }
 
@@ -83,6 +83,8 @@ pub struct SessionRecord {
 )]
 pub enum SessionRequest {
     Read,
+    /// Ownership metadata only; openers transfer the archive once on acquire.
+    Inspect,
     /// Host-only authorization for publishing project assets. The host holds
     /// the same project lock until the side effect has finished.
     AssertWrite {
@@ -109,6 +111,118 @@ pub enum SessionRequest {
         request_id: String,
         bundle: SessionBundle,
     },
+}
+
+impl<S> SessionRecord<S> {
+    fn with_saved<T>(self, saved: Option<T>) -> SessionRecord<T> {
+        SessionRecord {
+            schema_version: self.schema_version,
+            account_id: self.account_id,
+            project_id: self.project_id,
+            storage_revision: self.storage_revision,
+            generation: self.generation,
+            lease: self.lease,
+            last_host_time_ms: self.last_host_time_ms,
+            retries: self.retries,
+            saved,
+        }
+    }
+}
+
+/// Preserve the validated, immutable saved payload as raw JSON for ownership
+/// operations. Heartbeats must not allocate/clone every undo boundary. All
+/// lease, scope, monotonic-clock and quota rules still run through SessionRecord.
+/// Commits always take the fully validated path.
+pub fn session_transition_json(
+    record_json: &str,
+    account_id: &str,
+    project_id: &str,
+    request: SessionRequest,
+    now_ms: u64,
+) -> Result<String, AgentError> {
+    use serde_json::value::RawValue;
+    if matches!(request, SessionRequest::Commit { .. }) {
+        let mut record = if record_json.is_empty() {
+            SessionRecord::new(account_id.into(), project_id.into())?
+        } else {
+            SessionRecord::from_json(account_id, project_id, record_json)?
+        };
+        let result = record.apply(account_id, project_id, request, now_ms)?;
+        return serde_json::to_string(&json!({"record":record.to_json()?,
+            "project":record.saved.as_ref().map(|s| &s.project),"result":result}))
+        .map_err(error);
+    }
+    if record_json.len() > MAX_BYTES {
+        return Err(error("session storage quota exceeded"));
+    }
+    let (mut metadata, saved) = if record_json.is_empty() {
+        (
+            SessionRecord::new(account_id.into(), project_id.into())?,
+            None,
+        )
+    } else {
+        let mut raw: SessionRecord<Box<RawValue>> =
+            serde_json::from_str(record_json).map_err(error)?;
+        let saved = raw.saved.take();
+        let metadata = raw.with_saved::<SavedSession>(None);
+        // The same persisted-record structural validation as the ordinary path.
+        let metadata = SessionRecord::from_json(account_id, project_id, &metadata.to_json()?)?;
+        (metadata, saved)
+    };
+    let include_saved = matches!(
+        request,
+        SessionRequest::Read | SessionRequest::Acquire { .. }
+    );
+    let mut result = metadata.apply(account_id, project_id, request, now_ms)?;
+    result
+        .as_object_mut()
+        .expect("session response object")
+        .remove("saved");
+    #[derive(Deserialize)]
+    struct SavedHeader {
+        project: Box<RawValue>,
+    }
+    let project = saved
+        .as_ref()
+        .map(|s| serde_json::from_str::<SavedHeader>(s.get()))
+        .transpose()
+        .map_err(error)?
+        .map(|s| s.project);
+    let record = metadata.with_saved(saved);
+    let encoded = serde_json::to_string(&record).map_err(error)?;
+    if encoded.len() > MAX_BYTES {
+        return Err(error("session storage quota exceeded"));
+    }
+    #[derive(Serialize)]
+    struct View<'a> {
+        #[serde(flatten)]
+        fields: Value,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        saved: Option<&'a RawValue>,
+    }
+    // Read/acquire always include saved:null for legacy hosts.
+    if include_saved && record.saved.is_none() {
+        result["saved"] = Value::Null;
+    }
+    #[derive(Serialize)]
+    struct Output<'a> {
+        record: String,
+        project: Option<Box<RawValue>>,
+        result: View<'a>,
+    }
+    serde_json::to_string(&Output {
+        record: encoded,
+        project,
+        result: View {
+            fields: result,
+            saved: if include_saved {
+                record.saved.as_deref()
+            } else {
+                None
+            },
+        },
+    })
+    .map_err(error)
 }
 
 impl SessionRecord {
@@ -192,6 +306,9 @@ impl SessionRecord {
         // expired. Time and identity always originate at the authenticated host.
         let now = now_ms.max(self.last_host_time_ms);
         let result = match request {
+            SessionRequest::Inspect => {
+                json!({"storageRevision":self.storage_revision,"generation":self.generation,"lease":self.lease.as_ref().filter(|l|l.expires_at_ms>now)})
+            }
             SessionRequest::Read => {
                 json!({"storageRevision":self.storage_revision,"generation":self.generation,"lease":self.lease.as_ref().filter(|l|l.expires_at_ms>now),"saved":self.saved})
             }

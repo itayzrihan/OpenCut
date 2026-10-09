@@ -552,8 +552,83 @@ async fn compact_encoding_upgrade_preserves_revision_and_history_fence() {
         original.archive["revision"].as_u64().unwrap()
     );
     assert_eq!(record.storage_revision, 2);
+    compact.archive = runtime.registry().invoke("project.classic.session.archive", InvocationContext::default(),
+        json!({"projectId":PROJECT,"compact":true,"chained":true})).await.unwrap().result.data;
+    apply(&mut record, commit(compact.clone(), "chained", 2, 1), 350).unwrap();
+    assert_eq!(record.storage_revision, 3);
+    assert_eq!(record.saved.as_ref().unwrap().editor_revision, original.archive["revision"].as_u64().unwrap());
     compact.archive["classic"]["document"]["metadata"]["name"] = json!("Changed without revision");
     let before = record.to_json().unwrap();
-    assert!(apply(&mut record, commit(compact, "invalid", 2, 1), 400).is_err());
+    assert!(apply(&mut record, commit(compact, "invalid", 3, 1), 400).is_err());
     assert_eq!(record.to_json().unwrap(), before);
+}
+
+#[tokio::test]
+async fn raw_ownership_transitions_match_validated_record_policy_exactly() {
+    let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
+    apply(&mut record, acquire("tab-a", 0, false), 1).unwrap();
+    apply(&mut record, commit(bundle().await, "save", 0, 1), 2).unwrap();
+    for (request, now) in [
+        (SessionRequest::Read, 3),
+        (SessionRequest::Inspect, 4),
+        (
+            SessionRequest::Renew {
+                session_id: "tab-a".into(),
+                generation: 1,
+            },
+            200_000,
+        ),
+        (
+            SessionRequest::AssertWrite {
+                session_id: Some("tab-a".into()),
+                generation: Some(1),
+            },
+            200_001,
+        ),
+        (
+            SessionRequest::Acquire {
+                session_id: "tab-b".into(),
+                expected_generation: 1,
+                take_over: true,
+            },
+            200_002,
+        ),
+        (
+            SessionRequest::Release {
+                session_id: "tab-b".into(),
+                generation: 2,
+            },
+            200_003,
+        ),
+    ] {
+        let before = record.to_json().unwrap();
+        let wire: Value = serde_json::from_str(
+            &session_transition_json(&before, "alice", PROJECT, request.clone(), now).unwrap(),
+        )
+        .unwrap();
+        let expected = apply(&mut record, request, now).unwrap();
+        assert_eq!(wire["result"], expected);
+        assert_eq!(
+            serde_json::from_str::<Value>(wire["record"].as_str().unwrap()).unwrap(),
+            serde_json::from_str::<Value>(&record.to_json().unwrap()).unwrap()
+        );
+        assert_eq!(wire["project"], record.saved.as_ref().unwrap().project);
+    }
+    for (owner, project, request) in [
+        ("bob", PROJECT, SessionRequest::Read),
+        ("alice", "other", SessionRequest::Read),
+        (
+            "alice",
+            PROJECT,
+            SessionRequest::Renew {
+                session_id: "tab-a".into(),
+                generation: 1,
+            },
+        ),
+    ] {
+        assert!(
+            session_transition_json(&record.to_json().unwrap(), owner, project, request, 200_004)
+                .is_err()
+        );
+    }
 }

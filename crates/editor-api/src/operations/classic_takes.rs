@@ -422,12 +422,38 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
     }
     Ok(())
 }
+thread_local! {
+    // Validation is a pure function of the complete assembly and media membership.
+    // Keep hashes only: project contents and undo documents never live in this cache.
+    static VALIDATED_ASSEMBLIES: std::cell::RefCell<std::collections::VecDeque<[u8; 32]>> =
+        const { std::cell::RefCell::new(std::collections::VecDeque::new()) };
+}
+
 /// Called by ClassicProject::validate, including app.state.patch and session restoration.
 pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result<(), String> {
     podcast::validate_metadata(scene)?;
     let Some(value) = scene.get("takeAssembly") else {
         return Ok(());
     };
+    let mut media: Vec<_> = asset_ids.iter().copied().collect();
+    media.sort_unstable();
+    let fingerprint: [u8; 32] =
+        Sha256::digest(serde_json::to_vec(&(value, media)).map_err(|e| e.to_string())?).into();
+    if VALIDATED_ASSEMBLIES.with(|cache| cache.borrow().contains(&fingerprint)) {
+        return Ok(());
+    }
+    validate_assembly(value, asset_ids)?;
+    VALIDATED_ASSEMBLIES.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        if cache.len() >= 128 {
+            cache.pop_front();
+        }
+        cache.push_back(fingerprint);
+    });
+    Ok(())
+}
+
+fn validate_assembly(value: &Value, asset_ids: &HashSet<&str>) -> Result<(), String> {
     let a: Assembly = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
     if !matches!(a.version, 1 | 2) || !label(&a.id) || a.applied_digest.len() != 64 {
         return Err("Invalid take assembly version/identity".into());

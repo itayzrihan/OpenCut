@@ -19,13 +19,8 @@ import {
 	getSourceTimeAtClipTime,
 	renderRetimedBuffer,
 } from "@/retime";
-import {
-	ALL_FORMATS,
-	AudioBufferSink,
-	Input,
-	type WrappedAudioBuffer,
-} from "mediabunny";
-import { createMediaSource } from "@/media/source";
+import type { AudioBufferSink, WrappedAudioBuffer } from "mediabunny";
+import { AudioSinkCache } from "@/media/audio-sink-cache";
 import {
 	getAudibleContextTime,
 	getAudioContextStartTime,
@@ -141,8 +136,7 @@ export class AudioManager {
 	private audioCollectionAbort = new AbortController();
 	private audioProjectId: string | undefined;
 	private audioCompositions: TProject["hyperframesCompositions"];
-	private sinks = new Map<string, AudioBufferSink>();
-	private inputs = new Map<string, Input>();
+	private readonly audioSinks = new AudioSinkCache();
 	private activeClipIds = new Set<string>();
 	private clipIterators = new Map<
 		string,
@@ -906,11 +900,7 @@ export class AudioManager {
 		this.clipIterators.clear();
 		this.activeClipIds.clear();
 
-		for (const input of this.inputs.values()) {
-			input.dispose();
-		}
-		this.inputs.clear();
-		this.sinks.clear();
+		this.audioSinks.clear();
 	}
 
 	private shouldUsePreparedClipBuffer({
@@ -1120,18 +1110,9 @@ export class AudioManager {
 			return null;
 		}
 
-		const input = new Input({
-			source: createMediaSource(clip),
-			formats: ALL_FORMATS,
-		});
-
 		try {
-			const audioTrack = await input.getPrimaryAudioTrack();
-			if (!audioTrack) {
-				return null;
-			}
-
-			const sink = new AudioBufferSink(audioTrack);
+			const sink = await this.getAudioSink({ clip });
+			if (!sink) return null;
 			const chunks: WrappedAudioBuffer[] = [];
 
 			for await (const chunk of sink.buffers(sourceStart, sourceEnd)) {
@@ -1210,8 +1191,6 @@ export class AudioManager {
 		} catch (error) {
 			console.warn("Failed to decode clip audio:", error);
 			return null;
-		} finally {
-			input.dispose();
 		}
 	}
 
@@ -1220,30 +1199,11 @@ export class AudioManager {
 	}: {
 		clip: AudioClipSource;
 	}): Promise<AudioBufferSink | null> {
-		const existingSink = this.sinks.get(clip.sourceKey);
-		if (existingSink) return existingSink;
-
-		let input: Input | null = null;
 		try {
-			input = new Input({
-				source: createMediaSource(clip),
-				formats: ALL_FORMATS,
-			});
-			const audioTrack = await input.getPrimaryAudioTrack();
-			if (!audioTrack) {
-				return null;
-			}
-
-			const sink = new AudioBufferSink(audioTrack);
-			this.inputs.set(clip.sourceKey, input);
-			this.sinks.set(clip.sourceKey, sink);
-			input = null;
-			return sink;
+			return await this.audioSinks.get(clip);
 		} catch (error) {
 			console.warn("Failed to initialize audio sink:", error);
 			return null;
-		} finally {
-			input?.dispose();
 		}
 	}
 }

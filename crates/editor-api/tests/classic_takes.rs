@@ -958,3 +958,24 @@ async fn auto_edit_preparation_fails_atomically_for_unsupported_scene() {
         assert_eq!(read(&reopened).await, before);
     }
 }
+
+#[tokio::test]
+async fn cached_assembly_validation_rechecks_changed_evidence_and_media_membership() {
+    let runtime=setup().await;
+    call(&runtime, EDIT, assemble(&read(&runtime).await)).await;
+    let state=read(&runtime).await;
+    let valid=state["project"]["classic"].clone();
+    // The assembly is already cached by the successful canonical transaction.
+    let mut corrupt=valid.clone();
+    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceWords"][0]["text"]=json!("forged evidence");
+    let mut missing=valid.clone();
+    missing["mediaAssets"]=json!([]);
+    for classic in [corrupt,missing] {
+        let empty=OpenCutRuntime::default();
+        assert!(empty.registry().invoke("project.classic.session.attach",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await.is_err());
+        assert_eq!(empty.snapshot().unwrap().revision,0);
+    }
+    let reopened=OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":valid})).await;
+    assert_eq!(read(&reopened).await["project"]["classic"], valid);
+}

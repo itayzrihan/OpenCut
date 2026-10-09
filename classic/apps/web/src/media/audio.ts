@@ -476,14 +476,20 @@ async function fetchLibraryAudioClip({
 	volume: number;
 }): Promise<AudioClipSource | null> {
 	try {
-		const file = await loadLibraryAudioFile({ element });
-		if (!file) return null;
+		// Playback resolves a range-readable URL; exporting still loads full files.
+		// A late music bed must not delay Play by downloading the whole song.
+		const url = element.libraryAssetId
+			? await sharedLibraryService.getAudioAssetUrl({
+					id: element.libraryAssetId,
+				})
+			: element.sourceUrl;
+		if (!url) return null;
 
 		return {
 			timelineElement: element,
 			id: element.id,
 			sourceKey: getLibraryAudioSourceKey({ element }),
-			file,
+			url,
 			...getClipAudioTiming(element),
 			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,

@@ -1342,11 +1342,24 @@ export class CanonicalClassicSession {
 					projectId: this.projectId,
 					persistableOnly: true,
 					compact: true,
+					chained: true,
 				},
 			});
 		} catch (error) {
 			// An already-open editor may retain the previous WASM runtime during
 			// a development update. Let it save before loading the new runtime.
+			if (
+				error instanceof Error &&
+				error.message.includes("'chained' was unexpected")
+			)
+				return this.call({
+					capability: "project.classic.session.archive",
+					input: {
+						projectId: this.projectId,
+						persistableOnly: true,
+						compact: true,
+					},
+				});
 			if (
 				!(error instanceof Error) ||
 				!error.message.includes("'compact' was unexpected")

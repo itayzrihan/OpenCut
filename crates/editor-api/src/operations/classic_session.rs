@@ -42,6 +42,8 @@ struct ArchiveInput {
     persistable_only: bool,
     #[serde(default)]
     compact: bool,
+    #[serde(default)]
+    chained: bool,
 }
 
 #[derive(Debug, Serialize, JsonSchema)]
@@ -197,7 +199,7 @@ fn with_classic(
     classic: ClassicProject,
 ) -> Result<EditorDocument, CapabilityError> {
     let invalid = |error: ModelError| CapabilityError::InvalidInput(error.to_string());
-    classic.validate().map_err(invalid)?;
+    // document.validate below validates the Classic payload once, including every take.
     if classic.id().map_err(invalid)? != project_id {
         return Err(CapabilityError::Conflict(
             "Classic history belongs to another project".into(),
@@ -348,7 +350,7 @@ fn register_archive_operations(
         crate::CapabilityExecution::Immediate,
         "project.classic.session.archive",
         "Archive Classic session",
-        "Serializes Classic history with each immutable HyperFrames source stored once. compact:true emits version 2 lossless history deltas against the current snapshot; version 1 remains readable and is the default. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
+        "Serializes Classic history with each immutable HyperFrames source stored once. compact:true emits version 2 lossless history deltas against the current snapshot; chained:true with compact emits version 3 deltas against the preceding boundary in each stack; version 1 remains readable and is the default. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
         "project",
         AccessLevel::Read,
         true,
@@ -373,17 +375,26 @@ fn register_archive_operations(
                     .transpose()
                     .map_err(|e| CapabilityError::Failed(e.to_string()))?;
                 let mut archive_stack = |entries: &[HistoryEntry]| {
+                    let mut previous = base.clone();
                     entries
                         .iter()
                         .map(|entry| {
+                            let archived = classic_ref(&entry.document)?.to_archive(&mut sources);
+                            let next_base = if input.compact && input.chained {
+                                Some(serde_json::to_value(&archived)
+                                    .map_err(|e| CapabilityError::Failed(e.to_string()))?)
+                            } else {
+                                None
+                            };
+                            let snapshot = ArchivedHistorySnapshot::encode(archived, previous.as_ref())
+                                .map_err(|e| CapabilityError::Failed(e.to_string()))?;
+                            if let Some(next_base) = next_base {
+                                previous = Some(next_base);
+                            }
                             Ok(ArchivedBoundary {
                                 label: entry.label.clone(),
                                 host_context: entry.host_context.clone(),
-                                classic: ArchivedHistorySnapshot::encode(
-                                    classic_ref(&entry.document)?.to_archive(&mut sources),
-                                    base.as_ref(),
-                                )
-                                .map_err(|e| CapabilityError::Failed(e.to_string()))?,
+                                classic: snapshot,
                             })
                         })
                         .collect::<Result<Vec<_>, CapabilityError>>()
@@ -399,7 +410,13 @@ fn register_archive_operations(
                     &store.redo
                 })?;
                 Ok(OperationSuccess::new(SessionArchive {
-                    schema_version: if input.compact { 2 } else { 1 },
+                    schema_version: if input.compact && input.chained {
+                        3
+                    } else if input.compact {
+                        2
+                    } else {
+                        1
+                    },
                     project_id: input.project_id,
                     revision: store.document.revision,
                     classic,
@@ -427,7 +444,7 @@ fn register_archive_operations(
             let events = events.clone();
             async move {
                 let archive = input.archive;
-                if !matches!(archive.schema_version, 1 | 2) {
+                if !matches!(archive.schema_version, 1 | 2 | 3) {
                     return Err(CapabilityError::InvalidInput(
                         "Unsupported Classic archive schema".into(),
                     ));
@@ -439,22 +456,28 @@ fn register_archive_operations(
                 }
                 validate_sources(&archive.sources)
                     .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-                let base = (archive.schema_version == 2)
+                let base = (archive.schema_version >= 2)
                     .then(|| serde_json::to_value(&archive.classic))
                     .transpose()
                     .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
                 let mut expanded_budget = 512_000_000usize;
                 let mut restore = |entries: Vec<ArchivedBoundary>| {
+                    let mut previous = base.clone();
+                    let mut sources = archive.sources.clone();
                     entries
                         .into_iter()
                         .map(|entry| {
+                            let classic = entry.classic
+                                .restore(previous.as_ref(), &archive.sources, &mut expanded_budget)
+                                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+                            if archive.schema_version == 3 {
+                                previous = Some(serde_json::to_value(classic.to_archive(&mut sources))
+                                    .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?);
+                            }
                             Ok(ClassicHistoryBoundary {
                                 label: entry.label,
                                 host_context: entry.host_context,
-                                classic: entry
-                                    .classic
-                                    .restore(base.as_ref(), &archive.sources, &mut expanded_budget)
-                                    .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?,
+                                classic,
                             })
                         })
                         .collect::<Result<Vec<_>, CapabilityError>>()

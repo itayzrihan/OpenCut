@@ -244,3 +244,160 @@ async fn compact_history_preserves_every_boundary_and_rejects_invalid_deltas() {
         assert!(target.snapshot().unwrap().project.is_none());
     }
 }
+
+#[tokio::test]
+async fn chained_history_preserves_divergent_scenes_and_both_stack_orders() {
+    let runtime = OpenCutRuntime::default();
+    let mut initial = classic();
+    initial["document"]["futureLargeField"] = json!("original".repeat(10_000));
+    call(
+        &runtime,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project", "expectedRevision":0,"classic":initial}),
+    )
+    .await;
+    for revision in 1..=20 {
+        let mut changed = initial.clone();
+        changed["document"]["metadata"]["name"] = json!(format!("edit-{revision}"));
+        if revision > 10 {
+            changed["document"]["futureLargeField"] = json!("different".repeat(10_000));
+        }
+        call(
+            &runtime,
+            "project.classic.commit",
+            json!({"projectId":"classic-project","expectedRevision":revision,"classic":changed}),
+        )
+        .await;
+    }
+    for _ in 0..5 {
+        call(&runtime, "history.undo", json!({})).await;
+    }
+    let full = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project"}),
+    )
+    .await;
+    let compact = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project","compact":true}),
+    )
+    .await;
+    let chained = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project","compact":true,"chained":true}),
+    )
+    .await;
+    assert_eq!(chained["schemaVersion"], 3);
+    assert!(
+        serde_json::to_vec(&chained).unwrap().len() * 2
+            < serde_json::to_vec(&compact).unwrap().len(),
+        "chained={} compact={}",
+        serde_json::to_vec(&chained).unwrap().len(),
+        serde_json::to_vec(&compact).unwrap().len()
+    );
+    let restored = OpenCutRuntime::default();
+    call(
+        &restored,
+        "project.classic.session.restore",
+        json!({"projectId":"classic-project","expectedRevision":0,"archive":chained}),
+    )
+    .await;
+    assert_eq!(
+        call(
+            &restored,
+            "project.classic.session.archive",
+            json!({"projectId":"classic-project"})
+        )
+        .await,
+        full
+    );
+    for operation in ["history.redo", "history.undo"] {
+        for _ in 0..5 {
+            call(&runtime, operation, json!({})).await;
+            call(&restored, operation, json!({})).await;
+            assert_eq!(
+                call(&runtime, "app.state.read", json!({})).await,
+                call(&restored, "app.state.read", json!({})).await
+            );
+        }
+    }
+    let mut invalid = chained;
+    invalid["undoStack"][1]["classic"] =
+        json!({"delta":[{"op":"replace","path":"/document/metadata/id","value":"other"}]});
+    let empty = OpenCutRuntime::default();
+    assert!(
+        empty
+            .registry()
+            .invoke(
+                "project.classic.session.restore",
+                InvocationContext::default(),
+                json!({"projectId":"classic-project","expectedRevision":0,"archive":invalid})
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(empty.snapshot().unwrap().revision, 0);
+}
+
+/// Opt-in local benchmark; no fixture contents enter the repository or stdout.
+#[tokio::test]
+#[ignore]
+async fn local_archive_performance() {
+    let input = std::env::var("OPENCUT_PERF_PROJECT").unwrap();
+    let output = std::env::var("OPENCUT_PERF_ARCHIVE_OUTPUT").unwrap();
+    let project: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+    let record: Value =
+        serde_json::from_str(project["__opencutEditorSession"].as_str().unwrap()).unwrap();
+    let archive = &record["saved"]["bundle"]["archive"];
+    let project_id = archive["projectId"].as_str().unwrap();
+    let runtime = OpenCutRuntime::default();
+    let start = std::time::Instant::now();
+    call(
+        &runtime,
+        "project.classic.session.restore",
+        json!({"projectId":project_id,"expectedRevision":0,"archive":archive}),
+    )
+    .await;
+    let restore_ms = start.elapsed().as_millis();
+    let full = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":project_id}),
+    )
+    .await;
+    let start = std::time::Instant::now();
+    let chained = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":project_id,"compact":true,"chained":true}),
+    )
+    .await;
+    let encode_ms = start.elapsed().as_millis();
+    let restored = OpenCutRuntime::default();
+    let start = std::time::Instant::now();
+    call(
+        &restored,
+        "project.classic.session.restore",
+        json!({"projectId":project_id,"expectedRevision":0,"archive":chained}),
+    )
+    .await;
+    let chained_restore_ms = start.elapsed().as_millis();
+    assert_eq!(
+        call(
+            &restored,
+            "project.classic.session.archive",
+            json!({"projectId":project_id})
+        )
+        .await,
+        full
+    );
+    let bytes = serde_json::to_vec(&chained).unwrap();
+    println!(
+        "{}",
+        json!({"beforeBytes":serde_json::to_vec(archive).unwrap().len(),"afterBytes":bytes.len(),"restoreMs":restore_ms,"chainedRestoreMs":chained_restore_ms,"encodeMs":encode_ms,"undo":chained["undoStack"].as_array().unwrap().len(),"redo":chained["redoStack"].as_array().unwrap().len(),"exactHistoryEquality":true})
+    );
+    std::fs::write(output, bytes).unwrap();
+}
