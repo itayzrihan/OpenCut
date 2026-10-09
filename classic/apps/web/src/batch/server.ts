@@ -10,13 +10,17 @@ import {
 } from "opencut-wasm";
 import { getLocalDriveStatus, getProject } from "@/services/local-drive/server";
 import type { BatchRun, BatchState, BatchJobStatus } from "./types";
+import { findSceneCheckpoint } from "./scene-checkpoint";
 import type { FullAutoOptions } from "@/ai/full-auto-edit";
 type StoredRun = BatchRun & { token: string; heartbeat: number };
 type Store = { runs: StoredRun[] };
 const host = globalThis as typeof globalThis & {
 	__opencutBatchQueues?: Map<string, Promise<unknown>>;
 };
-const queues = (host.__opencutBatchQueues ??= new Map<string, Promise<unknown>>());
+const queues = (host.__opencutBatchQueues ??= new Map<
+	string,
+	Promise<unknown>
+>());
 const leaseMs = 180_000;
 async function transaction<T>(
 	action: (store: Store, assertLock: () => void) => Promise<T> | T,
@@ -62,7 +66,7 @@ async function transaction<T>(
 									event: "interrupt",
 								}) as BatchJobStatus;
 								job.message =
-									"Worker disconnected. Completed edits were preserved; review this project before restarting in a fresh project.";
+									"Worker disconnected. Completed edits were preserved; caption and finishing stages can be resumed from the editor.";
 								run.updatedAt = Date.now();
 							}
 					}
@@ -140,6 +144,7 @@ export async function createProjectEdit({
 			throw new Error("This project already has an active automatic edit");
 		const project = (await getProject(projectId)) as {
 			metadata?: { name?: string; updatedAt?: string };
+			currentSceneId?: string;
 		} | null;
 		if (!project?.metadata)
 			throw new Error(
@@ -149,18 +154,20 @@ export async function createProjectEdit({
 			throw new Error("Project changed before handoff. Save and try again.");
 		let resumeFromStage = 0;
 		if (resumeRunId) {
-			const previous = s.runs.find((r) =>
-				r.jobs.some((j) => j.projectId === projectId),
-			);
+			const previous = findSceneCheckpoint({
+				runs: s.runs,
+				projectId,
+				sceneId: project.currentSceneId,
+			});
 			const job = previous?.jobs.find((j) => j.projectId === projectId);
 			if (
 				previous?.id !== resumeRunId ||
-				job?.status !== "failed" ||
+				(job?.status !== "failed" && job?.status !== "interrupted") ||
 				job.completedStages < 3 ||
 				job.completedStages >= fullAutoEditStages(previous.options).length
 			)
 				throw new Error(
-					"Only the latest failed caption or finishing stage can be resumed",
+					"Only the latest failed or interrupted caption or finishing stage can be resumed",
 				);
 			for (const key of [
 				"zoom",
@@ -183,6 +190,9 @@ export async function createProjectEdit({
 			jobs: [
 				{
 					projectId,
+					...(project.currentSceneId
+						? { sceneId: project.currentSceneId }
+						: {}),
 					name: project.metadata.name ?? "Project",
 					fileName: project.metadata.name ?? "Project",
 					source: "existing",

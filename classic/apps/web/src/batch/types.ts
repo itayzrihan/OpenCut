@@ -12,6 +12,8 @@ export interface BatchJob {
 	resumeFromStage?: number;
 	source?: "existing" | "import";
 	projectId: string;
+	/** Saved scene owning this checkpoint; absent in older queue records. */
+	sceneId?: string;
 	name: string;
 	fileName: string;
 	status: BatchJobStatus;

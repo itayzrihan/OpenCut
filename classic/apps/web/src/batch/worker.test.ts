@@ -218,20 +218,26 @@ test("existing-project worker never recreates or imports the project", async () 
 		expect(created.length).toBe(createdBefore);
 		expect(edits.at(-1)).toBe("original");
 		expect(saved.at(-1)).toBe("original");
-		expect(run.jobs[0].status).toBe("completed");
+		expect<BatchRun["jobs"][number]["status"]>(run.jobs[0].status).toBe(
+			"completed",
+		);
 		// One ambiguous final-save failure retries persistence without rerunning edits.
 		const editsBeforeRetry = edits.length;
 		saveFailures = 1;
 		dirty = true;
 		run.jobs[0].status = "ready";
 		await executeBatch({ run, token: "existing-token", files: [] });
-		expect(run.jobs[0].status).toBe("completed");
+		expect<BatchRun["jobs"][number]["status"]>(run.jobs[0].status).toBe(
+			"completed",
+		);
 		expect(edits.length).toBe(editsBeforeRetry + 1);
 		expect(dirty).toBe(false);
 		failEditing = true;
 		run.jobs[0].status = "ready";
 		await executeBatch({ run, token: "existing-token", files: [] });
-		expect(run.jobs[0].status).toBe("failed");
+		expect<BatchRun["jobs"][number]["status"]>(run.jobs[0].status).toBe(
+			"failed",
+		);
 		expect(run.jobs[0].message).toContain("missing font");
 		expect(lifecycle.slice(-2)).toEqual(["release:original", "terminal:fail"]);
 	} finally {
@@ -316,7 +322,9 @@ test("failed final saves retain the dirty worker and original error until an aut
 		await execution;
 		expect(dirty).toBe(false);
 		expect(active).toBe("");
-		expect(run.jobs[0].status).toBe("failed");
+		expect<BatchRun["jobs"][number]["status"]>(run.jobs[0].status).toBe(
+			"failed",
+		);
 		expect(run.jobs[0].message).toContain("missing font");
 		expect(messages.at(-1)?.type).toBe("opencut-batch-finished");
 		expect(lifecycle.slice(-2)).toEqual(["release:recover", "terminal:fail"]);

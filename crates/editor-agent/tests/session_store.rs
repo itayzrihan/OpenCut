@@ -314,25 +314,14 @@ async fn ownership_transfer_and_expiry_fence_old_requests_including_replays() {
         .is_err()
     );
     assert!(apply(&mut record, acquire("tab-a", 1, true), 400).is_err());
-    assert!(
-        apply(
-            &mut record,
-            SessionRequest::Renew {
-                session_id: "tab-b".into(),
-                generation: 2
-            },
-            90_300
-        )
-        .is_err()
-    );
     assert!(apply(&mut record, SessionRequest::Read, 90_300).unwrap()["lease"].is_null());
-    // A rolled-back wall clock must not revive the expired owner.
+    // A rolled-back clock cannot authorize an expired asset write.
     assert!(
         apply(
             &mut record,
-            SessionRequest::Renew {
-                session_id: "tab-b".into(),
-                generation: 2
+            SessionRequest::AssertWrite {
+                session_id: Some("tab-b".into()),
+                generation: Some(2),
             },
             500
         )
@@ -483,5 +472,88 @@ async fn successful_saves_keep_the_current_owner_alive_without_reviving_expired_
     assert_eq!(view["lease"]["expiresAtMs"], 250_000);
     let before = record.to_json().unwrap();
     assert!(apply(&mut record, commit(bundle, "save", 0, 1), 250_000).is_err());
+    assert_eq!(record.to_json().unwrap(), before);
+}
+
+#[tokio::test]
+async fn sleeping_owner_can_renew_only_until_release_or_another_acquisition() {
+    let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
+    apply(&mut record, acquire("tab-a", 0, false), 100).unwrap();
+    let bundle = bundle().await;
+    apply(&mut record, commit(bundle.clone(), "save", 0, 1), 200).unwrap();
+    assert!(apply(&mut record, SessionRequest::Read, 900_000).unwrap()["lease"].is_null());
+    let renew = || SessionRequest::Renew {
+        session_id: "tab-a".into(),
+        generation: 1,
+    };
+    let result = apply(&mut record, renew(), 900_000).unwrap();
+    assert_eq!(result["lease"]["generation"], 1);
+    assert_eq!(result["lease"]["expiresAtMs"], 990_000);
+    // A response lost before sleep is still the same idempotent save.
+    let receipt = apply(&mut record, commit(bundle.clone(), "save", 0, 1), 900_001).unwrap();
+    assert_eq!(receipt["storageRevision"], 1);
+    apply(&mut record, acquire("tab-b", 1, false), 1_000_000).unwrap();
+    let before = record.to_json().unwrap();
+    assert!(apply(&mut record, renew(), 1_000_001).is_err());
+    assert_eq!(record.to_json().unwrap(), before);
+    apply(
+        &mut record,
+        SessionRequest::Release {
+            session_id: "tab-b".into(),
+            generation: 2,
+        },
+        1_000_002,
+    )
+    .unwrap();
+    assert!(
+        apply(
+            &mut record,
+            SessionRequest::Renew {
+                session_id: "tab-b".into(),
+                generation: 2
+            },
+            1_000_003
+        )
+        .is_err()
+    );
+}
+
+#[tokio::test]
+async fn compact_encoding_upgrade_preserves_revision_and_history_fence() {
+    let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
+    apply(&mut record, acquire("tab-a", 0, false), 100).unwrap();
+    let original = bundle().await;
+    apply(&mut record, commit(original.clone(), "legacy", 0, 1), 200).unwrap();
+    let runtime = OpenCutRuntime::default();
+    runtime
+        .registry()
+        .invoke(
+            "project.classic.session.restore",
+            InvocationContext::default(),
+            json!({"projectId":PROJECT,"expectedRevision":0,"archive":original.archive}),
+        )
+        .await
+        .unwrap();
+    let mut compact = original.clone();
+    compact.archive = runtime
+        .registry()
+        .invoke(
+            "project.classic.session.archive",
+            InvocationContext::default(),
+            json!({"projectId":PROJECT,"compact":true}),
+        )
+        .await
+        .unwrap()
+        .result
+        .data;
+    apply(&mut record, commit(compact.clone(), "compact", 1, 1), 300).unwrap();
+    assert_eq!(
+        record.saved.as_ref().unwrap().editor_revision,
+        original.archive["revision"].as_u64().unwrap()
+    );
+    assert_eq!(record.storage_revision, 2);
+    compact.archive["classic"]["document"]["metadata"]["name"] = json!("Changed without revision");
+    let before = record.to_json().unwrap();
+    assert!(apply(&mut record, commit(compact, "invalid", 2, 1), 400).is_err());
     assert_eq!(record.to_json().unwrap(), before);
 }

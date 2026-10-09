@@ -1,5 +1,5 @@
 import { IndexedDBAdapter } from "@/services/storage/indexeddb-adapter";
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, accountNamespace } from "@/accounts/browser";
 import { OPFSAdapter } from "@/services/storage/opfs-adapter";
 import {
 	LocalDriveFileAdapter,
@@ -303,14 +303,28 @@ export class SharedLibraryService {
 		kind: "stickers",
 		legacy: new OPFSAdapter(STICKER_FILES_DIR),
 	});
+	private manifestRequests = new Map<string, Promise<SharedLibraryManifest>>();
 	private audioUrlCache = new Map<string, string>();
+	private audioUrlRequests = new Map<string, Promise<string | null>>();
 	private stickerUrlCache = new Map<string, string>();
 	private stickerDataUrlCache = new Map<string, string>();
 
 	private async loadRepositoryManifest(): Promise<SharedLibraryManifest> {
-		const response = await fetch(SHARED_LIBRARY_API, { cache: "no-store" });
-		const data = await parseRepositoryResponse({ response });
-		return readManifestFromApiResult({ value: data }) ?? emptyManifest();
+		const key = accountNamespace("library-manifest");
+		const pending = this.manifestRequests.get(key);
+		if (pending) return pending;
+		const request = fetch(SHARED_LIBRARY_API, { cache: "no-store" })
+			.then(async (response) => {
+				const data = await parseRepositoryResponse({ response });
+				if (accountNamespace("library-manifest") !== key)
+					throw new Error(
+						"The active account changed while loading the library",
+					);
+				return readManifestFromApiResult({ value: data }) ?? emptyManifest();
+			})
+			.finally(() => this.manifestRequests.delete(key));
+		this.manifestRequests.set(key, request);
+		return request;
 	}
 
 	private async patchRepositoryManifest({
@@ -642,6 +656,14 @@ export class SharedLibraryService {
 
 	async getAudioAssetFile({ id }: { id: string }): Promise<File | null> {
 		const asset = await this.findAudioAsset({ id });
+		if (asset?.visibility === "global" && asset.sourceUrl) {
+			return fetchFileFromUrl({
+				url: accountAssetUrl(asset.sourceUrl),
+				name: asset.fileName ?? asset.name,
+				type: asset.mimeType,
+				lastModified: new Date(asset.updatedAt).getTime(),
+			});
+		}
 		const file = await this.audioFiles.get(id);
 		if (file && asset) {
 			return cloneStoredFile({
@@ -664,15 +686,33 @@ export class SharedLibraryService {
 	}
 
 	async getAudioAssetUrl({ id }: { id: string }): Promise<string | null> {
-		const cached = this.audioUrlCache.get(id);
+		const key = accountNamespace(`audio-url-${id}`);
+		const cached = this.audioUrlCache.get(key);
 		if (cached) return cached;
+		const pending = this.audioUrlRequests.get(key);
+		if (pending) return pending;
+		const request = this.resolveAudioAssetUrl({ id })
+			.then((url) => {
+				if (accountNamespace(`audio-url-${id}`) !== key)
+					throw new Error("The active account changed while loading audio");
+				if (url) this.audioUrlCache.set(key, url);
+				return url;
+			})
+			.finally(() => this.audioUrlRequests.delete(key));
+		this.audioUrlRequests.set(key, request);
+		return request;
+	}
+
+	private async resolveAudioAssetUrl({
+		id,
+	}: {
+		id: string;
+	}): Promise<string | null> {
 		const asset = await this.findAudioAsset({ id });
 		if (asset?.sourceUrl) return accountAssetUrl(asset.sourceUrl);
 		const file = await this.getAudioAssetFile({ id });
 		if (!file || typeof URL === "undefined") return null;
-		const url = URL.createObjectURL(file);
-		this.audioUrlCache.set(id, url);
-		return url;
+		return URL.createObjectURL(file);
 	}
 
 	async listStickerAssets(): Promise<SharedStickerAsset[]> {

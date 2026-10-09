@@ -219,8 +219,12 @@ export class EditorAgentClient {
 	}
 	pause() {
 		this.generation += 1;
+		const snapshot = this.editor.command.getEditingAgentSnapshot();
+		const wasActive = !!snapshot && !isTerminalRun(snapshot);
 		this.interrupt();
-		if (this.editor.command.hasAtomicSessionStorage()) {
+		// Unmounting an idle panel is not an edit. In particular, a background
+		// handoff has already released this viewer's persistence authority.
+		if (wasActive && this.editor.command.hasAtomicSessionStorage()) {
 			void this.persist().catch((error) =>
 				this.emit({
 					type: "status",

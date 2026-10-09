@@ -66,6 +66,11 @@ export class CommandManager {
 	private reactors: Array<() => void> = [];
 	private activeProjectId: string | null = null;
 	private historySaveQueue: Promise<void> = Promise.resolve();
+	private scheduledSessionSave: {
+		session: CanonicalClassicSession;
+		accountId: string;
+		promise: Promise<void>;
+	} | null = null;
 	private transactionDepth = 0;
 	private stateRevision = 0;
 	private canonical: CanonicalClassicSession | null = null;
@@ -532,7 +537,11 @@ export class CommandManager {
 	}
 
 	async flushHistory(): Promise<void> {
-		await this.historySaveQueue;
+		for (;;) {
+			const pending = this.historySaveQueue;
+			await pending;
+			if (pending === this.historySaveQueue) return;
+		}
 	}
 
 	/** Capture both opaque Rust protocols within one synchronous boundary. */
@@ -559,17 +568,31 @@ export class CommandManager {
 		if (!save || !session)
 			throw new Error("Atomic session storage is not attached");
 		const accountId = this.agentAccountId();
+		if (
+			this.scheduledSessionSave?.session === session &&
+			this.scheduledSessionSave.accountId === accountId
+		)
+			return this.scheduledSessionSave.promise;
+		// Capture at dispatch, so bursts share one pending save. Once capture
+		// starts, newer edits get one subsequent save behind the in-flight write.
 		const next = this.historySaveQueue
 			.catch(() => undefined)
 			.then(() =>
 				save(() => {
+					if (this.scheduledSessionSave?.promise === next)
+						this.scheduledSessionSave = null;
 					if (this.canonical !== session || this.agentAccountId() !== accountId)
 						throw new Error(
 							"The editor session changed before it could be saved",
 						);
 					return this.captureEditingSession();
 				}),
-			);
+			)
+			.finally(() => {
+				if (this.scheduledSessionSave?.promise === next)
+					this.scheduledSessionSave = null;
+			});
+		this.scheduledSessionSave = { session, accountId, promise: next };
 		this.historySaveQueue = next;
 		await next;
 	}
@@ -2689,6 +2712,11 @@ export class CommandManager {
 		this.canonical = null;
 		this.canonicalArchive = null;
 		this.sessionPersistence = null;
+		// The caller drains writable history before detaching. A disposed read-only
+		// viewer may still receive an old agent cleanup rejection; that belongs to
+		// its caller, never to the next canonical session's flush queue.
+		this.historySaveQueue = Promise.resolve();
+		this.scheduledSessionSave = null;
 		this.canonicalCallbacks.clear();
 	}
 

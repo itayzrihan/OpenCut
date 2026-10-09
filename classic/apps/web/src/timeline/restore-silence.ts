@@ -47,10 +47,12 @@ export async function restoreSelectedSilence({
 	editor: EditorCore;
 	selection: Selection;
 }) {
-	await editor.command.enableCanonical();
+	// Freeze the requested clip boundaries before async session preparation.
+	// The commit below rejects a scene/revision change instead of widening the edit.
 	const preview = previewRestoreSilence({ editor, selection });
 	if (!preview)
 		throw new Error("בחרו קליפים צמודים מאותו סרטון שיש ביניהם זמן מקור שנמחק");
+	await editor.command.enableCanonical();
 	const parsed = parseTimelineDocumentV2({ text: preview.sourceJson });
 	const value = parsed.value;
 	if (!parsed.valid || !value)

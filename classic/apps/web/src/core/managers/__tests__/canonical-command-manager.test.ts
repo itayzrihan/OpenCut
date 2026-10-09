@@ -7018,3 +7018,88 @@ test("reopening an atomic checkpoint does not rewrite its archive before the nex
  expect(writes).toBe(1);
  reopened.manager.detachCanonical();
 }, INTEGRATION_TIMEOUT);
+
+test(
+	"an old viewer save rejection cannot poison a reopened canonical session",
+	async () => {
+		const host = createHost();
+		let rejectSave!: (error: Error) => void;
+		let began!: () => void;
+		const ready = new Promise<void>((resolve) => {
+			began = resolve;
+		});
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			persistInitial: false,
+			persistSession: async (capture) => {
+				capture();
+				began();
+				await new Promise<void>((_resolve, reject) => {
+					rejectSave = reject;
+				});
+			},
+		});
+		const bundle = host.manager.captureEditingSession();
+		const old = host.manager.persistEditingSession();
+		const rejected = old.catch((error) => error);
+		await ready;
+		host.manager.detachCanonical();
+		let writes = 0;
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			atomicBundle: bundle,
+			persistSession: async (capture) => {
+				capture();
+				writes++;
+			},
+		});
+		await host.manager.flushHistory();
+		await host.manager.persistEditingSession();
+		rejectSave(new Error("The editor session changed"));
+		expect((await rejected).message).toBe("The editor session changed");
+		await host.manager.flushHistory();
+		expect(writes).toBe(1);
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"disposing an idle agent panel never queues a save during editor handoff",
+	async () => {
+		const { EditorAgentClient } = await import("@/editor-agent/client");
+		const originalWindow = globalThis.window;
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: {
+				__opencutAccountId: "local",
+				location: { origin: "http://127.0.0.1:3100" },
+			},
+		});
+		const host = createHost();
+		let writes = 0;
+		try {
+			await host.manager.enableCanonical({
+				runtime: await createCanonicalTestRuntime(),
+				persistInitial: false,
+				persistSession: async () => {
+					writes++;
+				},
+			});
+			const client = new EditorAgentClient({
+				editor: host.editor,
+				emit: () => {},
+			});
+			client.dispose();
+			await host.manager.flushHistory();
+			expect(writes).toBe(0);
+		} finally {
+			host.manager.detachCanonical();
+			Object.defineProperty(globalThis, "window", {
+				configurable: true,
+				value: originalWindow,
+			});
+		}
+	},
+	INTEGRATION_TIMEOUT,
+);

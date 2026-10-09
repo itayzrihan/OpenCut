@@ -167,3 +167,80 @@ async fn archive_rejects_corrupt_or_missing_source_and_invalid_history_atomicall
         assert!(target.snapshot().unwrap().project.is_none());
     }
 }
+
+#[tokio::test]
+async fn compact_history_preserves_every_boundary_and_rejects_invalid_deltas() {
+    let runtime = OpenCutRuntime::default();
+    let mut initial = classic();
+    initial["document"]["futureMetadata"] = json!("unchanged project data ".repeat(20_000));
+    let boundaries: Vec<_> = (0..12).map(|index| {
+        let mut snapshot = initial.clone();
+        snapshot["document"]["metadata"]["name"] = json!(format!("Before edit {index}"));
+        json!({"label":format!("Edit {index}"),"classic":snapshot,"hostContext":{"selection":index}})
+    }).collect();
+    call(&runtime, "project.classic.session.attach", json!({"projectId":"classic-project","expectedRevision":0,"classic":initial,"undoStack":boundaries})).await;
+    let full = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project"}),
+    )
+    .await;
+    let compact = call(
+        &runtime,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project","compact":true}),
+    )
+    .await;
+    assert_eq!(compact["schemaVersion"], 2);
+    assert!(compact["undoStack"][0]["classic"]["delta"].is_array());
+    assert!(
+        serde_json::to_vec(&compact).unwrap().len() * 4 < serde_json::to_vec(&full).unwrap().len()
+    );
+    let reopened = OpenCutRuntime::default();
+    call(
+        &reopened,
+        "project.classic.session.restore",
+        json!({"projectId":"classic-project","expectedRevision":0,"archive":compact}),
+    )
+    .await;
+    assert_eq!(
+        call(
+            &reopened,
+            "project.classic.session.archive",
+            json!({"projectId":"classic-project"})
+        )
+        .await,
+        full
+    );
+    for operation in ["history.undo", "history.redo"] {
+        for _ in 0..12 {
+            call(&runtime, operation, json!({})).await;
+            call(&reopened, operation, json!({})).await;
+            assert_eq!(
+                call(&runtime, "app.state.read", json!({})).await,
+                call(&reopened, "app.state.read", json!({})).await
+            );
+        }
+    }
+    for patch in [
+        json!([{"op":"replace","path":"/document/metadata/id","value":"another-project"}]),
+        json!([{"op":"remove","path":"/missing"}]),
+        json!([{"op":"copy","from":"","path":"/duplicate"}]),
+    ] {
+        let mut invalid = compact.clone();
+        invalid["undoStack"][0]["classic"] = json!({"delta":patch});
+        let target = OpenCutRuntime::default();
+        assert!(
+            target
+                .registry()
+                .invoke(
+                    "project.classic.session.restore",
+                    InvocationContext::default(),
+                    json!({"projectId":"classic-project","expectedRevision":0,"archive":invalid})
+                )
+                .await
+                .is_err()
+        );
+        assert!(target.snapshot().unwrap().project.is_none());
+    }
+}

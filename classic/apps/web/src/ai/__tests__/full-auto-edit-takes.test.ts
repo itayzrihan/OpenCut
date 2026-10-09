@@ -2,6 +2,12 @@
 import { expect, mock, test } from "bun:test";
 import type { EditorCore } from "@/core";
 const calls: string[] = [];
+let silenceFailure: Error | undefined;
+let duringSilence: () => void = () => {};
+const silenceCalls: Array<
+	Parameters<EditorCore["timeline"]["removeAllSilence"]>[0]
+> = [];
+let restoredSelections = 0;
 let fontAvailable = true;
 let duringFont: () => void = () => {};
 let customFonts = [{ family: "Assistant Bold" }];
@@ -53,7 +59,7 @@ mock.module("@/ai/timeline-document-v2", () => ({
 mock.module("@/timeline/scenes", () => ({ updateSceneInArray: () => [] }));
 mock.module("@/ai/subject-framing", () => ({
 	runLocalSubjectFraming: async ({ editor }: { editor: EditorCore }) => {
-		expect(editor.scenes.getActiveScene().tracks.main).toEqual(main);
+		expect(main).toEqual(editor.scenes.getActiveScene().tracks.main);
 		expect(editor.scenes.getActiveScene().takeAssembly).toBeUndefined();
 		calls.push("framing");
 		return { warnings: [] };
@@ -94,6 +100,10 @@ mock.module("@/ai/automatic-music", () => ({ runAutomaticMusic: () => {} }));
 const { runFullAutoEdit } = await import("../full-auto-edit");
 function setup() {
 	calls.length = 0;
+	silenceCalls.length = 0;
+	silenceFailure = undefined;
+	duringSilence = () => {};
+	restoredSelections = 0;
 	fontAvailable = true;
 	customFonts = [{ family: "Assistant Bold" }];
 	loadedSources.length = 0;
@@ -133,15 +143,22 @@ function setup() {
 			executeTransaction: ({ execute }: { execute: () => void }) => execute(),
 		},
 		timeline: {
-			removeAllSilence: async () => {
+			removeAllSilence: async (
+				options: Parameters<EditorCore["timeline"]["removeAllSilence"]>[0],
+			) => {
 				expect(scene.tracks.main).toEqual(main);
 				calls.push("silence");
+				silenceCalls.push(options);
+				duringSilence();
+				if (silenceFailure) throw silenceFailure;
 			},
 		},
 		selection: {
 			getSnapshot: () => ({}),
 			setSelectedElements: () => {},
-			restoreSnapshot: () => {},
+			restoreSnapshot: () => {
+				restoredSelections++;
+			},
 		},
 		save: {
 			flush: async () => {
@@ -250,5 +267,65 @@ for (const checkpoint of [3, 4]) {
 		expect(calls).toContain("finish");
 		expect(loadedSources).toHaveLength(1);
 		expect(JSON.stringify(scene.tracks.main)).toBe(before);
+	});
+}
+
+for (const smartTakes of [true, false]) {
+	test(`Full Auto uses smart speech protection for ${smartTakes ? "Smart Takes" : "imported video"}`, async () => {
+		const { editor, scene } = setup();
+		if (!smartTakes) {
+			scene.takeAssembly = undefined;
+			scene.tracks.overlay = [];
+		}
+		const controller = new AbortController();
+		await run({ editor, signal: controller.signal });
+		expect(silenceCalls).toEqual([
+			{ mode: "smart", minSilenceSeconds: 0.3, signal: controller.signal },
+		]);
+		expect(restoredSelections).toBe(1);
+		expect(calls).toContain("finish");
+	});
+}
+
+test("smart safety hold preserves audio and completes later stages without a legacy fallback", async () => {
+	const { editor, scene } = setup();
+	const before = JSON.stringify(scene.tracks.main);
+	silenceFailure = new Error(
+		"No clear pauses met this duration after protecting speech.",
+	);
+	silenceFailure.name = "NoClearSilence";
+	const notes = await run({ editor });
+	expect(notes).toContain(`Smart audio cut: ${silenceFailure.message}`);
+	expect(silenceCalls).toHaveLength(1);
+	expect(silenceCalls[0]?.mode).toBe("smart");
+	expect(JSON.stringify(scene.tracks.main)).toBe(before);
+	expect(calls).toContain("fresh transcription");
+	expect(calls).toContain("finish");
+	expect(restoredSelections).toBe(1);
+});
+
+for (const failure of ["decode", "cancel", "scene-change"]) {
+	test(`smart ${failure} failure stops Full Auto and restores selection`, async () => {
+		const { editor, scene } = setup();
+		const controller = new AbortController();
+		silenceFailure = new Error("Source audio unavailable");
+		if (failure !== "decode") {
+			silenceFailure.name = "NoClearSilence";
+			duringSilence = () => {
+				if (failure === "cancel") controller.abort();
+				else scene.id = "another-scene";
+			};
+		}
+		await expect(run({ editor, signal: controller.signal })).rejects.toThrow(
+			failure === "cancel"
+				? "Cancelled"
+				: failure === "scene-change"
+					? "Project or scene changed"
+					: "Source audio unavailable",
+		);
+		expect(silenceCalls).toHaveLength(1);
+		expect(calls).not.toContain("fresh transcription");
+		expect(calls).not.toContain("finish");
+		expect(restoredSelections).toBe(1);
 	});
 }

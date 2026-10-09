@@ -1,4 +1,8 @@
-import { setBatchReadOnlyProjects, acknowledgeAutomationReload, automationReadVersion } from "@/batch/read-only";
+import {
+	setBatchReadOnlyProjects,
+	acknowledgeAutomationReload,
+	automationReadVersion,
+} from "@/batch/read-only";
 import { mockFetch } from "@/test-support/mock-fetch";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Minimal browser/renderer fixtures; canonical state and storage policy use real WASM. */
 import { beforeAll, expect, mock, spyOn, test } from "bun:test";
@@ -98,7 +102,9 @@ mock.module("@/fonts/custom-fonts", () => ({
 	loadProjectFont: async () => {},
 }));
 mock.module("@/timeline/smart-takes/audio-evidence", () => ({
-	collectTakeAudioEvidence: () => { throw new Error("No audio analysis during session handoff"); },
+	collectTakeAudioEvidence: () => {
+		throw new Error("No audio analysis during session handoff");
+	},
 }));
 mock.module("@/timeline/element-utils", () => ({
 	getElementFontFamilies: () => [],
@@ -217,10 +223,24 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 		configurable: true,
 	});
 	const calls: string[] = [];
+	let commitGate: Promise<void> | null = null;
+	let onCommit = () => {};
+	let failCommit = false;
 	const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 		mockFetch(async (_url, init) => {
 			const body = JSON.parse(String(init?.body));
 			calls.push(body.request.type);
+			if (body.request.type === "commit" && failCommit) {
+				failCommit = false;
+				return Response.json(
+					{ error: "Temporary storage outage", definitive: false },
+					{ status: 503 },
+				);
+			}
+			if (body.request.type === "commit" && commitGate) {
+				onCommit();
+				await commitGate;
+			}
 			try {
 				const next = transition(
 					record,
@@ -254,11 +274,75 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 	const first = host();
 	const second = host();
 	const third = host();
-	Object.defineProperty(first.project, "updateThumbnailFromTimeline", {value: async () => false});
+	Object.defineProperty(first.project, "updateThumbnailFromTimeline", {
+		value: async () => false,
+	});
 	try {
 		expect(await first.project.loadProject({ id: "classic-project" })).toBe(
 			true,
 		);
+		// Route/effect reattachment reuses the runtime, media and ownership.
+		const beforeReload = calls.length;
+		const mountedProject = first.project.getActive();
+		const mountedScenes = first.editor.scenes.getScenes();
+		await Promise.all(
+			Array.from({ length: 10 }, () =>
+				first.project.loadProject({ id: "classic-project" }),
+			),
+		);
+		expect(calls.length).toBe(beforeReload);
+		expect(first.project.getActive()).toBe(mountedProject);
+		expect(first.editor.scenes.getScenes()).toBe(mountedScenes);
+		expect(first.project.getSessionReadOnlyReason()).toBeNull();
+		// Slow storage must not create one full archive write per UI action.
+		let releaseCommit!: () => void;
+		commitGate = new Promise<void>((resolve) => {
+			releaseCommit = resolve;
+		});
+		const started = new Promise<void>((resolve) => {
+			onCommit = resolve;
+		});
+		const commitsBeforeBurst = calls.filter((type) => type === "commit").length;
+		const firstSave = first.command.persistEditingSession();
+		await started;
+		const pendingSaves: Promise<void>[] = [];
+		for (let i = 1; i <= 40; i++) {
+			first.project.updateSettings({
+				settings: { canvasSize: { width: 1000 + i, height: 1080 } },
+			});
+			pendingSaves.push(first.command.persistEditingSession());
+		}
+		releaseCommit();
+		commitGate = null;
+		await Promise.all([firstSave, ...pendingSaves]);
+		expect(
+			calls.filter((type) => type === "commit").length - commitsBeforeBurst,
+		).toBe(2);
+		expect(JSON.parse(record).saved.project.settings.canvasSize.width).toBe(
+			1040,
+		);
+		// A suspended tab resumes the unchanged Rust fence without reloading.
+		const generationBeforeSleep = JSON.parse(record).generation;
+		const timeAfterSleep = Date.now() + 10 * 60_000;
+		const clock = spyOn(Date, "now").mockReturnValue(timeAfterSleep);
+		try {
+			await first.project.saveCurrentProject();
+			expect(first.project.getSessionReadOnlyReason()).toBeNull();
+			expect(JSON.parse(record).generation).toBe(generationBeforeSleep);
+			expect(calls).toContain("renew");
+		} finally {
+			clock.mockRestore();
+		}
+		// A temporary storage outage retains the pending save without locking the UI.
+		failCommit = true;
+		const dirty = spyOn(first.editor.save, "markDirty");
+		await expect(first.project.saveCurrentProject()).rejects.toThrow(
+			"Temporary storage outage",
+		);
+		expect(first.project.getSessionReadOnlyReason()).toBeNull();
+		expect(dirty).toHaveBeenCalledWith({ force: true });
+		await first.project.saveCurrentProject();
+		dirty.mockRestore();
 		const initialSettings = structuredClone(first.project.getActive().settings);
 		await first.project.updateSettings({
 			settings: { background: { type: "color", color: "#111111" } },
@@ -376,36 +460,79 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 		);
 		expect(record).toBe(savedBeforeStaleWrite);
 		expect(second.project.getSessionReadOnlyReason()).toContain("ownership");
-        // The fixture hosts share a JS ownership-guard map; real worker/viewer
-        // windows do not. Dispose the stale fixture before observing the owner.
-        second.dispose();
-        await third.project.saveCurrentProject();
-        await third.command.flushHistory();
-        const visibleProject = third.project.getActive();
-        const visibleScenes = third.editor.scenes.getScenes();
-        const visibleAssets = third.editor.media.getAssets();
-        const requestsBeforeHandoff = calls.length;
-        expect(third.project.observeBatchPreview({id:"classic-project"})).toBe(false);
-        setBatchReadOnlyProjects(["classic-project"]);
-        expect(third.project.observeBatchPreview({id:"classic-project"})).toBe(true);
-        expect(third.project.getIsLoading()).toBe(false);
-        expect(third.project.getActive()).toBe(visibleProject);
-        expect(third.editor.scenes.getScenes()).toBe(visibleScenes);
-        expect(third.editor.media.getAssets()).toBe(visibleAssets);
-        expect(calls.length).toBe(requestsBeforeHandoff);
-        expect(() => third.command.undo()).toThrow();
-        // The fixture hosts share a JS ownership-guard map; real worker/viewer
-        // windows do not. Dispose the stale fixture before observing the owner.
-        second.dispose();
-        await third.project.saveCurrentProject();
-        expect(calls.length).toBe(requestsBeforeHandoff);
-
+		// The fixture hosts share a JS ownership-guard map; real worker/viewer
+		// windows do not. Dispose the stale fixture before observing the owner.
+		second.dispose();
+		await third.project.saveCurrentProject();
+		await third.command.flushHistory();
+		const visibleProject = third.project.getActive();
+		const visibleScenes = third.editor.scenes.getScenes();
+		const visibleAssets = third.editor.media.getAssets();
+		const requestsBeforeHandoff = calls.length;
+		expect(third.project.observeBatchPreview({ id: "classic-project" })).toBe(
+			false,
+		);
+		setBatchReadOnlyProjects(["classic-project"]);
+		expect(third.project.observeBatchPreview({ id: "classic-project" })).toBe(
+			true,
+		);
+		expect(third.project.getIsLoading()).toBe(false);
+		expect(third.project.getActive()).toBe(visibleProject);
+		expect(third.editor.scenes.getScenes()).toBe(visibleScenes);
+		expect(third.editor.media.getAssets()).toBe(visibleAssets);
+		expect(calls.length).toBe(requestsBeforeHandoff);
+		expect(() => third.command.undo()).toThrow();
+		// The fixture hosts share a JS ownership-guard map; real worker/viewer
+		// windows do not. Dispose the stale fixture before observing the owner.
+		second.dispose();
+		await third.project.saveCurrentProject();
+		expect(calls.length).toBe(requestsBeforeHandoff);
+		// Once the worker finishes, stale preview data requires one reload,
+		// not a permanent false claim that another editor still owns it.
+		const acquired = transition(
+			record,
+			"alice",
+			"classic-project",
+			{
+				type: "acquire",
+				sessionId: "batch-worker",
+				expectedGeneration: JSON.parse(record).generation,
+				takeOver: true,
+			},
+			Date.now(),
+		);
+		record = transition(
+			acquired.record,
+			"alice",
+			"classic-project",
+			{
+				type: "release",
+				sessionId: "batch-worker",
+				generation: acquired.result.generation,
+			},
+			Date.now(),
+		).record;
+		setBatchReadOnlyProjects([]);
+		expect(await third.project.loadProject({ id: "classic-project" })).toBe(
+			true,
+		);
+		expect(third.project.getSessionReadOnlyReason()).toBeNull();
+		third.project.updateSettings({
+			settings: { canvasSize: { width: 1080, height: 1920 } },
+		});
+		await third.project.saveCurrentProject();
+		expect(JSON.parse(record).saved.project.settings.canvasSize.height).toBe(
+			1920,
+		);
 	} finally {
 		first.dispose();
 		second.dispose();
 		third.dispose();
-        setBatchReadOnlyProjects([]);
-        acknowledgeAutomationReload({projectId:"classic-project",version:automationReadVersion("classic-project")});
+		setBatchReadOnlyProjects([]);
+		acknowledgeAutomationReload({
+			projectId: "classic-project",
+			version: automationReadVersion("classic-project"),
+		});
 		fetchMock.mockRestore();
 		if (originalWindow)
 			Object.defineProperty(globalThis, "window", originalWindow);

@@ -1,10 +1,21 @@
-import { describe, expect, test } from "bun:test";
+// @opencut-test-wasm: real
+import { describe, expect, test, mock } from "bun:test";
+let suggestedRows: number[] = [];
+mock.module("@/ai/client-transport", () => ({
+	aiClientFetch: async () =>
+		Response.json({
+			response: {
+				output_text: JSON.stringify({ rowEndPositions: suggestedRows }),
+			},
+		}),
+}));
 import {
 	applyCaptionRowRearrangement,
 	applyTranscriptCorrections,
 	buildMessageOptimizationRanges,
 	removeCaptionLayerDuplicateWords,
 	validateCaptionRowEndPositions,
+	requestCaptionRowRearrangement,
 	type IndexedTranscriptWord,
 } from "@/subtitles/caption-ai";
 
@@ -16,6 +27,19 @@ const words: IndexedTranscriptWord[] = [
 ];
 
 describe("caption AI edits", () => {
+	test("AI rows are repaired by Rust without changing the transcript", async () => {
+		const original = structuredClone(words);
+		for (const rows of [[4], [2], [4, 2, 2, 99], []]) {
+			suggestedRows = rows;
+			const result = await requestCaptionRowRearrangement({
+				words,
+				wordsPerRow: 2,
+				rows: 1,
+			});
+			expect(result.rowEndPositions).toEqual([2, 4]);
+			expect(words).toEqual(original);
+		}
+	});
 	test("validates rearranged rows without changing word order", () => {
 		expect(
 			applyCaptionRowRearrangement({

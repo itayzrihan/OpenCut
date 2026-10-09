@@ -8,6 +8,7 @@ import { mediaTimeFromSeconds, ZERO_MEDIA_TIME } from "@/wasm";
 import { initializeGpuRenderer } from "@/services/renderer/gpu-renderer";
 import { batchEditIsLocked } from "opencut-wasm";
 import { batchRequest } from "./client";
+import { createBatchUpdateQueue } from "./update-queue";
 import { setBatchWriteToken } from "./write-token";
 import type { BatchRun, BatchState, BatchSource } from "./types";
 export async function executeBatch({
@@ -25,34 +26,24 @@ export async function executeBatch({
 	let abort: AbortController | undefined;
 	let state: BatchRun = run;
 	let executionRunId: string | undefined;
-	let queue: Promise<unknown> = Promise.resolve();
-	const send = (data: Record<string, unknown> = {}) => {
-		const task = queue.then(async () => {
-			const result = await batchRequest<BatchState>({
-				action: "update",
-				id: run.id,
-				...data,
-			});
-			state = result.runs.find((r) => r.id === run.id)!;
-			executionRunId = result.executionRunId;
-			if (
-				current &&
-				state.jobs.find((j) => j.projectId === current)?.cancelRequested
-			)
-				abort?.abort();
-			return result;
+	const send = createBatchUpdateQueue(async (data) => {
+		const result = await batchRequest<BatchState>({
+			action: "update",
+			id: run.id,
+			...data,
 		});
-		queue = task.catch(() => {});
-		return task;
-	};
+		state = result.runs.find((r) => r.id === run.id)!;
+		executionRunId = result.executionRunId;
+		if (
+			current &&
+			state.jobs.find((j) => j.projectId === current)?.cancelRequested
+		)
+			abort?.abort();
+		return result;
+	});
 	const heartbeat = setInterval(() => {
-		void send().catch(() => abort?.abort());
+		void send({}, true).catch(() => abort?.abort());
 	}, 10_000);
-	const progress = (message: string) => {
-		void send({ projectId: current, message: message.slice(0, 4000) }).catch(
-			() => abort?.abort(),
-		);
-	};
 	const errorMessage = (error: unknown) =>
 		error instanceof Error ? error.message : String(error);
 	// Keep the canonical editor and batch write authority alive until its final
@@ -253,13 +244,17 @@ export async function executeBatch({
 				const notes = await runFullAutoEdit({
 					editor,
 					signal: abort.signal,
-					onProgress: progress,
+					// onStep includes every progress message and its durable checkpoint.
+					onProgress: () => {},
 					onStep: (p) => {
-						void send({
-							projectId: current,
-							completedStages: p.completedStages,
-							message: p.message.slice(0, 4000),
-						}).catch(() => abort?.abort());
+						void send(
+							{
+								projectId: current,
+								completedStages: p.completedStages,
+								message: p.message.slice(0, 4000),
+							},
+							true,
+						).catch(() => abort?.abort());
 					},
 					options: run.options,
 					resumeFromStage: job.resumeFromStage,
@@ -301,7 +296,7 @@ export async function executeBatch({
 	} finally {
 		clearInterval(heartbeat);
 		window.removeEventListener("pagehide", stop);
-		await queue;
+		await send.flush();
 		editor.save.stop();
 		setBatchWriteToken("");
 		parent.postMessage(

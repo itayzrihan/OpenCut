@@ -173,6 +173,9 @@ export class EditorSessionClient {
 			viewSchema.parse(await this.exchange({ type: "read" })),
 		);
 	}
+	isCurrentOwner(view: EditorSessionView): boolean {
+		return view.lease?.sessionId === this.sessionId;
+	}
 	acquire({
 		expectedGeneration,
 		takeOver = false,
@@ -210,31 +213,38 @@ export class EditorSessionClient {
 		});
 	}
 	renew(): Promise<void> {
-		return this.serialize(async () => {
-			const lease = this.requireLease();
-			try {
-				const result = z.object({ lease: leaseSchema }).parse(
-					await this.exchange({
-						type: "renew",
-						sessionId: this.sessionId,
-						generation: lease.generation,
-					}),
-				);
-				if (
-					result.lease.sessionId !== this.sessionId ||
-					result.lease.generation !== lease.generation
-				)
-					throw new Error("Unexpected editor ownership acknowledgement");
-				this.assertLive();
-				this.lease = result.lease;
-			} catch (error) {
-				if (error instanceof EditorSessionFailure && error.definitive) {
-					this.lease = null;
-					this.leaseFailure = error;
-				}
-				throw error;
+		return this.serialize(() => this.renewLease());
+	}
+	private async renewLease(): Promise<void> {
+		const lease = this.requireLease();
+		try {
+			const result = z.object({ lease: leaseSchema }).parse(
+				await this.exchange({
+					type: "renew",
+					sessionId: this.sessionId,
+					generation: lease.generation,
+				}),
+			);
+			if (
+				result.lease.sessionId !== this.sessionId ||
+				result.lease.generation !== lease.generation
+			)
+				throw new Error("Unexpected editor ownership acknowledgement");
+			this.assertLive();
+			this.lease = result.lease;
+		} catch (error) {
+			if (error instanceof EditorSessionFailure && error.definitive) {
+				this.lease = null;
+				this.leaseFailure = error;
 			}
-		});
+			throw error;
+		}
+	}
+	private async ensureFreshLease(): Promise<void> {
+		// Refresh before writing after sleep or a long queue. The host resumes
+		// only an unchanged fence; this never acquires or takes over a project.
+		if (this.requireLease().expiresAtMs <= Date.now() + 30_000)
+			await this.renewLease();
 	}
 	/** A definitive acquisition conflict is observable, not permission to retry
 	 * takeover against a newer owner. Preserve the server's fence and read the
@@ -257,7 +267,7 @@ export class EditorSessionClient {
 	 * state can replace the original request identity after a lost response. */
 	save(capture: () => EditorSessionBundle): Promise<void> {
 		return this.serialize(async () => {
-			this.requireLease();
+			await this.ensureFreshLease();
 			if (this.pending) await this.commitPending();
 			const lease = this.requireLease();
 			this.pending = {
@@ -296,6 +306,7 @@ export class EditorSessionClient {
 	}
 	release(): Promise<void> {
 		return this.serialize(async () => {
+			await this.ensureFreshLease();
 			if (this.pending) await this.commitPending();
 			const lease = this.requireLease();
 			await this.exchange({

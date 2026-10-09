@@ -50,6 +50,10 @@ export function EditorProvider({
 		const loadProject = async () => {
 			try {
 				setError(null);
+				if (!readOnly && editor.project.canReuseLoadedProject(projectId)) {
+					setIsLoading(false);
+					return;
+				}
 				// A handoff changes ownership, not the visible project. Keep its
 				// preview mounted while the isolated worker edits the saved copy.
 				if (readOnly && editor.project.observeBatchPreview({ id: projectId })) {

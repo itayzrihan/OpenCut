@@ -18,6 +18,82 @@ pub(crate) struct ArchivedClassicProject {
     media_assets: Vec<Map<String, Value>>,
 }
 
+/// Version 2 history uses lossless JSON deltas against the archive's current
+/// snapshot. Full snapshots remain supported for v1 and for cheaper encodings.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(untagged)]
+pub(crate) enum ArchivedHistorySnapshot {
+    Full(ArchivedClassicProject),
+    Delta { delta: Vec<Value> },
+}
+
+impl ArchivedHistorySnapshot {
+    pub(crate) fn encode(
+        classic: ArchivedClassicProject,
+        base: Option<&Value>,
+    ) -> Result<Self, ModelError> {
+        let Some(base) = base else {
+            return Ok(Self::Full(classic));
+        };
+        let value = serde_json::to_value(&classic).map_err(|e| invalid(&e.to_string()))?;
+        let patch = json_patch::diff(base, &value);
+        let delta = serde_json::to_value(patch).map_err(|e| invalid(&e.to_string()))?;
+        if serde_json::to_vec(&delta)
+            .map_err(|e| invalid(&e.to_string()))?
+            .len()
+            + 16
+            < serde_json::to_vec(&value)
+                .map_err(|e| invalid(&e.to_string()))?
+                .len()
+        {
+            Ok(Self::Delta {
+                delta: delta.as_array().expect("patch array").clone(),
+            })
+        } else {
+            Ok(Self::Full(classic))
+        }
+    }
+
+    pub(crate) fn restore(
+        self,
+        base: Option<&Value>,
+        sources: &SourcePool,
+        budget: &mut usize,
+    ) -> Result<ClassicProject, ModelError> {
+        let classic = match self {
+            Self::Full(classic) => classic,
+            Self::Delta { delta } => {
+                let mut value = base
+                    .ok_or_else(|| invalid("history delta requires archive version 2"))?
+                    .clone();
+                let patch: json_patch::Patch = serde_json::from_value(Value::Array(delta))
+                    .map_err(|e| invalid(&e.to_string()))?;
+                // Our encoder uses only these operations. Copy/move can amplify
+                // untrusted data or introduce order-dependent aliasing.
+                if patch.0.iter().any(|op| {
+                    !matches!(
+                        op,
+                        json_patch::PatchOperation::Add(_)
+                            | json_patch::PatchOperation::Remove(_)
+                            | json_patch::PatchOperation::Replace(_)
+                    )
+                }) {
+                    return Err(invalid("unsupported history delta operation"));
+                }
+                json_patch::patch(&mut value, &patch).map_err(|e| invalid(&e.to_string()))?;
+                serde_json::from_value(value).map_err(|e| invalid(&e.to_string()))?
+            }
+        };
+        let bytes = serde_json::to_vec(&classic)
+            .map_err(|e| invalid(&e.to_string()))?
+            .len();
+        *budget = budget
+            .checked_sub(bytes)
+            .ok_or_else(|| invalid("expanded history exceeds its storage budget"))?;
+        classic.restore(sources)
+    }
+}
+
 impl ClassicProject {
     pub(crate) fn to_archive(&self, sources: &mut SourcePool) -> ArchivedClassicProject {
         let mut document = self.document.fields.clone();

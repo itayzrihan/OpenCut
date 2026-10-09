@@ -15,6 +15,7 @@ import { useEditor } from "@/editor/use-editor";
 import { type FullAutoOptions } from "@/ai/full-auto-edit";
 import { toast } from "sonner";
 import { useBatchEdit } from "@/batch/provider";
+import { findSceneCheckpoint } from "@/batch/scene-checkpoint";
 
 export function FullAutoEditButton({
 	disabled,
@@ -26,12 +27,17 @@ export function FullAutoEditButton({
 	const editor = useEditor();
 	const { startProject, state } = useBatchEdit();
 	const projectId = editor.project.getActive().metadata.id;
-	const previous = state.runs.find((r) =>
-		r.jobs.some((j) => j.projectId === projectId),
-	);
+	const sceneId = editor.scenes.getActiveScene().id;
+	const previous = findSceneCheckpoint({
+		runs: state.runs,
+		projectId,
+		sceneId,
+	});
 	const previousJob = previous?.jobs.find((j) => j.projectId === projectId);
 	const resumable =
-		previousJob?.status === "failed" && previousJob.completedStages >= 3;
+		(previousJob?.status === "failed" ||
+			previousJob?.status === "interrupted") &&
+		previousJob.completedStages >= 3;
 	const [open, setOpen] = useState(false);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
@@ -76,7 +82,7 @@ export function FullAutoEditButton({
 					: "Full Auto Edit"}
 			</Button>
 			<p className="text-xs text-muted-foreground">
-				Vertical framing, silence removal, complete Hebrew Auto Texts and
+				Vertical framing, smart silence removal, complete Hebrew Auto Texts and
 				finishing.
 			</p>
 			<Dialog
@@ -126,11 +132,11 @@ export function FullAutoEditButton({
 							</label>
 						))}
 						<p className="text-xs text-muted-foreground">
-							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · silence
-							0.3s · Assistant bold · fade 60% / 25%. Local face/body framing
-							uses five source samples per source; no cloud AI is used for
-							centering. Uncertain subjects use centered vertical cover
-							automatically; editing continues.
+							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · Smart
+							audio cut · protect speech · Assistant bold · fade 60% / 25%.
+							Local face/body framing uses five source samples per source; no
+							cloud AI is used for centering. Uncertain subjects use centered
+							vertical cover automatically; editing continues.
 						</p>
 						{status && (
 							<p role="status" className="text-sm whitespace-pre-wrap">

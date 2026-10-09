@@ -417,3 +417,53 @@ export async function importLegacyAccount({
 		).length,
 	};
 }
+
+/** Recover omitted private assets after projects were already migrated. Only
+ * the legacy owner may copy them; existing libraries are never overwritten. */
+export async function recoverMissingLegacyAssets({
+	publicRoot = legacyPublicRoot(),
+	signal,
+}: { publicRoot?: string; signal?: AbortSignal } = {}) {
+	if (!(await canImportLegacy()))
+		throw new Error("Legacy assets belong to the first account");
+	const recovered: string[] = [];
+	for (const name of ["shared-library", "project-fonts"]) {
+		const target = join(accountDataRoot(), name);
+		if ((await optionalWalk({ root: target })).length) continue;
+		const entries = await optionalWalk({ root: join(publicRoot, name) });
+		if (!entries.length) continue;
+		const staging = join(
+			accountsRoot(),
+			"imports",
+			`${requireAccount().id}-assets-${randomUUID()}`,
+		);
+		await mkdir(staging, { recursive: true });
+		for (const entry of entries) {
+			signal?.throwIfAborted();
+			const destination = contained({
+				root: staging,
+				name: entry.relativePath,
+			});
+			await mkdir(dirname(destination), { recursive: true });
+			await copyVerified({ source: entry.source, target: destination, signal });
+			if (entry.relativePath.endsWith(".json")) {
+				const value = JSON.parse(await readFile(destination, "utf8"));
+				await writeFile(destination, JSON.stringify(rewritePrivateUrls(value)));
+			}
+		}
+		signal?.throwIfAborted();
+		if ((await optionalWalk({ root: target })).length)
+			throw new Error(
+				"Account assets changed during recovery; staged copy retained",
+			);
+		await mkdir(dirname(target), { recursive: true });
+		try {
+			await rename(target, `${target}.before-recovery-${randomUUID()}`);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+		}
+		await rename(staging, target);
+		recovered.push(name);
+	}
+	return { recovered };
+}

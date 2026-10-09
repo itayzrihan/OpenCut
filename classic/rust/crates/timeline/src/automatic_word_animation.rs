@@ -85,6 +85,7 @@ fn compile(
         return Err("Invalid Timeline Source".into());
     }
     let mut doc: Value = serde_json::from_str(&c.formatted_json).map_err(|e| e.to_string())?;
+    let scene_id = doc["scene"]["id"].as_str().unwrap_or("scene").to_owned();
     let plan: Plan = serde_json::from_str(&o.plan_json).map_err(|e| e.to_string())?;
     let catalog: Vec<String> =
         serde_json::from_str(&o.preset_ids_json).map_err(|e| e.to_string())?;
@@ -312,11 +313,11 @@ fn compile(
         }
     }
     for (i, (a, b, text_id)) in merged.into_iter().enumerate() {
-        sounds.push(json!({"id":format!("{OWNER}:sfx:{i}"),"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":"da73d7d4-9b71-4a24-84ad-f6c51034354c","name":"Word Reveal · Typing","startTime":a,"duration":b-a,"trimStart":0,"trimEnd":1872000-(b-a),"sourceDuration":1872000,"automaticWordAnimationOwner":OWNER,"params":{"volume":-5,"muted":false,"fadeInDuration":0,"fadeOutDuration":0.04,"opencut.typingRevealSfx.kind":"letter-by-letter-typing-sfx","opencut.typingRevealSfx.textElementId":text_id}}));
+        sounds.push(json!({"id":format!("{OWNER}:{scene_id}:sfx:{i}"),"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":"da73d7d4-9b71-4a24-84ad-f6c51034354c","name":"Word Reveal · Typing","startTime":a,"duration":b-a,"trimStart":0,"trimEnd":1872000-(b-a),"sourceDuration":1872000,"automaticWordAnimationOwner":OWNER,"params":{"volume":-5,"muted":false,"fadeInDuration":0,"fadeOutDuration":0.04,"opencut.typingRevealSfx.kind":"letter-by-letter-typing-sfx","opencut.typingRevealSfx.textElementId":text_id}}));
     }
     let sound_count = sounds.len();
     if sound_count > 0 {
-        let base = format!("{OWNER}:audio");
+        let base = format!("{OWNER}:{scene_id}:audio");
         let mut id = base.clone();
         let mut suffix = 0;
         while tracks.iter().any(|t| t["id"] == id) {
@@ -454,5 +455,23 @@ mod tests {
         let mut d = source();
         d["scene"]["tracks"][0]["elements"][5]["wordRuns"][0]["endTime"] = json!(999999);
         assert!(!run(d, vec![event(5, false)]).valid);
+    }
+
+    #[test]
+    fn reveal_sound_ids_do_not_collide_between_scenes() {
+        let mut ids = std::collections::HashSet::new();
+        for scene in ["smart-a", "smart-b"] {
+            let mut input = source();
+            input["scene"]["id"] = json!(scene);
+            let output = doc(&run(input, vec![event(5, true)]));
+            let track = output["scene"]["tracks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|t| t["automaticWordAnimationOwner"] == OWNER)
+                .unwrap();
+            assert!(ids.insert(track["id"].as_str().unwrap().to_owned()));
+            assert!(ids.insert(track["elements"][0]["id"].as_str().unwrap().to_owned()));
+        }
     }
 }

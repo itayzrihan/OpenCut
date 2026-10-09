@@ -167,7 +167,7 @@ impl CanonicalEditorRuntime {
             .as_mut()
             .poll(&mut Context::from_waker(Waker::noop()))
         {
-            Poll::Ready(result) => to_js(&result.map_err(js_error)?),
+            Poll::Ready(result) => to_json_js(&result.map_err(js_error)?),
             Poll::Pending => Err(js_error("Immediate capability unexpectedly suspended")),
         }
     }
@@ -363,6 +363,12 @@ fn to_js(value: &impl Serialize) -> Result<JsValue, JsValue> {
     value
         .serialize(&serde_wasm_bindgen::Serializer::json_compatible())
         .map_err(js_error)
+}
+
+/// Large canonical archives must cross the WASM boundary in one transfer.
+/// Constructing millions of JS properties individually stalls editor saves.
+fn to_json_js(value: &impl Serialize) -> Result<JsValue, JsValue> {
+    js_sys::JSON::parse(&serde_json::to_string(value).map_err(js_error)?)
 }
 
 /// Registry contracts use JSON, including its distinction between an omitted

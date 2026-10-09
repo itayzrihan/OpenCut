@@ -152,17 +152,19 @@ pub fn build_caption_cue_plan(
     let row_count = preference(&settings, "rows", 1.0, 1.0, 4.0, true) as usize;
     let lead = preference(&settings, "inPaddingPercent", 0.0, 0.0, 100.0, false) / 100.0;
     let tail = preference(&settings, "outPaddingPercent", 0.0, 0.0, 100.0, false) / 100.0;
-    let mut breaks = breaks(&settings);
-    let valid_breaks = breaks.last() == Some(&words.len())
-        && breaks.iter().enumerate().all(|(i, end)| {
-            let start = if i == 0 { 0 } else { breaks[i - 1] };
-            *end > start && *end <= words.len() && *end - start <= per_row
-        });
-    if !valid_breaks {
-        breaks = (per_row..words.len())
-            .step_by(per_row)
-            .chain(std::iter::once(words.len()))
-            .collect();
+    // AI row boundaries are suggestions. Keep every usable semantic boundary,
+    // split oversized rows and cover an omitted tail without dropping speech.
+    let mut suggested = breaks(&settings);
+    suggested.retain(|end| *end <= words.len());
+    if suggested.last() != Some(&words.len()) {
+        suggested.push(words.len());
+    }
+    let mut breaks = Vec::new();
+    let mut start = 0;
+    for end in suggested {
+        breaks.extend((start + per_row..end).step_by(per_row));
+        breaks.push(end);
+        start = end;
     }
     let exact = settings["exactWordTimings"] == true;
     let mut segments: Vec<usize> = settings["segmentBreaks"]
@@ -333,6 +335,40 @@ pub fn allocate_caption_layers(
 mod tests {
     use super::*;
     #[test]
+    fn malformed_ai_rows_preserve_words_clocks_and_valid_boundaries() {
+        for suggested in ["[3,10]", "[10,3,3,999]", "[3]", "[]"] {
+            let cues = build_caption_cue_plan(CaptionCuePlanOptions {
+                words: (0..13)
+                    .map(|i| CaptionLayoutWord {
+                        text: format!("word{i}"),
+                        start: i as f64,
+                        end: i as f64 + 0.5,
+                    })
+                    .collect(),
+                settings_json: format!(
+                    "{{\"wordsPerRow\":4,\"rows\":1,\"exactWordTimings\":true,\"rowBreaks\":{suggested}}}"
+                ),
+            });
+            assert_eq!(
+                cues.iter()
+                    .flat_map(|cue| cue.word_indices.iter().copied())
+                    .collect::<Vec<_>>(),
+                (0..13).collect::<Vec<_>>()
+            );
+            for cue in &cues {
+                assert!(cue.word_indices.len() <= 4);
+                assert_eq!(cue.start_time, cue.word_indices[0] as f64);
+                assert_eq!(
+                    cue.start_time + cue.duration,
+                    *cue.word_indices.last().unwrap() as f64 + 0.5
+                );
+            }
+            if suggested != "[]" {
+                assert_eq!(cues[0].word_indices, vec![0, 1, 2]);
+            }
+        }
+    }
+    #[test]
     fn readable_rows_preserve_order_and_neighbour_boundaries() {
         let words = (0..4)
             .map(|i| CaptionLayoutWord {
@@ -347,9 +383,10 @@ mod tests {
                 .into(),
         });
         assert_eq!(cues.len(), 4);
-        assert!(cues
-            .windows(2)
-            .all(|pair| pair[0].start_time + pair[0].duration <= pair[1].start_time));
+        assert!(
+            cues.windows(2)
+                .all(|pair| pair[0].start_time + pair[0].duration <= pair[1].start_time)
+        );
         assert_eq!(cues[2].word_indices, vec![2]);
     }
     #[test]

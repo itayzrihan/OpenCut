@@ -1,5 +1,5 @@
 import { test, expect, mock } from "bun:test";
-import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, mkdir, writeFile, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -69,7 +69,7 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 			await accountScope.run(alice.account, () =>
 				assertAccountMediaSource(privateMedia),
 			),
-		).toBe(privateMedia);
+		).toBe(await realpath(privateMedia));
 		const request = (token: string) =>
 			new Request("http://localhost:3000/api/local-drive", {
 				headers: {

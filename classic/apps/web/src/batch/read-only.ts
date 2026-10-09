@@ -38,6 +38,10 @@ export function setBatchReadOnlyProjects(ids: string[]) {
 export function isBatchReadOnly(projectId: string | undefined) {
 	return !!projectId && (locked.has(projectId) || stale.has(projectId));
 }
+/** A stale preview needs reloading, but is not an active worker's ownership. */
+export function isBatchProjectLocked(projectId: string) {
+	return locked.has(projectId);
+}
 export function assertBatchEditable(projectId: string | undefined) {
 	assertEditorOwnership(projectId);
 	if (isBatchReadOnly(projectId) || (!!projectId && preparing.has(projectId)))

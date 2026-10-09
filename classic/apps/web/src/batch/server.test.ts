@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 const projects = new Map<
 	string,
-	{ metadata: { name: string; updatedAt: string } }
+	{ metadata: { name: string; updatedAt: string }; currentSceneId?: string }
 >();
 const root = await mkdtemp(join(tmpdir(), "opencut-batch-test-"));
 mock.module("@/services/local-drive/server", () => ({
@@ -426,21 +426,162 @@ test("resume preserves a failed caption checkpoint and rejects stale or changed 
 });
 
 test("an existing project whose worker never started cancels immediately and rejects late writes", async () => {
-    const projectId = "lost-before-start";
-    const stamp = "2026-10-08T10:00:00.000Z";
-    projects.set(projectId, {metadata:{name:"Lost worker",updatedAt:stamp}});
-    const started = await createProjectEdit({id:"lost-worker-run", projectId, expectedUpdatedAt:stamp, options});
-    const cancelled = await cancelBatch({id:started.run.id});
-    expect(cancelled.runs.find(r=>r.id===started.run.id)?.jobs[0].status).toBe("cancelled");
-    await assertBatchProjectWrite({projectId,token:null});
-    await expect(assertBatchProjectWrite({projectId,token:started.token})).rejects.toThrow("Expired");
-    await expect(updateBatch({id:started.run.id,token:started.token,projectId,event:"run"})).rejects.toThrow();
-    expect(projects.get(projectId)?.metadata.updatedAt).toBe(stamp);
-    const retry = await createProjectEdit({id:"replacement-worker-run",projectId,expectedUpdatedAt:stamp,options});
-    await updateBatch({id:retry.run.id,token:retry.token,projectId,event:"run"});
-    const cancelling = await cancelBatch({id:retry.run.id});
-    expect(cancelling.runs.find(r=>r.id===retry.run.id)?.jobs[0]).toMatchObject({status:"running",cancelRequested:true});
-    // Already-running workers must flush before releasing the project lock.
-    await expect(assertBatchProjectWrite({projectId,token:null})).rejects.toThrow("locked");
-    await updateBatch({id:retry.run.id,token:retry.token,projectId,event:"cancel"});
+	const projectId = "lost-before-start";
+	const stamp = "2026-10-08T10:00:00.000Z";
+	projects.set(projectId, {
+		metadata: { name: "Lost worker", updatedAt: stamp },
+	});
+	const started = await createProjectEdit({
+		id: "lost-worker-run",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	const cancelled = await cancelBatch({ id: started.run.id });
+	expect(
+		cancelled.runs.find((r) => r.id === started.run.id)?.jobs[0].status,
+	).toBe("cancelled");
+	await assertBatchProjectWrite({ projectId, token: null });
+	await expect(
+		assertBatchProjectWrite({ projectId, token: started.token }),
+	).rejects.toThrow("Expired");
+	await expect(
+		updateBatch({
+			id: started.run.id,
+			token: started.token,
+			projectId,
+			event: "run",
+		}),
+	).rejects.toThrow();
+	expect(projects.get(projectId)?.metadata.updatedAt).toBe(stamp);
+	const retry = await createProjectEdit({
+		id: "replacement-worker-run",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	await updateBatch({
+		id: retry.run.id,
+		token: retry.token,
+		projectId,
+		event: "run",
+	});
+	const cancelling = await cancelBatch({ id: retry.run.id });
+	expect(
+		cancelling.runs.find((r) => r.id === retry.run.id)?.jobs[0],
+	).toMatchObject({ status: "running", cancelRequested: true });
+	// Already-running workers must flush before releasing the project lock.
+	await expect(
+		assertBatchProjectWrite({ projectId, token: null }),
+	).rejects.toThrow("locked");
+	await updateBatch({
+		id: retry.run.id,
+		token: retry.token,
+		projectId,
+		event: "cancel",
+	});
+});
+
+test("explicit resume after worker interruption preserves the checkpoint and fences the old worker", async () => {
+	const projectId = "interrupted-resume-project";
+	const stamp = "2026-10-08T10:00:00.000Z";
+	projects.set(projectId, {
+		metadata: { name: "Interrupted", updatedAt: stamp },
+	});
+	const original = await createProjectEdit({
+		id: "interrupted-resume-original",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	await updateBatch({
+		id: original.run.id,
+		token: original.token,
+		projectId,
+		event: "run",
+		completedStages: 3,
+	});
+	const path = join(root, "batch", "queue.json");
+	const stored = JSON.parse(await readFile(path, "utf8"));
+	stored.runs.find(
+		(run: { id: string }) => run.id === original.run.id,
+	).heartbeat = 0;
+	await writeFile(path, JSON.stringify(stored));
+	expect(
+		(await getBatchState()).runs.find((r) => r.id === original.run.id)?.jobs[0]
+			.status,
+	).toBe("interrupted");
+	const resumed = await createProjectEdit({
+		id: "interrupted-resume-next",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+		resumeRunId: original.run.id,
+	});
+	expect(resumed.run.jobs[0]).toMatchObject({
+		status: "ready",
+		completedStages: 3,
+		resumeFromStage: 3,
+	});
+	await expect(
+		updateBatch({
+			id: original.run.id,
+			token: original.token,
+			projectId,
+			event: "complete",
+		}),
+	).rejects.toThrow("expired");
+	await expect(
+		assertBatchProjectWrite({ projectId, token: original.token }),
+	).rejects.toThrow();
+});
+
+test("caption checkpoints belong to their scene and cannot skip preparation in another Smart Takes scene", async () => {
+	const projectId = "scene-checkpoint-project",
+		stamp = "2026-10-08T12:00:00.000Z";
+	const project = {
+		metadata: { name: "Scenes", updatedAt: stamp },
+		currentSceneId: "smart-takes-b",
+	};
+	projects.set(projectId, project);
+	const original = await createProjectEdit({
+		id: "scene-checkpoint-original",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	expect(original.run.jobs[0].sceneId).toBe("smart-takes-b");
+	await updateBatch({
+		id: original.run.id,
+		token: original.token,
+		projectId,
+		event: "run",
+		completedStages: 3,
+	});
+	await updateBatch({
+		id: original.run.id,
+		token: original.token,
+		projectId,
+		event: "fail",
+	});
+	project.currentSceneId = "smart-takes-a";
+	await expect(
+		createProjectEdit({
+			id: "wrong-scene-resume",
+			projectId,
+			expectedUpdatedAt: stamp,
+			options,
+			resumeRunId: original.run.id,
+		}),
+	).rejects.toThrow("latest failed");
+	const fresh = await createProjectEdit({
+		id: "fresh-scene-start",
+		projectId,
+		expectedUpdatedAt: stamp,
+		options,
+	});
+	expect(fresh.run.jobs[0]).toMatchObject({
+		sceneId: "smart-takes-a",
+		completedStages: 0,
+	});
 });

@@ -22,9 +22,9 @@ pub struct SessionBundle {
     /// Derived library artwork; excluded from canonical editing and run hashes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub thumbnail: Option<String>,
-    #[serde(default,skip_serializing_if="Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub conversation: Option<crate::ConversationArchive>,
-    #[serde(default,skip_serializing_if="Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub artifacts: Option<crate::ScopedArtifactArchive>,
 }
 
@@ -249,7 +249,17 @@ impl SessionRecord {
                 session_id,
                 generation,
             } => {
-                self.require_lease(&session_id, generation, now)?;
+                // Sleep, background throttling and slow storage can outlast the
+                // heartbeat. Expiry makes the project available to another
+                // editor, but does not itself transfer ownership. Only the
+                // unchanged owner/fence may resume under the host's project
+                // lock; a release or acquisition permanently fences it out.
+                id(&session_id)?;
+                if !self.lease.as_ref().is_some_and(|lease| {
+                    lease.session_id == session_id && lease.generation == generation
+                }) {
+                    return Err(error("editor ownership was released or transferred"));
+                }
                 self.lease.as_mut().expect("validated lease").expires_at_ms = now + LEASE_MS;
                 json!({"storageRevision":self.storage_revision,"lease":self.lease})
             }
@@ -304,7 +314,14 @@ impl SessionRecord {
                 if let Some(previous) = &self.saved {
                     if saved.editor_revision < previous.editor_revision
                         || (saved.editor_revision == previous.editor_revision
-                            && saved.bundle.archive != previous.bundle.archive)
+                            && saved.bundle.archive != previous.bundle.archive
+                            && !(saved.bundle.archive["schemaVersion"]
+                                != previous.bundle.archive["schemaVersion"]
+                                && expanded_archive(&self.project_id, &saved.bundle.archive)?
+                                    == expanded_archive(
+                                        &self.project_id,
+                                        &previous.bundle.archive,
+                                    )?))
                     {
                         return Err(error(
                             "canonical revision cannot move backward or describe different contents",
@@ -336,6 +353,37 @@ impl SessionRecord {
         self.last_host_time_ms = now;
         Ok(result)
     }
+}
+
+// An encoding upgrade is not an edit. Compare complete canonical history when
+// a v1 archive is first saved as v2 at the same editor revision.
+fn expanded_archive(project_id: &str, archive: &Value) -> Result<Value, AgentError> {
+    let runtime = OpenCutRuntime::default();
+    let mut result = Value::Null;
+    for (capability, input) in [
+        (
+            "project.classic.session.restore",
+            json!({"projectId":project_id,"expectedRevision":0,"archive":archive}),
+        ),
+        (
+            "project.classic.session.archive",
+            json!({"projectId":project_id}),
+        ),
+    ] {
+        let mut future = std::pin::pin!(runtime.registry().invoke(
+            capability,
+            InvocationContext::default(),
+            input
+        ));
+        result = match future
+            .as_mut()
+            .poll(&mut Context::from_waker(Waker::noop()))
+        {
+            Poll::Ready(result) => result.map_err(error)?.result.data,
+            Poll::Pending => return Err(error("archive normalization unexpectedly suspended")),
+        };
+    }
+    Ok(result)
 }
 
 fn validate_bundle(
@@ -370,14 +418,19 @@ fn validate_bundle(
         }
     };
     let state = runtime.snapshot().map_err(error)?;
-    if let Some(conversation)=&bundle.conversation {conversation.validate(account_id,project_id)?;}
-    if let Some(artifacts)=&bundle.artifacts {artifacts.restore(account_id,project_id,runtime.artifacts())?;}
+    if let Some(conversation) = &bundle.conversation {
+        conversation.validate(account_id, project_id)?;
+    }
+    if let Some(artifacts) = &bundle.artifacts {
+        artifacts.restore(account_id, project_id, runtime.artifacts())?;
+    }
     if let Some(checkpoint) = &bundle.agent_checkpoint {
         let bridge = HostBridge::default();
         register_knowledge_capabilities(runtime.registry(), &bridge).map_err(error)?;
         // Install the same editor contracts, without dispatching any host IO.
         opencut_editor_api::register_editor_host_capabilities(&runtime, &bridge).map_err(error)?;
-        opencut_editor_api::register_editor_screenshot_capability(&runtime, &bridge).map_err(error)?;
+        opencut_editor_api::register_editor_screenshot_capability(&runtime, &bridge)
+            .map_err(error)?;
         RuntimeAgent::restore_checkpoint(
             runtime.clone(),
             account_id,

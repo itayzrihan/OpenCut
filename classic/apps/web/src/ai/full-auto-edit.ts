@@ -187,7 +187,7 @@ export async function runFullAutoEdit({
 					break;
 				}
 				case "silence": {
-					progress("Remove Silences · 0.3 seconds…");
+					progress("Smart audio cut · protect speech…");
 					const scene = editor.scenes.getActiveScene();
 					const previous = editor.selection.getSnapshot();
 					editor.selection.setSelectedElements({
@@ -198,10 +198,19 @@ export async function runFullAutoEdit({
 					});
 					try {
 						await editor.timeline.removeAllSilence({
-							mode: "audio",
+							mode: "smart",
 							minSilenceSeconds: 0.3,
 							signal,
 						});
+					} catch (error) {
+						assertContext();
+						if (!(error instanceof Error) || error.name !== "NoClearSilence")
+							throw error;
+						// An intentional safety hold is a completed analysis, not a failed edit.
+						notes.push(`Smart audio cut: ${error.message}`);
+						progress(
+							"Smart audio cut · no safe pauses found; keeping audio intact.",
+						);
 					} finally {
 						editor.selection.restoreSnapshot({ snapshot: previous });
 					}

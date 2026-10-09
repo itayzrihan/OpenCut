@@ -3,6 +3,10 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { accountDataRoot, withAccount } from "@/accounts/server";
+import {
+	readGlobalAudio,
+	withGlobalAudio,
+} from "@/shared-library/global-library";
 import type {
 	GeneratedBackgroundPreset,
 	GeneratedEffectPreset,
@@ -102,7 +106,9 @@ async function pathExists({ target }: { target: string }): Promise<boolean> {
 	}
 }
 
-async function resolvePublicRoot() { return { publicRoot: accountDataRoot(), repositoryRoot: "" }; }
+async function resolvePublicRoot() {
+	return { publicRoot: accountDataRoot(), repositoryRoot: "" };
+}
 
 function toRepositoryPath({ parts }: { parts: string[] }): string {
 	return path.posix.join(...parts.flatMap((part) => part.split(path.sep)));
@@ -152,7 +158,8 @@ async function readManifest(): Promise<SharedLibraryManifest> {
 				: [],
 		};
 	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === "ENOENT") return emptyManifest();
+		if ((error as NodeJS.ErrnoException).code === "ENOENT")
+			return emptyManifest();
 		throw error;
 	}
 }
@@ -332,6 +339,17 @@ async function handleAudioImport({
 	const { libraryRoot, manifestPath, repositoryRoot } =
 		await getSharedLibraryPaths();
 	const manifest = await readManifest();
+	const globalIds = new Set((await readGlobalAudio()).map((asset) => asset.id));
+	if (
+		metadata.some((input) =>
+			globalIds.has(sanitizeId({ value: input.id }) ?? ""),
+		)
+	) {
+		return NextResponse.json(
+			{ error: "Global audio cannot be replaced by an account upload" },
+			{ status: 409 },
+		);
+	}
 	const imported: SharedAudioAsset[] = [];
 	const stagedPaths = [manifestPath];
 
@@ -401,7 +419,7 @@ async function handleAudioImport({
 	await writeManifest({ manifest });
 	return NextResponse.json({
 		assets: imported,
-		manifest: await readManifest(),
+		manifest: await withGlobalAudio(await readManifest()),
 	});
 }
 
@@ -488,7 +506,7 @@ async function handleStickerImport({
 	await writeManifest({ manifest });
 	return NextResponse.json({
 		assets: imported,
-		manifest: await readManifest(),
+		manifest: await withGlobalAudio(await readManifest()),
 	});
 }
 
@@ -497,6 +515,15 @@ async function handlePatch({
 }: {
 	patch: ManifestPatch;
 }): Promise<NextResponse> {
+	if (
+		patch.action === "updateAudioAsset" &&
+		(await readGlobalAudio()).some((asset) => asset.id === patch.assetId)
+	) {
+		return NextResponse.json(
+			{ error: "Global audio is managed by the host library" },
+			{ status: 403 },
+		);
+	}
 	const manifest = await readManifest();
 	const { libraryRoot, manifestPath, repositoryRoot } =
 		await getSharedLibraryPaths();
@@ -626,11 +653,15 @@ async function handlePatch({
 	}
 
 	await writeManifest({ manifest });
-	return NextResponse.json({ manifest: await readManifest() });
+	return NextResponse.json({
+		manifest: await withGlobalAudio(await readManifest()),
+	});
 }
 
 async function GETHandler() {
-	return NextResponse.json({ manifest: await readManifest() });
+	return NextResponse.json({
+		manifest: await withGlobalAudio(await readManifest()),
+	});
 }
 
 async function POSTHandler(request: Request) {

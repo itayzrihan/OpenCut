@@ -33,7 +33,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useContainerSize } from "@/hooks/use-container-size";
@@ -82,7 +81,9 @@ export function SoundsView() {
 					</TabsList>
 				</div>
 				<Separator className="my-4" />
-				<TabsContent value="speech" className="mt-0 min-h-0 flex-1"><SpeechView /></TabsContent>
+				<TabsContent value="speech" className="mt-0 min-h-0 flex-1">
+					<SpeechView />
+				</TabsContent>
 				<TabsContent
 					value="sound-effects"
 					className="mt-0 flex min-h-0 flex-1 flex-col p-5 pt-0"
@@ -180,12 +181,16 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
 		null,
 	);
+	const [licenseFilter, setLicenseFilter] = useState("all");
+	const [search, setSearch] = useState("");
 	const [categoryName, setCategoryName] = useState("");
 	const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 	const [playingId, setPlayingId] = useState<string | null>(null);
 	const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
 		null,
 	);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const { height: listHeight } = useContainerSize({ containerRef });
 	const scope = getAudioScope({ folder });
 	const folderLabel = folder === "music" ? "Music" : "Sound effects";
 	const scopedCategories = useMemo(
@@ -200,12 +205,19 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 		? scopedCategories.find((category) => category.id === selectedCategoryId)
 		: null;
 	const displayedAssets = useMemo(() => {
-		if (!selectedCategory) {
-			return folderAssets;
-		}
-		const categoryAssetIds = new Set(selectedCategory.assetIds);
-		return folderAssets.filter((asset) => categoryAssetIds.has(asset.id));
-	}, [folderAssets, selectedCategory]);
+		const categoryAssetIds = selectedCategory
+			? new Set(selectedCategory.assetIds)
+			: null;
+		return folderAssets.filter(
+			(asset) =>
+				(!categoryAssetIds || categoryAssetIds.has(asset.id)) &&
+				(licenseFilter === "all" ||
+					(asset.license?.status ?? "needs-review") === licenseFilter) &&
+				`${asset.name} ${asset.pack ?? ""} ${asset.license?.author ?? ""}`
+					.toLowerCase()
+					.includes(search.toLowerCase()),
+		);
+	}, [folderAssets, selectedCategory, licenseFilter, search]);
 	const { openFilePicker, fileInputProps } = useFileUpload({
 		accept: "audio/*",
 		multiple: true,
@@ -282,7 +294,8 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				<div className="min-w-0">
 					<p className="text-sm font-medium">{folderLabel}</p>
 					<p className="text-muted-foreground text-xs">
-						Stored privately in your account and shared across your projects
+						Global sounds are available in every account. Your uploads stay in
+						your account.
 					</p>
 				</div>
 				<Button size="sm" onClick={openFilePicker}>
@@ -291,6 +304,29 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				</Button>
 			</div>
 
+			<div className="flex flex-col gap-2">
+				<Input
+					aria-label="Search library audio"
+					placeholder="Search sounds, music or creator"
+					value={search}
+					onChange={(event) => setSearch(event.target.value)}
+				/>
+				<select
+					aria-label="Commercial license filter"
+					className="bg-background rounded border p-2 text-xs"
+					value={licenseFilter}
+					onChange={(event) => setLicenseFilter(event.target.value)}
+				>
+					<option value="all">All licenses</option>
+					<option value="commercial-use-verified">
+						Commercial use verified
+					</option>
+					<option value="needs-review">Commercial license needs review</option>
+				</select>
+				<span className="text-muted-foreground text-xs">
+					{displayedAssets.length} sounds
+				</span>
+			</div>
 			<div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hidden">
 				<button
 					type="button"
@@ -347,8 +383,8 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 						<DialogHeader>
 							<DialogTitle>Create category</DialogTitle>
 							<DialogDescription>
-								Categories are saved in your account library and can contain
-								the same file in many places.
+								Categories are saved in your account library and can contain the
+								same file in many places.
 							</DialogDescription>
 						</DialogHeader>
 						<DialogBody>
@@ -379,33 +415,61 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				</Dialog>
 			</div>
 
-			<div className="relative min-h-0 flex-1 overflow-hidden">
-				<ScrollArea className="h-full flex-1">
-					<div className="flex flex-col gap-3">
-						{isLoading && folderAssets.length === 0 && (
-							<div className="text-muted-foreground text-sm">
-								Loading shared sounds...
-							</div>
-						)}
-						{displayedAssets.map((asset) => (
-							<SharedAudioItem
-								key={asset.id}
-								asset={asset}
-								isPlaying={playingId === asset.id}
-								onPlay={playAsset}
-								onAddToTimeline={addSharedAudioToTimeline}
-							/>
-						))}
-						{!isLoading && displayedAssets.length === 0 && (
-							<div className="text-muted-foreground py-8 text-center text-sm">
-								{selectedCategory
-									? "Drop sounds into this category to show them here."
-									: `Add ${folderLabel.toLowerCase()} to build your shared library.`}
-							</div>
-						)}
-					</div>
-				</ScrollArea>
+			<div
+				ref={containerRef}
+				className="relative min-h-0 flex-1 overflow-hidden"
+			>
+				{isLoading && folderAssets.length === 0 ? (
+					<p>Loading shared sounds...</p>
+				) : displayedAssets.length ? (
+					<List
+						key={`${folder}:${selectedCategoryId}:${licenseFilter}:${search}`}
+						rowCount={displayedAssets.length}
+						rowHeight={72}
+						overscanCount={8}
+						rowComponent={SharedAudioRow}
+						rowProps={{
+							assets: displayedAssets,
+							playingId,
+							onPlay: playAsset,
+							onAddToTimeline: addSharedAudioToTimeline,
+						}}
+						style={{ height: listHeight || 300, width: "100%" }}
+					/>
+				) : (
+					<p className="text-muted-foreground py-8 text-center text-sm">
+						No sounds match these filters.
+					</p>
+				)}
 			</div>
+		</div>
+	);
+}
+
+type SharedAudioRowProps = {
+	assets: SharedAudioAsset[];
+	playingId: string | null;
+	onPlay: ({ asset }: { asset: SharedAudioAsset }) => void;
+	onAddToTimeline: ({ asset }: { asset: SharedAudioAsset }) => Promise<boolean>;
+};
+function SharedAudioRow({
+	index,
+	style,
+	assets,
+	playingId,
+	onPlay,
+	onAddToTimeline,
+}: RowComponentProps<SharedAudioRowProps>) {
+	const asset = assets[index];
+	return (
+		<div style={style} className="pr-2 py-1">
+			<SharedAudioItem
+				key={asset.id}
+				asset={asset}
+				isPlaying={playingId === asset.id}
+				onPlay={onPlay}
+				onAddToTimeline={onAddToTimeline}
+			/>
 		</div>
 	);
 }
@@ -469,6 +533,15 @@ const SharedAudioItem = memo(function SharedAudioItem({
 						{formatAudioDuration({ seconds: asset.duration })} ·{" "}
 						{formatFileSize({ bytes: asset.size })}
 					</span>
+					<span
+						className="text-muted-foreground block truncate text-[10px]"
+						title={asset.license?.note}
+					>
+						{asset.visibility === "global" ? "Global · " : ""}
+						{asset.license?.status === "commercial-use-verified"
+							? `${asset.license.licenseId} · Commercial use verified`
+							: "Commercial license needs review"}
+					</span>
 				</div>
 			</button>
 			<Button
@@ -483,6 +556,16 @@ const SharedAudioItem = memo(function SharedAudioItem({
 			>
 				<HugeiconsIcon icon={PlusSignIcon} />
 			</Button>
+			{asset.license?.sourcePage && (
+				<a
+					href={asset.license.sourcePage}
+					target="_blank"
+					rel="noreferrer"
+					className="text-muted-foreground text-xs underline"
+				>
+					Source
+				</a>
+			)}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
@@ -490,7 +573,12 @@ const SharedAudioItem = memo(function SharedAudioItem({
 						size="icon"
 						className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
 						onClick={(event) => event.stopPropagation()}
-						title="Sound options"
+						disabled={asset.visibility === "global"}
+						title={
+							asset.visibility === "global"
+								? "Global library asset"
+								: "Sound options"
+						}
 					>
 						<HugeiconsIcon icon={Menu02Icon} />
 					</Button>

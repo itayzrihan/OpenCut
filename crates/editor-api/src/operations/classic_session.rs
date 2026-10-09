@@ -3,7 +3,9 @@
 
 use super::*;
 use crate::ClassicProject;
-use crate::classic_archive::{ArchivedClassicProject, SourcePool, validate_sources};
+use crate::classic_archive::{
+    ArchivedClassicProject, ArchivedHistorySnapshot, SourcePool, validate_sources,
+};
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -38,6 +40,8 @@ struct ArchiveInput {
     project_id: String,
     #[serde(default)]
     persistable_only: bool,
+    #[serde(default)]
+    compact: bool,
 }
 
 #[derive(Debug, Serialize, JsonSchema)]
@@ -65,7 +69,7 @@ struct SessionOutput {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ArchivedBoundary {
     label: String,
-    classic: ArchivedClassicProject,
+    classic: ArchivedHistorySnapshot,
     #[serde(default)]
     host_context: Map<String, Value>,
 }
@@ -344,7 +348,7 @@ fn register_archive_operations(
         crate::CapabilityExecution::Immediate,
         "project.classic.session.archive",
         "Archive Classic session",
-        "Serializes Classic history with each immutable HyperFrames source stored once. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
+        "Serializes Classic history with each immutable HyperFrames source stored once. compact:true emits version 2 lossless history deltas against the current snapshot; version 1 remains readable and is the default. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
         "project",
         AccessLevel::Read,
         true,
@@ -363,6 +367,11 @@ fn register_archive_operations(
                 }
                 let mut sources = SourcePool::new();
                 let classic = classic_ref(&store.document)?.to_archive(&mut sources);
+                let base = input
+                    .compact
+                    .then(|| serde_json::to_value(&classic))
+                    .transpose()
+                    .map_err(|e| CapabilityError::Failed(e.to_string()))?;
                 let mut archive_stack = |entries: &[HistoryEntry]| {
                     entries
                         .iter()
@@ -370,7 +379,11 @@ fn register_archive_operations(
                             Ok(ArchivedBoundary {
                                 label: entry.label.clone(),
                                 host_context: entry.host_context.clone(),
-                                classic: classic_ref(&entry.document)?.to_archive(&mut sources),
+                                classic: ArchivedHistorySnapshot::encode(
+                                    classic_ref(&entry.document)?.to_archive(&mut sources),
+                                    base.as_ref(),
+                                )
+                                .map_err(|e| CapabilityError::Failed(e.to_string()))?,
                             })
                         })
                         .collect::<Result<Vec<_>, CapabilityError>>()
@@ -386,7 +399,7 @@ fn register_archive_operations(
                     &store.redo
                 })?;
                 Ok(OperationSuccess::new(SessionArchive {
-                    schema_version: 1,
+                    schema_version: if input.compact { 2 } else { 1 },
                     project_id: input.project_id,
                     revision: store.document.revision,
                     classic,
@@ -414,7 +427,7 @@ fn register_archive_operations(
             let events = events.clone();
             async move {
                 let archive = input.archive;
-                if archive.schema_version != 1 {
+                if !matches!(archive.schema_version, 1 | 2) {
                     return Err(CapabilityError::InvalidInput(
                         "Unsupported Classic archive schema".into(),
                     ));
@@ -426,7 +439,12 @@ fn register_archive_operations(
                 }
                 validate_sources(&archive.sources)
                     .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-                let restore = |entries: Vec<ArchivedBoundary>| {
+                let base = (archive.schema_version == 2)
+                    .then(|| serde_json::to_value(&archive.classic))
+                    .transpose()
+                    .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+                let mut expanded_budget = 512_000_000usize;
+                let mut restore = |entries: Vec<ArchivedBoundary>| {
                     entries
                         .into_iter()
                         .map(|entry| {
@@ -435,7 +453,7 @@ fn register_archive_operations(
                                 host_context: entry.host_context,
                                 classic: entry
                                     .classic
-                                    .restore(&archive.sources)
+                                    .restore(base.as_ref(), &archive.sources, &mut expanded_budget)
                                     .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?,
                             })
                         })

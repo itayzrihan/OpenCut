@@ -1,3 +1,4 @@
+import { globalAudioFile } from "@/shared-library/global-library";
 import { stat } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { accountDataRoot, withAccount } from "@/accounts/server";
@@ -9,7 +10,7 @@ const types: Record<string, string> = { ".mp3": "audio/mpeg", ".wav": "audio/wav
 const serve = withAccount(async (request: Request, context: { params: Promise<{ path: string[] }> }) => {
 	const { path } = await context.params;
 	if (!path.length || !["shared-library", "project-fonts"].includes(path[0]) || path.some((part) => !/^[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9]+)?$/.test(part))) return new Response(null, { status: 404 });
-	const file = join(accountDataRoot(), ...path);
+	const file = (await globalAudioFile(path)) ?? join(accountDataRoot(), ...path);
 	const type = types[extname(file).toLowerCase()];
 	if (!type) return new Response(null, { status: 404 });
 	try {

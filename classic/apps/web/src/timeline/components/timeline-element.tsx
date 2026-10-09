@@ -871,8 +871,8 @@ function TimelineElementMenuContent({
 								editor,
 								selection: selectedElements,
 							});
-							toast.success("מחיקת הרגעים השקטים בוטלה", {
-								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות. הטיימליין והכתוביות הותאמו.`,
+							toast.success("השקטים שבין הקליפים שנבחרו הוחזרו", {
+								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות בין הקליפים בלבד. הקצוות החיצוניים נשמרו.`,
 							});
 							const { canFillRestoredCaptions, fillRestoredSilenceCaptions } =
 								await import("@/timeline/restore-silence-captions");
@@ -935,7 +935,7 @@ function TimelineElementMenuContent({
 						}
 					}}
 				>
-					ביטול מחיקת רגעים שקטים
+					החזרת שקטים בין הקליפים שנבחרו
 				</ContextMenuItem>
 			)}
 			{selectedElementCount === 1 && (

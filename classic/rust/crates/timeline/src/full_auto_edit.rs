@@ -154,6 +154,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
         return Err("Invalid Timeline Source".into());
     }
     let mut doc: Value = serde_json::from_str(&c.formatted_json).map_err(|e| e.to_string())?;
+    let scene_id = doc["scene"]["id"].as_str().unwrap_or("scene").to_owned();
     if o.stage == "framing" || o.stage == "framing-auto" || o.stage == "center-subject" {
         let unattended = o.stage == "framing-auto";
         let center_only = o.stage == "center-subject";
@@ -319,7 +320,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
             .iter()
             .position(|t| t["area"] == "main")
             .ok_or("Missing main track")?;
-        tracks.insert(at,json!({"id":"full-auto-edit:edge-track","type":"effect","area":"overlay","name":"Editorial Edge Feather","hidden":false,"fullAutoEditOwner":"edge-feather-v1","elements":[{"id":"full-auto-edit:edge","name":"Editorial Edge Feather","type":"effect","effectType":"editorial-edge-feather","startTime":0,"duration":end,"trimStart":0,"trimEnd":0,"fullAutoEditOwner":"edge-feather-v1","params":{"intensity":60,"height":30,"softness":80,"color":"#000000"}}]}));
+        tracks.insert(at,json!({"id":format!("full-auto-edit:{scene_id}:edge-track"),"type":"effect","area":"overlay","name":"Editorial Edge Feather","hidden":false,"fullAutoEditOwner":"edge-feather-v1","elements":[{"id":format!("full-auto-edit:{scene_id}:edge"),"name":"Editorial Edge Feather","type":"effect","effectType":"editorial-edge-feather","startTime":0,"duration":end,"trimStart":0,"trimEnd":0,"fullAutoEditOwner":"edge-feather-v1","params":{"intensity":60,"height":30,"softness":80,"color":"#000000"}}]}));
     } else {
         return Err("Unknown Full Auto stage".into());
     }
@@ -528,5 +529,30 @@ mod tests {
     #[test]
     fn untrusted_detections_fail_closed() {
         assert!(!frame(2.0).valid);
+    }
+
+    #[test]
+    fn finishing_ids_do_not_collide_between_scenes() {
+        let mut ids = std::collections::HashSet::new();
+        for scene in ["smart-a", "smart-b"] {
+            let mut input = source();
+            input["scene"]["id"] = json!(scene);
+            let result = compile_full_auto_edit(CompileFullAutoEditOptions {
+                source_json: input.to_string(),
+                stage: "finish".into(),
+                framing_json: "[]".into(),
+                font_family: "Assistant Bold".into(),
+            });
+            assert!(result.valid, "{}", result.error);
+            let output: Value = serde_json::from_str(&result.source_json).unwrap();
+            let track = output["scene"]["tracks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|t| t["fullAutoEditOwner"] == "edge-feather-v1")
+                .unwrap();
+            assert!(ids.insert(track["id"].as_str().unwrap().to_owned()));
+            assert!(ids.insert(track["elements"][0]["id"].as_str().unwrap().to_owned()));
+        }
     }
 }

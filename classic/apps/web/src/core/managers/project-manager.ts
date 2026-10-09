@@ -1,5 +1,6 @@
 import {
 	isBatchReadOnly,
+	isBatchProjectLocked,
 	automationReadVersion,
 	acknowledgeAutomationReload,
 } from "@/batch/read-only";
@@ -28,6 +29,7 @@ import {
 	assertEditorOwnership,
 } from "@/core/editor-ownership";
 import { batchWriteHeaders } from "@/batch/write-token";
+import { browserEditorSessionId } from "@/editor-agent/session-identity";
 import { toast } from "sonner";
 import { generateUUID } from "@/utils/id";
 import { UpdateProjectSettingsCommand } from "@/commands/project";
@@ -159,10 +161,14 @@ export class ProjectManager {
 	private sessionProjectId: string | null = null;
 	private sessionRenewing = false;
 	private sessionOwnershipLost = false;
+	private sessionWakeCleanup: (() => void) | null = null;
+	private sessionAccountId: string | null = null;
 
 	constructor(private editor: EditorCore) {}
 
 	dispose(): void {
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
 		this.editorSession?.dispose();
 		if (this.sessionTimer) clearInterval(this.sessionTimer);
 		this.sessionTimer = null;
@@ -185,6 +191,11 @@ export class ProjectManager {
 		reason: string | null;
 		ownershipLost?: boolean;
 	}): void {
+		if (
+			this.sessionReadOnly === reason &&
+			this.sessionOwnershipLost === (!!reason && ownershipLost)
+		)
+			return;
 		this.sessionReadOnly = reason;
 		this.sessionOwnershipLost = !!reason && ownershipLost;
 		if (this.sessionProjectId)
@@ -206,7 +217,8 @@ export class ProjectManager {
 	}
 	private startSessionHeartbeat(): void {
 		if (this.sessionTimer) clearInterval(this.sessionTimer);
-		this.sessionTimer = setInterval(() => {
+		this.sessionWakeCleanup?.();
+		const renew = () => {
 			if (
 				this.sessionRenewing ||
 				!this.editorSession ||
@@ -222,7 +234,13 @@ export class ProjectManager {
 						this.setSessionReadOnly({ reason: null });
 				})
 				.catch((error) => {
-					if (this.editorSession === session)
+					// A failed heartbeat says nothing about another owner. Keep the
+					// editor mounted; actual writes remain checked by the host fence.
+					if (
+						this.editorSession === session &&
+						error instanceof EditorSessionFailure &&
+						error.definitive
+					)
 						this.setSessionReadOnly({
 							reason:
 								error instanceof Error
@@ -235,9 +253,29 @@ export class ProjectManager {
 				.finally(() => {
 					this.sessionRenewing = false;
 				});
-		}, 25_000);
+		};
+		this.sessionTimer = setInterval(renew, 25_000);
+		if (
+			typeof window !== "undefined" &&
+			window.addEventListener &&
+			typeof document !== "undefined"
+		) {
+			const onVisible = () => {
+				if (document.visibilityState === "visible") renew();
+			};
+			window.addEventListener("focus", renew);
+			window.addEventListener("online", renew);
+			document.addEventListener("visibilitychange", onVisible);
+			this.sessionWakeCleanup = () => {
+				window.removeEventListener("focus", renew);
+				window.removeEventListener("online", renew);
+				document.removeEventListener("visibilitychange", onVisible);
+			};
+		}
 	}
 	private async releaseEditorSession(): Promise<void> {
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
 		if (this.sessionTimer) clearInterval(this.sessionTimer);
 		this.sessionTimer = null;
 		const session = this.editorSession;
@@ -250,6 +288,7 @@ export class ProjectManager {
 			});
 		this.editorSession = null;
 		this.sessionProjectId = null;
+		this.sessionAccountId = null;
 		this.sessionReadOnly = null;
 		this.sessionOwnershipLost = false;
 	}
@@ -384,6 +423,7 @@ export class ProjectManager {
 			return this.loadProject({ id, takeOver });
 		}
 
+		if (!takeOver && this.canReuseLoadedProject(id)) return true;
 		const promise = this.loadProjectOnce({ id, takeOver });
 		this.projectLoad = { id, takeOver, promise };
 		try {
@@ -395,18 +435,42 @@ export class ProjectManager {
 		}
 	}
 
+	/** Reattaching a view must not release its own live editor session. */
+	canReuseLoadedProject(id: string): boolean {
+		const accountId =
+			(typeof window === "undefined" ? null : window.__opencutAccountId) ??
+			"local";
+		return (
+			this.active?.metadata.id === id &&
+			!this.isLoading &&
+			!!this.editorSession &&
+			this.sessionAccountId === accountId &&
+			!this.sessionOwnershipLost &&
+			!isBatchReadOnly(id) &&
+			this.editor.command.hasAtomicSessionStorage()
+		);
+	}
+
 	/** Host ownership handoff only: retain the canonical scene and media handles. */
 	observeBatchPreview({ id }: { id: string }): boolean {
-		if (this.active?.metadata.id !== id || this.isLoading || !isBatchReadOnly(id))
+		if (
+			this.active?.metadata.id !== id ||
+			this.isLoading ||
+			!isBatchReadOnly(id)
+		)
 			return false;
 		// The handoff already flushed the project and history. The queue now
 		// fences ordinary writes; the worker acquires the next ownership generation.
 		if (this.sessionTimer) clearInterval(this.sessionTimer);
 		this.sessionTimer = null;
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
 		this.editorSession?.dispose();
 		this.editorSession = null;
 		this.editor.save.pause();
-		this.setSessionReadOnly({ reason: "Full Auto Edit is working on this project" });
+		this.setSessionReadOnly({
+			reason: "Full Auto Edit is working on this project",
+		});
 		return true;
 	}
 
@@ -450,6 +514,7 @@ export class ProjectManager {
 			// Route changes can switch projects without going through the explicit Exit
 			// action. Persist the current project before clearing any in-memory state.
 			await this.editor.save.flush();
+			await this.editor.command.flushHistory();
 		}
 		await this.releaseEditorSession();
 
@@ -483,11 +548,22 @@ export class ProjectManager {
 			const accountId =
 				(typeof window === "undefined" ? null : window.__opencutAccountId) ??
 				"local";
-			const session = new EditorSessionClient({ accountId, projectId: id });
-			let view = await session.read();
 			const batchWorker = !!batchWriteHeaders()["X-OpenCut-Batch-Token"];
+			const sessionId = batchWorker
+				? crypto.randomUUID()
+				: await browserEditorSessionId({ accountId, projectId: id });
+			const session = new EditorSessionClient({
+				accountId,
+				projectId: id,
+				sessionId,
+			});
+			let view = await session.read();
 			let canAcquire =
-				!isBatchReadOnly(id) && (!view.lease || takeOver || batchWorker);
+				!isBatchProjectLocked(id) &&
+				(!view.lease ||
+					session.isCurrentOwner(view) ||
+					takeOver ||
+					batchWorker);
 			if (canAcquire) {
 				const outcome = await session.acquireOrObserve({
 					expectedGeneration: view.generation,
@@ -498,6 +574,7 @@ export class ProjectManager {
 			}
 			this.editorSession = session;
 			this.sessionProjectId = id;
+			this.sessionAccountId = accountId;
 			this.setSessionReadOnly({
 				reason: canAcquire
 					? null
@@ -569,16 +646,18 @@ export class ProjectManager {
 						);
 					try {
 						await session.save(capture);
-						if (this.sessionReadOnly) this.setSessionReadOnly({ reason: null });
+						if (this.editorSession === session && this.sessionReadOnly)
+							this.setSessionReadOnly({ reason: null });
 					} catch (error) {
-						this.setSessionReadOnly({
-							reason:
-								error instanceof Error
-									? error.message
-									: "The project could not be saved",
-							ownershipLost:
-								error instanceof EditorSessionFailure && error.definitive,
-						});
+						if (this.editorSession !== session) throw error;
+						if (error instanceof EditorSessionFailure && error.definitive) {
+							this.setSessionReadOnly({ reason: error.message });
+						} else {
+							// The client retains the exact uncertain commit and reconciles
+							// it before capturing newer edits. A transport outage is not
+							// an ownership transfer and must not tear down the editor.
+							this.editor.save.markDirty({ force: true });
+						}
 						throw error;
 					}
 				},
@@ -610,6 +689,8 @@ export class ProjectManager {
 		} catch (error) {
 			if (this.sessionTimer) clearInterval(this.sessionTimer);
 			this.sessionTimer = null;
+			this.sessionWakeCleanup?.();
+			this.sessionWakeCleanup = null;
 			console.error("Failed to load project:", error);
 			throw error;
 		} finally {

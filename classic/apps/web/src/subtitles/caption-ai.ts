@@ -1,3 +1,4 @@
+import { buildCaptionCuePlan } from "opencut-wasm";
 import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { TranscriptionWord } from "@/transcription/types";
@@ -261,7 +262,12 @@ export async function requestCaptionRowRearrangement({
 	const rowEndPositions = validateCaptionRowEndPositions({
 		words,
 		wordsPerRow,
-		rowEndPositions: parsed.rowEndPositions,
+		// Rust enforces the hard layout limit even when the model misses it.
+        // Only boundaries change; original words and their clocks remain intact.
+        rowEndPositions: buildCaptionCuePlan({
+            words,
+            settingsJson: JSON.stringify({ wordsPerRow, rows: 1, rowBreaks: parsed.rowEndPositions, exactWordTimings: true }),
+        }).map((cue) => cue.wordIndices[cue.wordIndices.length - 1] + 1),
 	});
 	return {
 		rowEndPositions,

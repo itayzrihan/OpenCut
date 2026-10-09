@@ -36,7 +36,9 @@ test("the web bridge creates, reloads and undoes canonical podcast sequences", a
 	}));
 	scene.tracks.main.elements[0].duration =
 		18000000 as (typeof scene.tracks.main.elements)[0]["duration"];
-	scene.tracks.main.elements[0].retime = { rate: 1 };
+	const video = scene.tracks.main.elements[0];
+	if (video.type !== "video") throw new Error("Video fixture required");
+	video.retime = { rate: 1 };
 	session.attach({ classic: original });
 	const source = session.preparePodcast({
 		sceneId: scene.id,
