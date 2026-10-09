@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { classicRoot, repository, deploymentRoot, configuration, writeJson, readJson, runtimeEnvironment } from './common.mjs';
 
 const config = await configuration();
+const stageOnly = process.argv.includes('--stage');
 const environment = await runtimeEnvironment(config);
 const webRoot = join(classicRoot, 'apps/web');
 const buildDir = '.next-local-production';
@@ -124,10 +125,14 @@ try {
     if (!healthy) throw Error('Production startup smoke check failed; previous release retained.');
   } finally { smoke.kill('SIGTERM'); }
   // Atomic activation: a failed build never changes this pointer.
-  const previous = await readJson(join(deploymentRoot, 'current.json'));
-  if (previous) await writeJson(join(deploymentRoot, 'previous.json'), previous);
-  await writeJson(join(deploymentRoot, 'current.json'), metadata);
-  await status('Production ready', { running: false, release: metadata });
+  if (stageOnly) {
+    await writeJson(join(deploymentRoot, 'candidate.json'), metadata);
+  } else {
+    const previous = await readJson(join(deploymentRoot, 'current.json'));
+    if (previous) await writeJson(join(deploymentRoot, 'previous.json'), previous);
+    await writeJson(join(deploymentRoot, 'current.json'), metadata);
+  }
+  await status(stageOnly ? 'Candidate ready (not activated)' : 'Production ready', { running: false, release: metadata });
 } catch (error) {
   console.error(error);
   if (ownsLock) await status('Build failed', { running: false, error: error.message });

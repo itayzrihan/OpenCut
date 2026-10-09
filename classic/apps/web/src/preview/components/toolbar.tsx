@@ -32,6 +32,7 @@ import { safeAreaPreviewOverlay } from "@/preview/safe-area-overlay";
 import type { PreviewOverlayControl } from "@/preview/overlays";
 import type { MediaTime } from "@/wasm";
 import { Loader2 } from "lucide-react";
+import { PerformancePanel } from "@/diagnostics/performance-panel";
 
 export function PreviewToolbar({
 	onToggleFullscreen,
@@ -51,6 +52,7 @@ export function PreviewToolbar({
 
 	return (
 		<div className="grid grid-cols-[1fr_auto_1fr] items-center pb-3 pt-5 px-5">
+			<PerformancePanel />
 			<TimecodeDisplay />
 			<PlayPauseButton />
 			<div className="justify-self-end flex items-center gap-2.5">

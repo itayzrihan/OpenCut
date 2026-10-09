@@ -1,4 +1,6 @@
 import type { FrameRate } from "opencut-wasm";
+import { isRenderPerfEnabled } from "@/diagnostics/render-perf";
+import { publishPerformanceReport } from "@/diagnostics/performance-reports";
 import {
 	addMediaTime,
 	clampMediaTime,
@@ -108,9 +110,37 @@ export class PlaybackManager {
 			signal: abortController.signal,
 		};
 
+		const preparationStart = performance.now();
+		const measuring = isRenderPerfEnabled();
 		void Promise.allSettled(
-			[...this.preparers.values()].map((prepare) => prepare(context)),
+			[...this.preparers.entries()].map(([id, prepare]) => {
+				const start = performance.now();
+				const pending = prepare(context);
+				if (measuring) {
+					const finished = () =>
+						publishPerformanceReport({
+							kind: "preparer",
+							data: {
+								id,
+								durationMs: performance.now() - start,
+								cancelled: abortController.signal.aborted,
+							},
+						});
+					void pending.then(finished, finished);
+				}
+				return pending;
+			}),
 		).then((results) => {
+			if (measuring)
+				publishPerformanceReport({
+					kind: "play-start",
+					data: {
+						durationMs: performance.now() - preparationStart,
+						cancelled: abortController.signal.aborted,
+						failures: results.filter((result) => result.status === "rejected")
+							.length,
+					},
+				});
 			if (
 				abortController.signal.aborted ||
 				preparationId !== this.preparationId ||

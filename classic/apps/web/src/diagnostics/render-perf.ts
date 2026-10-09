@@ -14,6 +14,7 @@
  * The URL switch is read once per document; frame calls use cached flags.
  */
 
+import { publishPerformanceReport } from "./performance-reports";
 type SpanSample = number;
 
 type SpanStats = {
@@ -62,7 +63,8 @@ export function recordSpan({
 		stats = { samples: [] };
 		spans.set(name, stats);
 	}
-	stats.samples.push(durationMs);
+	if (stats.samples.length < 4096 && Number.isFinite(durationMs))
+		stats.samples.push(durationMs);
 }
 
 export async function measureSpanAsync<T>({
@@ -190,6 +192,14 @@ function flush(): void {
 	console.groupCollapsed(
 		`[render-perf] summary over ${framesSinceFlush} frames`,
 	);
+	publishPerformanceReport({
+		kind: "render",
+		data: {
+			frames: framesSinceFlush,
+			spans: spanRows,
+			counters: counterRows,
+		},
+	});
 	if (spanRows.length > 0) console.table(spanRows);
 	if (counterRows.length > 0) console.table(counterRows);
 	console.groupEnd();

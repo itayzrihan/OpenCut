@@ -2,6 +2,10 @@ import { Input, ALL_FORMATS, CanvasSink, type WrappedCanvas } from "mediabunny";
 import { incrementCounter, recordSpan } from "@/diagnostics/render-perf";
 import { createMediaSource } from "@/media/source";
 import {
+	previewProxySource,
+	rejectPreviewProxy,
+} from "@/services/video-proxy/client";
+import {
 	getCanvasSourceVersion,
 	markCanvasSourceVersion,
 } from "@/services/renderer/canvas-source-version";
@@ -50,6 +54,22 @@ export class VideoCache {
 		maxSourceSize?: number;
 		time: number;
 	}): Promise<WrappedCanvas | null> {
+		const proxy = previewProxySource({ url, maxSourceSize });
+		if (proxy) {
+			try {
+				const frame = await this.getFrameAt({
+					mediaId: `${mediaId}::proxy:${proxy.key}`,
+					url: proxy.url,
+					maxSourceSize,
+					time,
+				});
+				if (frame) return frame;
+			} catch {
+				/* A disposable proxy must never make the original unavailable. */
+			}
+			rejectPreviewProxy(proxy.key);
+			this.clearVideo({ mediaId: `${mediaId}::proxy:${proxy.key}` });
+		}
 		const sinkKey = this.getSinkKey({ mediaId, maxSourceSize });
 		const cachedFrame = this.getCachedFrame({ sinkKey, time });
 		if (cachedFrame) {

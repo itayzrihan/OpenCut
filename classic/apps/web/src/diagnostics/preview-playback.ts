@@ -1,4 +1,5 @@
 import { isRenderPerfEnabled } from "./render-perf";
+import { publishPerformanceReport } from "./performance-reports";
 
 const MAX_SAMPLES = 240;
 
@@ -50,8 +51,10 @@ export class PreviewPlaybackProbe {
 		this.enabled = options.enabled ?? isRenderPerfEnabled;
 		this.report =
 			options.report ??
-			((report) =>
-				console.info(`[preview-playback] ${JSON.stringify(report)}`));
+			((report) => {
+				publishPerformanceReport({ kind: "playback", data: report });
+				console.info(`[preview-playback] ${JSON.stringify(report)}`);
+			});
 	}
 
 	setPlaying({ playing, fps }: { playing: boolean; fps: number }): void {
