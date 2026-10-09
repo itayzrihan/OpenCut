@@ -20,6 +20,11 @@ const {
 	waitForHttp,
 } = require("./runtime.cjs");
 
+// The local Production launcher owns this profile and the external server.
+if (process.env.OPENCUT_ELECTRON_USER_DATA) {
+	app.setPath("userData", process.env.OPENCUT_ELECTRON_USER_DATA);
+}
+
 let mainWindow = null;
 let mainAppUrl = null;
 let webServer = null;
@@ -298,6 +303,6 @@ if (!app.requestSingleInstanceLock()) {
 
 	app.on("before-quit", stopPackagedServer);
 	app.on("window-all-closed", () => {
-		if (process.platform !== "darwin") app.quit();
+		if (process.platform !== "darwin" || process.env.OPENCUT_ELECTRON_EXIT_ON_CLOSE === "1") app.quit();
 	});
 }

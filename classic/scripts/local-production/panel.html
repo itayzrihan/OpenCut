@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OpenCut · ניהול מקומי</title>
+<style nonce="__LAUNCHER_TOKEN__">
+:root{font-family:Arial,Helvetica,sans-serif;color-scheme:dark;background:#0b0d12;color:#edf1fa}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 90% 0,#18253b 0,transparent 55%);min-height:100vh}main{max-width:1050px;margin:auto;padding:68px 28px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:50px}.brand{font-size:23px;letter-spacing:-.8px;font-weight:750}.tag{color:#a8b8d1;font-size:13px;border:1px solid #334052;border-radius:30px;padding:8px 13px}h1{font-size:40px;line-height:1.25;margin:0 0 16px;letter-spacing:-1px}.intro{color:#acb8ce;font-size:17px;line-height:1.8;margin:0 0 32px;max-width:680px}.card{background:#131823;border:1px solid #2b3548;border-radius:20px;padding:28px;margin-bottom:20px}.status-row{display:flex;align-items:center;justify-content:space-between;gap:20px}.status{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:bold}.dot{width:11px;height:11px;border-radius:50%;background:#738095;box-shadow:0 0 0 5px #ffffff06}.dot.on{background:#80e7ad;box-shadow:0 0 20px #80e7ad55}.description{color:#a8b4c9;font-size:15px;line-height:1.7;margin-top:16px}.buttons{display:flex;flex-wrap:wrap;gap:12px;margin-top:25px}button{font:inherit;font-size:15px;font-weight:600;padding:13px 20px;border-radius:10px;border:1px solid #3b475d;background:#202a3b;color:#f1f5ff;cursor:pointer;transition:background .15s}button:hover{background:#2d3b51}button:focus-visible{outline:3px solid #b6d5ff;outline-offset:3px}button:disabled{opacity:.35;cursor:default}.primary{background:#a9ccff;color:#0b1628;border-color:#a9ccff}.primary:hover{background:#c5dcff}.stop{color:#ffb5b5}.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}h2{font-size:19px;margin:0 0 14px}.version{font-size:14px;line-height:1.9;color:#aab8cf}.version b{color:#e0e8f7}.muted{font-size:13px;line-height:1.8;color:#8e9cb4;margin:18px 0 0}.progress{padding:13px;background:#1b2940;border-radius:9px;margin-top:18px;color:#c6deff;font-size:14px}.error{background:#391e29;color:#ffd6df;padding:16px;border-radius:10px;margin-top:20px;white-space:pre-wrap;overflow-wrap:anywhere}.footer{display:flex;gap:15px;justify-content:space-between;align-items:center;margin-top:22px;color:#8593ab;font-size:13px}.footer button{font-size:13px;padding:9px 13px;background:transparent}code{direction:ltr;unicode-bidi:embed}.hidden{display:none}@media(max-width:700px){main{padding:30px 18px}header{margin-bottom:35px}h1{font-size:31px}.grid{grid-template-columns:1fr;gap:0}.status-row{align-items:start;flex-direction:column}.card{padding:22px}.footer{align-items:start;flex-direction:column}}
+</style></head>
+<body><main>
+<header><div class="brand" dir="ltr">◈ OpenCut</div><span class="tag">מקומי · Production</span></header>
+<h1>הסטודיו שלך, מוכן לעבודה.</h1>
+<p class="intro">הפעל את הגרסה המוכנה ובחר איך לעבוד. החשבונות, הפרויקטים וספריית המדיה שלך זמינים באותו מקום.</p>
+<section class="card" aria-label="הפעלת העורך">
+<div class="status-row"><div class="status"><span id="dot" class="dot"></span><span id="status" role="status">בודק מצב…</span></div><span id="environment" class="tag">ללא שרת פיתוח</span></div>
+<div id="description" class="description">מסך הניהול יישאר זמין גם כשהעורך כבוי.</div>
+<div class="buttons"><button id="start" class="primary" disabled>הפעל Production</button><button id="browser" disabled>פתח בדפדפן ↗</button><button id="electron" disabled>פתח ב־Electron</button><button id="stop" class="stop" disabled>כבה Production</button></div>
+<p class="muted">לפני כיבוי, סיים את העבודה והמתן לשמירה. הכיבוי סוגר גם את חלון Electron שמופעל מכאן.</p>
+</section>
+<div class="grid"><section class="card"><h2>הגרסה המותקנת</h2><div id="version" class="version">טוען פרטי גרסה…</div><div id="build" class="progress hidden" role="status"></div></section>
+<section class="card"><h2>עדכון מהקוד המקומי</h2><p class="description">כשסיימנו לפתח, אפשר לבנות ולהתקין כאן גרסת Production חדשה. הגרסה הקודמת נשמרת אם הבנייה נכשלת.</p><button id="update" disabled>בנה ועדכן Production</button><p class="muted">העדכון זמין כשהעורך כבוי. בנייה יכולה להימשך כמה דקות.</p></section></div>
+<div id="error" class="error hidden" role="alert"></div>
+<div class="footer"><span>אין הפעלה אוטומטית עם המחשב. הכול בשליטתך.</span><div><button id="logs">פתח תיקיית לוגים</button> <button id="quit" disabled>סגור את מסך הניהול</button></div></div>
+</main>
+<script nonce="__LAUNCHER_TOKEN__">
+const headers={'X-OpenCut-Launcher':'__LAUNCHER_TOKEN__'};
+const $=id=>document.getElementById(id);
+let pending=false,closed=false;
+const phases={'Checking local source':'בודק את הקוד המקומי…','Building canonical Rust / WASM':'בונה את מנוע העריכה…','Preparing local assets':'מכין את קובצי האפליקציה…','Building local control plane':'מכין את שירותי העריכה המקומיים…','Building optimized production editor':'בונה את גרסת Production…','Packaging standalone release':'אורז את הגרסה החדשה…','Verifying production release':'בודק שהגרסה החדשה עולה…','Production ready':'הגרסה מוכנה להפעלה','Build failed':'העדכון נכשל; הגרסה הקודמת נשמרה'};
+function showError(message){$('error').textContent=message||'';$('error').classList.toggle('hidden',!message)}
+async function refresh(){
+ if(closed)return;
+ try{
+  const response=await fetch('/status',{headers});if(!response.ok)throw Error('לא ניתן לקרוא את מצב הניהול');
+  const s=await response.json();const working=pending||s.busy;
+  $('status').textContent=s.building?'מעדכן את הגרסה':working?'מבצע פעולה…':s.running?'Production פועל':'Production כבוי';
+  $('dot').classList.toggle('on',s.running);
+  $('description').textContent=s.running?'העורך מוכן. אפשר לפתוח אותו בדפדפן או בחלון Electron.':'הפעלת העורך אינה דורשת בנייה מחדש.';
+  $('start').disabled=working||s.running||s.building||!s.release;
+  $('stop').disabled=working||!s.running;
+  $('browser').disabled=working||s.building||!s.release;
+  $('electron').disabled=working||s.building||!s.release;
+  $('electron').textContent=s.electron?'Electron פתוח':'פתח ב־Electron';$('electron').disabled ||= s.electron;
+  $('update').disabled=working||s.running||s.building;
+  $('quit').disabled=working||s.running||s.building;
+  $('version').replaceChildren();
+  if(s.release){
+   for(const text of ['עודכן: '+new Date(s.release.builtAt).toLocaleString('he-IL'),'גרסה: '+s.release.commit.slice(0,8)+(s.release.dirty?' + שינויים מקומיים':''),'ענף: '+s.release.branch]){const line=document.createElement('div');line.textContent=text;$('version').append(line)}
+  }else $('version').textContent='עדיין אין גרסת Production. לחץ על בנייה ועדכון כדי להכין אותה.';
+  $('build').classList.toggle('hidden',!s.building && s.build?.phase!=='Build failed');
+  $('build').textContent=s.building && !s.build?.running ? 'מכין עדכון…' : phases[s.build?.phase]||s.build?.phase||'מכין עדכון…';
+  if(s.error)showError(s.error);
+ }catch(e){showError('מסך הניהול אינו זמין. אפשר לפתוח אותו שוב מהקיצור בדסקטופ.')}
+}
+for(const action of ['start','stop','browser','electron','update','logs','quit'])$(action).onclick=async()=>{
+ pending=true;showError(null);await refresh();
+ try{
+  const response=await fetch('/'+action,{method:'POST',headers});const result=await response.json();if(!response.ok)throw Error(result.error);
+  if(action==='quit'){closed=true;$('status').textContent='מסך הניהול נסגר';$('description').textContent='אפשר לסגור את הטאב. לפתיחה מחדש, השתמש בקיצור OpenCut Local בדסקטופ.';document.querySelectorAll('button').forEach(b=>b.disabled=true)}
+ }catch(e){showError(e.message)}finally{pending=false;await refresh()}
+};
+refresh();setInterval(refresh,2000);
+</script></body></html>
