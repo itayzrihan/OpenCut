@@ -628,6 +628,9 @@ fn registered_agent_capabilities() -> Vec<AgentCapabilityDescriptor> {
             false,
             &["app_control"],
         ),
+        registered_capability("smart_takes.start", "control", false, true, true, &["app_control", "layers", "network"]),
+        registered_capability("smart_takes.get_status", "read", true, true, false, &["layers"]),
+        registered_capability("smart_takes.cancel", "control", false, true, false, &["app_control"]),
         registered_capability("transcription.get_status", "read", true, true, false, &[]),
         registered_capability("web.research", "read", true, true, true, &["network"]),
     ]

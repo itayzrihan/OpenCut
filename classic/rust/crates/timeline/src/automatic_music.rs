@@ -154,6 +154,7 @@ pub fn compile_automatic_music(o: AutomaticMusicOptions) -> AutomaticMusicResult
 }
 fn compile(o: AutomaticMusicOptions) -> Result<AutomaticMusicResult, String> {
     let (mut doc, catalog, end) = read(&o)?;
+    let scene_id = doc["scene"]["id"].as_str().unwrap_or("scene").to_owned();
     let plan: Plan = serde_json::from_str(&o.plan_json).map_err(|e| e.to_string())?;
     if plan.reason.trim().is_empty() || plan.reason.len() > 4000 {
         return Err("Explain the musical choice".into());
@@ -194,13 +195,13 @@ fn compile(o: AutomaticMusicOptions) -> Result<AutomaticMusicResult, String> {
         .filter_map(|e| e["id"].as_str().map(str::to_owned))
         .collect();
     let mut suffix = 0;
-    while used.contains(&format!("{OWNER}:track:{suffix}"))
-        || used.contains(&format!("{OWNER}:clip:{suffix}"))
+    while used.contains(&format!("{OWNER}:{scene_id}:track:{suffix}"))
+        || used.contains(&format!("{OWNER}:{scene_id}:clip:{suffix}"))
     {
         suffix += 1;
     }
-    tracks.push(json!({"id":format!("{OWNER}:track:{suffix}"),"name":"Automatic Music","type":"audio","area":"audio","muted":false,"automaticMusicOwner":OWNER,"elements":[{
-        "id":format!("{OWNER}:clip:{suffix}"),"name":asset["name"],"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":plan.asset_id,
+    tracks.push(json!({"id":format!("{OWNER}:{scene_id}:track:{suffix}"),"name":"Automatic Music","type":"audio","area":"audio","muted":false,"automaticMusicOwner":OWNER,"elements":[{
+        "id":format!("{OWNER}:{scene_id}:clip:{suffix}"),"name":asset["name"],"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":plan.asset_id,
         "startTime":0,"duration":end,"sourceDuration":source_duration,"trimStart":0,"trimEnd":source_duration-end,"automaticMusicOwner":OWNER,"automaticMusicReason":plan.reason,
         "params":{"volume":-31,"muted":false,"fadeInDuration":0,"fadeOutDuration":0}
     }]}));
@@ -343,5 +344,25 @@ mod tests {
         let mut o = options(doc(), "long");
         o.assets_json = json!([assets()[0], assets()[0]]).to_string();
         assert!(!automatic_music_catalog(o).valid);
+    }
+
+    #[test]
+    fn music_ids_do_not_collide_between_scenes() {
+        let mut ids = std::collections::HashSet::new();
+        for scene in ["smart-a", "smart-b"] {
+            let mut input = doc();
+            input["scene"]["id"] = json!(scene);
+            let result = compile_automatic_music(options(input, "long"));
+            assert!(result.valid, "{}", result.error);
+            let output: Value = serde_json::from_str(&result.source_json).unwrap();
+            let track = output["scene"]["tracks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|t| t["automaticMusicOwner"] == OWNER)
+                .unwrap();
+            assert!(ids.insert(track["id"].as_str().unwrap().to_owned()));
+            assert!(ids.insert(track["elements"][0]["id"].as_str().unwrap().to_owned()));
+        }
     }
 }

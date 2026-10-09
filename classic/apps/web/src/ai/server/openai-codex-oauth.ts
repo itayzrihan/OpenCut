@@ -30,7 +30,7 @@ import {
 } from "@/ai/codex-models";
 import { webEnv } from "@/env/web";
 import { hostCookieSecret } from "@/accounts/host-key";
-import { requireAccount } from "@/accounts/server";
+import { requireAccount, localRequestOrigin } from "@/accounts/server";
 
 const AUTHORIZE_URL = "https://auth.openai.com/oauth/authorize";
 const TOKEN_URL = "https://auth.openai.com/oauth/token";
@@ -119,21 +119,22 @@ export async function createOpenAIAuthorizationResponse({
 	const { verifier, challenge } = createPkcePair();
 	const state = randomUUID();
 	const redirectUri = resolveLoopbackRedirectUri();
+	const appOrigin = localRequestOrigin(request);
 	const returnTo = normalizeReturnTo({
 		value: request.nextUrl.searchParams.get("returnTo"),
-		origin: request.nextUrl.origin,
+		origin: appOrigin,
 	});
 	const bindingCookieValue =
 		request.cookies.get(OAUTH_BINDING_COOKIE)?.value ?? randomUUID();
 	const sessionBinding = hashSessionBinding(
-		accountBoundOAuthValue(request, bindingCookieValue),
+		accountBoundOAuthValue({ request: request, value: bindingCookieValue }),
 	);
 	const statePayload: OAuthState = {
 		state,
 		codeVerifier: verifier,
 		redirectUri,
 		returnTo,
-		appOrigin: request.nextUrl.origin,
+		appOrigin,
 		sessionBinding,
 		createdAt: Date.now(),
 	};
@@ -365,14 +366,21 @@ export async function forwardCodexResponsesRequest({
 	credentials,
 	body,
 	signal,
+	allowModelFallback = true,
+	maxResponseBytes = 64_000_000,
 }: {
 	credentials: OpenAICodexCredentials;
 	body: Record<string, unknown>;
 	signal?: AbortSignal;
+	allowModelFallback?: boolean;
+	maxResponseBytes?: number;
 }): Promise<unknown> {
-	const modelCandidates = getCodexModelCandidates(
+	const candidates = getCodexModelCandidates(
 		typeof body.model === "string" ? body.model : webEnv.OPENAI_CODEX_MODEL,
 	);
+	const modelCandidates = allowModelFallback
+		? candidates
+		: candidates.slice(0, 1);
 	let lastUnsupportedModelMessage = "";
 
 	for (const [modelIndex, model] of modelCandidates.entries()) {
@@ -413,10 +421,13 @@ export async function forwardCodexResponsesRequest({
 		}
 
 		if (isEventStreamResponse(response)) {
-			return parseCodexResponsesStream({ response });
+			return parseCodexResponsesStream({ response, maxResponseBytes });
 		}
 
-		const responseText = await response.text();
+		const responseText = await readBoundedCodexResponse({
+			response,
+			maxResponseBytes,
+		});
 		const responseBody = parseCodexResponseText({
 			text: responseText,
 			contentType: response.headers.get("content-type"),
@@ -537,8 +548,10 @@ function isEventStreamResponse(response: Response): boolean {
 
 async function parseCodexResponsesStream({
 	response,
+	maxResponseBytes = 64_000_000,
 }: {
 	response: Response;
+	maxResponseBytes?: number;
 }): Promise<Record<string, unknown>> {
 	const reader = response.body?.getReader();
 	if (!reader) {
@@ -547,6 +560,7 @@ async function parseCodexResponsesStream({
 
 	const decoder = new TextDecoder();
 	let buffer = "";
+	let receivedBytes = 0;
 	const state: CodexStreamState = {
 		responseId: undefined,
 		outputText: "",
@@ -558,6 +572,13 @@ async function parseCodexResponsesStream({
 		while (true) {
 			const { done, value } = await reader.read();
 			if (done) break;
+			receivedBytes += value.byteLength;
+			if (receivedBytes > maxResponseBytes) {
+				await reader.cancel();
+				throw new Error(
+					"Codex response exceeds its byte limit; reconcile any dispatched image operation",
+				);
+			}
 			buffer += decoder.decode(value, { stream: true });
 			buffer = consumeCodexStreamBuffer({ buffer, state });
 		}
@@ -582,8 +603,39 @@ async function parseCodexResponsesStream({
 	};
 }
 
+async function readBoundedCodexResponse({
+	response,
+	maxResponseBytes,
+}: {
+	response: Response;
+	maxResponseBytes: number;
+}): Promise<string> {
+	if (!response.body) return "";
+	const reader = response.body.getReader();
+	const decoder = new TextDecoder();
+	let bytes = 0;
+	let text = "";
+	try {
+		for (;;) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			bytes += value.byteLength;
+			if (bytes > maxResponseBytes) {
+				await reader.cancel();
+				throw new Error("Codex response exceeds its byte limit");
+			}
+			text += decoder.decode(value, { stream: true });
+		}
+		return text + decoder.decode();
+	} finally {
+		reader.releaseLock();
+	}
+}
+
 interface CodexStreamOutputItem {
 	id?: string;
+	status?: string;
+	result?: string;
 	call_id?: string;
 	type?: string;
 	name?: string;
@@ -875,6 +927,19 @@ function normalizeCodexOutputItem(
 ): CodexStreamOutputItem | null {
 	if (!isRecord(value)) return null;
 	const type = typeof value.type === "string" ? value.type : undefined;
+	if (type === "image_generation_call") {
+		// Keep completed subscription images inside this server transport. The
+		// image adapter validates bytes and exposes bounded artifact metadata.
+		return {
+			id: typeof value.id === "string" ? value.id : undefined,
+			type,
+			status: typeof value.status === "string" ? value.status : undefined,
+			result:
+				typeof value.result === "string" && value.result.length <= 24_000_000
+					? value.result
+					: undefined,
+		};
+	}
 	if (type === "function_call") {
 		return {
 			id: typeof value.id === "string" ? value.id : undefined,
@@ -1717,10 +1782,18 @@ export function getSessionBinding({
 	// another signed-in workspace. Reauthentication is required after switching.
 	if (!oauthBinding || !request.cookies.get("opencut-account")?.value)
 		return "";
-	return hashSessionBinding(accountBoundOAuthValue(request, oauthBinding));
+	return hashSessionBinding(
+		accountBoundOAuthValue({ request: request, value: oauthBinding }),
+	);
 }
 
-function accountBoundOAuthValue(request: NextRequest, value: string): string {
+function accountBoundOAuthValue({
+	request,
+	value,
+}: {
+	request: NextRequest;
+	value: string;
+}): string {
 	const accountSession = request.cookies.get("opencut-account")?.value;
 	if (!accountSession) throw new Error("Sign in to an OpenCut account first");
 	return JSON.stringify([requireAccount().id, accountSession, value]);
@@ -1757,7 +1830,18 @@ function createReturnUrl({
 	message?: string;
 	returnTo?: string;
 }): URL {
-	const url = new URL(returnTo ?? request.nextUrl.origin);
+	const actualOrigin = localRequestOrigin(request);
+	const requested = new URL(returnTo ?? actualOrigin);
+	// Older in-flight flows may carry Next's internal localhost origin. Keep
+	// their path only on this same loopback service, then return to the browser host.
+	const compatible =
+		["localhost", "127.0.0.1", "[::1]"].includes(requested.hostname) &&
+		requested.protocol === new URL(actualOrigin).protocol &&
+		requested.port === new URL(actualOrigin).port;
+	const url = new URL(
+		compatible ? requested.pathname + requested.search : "/",
+		actualOrigin,
+	);
 	url.searchParams.set("ai_oauth", status);
 	if (message) {
 		url.searchParams.set("ai_oauth_error", message);
@@ -1904,6 +1988,7 @@ function resetOAuthRuntimeForTests(): void {
 }
 
 export const testing = {
+	createReturnUrl,
 	createPkcePair,
 	createAuthorizationUrl,
 	resolveCodexAuthIdentity,

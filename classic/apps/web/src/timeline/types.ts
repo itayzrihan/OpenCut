@@ -35,6 +35,8 @@ export interface Bookmark {
 }
 
 export interface TScene {
+	podcastExtract?: import("@/ai/podcast-types").PodcastExtract;
+	takeAssembly?: import("./smart-takes/types").TakeAssembly;
 	id: string;
 	name: string;
 	isMain: boolean;
@@ -67,6 +69,8 @@ export type TrackType =
 interface BaseTrack {
 	id: string;
 	name: string;
+	/** Explicitly created tracks remain until removed, even without elements. */
+	keepEmpty?: boolean;
 }
 
 export interface VideoTrack extends BaseTrack {
@@ -169,6 +173,7 @@ export interface LibraryAudioElement extends BaseAudioElement {
 export type AudioElement = UploadAudioElement | LibraryAudioElement;
 
 interface BaseTimelineElement {
+	takeGroup?: { assemblyId: string; groupIndex: number };
 	id: string;
 	name: string;
 	duration: MediaTime;
@@ -347,6 +352,7 @@ export interface StickerElement extends BaseTimelineElement {
 }
 
 export interface GraphicElement extends BaseTimelineElement {
+	hyperframesLayerEdits?: import("@/hyperframes/types").HyperframesLayerEdits;
 	type: "graphic";
 	definitionId: string;
 	hidden?: boolean;

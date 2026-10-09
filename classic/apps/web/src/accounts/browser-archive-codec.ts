@@ -1,9 +1,12 @@
 // A portable structured-clone graph. Explicit tags preserve dates, binary
 // values, undefined, maps, sets, shared references and cycles without eval.
-export async function encodeBrowserGraph(
-	value: unknown,
-	storeBlob: (blob: Blob) => Promise<string>,
-) {
+export async function encodeBrowserGraph({
+	value,
+	storeBlob,
+}: {
+	value: unknown;
+	storeBlob: (blob: Blob) => Promise<string>;
+}) {
 	const nodes: Record<string, unknown>[] = [],
 		seen = new Map<object, number>();
 	async function encode(item: unknown): Promise<unknown> {
@@ -108,10 +111,13 @@ export async function encodeBrowserGraph(
 	};
 }
 
-export async function decodeBrowserGraph(
-	graph: Awaited<ReturnType<typeof encodeBrowserGraph>>,
-	readBlob: (id: string) => Promise<Blob>,
-): Promise<unknown> {
+export async function decodeBrowserGraph({
+	graph,
+	readBlob,
+}: {
+	graph: Awaited<ReturnType<typeof encodeBrowserGraph>>;
+	readBlob: (id: string) => Promise<Blob>;
+}): Promise<unknown> {
 	if (
 		graph.format !== "opencut-browser-graph-v1" ||
 		graph.nodes.length > 1_000_000

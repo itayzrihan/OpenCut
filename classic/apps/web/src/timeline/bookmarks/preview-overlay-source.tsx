@@ -1,4 +1,7 @@
 import type { Bookmark } from "@/timeline";
+import { useCallback, useMemo } from "react";
+import { useEditorPlayback } from "@/editor/use-editor";
+import type { EditorCore } from "@/core";
 import {
 	EMPTY_PREVIEW_OVERLAY_SOURCE_RESULT,
 	type PreviewOverlayDefinition,
@@ -47,10 +50,49 @@ export function getBookmarkPreviewOverlaySource({
 	time: MediaTime;
 	isVisible: boolean;
 }): PreviewOverlaySourceResult {
-	const bookmarksWithNotes = getBookmarksActiveAtTime({
-		bookmarks,
-		time,
-	}).flatMap((bookmark) => {
+	return createBookmarkPreviewOverlaySource({
+		bookmarks: getBookmarksActiveAtTime({ bookmarks, time }),
+		isVisible,
+	});
+}
+
+/** Subscribe to the displayed notes, so unchanged intervals (including an
+ * empty timeline) don't rerender the entire preview on every transport tick. */
+export function useBookmarkPreviewOverlaySource({
+	bookmarks,
+	isVisible,
+}: {
+	bookmarks: Bookmark[];
+	isVisible: boolean;
+}): PreviewOverlaySourceResult {
+	const selectNotes = useCallback(
+		(editor: EditorCore) =>
+			isVisible
+				? getBookmarksActiveAtTime({
+						bookmarks,
+						time: editor.playback.getCurrentTime(),
+					}).filter((bookmark) => bookmark.note?.trim())
+				: [],
+		[bookmarks, isVisible],
+	);
+	// useEditorPlayback compares the array's bookmark identities, preserving
+	// its snapshot until notes enter/leave the interval or the document changes.
+	const activeNotes = useEditorPlayback(selectNotes);
+	return useMemo(
+		() =>
+			createBookmarkPreviewOverlaySource({ bookmarks: activeNotes, isVisible }),
+		[activeNotes, isVisible],
+	);
+}
+
+function createBookmarkPreviewOverlaySource({
+	bookmarks,
+	isVisible,
+}: {
+	bookmarks: Bookmark[];
+	isVisible: boolean;
+}): PreviewOverlaySourceResult {
+	const bookmarksWithNotes = bookmarks.flatMap((bookmark) => {
 		if (bookmark.note == null || bookmark.note.trim() === "") {
 			return [];
 		}

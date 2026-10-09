@@ -169,15 +169,26 @@ export class TranscriptionManager {
 					"The timeline changed while transcription was running; captions were not inserted",
 				);
 			}
+			// Share Rust's cut-time normalization with fresh provider results before
+			// both cue generation and the canonical transcript insertion.
+			const normalizedResult = {
+				...result,
+				words: result.words
+					? OpenCutWasm.removeCaptionWordTimeRanges({
+							words: result.words,
+							ranges: [],
+						}).map(({ text, start, end }) => ({ text, start, end }))
+					: undefined,
+			};
 			const captionChunks = buildCaptionChunks({
-				result,
+				result: normalizedResult,
 				settings: normalizedSettings,
 			});
 			const insertedTrackIds = this.dependencies.insertCaptions({
 				editor: this.editor,
 				captions: captionChunks,
-				captionSource: result.words?.length
-					? { words: result.words, settings: normalizedSettings }
+				captionSource: normalizedResult.words?.length
+					? { words: normalizedResult.words, settings: normalizedSettings }
 					: undefined,
 				settings: normalizedSettings,
 				layerCount: result.words?.length ? CAPTION_LAYER_COUNT : 1,

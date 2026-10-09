@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"description": "Reviewed starting inventory of legacy Command definitions and imports. Removing entries is allowed. Additions or changed hashes require an explicit migration exception in review; never regenerate this file in CI.",
+	"commands": {
+		"commands/base-command.ts#Command": "8559902493594c605cfe7368569abcca30e6fd376c2b4f872d60c74b8ae737bb",
+		"commands/batch-command.ts#BatchCommand": "68f8cc063f59b3fd6ac327d09c56cee61ce14c5e16091afe5cf49be629fcec7f",
+		"commands/media/add-media-asset.ts#AddMediaAssetCommand": "3308d70afffe572a4362fad9554473ddaf0a31db376202e726a481c0bfd43b3c",
+		"commands/media/remove-media-asset.ts#RemoveMediaAssetCommand": "93f3981306a06f94f5867671c43816dce6f68b99e0f3ceb1d7d676949b6e21f7",
+		"commands/parallax/create-canvas-pan-story.ts#CreateCanvasPanStoryCommand": "32172a001c04b4ee473796cd7569c3ee3ee0af54b63c6584cf1c5728b7a2ca28",
+		"commands/parallax/insert-selection-into-canvas.ts#InsertSelectionIntoCanvasCommand": "c28bde44bd3d52c44d42655debffa6db488268bcf05ca16d0dc4429433901b2c",
+		"commands/project/update-project-settings.ts#UpdateProjectSettingsCommand": "5e3657159bb093f95e7e65aff342a60092500b7f407cb8e55dcfdf1ed43f6a7e",
+		"commands/timeline/clipboard/paste.ts#PasteCommand": "c3c42383b8edd09baefdac9406d5df379aec6109bce8d894f186208fd027285f",
+		"commands/timeline/element/apply-text-transitions-with-sfx.ts#ApplyTextTransitionsWithSfxCommand": "73ef288bf947f5722d63d3d94374b4a8a6d337a0559bda99456217e931ed8c26",
+		"commands/timeline/element/apply-transition.ts#ApplyTransitionCommand": "8a6297b3ca14c80c3059baaec80f2f7b4ed3394d284676b39a6d28bf3d5921c2",
+		"commands/timeline/element/delete-elements.ts#DeleteElementsCommand": "5ab576d49f1b9a27191014f98f74849add20ba2557f648cc25e8e218e3e859ff",
+		"commands/timeline/element/insert-element.ts#InsertElementCommand": "ecdcc8675130a48fe96f003336ecf7c13b552b4c39c0dc7b240cf04d4c0798c0",
+		"commands/timeline/element/merge-text-elements.ts#MergeTextElementsCommand": "9cafc5ef64dfcc4f9cf5e09f8020e15d957f2da60355270fe9f4e617e1f09916",
+		"commands/timeline/element/move-elements.ts#MoveElementCommand": "c00c3c33b94ac9c1afa285d3d7eca6725bb86d9d8b7ddf510c21551948628636",
+		"commands/timeline/element/split-elements.ts#SplitElementsCommand": "3ab25cb45f8577a750852d90186d6954c2ceab901ee97762a858534ee03662b7",
+		"commands/timeline/element/update-elements.ts#UpdateElementsCommand": "032a263461e99f50a67915b86855fc08cbe6847893466d9b8eaa8d66c8fcd34f",
+		"commands/timeline/element/update-text-reveal-with-typing-sfx.ts#UpdateTextRevealWithTypingSfxCommand": "f481abf103de8b8b0e12897b42689a3b1d7a567b237f584c557ef8d1f0c485e0",
+		"commands/timeline/tracks-snapshot.ts#TracksSnapshotCommand": "f214c926e5c8576c4daacc5f785d76f93fd2eebd45761fd463df427885a97d50"
+	}
+}

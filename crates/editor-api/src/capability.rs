@@ -26,6 +26,46 @@ pub enum AccessLevel {
     Admin,
 }
 
+/// The document representation a capability actually operates on. This is a
+/// feature contract, shared by UI, MCP and agents; it is not an agent tool list.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum DocumentSupport {
+    /// Legacy descriptors are conservatively treated as rewrite-only.
+    #[default]
+    Rewrite,
+    Classic,
+    /// Representation-independent operations or explicitly bridged handlers.
+    Both,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum DocumentKind {
+    Rewrite,
+    Classic,
+}
+
+impl DocumentSupport {
+    pub fn supports(self, kind: DocumentKind) -> bool {
+        matches!(
+            (self, kind),
+            (Self::Both, _)
+                | (Self::Classic, DocumentKind::Classic)
+                | (Self::Rewrite, DocumentKind::Rewrite)
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum CapabilityExecution {
+    #[default]
+    Async,
+    /// Must complete on its first poll; safe for synchronous host transactions.
+    Immediate,
+}
+
 /// Complete, machine-readable metadata for an Editor API operation.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -70,6 +110,10 @@ pub struct CapabilityDescriptor {
     /// Searchable vocabulary and feature aliases.
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub document_support: DocumentSupport,
+    #[serde(default)]
+    pub execution: CapabilityExecution,
 }
 
 impl CapabilityDescriptor {
@@ -98,6 +142,8 @@ impl CapabilityDescriptor {
             unavailable_reason: None,
             category: category.into(),
             tags: Vec::new(),
+            document_support: DocumentSupport::default(),
+            execution: CapabilityExecution::default(),
         }
     }
 }

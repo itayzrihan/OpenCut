@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import type { SceneTracks, TextElement, VideoElement } from "@/timeline";
 import { mediaTime, ZERO_MEDIA_TIME } from "@/wasm";
@@ -17,6 +18,7 @@ let fitWords: (
 ) => FittedTextLayerWord[];
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	removeCaptionWordTimeRanges: <T extends { words: unknown[] }>(options: T) =>
 		options.words,
 	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(

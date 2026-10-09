@@ -1,0 +1,42 @@
+{
+  "id": "beat-pulse-background",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "809282bfc8f954ec98271a521945543cd69272ef877a7ef401c4aa3df76ff0e8",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "1cca75d428611b74b36440e676a12f3b27e05866d40e9eed87c88277c7035e70",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9a7df36b4980fe98d20e534b7d7f792532372e106b1c759ee881243ac1402d36",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "1ac73ae26864885c7cd535ea6cfb2a746f5cb4a06cc1210eaa1808b364e7025c",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9a7df36b4980fe98d20e534b7d7f792532372e106b1c759ee881243ac1402d36",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

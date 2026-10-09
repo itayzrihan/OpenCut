@@ -32,7 +32,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
-				<script src="/account-scope.js" />
+				<Script src="/account-scope.js" strategy="beforeInteractive" />
 				<BotIdClient protect={protectedRoutes} />
 				<link rel="stylesheet" href={TYPEKIT_STYLESHEET_URL} />
 			</head>

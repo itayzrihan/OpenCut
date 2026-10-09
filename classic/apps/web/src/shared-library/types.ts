@@ -5,7 +5,22 @@ export type SharedAudioFolder = "sfx" | "music";
 
 export type SharedCategoryScope = "audio:sfx" | "audio:music" | "stickers";
 
+export interface AudioLicense {
+	status: "commercial-use-verified" | "needs-review";
+	licenseId?: string;
+	licenseUrl?: string;
+	sourcePage?: string;
+	author?: string;
+	verifiedAt?: string;
+	attributionRequired?: boolean;
+	note?: string;
+}
+
 export interface SharedAudioAsset {
+	visibility?: "global" | "account";
+	license?: AudioLicense;
+	sha256?: string;
+	pack?: string;
 	id: string;
 	name: string;
 	folder: SharedAudioFolder;

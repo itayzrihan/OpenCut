@@ -114,6 +114,47 @@ cargo install cargo-watch
 Restart `bun dev:web` after adding or removing a Rust export because the
 browser cannot hot-swap a WebAssembly export table that is already running.
 
+### Web regression tests
+
+After `bun run build:wasm`, run these from `classic/`:
+
+```bash
+bun run test:web
+bun run test:web src/timeline/__tests__/cut-silence.test.ts
+```
+
+The runner starts a separate process for each test file, using Bun by default.
+Module mocks share a registry within a Bun process, so running the entire web suite with a single
+`bun test` can change another file's renderer or WASM behavior. The runner
+discovers all tests under `apps/web/src`, uses two workers, writes per-file logs
+and a JSON summary under the repository's `.local/classic-web-tests/`, and exits
+nonzero for failed or timed-out suites. Options are `--jobs=1` through `8`,
+`--timeout=90000` (milliseconds per suite), and `--report=<directory>`.
+
+Suites that require real Rust exports declare `// @opencut-test-wasm: real` at
+the top. The runner initializes the generated bundler WASM before loading them.
+Suites with partial WASM mocks import `test-support/wasm` and spread its exports
+into their own mock factory before overriding specific functions. A global
+WASM preload must not override these mocks.
+
+Suites marked `// @opencut-test-runner: node` use `node:test` in the server's
+runtime. The audio browser suite uses this path because Bun 1.3.5 on Windows
+can stall Chrome's CDP connection and crash during rejected-probe cleanup.
+The Node TypeScript hook resolves the same source and packages without mocks
+or bundling. It requires `node:module.registerHooks`; Node 24.12.0 was verified.
+The JSON report records the runtime for each suite. Test failures do not trigger
+an automatic retry or a switch to a different runtime.
+
+Real HyperFrames browser tests are opt-in with
+`OPENCUT_HYPERFRAMES_BROWSER_TESTS=1`. Set `HYPERFRAMES_FFMPEG_PATH` and
+`HYPERFRAMES_FFPROBE_PATH` if those binaries are not on PATH, and set
+`OPENCUT_HYPERFRAMES_GSAP_FIXTURE` to a local GSAP script for the volume-envelope
+test. Use `--jobs=1 --timeout=300000` for browser runs. Current verification
+results and remaining failures are recorded in `../HYPERFRAMES-INTEGRATION.md`.
+
+`tsconfig.test.json` enables Bun types and ES2020 for a separate test-fixture
+type audit. Product builds continue to use `tsconfig.build.json`.
+
 ### Self-Hosting with Docker
 
 To run everything (including a production build of the app) in Docker:

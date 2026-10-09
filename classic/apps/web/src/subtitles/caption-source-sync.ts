@@ -1,24 +1,18 @@
-import {
-	buildSubtitleCuesFromWords,
-	splitCaptionCuesByLayer,
-	stripCaptionPunctuation,
-} from "@/subtitles/caption-layout";
+import { stripCaptionPunctuation } from "@/subtitles/caption-layout";
 import {
 	findCaptionSourceTrack,
 	findCaptionSourceTracks,
-	getGeneratedCaptionWords,
-	hasSameCaptionSource,
 	rebuildCaptionTracksWithSource,
 } from "@/subtitles/caption-tracks";
-import type {
-	OverlayTrack,
-	SceneTracks,
-	TextElement,
-	TextTrack,
-} from "@/timeline";
+import type { SceneTracks, TextElement, TextTrack } from "@/timeline";
 import type { TranscriptionWord } from "@/transcription/types";
 import { mediaTimeToSeconds } from "@/wasm";
-import { normalizeTextLayerWordIds, reconcileCaptionWords } from "opencut-wasm";
+import {
+	normalizeTextLayerWordIds,
+	reconcileCaptionWords,
+	planCaptionSceneTranscriptSync,
+	planCaptionManualWordReplacement,
+} from "opencut-wasm";
 
 interface UpdatedElementRef {
 	trackId: string;
@@ -48,56 +42,27 @@ export function syncCaptionSourceWordsFromElements({
 	updates: UpdatedElementRef[];
 	canvasSize?: { width: number; height: number };
 }): SceneTracks {
-	const sourceTrack = findCaptionSourceTrack({ tracks });
-	const source = sourceTrack?.captionSource;
-	if (!source) return tracks;
-
-	let nextWords = source.words;
-	let didChange = false;
-	const sourceTracks = findCaptionSourceTracks({ tracks, source });
-
-	for (const update of updates) {
-		const track = sourceTracks.find(
-			(candidate) => candidate.id === update.trackId,
-		);
-		const elementIndex =
-			track?.elements.findIndex((element) => element.id === update.elementId) ??
-			-1;
-		const element =
-			elementIndex >= 0 ? track?.elements[elementIndex] : undefined;
-		if (!track || !element) continue;
-		if (
-			previousTracks &&
-			!hasElementTranscriptSemanticChange({
-				previousTracks,
-				nextElement: element,
-				update,
-			})
-		) {
-			continue;
-		}
-
-		const updatedWords = syncElementWords({
-			sourceWords: nextWords,
-			track,
-			element,
-			elementIndex,
-			previousElement: previousTracks
-				? findTextElementInTracks({
-						tracks: previousTracks,
-						trackId: update.trackId,
-						elementId: update.elementId,
-					})
-				: null,
-		});
-		if (updatedWords !== nextWords) {
-			nextWords = updatedWords;
-			didChange = true;
-		}
-	}
-
-	if (!didChange) return tracks;
-
+	// Rust owns source membership, ordered element matching and transcript edits.
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- The shared Rust planner returns source indices and field edits.
+	const plan = JSON.parse(
+		planCaptionSceneTranscriptSync({
+			inputJson: JSON.stringify({ tracks, previousTracks, updates }),
+		}),
+	) as TranscriptSyncPlan & {
+		firstIndex: number | null;
+		sourceIndices: number[];
+	};
+	if (!plan.changed || plan.firstIndex === null) return tracks;
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust only selects text tracks carrying captionSource.
+	const source = (tracks.overlay[plan.firstIndex] as TextTrack).captionSource!;
+	const nextWords = plan.words.map(({ sourceIndex, text, start, end }) => {
+		const original = source.words[sourceIndex];
+		return original.text === text &&
+			original.start === start &&
+			original.end === end
+			? original
+			: { ...original, text, start, end };
+	});
 	if (canvasSize) {
 		const rebuiltTracks = rebuildCaptionTracksWithSource({
 			tracks,
@@ -108,26 +73,19 @@ export function syncCaptionSourceWordsFromElements({
 			ignoredEditedElements: updates,
 			preserveEditedElements: false,
 		});
-		if (rebuiltTracks) {
-			return rebuiltTracks;
-		}
+		if (rebuiltTracks) return rebuiltTracks;
 	}
-
-	const withUpdatedSource = (track: OverlayTrack): OverlayTrack => {
-		if (track.type !== "text" || !track.captionSource) return track;
-		if (!hasSameCaptionSource({ track, source })) return track;
-		return {
-			...track,
-			captionSource: {
-				...track.captionSource,
-				words: nextWords,
-			},
-		};
-	};
-
+	const indices = new Set(plan.sourceIndices);
 	return {
 		...tracks,
-		overlay: tracks.overlay.map(withUpdatedSource),
+		overlay: tracks.overlay.map((track, index) => {
+			if (!indices.has(index) || track.type !== "text" || !track.captionSource)
+				return track;
+			return {
+				...track,
+				captionSource: { ...track.captionSource, words: nextWords },
+			};
+		}),
 	};
 }
 
@@ -144,18 +102,13 @@ export function syncTextLayerWordsIntoCaptionSource({
 	const source = sourceTrack?.captionSource;
 	if (!source) return tracks;
 
-	const uniqueElements = dedupeElementRefs({ elements });
-	const sourceTracks = findCaptionSourceTracks({ tracks, source });
-	const sourceTrackIds = new Set(sourceTracks.map((track) => track.id));
-	const generatedWordIndexesToReplace = previousTracks
-		? getGeneratedWordIndexesForPreviousCaptionElements({
-				source,
-				sourceWords: source.words,
-				previousTracks,
-				currentSourceTrackIds: sourceTrackIds,
-				elements: uniqueElements,
-			})
-		: new Set<number>();
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust supplies the generated source indices replaced by moved manual layers.
+	const replacement = JSON.parse(
+		planCaptionManualWordReplacement({
+			inputJson: JSON.stringify({ tracks, previousTracks, elements }),
+		}),
+	) as { indices: number[] };
+	const generatedWordIndexesToReplace = new Set(replacement.indices);
 	let nextTracks = tracks;
 	if (generatedWordIndexesToReplace.size > 0) {
 		nextTracks = updateCaptionSourceWordsInTracks({
@@ -252,50 +205,6 @@ export function normalizeTextLayerWordRunIds({
 	});
 
 	return didChange ? { ...tracks, overlay } : tracks;
-}
-
-function getGeneratedWordIndexesForPreviousCaptionElements({
-	source,
-	sourceWords,
-	previousTracks,
-	currentSourceTrackIds,
-	elements,
-}: {
-	source: NonNullable<TextTrack["captionSource"]>;
-	sourceWords: TranscriptionWord[];
-	previousTracks: SceneTracks;
-	currentSourceTrackIds: Set<string>;
-	elements: UpdatedElementRef[];
-}): Set<number> {
-	const previousSourceTracks = findCaptionSourceTracks({
-		tracks: previousTracks,
-		source,
-	});
-	const usedIndexes = new Set<number>();
-	const indexes = new Set<number>();
-
-	for (const ref of elements) {
-		if (currentSourceTrackIds.has(ref.trackId)) continue;
-		const previousElement = previousSourceTracks
-			.flatMap((track) => track.elements)
-			.find((element) => element.id === ref.elementId);
-		if (!previousElement) continue;
-
-		for (const entry of getElementTranscriptWordSnapshots({
-			element: previousElement,
-		})) {
-			const sourceIndex = findSourceWordIndexForTranscriptEntry({
-				sourceWords,
-				entry,
-				usedIndexes,
-			});
-			if (sourceIndex < 0) continue;
-			usedIndexes.add(sourceIndex);
-			indexes.add(sourceIndex);
-		}
-	}
-
-	return indexes;
 }
 
 export function removeTextLayerWordsFromCaptionSource({
@@ -397,349 +306,9 @@ export function removeCaptionElementWordsFromSource({
 	});
 }
 
-function syncElementWords({
-	sourceWords,
-	track,
-	element,
-	elementIndex,
-	previousElement,
-}: {
-	sourceWords: TranscriptionWord[];
-	track: TextTrack;
-	element: TextElement;
-	elementIndex: number;
-	previousElement: TextElement | null;
-}): TranscriptionWord[] {
-	const source = track.captionSource;
-	if (!source) return sourceWords;
-	if (previousElement) {
-		// Multiline merges deliberately strip timing from their word runs while
-		// keeping the generated transcript unchanged. Treat that representation
-		// change as presentation-only instead of deleting the previously timed
-		// source entries.
-		if (
-			!isPresentationOnlyWordRunElement({ element: previousElement }) &&
-			isPresentationOnlyWordRunElement({ element })
-		) {
-			return sourceWords;
-		}
-		const presentationOnlyWords = syncPresentationOnlyElementWords({
-			sourceWords,
-			source,
-			previousElement,
-			nextElement: element,
-		});
-		if (presentationOnlyWords !== sourceWords) {
-			return presentationOnlyWords;
-		}
-
-		const updatedWords = syncElementWordsByPreviousWordRuns({
-			sourceWords,
-			source,
-			previousElement,
-			nextElement: element,
-		});
-		if (updatedWords !== sourceWords) {
-			return updatedWords;
-		}
-	}
-
-	const generatedSourceWords = getGeneratedCaptionWords({ words: sourceWords });
-	const captions = buildSubtitleCuesFromWords({
-		words: generatedSourceWords,
-		settings: source.settings,
-	});
-	const layers = splitCaptionCuesByLayer({
-		captions,
-		layerCount: source.layerCount ?? 1,
-	});
-	const expectedCaption = layers[source.layerIndex ?? 0]?.[elementIndex];
-	if (!expectedCaption?.words?.length) return sourceWords;
-
-	const elementStart = mediaTimeToSeconds({ time: element.startTime });
-	const contentWords = getContentWords({ element });
-	const nextWords = [...sourceWords];
-	let didChange = false;
-
-	expectedCaption.words.forEach((expectedWord, wordOffset) => {
-		const sourceIndex = sourceWords.findIndex((word) => word === expectedWord);
-		if (sourceIndex < 0) return;
-		const current = nextWords[sourceIndex];
-		const run = element.wordRuns?.[wordOffset];
-		const renderedText =
-			run?.text ?? contentWords[wordOffset] ?? expectedWord.text;
-		const shouldHidePunctuation =
-			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
-		const nextText =
-			shouldHidePunctuation &&
-			stripCaptionPunctuation({ text: current.text }) ===
-				stripCaptionPunctuation({ text: renderedText })
-				? current.text
-				: renderedText;
-		const nextStart =
-			run?.startTime == null
-				? expectedWord.start
-				: elementStart + mediaTimeToSeconds({ time: run.startTime });
-		const nextEnd =
-			run?.endTime == null
-				? expectedWord.end
-				: elementStart + mediaTimeToSeconds({ time: run.endTime });
-
-		const nextWord = {
-			...current,
-			text: nextText,
-			start: roundSeconds(nextStart),
-			end: roundSeconds(Math.max(nextStart + 0.01, nextEnd)),
-		};
-		if (
-			nextWord.text !== current.text ||
-			nextWord.start !== current.start ||
-			nextWord.end !== current.end
-		) {
-			nextWords[sourceIndex] = nextWord;
-			didChange = true;
-		}
-	});
-
-	return didChange ? nextWords : sourceWords;
-}
-
-function syncPresentationOnlyElementWords({
-	sourceWords,
-	source,
-	previousElement,
-	nextElement,
-}: {
-	sourceWords: TranscriptionWord[];
-	source: NonNullable<TextTrack["captionSource"]>;
-	previousElement: TextElement;
-	nextElement: TextElement;
-}): TranscriptionWord[] {
-	if (
-		!isPresentationOnlyWordRunElement({ element: previousElement }) ||
-		!isPresentationOnlyWordRunElement({ element: nextElement })
-	) {
-		return sourceWords;
-	}
-
-	const previousEntries = getElementPresentationWordSnapshots({
-		element: previousElement,
-	});
-	const nextEntries = getElementPresentationWordSnapshots({
-		element: nextElement,
-	});
-	if (previousEntries.length === 0) return sourceWords;
-
-	const sourceIndexesByPreviousEntry = mapPresentationEntriesToSourceWords({
-		sourceWords,
-		entries: previousEntries,
-		element: previousElement,
-	});
-	const usedPreviousEntryIndexes = new Set<number>();
-	const nextWords = [...sourceWords];
-	const sourceIndexesToRemove = new Set<number>();
-	let didChange = false;
-
-	nextEntries.forEach((nextEntry, entryIndex) => {
-		const previousEntryIndex = findPreviousPresentationEntryIndex({
-			entries: previousEntries,
-			nextEntry,
-			entryIndex,
-			usedIndexes: usedPreviousEntryIndexes,
-		});
-		if (previousEntryIndex < 0) return;
-
-		const sourceIndex = sourceIndexesByPreviousEntry.get(previousEntryIndex);
-		if (sourceIndex == null) return;
-
-		const current = nextWords[sourceIndex];
-		const shouldHidePunctuation =
-			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
-		const nextText =
-			shouldHidePunctuation &&
-			stripCaptionPunctuation({ text: current.text }) ===
-				stripCaptionPunctuation({ text: nextEntry.text })
-				? current.text
-				: nextEntry.text;
-		if (current.text !== nextText) {
-			nextWords[sourceIndex] = {
-				...current,
-				text: nextText,
-			};
-			didChange = true;
-		}
-	});
-
-	for (const [entryIndex, sourceIndex] of sourceIndexesByPreviousEntry) {
-		if (usedPreviousEntryIndexes.has(entryIndex)) continue;
-		sourceIndexesToRemove.add(sourceIndex);
-		didChange = true;
-	}
-
-	if (sourceIndexesToRemove.size > 0) {
-		return nextWords.filter((_, index) => !sourceIndexesToRemove.has(index));
-	}
-
-	return didChange ? nextWords : sourceWords;
-}
-
-function syncElementWordsByPreviousWordRuns({
-	sourceWords,
-	source,
-	previousElement,
-	nextElement,
-}: {
-	sourceWords: TranscriptionWord[];
-	source: NonNullable<TextTrack["captionSource"]>;
-	previousElement: TextElement;
-	nextElement: TextElement;
-}): TranscriptionWord[] {
-	const previousEntries = getElementTranscriptWordSnapshots({
-		element: previousElement,
-	});
-	const nextEntries = getElementTranscriptWordSnapshots({
-		element: nextElement,
-	});
-	if (previousEntries.length === 0) {
-		return sourceWords;
-	}
-
-	const previousEntryIndexes = new Set<number>();
-	const usedSourceIndexes = new Set<number>();
-	const nextWords = [...sourceWords];
-	let didChange = false;
-
-	nextEntries.forEach((nextEntry, entryIndex) => {
-		const previousEntry = findPreviousTranscriptEntry({
-			entries: previousEntries,
-			nextEntry,
-			entryIndex,
-			usedIndexes: previousEntryIndexes,
-		});
-		if (!previousEntry) return;
-		const sourceIndex = findSourceWordIndexForTranscriptEntry({
-			sourceWords,
-			entry: previousEntry,
-			usedIndexes: usedSourceIndexes,
-		});
-		if (sourceIndex < 0) return;
-		usedSourceIndexes.add(sourceIndex);
-
-		const current = nextWords[sourceIndex];
-		const shouldHidePunctuation =
-			source.settings.hidePunctuation && !current.excludeFromPunctuationHiding;
-		const nextText =
-			shouldHidePunctuation &&
-			stripCaptionPunctuation({ text: current.text }) ===
-				stripCaptionPunctuation({ text: nextEntry.text })
-				? current.text
-				: nextEntry.text;
-		const nextWord = {
-			...current,
-			text: nextText,
-			start: roundSeconds(nextEntry.start),
-			end: roundSeconds(Math.max(nextEntry.start + 0.01, nextEntry.end)),
-		};
-		if (
-			nextWord.text !== current.text ||
-			nextWord.start !== current.start ||
-			nextWord.end !== current.end
-		) {
-			nextWords[sourceIndex] = nextWord;
-			didChange = true;
-		}
-	});
-
-	const sourceIndexesToRemove = new Set<number>();
-	previousEntries.forEach((previousEntry, entryIndex) => {
-		if (previousEntryIndexes.has(entryIndex)) return;
-		const sourceIndex = findSourceWordIndexForTranscriptEntry({
-			sourceWords,
-			entry: previousEntry,
-			usedIndexes: usedSourceIndexes,
-		});
-		if (sourceIndex < 0) return;
-		usedSourceIndexes.add(sourceIndex);
-		sourceIndexesToRemove.add(sourceIndex);
-		didChange = true;
-	});
-
-	if (sourceIndexesToRemove.size > 0) {
-		return nextWords.filter((_, index) => !sourceIndexesToRemove.has(index));
-	}
-
-	return didChange ? nextWords : sourceWords;
-}
-
-function findPreviousTranscriptEntry({
-	entries,
-	nextEntry,
-	entryIndex,
-	usedIndexes,
-}: {
-	entries: TranscriptWordSnapshot[];
-	nextEntry: TranscriptWordSnapshot;
-	entryIndex: number;
-	usedIndexes: Set<number>;
-}): TranscriptWordSnapshot | null {
-	if (nextEntry.wordId) {
-		const wordIdIndex = entries.findIndex(
-			(entry, index) =>
-				!usedIndexes.has(index) && entry.wordId === nextEntry.wordId,
-		);
-		if (wordIdIndex >= 0) {
-			usedIndexes.add(wordIdIndex);
-			return entries[wordIdIndex];
-		}
-	}
-
-	if (entries[entryIndex] && !usedIndexes.has(entryIndex)) {
-		usedIndexes.add(entryIndex);
-		return entries[entryIndex];
-	}
-
-	return null;
-}
-
-function findPreviousPresentationEntryIndex({
-	entries,
-	nextEntry,
-	entryIndex,
-	usedIndexes,
-}: {
-	entries: PresentationWordSnapshot[];
-	nextEntry: PresentationWordSnapshot;
-	entryIndex: number;
-	usedIndexes: Set<number>;
-}): number {
-	if (nextEntry.wordId) {
-		const wordIdIndex = entries.findIndex(
-			(entry, index) =>
-				!usedIndexes.has(index) && entry.wordId === nextEntry.wordId,
-		);
-		if (wordIdIndex >= 0) {
-			usedIndexes.add(wordIdIndex);
-			return wordIdIndex;
-		}
-	}
-
-	if (entries[entryIndex] && !usedIndexes.has(entryIndex)) {
-		usedIndexes.add(entryIndex);
-		return entryIndex;
-	}
-
-	const normalizedEntry = normalizeTranscriptText({ text: nextEntry.text });
-	const textIndex = entries.findIndex(
-		(entry, index) =>
-			!usedIndexes.has(index) &&
-			normalizeTranscriptText({ text: entry.text }) === normalizedEntry,
-	);
-	if (textIndex >= 0) {
-		usedIndexes.add(textIndex);
-		return textIndex;
-	}
-
-	return -1;
+interface TranscriptSyncPlan {
+	changed: boolean;
+	words: { sourceIndex: number; text: string; start: number; end: number }[];
 }
 
 function findSourceWordIndexForTranscriptEntry({
@@ -922,52 +491,6 @@ function dedupeElementRefs({
 	});
 }
 
-function hasElementTranscriptSemanticChange({
-	previousTracks,
-	nextElement,
-	update,
-}: {
-	previousTracks: SceneTracks;
-	nextElement: TextElement;
-	update: UpdatedElementRef;
-}) {
-	const previousElement = findTextElementInTracks({
-		tracks: previousTracks,
-		trackId: update.trackId,
-		elementId: update.elementId,
-	});
-	if (!previousElement) return true;
-	if (
-		isPresentationOnlyWordRunElement({ element: previousElement }) ||
-		isPresentationOnlyWordRunElement({ element: nextElement })
-	) {
-		return !arePresentationWordSnapshotsEqual({
-			left: getElementPresentationWordSnapshots({ element: previousElement }),
-			right: getElementPresentationWordSnapshots({ element: nextElement }),
-		});
-	}
-	return !areTranscriptWordSnapshotsEqual({
-		left: getElementTranscriptWordSnapshots({ element: previousElement }),
-		right: getElementTranscriptWordSnapshots({ element: nextElement }),
-	});
-}
-
-function findTextElementInTracks({
-	tracks,
-	trackId,
-	elementId,
-}: {
-	tracks: SceneTracks;
-	trackId: string;
-	elementId: string;
-}) {
-	const track = tracks.overlay.find(
-		(track): track is TextTrack =>
-			track.type === "text" && track.id === trackId,
-	);
-	return track?.elements.find((element) => element.id === elementId) ?? null;
-}
-
 function getElementTranscriptWordSnapshots({
 	element,
 }: {
@@ -1021,38 +544,6 @@ function getElementPresentationWordSnapshots({
 	});
 }
 
-function areTranscriptWordSnapshotsEqual({
-	left,
-	right,
-}: {
-	left: TranscriptWordSnapshot[];
-	right: TranscriptWordSnapshot[];
-}) {
-	if (left.length !== right.length) return false;
-	return left.every((word, index) => {
-		const candidate = right[index];
-		return (
-			candidate?.text === word.text &&
-			candidate.start === word.start &&
-			candidate.end === word.end
-		);
-	});
-}
-
-function arePresentationWordSnapshotsEqual({
-	left,
-	right,
-}: {
-	left: PresentationWordSnapshot[];
-	right: PresentationWordSnapshot[];
-}) {
-	if (left.length !== right.length) return false;
-	return left.every((word, index) => {
-		const candidate = right[index];
-		return candidate?.text === word.text && candidate.wordId === word.wordId;
-	});
-}
-
 function roundSeconds(value: number) {
 	return Math.round(value * 1000) / 1000;
 }
@@ -1064,15 +555,4 @@ function isTimedWordRun(
 		Pick<NonNullable<TextElement["wordRuns"]>[number], "startTime" | "endTime">
 	> {
 	return run.startTime != null && run.endTime != null;
-}
-
-function isPresentationOnlyWordRunElement({
-	element,
-}: {
-	element: TextElement;
-}) {
-	return (
-		(element.wordRuns?.length ?? 0) > 0 &&
-		!element.wordRuns?.some((run) => isTimedWordRun(run))
-	);
 }

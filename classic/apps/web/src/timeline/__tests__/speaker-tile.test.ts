@@ -1,10 +1,10 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { BackgroundRemovalSettings } from "@/background-removal";
-import {
-	getDisplayTracks,
-	type SceneTracks,
-	type VideoElement,
-	type VideoTrack,
+import type {
+	SceneTracks,
+	VideoElement,
+	VideoTrack,
 } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 
@@ -20,6 +20,7 @@ const defaultSettings: BackgroundRemovalSettings = {
 };
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	preserveAudioDuringTimeRemoval: <T extends { clips: unknown[] }>(
 		options: T,
 	) => ({
@@ -45,7 +46,10 @@ mock.module("opencut-wasm", () => ({
 let buildSpeakerTileEdit: typeof import("@/timeline/speaker-tile").buildSpeakerTileEdit;
 let buildSpeakerFrameBreakoutEdit: typeof import("@/timeline/speaker-tile").buildSpeakerFrameBreakoutEdit;
 
+let getDisplayTracks: typeof import("@/timeline").getDisplayTracks;
+
 beforeAll(async () => {
+	({ getDisplayTracks } = await import("@/timeline"));
 	({ buildSpeakerTileEdit, buildSpeakerFrameBreakoutEdit } =
 		await import("@/timeline/speaker-tile"));
 });

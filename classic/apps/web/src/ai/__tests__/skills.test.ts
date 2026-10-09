@@ -13,6 +13,9 @@ describe("AI skills", () => {
 		const listed = listAiSkills();
 		expect(listed).toHaveLength(AI_SKILLS.length);
 		expect(listed.map((skill) => skill.name)).toEqual([
+			"automatic-word-animation",
+			"automatic-text-transitions",
+			"automatic-zoom",
 			"creative-direction",
 			"hyperframe-authoring",
 			"motion-graphics",

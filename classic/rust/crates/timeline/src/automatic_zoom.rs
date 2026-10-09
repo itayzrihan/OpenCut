@@ -247,7 +247,10 @@ fn compile(options: CompileAutomaticZoomOptions) -> Result<AutomaticZoomResult, 
         if e.start < 0.0 || duration < quantize(0.6) || duration > quantize(4.5) || stop > end {
             return Err(fail(&format!(
                 "duration must be 0.6–4.5 seconds inside the video; requested {:.4}–{:.4}s, frame-aligned duration {:.4}s, last usable frame {:.4}s",
-                e.start, e.end, duration as f64 / TICKS, last_frame as f64 / TICKS
+                e.start,
+                e.end,
+                duration as f64 / TICKS,
+                last_frame as f64 / TICKS
             )));
         }
         if start < previous_end + quantize(0.35) {
@@ -467,7 +470,9 @@ mod tests {
         assert!(result.valid, "{}", result.error);
         let after: Value = serde_json::from_str(&result.source_json).unwrap();
         let effect = &after["scene"]["tracks"][1]["elements"][0];
-        assert!(effect["startTime"].as_i64().unwrap() + effect["duration"].as_i64().unwrap() <= 1183999);
+        assert!(
+            effect["startTime"].as_i64().unwrap() + effect["duration"].as_i64().unwrap() <= 1183999
+        );
         e["end"] = json!(10.5);
         assert!(!run(doc, vec![e]).valid);
     }

@@ -1,0 +1,43 @@
+{
+  "id": "gravitational-lens",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "a7e054e8b754d6654616d232152854cc5edbf50d6ef4b0c2a543962297d7e01a",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "gravitational-lens.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "c25d7877ce37a84c8338aaaff5e26d13ba12e93572a10698925d93521b4e7f0d",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9a8cc19ff47b8747995ee5e78d5a6c479766afe5f4103f39f094a1bd6a125901",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "ac43281112b255381f69bb6b8c27dc10a6665950ac3055120c1dc48ba22a8362",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9a8cc19ff47b8747995ee5e78d5a6c479766afe5f4103f39f094a1bd6a125901",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

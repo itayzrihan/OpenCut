@@ -1,7 +1,11 @@
+import { PushBrollNode, TextGraphicsNode } from "./nodes/push-broll-node";
+import { hyperframesVisualKey } from "@/hyperframes/layer-edits";
 import type { SceneTracks, TimelineTrack, TScene } from "@/timeline";
 import { calculateTotalDuration, getDisplayTracks } from "@/timeline";
 import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
+import type { HyperframesRenderContext } from "@/hyperframes/types";
+import { TICKS_PER_SECOND } from "@/wasm";
 import { resolveUnifiedAnglesVideoAsset } from "@/media/unified-angles";
 import type { ParamValues } from "@/params";
 import { RootNode } from "./nodes/root-node";
@@ -78,6 +82,8 @@ function buildTrackNodes({
 	scenes,
 	visitedSceneIds,
 	isParallaxCanvasScene,
+	hyperframes,
+	allowHyperframesPreviewScaling,
 }: {
 	tracks: TimelineTrack[];
 	sceneTracks: SceneTracks;
@@ -89,8 +95,18 @@ function buildTrackNodes({
 	scenes: TScene[];
 	visitedSceneIds: ReadonlySet<string>;
 	isParallaxCanvasScene: boolean;
+	hyperframes?: HyperframesRenderContext;
+	allowHyperframesPreviewScaling: boolean;
 }): AnyBaseNode[] {
 	const nodes: AnyBaseNode[] = [];
+	const canScaleHyperframesPreview = Boolean(
+		isPreview &&
+		allowHyperframesPreviewScaling &&
+		!isParallaxCanvasScene &&
+		!tracks.some((track) =>
+			track.elements.some((element) => element.type === "effect"),
+		),
+	);
 	const parallaxAssignments = isParallaxCanvasScene
 		? resolveParallaxTrackAssignments({
 				tracks: getDisplayTracks({ tracks: sceneTracks }),
@@ -104,6 +120,45 @@ function buildTrackNodes({
 
 		for (const element of elements) {
 			if (element.type === "effect") {
+				if (element.effectType === "push-broll") {
+					const id = element.params.brollSceneId;
+					const nested = scenes.find((scene) => scene.id === id);
+					if (nested && !visitedSceneIds.has(nested.id)) {
+						const node = new PushBrollNode({
+							timeOffset: element.startTime,
+							duration: element.duration,
+							edge: element.params.edge === "bottom" ? "bottom" : "top",
+							screenPercent: Number(element.params.screenPercent ?? 40),
+							transitionSeconds: Number(
+								element.params.transitionSeconds ?? 0.4,
+							),
+						});
+						const visited = new Set(visitedSceneIds);
+						visited.add(nested.id);
+						for (const child of buildTrackNodes({
+							tracks: getDisplayTracks({ tracks: nested.tracks })
+								.filter(
+									(t) => t.type !== "audio" && !("hidden" in t && t.hidden),
+								)
+								.slice()
+								.reverse(),
+							sceneTracks: nested.tracks,
+							mediaMap,
+							mediaAssets,
+							canvasSize,
+							cameraCanvasSize,
+							isPreview,
+							scenes,
+							visitedSceneIds: visited,
+							isParallaxCanvasScene: false,
+							hyperframes,
+							allowHyperframesPreviewScaling: false,
+						}))
+							node.add(child);
+						nodes.push(node);
+					}
+					continue;
+				}
 				const nestedSceneId = readParallaxSceneId({ params: element.params });
 				if (nestedSceneId && !visitedSceneIds.has(nestedSceneId)) {
 					const nestedScene = scenes.find(
@@ -164,6 +219,8 @@ function buildTrackNodes({
 							scenes,
 							visitedSceneIds: nextVisited,
 							isParallaxCanvasScene: Boolean(nestedScene.parallax),
+							hyperframes,
+							allowHyperframesPreviewScaling: false,
 						})) {
 							nestedNode.add(child);
 						}
@@ -487,29 +544,63 @@ function buildTrackNodes({
 				const clipMediaAsset = element.clipMediaId
 					? mediaMap.get(element.clipMediaId)
 					: undefined;
-				nodes.push(
-					new TextNode({
-						...element,
-						transform: buildTransformFromParams({ params: element.params }),
-						animations: buildTransitionAnimationsFromElement({ element }),
-						opacity: readOpacityFromParams({ params: element.params }),
-						blendMode: readBlendModeFromParams({ params: element.params }),
-						canvasCenter: {
-							x: cameraCanvasSize.width / 2,
-							y: cameraCanvasSize.height / 2,
-						},
-						canvasHeight: cameraCanvasSize.height,
-						textBaseline: "middle",
-						effects: element.effects ?? [],
-						clipMediaAsset,
-						cameraDepth: camera.depth,
-						cameraLocked: camera.locked,
-						cameraMotionFactor: camera.motionFactor,
-						cameraCanvasWidth: cameraCanvasSize.width,
-						cameraCanvasHeight: cameraCanvasSize.height,
-						worldPinned: isParallaxCanvasScene,
-					}),
+				const textNode = new TextNode({
+					...element,
+					transform: buildTransformFromParams({ params: element.params }),
+					animations: buildTransitionAnimationsFromElement({ element }),
+					opacity: readOpacityFromParams({ params: element.params }),
+					blendMode: readBlendModeFromParams({ params: element.params }),
+					canvasCenter: {
+						x: cameraCanvasSize.width / 2,
+						y: cameraCanvasSize.height / 2,
+					},
+					canvasHeight: cameraCanvasSize.height,
+					textBaseline: "middle",
+					effects: element.effects ?? [],
+					clipMediaAsset,
+					cameraDepth: camera.depth,
+					cameraLocked: camera.locked,
+					cameraMotionFactor: camera.motionFactor,
+					cameraCanvasWidth: cameraCanvasSize.width,
+					cameraCanvasHeight: cameraCanvasSize.height,
+					worldPinned: isParallaxCanvasScene,
+				});
+				const nested = scenes.find(
+					(s) => s.id === element.params.textGraphicsSceneId,
 				);
+				if (nested && !visitedSceneIds.has(nested.id)) {
+					const wrapper = new TextGraphicsNode({
+						timeOffset: element.startTime,
+						duration: element.duration,
+						edge: element.params.textGraphicsEdge === "top" ? "top" : "bottom",
+						screenPercent: Number(element.params.textGraphicsSizePercent ?? 20),
+						transitionSeconds: Number(
+							element.params.textGraphicsTransitionSeconds ?? 0.4,
+						),
+					});
+					wrapper.add(textNode);
+					const visited = new Set(visitedSceneIds);
+					visited.add(nested.id);
+					for (const child of buildTrackNodes({
+						tracks: getDisplayTracks({ tracks: nested.tracks })
+							.filter((t) => t.type !== "audio" && !("hidden" in t && t.hidden))
+							.slice()
+							.reverse(),
+						sceneTracks: nested.tracks,
+						mediaMap,
+						mediaAssets,
+						canvasSize,
+						cameraCanvasSize,
+						isPreview,
+						scenes,
+						visitedSceneIds: visited,
+						isParallaxCanvasScene: false,
+						hyperframes,
+						allowHyperframesPreviewScaling: false,
+					}))
+						wrapper.add(child);
+					nodes.push(wrapper);
+				} else nodes.push(textNode);
 			}
 
 			if (element.type === "sticker") {
@@ -546,6 +637,19 @@ function buildTrackNodes({
 			}
 
 			if (element.type === "graphic") {
+				const sourceId = element.params.hyperframesAssetId;
+				const composition =
+					element.definitionId === "hyperframes" && typeof sourceId === "string"
+						? hyperframes?.compositions[sourceId]
+						: undefined;
+				const getSourceTime = (localTime: number) =>
+					Math.max(
+						0,
+						Math.min(
+							(element.trimStart + localTime) / TICKS_PER_SECOND,
+							(composition?.durationSeconds ?? 0) - 1 / TICKS_PER_SECOND,
+						),
+					);
 				const camera = isParallaxCanvasScene
 					? {
 							depth: 1,
@@ -558,7 +662,47 @@ function buildTrackNodes({
 				nodes.push(
 					new GraphicNode({
 						definitionId: element.definitionId,
-						params: element.params,
+						// Camera and scene effects can magnify a layer after it is
+						// resolved. Keep its full source for those preview paths.
+						isPreview: canScaleHyperframesPreview,
+						params: composition
+							? {
+									...element.params,
+									sourceWidth: composition.width,
+									sourceHeight: composition.height,
+								}
+							: element.params,
+						frameSource:
+							composition && hyperframes
+								? {
+										width: composition.width,
+										height: composition.height,
+										getResourceRevision: hyperframes.getResourceRevision,
+										live: hyperframes.openLivePreview
+											? {
+													occurrenceId: element.id,
+													key: hyperframesVisualKey({
+														source: composition.source,
+														layerEdits: element.hyperframesLayerEdits,
+													}),
+													open: () =>
+														hyperframes.openLivePreview!({
+															composition,
+															layerEdits: element.hyperframesLayerEdits,
+														}),
+													getSourceTime,
+												}
+											: undefined,
+										renderTo: ({ localTime, target, previewScale }) =>
+											hyperframes.renderTo({
+												layerEdits: element.hyperframesLayerEdits,
+												composition,
+												target,
+												previewScale,
+												timeSeconds: getSourceTime(localTime),
+											}),
+									}
+								: undefined,
 						duration: element.duration,
 						timeOffset: element.startTime,
 						trimStart: element.trimStart,
@@ -662,6 +806,7 @@ function buildBlurBackgroundNodes({
 }
 
 export type BuildSceneParams = {
+	hyperframes?: HyperframesRenderContext;
 	canvasSize: TCanvasSize;
 	cameraCanvasSize?: TCanvasSize;
 	tracks: SceneTracks;
@@ -676,6 +821,7 @@ export type BuildSceneParams = {
 };
 
 export function buildScene({
+	hyperframes,
 	canvasSize,
 	cameraCanvasSize = canvasSize,
 	tracks,
@@ -698,6 +844,8 @@ export function buildScene({
 	const mainTrack = tracks.main.hidden ? undefined : tracks.main;
 
 	const allNodes = buildTrackNodes({
+		hyperframes,
+		allowHyperframesPreviewScaling: !editorCameraEffectParams,
 		tracks: orderedTracksBottomToTop,
 		sceneTracks: tracks,
 		mediaMap,

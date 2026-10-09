@@ -1,6 +1,7 @@
 import { graphicsRegistry } from "../registry";
 import { ellipseGraphicDefinition } from "./ellipse";
 import { hyperframeGraphicDefinition } from "./hyperframe";
+import { hyperframesGraphicDefinition } from "./hyperframes";
 import { polygonGraphicDefinition } from "./polygon";
 import { presetBackgroundGraphicDefinition } from "./preset-background";
 import { rectangleGraphicDefinition } from "./rectangle";
@@ -14,6 +15,7 @@ const defaultGraphicDefinitions = [
 	starGraphicDefinition,
 	presetBackgroundGraphicDefinition,
 	hyperframeGraphicDefinition,
+	hyperframesGraphicDefinition,
 	uiElementGraphicDefinition,
 ];
 

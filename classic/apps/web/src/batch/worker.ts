@@ -8,6 +8,7 @@ import { mediaTimeFromSeconds, ZERO_MEDIA_TIME } from "@/wasm";
 import { initializeGpuRenderer } from "@/services/renderer/gpu-renderer";
 import { batchEditIsLocked } from "opencut-wasm";
 import { batchRequest } from "./client";
+import { createBatchUpdateQueue } from "./update-queue";
 import { setBatchWriteToken } from "./write-token";
 import type { BatchRun, BatchState, BatchSource } from "./types";
 export async function executeBatch({
@@ -25,33 +26,78 @@ export async function executeBatch({
 	let abort: AbortController | undefined;
 	let state: BatchRun = run;
 	let executionRunId: string | undefined;
-	let queue: Promise<unknown> = Promise.resolve();
-	const send = (data: Record<string, unknown> = {}) => {
-		const task = queue.then(async () => {
-			const result = await batchRequest<BatchState>({
-				action: "update",
-				id: run.id,
-				...data,
-			});
-			state = result.runs.find((r) => r.id === run.id)!;
-			executionRunId = result.executionRunId;
-			if (
-				current &&
-				state.jobs.find((j) => j.projectId === current)?.cancelRequested
-			)
-				abort?.abort();
-			return result;
+	const send = createBatchUpdateQueue(async (data) => {
+		const result = await batchRequest<BatchState>({
+			action: "update",
+			id: run.id,
+			...data,
 		});
-		queue = task.catch(() => {});
-		return task;
-	};
+		state = result.runs.find((r) => r.id === run.id)!;
+		executionRunId = result.executionRunId;
+		if (
+			current &&
+			state.jobs.find((j) => j.projectId === current)?.cancelRequested
+		)
+			abort?.abort();
+		return result;
+	});
 	const heartbeat = setInterval(() => {
-		void send().catch(() => abort?.abort());
+		void send({}, true).catch(() => abort?.abort());
 	}, 10_000);
-	const progress = (message: string) => {
-		void send({ projectId: current, message: message.slice(0, 4000) }).catch(
-			() => abort?.abort(),
-		);
+	const errorMessage = (error: unknown) =>
+		error instanceof Error ? error.message : String(error);
+	// Keep the canonical editor and batch write authority alive until its final
+	// save is acknowledged. Never discard a dirty worker or silently take over
+	// another editor's lease to make an exit succeed.
+	const prepareExit = async (originalError?: unknown) => {
+		let attempt = 0;
+		while (true) {
+			try {
+				await editor.project.prepareExit();
+				parent.postMessage(
+					{ type: "opencut-batch-recovered", id: run.id },
+					location.origin,
+				);
+				return;
+			} catch (saveError) {
+				console.error("Background edit could not be saved", {
+					projectId: current,
+					originalError,
+					saveError,
+				});
+				// A transient failure may have committed without delivering its
+				// response. The session client reconciles that exact request first.
+				if (attempt++ === 0) continue;
+				const message = [
+					originalError
+						? errorMessage(originalError)
+						: "Background edit paused",
+					`Save failed: ${errorMessage(saveError)}`,
+					"Unsaved changes are retained in this tab. Keep it open and retry saving.",
+				]
+					.join(" · ")
+					.slice(0, 4000);
+				await send({ projectId: current, message }).catch(() => {});
+				await new Promise<void>((resolve) => {
+					const retry = (event: MessageEvent) => {
+						if (
+							event.origin !== location.origin ||
+							event.source !== parent ||
+							event.data?.type !== "opencut-batch-retry-save" ||
+							event.data.id !== run.id
+						)
+							return;
+						window.removeEventListener("message", retry);
+						resolve();
+					};
+					window.addEventListener("message", retry);
+					parent.postMessage(
+						{ type: "opencut-batch-save-blocked", id: run.id, message },
+						location.origin,
+					);
+				});
+			}
+		}
 	};
 	const stop = () => abort?.abort();
 	window.addEventListener("pagehide", stop);
@@ -161,15 +207,14 @@ export async function executeBatch({
 					message: "Imported · waiting for Full Auto Edit",
 				});
 			} catch (e) {
-				await editor.save.flush();
-				await editor.command.flushHistory();
+				await prepareExit(e);
 				await send({
 					projectId: current,
 					event: abort.signal.aborted ? "cancel" : "fail",
 					message: e instanceof Error ? e.message : "Import failed",
 				});
 			} finally {
-				editor.project.closeProject();
+				if (!editor.save.getIsDirty()) editor.project.closeProject();
 			}
 		}
 		for (const job of run.jobs) {
@@ -190,35 +235,41 @@ export async function executeBatch({
 				await send({
 					projectId: current,
 					event: "run",
-					message: "Starting Full Auto Edit…",
+					message: job.resumeFromStage
+						? `Resuming Full Auto Edit from stage ${job.resumeFromStage + 1}…`
+						: "Starting Full Auto Edit…",
 				});
 				if (!(await editor.project.loadProject({ id: current })))
 					throw new Error("Imported project is unavailable");
 				const notes = await runFullAutoEdit({
 					editor,
 					signal: abort.signal,
-					onProgress: progress,
+					// onStep includes every progress message and its durable checkpoint.
+					onProgress: () => {},
 					onStep: (p) => {
-						void send({
-							projectId: current,
-							completedStages: p.completedStages,
-							message: p.message.slice(0, 4000),
-						}).catch(() => abort?.abort());
+						void send(
+							{
+								projectId: current,
+								completedStages: p.completedStages,
+								message: p.message.slice(0, 4000),
+							},
+							true,
+						).catch(() => abort?.abort());
 					},
 					options: run.options,
 					resumeFromStage: job.resumeFromStage,
 				});
 				abort.signal.throwIfAborted();
-				await editor.project.prepareExit();
+				await prepareExit();
 				await send({
 					projectId: current,
 					event: "complete",
 					message: ["Ready for review", ...notes].join(" · ").slice(0, 4000),
 				});
 			} catch (e) {
-				// Retain all completed stages and persist undo history before releasing the lock.
-				await editor.save.flush();
-				await editor.command.flushHistory();
+				// Save and release editor ownership while the batch token is still
+				// valid, before the terminal transition unlocks the visible editor.
+				await prepareExit(e);
 				await send({
 					projectId: current,
 					event: abort.signal.aborted ? "cancel" : "fail",
@@ -228,10 +279,11 @@ export async function executeBatch({
 					).slice(0, 4000),
 				});
 			} finally {
-				editor.project.closeProject();
+				if (!editor.save.getIsDirty()) editor.project.closeProject();
 			}
 		}
 	} catch (e) {
+		await prepareExit(e);
 		const message = e instanceof Error ? e.message : "Batch worker stopped";
 		for (const job of state.jobs)
 			if (batchEditIsLocked({ status: job.status })) {
@@ -244,7 +296,7 @@ export async function executeBatch({
 	} finally {
 		clearInterval(heartbeat);
 		window.removeEventListener("pagehide", stop);
-		await queue;
+		await send.flush();
 		editor.save.stop();
 		setBatchWriteToken("");
 		parent.postMessage(

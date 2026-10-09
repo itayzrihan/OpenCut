@@ -1,5 +1,6 @@
 import type {
 	ClipboardEntry,
+	ClipboardEntryByType,
 	ClipboardEntryType,
 	ClipboardHandler,
 	ClipboardHandlerMap,
@@ -9,10 +10,10 @@ import type {
 import { ElementsClipboardHandler } from "./elements";
 import { KeyframesClipboardHandler } from "./keyframes";
 
-export const clipboardHandlers = {
+export const clipboardHandlers: ClipboardHandlerMap = {
 	elements: ElementsClipboardHandler,
 	keyframes: KeyframesClipboardHandler,
-} satisfies ClipboardHandlerMap;
+};
 
 export const clipboardCopyHandlers = [
 	KeyframesClipboardHandler,
@@ -35,15 +36,13 @@ export function copyClipboardEntry({
 	return null;
 }
 
-export function buildPasteClipboardCommand({
+export function buildPasteClipboardAction<TType extends ClipboardEntryType>({
 	entry,
 	context,
 }: {
-	entry: ClipboardEntry;
+	entry: ClipboardEntryByType[TType] & { type: TType };
 	context: PasteContext;
 }) {
-	const handler = clipboardHandlers[entry.type] as ClipboardHandler<
-		typeof entry.type
-	>;
-	return handler.paste({ entry: entry as never, context });
+	const handler: ClipboardHandler<TType> = clipboardHandlers[entry.type];
+	return handler.paste({ entry, context });
 }

@@ -21,6 +21,36 @@ function fakeJwt(payload: Record<string, unknown>): string {
 }
 
 describe("OpenAI Codex OAuth helpers", () => {
+	test("OAuth completion keeps the browser host despite normalized localhost URLs", async () => {
+		setRequiredEnv();
+		const { testing } = await import("@/ai/server/openai-codex-oauth");
+		const request = new NextRequest(
+			"http://localhost:3100/api/ai/oauth/complete",
+			{ headers: { host: "127.0.0.1:3100" } },
+		);
+		for (const returnTo of [
+			"http://127.0.0.1:3100/editor/project",
+			"http://localhost:3100/editor/project",
+		]) {
+			expect(
+				testing
+					.createReturnUrl({ request, status: "success", returnTo })
+					.toString(),
+			).toBe("http://127.0.0.1:3100/editor/project?ai_oauth=success");
+		}
+		for (const returnTo of [
+			"https://evil.example/editor",
+			"http://localhost:9999/editor",
+		]) {
+			expect(
+				testing.createReturnUrl({ request, status: "error", returnTo }).origin,
+			).toBe("http://127.0.0.1:3100");
+			expect(
+				testing.createReturnUrl({ request, status: "error", returnTo })
+					.pathname,
+			).toBe("/");
+		}
+	});
 	test("extracts identity from Codex JWT claims", async () => {
 		setRequiredEnv();
 		const { testing } = await import("@/ai/server/openai-codex-oauth");
@@ -127,9 +157,8 @@ describe("OpenAI Codex OAuth helpers", () => {
 		expect(result.status.identity?.accountId).toBe("acct-large-token");
 		expect(result.credentials?.access.startsWith("access-")).toBe(true);
 
-		const { clearOpenAICredentials } = await import(
-			"@/ai/server/openai-codex-oauth"
-		);
+		const { clearOpenAICredentials } =
+			await import("@/ai/server/openai-codex-oauth");
 		const bob = { id: "bob", login: "bob", displayName: "Bob" };
 		const stolenCookieRequest = new NextRequest(request.url, {
 			headers: { cookie: request.headers.get("cookie")! },
@@ -253,6 +282,30 @@ describe("OpenAI Codex OAuth helpers", () => {
 			}
 		}
 	});
+	test("preserves completed subscription PNG output and bounds streaming bytes", async () => {
+		setRequiredEnv();
+		const { testing } = await import("@/ai/server/openai-codex-oauth");
+		const image = {
+			id: "image-1",
+			type: "image_generation_call",
+			status: "completed",
+			result: "iVBORw0KGgo=",
+		};
+		const stream = `data: ${JSON.stringify({ type: "response.completed", response: { id: "image-response", output: [image] } })}\n\n`;
+		expect(
+			(
+				await testing.parseCodexResponsesStream({
+					response: new Response(stream),
+				})
+			).output,
+		).toEqual([image]);
+		await expect(
+			testing.parseCodexResponsesStream({
+				response: new Response(stream),
+				maxResponseBytes: 16,
+			}),
+		).rejects.toThrow("byte limit");
+	});
 
 	test("parses streamed Codex Responses events into agent response shape", async () => {
 		setRequiredEnv();
@@ -331,6 +384,7 @@ describe("OpenAI Codex OAuth helpers", () => {
 				.join(""),
 		});
 
+		if (!parsed) throw new Error("Expected a parsed Codex response");
 		expect(parsed.id).toBe("resp-text-stream");
 		expect(parsed.output_text).toBe(
 			'{"title":"Plan","summary":"Done","operations":[]}',
@@ -426,7 +480,7 @@ describe("OpenAI Codex OAuth helpers", () => {
 });
 
 function setRequiredEnv() {
-	process.env.NODE_ENV ??= "test";
+	if (!process.env.NODE_ENV) Reflect.set(process.env, "NODE_ENV", "test");
 	process.env.NEXT_PUBLIC_SITE_URL ??= "http://localhost:3000";
 	process.env.NEXT_PUBLIC_MARBLE_API_URL ??= "http://localhost:3001";
 	process.env.DATABASE_URL ??= "postgres://user:pass@localhost:5432/opencut";

@@ -33,6 +33,18 @@ export function useKeybindingsListener() {
 
 			const binding = getKeybindingString(ev);
 			const activeElement = document.activeElement;
+			// Opt-in controls keep native keyboard activation despite this listener
+			// running in capture phase. Other editor shortcuts keep their behavior.
+			if (
+				(normalizedKey === "enter" || normalizedKey === " ") &&
+				!ev.ctrlKey &&
+				!ev.metaKey &&
+				!ev.altKey &&
+				!ev.shiftKey &&
+				activeElement instanceof HTMLElement &&
+				activeElement.closest("[data-native-keyboard-activation]")
+			)
+				return;
 			const isTextInput =
 				activeElement instanceof HTMLElement &&
 				isTypableDOMElement({ element: activeElement });

@@ -28,7 +28,7 @@ describe("cut silence toolbar options", () => {
 
 	test("wires the selected mode into the manager action", async () => {
 		const calls: Array<{
-			mode: "audio" | "fast" | "deep";
+			mode: "audio" | "smart" | "fast" | "deep";
 			minSilenceSeconds?: number;
 		}> = [];
 
@@ -41,5 +41,26 @@ describe("cut silence toolbar options", () => {
 		});
 
 		expect(calls).toEqual([{ mode: "audio", minSilenceSeconds: 0.25 }]);
+	});
+
+	test("smart cut stays separate and forwards its duration and cancellation", async () => {
+		const controller = new AbortController();
+		const calls: unknown[] = [];
+		expect(DEFAULT_CUT_SILENCE_MODE).toBe("audio");
+		expect(
+			CUT_SILENCE_ACTIONS.find((action) => action.mode === "smart")
+				?.description,
+		).toContain("average");
+		await executeCutSilenceAction({
+			mode: "smart",
+			minSilenceSeconds: 0.8,
+			signal: controller.signal,
+			removeAllSilence: async (options) => {
+				calls.push(options);
+			},
+		});
+		expect(calls).toEqual([
+			{ mode: "smart", minSilenceSeconds: 0.8, signal: controller.signal },
+		]);
 	});
 });

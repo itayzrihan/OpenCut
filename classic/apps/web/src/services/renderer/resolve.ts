@@ -1,4 +1,10 @@
-import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
+import {
+	PushBrollNode,
+	TextGraphicsNode,
+	pushBrollProgress,
+} from "./nodes/push-broll-node";
+import { TICKS_PER_SECOND, mediaTimeToSeconds, roundMediaTime } from "@/wasm";
+import { getHyperframesPreviewScale } from "@/hyperframes/preview-scale";
 import {
 	getElementLocalTime,
 	resolveAnimationPathValueAtTime,
@@ -77,6 +83,7 @@ import { resolveParallaxMotionLoopFrame } from "@/parallax-story-teller/motion-l
 
 type ResolveContext = {
 	renderer: Pick<CanvasRenderer, "width" | "height">;
+	outputSize: { width: number; height: number };
 	time: number;
 };
 
@@ -96,16 +103,19 @@ const staticResolutionCache = new WeakMap<
 export async function resolveRenderTree({
 	node,
 	renderer,
+	outputSize = renderer,
 	time,
 }: {
 	node: AnyBaseNode;
 	renderer: Pick<CanvasRenderer, "width" | "height">;
+	outputSize?: { width: number; height: number };
 	time: number;
 }): Promise<void> {
 	await resolveNode({
 		node,
 		context: {
 			renderer,
+			outputSize,
 			time,
 		},
 	});
@@ -159,6 +169,14 @@ async function resolveNode({
 		node.resolved = await resolvePersonCutoutLayerNode({ node, context });
 	} else if (node instanceof EffectLayerNode) {
 		node.resolved = resolveEffectLayerNode({ node, context });
+	} else if (node instanceof PushBrollNode) {
+		const progress = pushBrollProgress({
+			time: context.time,
+			start: node.params.timeOffset,
+			duration: node.params.duration,
+			transition: node.params.transitionSeconds * TICKS_PER_SECOND,
+		});
+		node.resolved = progress > 0 ? { progress } : null;
 	} else if (node instanceof ParallaxSceneNode) {
 		node.resolved = resolveParallaxSceneNode({ node, context });
 	}
@@ -174,20 +192,28 @@ async function resolveNode({
 	}
 
 	const childContext =
-		node instanceof ParallaxSceneNode
-			? {
-					...context,
-					time: mapParallaxParentTimeToSourceTime({
-						time: context.time,
-						timeOffset: node.params.timeOffset,
-						duration: node.params.duration,
-						sourceDuration: node.params.sourceDuration,
-					}),
-				}
-			: context;
+		node instanceof PushBrollNode
+			? { ...context, time: Math.max(0, context.time - node.params.timeOffset) }
+			: node instanceof ParallaxSceneNode
+				? {
+						...context,
+						time: mapParallaxParentTimeToSourceTime({
+							time: context.time,
+							timeOffset: node.params.timeOffset,
+							duration: node.params.duration,
+							sourceDuration: node.params.sourceDuration,
+						}),
+					}
+				: context;
 	await Promise.all(
-		node.children.map((child) =>
-			resolveNode({ node: child, context: childContext }),
+		node.children.map((child, index) =>
+			resolveNode({
+				node: child,
+				context:
+					node instanceof TextGraphicsNode && index === 0
+						? context
+						: childContext,
+			}),
 		),
 	);
 }
@@ -884,10 +910,61 @@ async function resolveGraphicNode({
 	node: GraphicNode;
 	context: ResolveContext;
 }): Promise<ResolvedGraphicNodeState | null> {
+	const state = resolveGraphicNodeLayout({
+		node,
+		renderer: context.renderer,
+		time: context.time,
+	});
+	if (!state) return null;
+	const { sourceWidth, sourceHeight, resolvedParams, ...visualState } = state;
+	const definition = getGraphicDefinition({
+		definitionId: node.params.definitionId,
+	});
+	if (node.params.definitionId === "hyperframes") {
+		await node.prepareFrame({
+			localTime: visualState.localTime,
+			previewScale: getHyperframesPreviewScale({
+				sourceWidth,
+				sourceHeight,
+				logicalWidth: context.renderer.width,
+				logicalHeight: context.renderer.height,
+				outputWidth: context.outputSize.width,
+				outputHeight: context.outputSize.height,
+				scaleX: visualState.transform.scaleX,
+				scaleY: visualState.transform.scaleY,
+				preserveFullResolution:
+					!node.params.isPreview ||
+					Boolean(node.params.effects?.length) ||
+					visualState.effectPasses.length > 0 ||
+					visualState.transform.perspectiveX !== 0 ||
+					visualState.transform.perspectiveY !== 0,
+			}),
+		});
+	} else
+		await definition.prepare?.({
+			params: resolvedParams,
+			width: sourceWidth,
+			height: sourceHeight,
+			localTime: visualState.localTime,
+			duration: node.params.duration,
+		});
+	return state;
+}
+
+/** Shared visual projection for raster capture and an isolated DOM preview. */
+export function resolveGraphicNodeLayout({
+	node,
+	renderer,
+	time,
+}: {
+	node: GraphicNode;
+	renderer: Pick<CanvasRenderer, "width" | "height">;
+	time: number;
+}): ResolvedGraphicNodeState | null {
 	const { width: sourceWidth, height: sourceHeight } = node.getSourceSize();
 	const visualState = resolveVisualState({
 		params: node.params,
-		context,
+		context: { renderer, outputSize: renderer, time },
 		sourceWidth,
 		sourceHeight,
 	});
@@ -899,17 +976,6 @@ async function resolveGraphicNode({
 		element: node.params,
 		localTime: visualState.localTime,
 	});
-	const definition = getGraphicDefinition({
-		definitionId: node.params.definitionId,
-	});
-	await definition.prepare?.({
-		params: resolvedParams,
-		width: sourceWidth,
-		height: sourceHeight,
-		localTime: visualState.localTime,
-		duration: node.params.duration,
-	});
-
 	return {
 		...visualState,
 		resolvedParams,

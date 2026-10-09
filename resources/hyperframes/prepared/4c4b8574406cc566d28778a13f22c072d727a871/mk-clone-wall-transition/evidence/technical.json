@@ -1,0 +1,42 @@
+{
+  "id": "mk-clone-wall-transition",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "6170d4c70efdfc86e86ef46d2104f13ac4122112e066e262416f1b732b9a574f",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "mk-clone-wall-transition.html",
+  "durationSeconds": 2.4,
+  "frames": [
+    {
+      "timeSeconds": 0.36,
+      "sha256": "060bc86f0a6b8ffe2929e901c00df1348b033b1ec8bc3998be3c7c71247dc57a",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.2,
+      "sha256": "9f86b8a5754eda55a59ca3d45d301d7c0fbaa5180dfe4e68e364ebc7eea9ade7",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.04,
+      "sha256": "3d34055be0da467fef286cc6b073633880e55a8fcaa7b3b8320f9d035f63af9f",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 1.2,
+      "sha256": "9f86b8a5754eda55a59ca3d45d301d7c0fbaa5180dfe4e68e364ebc7eea9ade7",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

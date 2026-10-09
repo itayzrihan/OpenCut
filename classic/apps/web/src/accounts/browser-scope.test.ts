@@ -10,6 +10,8 @@ test("browser bootstrap preserves legacy settings and isolates account storage b
 		getItem(key: string) {
 			return this.data.get(key) ?? null;
 		}
+		// The Web Storage interface requires two positional arguments.
+		// eslint-disable-next-line opencut/prefer-object-params
 		setItem(key: string, value: string) {
 			this.data.set(key, String(value));
 		}

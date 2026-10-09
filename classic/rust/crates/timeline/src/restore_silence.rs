@@ -1,9 +1,12 @@
 //! Classic-only source-gap restoration. One full-fidelity source transaction
 //! keeps the selected video, caption timing and all companion layers together.
-use crate::{canonicalize_timeline_source_document, CanonicalizeTimelineSourceDocumentOptions};
+use crate::{
+    CanonicalizeTimelineSourceDocumentOptions, ClipAudioTimingOptions,
+    canonicalize_timeline_source_document, resolve_clip_audio_timing,
+};
 use bridge::export;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::HashSet;
 const TICKS: f64 = 120_000.0;
 
@@ -26,6 +29,27 @@ pub struct RestoreSilenceResult {
     pub error: String,
     pub restored_duration: i64,
     pub restored_gap_count: usize,
+    pub restored_intervals: Vec<RestoredSilenceInterval>,
+}
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RestoredSilenceInterval {
+    pub track_id: String,
+    pub element_id: String,
+    pub media_id: String,
+    pub start_time: i64,
+    pub end_time: i64,
+    pub source_start: i64,
+    pub source_end: i64,
+    pub playback_rate: f64,
+    #[serde(default)]
+    pub audio_source_start: Option<i64>,
+    #[serde(default)]
+    pub audio_source_end: Option<i64>,
+    #[serde(default)]
+    pub audio_start_time: Option<i64>,
 }
 #[export]
 pub fn restore_silence(options: RestoreSilenceOptions) -> RestoreSilenceResult {
@@ -37,6 +61,7 @@ pub fn restore_silence(options: RestoreSilenceOptions) -> RestoreSilenceResult {
             error,
             restored_duration: 0,
             restored_gap_count: 0,
+            restored_intervals: Vec::new(),
         },
     }
 }
@@ -100,6 +125,8 @@ fn compile(options: RestoreSilenceOptions) -> Result<RestoreSilenceResult, Strin
         return Err("Some selected clips no longer exist".into());
     }
     let mut edits = Vec::new();
+    let mut restored_intervals = Vec::new();
+    let mut accumulated = 0i64;
     for pair in selected.windows(2) {
         let (li, l) = pair[0];
         let (ri, r) = pair[1];
@@ -142,6 +169,30 @@ fn compile(options: RestoreSilenceOptions) -> Result<RestoreSilenceResult, Strin
             gap,
             l["id"].as_str().ok_or("Missing clip id")?.to_owned(),
         ));
+        let start_time = cut.checked_add(accumulated).ok_or("Time overflow")?;
+        let audio = resolve_clip_audio_timing(ClipAudioTimingOptions {
+            start_time: start_time as f64 / TICKS,
+            duration: inserted as f64 / TICKS,
+            trim_start: source_end as f64 / TICKS,
+            rate: lr,
+            offset_seconds: l["params"]["audioSyncOffset"].as_f64().unwrap_or(0.0),
+        });
+        restored_intervals.push(RestoredSilenceInterval {
+            track_id: options.track_id.clone(),
+            element_id: l["id"].as_str().unwrap().to_owned(),
+            media_id: l["mediaId"].as_str().unwrap().to_owned(),
+            start_time,
+            end_time: start_time.checked_add(inserted).ok_or("Time overflow")?,
+            source_start: source_end,
+            source_end: source_end.checked_add(gap).ok_or("Time overflow")?,
+            playback_rate: lr,
+            audio_source_start: Some((audio.trim_start * TICKS).round() as i64),
+            audio_source_end: Some(
+                ((audio.trim_start + audio.duration * lr) * TICKS).round() as i64
+            ),
+            audio_start_time: Some((audio.start_time * TICKS).round() as i64),
+        });
+        accumulated = accumulated.checked_add(inserted).ok_or("Time overflow")?;
     }
     if edits.is_empty() {
         return Err("No removed source time between the selected clips".into());
@@ -238,6 +289,7 @@ fn compile(options: RestoreSilenceOptions) -> Result<RestoreSilenceResult, Strin
         error: String::new(),
         restored_duration,
         restored_gap_count: edits.len(),
+        restored_intervals,
     })
 }
 fn map(t: i64, cut: i64, delta: i64, right: bool) -> Result<i64, String> {
@@ -328,6 +380,17 @@ mod tests {
         assert!(r.valid, "{}", r.error);
         assert_eq!(r.restored_duration, 480000);
         assert_eq!(r.restored_gap_count, 3);
+        assert_eq!(
+            r.restored_intervals
+                .iter()
+                .map(|g| (g.start_time, g.end_time, g.source_start, g.source_end))
+                .collect::<Vec<_>>(),
+            vec![
+                (120000, 240000, 240000, 360000),
+                (360000, 600000, 480000, 720000),
+                (720000, 840000, 840000, 960000)
+            ]
+        );
         let d: Value = serde_json::from_str(&r.source_json).unwrap();
         let tracks = &d["scene"]["tracks"];
         let v = &tracks[0]["elements"];
@@ -385,6 +448,26 @@ mod tests {
         let mut d = source();
         d["scene"]["tracks"][0]["elements"][0]["trimEnd"] = json!(0);
         assert!(!run(d, &["a", "b"]).valid);
+    }
+    #[test]
+    fn restored_audio_bounds_use_sync_offset_and_pad_missing_source() {
+        let mut d = source();
+        d["scene"]["tracks"][0]["elements"][0]["params"]["audioSyncOffset"] = json!(-0.25);
+        let r = run(d, &["a", "b"]);
+        assert!(r.valid);
+        let gap = &r.restored_intervals[0];
+        assert_eq!(gap.source_start, 240000);
+        assert_eq!(gap.audio_source_start, Some(270000));
+        assert_eq!(gap.audio_source_end, Some(390000));
+        assert_eq!(gap.audio_start_time, Some(120000));
+        let mut d = source();
+        d["scene"]["tracks"][0]["elements"][0]["params"]["audioSyncOffset"] = json!(2.5);
+        let r = run(d, &["a", "b"]);
+        assert!(r.valid);
+        let gap = &r.restored_intervals[0];
+        assert_eq!(gap.audio_start_time, Some(180000));
+        assert_eq!(gap.audio_source_start, Some(0));
+        assert_eq!(gap.audio_source_end, Some(60000));
     }
     #[test]
     fn repeated_restore_is_a_no_op_and_keeps_outer_trim() {

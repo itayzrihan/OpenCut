@@ -86,6 +86,7 @@ function buildOverlayStarPath({
 }
 
 export const starMaskDefinition: MaskDefinition<"star"> = {
+	defaultSizing: "square",
 	type: "star",
 	name: "Star",
 	features: {

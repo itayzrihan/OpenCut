@@ -4,10 +4,13 @@ import { randomUUID } from "node:crypto";
 
 // Recover the small atomic-activation window after a host crash. Never replace
 // a present workspace, and never follow paths outside the authenticated host.
-export async function recoverInterruptedRestores(
-	root: string,
-	accountId: string,
-) {
+export async function recoverInterruptedRestores({
+	root,
+	accountId,
+}: {
+	root: string;
+	accountId: string;
+}) {
 	const directory = join(root, "restore-journals"),
 		destination = join(root, "data", accountId);
 	const entries = await readdir(directory).catch((error) => {

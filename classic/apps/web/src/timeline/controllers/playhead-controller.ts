@@ -164,7 +164,7 @@ export class PlayheadController {
 	// --- Public non-session methods ---
 
 	/**
-	 * Imperatively updates the playhead DOM element's `left` style.
+	 * Moves the playhead with a compositor transform, avoiding a layout update.
 	 * Called on scroll and playback events to avoid React re-renders
 	 * during animation frame updates.
 	 */
@@ -178,7 +178,7 @@ export class PlayheadController {
 			zoomLevel: this.config.zoomLevel,
 			scrollLeft,
 		});
-		playheadEl.style.left = `${left}px`;
+		playheadEl.style.transform = `translateX(${left}px)`;
 		playheadEl.setAttribute("aria-valuenow", String(time));
 	}
 

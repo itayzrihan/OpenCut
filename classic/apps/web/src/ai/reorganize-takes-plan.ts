@@ -1,4 +1,4 @@
-import { aiClientFetch } from "@/ai/client-transport";
+import { readAgentResponse } from "@/editor-agent/stream";
 import { z } from "zod";
 import type { ReorganizeTakesPlan } from "@/timeline/reorganize-takes/apply-reorganize-takes";
 
@@ -66,32 +66,93 @@ async function requestReorganizeTakesJson({
 	system: string;
 	prompt: string;
 }): Promise<unknown> {
-	const response = await aiClientFetch("/api/ai/chat", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({
-			input: [
-				{ role: "system", content: system },
-				{ role: "user", content: prompt },
-			],
-		}),
-	});
-	const data = await response.json().catch(() => ({}));
-	if (!response.ok) {
-		throw new Error(
-			typeof data.error === "string"
-				? data.error
-				: `AI request failed (${response.status})`,
-		);
+	const account = window.__opencutAccountId;
+	if (!account) throw new Error("Sign in to OpenCut first");
+	const controller = new AbortController();
+	const assertAccount = () => {
+		if (window.__opencutAccountId !== account) {
+			controller.abort();
+			throw new Error(
+				"Account changed. Discarded the previous account's take plan.",
+			);
+		}
+	};
+	const leaving = () => controller.abort();
+	window.addEventListener("pagehide", leaving, { once: true });
+	try {
+		const modelResponse = await fetch("/api/editor-agent/connection", {
+			method: "POST",
+			credentials: "same-origin",
+			cache: "no-store",
+			signal: controller.signal,
+			headers: {
+				"Content-Type": "application/json",
+				"X-OpenCut-Account": account,
+			},
+			body: JSON.stringify({ operation: "models" }),
+		});
+		const modelResult = await modelResponse.json();
+		if (!modelResponse.ok)
+			throw new Error(
+				typeof modelResult.error === "string"
+					? modelResult.error
+					: "Connect ChatGPT before reorganizing takes",
+			);
+		const { models } = z
+			.object({
+				models: z.array(z.object({ id: z.string().min(1).max(100) })).max(200),
+			})
+			.parse(modelResult);
+		assertAccount();
+		const model = models[0]?.id;
+		if (!model)
+			throw new Error("No ChatGPT model is available for reorganizing takes");
+		const response = await fetch("/api/editor-agent/respond", {
+			method: "POST",
+			credentials: "same-origin",
+			cache: "no-store",
+			signal: controller.signal,
+			headers: {
+				"Content-Type": "application/json",
+				"X-OpenCut-Account": account,
+			},
+			body: JSON.stringify({
+				model,
+				instructions: system,
+				input: [{ role: "user", content: prompt }],
+				tools: [],
+			}),
+		});
+		const aiResponse = z
+			.object({
+				output_text: z.string().optional(),
+				output: z
+					.array(
+						z.object({
+							content: z
+								.array(
+									z.object({
+										text: z.string().optional(),
+										output_text: z.string().optional(),
+									}),
+								)
+								.optional(),
+						}),
+					)
+					.optional(),
+			})
+			.parse(
+				await readAgentResponse({
+					response,
+					signal: controller.signal,
+					onEvent: assertAccount,
+				}),
+			);
+		assertAccount();
+		return extractJsonObject({ text: getResponseText(aiResponse) });
+	} finally {
+		window.removeEventListener("pagehide", leaving);
 	}
-	if (!data.response) {
-		throw new Error("AI response was empty");
-	}
-	const aiResponse = data.response as ResponsesApiResult;
-	if (aiResponse.error?.message) {
-		throw new Error(aiResponse.error.message);
-	}
-	return extractJsonObject({ text: getResponseText(aiResponse) });
 }
 
 /**

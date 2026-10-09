@@ -3,11 +3,12 @@
   "packageManager": "bun@1.2.18",
   "workspaces": [
     "apps/*",
+    "apps/electron/app",
     "packages/*"
   ],
   "scripts": {
     "build:tools": "turbo run build --filter=@opencut/tools",
-    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg && node scripts/verify-wasm-exports.mjs",
+    "build:wasm": "wasm-pack build rust/wasm --target bundler --out-dir pkg --no-pack && wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg --no-pack && node scripts/write-wasm-manifests.mjs && node scripts/verify-wasm-exports.mjs",
     "build:web": "turbo run build --filter=@opencut/web",
     "build:browser": "turbo run build --filter=@opencut/web",
     "start:mcp": "node scripts/mcp-bridge-runner.mjs",
@@ -16,17 +17,22 @@
     "dist:electron": "bun run --cwd apps/electron dist",
     "deploy:web": "turbo run deploy --filter=@opencut/web",
     "dev:tools": "turbo run dev --filter=@opencut/tools",
-    "dev:wasm": "cargo watch -w rust/crates -w rust/wasm/src -s 'wasm-pack build rust/wasm --target bundler --out-dir pkg'",
+    "dev:wasm": "cargo watch -w rust/crates -w rust/wasm/src -w rust/editor-runtime-wasm/src -w ../crates/editor-api/src -w ../crates/account-core/src -s 'bun run build:wasm'",
     "dev:web": "turbo run dev --filter=@opencut/web",
     "format:web": "prettier apps/web/src/services/renderer --write",
     "generate:fonts": "npx tsx apps/web/scripts/generate-font-sprites.ts",
     "lint:web": "eslint apps/web/src --ext .ts,.tsx",
     "lint:web:fix": "eslint apps/web/src --ext .ts,.tsx --fix",
+    "architecture:check": "node scripts/editor-architecture/check.mjs",
+    "architecture:coverage": "node scripts/editor-architecture/feature-coverage.mjs",
+    "architecture:inventory": "node scripts/editor-architecture/check.mjs --with-runtime",
+    "architecture:test": "node --test scripts/editor-architecture/inventory.test.mjs",
     "preview:web": "turbo run preview --filter=@opencut/web",
     "publish:wasm": "bun run build:wasm && npm publish rust/wasm/pkg --access public",
     "skills:check": "bun run --cwd apps/web skills:check",
     "start:tools": "turbo run start --filter=@opencut/tools",
-    "test": "bun test"
+    "test": "bun test",
+    "test:web": "node scripts/test-web.mjs"
   },
   "dependencies": {
     "@types/react": "^19.2.10",
@@ -52,5 +58,8 @@
   },
   "trustedDependencies": [
     "@tailwindcss/oxide"
-  ]
+  ],
+  "patchedDependencies": {
+    "@hyperframes/engine@0.8.115": "patches/@hyperframes%2Fengine@0.8.115.patch"
+  }
 }

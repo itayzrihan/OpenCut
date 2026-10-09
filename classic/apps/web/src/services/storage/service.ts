@@ -7,12 +7,15 @@ import type { Bookmark, SceneTracks, TScene } from "@/timeline";
 import { getProjectDurationFromScenes } from "@/timeline/scenes";
 import { roundMediaTime } from "@/wasm";
 import {
+	captureLocalDriveWriteScope,
+	pinLocalDriveWriteScope,
 	loadLocalFontFile,
 	localDriveRequest,
 	localFontUrl,
 	localMediaUrl,
 	uploadLocalFont,
 	uploadLocalMedia,
+	type LocalDriveRequestScope,
 } from "@/services/local-drive/client";
 import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
 import {
@@ -130,9 +133,12 @@ function readProjectMetadata(entry: unknown): TProjectMetadata | null {
 	};
 }
 
-function deserializeProject(serializedProject: SerializedProject): TProject {
+export function deserializeProject(
+	serializedProject: SerializedProject,
+): TProject {
 	const scenes =
 		serializedProject.scenes?.map((scene) => ({
+			...scene,
 			id: scene.id,
 			name: scene.name,
 			isMain: scene.isMain,
@@ -144,7 +150,9 @@ function deserializeProject(serializedProject: SerializedProject): TProject {
 		})) ?? [];
 
 	return {
+		...serializedProject,
 		metadata: {
+			...serializedProject.metadata,
 			id: serializedProject.metadata.id,
 			name: serializedProject.metadata.name,
 			thumbnail: serializedProject.metadata.thumbnail,
@@ -380,12 +388,14 @@ export class StorageService {
 			});
 			const driveFontIds = new Set(driveFonts.map((item) => item.id));
 			for (const metadata of fontRecords) {
+				const scope = captureLocalDriveWriteScope({ projectId });
 				if (!recovering && driveFontIds.has(metadata.id)) continue;
 				const file = await legacyFonts.files.get(metadata.id);
 				if (!file) {
 					if (driveFontIds.has(metadata.id)) continue;
 					await localDriveRequest({
 						operation: "font.put",
+						scope,
 						payload: {
 							projectId,
 							font: { ...metadata, missing: true },
@@ -396,11 +406,13 @@ export class StorageService {
 				}
 				const storedPath = await uploadLocalFont({
 					projectId,
+					scope,
 					id: metadata.id,
 					file,
 				});
 				await localDriveRequest({
 					operation: "font.put",
+					scope,
 					payload: { projectId, font: metadata, storedPath },
 				});
 			}
@@ -461,6 +473,7 @@ export class StorageService {
 			project.metadata.duration ??
 			getProjectDurationFromScenes({ scenes: project.scenes });
 		const scenes: SerializedScene[] = project.scenes.map((scene) => ({
+			...scene,
 			id: scene.id,
 			name: scene.name,
 			isMain: scene.isMain,
@@ -471,6 +484,7 @@ export class StorageService {
 			updatedAt: scene.updatedAt.toISOString(),
 		}));
 		return {
+			...project,
 			metadata: {
 				...project.metadata,
 				duration,
@@ -580,20 +594,29 @@ export class StorageService {
 	async saveMediaAsset({
 		projectId,
 		mediaAsset,
+		scope,
 	}: {
 		projectId: string;
 		mediaAsset: MediaAsset;
+		scope?: LocalDriveRequestScope;
 	}): Promise<void> {
-		const targetUrl = localMediaUrl({ projectId, id: mediaAsset.id });
+		scope = pinLocalDriveWriteScope({ projectId, scope });
+		const targetUrl = localMediaUrl({
+			projectId,
+			id: mediaAsset.id,
+			accountId: scope?.accountId,
+		});
 		if (mediaAsset.file) {
 			await uploadLocalMedia({
 				projectId,
 				id: mediaAsset.id,
 				file: mediaAsset.file,
+				scope,
 			});
 		} else if (mediaAsset.sourcePath) {
 			const registered = await localDriveRequest<LocalDriveMediaRecord>({
 				operation: "media.registerPath",
+				scope,
 				payload: {
 					projectId,
 					media: {
@@ -612,6 +635,7 @@ export class StorageService {
 			mediaAsset.file?.lastModified ?? mediaAsset.lastModified ?? Date.now();
 		await localDriveRequest({
 			operation: "media.put",
+			scope,
 			payload: {
 				projectId,
 				media: {
@@ -680,11 +704,86 @@ export class StorageService {
 		return records.map((record) => this.hydrateMedia({ projectId, record }));
 	}
 
-	async deleteMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+	async deleteMediaAsset({
+		projectId,
+		id,
+		scope,
+	}: {
+		projectId: string;
+		id: string;
+		scope?: LocalDriveRequestScope;
+	}) {
 		await localDriveRequest({
 			operation: "media.delete",
+			scope,
 			payload: { projectId, id },
 		});
+	}
+
+	async finishMediaUpload({
+		projectId,
+		uploadToken,
+		discard,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		discard: boolean;
+		scope: LocalDriveRequestScope;
+	}) {
+		await localDriveRequest({
+			operation: "media.finishUpload",
+			scope,
+			payload: { projectId, uploadToken, discard },
+		});
+	}
+
+	async beginMediaUpload({
+		projectId,
+		uploadToken,
+		draft,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		draft: import("@/hyperframes/import-recovery-types").HyperframesImportDraft;
+		scope: LocalDriveRequestScope;
+	}) {
+		await localDriveRequest({
+			operation: "media.beginUpload",
+			payload: { projectId, uploadToken, draft },
+			scope,
+		});
+	}
+
+	async readMediaUpload({
+		projectId,
+		uploadToken,
+		scope,
+	}: {
+		projectId: string;
+		uploadToken: string;
+		scope: LocalDriveRequestScope;
+	}) {
+		return localDriveRequest<
+			import("@/hyperframes/import-recovery-types").HyperframesImportRecovery
+		>({
+			operation: "media.readUpload",
+			payload: { projectId, uploadToken },
+			scope,
+		});
+	}
+
+	async listMediaUploads({
+		projectId,
+		scope,
+	}: {
+		projectId: string;
+		scope: LocalDriveRequestScope;
+	}) {
+		return localDriveRequest<
+			import("@/hyperframes/import-recovery-types").HyperframesImportRecoverySummary[]
+		>({ operation: "media.listUploads", payload: { projectId }, scope });
 	}
 
 	async deleteProjectMedia({ projectId }: { projectId: string }) {
@@ -701,8 +800,10 @@ export class StorageService {
 		projectId: string;
 		font: ProjectFontAsset;
 	}) {
+		const scope = captureLocalDriveWriteScope({ projectId });
 		const storedPath = await uploadLocalFont({
 			projectId,
+			scope,
 			id: font.id,
 			file: font.file,
 		});
@@ -719,6 +820,7 @@ export class StorageService {
 		};
 		await localDriveRequest({
 			operation: "font.put",
+			scope,
 			payload: { projectId, font: metadata, storedPath },
 		});
 	}

@@ -1,0 +1,23 @@
+[package]
+name = "opencut-editor-runtime-wasm"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Lazy browser binding for the canonical OpenCut editor runtime"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+opencut-editor-api = { path = "../../../crates/editor-api" }
+opencut-editor-agent = { path = "../../../crates/editor-agent" }
+js-sys = "0.3.93"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+serde-wasm-bindgen = "0.6.5"
+wasm-bindgen = "0.2.116"
+wasm-bindgen-futures = "0.4.66"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.66"

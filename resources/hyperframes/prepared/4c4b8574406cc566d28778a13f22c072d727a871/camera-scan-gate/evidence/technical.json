@@ -1,0 +1,42 @@
+{
+  "id": "camera-scan-gate",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "e501bf21ccec58fb8779b7c9a47178929ac15db3e4711f09abca8848eb7dff19",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "0a09da0dd5c577d42663c6633eabf2141a29de396eec2fe404a2ec7ece2fa713",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "847283b8e29cd399a83a7c8e210fa35c5ac1019048e97da98fa52b8c12291ecd",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "10effe9436c6e312ec21f86a34c9631ef6dda852e37109dc3232e4abe5deb653",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "847283b8e29cd399a83a7c8e210fa35c5ac1019048e97da98fa52b8c12291ecd",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

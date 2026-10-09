@@ -214,12 +214,12 @@ async function proxyBridgeRequest({
 	const accountId = requireAccount().id;
 	let body: ArrayBuffer | undefined;
 	try {
-		body = request.method === "GET" ? undefined : await readBoundedBody(request, 32 * 1024 * 1024);
+		body = request.method === "GET" ? undefined : await readBoundedBody({ request: request, maximumBytes: 32 * 1024 * 1024 });
 		if (path[0] === "state" && body) {
 			const snapshot = JSON.parse(new TextDecoder().decode(body));
-			snapshot.sessionId = scopedBridgeSession(accountId, snapshot.sessionId);
+			snapshot.sessionId = scopedBridgeSession({ accountId: accountId, sessionId: snapshot.sessionId });
 			body = new TextEncoder().encode(JSON.stringify(snapshot)).buffer;
-		} else if (path.length === 2) path[1] = scopedBridgeSession(accountId, path[1]);
+		} else if (path.length === 2) path[1] = scopedBridgeSession({ accountId: accountId, sessionId: path[1] });
 	} catch { return NextResponse.json({ error: "Invalid account bridge request" }, { status: 400 }); }
 	const contentType = request.headers.get("content-type");
 
@@ -270,7 +270,7 @@ async function proxyBridgeRequest({
 			}),
 		);
 		return NextResponse.json({
-			commands: batches.flatMap((batch) => batch.commands ?? []).map((command) => accountBridgeCommand(accountId, command)),
+			commands: batches.flatMap((batch) => batch.commands ?? []).map((command) => accountBridgeCommand({ accountId: accountId, value: command })),
 		});
 	}
 

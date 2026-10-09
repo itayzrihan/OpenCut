@@ -1,0 +1,42 @@
+{
+  "id": "cosmic-orb",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "2974e40a12d443ab3e970a0cbc551380345edac458e88c83db05738edf6472d7",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "cosmic-orb.html",
+  "durationSeconds": 10,
+  "frames": [
+    {
+      "timeSeconds": 1.5,
+      "sha256": "cf2ad90fefda5628c3fc75e24add442e0789634b0d04af8a5d19d9f7bff4a727",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5,
+      "sha256": "9e46701122e4a3c5948c263ca7967731ede45605f5f2516cff55895db5028ab0",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 8.5,
+      "sha256": "3e6492426ca4a60668d85eeed35359b820ca55bec95bec7c26ea09e14c236459",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5,
+      "sha256": "9e46701122e4a3c5948c263ca7967731ede45605f5f2516cff55895db5028ab0",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

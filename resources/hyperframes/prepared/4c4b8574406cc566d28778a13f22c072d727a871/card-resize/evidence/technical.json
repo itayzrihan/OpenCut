@@ -1,0 +1,42 @@
+{
+  "id": "card-resize",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c5a2380a4808535d4f7ce450ac1ca905d337a7f2c0cb0298ee1fbabbafa9ab87",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "85380ddeef993e856aee425d786b2fa5d35e0dc001674a62d2c513c389f115ae",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "f5232ae106cdf37f4bf6214b7f92eac8b303f7ad2a17679d1f20ebfa91476e57",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "f5232ae106cdf37f4bf6214b7f92eac8b303f7ad2a17679d1f20ebfa91476e57",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "f5232ae106cdf37f4bf6214b7f92eac8b303f7ad2a17679d1f20ebfa91476e57",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

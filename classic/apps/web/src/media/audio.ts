@@ -63,54 +63,7 @@ export function createAudioContext({
 	return new AudioContextConstructor(sampleRate ? { sampleRate } : undefined);
 }
 
-export interface DecodedAudio {
-	samples: Float32Array;
-	sampleRate: number;
-}
-
-export async function decodeAudioToFloat32({
-	audioBlob,
-	url,
-}: {
-	audioBlob?: Blob;
-	url?: string;
-	sampleRate?: number;
-}): Promise<DecodedAudio> {
-	const input = new Input({
-		source: createMediaSource({ file: audioBlob, url }),
-		formats: ALL_FORMATS,
-	});
-	try {
-		const track = await input.getPrimaryAudioTrack();
-		if (!track) throw new Error("Media does not contain an audio track");
-		const sink = new AudioBufferSink(track);
-		const chunks: Float32Array[] = [];
-		let totalLength = 0;
-		let nativeSampleRate = 0;
-		for await (const { buffer } of sink.buffers(0)) {
-			nativeSampleRate = buffer.sampleRate;
-			const mono = new Float32Array(buffer.length);
-			for (let i = 0; i < buffer.length; i++) {
-				let sum = 0;
-				for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-					sum += buffer.getChannelData(channel)[i];
-				}
-				mono[i] = sum / Math.max(1, buffer.numberOfChannels);
-			}
-			chunks.push(mono);
-			totalLength += mono.length;
-		}
-		const samples = new Float32Array(totalLength);
-		let offset = 0;
-		for (const chunk of chunks) {
-			samples.set(chunk, offset);
-			offset += chunk.length;
-		}
-		return { samples, sampleRate: nativeSampleRate };
-	} finally {
-		input.dispose();
-	}
-}
+export { decodeAudioToFloat32, type DecodedAudio } from "./decode-audio";
 
 export interface AudibleElementCandidate {
 	element: AudioElement | VideoElement;
@@ -164,6 +117,7 @@ export async function collectAudioElements({
 	mediaAssets,
 	audioContext,
 	resolveAssetAudio = resolveAudioBufferForAsset,
+	additionalClips = [],
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
@@ -172,6 +126,7 @@ export async function collectAudioElements({
 		asset: MediaAsset;
 		audioContext: AudioContext;
 	}) => Promise<AudioBuffer | null>;
+	additionalClips?: AudioClipSource[];
 }): Promise<CollectedAudioElement[]> {
 	const candidates = collectAudibleCandidates({ tracks, mediaAssets });
 	const mediaMap = new Map<string, MediaAsset>(
@@ -256,6 +211,23 @@ export async function collectAudioElements({
 		}
 	}
 
+	for (const clip of additionalClips) {
+		if (clip.muted || clip.duration <= 0) continue;
+		const asset = clip.mediaAsset;
+		if (!asset)
+			throw new Error(
+				`Audio source is missing for ${clip.timelineElement.name}`,
+			);
+		pendingElements.push(
+			resolveCachedAssetAudio({ asset }).then((buffer) => {
+				if (!buffer)
+					throw new Error(
+						`Could not decode audio for ${clip.timelineElement.name}`,
+					);
+				return { ...clip, buffer };
+			}),
+		);
+	}
 	const resolvedElements = await Promise.all(pendingElements);
 	const audioElements: CollectedAudioElement[] = [];
 	for (const element of resolvedElements) {
@@ -309,7 +281,10 @@ export async function resolveAudioBufferForAsset({
 	// Web Audio's container decoder is independent and also resamples to the
 	// export context. Prefer it for local files; retain the streaming decoder
 	// for formats Web Audio cannot decode and URL-backed media.
-	if (asset.file || (asset.url && asset.size && asset.size <= 1024 * 1024 * 1024)) {
+	if (
+		asset.file ||
+		(asset.url && asset.size && asset.size <= 1024 * 1024 * 1024)
+	) {
 		try {
 			const bytes = asset.file
 				? await asset.file.arrayBuffer()
@@ -648,6 +623,7 @@ export async function collectAudioClips({
 	tracks,
 	mediaAssets,
 	onClips,
+	additionalClips,
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
@@ -656,6 +632,7 @@ export async function collectAudioClips({
 	 * still being fetched. The final callback includes both sets of clips.
 	 */
 	onClips?: (clips: AudioClipSource[]) => void;
+	additionalClips?: Promise<AudioClipSource[]>;
 }): Promise<AudioClipSource[]> {
 	const orderedTracks = getDisplayTracks({ tracks });
 	const clips: AudioClipSource[] = [];
@@ -731,7 +708,11 @@ export async function collectAudioClips({
 	// Do not make video audio wait for unrelated library-audio fetches.
 	onClips?.([...clips]);
 
-	const resolvedLibraryClips = await Promise.all(pendingLibraryClips);
+	const [resolvedLibraryClips, derivedClips] = await Promise.all([
+		Promise.all(pendingLibraryClips),
+		additionalClips ?? [],
+	]);
+	clips.push(...derivedClips);
 	for (const clip of resolvedLibraryClips) {
 		if (clip) clips.push(clip);
 	}
@@ -746,12 +727,14 @@ export async function createTimelineAudioBuffer({
 	duration,
 	sampleRate = EXPORT_SAMPLE_RATE,
 	audioContext,
+	additionalClips,
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
 	duration: number;
 	sampleRate?: number;
 	audioContext?: AudioContext;
+	additionalClips?: AudioClipSource[];
 }): Promise<AudioBuffer | null> {
 	const context = audioContext ?? createAudioContext({ sampleRate });
 
@@ -759,6 +742,7 @@ export async function createTimelineAudioBuffer({
 		tracks,
 		mediaAssets,
 		audioContext: context,
+		additionalClips,
 	});
 
 	if (audioElements.length === 0) return null;

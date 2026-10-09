@@ -5,11 +5,18 @@ import { storageService } from "@/services/storage/service";
 import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
-import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
+import { buildWaveformSourceKey } from "@/media/waveform-summary";
 import { localDriveRequest } from "@/services/local-drive/client";
 
 export class MediaManager {
-	private assets: MediaAsset[] = [];
+	private assetViews: MediaAsset[] = [];
+	private get assets(): MediaAsset[] {
+		return this.assetViews;
+	}
+	private set assets(assets: MediaAsset[]) {
+		this.editor.command.synchronizeMedia({ assets });
+		this.assetViews = assets;
+	}
 	private isLoading = false;
 	private listeners = new Set<() => void>();
 
@@ -56,28 +63,32 @@ export class MediaManager {
 	async addMediaAsset({
 		projectId,
 		asset,
+		afterRegister,
 	}: {
 		projectId: string;
 		asset: Omit<MediaAsset, "id"> & { id?: string };
+		afterRegister?: (asset: MediaAsset) => undefined;
 	}): Promise<MediaAsset | null> {
 		const newAsset: MediaAsset = {
 			...asset,
 			id: asset.id ?? generateUUID(),
 		};
 
-		this.assets = [...this.assets, newAsset];
-		this.notify();
-
 		try {
-			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
-			this.editor.project.ratchetFpsForImportedMedia({
-				importedAssets: [newAsset],
+			const publish = this.editor.command.prepareClassicMediaImport({
+				projectId,
+				assets: [newAsset],
+				afterRegister: afterRegister
+					? () => afterRegister(newAsset)
+					: undefined,
 			});
+			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
+			publish();
 			return newAsset;
 		} catch (error) {
 			console.error("Failed to save media asset:", error);
-			this.assets = this.assets.filter((asset) => asset.id !== newAsset.id);
-			this.notify();
+			// Saved bytes are retained after a stale/cancelled publication, never
+			// deleted or injected into a different project. Membership is canonical.
 
 			if (storageService.isQuotaExceededError({ error })) {
 				toast.error("Not enough browser storage", {
@@ -105,23 +116,15 @@ export class MediaManager {
 			return;
 		}
 
-		const command =
-			uniqueIds.length === 1
-				? new RemoveMediaAssetCommand({
-						projectId,
-						assetId: uniqueIds[0],
-					})
-				: new BatchCommand(
-						uniqueIds.map(
-							(id) =>
-								new RemoveMediaAssetCommand({
-									projectId,
-									assetId: id,
-								}),
-						),
-					);
-
-		this.editor.command.execute({ command });
+		this.editor.command.removeClassicMedia({ projectId, mediaIds: uniqueIds });
+		// Canonical removal retains durable files and URL handles for history.
+		// Discard only derived decode caches after the successful transaction.
+		for (const id of uniqueIds) {
+			videoCache.clearVideo({ mediaId: id });
+			waveformCache.clearSource({
+				sourceKey: buildWaveformSourceKey({ kind: "media", id }),
+			});
+		}
 	}
 
 	async loadProjectMedia({ projectId }: { projectId: string }): Promise<void> {
@@ -143,6 +146,7 @@ export class MediaManager {
 	}
 
 	async clearProjectMedia({ projectId }: { projectId: string }): Promise<void> {
+		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		waveformCache.clearAll();
 
 		this.assets.forEach((asset) => {
@@ -170,6 +174,7 @@ export class MediaManager {
 	}
 
 	clearAllAssets(): void {
+		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		videoCache.clearAll();
 		waveformCache.clearAll();
 

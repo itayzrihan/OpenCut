@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 import type {
 	SceneTracks,

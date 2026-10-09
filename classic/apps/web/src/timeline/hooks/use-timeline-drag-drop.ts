@@ -37,7 +37,19 @@ export function useTimelineDragDrop({
 		getMediaAssets: () => editor.media.getAssets(),
 		dragSource: editor.timeline.dragSource,
 		addMediaAsset: (args) => editor.media.addMediaAsset(args),
-		executeCommand: (command) => editor.command.execute({ command }),
+		insertElements: (clips) =>
+			editor.command.insertClassicTimelineElements(clips),
+		insertOnNewTrack: ({ type, index, element }) => {
+			editor.command.executeTransaction({
+				execute: () => {
+					const trackId = editor.timeline.addTrack({ type, index });
+					editor.timeline.insertElement({
+						element,
+						placement: { mode: "explicit", trackId },
+					});
+				},
+			});
+		},
 		insertElement: (args) => editor.timeline.insertElement(args),
 		addClipEffect: (args) => editor.timeline.addClipEffect(args),
 		applyTransitions: (args) => editor.timeline.applyTransitions(args),

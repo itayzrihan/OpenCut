@@ -4,7 +4,6 @@ import { storageService } from "@/services/storage/service";
 import {
 	getMainScene,
 	ensureMainScene,
-	canDeleteScene,
 	findCurrentScene,
 } from "@/timeline/scenes";
 import {
@@ -12,15 +11,7 @@ import {
 	getFrameTime,
 	isBookmarkAtTime,
 } from "@/timeline/bookmarks/index";
-import {
-	CreateSceneCommand,
-	DeleteSceneCommand,
-	MoveBookmarkCommand,
-	RemoveBookmarkCommand,
-	RenameSceneCommand,
-	ToggleBookmarkCommand,
-	UpdateBookmarkCommand,
-} from "@/commands/scene";
+import { generateUUID } from "@/utils/id";
 import { restoreParallaxSceneMetadataForScenes } from "@/parallax-story-teller/model";
 import type { MediaTime } from "@/wasm";
 
@@ -42,29 +33,19 @@ export class ScenesManager {
 			throw new Error("No active project");
 		}
 
-		const command = new CreateSceneCommand({ name, isMain });
-		this.editor.command.execute({ command });
-		return command.getSceneId();
+		const sceneId = generateUUID();
+		this.editor.command.editClassicScene({
+			type: "create",
+			sceneId,
+			mainTrackId: generateUUID(),
+			name,
+			isMain,
+		});
+		return sceneId;
 	}
 
 	async deleteScene({ sceneId }: { sceneId: string }): Promise<void> {
-		const sceneToDelete = this.list.find((s) => s.id === sceneId);
-
-		if (!sceneToDelete) {
-			throw new Error("Scene not found");
-		}
-
-		const { canDelete, reason } = canDeleteScene({ scene: sceneToDelete });
-		if (!canDelete) {
-			throw new Error(reason);
-		}
-
-		if (!this.editor.project.getActive()) {
-			throw new Error("No active project");
-		}
-
-		const command = new DeleteSceneCommand(sceneId);
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicScene({ type: "delete", sceneId });
 	}
 
 	async renameScene({
@@ -78,42 +59,18 @@ export class ScenesManager {
 			throw new Error("No active project");
 		}
 
-		const command = new RenameSceneCommand({
-			sceneId,
-			newName: name,
-		});
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicScene({ type: "rename", sceneId, name });
 	}
 
 	async switchToScene({ sceneId }: { sceneId: string }): Promise<void> {
-		const targetScene = this.list.find((s) => s.id === sceneId);
-
-		if (!targetScene) {
-			throw new Error("Scene not found");
-		}
-
-		const activeProject = this.editor.project.getActive();
-
-		if (activeProject) {
-			const updatedProject = {
-				...activeProject,
-				currentSceneId: sceneId,
-				metadata: {
-					...activeProject.metadata,
-					updatedAt: new Date(),
-				},
-			};
-
-			this.editor.project.setActiveProject({ project: updatedProject });
-		}
-
-		this.active = targetScene;
-		this.notify();
+		this.editor.command.editClassicScene({ type: "select", sceneId });
 	}
 
 	async toggleBookmark({ time }: { time: MediaTime }): Promise<void> {
-		const command = new ToggleBookmarkCommand(time);
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicBookmarks({
+			sceneId: this.getActiveScene().id,
+			change: { type: "toggle", time },
+		});
 	}
 
 	isBookmarked({ time }: { time: MediaTime }): boolean {
@@ -131,8 +88,10 @@ export class ScenesManager {
 	}
 
 	async removeBookmark({ time }: { time: MediaTime }): Promise<void> {
-		const command = new RemoveBookmarkCommand(time);
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicBookmarks({
+			sceneId: this.getActiveScene().id,
+			change: { type: "remove", time },
+		});
 	}
 
 	async updateBookmark({
@@ -142,8 +101,14 @@ export class ScenesManager {
 		time: MediaTime;
 		updates: Partial<Omit<Bookmark, "time">>;
 	}): Promise<void> {
-		const command = new UpdateBookmarkCommand({ time, updates });
-		this.editor.command.execute({ command });
+		const fields = ["note", "color", "duration", "groupId"] as const;
+		const clear = fields.filter(
+			(key) => Object.hasOwn(updates, key) && updates[key] === undefined,
+		);
+		this.editor.command.editClassicBookmarks({
+			sceneId: this.getActiveScene().id,
+			change: { type: "update", time, updates: { ...updates, clear } },
+		});
 	}
 
 	async moveBookmark({
@@ -153,8 +118,10 @@ export class ScenesManager {
 		fromTime: MediaTime;
 		toTime: MediaTime;
 	}): Promise<void> {
-		const command = new MoveBookmarkCommand({ fromTime, toTime });
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicBookmarks({
+			sceneId: this.getActiveScene().id,
+			change: { type: "move", fromTime, toTime },
+		});
 	}
 
 	getBookmarkAtTime({ time }: { time: MediaTime }) {
@@ -206,18 +173,13 @@ export class ScenesManager {
 		const ensuredScenes = ensureMainScene({ scenes });
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes: ensuredScenes,
-			cameraCanvasSize:
-				this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
 		});
 		const currentScene = currentSceneId
 			? normalizedScenes.find((s) => s.id === currentSceneId)
 			: null;
 
 		const fallbackScene = getMainScene({ scenes: normalizedScenes });
-
-		this.list = normalizedScenes;
-		this.active = currentScene || fallbackScene;
-		this.notify();
 
 		const hasAddedMainScene = normalizedScenes.length > scenes.length;
 		const hasRestoredParallaxMetadata = normalizedScenes.some(
@@ -240,6 +202,9 @@ export class ScenesManager {
 				this.editor.save.markDirty({ force: true });
 			}
 		}
+		this.list = normalizedScenes;
+		this.active = currentScene || fallbackScene;
+		this.notify();
 	}
 
 	clearScenes(): void {
@@ -272,21 +237,20 @@ export class ScenesManager {
 	}): void {
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes,
-			cameraCanvasSize:
-				this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
 		});
-		this.list = normalizedScenes;
 		const nextActiveSceneId = activeSceneId ?? this.active?.id ?? null;
-		this.active = nextActiveSceneId
-			? (normalizedScenes.find((scene) => scene.id === nextActiveSceneId) ?? null)
-			: null;
-		this.notify();
+		const nextActive = nextActiveSceneId
+			? (normalizedScenes.find((scene) => scene.id === nextActiveSceneId) ??
+				getMainScene({ scenes: normalizedScenes }))
+			: getMainScene({ scenes: normalizedScenes });
 
 		const activeProject = this.editor.project.getActive();
 		if (activeProject) {
 			const updatedProject = {
 				...activeProject,
 				scenes: normalizedScenes,
+				...(nextActive && { currentSceneId: nextActive.id }),
 				metadata: {
 					...activeProject.metadata,
 					updatedAt: new Date(),
@@ -294,6 +258,9 @@ export class ScenesManager {
 			};
 			this.editor.project.setActiveProject({ project: updatedProject });
 		}
+		this.list = normalizedScenes;
+		this.active = nextActive;
+		this.notify();
 	}
 
 	subscribe(listener: () => void): () => void {
@@ -316,17 +283,15 @@ export class ScenesManager {
 			updatedAt: new Date(),
 		};
 
-		this.list = this.list.map((s) =>
+		const nextScenes = this.list.map((s) =>
 			s.id === this.active?.id ? updatedScene : s,
 		);
-		this.active = updatedScene;
-		this.notify();
 
 		const activeProject = this.editor.project.getActive();
 		if (activeProject) {
 			const updatedProject = {
 				...activeProject,
-				scenes: this.list,
+				scenes: nextScenes,
 				metadata: {
 					...activeProject.metadata,
 					updatedAt: new Date(),
@@ -334,5 +299,8 @@ export class ScenesManager {
 			};
 			this.editor.project.setActiveProject({ project: updatedProject });
 		}
+		this.list = nextScenes;
+		this.active = updatedScene;
+		this.notify();
 	}
 }

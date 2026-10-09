@@ -1,13 +1,16 @@
 use std::{
     collections::BTreeMap,
     sync::{Arc, Mutex},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
+
+use crate::runtime::now_ms;
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 
 pub const ARTIFACT_URI_PREFIX: &str = "opencut://artifacts/";
 
@@ -30,6 +33,19 @@ pub struct ArtifactRef {
 pub struct StoredArtifact {
     pub metadata: ArtifactRef,
     pub bytes: Arc<[u8]>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactArchive {
+    pub schema_version: u32,
+    pub items: Vec<ArchivedArtifact>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchivedArtifact {
+    pub metadata: ArtifactRef,
+    pub data_base64: String,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -65,6 +81,7 @@ struct ArtifactState {
 struct ArtifactEntry {
     artifact: StoredArtifact,
     last_access: u64,
+    pinned: bool,
 }
 
 impl Default for ArtifactStore {
@@ -107,15 +124,24 @@ impl ArtifactStore {
             let Some(oldest_id) = state
                 .entries
                 .iter()
+                .filter(|(_, entry)| !entry.pinned)
                 .min_by_key(|(_, entry)| entry.last_access)
                 .map(|(id, _)| id.clone())
             else {
-                break;
+                return Err(ArtifactError::TooLarge {
+                    size: state.total_bytes + bytes.len() as u64,
+                    limit: self.limits.max_total_bytes,
+                });
             };
             remove_entry(&mut state, &oldest_id);
         }
-        let id = format!("artifact-{}-{:#x}", now, state.next_id).replace("0x", "");
-        state.next_id += 1;
+        let id = loop {
+            let id = format!("artifact-{}-{:#x}", now, state.next_id).replace("0x", "");
+            state.next_id += 1;
+            if !state.entries.contains_key(&id) {
+                break id;
+            }
+        };
         state.access_clock += 1;
         let sha256 = format!("{:x}", Sha256::digest(&bytes));
         let metadata = ArtifactRef {
@@ -140,6 +166,7 @@ impl ArtifactStore {
                     bytes: bytes.into(),
                 },
                 last_access,
+                pinned: false,
             },
         );
         Ok(metadata)
@@ -184,6 +211,126 @@ impl ArtifactStore {
     pub fn contains(&self, uri: &str) -> bool {
         self.get(uri).is_ok()
     }
+
+    /// Host-owned durable references must not expire or be evicted between saves.
+    pub fn pin(&self, id: &str) -> Result<(), ArtifactError> {
+        let mut state = self.inner.lock().map_err(|_| ArtifactError::LockPoisoned)?;
+        let entry = state
+            .entries
+            .get_mut(id)
+            .ok_or_else(|| ArtifactError::NotFound(id.into()))?;
+        entry.pinned = true;
+        entry.artifact.metadata.expires_at_ms = 9_007_199_254_740_991;
+        Ok(())
+    }
+    pub fn archive(&self, ids: &[String]) -> Result<ArtifactArchive, ArtifactError> {
+        let mut items = vec![];
+        for id in ids.iter().collect::<std::collections::BTreeSet<_>>() {
+            let artifact = self.get(id)?;
+            items.push(ArchivedArtifact {
+                metadata: artifact.metadata,
+                data_base64: STANDARD.encode(&artifact.bytes),
+            });
+        }
+        Ok(ArtifactArchive {
+            schema_version: 1,
+            items,
+        })
+    }
+    /// Validate the entire archive before changing this store. IDs and digests
+    /// remain stable across reload, so saved receipts continue to address bytes.
+    pub fn restore(&self, archive: &ArtifactArchive) -> Result<(), ArtifactError> {
+        if archive.schema_version != 1 {
+            return Err(ArtifactError::InvalidArchive(
+                "Unsupported artifact archive".into(),
+            ));
+        }
+        let mut decoded = BTreeMap::new();
+        let mut total = 0u64;
+        for item in &archive.items {
+            let meta = &item.metadata;
+            if meta.id.is_empty()
+                || meta.id.len() > 256
+                || meta.uri != format!("{ARTIFACT_URI_PREFIX}{}", meta.id)
+                || meta.mime_type.is_empty()
+                || meta.mime_type.len() > 256
+                || item.data_base64.len() as u64
+                    > self.limits.max_artifact_bytes.saturating_mul(4) / 3 + 4
+            {
+                return Err(ArtifactError::InvalidArchive(
+                    "Invalid artifact identity or encoded bound".into(),
+                ));
+            }
+            let bytes = STANDARD
+                .decode(&item.data_base64)
+                .map_err(|_| ArtifactError::InvalidArchive("Invalid artifact encoding".into()))?;
+            if bytes.len() as u64 != meta.byte_size
+                || meta.byte_size > self.limits.max_artifact_bytes
+                || format!("{:x}", Sha256::digest(&bytes)) != meta.sha256
+                || decoded.contains_key(&meta.id)
+            {
+                return Err(ArtifactError::InvalidArchive(
+                    "Artifact digest, size or identity differs".into(),
+                ));
+            }
+            total = total
+                .checked_add(meta.byte_size)
+                .ok_or_else(|| ArtifactError::InvalidArchive("Artifact size overflow".into()))?;
+            if total > self.limits.max_total_bytes {
+                return Err(ArtifactError::TooLarge {
+                    size: total,
+                    limit: self.limits.max_total_bytes,
+                });
+            }
+            let mut metadata = meta.clone();
+            metadata.expires_at_ms = 9_007_199_254_740_991;
+            decoded.insert(
+                meta.id.clone(),
+                StoredArtifact {
+                    metadata,
+                    bytes: bytes.into(),
+                },
+            );
+        }
+        let mut state = self.inner.lock().map_err(|_| ArtifactError::LockPoisoned)?;
+        let mut added = 0u64;
+        for (id, artifact) in &decoded {
+            if let Some(existing) = state.entries.get(id) {
+                if existing.artifact.metadata.sha256 != artifact.metadata.sha256
+                    || existing.artifact.metadata.mime_type != artifact.metadata.mime_type
+                    || existing.artifact.metadata.byte_size != artifact.metadata.byte_size
+                {
+                    return Err(ArtifactError::InvalidArchive(
+                        "Existing artifact identity conflicts".into(),
+                    ));
+                }
+            } else {
+                added += artifact.metadata.byte_size;
+            }
+        }
+        if state.total_bytes + added > self.limits.max_total_bytes {
+            return Err(ArtifactError::TooLarge {
+                size: state.total_bytes + added,
+                limit: self.limits.max_total_bytes,
+            });
+        }
+        for (id, artifact) in decoded {
+            if !state.entries.contains_key(&id) {
+                state.total_bytes += artifact.metadata.byte_size;
+            }
+            state.access_clock += 1;
+            let last_access = state.access_clock;
+            state.entries.insert(
+                id,
+                ArtifactEntry {
+                    artifact,
+                    last_access,
+                    pinned: true,
+                },
+            );
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Error)]
@@ -194,13 +341,15 @@ pub enum ArtifactError {
     TooLarge { size: u64, limit: u64 },
     #[error("artifact store lock was poisoned")]
     LockPoisoned,
+    #[error("{0}")]
+    InvalidArchive(String),
 }
 
 fn prune_expired(state: &mut ArtifactState, now: u64) {
     let expired: Vec<_> = state
         .entries
         .iter()
-        .filter(|(_, entry)| entry.artifact.metadata.expires_at_ms <= now)
+        .filter(|(_, entry)| !entry.pinned && entry.artifact.metadata.expires_at_ms <= now)
         .map(|(id, _)| id.clone())
         .collect();
     for id in expired {
@@ -218,16 +367,44 @@ fn remove_entry(state: &mut ArtifactState, id: &str) -> bool {
     true
 }
 
-fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn durable_bytes_keep_identity_and_corrupt_archives_are_atomic() {
+        let store = ArtifactStore::default();
+        let image = store
+            .put(vec![1, 2, 3], "image/jpeg", Some(16), Some(9), None)
+            .unwrap();
+        store.pin(&image.id).unwrap();
+        let archive = store.archive(&[image.id.clone()]).unwrap();
+        let restored = ArtifactStore::default();
+        restored.restore(&archive).unwrap();
+        assert_eq!(restored.get(&image.id).unwrap().bytes.as_ref(), &[1, 2, 3]);
+        let mut corrupt = archive.clone();
+        corrupt.items[0].data_base64 = STANDARD.encode([3, 2, 1]);
+        let before = restored.list().unwrap();
+        assert!(restored.restore(&corrupt).is_err());
+        assert_eq!(restored.list().unwrap(), before);
+        let mut duplicate = archive.clone();
+        duplicate.items.push(duplicate.items[0].clone());
+        assert!(restored.restore(&duplicate).is_err());
+        assert_eq!(restored.list().unwrap(), before);
+    }
+    #[test]
+    fn pinned_outputs_cannot_be_evicted_by_another_result() {
+        let store = ArtifactStore::new(ArtifactLimits {
+            ttl: Duration::from_secs(0),
+            max_artifact_bytes: 4,
+            max_total_bytes: 4,
+        });
+        let first = store
+            .put(vec![1, 2, 3, 4], "video/webm", None, None, None)
+            .unwrap();
+        store.pin(&first.id).unwrap();
+        assert!(store.put(vec![5], "image/jpeg", None, None, None).is_err());
+        assert_eq!(store.get(&first.id).unwrap().bytes.as_ref(), &[1, 2, 3, 4]);
+    }
 
     #[test]
     fn artifacts_are_addressable_and_bounded() {

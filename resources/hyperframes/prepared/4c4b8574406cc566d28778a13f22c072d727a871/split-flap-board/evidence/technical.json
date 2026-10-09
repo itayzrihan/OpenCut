@@ -1,0 +1,42 @@
+{
+  "id": "split-flap-board",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "35fc278a8be20f5420759eee6b20eb84dfef3f74b827db855ae1282f3f65f863",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "split-flap-board.html",
+  "durationSeconds": 3.5,
+  "frames": [
+    {
+      "timeSeconds": 0.525,
+      "sha256": "231aefce5ba7d1b0e49dddc9645e2a1b55fa7a5ab754d8fe34452ca4efe4ec2c",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "9d9ca64c520daa821cf51fc83f83268d8fe12268b3a9003127e11f8df221d6bc",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.975,
+      "sha256": "ba6324c1f4ced4ff5ce3bb298a72cb9843819297ea0233f11991ca6574519d1f",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "9d9ca64c520daa821cf51fc83f83268d8fe12268b3a9003127e11f8df221d6bc",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

@@ -3,11 +3,7 @@
 import type { MaskableElement } from "@/timeline";
 import type { Mask, MaskType, TextMask } from "@/masks/types";
 import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
-import {
-	buildDefaultMaskInstance,
-	getMaskDefinition,
-	getMaskDefinitionsForMenu,
-} from "@/masks";
+import { getMaskDefinition, getMaskDefinitionsForMenu } from "@/masks";
 import {
 	useEditor,
 	useEditorMediaAsset,
@@ -101,47 +97,13 @@ function isTextMask(mask: Mask): mask is TextMask {
 	return mask.type === "text";
 }
 
-function withPreviewedMaskParam({
-	mask,
-	key,
-	value,
-}: {
-	mask: Mask;
-	key: string;
-	value: number | string | boolean;
-}): Mask {
-	switch (mask.type) {
-		case "split":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "cinematic-bars":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "rectangle":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "rounded-rectangle":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "ellipse":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "heart":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "diamond":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "star":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "text":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-		case "freeform":
-			return { ...mask, params: { ...mask.params, [key]: value } };
-	}
-}
-
 export function MasksTab({ element, trackId }: MasksTabProps) {
 	const editor = useEditor();
-	const { renderElement, previewUpdates, commit } =
-		useElementPreview<MaskableElement>({
-			trackId,
-			elementId: element.id,
-			fallback: element,
-		});
+	const { renderElement, commit } = useElementPreview<MaskableElement>({
+		trackId,
+		elementId: element.id,
+		fallback: element,
+	});
 	const maskDefs = getMaskDefinitionsForMenu();
 	const tracks = useEditorTimelineScenes(
 		(e) => e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
@@ -199,73 +161,35 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 	};
 
 	const previewMask = ({ maskType }: { maskType: MaskType }) => {
-		editor.timeline.previewElements({
-			updates: [
-				{
-					trackId,
-					elementId: element.id,
-					updates: {
-						masks: [
-							buildDefaultMaskInstance({
-								maskType,
-								elementSize: elementBounds
-									? {
-											width: elementBounds.width,
-											height: elementBounds.height,
-										}
-									: undefined,
-							}),
-						],
-					} as Partial<MaskableElement>,
-				},
-			],
+		editor.timeline.previewMask({
+			trackId,
+			elementId: element.id,
+			change: {
+				type: "create",
+				maskType,
+				elementSize: elementBounds
+					? { width: elementBounds.width, height: elementBounds.height }
+					: undefined,
+			},
 		});
 	};
-
 	const commitMask = ({ maskType }: { maskType: MaskType }) => {
-		if (editor.timeline.isPreviewActive()) {
-			editor.timeline.commitPreview();
-		} else {
-			editor.timeline.updateElements({
-				updates: [
-					{
-						trackId,
-						elementId: element.id,
-						patch: {
-							masks: [
-								buildDefaultMaskInstance({
-									maskType,
-									elementSize: elementBounds
-										? {
-												width: elementBounds.width,
-												height: elementBounds.height,
-											}
-										: undefined,
-								}),
-							],
-						} as Partial<MaskableElement>,
-					},
-				],
-			});
-		}
+		previewMask({ maskType });
+		editor.timeline.commitPreview();
 		markCommitted();
 		setIsDropdownOpen(false);
 	};
-
 	const previewMaskParam =
 		({ index, key }: { index: number; key: string }) =>
 		(value: number | string | boolean) => {
-			if (!renderMasks[index]) {
-				return;
-			}
-
-			const updatedMasks = renderMasks.map((existingMask, maskIndex) =>
-				maskIndex !== index
-					? existingMask
-					: withPreviewedMaskParam({ mask: existingMask, key, value }),
-			);
-
-			previewUpdates({ masks: updatedMasks });
+			const mask = renderMasks[index];
+			if (!mask) return;
+			editor.timeline.previewMask({
+				trackId,
+				elementId: element.id,
+				maskId: mask.id,
+				change: { type: "update", params: { [key]: value } },
+			});
 		};
 
 	return (

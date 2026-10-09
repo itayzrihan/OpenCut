@@ -1,6 +1,10 @@
 /** Local source decoding + OpenCV + local pose inference. Rust owns detection acceptance and crop math. */
 import type { EditorCore } from "@/core";
-import { resolveLocalSubjectFraming, compileFullAutoEdit } from "opencut-wasm";
+import {
+	resolveLocalSubjectFraming,
+	compileFullAutoEdit,
+	fullAutoFramingSampleTimes,
+} from "opencut-wasm";
 import {
 	buildTimelineDocumentV2,
 	parseTimelineDocumentV2,
@@ -86,13 +90,14 @@ export async function detectSubjectFraming({
 			video.src = ownedUrl ?? asset.url!;
 			await loaded;
 			// One stable source crop across silence-cut fragments prevents framing jumps at every cut.
-			const start = Math.min(...clips.map((c) => c.trimStart)) / 120000;
-			const end =
-				Math.max(...clips.map((c) => c.trimStart + c.duration)) / 120000;
+			const sampleTimes = fullAutoFramingSampleTimes({
+				clipsJson: JSON.stringify(clips),
+			});
+			if (sampleTimes.length !== 5)
+				throw new Error("Cannot sample the selected video cuts for framing");
 			const frames: string[] = [];
-			for (const fraction of [0.02, 0.25, 0.5, 0.75, 0.98]) {
+			for (const time of sampleTimes) {
 				signal.throwIfAborted();
-				const time = start + (end - start) * fraction;
 				if (time >= video.duration)
 					throw new Error("Clip extends beyond source media");
 				if (Math.abs(video.currentTime - time) > 0.0001) {

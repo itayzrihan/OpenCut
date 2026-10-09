@@ -1,7 +1,6 @@
 use std::{
     collections::{BTreeMap, VecDeque},
     sync::{Arc, RwLock},
-    time::{SystemTime, UNIX_EPOCH},
 };
 
 use jsonschema::Validator;
@@ -12,8 +11,8 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 
 use crate::{
-    AccessPolicy, Capability, CapabilityDescriptor, CapabilityError, InvocationContext,
-    InvocationReceipt, PolicyDecision,
+    AccessPolicy, Capability, CapabilityDescriptor, CapabilityError, DocumentKind,
+    InvocationContext, InvocationReceipt, PolicyDecision, runtime::now_ms,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -64,7 +63,11 @@ pub struct CapabilityRegistry {
     events: broadcast::Sender<RegistryEvent>,
     audit: Arc<RwLock<AuditState>>,
     idempotency: Arc<RwLock<IdempotencyState>>,
+    document_resolver: Arc<RwLock<Option<Arc<DocumentResolver>>>>,
 }
+
+type DocumentResolver =
+    dyn Fn(&Value, &InvocationContext) -> Result<Option<DocumentKind>, RegistryError> + Send + Sync;
 
 #[derive(Default)]
 struct AuditState {
@@ -72,10 +75,10 @@ struct AuditState {
     entries: VecDeque<InvocationAudit>,
 }
 
-#[derive(Default)]
-struct IdempotencyState {
+#[derive(Default, Clone)]
+pub(crate) struct IdempotencyState {
     order: VecDeque<String>,
-    entries: BTreeMap<String, IdempotencyEntry>,
+    entries: BTreeMap<String, Arc<IdempotencyEntry>>,
 }
 
 #[derive(Clone)]
@@ -91,6 +94,16 @@ impl Default for CapabilityRegistry {
 }
 
 impl CapabilityRegistry {
+    /// A registered orchestration capability must not own its own registry.
+    pub(crate) fn downgrade(&self) -> impl Fn() -> Option<Self> + Clone + Send + Sync + 'static {
+        let state = Arc::downgrade(&self.state);
+        let policy = self.policy.clone();
+        let events = self.events.clone();
+        let audit = self.audit.clone();
+        let idempotency = self.idempotency.clone();
+        let document_resolver = self.document_resolver.clone();
+        move || Some(Self { state: state.upgrade()?, policy: policy.clone(), events: events.clone(), audit: audit.clone(), idempotency: idempotency.clone(), document_resolver: document_resolver.clone() })
+    }
     pub fn new(policy: AccessPolicy) -> Self {
         let (events, _) = broadcast::channel(256);
         Self {
@@ -99,11 +112,48 @@ impl CapabilityRegistry {
             events,
             audit: Arc::new(RwLock::new(AuditState::default())),
             idempotency: Arc::new(RwLock::new(IdempotencyState::default())),
+            document_resolver: Arc::new(RwLock::new(None)),
         }
     }
 
     pub fn subscribe(&self) -> broadcast::Receiver<RegistryEvent> {
         self.events.subscribe()
+    }
+
+    pub(crate) fn set_document_resolver(
+        &self,
+        resolver: Arc<DocumentResolver>,
+    ) -> Result<(), RegistryError> {
+        *self
+            .document_resolver
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = Some(resolver);
+        Ok(())
+    }
+
+    fn document_kind(
+        &self,
+        input: &Value,
+        context: &InvocationContext,
+    ) -> Result<Option<DocumentKind>, RegistryError> {
+        let resolver = self
+            .document_resolver
+            .read()
+            .map_err(|_| RegistryError::LockPoisoned)?
+            .clone();
+        resolver.map_or(Ok(None), |resolve| resolve(input, context))
+    }
+
+    fn project_descriptor(descriptor: &mut CapabilityDescriptor, kind: Option<DocumentKind>) {
+        if let Some(kind) = kind
+            && !descriptor.document_support.supports(kind)
+        {
+            descriptor.available = false;
+            descriptor.unavailable_reason = Some(format!(
+                "{} does not operate on the {kind:?} document representation",
+                descriptor.id
+            ));
+        }
     }
 
     pub fn notify_resources_changed(&self, uris: Vec<String>) -> Result<(), RegistryError> {
@@ -126,6 +176,30 @@ impl CapabilityRegistry {
             .policy
             .write()
             .map_err(|_| RegistryError::LockPoisoned)? = policy;
+        Ok(())
+    }
+
+    pub(crate) fn clear_idempotency(&self) -> Result<(), RegistryError> {
+        *self
+            .idempotency
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = IdempotencyState::default();
+        Ok(())
+    }
+
+    pub(crate) fn checkpoint_idempotency(&self) -> Result<IdempotencyState, RegistryError> {
+        Ok(self
+            .idempotency
+            .read()
+            .map_err(|_| RegistryError::LockPoisoned)?
+            .clone())
+    }
+
+    pub(crate) fn restore_idempotency(&self, state: IdempotencyState) -> Result<(), RegistryError> {
+        *self
+            .idempotency
+            .write()
+            .map_err(|_| RegistryError::LockPoisoned)? = state;
         Ok(())
     }
 
@@ -182,14 +256,20 @@ impl CapabilityRegistry {
 
     pub fn snapshot(&self) -> Result<RegistrySnapshot, RegistryError> {
         let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
-        Ok(RegistrySnapshot {
+        let mut snapshot = RegistrySnapshot {
             revision: state.revision,
             capabilities: state
                 .entries
                 .values()
                 .map(|entry| entry.capability.descriptor().clone())
                 .collect(),
-        })
+        };
+        drop(state);
+        let kind = self.document_kind(&Value::Null, &InvocationContext::default())?;
+        for descriptor in &mut snapshot.capabilities {
+            Self::project_descriptor(descriptor, kind);
+        }
+        Ok(snapshot)
     }
 
     /// Returns only the capabilities currently permitted by the effective policy.
@@ -242,10 +322,18 @@ impl CapabilityRegistry {
 
     pub fn descriptor(&self, id: &str) -> Result<Option<CapabilityDescriptor>, RegistryError> {
         let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
-        Ok(state
+        let mut descriptor = state
             .entries
             .get(id)
-            .map(|entry| entry.capability.descriptor().clone()))
+            .map(|entry| entry.capability.descriptor().clone());
+        drop(state);
+        if let Some(descriptor) = descriptor.as_mut() {
+            Self::project_descriptor(
+                descriptor,
+                self.document_kind(&Value::Null, &InvocationContext::default())?,
+            );
+        }
+        Ok(descriptor)
     }
 
     pub async fn invoke(
@@ -254,7 +342,7 @@ impl CapabilityRegistry {
         context: InvocationContext,
         input: Value,
     ) -> Result<InvocationReceipt, RegistryError> {
-        let (capability, descriptor, revision) = {
+        let (capability, mut descriptor, revision) = {
             let state = self.state.read().map_err(|_| RegistryError::LockPoisoned)?;
             let entry = state
                 .entries
@@ -273,6 +361,8 @@ impl CapabilityRegistry {
                 state.revision,
             )
         };
+
+        Self::project_descriptor(&mut descriptor, self.document_kind(&input, &context)?);
 
         let policy = self
             .policy
@@ -297,10 +387,11 @@ impl CapabilityRegistry {
             .and_then(Value::as_str)
             .map(|key| {
                 format!(
-                    "{}|{}|{}",
+                    "{}|{}|{}|dryRun={}",
                     context.actor.as_deref().unwrap_or("anonymous"),
                     descriptor.id,
-                    key
+                    key,
+                    context.dry_run
                 )
             });
         if let Some(key) = &idempotency_key
@@ -318,7 +409,7 @@ impl CapabilityRegistry {
                     details: "idempotencyKey was already used with different input".into(),
                 });
             }
-            return Ok(cached.receipt);
+            return Ok(cached.receipt.clone());
         }
 
         let audit_context = context.clone();
@@ -360,7 +451,13 @@ impl CapabilityRegistry {
             }
         }
 
-        if !result.changed_resources.is_empty() {
+        if !result.changed_resources.is_empty()
+            && audit_context
+                .metadata
+                .get("opencut/transaction")
+                .and_then(Value::as_bool)
+                != Some(true)
+        {
             let _ = self.events.send(RegistryEvent::ResourcesChanged {
                 uris: result.changed_resources.clone(),
                 revision,
@@ -391,10 +488,10 @@ impl CapabilityRegistry {
             }
             state.entries.insert(
                 key,
-                IdempotencyEntry {
+                Arc::new(IdempotencyEntry {
                     input,
                     receipt: receipt.clone(),
-                },
+                }),
             );
             while state.order.len() > 1000 {
                 if let Some(oldest) = state.order.pop_front() {
@@ -422,10 +519,7 @@ impl CapabilityRegistry {
         let sequence = audit.next_sequence;
         audit.entries.push_back(InvocationAudit {
             sequence,
-            timestamp_ms: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_millis() as u64,
+            timestamp_ms: now_ms(),
             capability_id: capability_id.into(),
             actor: context.actor.clone(),
             request_id: context.request_id.clone(),

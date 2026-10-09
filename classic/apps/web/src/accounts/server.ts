@@ -86,11 +86,15 @@ export async function accountDataLocked(id: string) {
 		});
 	return !!lock && lock.mode !== "snapshot";
 }
-export async function markAccountImport(
-	id: string,
-	active: boolean,
-	mode: "exclusive" | "snapshot" = "exclusive",
-) {
+export async function markAccountImport({
+	id,
+	active,
+	mode = "exclusive",
+}: {
+	id: string;
+	active: boolean;
+	mode?: "exclusive" | "snapshot";
+}) {
 	if (active && activeImports.has(id))
 		throw new Error("An import is already running");
 	if (active) {
@@ -129,20 +133,50 @@ export function requireAccount() {
 export function accountDataRoot() {
 	return join(accountsRoot(), "data", requireAccount().id);
 }
-export function assertLocalOrigin(request: Request) {
+/** Preserve the browser's host when Next normalizes its internal URL. */
+export function localRequestOrigin(request: Request): string {
 	const url = new URL(request.url);
 	// Next may normalize request.url to localhost even when the browser used
 	// 127.0.0.1. Validate the actual Host as well as the internal URL.
 	const hostHeader = request.headers.get("host");
+	const configuredOrigin = process.env.OPENCUT_PUBLIC_ORIGIN;
+	if (configuredOrigin && hostHeader) {
+		const configured = new URL(configuredOrigin);
+		if (
+			configured.protocol !== "https:" ||
+			configured.username ||
+			configured.password ||
+			configured.pathname !== "/" ||
+			configured.search ||
+			configured.hash
+		)
+			throw new Error("OPENCUT_PUBLIC_ORIGIN must be an exact HTTPS origin");
+		if (
+			hostHeader === configured.host &&
+			(request.headers.get("x-forwarded-proto") === "https" ||
+				url.protocol === "https:") &&
+			(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
+				url.origin === configured.origin)
+		)
+			return configured.origin;
+	}
 	const actual = hostHeader ? new URL(`${url.protocol}//${hostHeader}`) : url;
 	if (
-		![url, actual].every((value) =>
-			["localhost", "127.0.0.1", "[::1]"].includes(value.hostname),
+		![url, actual].every(
+			(value) =>
+				["localhost", "127.0.0.1", "[::1]"].includes(value.hostname) &&
+				["http:", "https:"].includes(value.protocol) &&
+				!value.username &&
+				!value.password,
 		)
 	)
 		throw new Error("This storage host is available only on loopback");
+	return actual.origin;
+}
+export function assertLocalOrigin(request: Request) {
+	const actualOrigin = localRequestOrigin(request);
 	const origin = request.headers.get("origin");
-	if (origin && origin !== actual.origin)
+	if (origin && origin !== actualOrigin)
 		throw new Error("Cross-origin request rejected");
 	const site = request.headers.get("sec-fetch-site");
 	if (
@@ -160,7 +194,11 @@ function digest(value: string) {
 }
 function normalizeLogin(login: string) {
 	const value = login.trim().normalize("NFKC").toLowerCase();
-	if (value.length < 3 || value.length > 128 || /[\x00-\x1f]/.test(value))
+	if (
+		value.length < 3 ||
+		value.length > 128 ||
+		[...value].some((letter) => letter.charCodeAt(0) <= 31)
+	)
 		throw new Error("Use an account name of 3–128 characters");
 	return value;
 }
@@ -187,11 +225,15 @@ async function newSession(account: LocalAccount) {
 	);
 	return { account, token };
 }
-export async function registerAccount(
-	login: string,
-	displayName: string,
-	password: string,
-) {
+export async function registerAccount({
+	login,
+	displayName,
+	password,
+}: {
+	login: string;
+	displayName: string;
+	password: string;
+}) {
 	login = normalizeLogin(login);
 	if (password.length < 12 || password.length > 1024)
 		throw new Error("Use a password of 12–1024 characters");
@@ -199,7 +241,7 @@ export async function registerAccount(
 	if (
 		!displayName ||
 		displayName.length > 128 ||
-		/[\x00-\x1f]/.test(displayName)
+		[...displayName].some((letter) => letter.charCodeAt(0) <= 31)
 	)
 		throw new Error("Enter a display name");
 	const salt = randomBytes(32).toString("hex");
@@ -236,7 +278,13 @@ export async function canImportLegacy() {
 	).then(JSON.parse);
 	return owner.accountId === requireAccount().id;
 }
-export async function loginAccount(login: string, password: string) {
+export async function loginAccount({
+	login,
+	password,
+}: {
+	login: string;
+	password: string;
+}) {
 	login = normalizeLogin(login);
 	if (password.length > 1024) throw new Error("Invalid credentials");
 	const key = digest(login);
@@ -287,10 +335,13 @@ export async function verifyCurrentAccountPassword(password: string) {
 	)
 		throw new Error("Invalid password");
 }
-export async function changeAccountPassword(
-	currentPassword: string,
-	password: string,
-) {
+export async function changeAccountPassword({
+	currentPassword,
+	password,
+}: {
+	currentPassword: string;
+	password: string;
+}) {
 	if (password.length < 12 || password.length > 1024)
 		throw new Error("Use a password of 12–1024 characters");
 	await verifyCurrentAccountPassword(currentPassword);
@@ -322,11 +373,15 @@ export async function changeAccountPassword(
 	return newSession(account);
 }
 
-export async function installRecoveredAccount(
-	account: LocalAccount,
-	key: Buffer,
-	password: string,
-) {
+export async function installRecoveredAccount({
+	account,
+	key,
+	password,
+}: {
+	account: LocalAccount;
+	key: Buffer;
+	password: string;
+}) {
 	if (
 		!/^[a-f0-9-]{36}$/.test(account.id) ||
 		key.length !== 32 ||
@@ -426,7 +481,10 @@ export async function authenticateAccount(
 	)
 		throw new Error("Session expired. Sign in again");
 	if (!(await importLocked(session.accountId)))
-		await recoverInterruptedRestores(accountsRoot(), session.accountId);
+		await recoverInterruptedRestores({
+			root: accountsRoot(),
+			accountId: session.accountId,
+		});
 	return session.account;
 }
 export async function logoutAccount(request: Request) {
@@ -438,11 +496,13 @@ export async function logoutAccount(request: Request) {
 		});
 }
 export function sessionCookie(token: string) {
-	return `${COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${token ? SESSION_MS / 1000 : 0}`;
+	return `${COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${token ? SESSION_MS / 1000 : 0}${process.env.OPENCUT_PUBLIC_ORIGIN ? "; Secure" : ""}`;
 }
 export function withAccount<R extends Request, T extends unknown[]>(
 	handler: (request: R, ...args: T) => Promise<Response>,
 ) {
+	// Next route handlers receive Request and route context positionally.
+	// eslint-disable-next-line opencut/prefer-object-params
 	return async (request: R, ...args: T): Promise<Response> => {
 		let account: LocalAccount;
 		try {

@@ -63,6 +63,13 @@ import {
 } from "@/selection";
 import { buildElementFromMedia } from "@/timeline/element-utils";
 import { PodcastSyncDialog } from "@/podcast-sync/components/podcast-sync-dialog";
+import { HyperframesImportDialog } from "@/hyperframes/import-dialog";
+import { HyperframesExamplesLibrary } from "@/hyperframes/examples-library";
+import {
+	HyperframesLibraryCard,
+	useHyperframesLibrary,
+} from "@/hyperframes/library";
+import type { HyperframesLibraryItem } from "@/hyperframes/types";
 import { unnestSceneTracks } from "@/podcast-sync/scene";
 import { exportSceneToPremiereXml } from "@/export/premiere-xml";
 import {
@@ -99,10 +106,21 @@ import {
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { FileOutput, Layers2, SplitSquareHorizontal } from "lucide-react";
+import {
+	ChevronDown,
+	FileOutput,
+	Layers2,
+	SplitSquareHorizontal,
+	MoreHorizontal,
+	Search,
+	ArrowLeft,
+	X,
+	File,
+} from "lucide-react";
 
 type MediaListEntry =
 	| { type: "media"; item: MediaAsset }
+	| { type: "hyperframes"; item: HyperframesLibraryItem }
 	| { type: "sequence"; scene: TScene };
 
 /**
@@ -121,6 +139,11 @@ async function pickLocalMediaRecords({ projectId }: { projectId: string }) {
 }
 
 export function MediaView() {
+	const projectId = useEditorProject((e) => e.project.getActive().metadata.id);
+	return <MediaViewContent key={projectId} />;
+}
+
+function MediaViewContent() {
 	const editor = useEditor();
 	const mediaFiles = useEditorMedia((e) => e.media.getAssets());
 	const activeProject = useEditorProject((e) => e.project.getActive());
@@ -140,6 +163,57 @@ export function MediaView() {
 	} = useAssetsPanelStore();
 
 	const [isProcessing, setIsProcessing] = useState(false);
+	const library = useHyperframesLibrary();
+	const [search, setSearch] = useState("");
+	const [folderId, setFolderId] = useState<string | null>(null);
+	const [showAllFiles, setShowAllFiles] = useState(!!highlightMediaId);
+	const folder = library.items.find((item) => item.assetId === folderId);
+	const resourceIds = useMemo(
+		() => new Set(library.items.flatMap((item) => item.resourceAssetIds)),
+		[library.items],
+	);
+	const folderResourceIds = useMemo(
+		() => new Set(folder?.resourceAssetIds),
+		[folder],
+	);
+	const query = search.trim().toLocaleLowerCase();
+	const visibleCompositions = useMemo(
+		() =>
+			folder || showAllFiles
+				? []
+				: library.items
+						.filter((item) => item.name.toLocaleLowerCase().includes(query))
+						.sort((a, b) => {
+							const order = mediaSortOrder === "asc" ? 1 : -1;
+							return (
+								order *
+								(mediaSortBy === "duration"
+									? a.durationSeconds - b.durationSeconds
+									: a.name.localeCompare(b.name))
+							);
+						}),
+		[folder, showAllFiles, library.items, query, mediaSortBy, mediaSortOrder],
+	);
+	const showCompositionFiles = useCallback((assetId: string) => {
+		setFolderId(assetId);
+		setSearch("");
+	}, []);
+	useEffect(
+		() =>
+			useAssetsPanelStore.subscribe((state, previous) => {
+				if (
+					!state.highlightMediaId ||
+					state.highlightMediaId === previous.highlightMediaId
+				)
+					return;
+				setFolderId(null);
+				setSearch("");
+				setShowAllFiles(true);
+			}),
+		[],
+	);
+	const [hyperframesImportOpen, setHyperframesImportOpen] = useState(false);
+	const [hyperframesExamplesOpen, setHyperframesExamplesOpen] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [podcastSyncAssets, setPodcastSyncAssets] = useState<
 		MediaAsset[] | null
@@ -227,7 +301,7 @@ export function MediaView() {
 		}
 	};
 
-	const { isDragOver, dragProps, fileInputProps } = useFileUpload({
+	const { isDragOver, dragProps, fileInputProps, openFilePicker } = useFileUpload({
 		accept: "image/*,video/*,audio/*",
 		multiple: true,
 		onFilesSelected: (files) => processFiles({ files }),
@@ -261,7 +335,14 @@ export function MediaView() {
 	);
 
 	const filteredMediaItems = useMemo(() => {
-		const filtered = mediaFiles.filter((item) => !item.ephemeral);
+		const filtered = mediaFiles.filter(
+			(item) =>
+				!item.ephemeral &&
+				item.name.toLocaleLowerCase().includes(query) &&
+				(folder
+					? folderResourceIds.has(item.id)
+					: showAllFiles || !!query || !resourceIds.has(item.id)),
+		);
 
 		filtered.sort((a, b) => {
 			let valueA: string | number;
@@ -294,25 +375,51 @@ export function MediaView() {
 		});
 
 		return filtered;
-	}, [mediaFiles, mediaSortBy, mediaSortOrder]);
+	}, [
+		mediaFiles,
+		mediaSortBy,
+		mediaSortOrder,
+		query,
+		folder,
+		folderResourceIds,
+		showAllFiles,
+		resourceIds,
+	]);
 	const orderedMediaIds = useMemo(() => {
-		return filteredMediaItems.map((item) => item.id);
+		return filteredMediaItems
+			.filter((item) => item.type !== "file")
+			.map((item) => item.id);
 	}, [filteredMediaItems]);
 	const sequenceScenes = useMemo(
-		() => scenes.filter((scene) => !scene.isMain && !scene.parallax),
-		[scenes],
+		() =>
+			folder || showAllFiles
+				? []
+				: scenes.filter(
+						(scene) =>
+							!scene.isMain &&
+							!scene.parallax &&
+							scene.name.toLocaleLowerCase().includes(query),
+					),
+		[scenes, folder, showAllFiles, query],
 	);
 
 	const handleCreatePodcastSync = useCallback(
 		({ ids }: { ids: string[] }) => {
 			if (ids.length === 0) {
-				setPodcastSyncAssets(mediaFiles.filter((asset) => !asset.ephemeral));
+				setPodcastSyncAssets(
+					mediaFiles.filter(
+						(asset) => !asset.ephemeral && asset.type !== "file",
+					),
+				);
 				return;
 			}
 			const selectedIdSet = new Set(ids);
 			setPodcastSyncAssets(
 				mediaFiles.filter(
-					(asset) => !asset.ephemeral && selectedIdSet.has(asset.id),
+					(asset) =>
+						!asset.ephemeral &&
+						asset.type !== "file" &&
+						selectedIdSet.has(asset.id),
 				),
 			);
 		},
@@ -427,6 +534,13 @@ export function MediaView() {
 				}}
 				assets={podcastSyncAssets ?? []}
 			/>
+			{hyperframesImportOpen && (
+				<HyperframesImportDialog
+					key={`${activeProject.metadata.id}:${activeScene?.id}`}
+					onClose={() => setHyperframesImportOpen(false)}
+				/>
+			)}
+			{hyperframesExamplesOpen && <HyperframesExamplesLibrary key={activeProject.metadata.id} projectId={activeProject.metadata.id} onClose={() => setHyperframesExamplesOpen(false)} />}
 
 			<PanelView
 				title="Assets"
@@ -439,6 +553,8 @@ export function MediaView() {
 						sortOrder={mediaSortOrder}
 						onSort={handleSort}
 						onImport={() => void importFromDrive()}
+						onImportBrowser={openFilePicker}
+						onImportHyperframes={() => setHyperframesImportOpen(true)}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
 						onUnify={() => void handleUnify({ ids: selectedMediaIds })}
@@ -446,44 +562,142 @@ export function MediaView() {
 					/>
 				}
 				className={cn(isDragOver && "bg-accent/30")}
-				contentClassName="h-full min-h-0"
-				scrollClassName="overflow-hidden"
-				scrollRef={mediaListViewportRef}
+				contentClassName="flex h-full min-h-0 flex-col"
+				scrollClassName="min-h-0 overflow-hidden"
 				{...dragProps}
 			>
-				{isDragOver ||
-				(filteredMediaItems.length === 0 && sequenceScenes.length === 0) ? (
-					<MediaDragOverlay
-						isVisible={true}
-						isProcessing={isProcessing}
-						progress={progress}
-						onClick={() => void importFromDrive()}
-					/>
-				) : (
-					<SelectableSurface
-						ariaLabel="Assets"
-						orderedIds={orderedMediaIds}
-						revealId={highlightMediaId}
-						onRevealComplete={clearHighlight}
-						onSelectionChange={handleSelectionChange}
-					>
-						<MediaScopeRegistrar />
-						<MediaItemList
-							items={filteredMediaItems}
-							sequences={sequenceScenes}
-							mode={mediaViewMode}
-							viewportWidth={mediaListViewportWidth}
-							viewportHeight={mediaListViewportHeight}
-							revealId={highlightMediaId}
-							onRemove={handleRemove}
-							onCreatePodcastSync={handleCreatePodcastSync}
-							onUnify={handleUnify}
-							onOpenSequence={handleOpenSequence}
-							onUnnestSequence={handleUnnestSequence}
-							onPremiereExport={handlePremiereExport}
+				<div className="shrink-0 space-y-2 pb-2">
+					<Button variant="outline" size="sm" onClick={() => setHyperframesExamplesOpen(true)}>HyperFrames examples + prompts</Button>
+					<div className="flex h-8 items-center gap-2 rounded border px-2">
+						<Search className="size-3.5 shrink-0 text-muted-foreground" />
+						<input
+							aria-label="Search assets"
+							placeholder={folder ? "Search these files" : "Search assets"}
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+							className="w-full min-w-0 bg-transparent text-xs outline-none"
 						/>
-					</SelectableSurface>
-				)}
+						{search && (
+							<button
+								type="button"
+								aria-label="Clear asset search"
+								onClick={() => setSearch("")}
+							>
+								<X className="size-3.5" />
+							</button>
+						)}
+					</div>
+					{library.items.length > 0 && (
+						<div className="flex h-6 items-center gap-1 text-xs">
+							{folder ? (
+								<>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="size-6 shrink-0"
+										aria-label="Back to asset library"
+										onClick={() => {
+											setFolderId(null);
+											setSearch("");
+										}}
+									>
+										<ArrowLeft />
+									</Button>
+									<span className="truncate" title={folder.name}>
+										{folder.name}
+									</span>
+									<span className="ml-auto shrink-0 text-muted-foreground">
+										{filteredMediaItems.length} files
+									</span>
+								</>
+							) : (
+								<>
+									<button
+										type="button"
+										aria-pressed={!showAllFiles}
+										className={cn(
+											"rounded px-2 py-1",
+											!showAllFiles
+												? "bg-accent text-foreground"
+												: "text-muted-foreground",
+										)}
+										onClick={() => setShowAllFiles(false)}
+									>
+										Library
+									</button>
+									<button
+										type="button"
+										aria-pressed={showAllFiles}
+										className={cn(
+											"rounded px-2 py-1",
+											showAllFiles
+												? "bg-accent text-foreground"
+												: "text-muted-foreground",
+										)}
+										onClick={() => setShowAllFiles(true)}
+									>
+										All files
+									</button>
+								</>
+							)}
+						</div>
+					)}
+					{library.error && (
+						<p role="alert" className="text-xs text-destructive">
+							{library.error}
+						</p>
+					)}
+				</div>
+				<div ref={mediaListViewportRef} className="relative min-h-0 flex-1">
+					{isDragOver ||
+					(!query &&
+						!folder &&
+						filteredMediaItems.length === 0 &&
+						sequenceScenes.length === 0 &&
+						visibleCompositions.length === 0) ? (
+						<MediaDragOverlay
+							isVisible={true}
+							isProcessing={isProcessing}
+							progress={progress}
+							onClick={() => void importFromDrive()}
+						/>
+					) : filteredMediaItems.length === 0 &&
+					  sequenceScenes.length === 0 &&
+					  visibleCompositions.length === 0 ? (
+						<p className="px-2 py-8 text-center text-xs text-muted-foreground">
+							{query
+								? "No matching assets"
+								: "No resource files in this composition"}
+						</p>
+					) : (
+						<SelectableSurface
+							ariaLabel="Assets"
+							orderedIds={orderedMediaIds}
+							revealId={highlightMediaId}
+							onRevealComplete={clearHighlight}
+							onSelectionChange={handleSelectionChange}
+						>
+							<MediaScopeRegistrar />
+							<MediaItemList
+								key={`${folder?.assetId ?? (showAllFiles ? "all" : "library")}:${query}:${mediaViewMode}`}
+								items={filteredMediaItems}
+								compositions={visibleCompositions}
+								onShowCompositionFiles={showCompositionFiles}
+								sequences={sequenceScenes}
+								mode={mediaViewMode}
+								viewportWidth={mediaListViewportWidth}
+								viewportHeight={mediaListViewportHeight}
+								revealId={highlightMediaId}
+								onRemove={handleRemove}
+								onCreatePodcastSync={handleCreatePodcastSync}
+								onUnify={handleUnify}
+								onOpenSequence={handleOpenSequence}
+								onUnnestSequence={handleUnnestSequence}
+								onPremiereExport={handlePremiereExport}
+							/>
+						</SelectableSurface>
+					)}
+				</div>
 			</PanelView>
 		</>
 	);
@@ -506,6 +720,7 @@ function MediaAssetDraggable({
 	isRounded?: boolean;
 }) {
 	const editor = useEditor();
+	if (item.type === "file") return null;
 
 	const addElementAtTime = ({
 		asset,
@@ -606,6 +821,8 @@ function MediaItemWithContextMenu({
 
 function MediaItemList({
 	items,
+	compositions,
+	onShowCompositionFiles,
 	sequences,
 	mode,
 	viewportWidth,
@@ -619,6 +836,8 @@ function MediaItemList({
 	onPremiereExport,
 }: {
 	items: MediaAsset[];
+	compositions: HyperframesLibraryItem[];
+	onShowCompositionFiles: (assetId: string) => void;
 	sequences: TScene[];
 	mode: MediaViewMode;
 	viewportWidth: number;
@@ -639,7 +858,7 @@ function MediaItemList({
 }) {
 	const isGrid = mode === "grid";
 	const listRef = useRef<ListImperativeAPI | null>(null);
-	const listWidth = Math.max(1, viewportWidth - 16);
+	const listWidth = Math.max(1, viewportWidth);
 	const listHeight = Math.max(
 		1,
 		(viewportHeight || MEDIA_LIST_FALLBACK_HEIGHT_PX) - 8,
@@ -652,10 +871,11 @@ function MediaItemList({
 		: MEDIA_COMPACT_ROW_HEIGHT_PX;
 	const entries = useMemo<MediaListEntry[]>(
 		() => [
+			...compositions.map((item) => ({ type: "hyperframes" as const, item })),
 			...items.map((item) => ({ type: "media" as const, item })),
 			...sequences.map((scene) => ({ type: "sequence" as const, scene })),
 		],
-		[items, sequences],
+		[items, sequences, compositions],
 	);
 	const rowCount = getMediaVirtualRowCount({
 		entryCount: entries.length,
@@ -704,6 +924,7 @@ function MediaItemList({
 			rowProps={{
 				columnCount,
 				entries,
+				onShowCompositionFiles,
 				mode,
 				onCreatePodcastSync,
 				onUnify,
@@ -718,6 +939,7 @@ function MediaItemList({
 }
 
 type MediaListRowProps = {
+	onShowCompositionFiles: (assetId: string) => void;
 	columnCount: number;
 	entries: MediaListEntry[];
 	mode: MediaViewMode;
@@ -736,6 +958,7 @@ type MediaListRowProps = {
 };
 
 function MediaListRow({
+	onShowCompositionFiles,
 	index,
 	style,
 	columnCount,
@@ -763,8 +986,15 @@ function MediaListRow({
 		>
 			{rowEntries.map((entry) => (
 				<MediaListEntryItem
-					key={entry.type === "media" ? entry.item.id : entry.scene.id}
+					key={
+						entry.type === "sequence"
+							? entry.scene.id
+							: entry.type === "hyperframes"
+								? entry.item.assetId
+								: entry.item.id
+					}
 					entry={entry}
+					onShowCompositionFiles={onShowCompositionFiles}
 					variant={isGrid ? "grid" : "compact"}
 					onRemove={onRemove}
 					onCreatePodcastSync={onCreatePodcastSync}
@@ -779,6 +1009,7 @@ function MediaListRow({
 }
 
 const MediaListEntryItem = memo(function MediaListEntryItem({
+	onShowCompositionFiles,
 	entry,
 	variant,
 	onRemove,
@@ -789,6 +1020,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 	onPremiereExport,
 }: {
 	entry: MediaListEntry;
+	onShowCompositionFiles: (assetId: string) => void;
 	variant: "grid" | "compact";
 	onRemove: ({
 		event,
@@ -804,6 +1036,14 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 }) {
 	const isGrid = variant === "grid";
+	if (entry.type === "hyperframes")
+		return (
+			<HyperframesLibraryCard
+				item={entry.item}
+				variant={variant}
+				onShowFiles={onShowCompositionFiles}
+			/>
+		);
 
 	if (entry.type === "sequence") {
 		return (
@@ -816,6 +1056,28 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 			/>
 		);
 	}
+
+	if (entry.item.type === "file")
+		return (
+			<div
+				className={cn(
+					"text-muted-foreground",
+					isGrid ? "w-28" : "flex h-8 items-center gap-3 px-1",
+				)}
+				title={entry.item.name}
+			>
+				<div
+					className={cn(
+						"flex items-center justify-center rounded-sm bg-muted",
+						isGrid ? "h-16" : "size-6 shrink-0",
+					)}
+				>
+					<File className="size-5" />
+				</div>
+				<div className="truncate text-xs">{entry.item.name}</div>
+				{isGrid && <div className="text-[10px]">Resource file</div>}
+			</div>
+		);
 
 	return (
 		<MediaItemWithContextMenu
@@ -1042,6 +1304,8 @@ function MediaActions({
 	sortOrder,
 	onSort,
 	onImport,
+	onImportBrowser,
+	onImportHyperframes,
 	selectedCount,
 	onPodcastSync,
 	onUnify,
@@ -1054,19 +1318,26 @@ function MediaActions({
 	sortOrder: MediaSortOrder;
 	onSort: ({ key }: { key: MediaSortKey }) => void;
 	onImport: () => void;
+	onImportBrowser: () => void;
+	onImportHyperframes: () => void;
 	selectedCount: number;
 	onPodcastSync: () => void;
 	onUnify: () => void;
 	canUnify: boolean;
 }) {
 	return (
-		<div className="flex gap-1.5">
+		<div className="flex gap-1">
 			<TooltipProvider>
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
 							size="icon"
 							variant="ghost"
+							aria-label={
+								mediaViewMode === "grid"
+									? "Switch to list view"
+									: "Switch to grid view"
+							}
 							onClick={() =>
 								setMediaViewMode(mediaViewMode === "grid" ? "list" : "grid")
 							}
@@ -1095,6 +1366,7 @@ function MediaActions({
 								<Button
 									size="icon"
 									variant="ghost"
+									aria-label="Sort assets"
 									disabled={isProcessing}
 									className="items-center justify-center"
 								>
@@ -1141,42 +1413,65 @@ function MediaActions({
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			<Button
-				variant="outline"
-				onClick={onUnify}
-				disabled={isProcessing || !canUnify}
-				size="sm"
-				className="items-center justify-center gap-1.5"
-				title="Create one virtual clip from two selected camera angles"
-			>
-				<Layers2 className="size-4" />
-				Unify
-			</Button>
-			<Button
-				variant="outline"
-				onClick={onPodcastSync}
-				disabled={isProcessing}
-				size="sm"
-				className="items-center justify-center gap-1.5"
-				title={
-					selectedCount > 0
-						? `Build podcast multicam from ${selectedCount} selected files`
-						: "Build a podcast multicam sequence"
-				}
-			>
-				<SplitSquareHorizontal className="size-4" />
-				Podcast multicam
-			</Button>
-			<Button
-				variant="outline"
-				onClick={onImport}
-				disabled={isProcessing}
-				size="sm"
-				className="items-center justify-center gap-1.5"
-			>
-				<HugeiconsIcon icon={CloudUploadIcon} />
-				Import
-			</Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="More asset actions"
+						disabled={isProcessing}
+					>
+						<MoreHorizontal />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					<DropdownMenuItem onSelect={onUnify} disabled={!canUnify}>
+						<Layers2 className="size-4" />
+						Unify selected angles
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={onPodcastSync}>
+						<SplitSquareHorizontal className="size-4" />
+						Podcast multicam
+						{selectedCount > 0 ? ` (${selectedCount} selected)` : ""}
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			<div className="flex">
+				<Button
+					variant="outline"
+					onClick={onImport}
+					disabled={isProcessing}
+					size="sm"
+					className="gap-1.5 rounded-r-none"
+				>
+					<HugeiconsIcon icon={CloudUploadIcon} />
+					Import
+				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={isProcessing}
+							className="rounded-l-none border-l-0 px-1"
+							aria-label="Import options"
+						>
+							<ChevronDown />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onSelect={onImport}>
+							Media files…
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={onImportBrowser}>
+							Upload media files…
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={onImportHyperframes}>
+							HyperFrames project folder…
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 		</div>
 	);
 }

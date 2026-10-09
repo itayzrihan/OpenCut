@@ -1,4 +1,10 @@
-export function scopedBridgeSession(accountId: string, sessionId: unknown) {
+export function scopedBridgeSession({
+	accountId,
+	sessionId,
+}: {
+	accountId: string;
+	sessionId: unknown;
+}) {
 	if (
 		typeof sessionId !== "string" ||
 		!/^[a-zA-Z0-9_-]{1,128}$/.test(sessionId)
@@ -6,7 +12,13 @@ export function scopedBridgeSession(accountId: string, sessionId: unknown) {
 		throw new Error("Invalid browser session");
 	return `${accountId}_${sessionId}`;
 }
-export function accountBridgeCommand(accountId: string, value: unknown) {
+export function accountBridgeCommand({
+	accountId,
+	value,
+}: {
+	accountId: string;
+	value: unknown;
+}): Record<string, unknown> & { sessionId: string } {
 	if (
 		!value ||
 		typeof value !== "object" ||

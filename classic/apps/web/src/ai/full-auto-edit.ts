@@ -14,6 +14,7 @@ import { runAutomaticZoom } from "./automatic-zoom";
 import { runAutomaticTextTransitions } from "./automatic-text-transitions";
 import { runAutomaticWordAnimation } from "./automatic-word-animation";
 import { loadProjectFont, isProjectFontLoaded } from "@/fonts/custom-fonts";
+import { loadBundledAssistantBold } from "@/fonts/bundled-fonts";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
@@ -53,10 +54,10 @@ export async function runFullAutoEdit({
 	if (
 		resumeFromStage !== 0 &&
 		(!Number.isInteger(resumeFromStage) ||
-			resumeFromStage < 5 ||
+			resumeFromStage < 3 ||
 			resumeFromStage >= steps.length)
 	)
-		throw new Error("Invalid finishing checkpoint");
+		throw new Error("Invalid automatic editing checkpoint");
 	const assertContext = () => {
 		signal.throwIfAborted();
 		if (
@@ -65,6 +66,31 @@ export async function runFullAutoEdit({
 		)
 			throw new Error("Project or scene changed; Full Auto Edit stopped");
 	};
+	const loadCaptionFont = async () => {
+		const font =
+			editor.project
+				.getActive()
+				.customFonts?.find((f) => /^assistant[ _-]*bold$/i.test(f.family)) ??
+			editor.project
+				.getActive()
+				.customFonts?.find((f) =>
+					/^assistant[ _-]*extra[ _-]*bold$/i.test(f.family),
+				);
+		if (font) {
+			await loadProjectFont({ font });
+			if (!isProjectFontLoaded({ family: font.family }))
+				throw new Error("The custom Assistant font file is unavailable");
+			fontFamily = font.family;
+		} else {
+			onProgress("Loading included Assistant Bold caption font…");
+			fontFamily = await loadBundledAssistantBold();
+		}
+	};
+	// Resuming skips timeline preparation, but font availability is browser-local.
+	if (resumeFromStage > 0 && resumeFromStage <= 4) {
+		await loadCaptionFont();
+		assertContext();
+	}
 	const compileAndApply = async ({
 		stage,
 		framing = [],
@@ -120,37 +146,34 @@ export async function runFullAutoEdit({
 			switch (stage) {
 				case "preflight": {
 					progress(
-						"Checking imported video, custom font, AI and Hebrew model…",
+						"Checking imported video, caption font, AI and Hebrew model…",
 					);
 					const scene = editor.scenes.getActiveScene();
+					const revision = editor.command.getStateRevision();
 					if (
 						!scene.tracks.main.elements.length ||
-						scene.tracks.overlay.some((t) => t.elements.length > 0) ||
-						scene.tracks.audio.some((t) => t.elements.length > 0)
+						(!scene.takeAssembly &&
+							(scene.tracks.overlay.some((t) => t.elements.length > 0) ||
+								scene.tracks.audio.some((t) => t.elements.length > 0)))
 					)
 						throw new Error(
 							"Full Auto Edit starts with imported main-track video. This scene already contains edits; use a fresh project to avoid replacing them.",
 						);
-					const font =
-						editor.project
-							.getActive()
-							.customFonts?.find((f) =>
-								/^assistant[ _-]*bold$/i.test(f.family),
-							) ??
-						editor.project
-							.getActive()
-							.customFonts?.find((f) =>
-								/^assistant[ _-]*extra[ _-]*bold$/i.test(f.family),
-							);
-					if (!font)
-						throw new Error(
-							"Import Assistant Bold or Assistant ExtraBold into Custom Fonts first",
-						);
-					await loadProjectFont({ font });
-					if (!isProjectFontLoaded({ family: font.family }))
-						throw new Error("The custom Assistant font file is unavailable");
-					fontFamily = font.family;
+					await loadCaptionFont();
 					assertBrowserTranscriptionAvailable();
+					assertContext();
+					if (editor.command.getStateRevision() !== revision)
+						throw new Error(
+							"Timeline changed during preflight; no preparation was applied",
+						);
+					if (scene.takeAssembly) {
+						progress(
+							"Preparing selected Smart Takes · clearing old text · no video render…",
+						);
+						editor.command.prepareSmartTakesForAutoEdit();
+						// Persist the caption-free cut sequence before the asynchronous stages.
+						await editor.save.flush();
+					}
 					break;
 				}
 				case "framing": {
@@ -164,7 +187,7 @@ export async function runFullAutoEdit({
 					break;
 				}
 				case "silence": {
-					progress("Remove Silences · 0.3 seconds…");
+					progress("Smart audio cut · protect speech…");
 					const scene = editor.scenes.getActiveScene();
 					const previous = editor.selection.getSnapshot();
 					editor.selection.setSelectedElements({
@@ -175,10 +198,19 @@ export async function runFullAutoEdit({
 					});
 					try {
 						await editor.timeline.removeAllSilence({
-							mode: "audio",
+							mode: "smart",
 							minSilenceSeconds: 0.3,
 							signal,
 						});
+					} catch (error) {
+						assertContext();
+						if (!(error instanceof Error) || error.name !== "NoClearSilence")
+							throw error;
+						// An intentional safety hold is a completed analysis, not a failed edit.
+						notes.push(`Smart audio cut: ${error.message}`);
+						progress(
+							"Smart audio cut · no safe pauses found; keeping audio intact.",
+						);
 					} finally {
 						editor.selection.restoreSnapshot({ snapshot: previous });
 					}
@@ -186,6 +218,7 @@ export async function runFullAutoEdit({
 				}
 				case "auto-texts":
 					await runAutoTexts({
+						resumeTranscript: resumeFromStage === index,
 						editor,
 						signal,
 						onProgress: progress,
@@ -236,6 +269,9 @@ export async function runFullAutoEdit({
 					await editor.save.flush();
 					break;
 			}
+			// A stage is complete only once its canonical project and history are durable.
+			if (stage !== "save") await editor.save.flush();
+			await editor.command.flushHistory();
 			onStep?.({
 				completedStages: index + 1,
 				totalStages: steps.length,

@@ -1,29 +1,34 @@
 import { TracksSnapshotCommand } from "@/commands/timeline/tracks-snapshot";
 import type { EditorCore } from "@/core";
-import {
-	buildCaptionChunksFromWords,
-	buildSubtitleCuesFromWords,
-	splitCaptionCuesByLayer,
-	stripCaptionPunctuation,
-	type CaptionLayoutSettings,
-} from "@/subtitles/caption-layout";
-import { buildCaptionTextTracks } from "@/subtitles/insert";
-import type { SceneTracks, TextElement, TextTrack } from "@/timeline";
+import type { SceneTracks, TextTrack } from "@/timeline";
 import { buildEmptyTrack } from "@/timeline/placement";
-import type { SubtitleCue, SubtitleStyleOverrides } from "@/subtitles/types";
-import { normalizeTextFontWeight } from "@/text/primitives";
 import type { TranscriptionWord } from "@/transcription/types";
+import type { CaptionLayoutSettings } from "./caption-layout";
 import { generateUUID } from "@/utils/id";
-import { mediaTimeToSeconds } from "@/wasm";
-
-const TIMING_EPSILON_SECONDS = 0.002;
-const SOURCE_SPAN_OVERLAP_RATIO = 0.6;
+import { DEFAULTS } from "@/timeline/defaults";
+import { FONT_SIZE_SCALE_REFERENCE } from "@/text/typography";
+import { setCanvasLetterSpacing } from "@/text/layout";
+import {
+	planCaptionSourceSelection,
+	rebuildCaptionScene,
+	type CaptionTextMeasureQuery,
+} from "opencut-wasm";
 
 export interface CaptionElementRef {
 	trackId: string;
 	elementId: string;
 }
-
+interface CaptionSourceSelection {
+	firstIndex: number | null;
+	indices: number[];
+	matches: boolean;
+}
+function sourceSelection(input: unknown): CaptionSourceSelection {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust supplies source membership and validated overlay indices.
+	return JSON.parse(
+		planCaptionSourceSelection({ inputJson: JSON.stringify(input) }),
+	) as CaptionSourceSelection;
+}
 export function isTextLayerTranscriptionWord({
 	word,
 }: {
@@ -31,7 +36,6 @@ export function isTextLayerTranscriptionWord({
 }) {
 	return word.source?.type === "text-layer";
 }
-
 export function getGeneratedCaptionWords({
 	words,
 }: {
@@ -39,7 +43,6 @@ export function getGeneratedCaptionWords({
 }) {
 	return words.filter((word) => !isTextLayerTranscriptionWord({ word }));
 }
-
 export function hasSameCaptionSource({
 	track,
 	source,
@@ -47,39 +50,18 @@ export function hasSameCaptionSource({
 	track: TextTrack;
 	source: NonNullable<TextTrack["captionSource"]>;
 }) {
-	const candidate = track.captionSource;
-	if (!candidate) return false;
-	if (candidate.sourceId || source.sourceId) {
-		return candidate.sourceId === source.sourceId;
-	}
-
-	const candidateWords = getGeneratedCaptionWords({ words: candidate.words });
-	const sourceWords = getGeneratedCaptionWords({ words: source.words });
-	if (candidateWords.length !== sourceWords.length) return false;
-	if ((candidate.layerCount ?? 1) !== (source.layerCount ?? 1)) return false;
-
-	const candidateSpan = captionSourceTimeSpan({ words: candidateWords });
-	const sourceSpan = captionSourceTimeSpan({ words: sourceWords });
-	if (!candidateSpan || !sourceSpan) return true;
-	return (
-		getSpanOverlapRatio({ left: candidateSpan, right: sourceSpan }) >=
-		SOURCE_SPAN_OVERLAP_RATIO
-	);
+	return sourceSelection({ track, source }).matches;
 }
-
 export function findCaptionSourceTrack({
 	tracks,
 }: {
 	tracks: SceneTracks;
 }): TextTrack | null {
-	return (
-		tracks.overlay.find(
-			(track): track is TextTrack =>
-				track.type === "text" && !!track.captionSource,
-		) ?? null
-	);
+	const index = sourceSelection({ tracks }).firstIndex;
+	if (index === null) return null;
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- The Rust selector only returns text tracks carrying a caption source.
+	return tracks.overlay[index] as TextTrack;
 }
-
 export function findCaptionSourceTracks({
 	tracks,
 	source,
@@ -87,510 +69,34 @@ export function findCaptionSourceTracks({
 	tracks: SceneTracks;
 	source: NonNullable<TextTrack["captionSource"]>;
 }): TextTrack[] {
-	return tracks.overlay.filter(
-		(track): track is TextTrack =>
-			track.type === "text" && hasSameCaptionSource({ track, source }),
-	);
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust source-group indices refer only to matching text tracks.
+	return sourceSelection({ tracks, source }).indices.map(
+		(index) => tracks.overlay[index],
+	) as TextTrack[];
 }
-
-function textElementContent(element: TextElement) {
-	return typeof element.params.content === "string"
-		? element.params.content
-		: "";
+function pointerKey(key: string): string {
+	return key.replaceAll("~1", "/").replaceAll("~0", "~");
 }
-
-function isPristineGeneratedCaption({
-	element,
-	expected,
-	settings,
+function referenceAt({
+	root,
+	pointer,
 }: {
-	element: TextElement;
-	expected: { text: string; startTime: number; duration: number } | undefined;
-	settings: CaptionLayoutSettings;
-}) {
-	if (!expected) return false;
-	const content = textElementContent(element);
-	return (
-		(content === expected.text ||
-			(settings.hidePunctuation &&
-				content === stripCaptionPunctuation({ text: expected.text }))) &&
-		Math.abs(
-			mediaTimeToSeconds({ time: element.startTime }) - expected.startTime,
-		) <= TIMING_EPSILON_SECONDS &&
-		Math.abs(
-			mediaTimeToSeconds({ time: element.duration }) - expected.duration,
-		) <= TIMING_EPSILON_SECONDS &&
-		mediaTimeToSeconds({ time: element.trimStart }) === 0 &&
-		mediaTimeToSeconds({ time: element.trimEnd }) === 0
-	);
-}
-
-function buildEditedCaptionTracks({
-	sourceTracks,
-	ignoredElements = [],
-}: {
-	sourceTracks: TextTrack[];
-	ignoredElements?: CaptionElementRef[];
-}) {
-	const ignoredElementKeys = new Set(
-		ignoredElements.map(({ trackId, elementId }) => `${trackId}:${elementId}`),
-	);
-
-	return sourceTracks.flatMap((track) => {
-		const source = track.captionSource;
-		if (!source) return [];
-
-		const previousCaptions = buildSubtitleCuesFromWords({
-			words: getGeneratedCaptionWords({ words: source.words }),
-			settings: source.settings,
-		});
-		const previousLayers = splitCaptionCuesByLayer({
-			captions: previousCaptions,
-			layerCount: source.layerCount ?? 1,
-		});
-		const expectedLayer = previousLayers[source.layerIndex ?? 0] ?? [];
-		const editedElements = track.elements.filter(
-			(element, index) =>
-				!ignoredElementKeys.has(`${track.id}:${element.id}`) &&
-				!isPristineGeneratedCaption({
-					element,
-					expected: expectedLayer[index],
-					settings: source.settings,
-				}),
-		);
-
-		if (editedElements.length === 0) return [];
-
-		return [
-			{
-				...buildEmptyTrack({
-					id: generateUUID(),
-					type: "text",
-					name: `Edited ${track.name}`,
-				}),
-				hidden: track.hidden,
-				elements: editedElements,
-			},
-		];
-	});
-}
-
-function findReusableCaptionElement({
-	element,
-	candidates,
-	usedElementIds,
-}: {
-	element: TextElement;
-	candidates: TextElement[];
-	usedElementIds: Set<string>;
-}): TextElement | null {
-	const elementStart = mediaTimeToSeconds({ time: element.startTime });
-	const elementDuration = mediaTimeToSeconds({ time: element.duration });
-
-	return (
-		candidates.find((candidate) => {
-			if (usedElementIds.has(candidate.id)) return false;
-			return (
-				textElementContent(candidate) === textElementContent(element) &&
-				Math.abs(
-					mediaTimeToSeconds({ time: candidate.startTime }) - elementStart,
-				) <= TIMING_EPSILON_SECONDS &&
-				Math.abs(
-					mediaTimeToSeconds({ time: candidate.duration }) - elementDuration,
-				) <= TIMING_EPSILON_SECONDS
-			);
-		}) ?? null
-	);
-}
-
-function elementTimeSpan(element: TextElement) {
-	const start = mediaTimeToSeconds({ time: element.startTime });
-	return {
-		start,
-		end: start + mediaTimeToSeconds({ time: element.duration }),
-	};
-}
-
-function cueTimeSpan(cue: SubtitleCue) {
-	return {
-		start: cue.startTime,
-		end: cue.startTime + cue.duration,
-	};
-}
-
-function getOverlapSeconds({
-	left,
-	right,
-}: {
-	left: { start: number; end: number };
-	right: { start: number; end: number };
-}) {
-	return Math.max(
-		0,
-		Math.min(left.end, right.end) - Math.max(left.start, right.start),
-	);
-}
-
-function captionSourceTimeSpan({ words }: { words: TranscriptionWord[] }) {
-	if (words.length === 0) return null;
-	return words.reduce(
-		(span, word) => ({
-			start: Math.min(span.start, word.start),
-			end: Math.max(span.end, word.end),
-		}),
-		{
-			start: words[0].start,
-			end: words[0].end,
-		},
-	);
-}
-
-function getSpanOverlapRatio({
-	left,
-	right,
-}: {
-	left: { start: number; end: number };
-	right: { start: number; end: number };
-}) {
-	const leftDuration = Math.max(0, left.end - left.start);
-	const rightDuration = Math.max(0, right.end - right.start);
-	const shorterDuration = Math.min(leftDuration, rightDuration);
-	if (shorterDuration <= TIMING_EPSILON_SECONDS) {
-		return Math.abs(left.start - right.start) <= TIMING_EPSILON_SECONDS ? 1 : 0;
+	root: unknown;
+	pointer: string;
+}): unknown {
+	let value: unknown = root;
+	if (!pointer) return value;
+	for (const part of pointer.slice(1).split("/")) {
+		const key = pointerKey(part);
+		if (!value || typeof value !== "object" || !Object.hasOwn(value, key))
+			throw new Error("Invalid shared caption reference source");
+		value = Reflect.get(value, key);
 	}
-	return getOverlapSeconds({ left, right }) / shorterDuration;
+	return value;
 }
-
-function findPresentationSourceElement({
-	timeSpan,
-	candidates,
-}: {
-	timeSpan: { start: number; end: number };
-	candidates: TextElement[];
-}): TextElement | null {
-	let best: { element: TextElement; overlap: number; distance: number } | null =
-		null;
-	const midpoint = (timeSpan.start + timeSpan.end) / 2;
-
-	for (const candidate of candidates) {
-		const candidateTimeSpan = elementTimeSpan(candidate);
-		const candidateMidpoint =
-			(candidateTimeSpan.start + candidateTimeSpan.end) / 2;
-		const overlap = getOverlapSeconds({
-			left: timeSpan,
-			right: candidateTimeSpan,
-		});
-		const distance = Math.abs(candidateMidpoint - midpoint);
-		if (
-			!best ||
-			overlap > best.overlap ||
-			(overlap === best.overlap && distance < best.distance)
-		) {
-			best = { element: candidate, overlap, distance };
-		}
-	}
-
-	return best?.element ?? null;
-}
-
-function numberParam({
-	params,
-	key,
-}: {
-	params: TextElement["params"];
-	key: string;
-}): number | undefined {
-	const value = params[key];
-	return typeof value === "number" ? value : undefined;
-}
-
-function stringParam({
-	params,
-	key,
-}: {
-	params: TextElement["params"];
-	key: string;
-}): string | undefined {
-	const value = params[key];
-	return typeof value === "string" ? value : undefined;
-}
-
-function booleanParam({
-	params,
-	key,
-}: {
-	params: TextElement["params"];
-	key: string;
-}): boolean | undefined {
-	const value = params[key];
-	return typeof value === "boolean" ? value : undefined;
-}
-
-function textAlignParam({
-	params,
-}: {
-	params: TextElement["params"];
-}): SubtitleStyleOverrides["textAlign"] | undefined {
-	const value = stringParam({ params, key: "textAlign" });
-	return value === "left" || value === "center" || value === "right"
-		? value
-		: undefined;
-}
-
-function fontWeightParam({
-	params,
-}: {
-	params: TextElement["params"];
-}): SubtitleStyleOverrides["fontWeight"] | undefined {
-	const value = stringParam({ params, key: "fontWeight" });
-	return value === undefined
-		? undefined
-		: normalizeTextFontWeight({ value, fallback: "normal" });
-}
-
-function fontStyleParam({
-	params,
-}: {
-	params: TextElement["params"];
-}): SubtitleStyleOverrides["fontStyle"] | undefined {
-	const value = stringParam({ params, key: "fontStyle" });
-	return value === "italic" || value === "normal" ? value : undefined;
-}
-
-function textDecorationParam({
-	params,
-}: {
-	params: TextElement["params"];
-}): SubtitleStyleOverrides["textDecoration"] | undefined {
-	const value = stringParam({ params, key: "textDecoration" });
-	return value === "underline" || value === "line-through" || value === "none"
-		? value
-		: undefined;
-}
-
-function getElementStyleOverrides({
-	element,
-}: {
-	element: TextElement;
-}): SubtitleStyleOverrides {
-	const params = element.params;
-	return {
-		fontFamily: stringParam({ params, key: "fontFamily" }),
-		fontSize: numberParam({ params, key: "fontSize" }),
-		color: stringParam({ params, key: "color" }),
-		textAlign: textAlignParam({ params }),
-		fontWeight: fontWeightParam({ params }),
-		fontStyle: fontStyleParam({ params }),
-		textDecoration: textDecorationParam({ params }),
-		letterSpacing: numberParam({ params, key: "letterSpacing" }),
-		lineHeight: numberParam({ params, key: "lineHeight" }),
-		background: {
-			enabled: booleanParam({ params, key: "background.enabled" }) ?? false,
-			color: stringParam({ params, key: "background.color" }) ?? "#000000",
-			cornerRadius: numberParam({ params, key: "background.cornerRadius" }),
-			paddingX: numberParam({ params, key: "background.paddingX" }),
-			paddingY: numberParam({ params, key: "background.paddingY" }),
-			offsetX: numberParam({ params, key: "background.offsetX" }),
-			offsetY: numberParam({ params, key: "background.offsetY" }),
-		},
-	};
-}
-
-function applyPresentationStylesToCaptions({
-	captions,
-	sourceTracks,
-}: {
-	captions: SubtitleCue[];
-	sourceTracks: TextTrack[];
-}): SubtitleCue[] {
-	const sourceElements = sourceTracks.flatMap((track) => track.elements);
-	if (sourceElements.length === 0) return captions;
-
-	return captions.map((caption) => {
-		const sourceElement = findPresentationSourceElement({
-			timeSpan: cueTimeSpan(caption),
-			candidates: sourceElements,
-		});
-		if (!sourceElement) return caption;
-		return {
-			...caption,
-			style: {
-				...caption.style,
-				...getElementStyleOverrides({ element: sourceElement }),
-			},
-		};
-	});
-}
-
-function mergeWordRunPresentation({
-	generated,
-	source,
-}: {
-	generated: TextElement["wordRuns"];
-	source: TextElement["wordRuns"];
-}): TextElement["wordRuns"] {
-	if (!generated?.length || !source?.length) return generated;
-
-	const usedSourceIndexes = new Set<number>();
-	return generated.map((run, runIndex) => {
-		const sourceIndex = source.findIndex(
-			(sourceRun, candidateIndex) =>
-				!usedSourceIndexes.has(candidateIndex) && sourceRun.text === run.text,
-		);
-		const fallbackIndex =
-			sourceIndex >= 0
-				? sourceIndex
-				: runIndex < source.length && !usedSourceIndexes.has(runIndex)
-					? runIndex
-					: -1;
-		const sourceRun = fallbackIndex >= 0 ? source[fallbackIndex] : undefined;
-		if (!sourceRun) return run;
-		usedSourceIndexes.add(fallbackIndex);
-		return {
-			...run,
-			style: sourceRun.style,
-			revealMode: sourceRun.revealMode,
-			transitionIn: sourceRun.transitionIn,
-			wordAnimationId: sourceRun.wordAnimationId,
-			accentColor: sourceRun.accentColor,
-			wordDirection: sourceRun.wordDirection,
-		};
-	});
-}
-
-function mergeCaptionElementPresentation({
-	generated,
-	source,
-}: {
-	generated: TextElement;
-	source: TextElement;
-}): TextElement {
-	return {
-		...generated,
-		hidden: source.hidden ?? generated.hidden,
-		effects: source.effects ?? generated.effects,
-		animations: source.animations ?? generated.animations,
-		transitions: source.transitions ?? generated.transitions,
-		params: {
-			...generated.params,
-			...source.params,
-			content: generated.params.content,
-			"transform.positionX": generated.params["transform.positionX"],
-			"transform.positionY": generated.params["transform.positionY"],
-		},
-		textRowOverrides: source.textRowOverrides ?? generated.textRowOverrides,
-		wordRuns: mergeWordRunPresentation({
-			generated: generated.wordRuns,
-			source: source.wordRuns,
-		}),
-		captionRevealMode: source.captionRevealMode ?? generated.captionRevealMode,
-		captionTransitionIn:
-			source.captionTransitionIn ?? generated.captionTransitionIn,
-		captionWordAnimationId:
-			source.captionWordAnimationId ?? generated.captionWordAnimationId,
-		captionAccentColor:
-			source.captionAccentColor ?? generated.captionAccentColor,
-		captionWordDirection:
-			source.captionWordDirection ?? generated.captionWordDirection,
-	};
-}
-
-function applyStableCaptionIdentity({
-	regeneratedTracks,
-	sourceTracks,
-	preferredElementRefs = [],
-}: {
-	regeneratedTracks: TextTrack[];
-	sourceTracks: TextTrack[];
-	preferredElementRefs?: CaptionElementRef[];
-}): TextTrack[] {
-	const reusableElements = sourceTracks.flatMap((track) => track.elements);
-	const sourceTrackById = new Map(
-		sourceTracks.map((track) => [track.id, track]),
-	);
-	const sourceTrackIdByElementId = new Map(
-		sourceTracks.flatMap((track) =>
-			track.elements.map((element) => [element.id, track.id] as const),
-		),
-	);
-	const preferredElementIds = new Set(
-		preferredElementRefs.map(({ elementId }) => elementId),
-	);
-	const usedElementIds = new Set<string>();
-	const matchedElementIdsByTrackIndex = new Map<number, string[]>();
-
-	const tracksWithStableElements = regeneratedTracks.map(
-		(track, trackIndex) => ({
-			...track,
-			elements: track.elements.map((element) => {
-				const reusable = findReusableCaptionElement({
-					element,
-					candidates: reusableElements,
-					usedElementIds,
-				});
-				const presentationSource =
-					reusable ??
-					findPresentationSourceElement({
-						timeSpan: elementTimeSpan(element),
-						candidates: reusableElements,
-					});
-				const elementWithPresentation = presentationSource
-					? mergeCaptionElementPresentation({
-							generated: element,
-							source: presentationSource,
-						})
-					: element;
-				if (!reusable) return elementWithPresentation;
-				usedElementIds.add(reusable.id);
-				matchedElementIdsByTrackIndex.set(trackIndex, [
-					...(matchedElementIdsByTrackIndex.get(trackIndex) ?? []),
-					reusable.id,
-				]);
-				return {
-					...elementWithPresentation,
-					id: reusable.id,
-					name: reusable.name,
-				};
-			}),
-		}),
-	);
-
-	const usedTrackIds = new Set<string>();
-	const assignedTrackIds = new Map<number, string>();
-
-	for (const [trackIndex, elementIds] of matchedElementIdsByTrackIndex) {
-		const preferredTrackId = elementIds
-			.filter((elementId) => preferredElementIds.has(elementId))
-			.map((elementId) => sourceTrackIdByElementId.get(elementId))
-			.find(
-				(trackId): trackId is string => !!trackId && !usedTrackIds.has(trackId),
-			);
-		if (!preferredTrackId) continue;
-		assignedTrackIds.set(trackIndex, preferredTrackId);
-		usedTrackIds.add(preferredTrackId);
-	}
-
-	return tracksWithStableElements.map((track, trackIndex) => {
-		const fallbackTrackId = !usedTrackIds.has(
-			sourceTracks[trackIndex]?.id ?? "",
-		)
-			? sourceTracks[trackIndex]?.id
-			: sourceTracks.find((sourceTrack) => !usedTrackIds.has(sourceTrack.id))
-					?.id;
-		const assignedTrackId = assignedTrackIds.get(trackIndex) ?? fallbackTrackId;
-		if (assignedTrackId) {
-			usedTrackIds.add(assignedTrackId);
-		}
-		const previousTrack = assignedTrackId
-			? sourceTrackById.get(assignedTrackId)
-			: undefined;
-		return {
-			...track,
-			id: assignedTrackId ?? track.id,
-			name: previousTrack?.name ?? track.name,
-			hidden: previousTrack?.hidden ?? track.hidden,
-		};
-	});
+interface CaptionScenePlan {
+	tracks: SceneTracks | null;
+	references: { from: "input"; source: string; target: string }[];
 }
 
 function areCaptionWordsEqual({
@@ -612,15 +118,7 @@ function areCaptionWordsEqual({
 	});
 }
 
-export function rebuildCaptionTracksWithSource({
-	tracks,
-	words,
-	settings,
-	canvasSize,
-	layerCount,
-	ignoredEditedElements,
-	preserveEditedElements = true,
-}: {
+export function rebuildCaptionTracksWithSource(input: {
 	tracks: SceneTracks;
 	words: TranscriptionWord[];
 	settings: CaptionLayoutSettings;
@@ -629,49 +127,51 @@ export function rebuildCaptionTracksWithSource({
 	ignoredEditedElements?: CaptionElementRef[];
 	preserveEditedElements?: boolean;
 }): SceneTracks | null {
-	const firstSourceTrack = findCaptionSourceTrack({ tracks });
-	const source = firstSourceTrack?.captionSource;
-	if (!source) return null;
-
-	const sourceTracks = findCaptionSourceTracks({ tracks, source });
-	const sourceTrackIds = new Set(sourceTracks.map((track) => track.id));
-	const editedTracks = preserveEditedElements
-		? buildEditedCaptionTracks({
-				sourceTracks,
-				ignoredElements: ignoredEditedElements,
-			})
-		: [];
-	const captions = applyPresentationStylesToCaptions({
-		captions: buildCaptionChunksFromWords({
-			words: getGeneratedCaptionWords({ words }),
-			settings,
-		}),
-		sourceTracks,
-	});
-	const regeneratedTracks = buildCaptionTextTracks({
-		captions,
-		captionSource: {
-			...source,
-			words,
-			settings,
-		},
-		layerCount: layerCount ?? source.layerCount ?? 1,
-		canvasSize,
-	});
-	const stableRegeneratedTracks = applyStableCaptionIdentity({
-		regeneratedTracks,
-		sourceTracks,
-		preferredElementRefs: ignoredEditedElements,
-	});
-
-	return {
-		...tracks,
-		overlay: [
-			...stableRegeneratedTracks,
-			...editedTracks,
-			...tracks.overlay.filter((track) => !sourceTrackIds.has(track.id)),
-		],
+	if (sourceSelection({ tracks: input.tracks }).firstIndex === null)
+		return null;
+	const canvas = document.createElement("canvas");
+	canvas.width = 4096;
+	canvas.height = 4096;
+	const ctx = canvas.getContext("2d");
+	const measure = ctx
+		? ({ text, font, letterSpacing }: CaptionTextMeasureQuery) => {
+				ctx.font = font;
+				setCanvasLetterSpacing({ ctx, letterSpacingPx: letterSpacing });
+				return ctx.measureText(text).width;
+			}
+		: undefined;
+	const request = {
+		...input,
+		defaults: DEFAULTS.text,
+		fontSizeScaleReference: FONT_SIZE_SCALE_REFERENCE,
+		trackDefaults: buildEmptyTrack({ id: "", type: "text" }),
 	};
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust builds the complete scene and a reference plan; this adapter only restores selected host object identities.
+	const plan = JSON.parse(
+		rebuildCaptionScene({
+			inputJson: JSON.stringify(request, (_key, value) =>
+				typeof value === "number" && !Number.isFinite(value)
+					? { nonFinite: true }
+					: value,
+			),
+			freshId: generateUUID,
+			measure,
+		}),
+	) as CaptionScenePlan;
+	if (!plan.tracks) return null;
+	for (const binding of plan.references) {
+		const value = referenceAt({ root: input, pointer: binding.source });
+		const slash = binding.target.lastIndexOf("/");
+		const parent = referenceAt({
+			root: plan.tracks,
+			pointer: binding.target.slice(0, slash),
+		});
+		const key = pointerKey(binding.target.slice(slash + 1));
+		if (!parent || typeof parent !== "object" || !Object.hasOwn(parent, key))
+			throw new Error("Invalid shared caption reference target");
+		Reflect.set(parent, key, value);
+	}
+	return plan.tracks;
 }
 
 export function updateCaptionSourceWords({

@@ -44,6 +44,14 @@ function buildTracks(): SceneTracks {
 }
 
 describe("pruneEmptyElementTracks", () => {
+	test("retains explicitly created empty video and audio tracks across later edits", () => {
+		const tracks = buildTracks();
+		tracks.overlay[1].keepEmpty = true;
+		tracks.audio[0].keepEmpty = true;
+		const pruned = pruneEmptyElementTracks({ tracks });
+		expect(pruned.overlay.map((track) => track.id)).toEqual(["parallax-1", "empty-video"]);
+		expect(pruned.audio.map((track) => track.id)).toEqual(["empty-audio"]);
+	});
 	test("keeps an empty parallax marker while pruning empty element tracks", () => {
 		const pruned = pruneEmptyElementTracks({ tracks: buildTracks() });
 

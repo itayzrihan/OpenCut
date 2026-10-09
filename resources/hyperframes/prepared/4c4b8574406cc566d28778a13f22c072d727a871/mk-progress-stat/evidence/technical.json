@@ -1,0 +1,42 @@
+{
+  "id": "mk-progress-stat",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c26cbef412825a0ea67a3d1fe29ffcfa9c96bc3212fb6485067c2d5ffff856cf",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "mk-progress-stat.html",
+  "durationSeconds": 7,
+  "frames": [
+    {
+      "timeSeconds": 1.05,
+      "sha256": "e37d0749205257a807ec4c76b99ae8e5b5b364815d6c3a29600804e6c166c831",
+      "file": "frame-0.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 3.5,
+      "sha256": "f4e2b5eaca0922367b1264e988663611299df2fd81d0eece73a73a167b545823",
+      "file": "frame-1.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 5.95,
+      "sha256": "f4e2b5eaca0922367b1264e988663611299df2fd81d0eece73a73a167b545823",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 3.5,
+      "sha256": "f4e2b5eaca0922367b1264e988663611299df2fd81d0eece73a73a167b545823",
+      "file": "frame-3.png",
+      "transparentPixels": true
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

@@ -1537,7 +1537,6 @@ export function Captions() {
 							void handleSavePresetWithName();
 						}
 					}}
-					autoFocus
 				/>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => setPresetNameDialogOpen(false)}>

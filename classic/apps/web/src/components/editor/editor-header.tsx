@@ -37,6 +37,7 @@ import {
 } from "@/project/archive/project-archive";
 
 export function EditorHeader() {
+	const projectId = useEditorProject((e) => e.project.getActive().metadata.id);
 	return (
 		<header className="bg-background flex h-[3.4rem] items-center justify-between px-3 pt-0.5">
 			<div className="flex items-center gap-1">
@@ -44,6 +45,12 @@ export function EditorHeader() {
 				<EditableProjectName />
 			</div>
 			<nav className="flex items-center gap-2">
+				<Link
+					href={`/editor/${encodeURIComponent(projectId)}?view=examples`}
+					className="text-sm"
+				>
+					HyperFrames examples
+				</Link>
 				<FeedbackPopover />
 				<ExportButton />
 				<ThemeToggle />

@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { SceneTracks } from "@/timeline";
 import type { MediaTime } from "@/wasm";
@@ -83,6 +84,7 @@ function validateTimelineSourceV2MutationScopeForTest({
 }
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -165,16 +167,15 @@ mock.module("opencut-wasm", () => ({
 		startTime: number;
 		endTime: number;
 		maxFrames?: number;
-	}) => ({
-		valid: true,
-		times: Array.from(
-			{ length: Math.max(2, Math.min(4, Math.floor(maxFrames))) },
-			(_, index, values) =>
-				Math.round(
-					startTime + ((endTime - startTime) * (index + 0.5)) / values.length,
-				),
-		),
-	}),
+	}) => {
+		const count = Math.max(2, Math.min(4, Math.floor(maxFrames)));
+		return {
+			valid: true,
+			times: Array.from({ length: count }, (_, index) =>
+				Math.round(startTime + ((endTime - startTime) * (index + 0.5)) / count),
+			),
+		};
+	},
 	canonicalizeTimelineSourceDocument: canonicalizeTimelineSourceDocumentForTest,
 	validateTimelineSourceV2MutationScope:
 		validateTimelineSourceV2MutationScopeForTest,

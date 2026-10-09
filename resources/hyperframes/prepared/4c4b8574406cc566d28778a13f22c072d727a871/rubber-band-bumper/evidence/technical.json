@@ -1,0 +1,42 @@
+{
+  "id": "rubber-band-bumper",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "7eb4568ca29664d611055478125593f9790346ade64c924c020c9c3bd1cceceb",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 2.5,
+  "frames": [
+    {
+      "timeSeconds": 0.375,
+      "sha256": "b81c00eda6b75ccaa08e65aae3f1ebe3f9583c59d6dc972fe162361fb9911b89",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.25,
+      "sha256": "7ca2df8ba844f0698242a4905a7de2cb6ab833246ad97c16a5bd399515e6cdb9",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.125,
+      "sha256": "5946cc44a11a5f3dd6c7fc46565f45b8285318e749006f967704b4e714371028",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.25,
+      "sha256": "7ca2df8ba844f0698242a4905a7de2cb6ab833246ad97c16a5bd399515e6cdb9",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

@@ -9,6 +9,7 @@ import {
 } from "../box-like";
 
 export const ellipseMaskDefinition: MaskDefinition<"ellipse"> = {
+	defaultSizing: "square",
 	type: "ellipse",
 	name: "Ellipse",
 	features: {

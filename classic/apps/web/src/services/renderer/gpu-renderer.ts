@@ -16,6 +16,7 @@ export function initializeGpuRenderer(): Promise<void> {
 			})
 			.catch((error: unknown) => {
 				gpuAvailable = false;
+				initPromise = null;
 				const message = error instanceof Error ? error.message : String(error);
 				console.warn(`GPU renderer unavailable: ${message}`);
 			});

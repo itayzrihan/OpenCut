@@ -1,0 +1,6 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"title","type":"string","label":"Title","default":"Original title","maxLength":100},{"id":"accent","type":"color","label":"Accent","default":"#ff0000"},{"id":"size","type":"number","label":"Size","default":60,"min":20,"max":100},{"id":"show","type":"boolean","label":"Show tile","default":true},{"id":"mode","type":"enum","label":"Layout","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]}]'>
+<head><style>html,body{margin:0;width:320px;height:180px;background:transparent}#paint{height:60px;background:var(--accent);animation:fade 4s linear both}@keyframes fade{from{opacity:.25}to{opacity:.75}}#title{position:absolute;top:90px;color:white;font:20px sans-serif}</style></head>
+<body><div data-composition-id="main" data-no-timeline data-width="320" data-height="180" data-duration="4"><div id="paint" data-start="0" data-duration="4"></div><div id="title" data-start="0" data-duration="4" data-var-text="title">Original title</div></div>
+<script>const v=window.__hyperframes.getVariables(); const tile=document.getElementById('paint'); tile.style.width=v.size+'px';tile.style.marginLeft=v.mode==='right'?'160px':'0px';tile.style.display=v.show?'block':'none';document.getElementById('title').textContent=v.title;</script>
+</body></html>

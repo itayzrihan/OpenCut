@@ -1,16 +1,138 @@
 import { accountScope } from "@/accounts/server";
-const test = (name: string, body: () => Promise<void>) => runTest(name, () => accountScope.run({ id: "test-account", login: "test", displayName: "Test" }, body));
+import "../../../../test-support/session-policy";
+// eslint-disable-next-line opencut/prefer-object-params -- Preserve Bun's test signature while adding account scope.
+const test = (name: string, body: () => Promise<void>) =>
+	runTest(name, () =>
+		accountScope.run(
+			{ id: "test-account", login: "test", displayName: "Test" },
+			body,
+		),
+	);
 import { describe, expect, mock, test as runTest } from "bun:test";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
+	batchEditIsLocked: () => false,
+	batchEditTransition: () => "",
+	fullAutoEditStages: () => [],
 }));
 
 describe("local-drive shared collections", () => {
+	test("discarding a staged import removes only its copied bytes and cannot erase finalized media", async () => {
+		const {
+			storeUploadedMedia,
+			finishMediaUpload,
+			getMediaFile,
+			listMedia,
+			deleteMedia,
+		} = await import("../server");
+		const directory = await mkdtemp(
+			join(tmpdir(), "opencut-upload-ownership-"),
+		);
+		const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
+		const upload = ({
+			mediaId,
+			uploadToken,
+		}: {
+			mediaId: string;
+			uploadToken?: string;
+		}) =>
+			storeUploadedMedia({
+				projectId: "project",
+				mediaId,
+				fileName: "image.png",
+				mimeType: "image/png",
+				lastModified: 1,
+				size: 3,
+				body: new Blob(["png"]).stream(),
+				allowLargeCopy: false,
+				uploadToken,
+			});
+		try {
+			await upload({ mediaId: "existing" });
+			await upload({ mediaId: "staged", uploadToken: "attempt-one" });
+			await upload({ mediaId: "other", uploadToken: "attempt-two" });
+			const stagedPath = (await getMediaFile("project", "staged"))!.path;
+			expect(
+				(await listMedia("project")).some((record) => "uploadToken" in record),
+			).toBe(false);
+			await expect(
+				upload({ mediaId: "existing", uploadToken: "attempt-one" }),
+			).rejects.toThrow("cannot replace");
+			await finishMediaUpload("project", "wrong-token", true);
+			expect(await stat(stagedPath)).toBeDefined();
+			await finishMediaUpload("project", "attempt-one", true);
+			await expect(stat(stagedPath)).rejects.toThrow();
+			expect(await getMediaFile("project", "staged")).toBeNull();
+			expect(
+				(await listMedia("project")).map((record) => record.id).sort(),
+			).toEqual(["existing", "other"]);
+			await finishMediaUpload("project", "attempt-two", false);
+			await finishMediaUpload("project", "attempt-two", true);
+			const retained = (await getMediaFile("project", "other"))!.path;
+			expect(await readFile(retained, "utf8")).toBe("png");
+			await deleteMedia("project", "other");
+			await expect(
+				upload({ mediaId: "other", uploadToken: "new-attempt" }),
+			).rejects.toThrow("retained media bytes");
+			expect(await readFile(retained, "utf8")).toBe("png");
+			await finishMediaUpload("project", "attempt-one", true); // retry is idempotent
+			expect((await listMedia("project")).map((record) => record.id)).toEqual([
+				"existing",
+			]);
+		} finally {
+			if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+			else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+			await rm(directory, { recursive: true, force: true });
+		}
+	});
+	test("round-trips composition fonts and binary data through the project asset store", async () => {
+		const { storeUploadedMedia, getMediaFile, listMedia } =
+			await import("../server");
+		const directory = await mkdtemp(join(tmpdir(), "opencut-package-assets-"));
+		const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = directory;
+		try {
+			const bytes = new Uint8Array([0, 255, 32, 67, 0, 99]);
+			for (const [id, fileName, mimeType] of [
+				["font", "hebrew.woff2", "application/octet-stream"],
+				["data", "module.wasm", "application/wasm"],
+			]) {
+				await storeUploadedMedia({
+					projectId: "composition-project",
+					mediaId: id,
+					fileName,
+					mimeType,
+					lastModified: 100,
+					size: bytes.byteLength,
+					body: new Blob([bytes]).stream(),
+					allowLargeCopy: false,
+				});
+				const file = await getMediaFile("composition-project", id);
+				expect(file?.record.type).toBe("file");
+				expect(new Uint8Array(await readFile(file!.path))).toEqual(bytes);
+			}
+			const records = await listMedia("composition-project");
+			expect(records.find((asset) => asset.id === "font")).toMatchObject({
+				type: "file",
+				mimeType: "font/woff2",
+				size: 6,
+			});
+			expect(records.find((asset) => asset.id === "data")).toMatchObject({
+				type: "file",
+				mimeType: "application/wasm",
+			});
+		} finally {
+			if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+			else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+			await rm(directory, { recursive: true, force: true });
+		}
+	});
 	test("indexes project metadata and only loads outdated migration candidates", async () => {
 		const {
 			getProjectThumbnail,
@@ -61,7 +183,14 @@ describe("local-drive shared collections", () => {
 			expect(metadata.every((project) => !("scenes" in project))).toBe(true);
 			const storedProject = JSON.parse(
 				await readFile(
-					join(directory, "data", "test-account", "projects", "current", "project.json"),
+					join(
+						directory,
+						"data",
+						"test-account",
+						"projects",
+						"current",
+						"project.json",
+					),
 					"utf8",
 				),
 			) as { metadata: { thumbnail?: string } };

@@ -3,9 +3,6 @@ import { useEditor } from "@/editor/use-editor";
 import { processMediaAssets } from "@/media/processing";
 import { showMediaUploadToast } from "@/media/upload-toast";
 import { buildElementFromMedia } from "@/timeline/element-utils";
-import { AddMediaAssetCommand } from "@/commands/media";
-import { InsertElementCommand } from "@/commands/timeline";
-import { BatchCommand } from "@/commands";
 import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
 import { mediaTimeFromSeconds } from "@/wasm";
 import { isTypableDOMElement } from "@/utils/browser";
@@ -40,9 +37,12 @@ export function usePasteMedia() {
 
 	useEffect(() => {
 		const handlePaste = async (event: ClipboardEvent) => {
-			const activeElement = document.activeElement as HTMLElement;
+			const activeElement = document.activeElement;
 
-			if (activeElement && isTypableDOMElement({ element: activeElement })) {
+			if (
+				activeElement instanceof HTMLElement &&
+				isTypableDOMElement({ element: activeElement })
+			) {
 				return;
 			}
 
@@ -68,35 +68,36 @@ export function usePasteMedia() {
 						const startTime = editor.playback.getCurrentTime();
 
 						for (const asset of processedAssets) {
-							const addMediaCmd = new AddMediaAssetCommand({
-								projectId: activeProject.metadata.id,
-								asset,
-							});
-							const assetId = addMediaCmd.getAssetId();
 							const duration =
 								asset.duration != null
 									? mediaTimeFromSeconds({ seconds: asset.duration })
 									: DEFAULT_NEW_ELEMENT_DURATION;
 							const trackType = asset.type === "audio" ? "audio" : "video";
 
-							const element = buildElementFromMedia({
-								mediaId: assetId,
-								mediaType: asset.type,
-								name: asset.name,
-								duration,
-								startTime,
-								buffer:
-									asset.type === "audio"
-										? new AudioBuffer({ length: 1, sampleRate: 44100 })
-										: undefined,
-							});
+							const added = await editor.media.addMediaAsset({
+								projectId: activeProject.metadata.id,
+								asset,
+								afterRegister: (registered) => {
+									const element = buildElementFromMedia({
+										mediaId: registered.id,
+										mediaType: asset.type,
+										name: asset.name,
+										duration,
+										startTime,
+										buffer:
+											asset.type === "audio"
+												? new AudioBuffer({ length: 1, sampleRate: 44100 })
+												: undefined,
+									});
 
-							const insertCmd = new InsertElementCommand({
-								element,
-								placement: { mode: "auto", trackType },
+									editor.timeline.insertElement({
+										element,
+										placement: { mode: "auto", trackType },
+									});
+								},
 							});
-							const batchCmd = new BatchCommand([addMediaCmd, insertCmd]);
-							editor.command.execute({ command: batchCmd });
+							if (!added)
+								throw new Error("Could not save or insert pasted media");
 						}
 
 						return {

@@ -36,7 +36,13 @@ export async function exportAccountIdentity(password: string) {
 		encrypted: encrypted.toString("base64"),
 	};
 }
-export async function importAccountIdentity(value: unknown, password: string) {
+export async function importAccountIdentity({
+	value,
+	password,
+}: {
+	value: unknown;
+	password: string;
+}) {
 	if (
 		!value ||
 		typeof value !== "object" ||
@@ -47,7 +53,7 @@ export async function importAccountIdentity(value: unknown, password: string) {
 	const packageData = value as Record<string, unknown>;
 	if (packageData.format !== format)
 		throw new Error("Unsupported recovery format");
-	const bytes = (name: string, length?: number) => {
+	const bytes = ({ name, length }: { name: string; length?: number }) => {
 		const text = packageData[name];
 		if (
 			typeof text !== "string" ||
@@ -60,10 +66,10 @@ export async function importAccountIdentity(value: unknown, password: string) {
 			throw new Error("Invalid recovery data length");
 		return buffer;
 	};
-	const salt = bytes("salt", 32),
-		iv = bytes("iv", 12),
-		tag = bytes("tag", 16),
-		encrypted = bytes("encrypted");
+	const salt = bytes({ name: "salt", length: 32 }),
+		iv = bytes({ name: "iv", length: 12 }),
+		tag = bytes({ name: "tag", length: 16 }),
+		encrypted = bytes({ name: "encrypted" });
 	const key = (await derive(password, salt, 32)) as Buffer,
 		decipher = createDecipheriv("aes-256-gcm", key, iv);
 	decipher.setAAD(Buffer.from(format));
@@ -78,9 +84,9 @@ export async function importAccountIdentity(value: unknown, password: string) {
 	} catch {
 		throw new Error("Recovery password is incorrect or the file is damaged");
 	}
-	return installRecoveredAccount(
-		decoded.account,
-		Buffer.from(decoded.storageKey, "base64"),
-		password,
-	);
+	return installRecoveredAccount({
+		account: decoded.account,
+		key: Buffer.from(decoded.storageKey, "base64"),
+		password: password,
+	});
 }

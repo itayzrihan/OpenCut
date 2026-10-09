@@ -126,12 +126,12 @@ export async function runAutomaticZoom({
 			throw new Error(
 				"This timeline exceeds the AI request limit. Use a shorter scene.",
 			);
-		const response = await aiClientFetch("/api/ai/chat", {
+		const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body,
 			signal,
-		});
+		} });
 		const data = responseSchema.parse(await response.json());
 		if (!response.ok || !data.response)
 			throw new Error(data.error ?? "Automatic Zoom request failed");

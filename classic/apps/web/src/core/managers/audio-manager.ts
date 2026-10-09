@@ -1,4 +1,6 @@
 import type { EditorCore } from "@/core";
+import { toast } from "sonner";
+import type { TProject } from "@/project/types";
 import { mediaTimeFromSeconds, TICKS_PER_SECOND } from "@/wasm";
 import { clampRetimeRate } from "@/retime/rate";
 import type { AudioClipSource } from "@/media/audio";
@@ -136,6 +138,9 @@ export class AudioManager {
 	private audioClipsReady = false;
 	private audioClipsPromise: Promise<void> | null = null;
 	private audioCacheGeneration = 0;
+	private audioCollectionAbort = new AbortController();
+	private audioProjectId: string | undefined;
+	private audioCompositions: TProject["hyperframesCompositions"];
 	private sinks = new Map<string, AudioBufferSink>();
 	private inputs = new Map<string, Input>();
 	private activeClipIds = new Set<string>();
@@ -166,6 +171,7 @@ export class AudioManager {
 			this.editor.timeline.subscribe(this.handleTimelineChange),
 			this.editor.scenes.subscribe(this.handleTimelineChange),
 			this.editor.media.subscribe(this.handleTimelineChange),
+			this.editor.project.subscribe(this.handleProjectChange),
 			this.editor.playback.onSeek(this.handleSeek),
 		);
 
@@ -199,6 +205,7 @@ export class AudioManager {
 	}
 
 	dispose(): void {
+		this.audioCollectionAbort.abort();
 		this.stopPlayback();
 		for (const unsub of this.unsubscribers) {
 			unsub();
@@ -247,7 +254,21 @@ export class AudioManager {
 		this.stopPlayback();
 	};
 
+	private handleProjectChange = (): void => {
+		const project = this.editor.project.getActiveOrNull();
+		if (
+			project?.metadata.id === this.audioProjectId &&
+			project?.hyperframesCompositions === this.audioCompositions
+		)
+			return;
+		this.audioProjectId = project?.metadata.id;
+		this.audioCompositions = project?.hyperframesCompositions;
+		this.handleTimelineChange();
+	};
+
 	private handleTimelineChange = (): void => {
+		this.audioCollectionAbort.abort();
+		this.audioCollectionAbort = new AbortController();
 		this.disposeSinks();
 		this.preparedClipBuffers.clear();
 		this.decodedBuffers.clear();
@@ -423,6 +444,24 @@ export class AudioManager {
 		const clips = await collectAudioClips({
 			tracks,
 			mediaAssets,
+			additionalClips: this.editor.renderer
+				.readHyperframesAudioClips({
+					sceneId: nestedAudioScope?.scene.id ?? activeScene.id,
+					signal: this.audioCollectionAbort.signal,
+				})
+				.catch((error: unknown) => {
+					if (
+						generation === this.audioCacheGeneration &&
+						!this.audioCollectionAbort.signal.aborted
+					) {
+						this.editor.playback.pause();
+						toast.error("Could not prepare composition audio", {
+							description:
+								error instanceof Error ? error.message : "Try playback again.",
+						});
+					}
+					throw error;
+				}),
 			onClips: (nextClips) => {
 				if (generation !== this.audioCacheGeneration) return;
 				this.clips = nestedAudioScope

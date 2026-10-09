@@ -1,0 +1,34 @@
+{
+  "document": {
+    "metadata": { "id": "classic-project", "name": "Existing edit", "duration": 1200000, "createdAt": "2026-10-03T00:00:00.000Z", "updatedAt": "2026-10-03T00:00:00.000Z", "thumbnail": "existing-thumbnail" },
+    "settings": { "fps": { "numerator": 30000, "denominator": 1001 }, "canvasSize": { "width": 1920, "height": 1080 }, "background": { "type": "blur", "blurIntensity": 0.3 }, "canvasSizeMode": "custom" },
+    "version": 33,
+    "currentSceneId": "main-scene",
+    "customFonts": [{ "id": "font-1", "name": "My font" }],
+    "aiEditHistory": [{ "id": "edit-1", "title": "Existing agent edit" }],
+    "futureFeature": { "preserve": [1, "שלום", { "nested": true }] },
+    "scenes": [
+      {
+        "id": "main-scene", "name": "Main", "isMain": true,
+        "createdAt": "2026-10-03T00:00:00.000Z", "updatedAt": "2026-10-03T00:00:00.000Z",
+        "parallax": { "version": 1, "camera": { "depth": 0.7 } },
+        "bookmarks": [{ "time": 120000, "note": "Keep" }],
+        "tracks": {
+          "main": { "id": "video-track", "name": "Video", "type": "video", "hidden": false, "muted": false, "elements": [
+            { "id": "item-2", "name": "Original video", "type": "video", "mediaId": "video-asset", "startTime": 0, "duration": 1200000, "trimStart": 480000, "trimEnd": 240000, "params": { "transform.scaleX": 1.2, "audioSyncOffset": 0.1 }, "retime": { "rate": 1.25 }, "masks": [{ "id": "mask", "points": [[0,0],[1,1]] }], "effects": [{ "id": "effect", "type": "blur", "params": { "amount": 2 } }] }
+          ] },
+          "overlay": [{ "id": "titles", "name": "Captions", "type": "text", "hidden": false, "captionSource": { "words": [{ "text": "שלום", "start": 0, "end": 1 }], "settings": {} }, "elements": [
+            { "id": "text-1", "type": "text", "name": "שלום", "startTime": 0, "duration": 120000, "trimStart": 0, "trimEnd": 0, "params": { "fontFamily": "My font" }, "wordRuns": [{ "id": "word-1", "text": "שלום" }] }
+          ] }],
+          "audio": [], "order": ["titles", "video-track"], "futureTrackLayout": { "height": 87 }
+        }
+      },
+      {
+        "id": "other-scene", "name": "Other scene", "isMain": false, "bookmarks": [],
+        "createdAt": "2026-10-03T00:00:00.000Z", "updatedAt": "2026-10-03T00:00:00.000Z",
+        "tracks": { "main": { "id": "other-main", "name": "Video", "type": "video", "elements": [], "muted": false, "hidden": false }, "overlay": [], "audio": [], "order": ["other-main"] }
+      }
+    ]
+  },
+  "mediaAssets": [{ "id": "video-asset", "name": "Footage", "type": "video", "duration": 16, "storageKind": "linked", "sourcePath": "C:/selected/footage.mp4", "bindingRevision": 3 }]
+}

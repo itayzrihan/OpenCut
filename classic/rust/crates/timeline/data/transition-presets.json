@@ -1,0 +1,5268 @@
+[
+  {
+    "id": "none",
+    "label": "None",
+    "state": {},
+    "keywords": [
+      "clear"
+    ]
+  },
+  {
+    "id": "fade",
+    "label": "Fade",
+    "state": {
+      "opacity": 0
+    },
+    "keywords": [
+      "opacity"
+    ]
+  },
+  {
+    "id": "slide-left",
+    "label": "Slide Left",
+    "state": {
+      "transform.positionX": -120,
+      "opacity": 0
+    },
+    "keywords": [
+      "move"
+    ]
+  },
+  {
+    "id": "slide-right",
+    "label": "Slide Right",
+    "state": {
+      "transform.positionX": 120,
+      "opacity": 0
+    },
+    "keywords": [
+      "move"
+    ]
+  },
+  {
+    "id": "slide-up",
+    "label": "Slide Up",
+    "state": {
+      "transform.positionY": -120,
+      "opacity": 0
+    },
+    "keywords": [
+      "move"
+    ]
+  },
+  {
+    "id": "slide-down",
+    "label": "Slide Down",
+    "state": {
+      "transform.positionY": 120,
+      "opacity": 0
+    },
+    "keywords": [
+      "move"
+    ]
+  },
+  {
+    "id": "push-left",
+    "label": "Push Left",
+    "state": {
+      "transform.positionX": -240
+    },
+    "keywords": [
+      "push"
+    ]
+  },
+  {
+    "id": "push-right",
+    "label": "Push Right",
+    "state": {
+      "transform.positionX": 240
+    },
+    "keywords": [
+      "push"
+    ]
+  },
+  {
+    "id": "push-up",
+    "label": "Push Up",
+    "state": {
+      "transform.positionY": -240
+    },
+    "keywords": [
+      "push"
+    ]
+  },
+  {
+    "id": "push-down",
+    "label": "Push Down",
+    "state": {
+      "transform.positionY": 240
+    },
+    "keywords": [
+      "push"
+    ]
+  },
+  {
+    "id": "zoom-in",
+    "label": "Zoom In",
+    "state": {
+      "transform.scaleX": 0.25,
+      "transform.scaleY": 0.25,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "zoom-out",
+    "label": "Zoom Out",
+    "state": {
+      "transform.scaleX": 1.8,
+      "transform.scaleY": 1.8,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "pop",
+    "label": "Pop",
+    "state": {
+      "transform.scaleX": 0,
+      "transform.scaleY": 0,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "shrink",
+    "label": "Shrink",
+    "state": {
+      "transform.scaleX": 0.7,
+      "transform.scaleY": 0.7,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "grow",
+    "label": "Grow",
+    "state": {
+      "transform.scaleX": 1.35,
+      "transform.scaleY": 1.35,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "flip-x",
+    "label": "Flip X",
+    "state": {
+      "transform.scaleX": -1,
+      "opacity": 0
+    },
+    "keywords": [
+      "flip"
+    ]
+  },
+  {
+    "id": "flip-y",
+    "label": "Flip Y",
+    "state": {
+      "transform.scaleY": -1,
+      "opacity": 0
+    },
+    "keywords": [
+      "flip"
+    ]
+  },
+  {
+    "id": "spin-left",
+    "label": "Spin Left",
+    "state": {
+      "transform.rotate": -180,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "spin-right",
+    "label": "Spin Right",
+    "state": {
+      "transform.rotate": 180,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "tilt-left",
+    "label": "Tilt Left",
+    "state": {
+      "transform.rotate": -25,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "tilt-right",
+    "label": "Tilt Right",
+    "state": {
+      "transform.rotate": 25,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "rise-soft",
+    "label": "Rise Soft",
+    "state": {
+      "transform.positionY": 45,
+      "opacity": 0
+    },
+    "keywords": [
+      "soft"
+    ]
+  },
+  {
+    "id": "drop-soft",
+    "label": "Drop Soft",
+    "state": {
+      "transform.positionY": -45,
+      "opacity": 0
+    },
+    "keywords": [
+      "soft"
+    ]
+  },
+  {
+    "id": "drift-left",
+    "label": "Drift Left",
+    "state": {
+      "transform.positionX": 45,
+      "opacity": 0
+    },
+    "keywords": [
+      "soft"
+    ]
+  },
+  {
+    "id": "drift-right",
+    "label": "Drift Right",
+    "state": {
+      "transform.positionX": -45,
+      "opacity": 0
+    },
+    "keywords": [
+      "soft"
+    ]
+  },
+  {
+    "id": "corner-tl",
+    "label": "Corner Top Left",
+    "state": {
+      "transform.positionX": -160,
+      "transform.positionY": -90,
+      "opacity": 0
+    },
+    "keywords": [
+      "corner"
+    ]
+  },
+  {
+    "id": "corner-tr",
+    "label": "Corner Top Right",
+    "state": {
+      "transform.positionX": 160,
+      "transform.positionY": -90,
+      "opacity": 0
+    },
+    "keywords": [
+      "corner"
+    ]
+  },
+  {
+    "id": "corner-bl",
+    "label": "Corner Bottom Left",
+    "state": {
+      "transform.positionX": -160,
+      "transform.positionY": 90,
+      "opacity": 0
+    },
+    "keywords": [
+      "corner"
+    ]
+  },
+  {
+    "id": "corner-br",
+    "label": "Corner Bottom Right",
+    "state": {
+      "transform.positionX": 160,
+      "transform.positionY": 90,
+      "opacity": 0
+    },
+    "keywords": [
+      "corner"
+    ]
+  },
+  {
+    "id": "squash",
+    "label": "Squash",
+    "state": {
+      "transform.scaleX": 1.6,
+      "transform.scaleY": 0.25,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "stretch",
+    "label": "Stretch",
+    "state": {
+      "transform.scaleX": 0.35,
+      "transform.scaleY": 1.6,
+      "opacity": 0
+    },
+    "keywords": [
+      "scale"
+    ]
+  },
+  {
+    "id": "wipe-left",
+    "label": "Wipe Left",
+    "state": {
+      "transform.scaleX": 0.05,
+      "transform.positionX": -80,
+      "opacity": 0
+    },
+    "keywords": [
+      "wipe"
+    ]
+  },
+  {
+    "id": "wipe-right",
+    "label": "Wipe Right",
+    "state": {
+      "transform.scaleX": 0.05,
+      "transform.positionX": 80,
+      "opacity": 0
+    },
+    "keywords": [
+      "wipe"
+    ]
+  },
+  {
+    "id": "wipe-up",
+    "label": "Wipe Up",
+    "state": {
+      "transform.scaleY": 0.05,
+      "transform.positionY": -60,
+      "opacity": 0
+    },
+    "keywords": [
+      "wipe"
+    ]
+  },
+  {
+    "id": "wipe-down",
+    "label": "Wipe Down",
+    "state": {
+      "transform.scaleY": 0.05,
+      "transform.positionY": 60,
+      "opacity": 0
+    },
+    "keywords": [
+      "wipe"
+    ]
+  },
+  {
+    "id": "float-spin",
+    "label": "Float Spin",
+    "state": {
+      "transform.positionY": 80,
+      "transform.rotate": -90,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "snap-spin",
+    "label": "Snap Spin",
+    "state": {
+      "transform.scaleX": 0.4,
+      "transform.scaleY": 0.4,
+      "transform.rotate": 90,
+      "opacity": 0
+    },
+    "keywords": [
+      "rotate"
+    ]
+  },
+  {
+    "id": "glitch",
+    "label": "Glitch",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 0.16,
+          "value": 0.15
+        },
+        {
+          "at": 0.24,
+          "value": 1
+        },
+        {
+          "at": 0.36,
+          "value": 0.45
+        },
+        {
+          "at": 0.48,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -70
+        },
+        {
+          "at": 0.12,
+          "value": 55
+        },
+        {
+          "at": 0.2,
+          "value": -35
+        },
+        {
+          "at": 0.34,
+          "value": 22
+        },
+        {
+          "at": 0.52,
+          "value": -8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 14
+        },
+        {
+          "at": 0.18,
+          "value": -10
+        },
+        {
+          "at": 0.34,
+          "value": 8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "glitch",
+      "strobe"
+    ]
+  },
+  {
+    "id": "flicker",
+    "label": "Flicker",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.05,
+          "value": 1
+        },
+        {
+          "at": 0.11,
+          "value": 0.06
+        },
+        {
+          "at": 0.2,
+          "value": 1
+        },
+        {
+          "at": 0.27,
+          "value": 0.12
+        },
+        {
+          "at": 0.38,
+          "value": 1
+        },
+        {
+          "at": 0.45,
+          "value": 0.04
+        },
+        {
+          "at": 0.58,
+          "value": 1
+        },
+        {
+          "at": 0.66,
+          "value": 0.18
+        },
+        {
+          "at": 0.78,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "flicker",
+      "flash",
+      "strobe",
+      "neon",
+      "light"
+    ]
+  },
+  {
+    "id": "shatter",
+    "label": "Shatter · ניפוץ",
+    "state": {},
+    "recipe": {
+      "transition.shatter": [
+        {
+          "at": 0,
+          "value": 1
+        },
+        {
+          "at": 0.18,
+          "value": 0.72
+        },
+        {
+          "at": 0.5,
+          "value": 0.2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.22,
+          "value": 0.72
+        },
+        {
+          "at": 0.55,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "explode",
+      "broken glass",
+      "fragments",
+      "text"
+    ]
+  },
+  {
+    "id": "elastic-drop",
+    "label": "Elastic Drop",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.18,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -220
+        },
+        {
+          "at": 0.38,
+          "value": 28
+        },
+        {
+          "at": 0.58,
+          "value": -16
+        },
+        {
+          "at": 0.78,
+          "value": 7
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.35
+        },
+        {
+          "at": 0.38,
+          "value": 0.82
+        },
+        {
+          "at": 0.58,
+          "value": 1.08
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "bounce"
+    ]
+  },
+  {
+    "id": "rubber-band",
+    "label": "Rubber Band",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.1,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.2
+        },
+        {
+          "at": 0.28,
+          "value": 1.35
+        },
+        {
+          "at": 0.45,
+          "value": 0.75
+        },
+        {
+          "at": 0.65,
+          "value": 1.12
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.8
+        },
+        {
+          "at": 0.28,
+          "value": 0.72
+        },
+        {
+          "at": 0.45,
+          "value": 1.25
+        },
+        {
+          "at": 0.65,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "bounce"
+    ]
+  },
+  {
+    "id": "portal",
+    "label": "Portal",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.26,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.05
+        },
+        {
+          "at": 0.42,
+          "value": 1.22
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.9
+        },
+        {
+          "at": 0.42,
+          "value": 0.82
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 360
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "spin",
+      "scale"
+    ]
+  },
+  {
+    "id": "cinematic-glide-left",
+    "label": "Cinematic Glide Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -220
+        },
+        {
+          "at": 0.58,
+          "value": 7.700000000000001
+        },
+        {
+          "at": 0.82,
+          "value": -2.6950000000000003
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "cinematic-glide-right",
+    "label": "Cinematic Glide Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 220
+        },
+        {
+          "at": 0.58,
+          "value": -7.700000000000001
+        },
+        {
+          "at": 0.82,
+          "value": 2.6950000000000003
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "cinematic-glide-up",
+    "label": "Cinematic Glide Up",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -140
+        },
+        {
+          "at": 0.58,
+          "value": 4.9
+        },
+        {
+          "at": 0.82,
+          "value": -1.715
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "cinematic-glide-down",
+    "label": "Cinematic Glide Down",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 140
+        },
+        {
+          "at": 0.58,
+          "value": -4.9
+        },
+        {
+          "at": 0.82,
+          "value": 1.715
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "silk-drift-left",
+    "label": "Silk Drift Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -95
+        },
+        {
+          "at": 0.58,
+          "value": 3.325
+        },
+        {
+          "at": 0.82,
+          "value": -1.16375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "soft"
+    ]
+  },
+  {
+    "id": "silk-drift-right",
+    "label": "Silk Drift Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 95
+        },
+        {
+          "at": 0.58,
+          "value": -3.325
+        },
+        {
+          "at": 0.82,
+          "value": 1.16375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "soft"
+    ]
+  },
+  {
+    "id": "silk-rise",
+    "label": "Silk Rise",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 72
+        },
+        {
+          "at": 0.58,
+          "value": -2.5200000000000005
+        },
+        {
+          "at": 0.82,
+          "value": 0.8820000000000001
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "soft"
+    ]
+  },
+  {
+    "id": "velvet-drop",
+    "label": "Velvet Drop",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -72
+        },
+        {
+          "at": 0.58,
+          "value": 2.5200000000000005
+        },
+        {
+          "at": 0.82,
+          "value": -0.8820000000000001
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "soft"
+    ]
+  },
+  {
+    "id": "whip-pan-left",
+    "label": "Whip Pan Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -560
+        },
+        {
+          "at": 0.22,
+          "value": 89.60000000000001
+        },
+        {
+          "at": 0.52,
+          "value": -25.2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -4
+        },
+        {
+          "at": 0.42,
+          "value": 0.56
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "pan"
+    ]
+  },
+  {
+    "id": "whip-pan-right",
+    "label": "Whip Pan Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 560
+        },
+        {
+          "at": 0.22,
+          "value": -89.60000000000001
+        },
+        {
+          "at": 0.52,
+          "value": 25.2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 4
+        },
+        {
+          "at": 0.42,
+          "value": -0.56
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "pan"
+    ]
+  },
+  {
+    "id": "whip-pan-up",
+    "label": "Whip Pan Up",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -360
+        },
+        {
+          "at": 0.22,
+          "value": 57.6
+        },
+        {
+          "at": 0.52,
+          "value": -16.2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 3
+        },
+        {
+          "at": 0.42,
+          "value": -0.42000000000000004
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "pan"
+    ]
+  },
+  {
+    "id": "whip-pan-down",
+    "label": "Whip Pan Down",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 360
+        },
+        {
+          "at": 0.22,
+          "value": -57.6
+        },
+        {
+          "at": 0.52,
+          "value": 16.2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -3
+        },
+        {
+          "at": 0.42,
+          "value": 0.42000000000000004
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "pan"
+    ]
+  },
+  {
+    "id": "snap-pan-left",
+    "label": "Snap Pan Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -320
+        },
+        {
+          "at": 0.22,
+          "value": 51.2
+        },
+        {
+          "at": 0.52,
+          "value": -14.399999999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -2
+        },
+        {
+          "at": 0.42,
+          "value": 0.28
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "snap"
+    ]
+  },
+  {
+    "id": "snap-pan-right",
+    "label": "Snap Pan Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 320
+        },
+        {
+          "at": 0.22,
+          "value": -51.2
+        },
+        {
+          "at": 0.52,
+          "value": 14.399999999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 2
+        },
+        {
+          "at": 0.42,
+          "value": -0.28
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "snap"
+    ]
+  },
+  {
+    "id": "snap-pan-up",
+    "label": "Snap Pan Up",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -220
+        },
+        {
+          "at": 0.22,
+          "value": 35.2
+        },
+        {
+          "at": 0.52,
+          "value": -9.9
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 2
+        },
+        {
+          "at": 0.42,
+          "value": -0.28
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "snap"
+    ]
+  },
+  {
+    "id": "snap-pan-down",
+    "label": "Snap Pan Down",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.08
+        },
+        {
+          "at": 0.46,
+          "value": 0.985
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 220
+        },
+        {
+          "at": 0.22,
+          "value": -35.2
+        },
+        {
+          "at": 0.52,
+          "value": 9.9
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -2
+        },
+        {
+          "at": 0.42,
+          "value": 0.28
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "whip",
+      "snap"
+    ]
+  },
+  {
+    "id": "diagonal-sweep-tl",
+    "label": "Diagonal Sweep TL",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -240
+        },
+        {
+          "at": 0.58,
+          "value": 8.4
+        },
+        {
+          "at": 0.82,
+          "value": -2.94
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -135
+        },
+        {
+          "at": 0.58,
+          "value": 4.7250000000000005
+        },
+        {
+          "at": 0.82,
+          "value": -1.65375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "diagonal"
+    ]
+  },
+  {
+    "id": "diagonal-sweep-tr",
+    "label": "Diagonal Sweep TR",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 240
+        },
+        {
+          "at": 0.58,
+          "value": -8.4
+        },
+        {
+          "at": 0.82,
+          "value": 2.94
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -135
+        },
+        {
+          "at": 0.58,
+          "value": 4.7250000000000005
+        },
+        {
+          "at": 0.82,
+          "value": -1.65375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "diagonal"
+    ]
+  },
+  {
+    "id": "diagonal-sweep-bl",
+    "label": "Diagonal Sweep BL",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -240
+        },
+        {
+          "at": 0.58,
+          "value": 8.4
+        },
+        {
+          "at": 0.82,
+          "value": -2.94
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 135
+        },
+        {
+          "at": 0.58,
+          "value": -4.7250000000000005
+        },
+        {
+          "at": 0.82,
+          "value": 1.65375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "diagonal"
+    ]
+  },
+  {
+    "id": "diagonal-sweep-br",
+    "label": "Diagonal Sweep BR",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.985
+        },
+        {
+          "at": 0.58,
+          "value": 1.012
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 240
+        },
+        {
+          "at": 0.58,
+          "value": -8.4
+        },
+        {
+          "at": 0.82,
+          "value": 2.94
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 135
+        },
+        {
+          "at": 0.58,
+          "value": -4.7250000000000005
+        },
+        {
+          "at": 0.82,
+          "value": 1.65375
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "glide",
+      "diagonal"
+    ]
+  },
+  {
+    "id": "dolly-zoom-in",
+    "label": "Dolly Zoom In",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.42
+        },
+        {
+          "at": 0.58,
+          "value": 0.985
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.42
+        },
+        {
+          "at": 0.58,
+          "value": 0.985
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "dolly-zoom-out",
+    "label": "Dolly Zoom Out",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.62
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.62
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "close-focus",
+    "label": "Close Focus",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.18
+        },
+        {
+          "at": 0.58,
+          "value": 0.995
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.18
+        },
+        {
+          "at": 0.58,
+          "value": 0.995
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "subtle"
+    ]
+  },
+  {
+    "id": "wide-focus",
+    "label": "Wide Focus",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.82
+        },
+        {
+          "at": 0.58,
+          "value": 1.018
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.82
+        },
+        {
+          "at": 0.58,
+          "value": 1.018
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "subtle"
+    ]
+  },
+  {
+    "id": "crash-zoom-in",
+    "label": "Crash Zoom In",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 2.15
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 2.15
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -1.5
+        },
+        {
+          "at": 0.68,
+          "value": 0.12
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "impact"
+    ]
+  },
+  {
+    "id": "crash-zoom-out",
+    "label": "Crash Zoom Out",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.18
+        },
+        {
+          "at": 0.58,
+          "value": 1.08
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.18
+        },
+        {
+          "at": 0.58,
+          "value": 1.08
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 1.5
+        },
+        {
+          "at": 0.68,
+          "value": -0.12
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "impact"
+    ]
+  },
+  {
+    "id": "spiral-zoom-left",
+    "label": "Spiral Zoom Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.2
+        },
+        {
+          "at": 0.58,
+          "value": 1.04
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.2
+        },
+        {
+          "at": 0.58,
+          "value": 1.04
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -120
+        },
+        {
+          "at": 0.68,
+          "value": 9.6
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "spiral"
+    ]
+  },
+  {
+    "id": "spiral-zoom-right",
+    "label": "Spiral Zoom Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.2
+        },
+        {
+          "at": 0.58,
+          "value": 1.04
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.2
+        },
+        {
+          "at": 0.58,
+          "value": 1.04
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 120
+        },
+        {
+          "at": 0.68,
+          "value": -9.6
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "zoom",
+      "spiral"
+    ]
+  },
+  {
+    "id": "shutter-horizontal",
+    "label": "Shutter Horizontal",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "shutter-vertical",
+    "label": "Shutter Vertical",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "shutter-left",
+    "label": "Shutter Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -130
+        },
+        {
+          "at": 0.58,
+          "value": 2.6
+        },
+        {
+          "at": 0.82,
+          "value": -0.9099999999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "shutter-right",
+    "label": "Shutter Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 130
+        },
+        {
+          "at": 0.58,
+          "value": -2.6
+        },
+        {
+          "at": 0.82,
+          "value": 0.9099999999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "shutter-up",
+    "label": "Shutter Up",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -90
+        },
+        {
+          "at": 0.58,
+          "value": 1.8
+        },
+        {
+          "at": 0.82,
+          "value": -0.63
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "shutter-down",
+    "label": "Shutter Down",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.04,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.035
+        },
+        {
+          "at": 0.62,
+          "value": 1.045
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 90
+        },
+        {
+          "at": 0.58,
+          "value": -1.8
+        },
+        {
+          "at": 0.82,
+          "value": 0.63
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "wipe",
+      "shutter",
+      "editorial"
+    ]
+  },
+  {
+    "id": "hinge-left-pro",
+    "label": "Hinge Left Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.12,
+          "value": 0.9
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -32
+        },
+        {
+          "at": 0.5,
+          "value": 2.88
+        },
+        {
+          "at": 0.78,
+          "value": -0.8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -95
+        },
+        {
+          "at": 0.58,
+          "value": 2.375
+        },
+        {
+          "at": 0.82,
+          "value": -0.8312499999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "hinge",
+      "rotate"
+    ]
+  },
+  {
+    "id": "hinge-right-pro",
+    "label": "Hinge Right Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.12,
+          "value": 0.9
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 32
+        },
+        {
+          "at": 0.5,
+          "value": -2.88
+        },
+        {
+          "at": 0.78,
+          "value": 0.8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 95
+        },
+        {
+          "at": 0.58,
+          "value": -2.375
+        },
+        {
+          "at": 0.82,
+          "value": 0.8312499999999999
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "hinge",
+      "rotate"
+    ]
+  },
+  {
+    "id": "hinge-top-pro",
+    "label": "Hinge Top Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.12,
+          "value": 0.9
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 18
+        },
+        {
+          "at": 0.5,
+          "value": -1.6199999999999999
+        },
+        {
+          "at": 0.78,
+          "value": 0.45
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": -72
+        },
+        {
+          "at": 0.58,
+          "value": 1.8
+        },
+        {
+          "at": 0.82,
+          "value": -0.63
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "hinge",
+      "rotate"
+    ]
+  },
+  {
+    "id": "hinge-bottom-pro",
+    "label": "Hinge Bottom Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.12,
+          "value": 0.9
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -18
+        },
+        {
+          "at": 0.5,
+          "value": 1.6199999999999999
+        },
+        {
+          "at": 0.78,
+          "value": -0.45
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.6,
+          "value": 1.015
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 72
+        },
+        {
+          "at": 0.58,
+          "value": -1.8
+        },
+        {
+          "at": 0.82,
+          "value": 0.63
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "hinge",
+      "rotate"
+    ]
+  },
+  {
+    "id": "carousel-left",
+    "label": "Carousel Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -340
+        },
+        {
+          "at": 0.54,
+          "value": 28
+        },
+        {
+          "at": 0.8,
+          "value": -8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.72
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.72
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -12
+        },
+        {
+          "at": 0.62,
+          "value": 2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "carousel",
+      "rotate"
+    ]
+  },
+  {
+    "id": "carousel-right",
+    "label": "Carousel Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 340
+        },
+        {
+          "at": 0.54,
+          "value": -28
+        },
+        {
+          "at": 0.8,
+          "value": 8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.72
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.72
+        },
+        {
+          "at": 0.58,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 12
+        },
+        {
+          "at": 0.62,
+          "value": -2
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "carousel",
+      "rotate"
+    ]
+  },
+  {
+    "id": "orbit-left",
+    "label": "Orbit Left",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -260
+        },
+        {
+          "at": 0.45,
+          "value": 34
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 88
+        },
+        {
+          "at": 0.52,
+          "value": -14
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.68
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.68
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -24
+        },
+        {
+          "at": 0.58,
+          "value": 3
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "orbit",
+      "rotate"
+    ]
+  },
+  {
+    "id": "orbit-right",
+    "label": "Orbit Right",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 260
+        },
+        {
+          "at": 0.45,
+          "value": -34
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 88
+        },
+        {
+          "at": 0.52,
+          "value": -14
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.68
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.68
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": 24
+        },
+        {
+          "at": 0.58,
+          "value": -3
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "orbit",
+      "rotate"
+    ]
+  },
+  {
+    "id": "liquid-pop",
+    "label": "Liquid Pop",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.18
+        },
+        {
+          "at": 0.28,
+          "value": 1.32
+        },
+        {
+          "at": 0.48,
+          "value": 0.86
+        },
+        {
+          "at": 0.72,
+          "value": 1.06
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.7
+        },
+        {
+          "at": 0.28,
+          "value": 0.74
+        },
+        {
+          "at": 0.48,
+          "value": 1.18
+        },
+        {
+          "at": 0.72,
+          "value": 0.96
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "pop",
+      "bounce"
+    ]
+  },
+  {
+    "id": "magnetic-pop",
+    "label": "Magnetic Pop",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.06,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 34
+        },
+        {
+          "at": 0.24,
+          "value": -18
+        },
+        {
+          "at": 0.52,
+          "value": 7
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.55
+        },
+        {
+          "at": 0.3,
+          "value": 1.18
+        },
+        {
+          "at": 0.58,
+          "value": 0.96
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.55
+        },
+        {
+          "at": 0.3,
+          "value": 1.18
+        },
+        {
+          "at": 0.58,
+          "value": 0.96
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "pop",
+      "snap"
+    ]
+  },
+  {
+    "id": "editorial-slam",
+    "label": "Editorial Slam",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.05,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -180
+        },
+        {
+          "at": 0.22,
+          "value": 18
+        },
+        {
+          "at": 0.42,
+          "value": -7
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.18
+        },
+        {
+          "at": 0.2,
+          "value": 0.96
+        },
+        {
+          "at": 0.48,
+          "value": 1.02
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.18
+        },
+        {
+          "at": 0.2,
+          "value": 0.96
+        },
+        {
+          "at": 0.48,
+          "value": 1.02
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.rotate": [
+        {
+          "at": 0,
+          "value": -2.5
+        },
+        {
+          "at": 0.3,
+          "value": 0.8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "impact",
+      "editorial"
+    ]
+  },
+  {
+    "id": "prism-snap",
+    "label": "Prism Snap",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.06,
+          "value": 0.75
+        },
+        {
+          "at": 0.12,
+          "value": 0.3
+        },
+        {
+          "at": 0.2,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -46
+        },
+        {
+          "at": 0.1,
+          "value": 34
+        },
+        {
+          "at": 0.18,
+          "value": -18
+        },
+        {
+          "at": 0.32,
+          "value": 8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 16
+        },
+        {
+          "at": 0.12,
+          "value": -10
+        },
+        {
+          "at": 0.24,
+          "value": 5
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.12
+        },
+        {
+          "at": 0.34,
+          "value": 0.98
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.34,
+          "value": 1.02
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "snap",
+      "glitch"
+    ]
+  },
+  {
+    "id": "film-dissolve-pro",
+    "label": "Film Dissolve Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.18,
+          "value": 0.42
+        },
+        {
+          "at": 0.34,
+          "value": 0.32
+        },
+        {
+          "at": 0.58,
+          "value": 0.82
+        },
+        {
+          "at": 0.76,
+          "value": 0.74
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "film",
+      "dissolve"
+    ]
+  },
+  {
+    "id": "luxe-fade",
+    "label": "Luxe Fade",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.3,
+          "value": 0.5
+        },
+        {
+          "at": 0.72,
+          "value": 0.95
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.025
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.025
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "fade",
+      "cinematic"
+    ]
+  },
+  {
+    "id": "focus-bloom",
+    "label": "Focus Bloom",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.14,
+          "value": 0.42
+        },
+        {
+          "at": 0.36,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 1.12
+        },
+        {
+          "at": 0.68,
+          "value": 0.992
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 1.12
+        },
+        {
+          "at": 0.68,
+          "value": 0.992
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "focus",
+      "fade"
+    ]
+  },
+  {
+    "id": "lower-third-reveal-left",
+    "label": "Lower Third Reveal L",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": -150
+        },
+        {
+          "at": 0.58,
+          "value": 5.250000000000001
+        },
+        {
+          "at": 0.82,
+          "value": -1.8375000000000001
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.paddingX": [
+        {
+          "at": 0,
+          "value": -22
+        },
+        {
+          "at": 0.58,
+          "value": 8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.offsetX": [
+        {
+          "at": 0,
+          "value": -42
+        },
+        {
+          "at": 0.62,
+          "value": 4
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.cornerRadius": [
+        {
+          "at": 0,
+          "value": 2
+        },
+        {
+          "at": 0.5,
+          "value": 18
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "lower-third"
+    ]
+  },
+  {
+    "id": "lower-third-reveal-right",
+    "label": "Lower Third Reveal R",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionX": [
+        {
+          "at": 0,
+          "value": 150
+        },
+        {
+          "at": 0.58,
+          "value": -5.250000000000001
+        },
+        {
+          "at": 0.82,
+          "value": 1.8375000000000001
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.paddingX": [
+        {
+          "at": 0,
+          "value": -22
+        },
+        {
+          "at": 0.58,
+          "value": 8
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.offsetX": [
+        {
+          "at": 0,
+          "value": 42
+        },
+        {
+          "at": 0.62,
+          "value": -4
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.cornerRadius": [
+        {
+          "at": 0,
+          "value": 2
+        },
+        {
+          "at": 0.5,
+          "value": 18
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "lower-third"
+    ]
+  },
+  {
+    "id": "title-card-bloom",
+    "label": "Title Card Bloom",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.2,
+          "value": 0.36
+        },
+        {
+          "at": 0.58,
+          "value": 0.92
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.88
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.88
+        },
+        {
+          "at": 0.58,
+          "value": 1.025
+        },
+        {
+          "at": 0.82,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "background.paddingX": [
+        {
+          "at": 0,
+          "value": -18
+        },
+        {
+          "at": 0.55,
+          "value": 10
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.paddingY": [
+        {
+          "at": 0,
+          "value": -10
+        },
+        {
+          "at": 0.55,
+          "value": 6
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.cornerRadius": [
+        {
+          "at": 0,
+          "value": 28
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "title"
+    ]
+  },
+  {
+    "id": "caption-lift-pro",
+    "label": "Caption Lift Pro",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.16,
+          "value": 0.82
+        },
+        {
+          "at": 0.34,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 44
+        },
+        {
+          "at": 0.52,
+          "value": -6
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.offsetY": [
+        {
+          "at": 0,
+          "value": 22
+        },
+        {
+          "at": 0.6,
+          "value": -3
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.paddingX": [
+        {
+          "at": 0,
+          "value": -12
+        },
+        {
+          "at": 0.62,
+          "value": 5
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "caption"
+    ]
+  },
+  {
+    "id": "pill-expand",
+    "label": "Pill Expand",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.28
+        },
+        {
+          "at": 0.46,
+          "value": 1.08
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.92
+        },
+        {
+          "at": 0.46,
+          "value": 1.03
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "background.paddingX": [
+        {
+          "at": 0,
+          "value": -30
+        },
+        {
+          "at": 0.48,
+          "value": 12
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "background.cornerRadius": [
+        {
+          "at": 0,
+          "value": 36
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "pill"
+    ]
+  },
+  {
+    "id": "subtitle-snap",
+    "label": "Subtitle Snap",
+    "state": {},
+    "recipe": {
+      "opacity": [
+        {
+          "at": 0,
+          "value": 0
+        },
+        {
+          "at": 0.08,
+          "value": 1
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.positionY": [
+        {
+          "at": 0,
+          "value": 22
+        },
+        {
+          "at": 0.24,
+          "value": -8
+        },
+        {
+          "at": 0.48,
+          "value": 3
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ],
+      "transform.scaleX": [
+        {
+          "at": 0,
+          "value": 0.96
+        },
+        {
+          "at": 0.28,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "transform.scaleY": [
+        {
+          "at": 0,
+          "value": 0.96
+        },
+        {
+          "at": 0.28,
+          "value": 1.035
+        },
+        {
+          "at": 1,
+          "value": 1
+        }
+      ],
+      "background.paddingY": [
+        {
+          "at": 0,
+          "value": -6
+        },
+        {
+          "at": 0.36,
+          "value": 5
+        },
+        {
+          "at": 1,
+          "value": 0
+        }
+      ]
+    },
+    "keywords": [
+      "premium",
+      "text",
+      "caption",
+      "snap"
+    ]
+  }
+]

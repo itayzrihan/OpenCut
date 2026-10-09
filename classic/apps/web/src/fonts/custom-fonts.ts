@@ -66,7 +66,7 @@ export function buildUniqueFontFamily({
 export async function loadProjectFont({
 	font,
 }: {
-	font: ProjectFont | ProjectFontAsset;
+	font: Pick<ProjectFont, "family" | "sourceUrl"> & { url?: string };
 }): Promise<void> {
 	const source = "url" in font && font.url ? font.url : font.sourceUrl;
 	if (!source || typeof document === "undefined") return;

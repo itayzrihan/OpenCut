@@ -46,6 +46,7 @@ function buildDiamondPath({
 }
 
 export const diamondMaskDefinition: MaskDefinition<"diamond"> = {
+	defaultSizing: "square",
 	type: "diamond",
 	name: "Diamond",
 	features: {

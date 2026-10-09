@@ -6,7 +6,17 @@ Scope: **classic-only**. The rewrite is not modified or represented as feature-p
 
 Projects → **Batch** → choose videos (or **Import from drive** for large local sources). Each video gets a new project. Choose any combination of Automatic Zoom, Automatic Transition Edit, Automatic Word Animation and Reveal, and Automatic Music, then start.
 
-The mandatory recipe comes from Rust `fullAutoEditStages`: vertical cover, local face/body framing, silence removal at 0.3 seconds, Hebrew ivrit-ai Whisper large-v3 and one-row Auto Texts, caption finishing at 60% / 25%, Assistant bold custom font, punctuation hidden, centered text, black edge feather, then optional additions and save. The existing transcription and AI prerequisites still apply. No export runs automatically.
+The mandatory recipe comes from Rust `fullAutoEditStages`: vertical cover, local face/body framing, silence removal at 0.3 seconds, Hebrew ivrit-ai Whisper large-v3 and one-row Auto Texts, caption finishing at 60% / 25%, Assistant bold font, punctuation hidden, centered text, black edge feather, then optional additions and save. The existing transcription and AI prerequisites still apply. No export runs automatically.
+
+Full Auto prefers an imported Assistant Bold/ExtraBold when present. Otherwise
+preflight loads the included static Assistant Bold face from the app's own font
+assets; manual font import is no longer a prerequisite. Saved caption families
+resolve to that same bundled font on reopen, without a Google Fonts request.
+The font uses the accompanying SIL Open Font License. This is a Classic platform
+font-loading fix; caption style and project mutations remain canonical. Font
+load failure, cancellation and stale revision still stop before Smart Takes
+caption cleanup. Tests cover missing custom fonts, bundled asset weight/Hebrew
+coverage, reopening font resolution and preflight failure without edits.
 
 A draggable floating progress control serves both single and batch edits. The ring measures completed recipe stages, not estimated elapsed time. Click opens the current video's stage list and completed-video count. The panel follows the dragged control with a damped spring; reduced-motion preferences disable the trailing motion. Arrow keys reposition the control; Enter opens details; Escape closes them. Failure/cancellation remains visible and never counts as successful completion.
 
@@ -34,3 +44,75 @@ UI verification covered dragging with the expanded following panel, navigating i
 Checks: 102 native timeline tests, 9 scoped host/worker/save tests; scoped ESLint has no errors (existing/type-assertion warnings remain). Whole-app TypeScript still reports unrelated existing errors; none were reported in the changed Batch/Full Auto/provider/project-manager surfaces.
 
 See [BACKGROUND-AUTOMATION-QA.md](BACKGROUND-AUTOMATION-QA.md) for the expanded background-execution regression audit.
+
+## Existing-project handoff (October 2026)
+
+The editor remains mounted and inert under a saving banner during handoff. Switching to a locked preview preserves its canonical scene, media handles and renderer; the visible host stops its ownership heartbeat locally instead of reloading the project or making a lease-release request after the queue has fenced ordinary writes. When automation ends, the normal full reload reacquires the latest saved document before editing is enabled.
+
+An idle worker iframe warms the browser route and confirms its ready handshake before a request can save/lock/queue a project. Its React host key is retained when it receives the first job, so handoff does not navigate a second iframe. This prevents first-use development route compilation from triggering Fast Refresh while a newly queued job is protected by the unload guard. A failed startup leaves no queued job. Intentional reload/closing during a running edit still prompts because it terminates the browser worker; the saved project survives and the queue lease eventually expires. This change does not claim reload-resume support.
+
+An existing-project job still in `ready` can be cancelled immediately without an available worker. The canonical `cancel` transition releases its queue lock and invalidates late worker writes. Once `running`, cancellation remains cooperative until completed changes are saved. Import jobs retain their existing cancellation flow.
+
+Capability status: classic-only host orchestration around the existing canonical runtime and Rust batch transitions; no duplicate project state or new transport-specific editor mutation.
+
+Canonical session archive commits now allow up to 120 seconds for validation and durable storage; lease/read requests keep the 30-second default. Explicit transport timeouts still apply to all requests, and timeout recovery retains the exact idempotent pending save. This accommodates large Smart Takes history archives without treating a valid slow save as a lost acknowledgement.
+
+## Save checkpoints and worker recovery (October 8, 2026)
+
+Successful canonical session commits, including matching idempotent retries,
+refresh the current owner's lease in Rust. Large serialized history saves can
+queue ahead of timer renewals; active saving must not starve ownership renewal.
+Expired or superseded ownership still cannot commit or revive its fence.
+The client retains the original definitive rejection for subsequent attempts.
+
+Full Auto now awaits project and history persistence before reporting each stage
+complete or starting the next one. This does not introduce early-stage resume:
+existing finishing-checkpoint restrictions still apply. Final-save failures get
+one automatic retry using the session client's existing idempotency protocol.
+If saving still fails, the worker retains its canonical editor, batch token and
+heartbeat, shows the original error and a Retry saving button, and waits. It does
+not close a dirty project, report a terminal result, unlock the project, or
+unmount until saving and ownership release succeed. Keep the launching tab open.
+A definitive ownership conflict remains fenced; retry never steals ownership.
+
+Capability status: shared Rust persistence policy plus Classic host lifecycle
+and progress UI; all document changes still use the canonical editor session.
+Regression coverage includes lease renewal under queued saves, expired-owner
+rejection, stage checkpoint failure, preservation of the original error, and
+retaining/retrying a dirty worker before terminal queue transitions.
+
+Verification for this fix: 8 Rust session-store tests and 20 scoped web tests
+passed; TypeScript passed and scoped ESLint reported no errors. The rebuilt WASM
+also saved an in-memory copy of the affected project's 72 MB session archive,
+then acknowledged the same request 80 seconds later without a second revision
+and retained ownership another 80 seconds later. No project file was written by
+that diagnostic. The full ten-stage AI recipe was not rerun for this check.
+
+## Resume after silence removal
+
+The latest failed run can now resume from checkpoint 3 or 4 as well as the later
+finishing checkpoints. Full Auto Edit presents Resume as its primary action for
+these runs, preserves the original options, and starts with the first unfinished
+stage. Completed framing, Smart Takes preparation and silence removal are skipped.
+The caption font is loaded again because font availability belongs to the browser,
+without applying preflight timeline mutations.
+
+When resuming Auto Texts, its saved caption source is reused if present: no second
+transcription or duplicate caption tracks. Correction and row arrangement continue
+against those saved words; if no transcript was committed, transcription is retried.
+This resumes at the stage boundary, not an arbitrary point inside an AI request.
+The interrupted user project was verified to contain 418 timed words and its
+39 selected/trimmed video segments. Checks cover early-stage skipping, unchanged
+cuts, font reload, transcript reuse, missing transcript, and queue/recipe guards.
+
+Opening a saved atomic session no longer re-commits its unchanged undo archive.
+The editor lease now renews during asynchronous font/media hydration, with the
+renewal timer stopped if opening fails. This removes a redundant large save that
+could block the resume button with a storage timeout. All 75 canonical command
+manager tests pass, including restoration with zero writes followed by an
+explicit successful save.
+
+Large archive reads/acquisitions now use the same bounded 120-second transport
+window as commits. Renewal and release remain at 30 seconds; explicit timeout
+overrides are unchanged. Live opening of the affected project exceeded 40 seconds
+on the local host, so the old 30-second read timeout prevented reaching Resume.

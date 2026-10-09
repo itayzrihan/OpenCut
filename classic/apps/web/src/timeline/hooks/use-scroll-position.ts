@@ -54,18 +54,13 @@ export function useScrollPosition({
 }): ScrollPosition {
 	const [position, setPosition] = useState(INITIAL_SCROLL_POSITION);
 	const positionRef = useRef(position);
-	const rafIdRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		const scrollElement = scrollRef.current;
 		if (!scrollElement) return;
-
-		const updatePosition = () => {
-			if (rafIdRef.current !== null) return;
-
-			rafIdRef.current = requestAnimationFrame(() => {
-				rafIdRef.current = null;
-				const nextPosition = readScrollPosition({ scrollElement });
+		return observeScrollPosition({
+			scrollElement,
+			onChange: (nextPosition) => {
 				if (
 					areScrollPositionsEqual({
 						a: positionRef.current,
@@ -77,26 +72,40 @@ export function useScrollPosition({
 
 				positionRef.current = nextPosition;
 				setPosition(nextPosition);
-			});
-		};
-
-		const resizeObserver = new ResizeObserver(() => {
-			updatePosition();
+			},
 		});
-
-		updatePosition();
-
-		scrollElement.addEventListener("scroll", updatePosition, { passive: true });
-		resizeObserver.observe(scrollElement);
-
-		return () => {
-			scrollElement.removeEventListener("scroll", updatePosition);
-			resizeObserver.disconnect();
-			if (rafIdRef.current !== null) {
-				cancelAnimationFrame(rafIdRef.current);
-			}
-		};
 	}, [scrollRef]);
 
 	return position;
+}
+
+/** Each effect setup owns its scheduled frame, including Strict Mode restarts. */
+export function observeScrollPosition({
+	scrollElement,
+	onChange,
+}: {
+	scrollElement: HTMLElement;
+	onChange: (position: ScrollPosition) => void;
+}): () => void {
+	let frameId: number | null = null;
+	const updatePosition = () => {
+		if (frameId !== null) return;
+		frameId = requestAnimationFrame(() => {
+			frameId = null;
+			onChange(readScrollPosition({ scrollElement }));
+		});
+	};
+	const resizeObserver = new ResizeObserver(updatePosition);
+	updatePosition();
+	scrollElement.addEventListener("scroll", updatePosition, { passive: true });
+	resizeObserver.observe(scrollElement);
+
+	return () => {
+		scrollElement.removeEventListener("scroll", updatePosition);
+		resizeObserver.disconnect();
+		if (frameId !== null) {
+			cancelAnimationFrame(frameId);
+			frameId = null;
+		}
+	};
 }

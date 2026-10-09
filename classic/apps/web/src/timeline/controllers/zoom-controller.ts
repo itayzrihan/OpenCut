@@ -2,7 +2,7 @@ import type { WheelEvent as ReactWheelEvent } from "react";
 import { TIMELINE_ZOOM_ANCHOR_PLAYHEAD_THRESHOLD } from "@/timeline/components/interaction";
 import { timelineTimeToPixels } from "@/timeline/pixel-utils";
 import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
-import { zoomToSlider } from "@/timeline/zoom-utils";
+import { getTimelineFitZoom, zoomToSlider } from "@/timeline/zoom-utils";
 import type { MediaTime } from "@/wasm";
 
 type ZoomUpdater = number | ((prev: number) => number);
@@ -47,6 +47,7 @@ export class ZoomController {
 	private preZoomScrollLeft = 0;
 	private prePlayheadAnchorScrollLeft = 0;
 	private isInPlayheadAnchorMode = false;
+	private fitLayoutPending = false;
 	private scrollSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(deps: { configRef: ZoomConfigRef; initialZoom?: number }) {
@@ -61,6 +62,7 @@ export class ZoomController {
 		this.hasInitialized = deps.initialZoom !== undefined;
 
 		this.setZoomLevel = this.setZoomLevel.bind(this);
+		this.fitToContent = this.fitToContent.bind(this);
 		this.handleWheel = this.handleWheel.bind(this);
 		this.saveScrollPosition = this.saveScrollPosition.bind(this);
 	}
@@ -105,6 +107,22 @@ export class ZoomController {
 		this.notify();
 	}
 
+	fitToContent({ duration }: { duration: number }): void {
+		const width = this.config.getTracksScrollEl()?.clientWidth;
+		if (!width || !Number.isFinite(duration) || duration < 0) return;
+		if (this.scrollSaveTimeout) {
+			clearTimeout(this.scrollSaveTimeout);
+			this.scrollSaveTimeout = null;
+		}
+		this.hasInitialized = true;
+		this.hasRestoredScroll = true;
+		this.fitLayoutPending = true;
+		this.setZoomLevel(getTimelineFitZoom({ duration, containerWidth: width }));
+		// Fitting an already-fitted, manually scrolled view must still reveal zero.
+		if (this.previousZoom === this.zoomLevelValue)
+			this.applyZoomLayout(this.zoomLevelValue);
+	}
+
 	handleWheel(event: ReactWheelEvent): void {
 		const isZoomGesture = event.ctrlKey || event.metaKey;
 		const isHorizontalScrollGesture =
@@ -143,6 +161,24 @@ export class ZoomController {
 	}
 
 	applyZoomLayout(zoomLevel: number): void {
+		if (this.fitLayoutPending) {
+			const tracks = this.config.getTracksScrollEl();
+			if (!tracks) return;
+			this.fitLayoutPending = false;
+			this.previousZoom = zoomLevel;
+			this.preZoomScrollLeft = 0;
+			this.prePlayheadAnchorScrollLeft = 0;
+			this.isInPlayheadAnchorMode = false;
+			tracks.scrollLeft = 0;
+			const ruler = this.config.getRulerScrollEl();
+			if (ruler) ruler.scrollLeft = 0;
+			this.config.setTimelineViewState({
+				zoomLevel,
+				scrollLeft: 0,
+				playheadTime: this.config.getCurrentPlayheadTime(),
+			});
+			return;
+		}
 		const previousZoom = this.previousZoom;
 		if (previousZoom === zoomLevel) return;
 

@@ -15,10 +15,7 @@ test("background snapshots permit editor saves while restore locks reject them",
 	process.env.OPENCUT_ACCOUNTS_DIR = root;
 	let id: string | undefined;
 	try {
-		const identity = await registerAccount(
-			"lock-owner",
-			"Lock Owner",
-			"storage lock test password",
+		const identity = await registerAccount({ login: "lock-owner", displayName: "Lock Owner", password: "storage lock test password" }
 		);
 		id = identity.account.id;
 		const request = () =>
@@ -30,18 +27,18 @@ test("background snapshots permit editor saves while restore locks reject them",
 				},
 			});
 		const save = withAccount(async () => Response.json({ saved: true }));
-		await markAccountImport(id, true, "snapshot");
+		await markAccountImport({ id: id, active: true, mode: "snapshot" });
 		expect((await save(request())).status).toBe(200);
-		await expect(markAccountImport(id, true)).rejects.toThrow(
+		await expect(markAccountImport({ id: id, active: true })).rejects.toThrow(
 			"already running",
 		);
-		await markAccountImport(id, false);
-		await markAccountImport(id, true, "exclusive");
+		await markAccountImport({ id: id, active: false });
+		await markAccountImport({ id: id, active: true, mode: "exclusive" });
 		expect((await save(request())).status).toBe(423);
-		await markAccountImport(id, false);
+		await markAccountImport({ id: id, active: false });
 		expect((await save(request())).status).toBe(200);
 	} finally {
-		if (id) await markAccountImport(id, false);
+		if (id) await markAccountImport({ id: id, active: false });
 		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
 		else process.env.OPENCUT_ACCOUNTS_DIR = previous;
 		await rm(root, { recursive: true, force: true });

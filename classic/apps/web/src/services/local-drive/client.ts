@@ -1,4 +1,5 @@
 import { batchWriteHeaders } from "@/batch/write-token";
+import { editorWriteHeaders } from "@/editor-agent/write-authority";
 import { accountAssetUrl } from "@/accounts/browser";
 import type { ProjectFontData } from "@/services/storage/types";
 import type {
@@ -8,6 +9,76 @@ import type {
 } from "./types";
 
 const API_PATH = "/api/local-drive";
+
+/** Pin multi-request work to the account that started it. */
+export interface LocalDriveRequestScope {
+	accountId: string;
+	/** Pin the original editor generation across a multi-request operation. */
+	writeHeaders?: Record<string, string>;
+	signal?: AbortSignal;
+	/** Identifies newly copied files until an import commits or discards them. */
+	uploadToken?: string;
+}
+
+export function captureLocalDriveWriteScope({
+	projectId,
+	accountId = typeof window === "undefined"
+		? "local"
+		: (window.__opencutAccountId ?? "local"),
+}: {
+	projectId: string;
+	accountId?: string;
+}): LocalDriveRequestScope {
+	return {
+		accountId,
+		writeHeaders: {
+			...batchWriteHeaders(),
+			...editorWriteHeaders({ accountId, projectId }),
+		},
+	};
+}
+
+export function pinLocalDriveWriteScope({
+	projectId,
+	scope,
+}: {
+	projectId: string;
+	scope?: LocalDriveRequestScope;
+}): LocalDriveRequestScope {
+	const current = captureLocalDriveWriteScope({
+		projectId,
+		accountId: scope?.accountId,
+	});
+	return {
+		...current,
+		...scope,
+		writeHeaders: scope?.writeHeaders ?? current.writeHeaders,
+	};
+}
+
+/** Check before a multi-request workflow edits the live canonical document. */
+export function assertLocalDriveWriteScope({
+	projectId,
+	scope,
+}: {
+	projectId: string;
+	scope: LocalDriveRequestScope;
+}) {
+	const current = captureLocalDriveWriteScope({ projectId });
+	const keys = [
+		"X-OpenCut-Editor-Project",
+		"X-OpenCut-Editor-Session",
+		"X-OpenCut-Editor-Generation",
+		"X-OpenCut-Batch-Token",
+	];
+	if (
+		current.accountId !== scope.accountId ||
+		keys.some(
+			(key) => current.writeHeaders?.[key] !== scope.writeHeaders?.[key],
+		)
+	)
+		throw new Error("Editor ownership changed during the operation");
+}
 
 async function readError(response: Response): Promise<string> {
 	try {
@@ -22,13 +93,26 @@ async function readError(response: Response): Promise<string> {
 export async function localDriveRequest<T>({
 	operation,
 	payload = {},
+	scope,
 }: {
 	operation: LocalDriveOperation;
 	payload?: Record<string, unknown>;
+	scope?: LocalDriveRequestScope;
 }): Promise<T> {
 	const response = await fetch(API_PATH, {
 		method: "POST",
-		headers: { "Content-Type": "application/json", ...batchWriteHeaders() },
+		headers: {
+			"Content-Type": "application/json",
+			...(scope?.writeHeaders ?? {
+				...batchWriteHeaders(),
+				...editorWriteHeaders({
+					projectId: payload.projectId,
+					accountId: scope?.accountId,
+				}),
+			}),
+			...(scope && { "X-OpenCut-Account": scope.accountId }),
+		},
+		signal: scope?.signal,
 		body: JSON.stringify({ operation, ...payload }),
 		cache: "no-store",
 	});
@@ -39,11 +123,17 @@ export async function localDriveRequest<T>({
 export function localMediaUrl({
 	projectId,
 	id,
+	accountId,
 }: {
 	projectId: string;
 	id: string;
+	accountId?: string;
 }): string {
 	const params = new URLSearchParams({ projectId, id });
+	if (accountId) {
+		params.set("account", accountId);
+		return `/api/local-drive/media?${params}`;
+	}
 	return accountAssetUrl(`/api/local-drive/media?${params}`);
 }
 
@@ -88,11 +178,13 @@ export async function uploadLocalMedia({
 	id,
 	file,
 	migration = false,
+	scope,
 }: {
 	projectId: string;
 	id: string;
 	file: File;
 	migration?: boolean;
+	scope?: LocalDriveRequestScope;
 }): Promise<void> {
 	const params = new URLSearchParams({
 		projectId,
@@ -105,7 +197,15 @@ export async function uploadLocalMedia({
 	if (migration) params.set("migration", "1");
 	const response = await fetch(`/api/local-drive/media?${params}`, {
 		method: "POST",
-		headers: batchWriteHeaders(),
+		headers: {
+			...(scope?.writeHeaders ?? {
+				...batchWriteHeaders(),
+				...editorWriteHeaders({ projectId, accountId: scope?.accountId }),
+			}),
+			...(scope && { "X-OpenCut-Account": scope.accountId }),
+			...(scope?.uploadToken && { "X-OpenCut-Upload": scope.uploadToken }),
+		},
+		signal: scope?.signal,
 		body: file,
 	});
 	if (!response.ok) throw new Error(await readError(response));
@@ -115,15 +215,24 @@ export async function uploadLocalFont({
 	projectId,
 	id,
 	file,
+	scope,
 }: {
 	projectId: string;
 	id: string;
 	file: File;
+	scope?: LocalDriveRequestScope;
 }): Promise<string> {
 	const params = new URLSearchParams({ projectId, id, fileName: file.name });
 	const response = await fetch(`/api/local-drive/font?${params}`, {
 		method: "POST",
-		headers: batchWriteHeaders(),
+		headers: {
+			...(scope?.writeHeaders ?? {
+				...batchWriteHeaders(),
+				...editorWriteHeaders({ projectId, accountId: scope?.accountId }),
+			}),
+			...(scope && { "X-OpenCut-Account": scope.accountId }),
+		},
+		signal: scope?.signal,
 		body: file,
 	});
 	if (!response.ok) throw new Error(await readError(response));

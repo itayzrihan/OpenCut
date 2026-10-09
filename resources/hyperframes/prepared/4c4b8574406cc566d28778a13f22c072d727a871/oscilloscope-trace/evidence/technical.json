@@ -1,0 +1,42 @@
+{
+  "id": "oscilloscope-trace",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "a2c226cab75c8955291e44f47cce815c1bcd77502099ec26b80a9130b95ccef8",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "oscilloscope-trace.html",
+  "durationSeconds": 6,
+  "frames": [
+    {
+      "timeSeconds": 0.8999999999999999,
+      "sha256": "ced500e26fa7a639fdbdf26545341cbe550c6a1fcdbba7fb1e728a84daffd35f",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3,
+      "sha256": "15b34967f8882b763b0a52a07294e4f4415c4ba5cffb302270529c13ec61ad1e",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5.1,
+      "sha256": "d2bc5a9617b6531b6cad195790fa33a5e6baaca844e8e91c26558c22906a3899",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3,
+      "sha256": "15b34967f8882b763b0a52a07294e4f4415c4ba5cffb302270529c13ec61ad1e",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

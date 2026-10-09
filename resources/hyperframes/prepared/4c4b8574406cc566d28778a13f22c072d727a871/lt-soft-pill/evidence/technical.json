@@ -1,0 +1,42 @@
+{
+  "id": "lt-soft-pill",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "a0ea6da1dfc466aa74ba7a7eeee8235fefe4614e6496f82e1dd04b0be7238529",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "lt-soft-pill.html",
+  "durationSeconds": 4.8,
+  "frames": [
+    {
+      "timeSeconds": 0.72,
+      "sha256": "34a2e2f332bf23dbc6d691cf1a21ad4c25a82095ca32714f65e999e81fa22e06",
+      "file": "frame-0.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 2.4,
+      "sha256": "2489a1a9e693228a53ec63e81b42c4b179fdd7acfa7ed2dbbb1fa74b5b2779e6",
+      "file": "frame-1.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 4.08,
+      "sha256": "2489a1a9e693228a53ec63e81b42c4b179fdd7acfa7ed2dbbb1fa74b5b2779e6",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 2.4,
+      "sha256": "2489a1a9e693228a53ec63e81b42c4b179fdd7acfa7ed2dbbb1fa74b5b2779e6",
+      "file": "frame-3.png",
+      "transparentPixels": true
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

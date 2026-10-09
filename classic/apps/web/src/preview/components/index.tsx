@@ -20,6 +20,14 @@ import {
 import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
+import {
+	HyperframesLivePreview,
+	findHyperframesLiveLayers,
+} from "@/hyperframes/live-preview";
+import {
+	PreviewPlaybackProbe,
+	forceHyperframesCaptureForDiagnostics,
+} from "@/diagnostics/preview-playback";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
@@ -49,6 +57,7 @@ import {
 } from "@/parallax-story-teller/camera-man-store";
 import { getPreviewRenderSize } from "../render-size";
 import { OfflineMediaPanel } from "./offline-media";
+import { Button } from "@/components/ui/button";
 
 function usePreviewSize() {
 	const canvasSize = useEditorProject(
@@ -133,6 +142,9 @@ function RenderTreeController() {
 	]);
 	const mediaAssets = useEditorMedia((e) => e.media.getAssets());
 	const activeProject = useEditorProject((e) => e.project.getActive());
+	const hyperframesResourceRevision = useEditorRenderer((e) =>
+		e.renderer.getHyperframesResourceRevision(),
+	);
 
 	const { width, height } = usePreviewSize();
 
@@ -141,6 +153,7 @@ function RenderTreeController() {
 
 		const duration = editor.timeline.getTotalDuration();
 		const renderTree = buildScene({
+			hyperframes: editor.renderer.getHyperframesRenderContext(),
 			tracks,
 			mediaAssets,
 			duration,
@@ -157,6 +170,8 @@ function RenderTreeController() {
 		tracks,
 		mediaAssets,
 		activeProject?.settings.background,
+		activeProject?.hyperframesCompositions,
+		hyperframesResourceRevision,
 		width,
 		height,
 		scenes,
@@ -183,17 +198,26 @@ function PreviewCanvas({
 	}) => void;
 }) {
 	const canvasMountRef = useRef<HTMLDivElement>(null);
+	const liveMountRef = useRef<HTMLDivElement>(null);
+	const livePreviewRef = useRef<HyperframesLivePreview | null>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const lastFrameRef = useRef(-1);
 	const lastSceneRef = useRef<RootNode | null>(null);
 	const renderingRef = useRef(false);
+	const renderPromiseRef = useRef<Promise<void>>(Promise.resolve());
 	const pendingRenderRef = useRef(false);
 	const scheduledRenderRef = useRef<number | null>(null);
 	const isExportingRef = useRef(false);
 	const runRenderRef = useRef<() => void>(() => {});
+	const renderAttemptRef = useRef<object | null>(null);
+	const preparingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [isPreparing, setIsPreparing] = useState(false);
+	const [previewFailed, setPreviewFailed] = useState(false);
+	const [previewRetry, setPreviewRetry] = useState(0);
 	const { width: nativeWidth, height: nativeHeight } = usePreviewSize();
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
+	const playbackProbe = useMemo(() => new PreviewPlaybackProbe(), []);
 	const activeProject = useEditorProject((e) => e.project.getActive());
 	const renderTree = useEditorRenderer((e) => e.renderer.getRenderTree());
 	const isExporting = useEditorRenderer((e) => e.renderer.isExporting);
@@ -223,13 +247,14 @@ function PreviewCanvas({
 		(...args) => {
 			if (!isRenderPerfEnabled()) return;
 
-			const [, , actualDuration, , startTime, commitTime] = args;
+			const [id, , actualDuration, , startTime, commitTime] = args;
+			const name = id === "PreviewCanvas" ? "preview" : id;
 			recordSpan({
-				name: "react.previewRender",
+				name: `react.${name}Render`,
 				durationMs: actualDuration,
 			});
 			recordSpan({
-				name: "react.previewCommit",
+				name: `react.${name}Commit`,
 				durationMs: Math.max(0, commitTime - startTime),
 			});
 		},
@@ -259,7 +284,7 @@ function PreviewCanvas({
 		let disposed = false;
 		let outputCanvas: HTMLCanvasElement | null = null;
 		void renderer
-			.getOutputCanvas()
+			.getPresentationCanvas()
 			.then((canvas) => {
 				if (disposed) return;
 				outputCanvas = canvas;
@@ -269,6 +294,7 @@ function PreviewCanvas({
 				mount.appendChild(canvas);
 			})
 			.catch((error: unknown) => {
+				if (!disposed) setPreviewFailed(true);
 				console.error("Failed to mount preview canvas:", error);
 			});
 
@@ -278,7 +304,7 @@ function PreviewCanvas({
 				mount.removeChild(outputCanvas);
 			}
 		};
-	}, [renderer]);
+	}, [renderer, previewRetry]);
 
 	const scheduleRender = useCallback(
 		(reason: string) => {
@@ -296,6 +322,17 @@ function PreviewCanvas({
 				return;
 			}
 
+			// Playback updates already run inside the transport's animation frame.
+			// Starting here avoids delaying every preview by another display frame.
+			if (reason === "playback") {
+				if (scheduledRenderRef.current !== null) {
+					cancelAnimationFrame(scheduledRenderRef.current);
+					scheduledRenderRef.current = null;
+				}
+				runRenderRef.current();
+				return;
+			}
+
 			if (scheduledRenderRef.current !== null) {
 				pendingRenderRef.current = true;
 				incrementCounter({ name: "preview.renderCoalesced" });
@@ -310,6 +347,36 @@ function PreviewCanvas({
 		[editor.renderer],
 	);
 
+	useEffect(() => {
+		if (
+			!liveMountRef.current ||
+			isExporting ||
+			forceHyperframesCaptureForDiagnostics()
+		)
+			return;
+		const live = new HyperframesLivePreview({
+			mount: liveMountRef.current,
+			width: nativeWidth,
+			height: nativeHeight,
+			onFallback: () => {
+				lastFrameRef.current = -1;
+				scheduleRender("hyperframesFallback");
+			},
+		});
+		livePreviewRef.current = live;
+		return () => {
+			live.dispose();
+			if (livePreviewRef.current === live) livePreviewRef.current = null;
+		};
+	}, [
+		renderer,
+		nativeWidth,
+		nativeHeight,
+		previewRetry,
+		scheduleRender,
+		isExporting,
+	]);
+
 	const render = useCallback(() => {
 		if (!renderTree || isExportingRef.current || editor.renderer.isExporting) {
 			return;
@@ -317,7 +384,7 @@ function PreviewCanvas({
 		if (renderingRef.current) {
 			pendingRenderRef.current = true;
 			incrementCounter({ name: "preview.renderCoalesced" });
-			return;
+			return renderPromiseRef.current;
 		}
 
 		const renderTime = Math.min(
@@ -336,12 +403,36 @@ function PreviewCanvas({
 
 		renderingRef.current = true;
 		pendingRenderRef.current = false;
+		const attempt = {};
+		renderAttemptRef.current = attempt;
+		setPreviewFailed(false);
+		preparingTimerRef.current = setTimeout(() => {
+			if (renderAttemptRef.current === attempt) setIsPreparing(true);
+		}, 250);
 		lastSceneRef.current = renderTree;
 		lastFrameRef.current = frame;
 		const start = performance.now();
-		void renderer
-			.render({ node: renderTree, time: renderTime })
+		const ticket = playbackProbe.beginFrame({ frame });
+		const rendered = livePreviewRef.current
+			? livePreviewRef.current.render({
+					node: renderTree,
+					time: renderTime,
+					renderer,
+					playing: editor.playback.getIsPlaying(),
+					clockTime: editor.playback.getClockTime(),
+				})
+			: renderer.render({ node: renderTree, time: renderTime });
+		const completion = rendered
 			.then(() => {
+				if (ticket) {
+					playbackProbe.completeFrame({
+						ticket,
+						transportLagMs:
+							(Math.max(0, editor.playback.getCurrentTime() - renderTime) *
+								1000) /
+							TICKS_PER_SECOND,
+					});
+				}
 				incrementCounter({ name: "preview.rendered" });
 				recordSpan({
 					name: "preview.renderTotal",
@@ -350,10 +441,19 @@ function PreviewCanvas({
 				recordFrameInterval({ name: "preview.frame" });
 			})
 			.catch((error: unknown) => {
+				playbackProbe.failFrame({ ticket });
 				lastFrameRef.current = -1;
+				if (renderAttemptRef.current === attempt) setPreviewFailed(true);
 				console.error("Preview render failed:", error);
 			})
 			.finally(() => {
+				if (renderAttemptRef.current === attempt) {
+					if (preparingTimerRef.current !== null) {
+						clearTimeout(preparingTimerRef.current);
+						preparingTimerRef.current = null;
+					}
+					setIsPreparing(false);
+				}
 				const hasQueuedRender = pendingRenderRef.current;
 				if (hasQueuedRender) {
 					incrementCounter({ name: "preview.renderStale" });
@@ -369,6 +469,8 @@ function PreviewCanvas({
 					scheduleRender("queued");
 				}
 			});
+		renderPromiseRef.current = completion;
+		return completion;
 	}, [
 		renderer,
 		renderTree,
@@ -376,7 +478,52 @@ function PreviewCanvas({
 		editor.renderer,
 		editor.timeline,
 		scheduleRender,
+		playbackProbe,
 	]);
+
+	useEffect(() => {
+		let active = true;
+		const unregister = editor.playback.registerPlaybackPreparer({
+			id: "hyperframes-live-preview",
+			prepare: async ({ time, signal }) => {
+				if (
+					!livePreviewRef.current ||
+					!renderTree ||
+					!findHyperframesLiveLayers({ node: renderTree, time }).length
+				)
+					return;
+				// A replay can seek from the final scene back to undecoded video.
+				// Finish the paused frame before the shared transport and mixer start.
+				await renderPromiseRef.current;
+				signal.throwIfAborted();
+				if (!active) return;
+				lastFrameRef.current = -1;
+				await render();
+			},
+		});
+		return () => {
+			active = false;
+			unregister();
+		};
+	}, [editor.playback, render, renderTree]);
+
+	useEffect(() => {
+		const sync = () =>
+			playbackProbe.setPlaying({
+				playing: editor.playback.getIsPlaying() && !isExporting,
+				fps: renderer.fps.numerator / renderer.fps.denominator,
+			});
+		sync();
+		const unsubscribe = editor.playback.subscribe(sync);
+		const unsubscribeSeek = editor.playback.onSeek(() =>
+			playbackProbe.restartForSeek(),
+		);
+		return () => {
+			unsubscribe();
+			unsubscribeSeek();
+			playbackProbe.stop({ reason: "dispose" });
+		};
+	}, [editor.playback, isExporting, playbackProbe, renderer]);
 
 	useEffect(() => {
 		runRenderRef.current = render;
@@ -406,9 +553,13 @@ function PreviewCanvas({
 			scheduleRender("playback");
 		});
 		const unsubscribeSeek = editor.playback.onSeek(() => {
+			livePreviewRef.current?.pause();
+			lastFrameRef.current = -1;
 			scheduleRender("seek");
 		});
 		const unsubscribeState = editor.playback.subscribe(() => {
+			if (!editor.playback.getIsPlaying()) livePreviewRef.current?.pause();
+			lastFrameRef.current = -1;
 			scheduleRender("playbackState");
 		});
 		scheduleRender("mount");
@@ -430,6 +581,11 @@ function PreviewCanvas({
 
 	useEffect(() => {
 		return () => {
+			renderAttemptRef.current = null;
+			if (preparingTimerRef.current !== null) {
+				clearTimeout(preparingTimerRef.current);
+				preparingTimerRef.current = null;
+			}
 			if (scheduledRenderRef.current !== null) {
 				cancelAnimationFrame(scheduledRenderRef.current);
 				scheduledRenderRef.current = null;
@@ -633,7 +789,22 @@ function PreviewCanvas({
 													: activeProject?.settings.background.color,
 											visibility: isExporting ? "hidden" : "visible",
 										}}
-									/>
+									>
+										<div
+											className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+											style={{ display: isExporting ? "none" : undefined }}
+										>
+											<div
+												ref={liveMountRef}
+												style={{
+													width: nativeWidth,
+													height: nativeHeight,
+													transformOrigin: "0 0",
+													transform: `scale(${Math.max(0, viewport.sceneWidth - 2) / nativeWidth}, ${Math.max(0, viewport.sceneHeight - 2) / nativeHeight})`,
+												}}
+											/>
+										</div>
+									</div>
 									{isExporting && (
 										<div
 											className="absolute flex items-center justify-center border bg-background/85 text-xs text-muted-foreground backdrop-blur-sm"
@@ -651,11 +822,42 @@ function PreviewCanvas({
 										instances={overlayInstances}
 										plane="under-interaction"
 									/>
-									<PreviewInteractionOverlay />
+									<Profiler
+										id="previewInteraction"
+										onRender={handleProfilerRender}
+									>
+										<PreviewInteractionOverlay />
+									</Profiler>
 									<PreviewOverlayLayer
 										instances={overlayInstances}
 										plane="over-interaction"
 									/>
+									{!isExporting && (isPreparing || previewFailed) && (
+										<div
+											role={previewFailed ? "alert" : "status"}
+											className="absolute bottom-3 left-1/2 z-10 flex max-w-full -translate-x-1/2 items-center gap-2 rounded-md border bg-background/95 px-3 py-2 text-xs text-foreground shadow-sm"
+										>
+											<span>
+												{previewFailed
+													? "Preview could not be rendered."
+													: "Preparing preview…"}
+											</span>
+											{previewFailed && (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => {
+														setPreviewRetry((value) => value + 1);
+														lastFrameRef.current = -1;
+														lastSceneRef.current = null;
+														scheduleRender("retry");
+													}}
+												>
+													Retry preview
+												</Button>
+											)}
+										</div>
+									)}
 								</div>
 							</ContextMenuTrigger>
 							<PreviewContextMenu
@@ -666,11 +868,13 @@ function PreviewCanvas({
 							/>
 						</ContextMenu>
 					</div>
-					<PreviewToolbar
-						onToggleFullscreen={onToggleFullscreen}
-						overlayControls={overlayControls}
-						onOverlayVisibilityChange={onOverlayVisibilityChange}
-					/>
+					<Profiler id="previewToolbar" onRender={handleProfilerRender}>
+						<PreviewToolbar
+							onToggleFullscreen={onToggleFullscreen}
+							overlayControls={overlayControls}
+							onOverlayVisibilityChange={onOverlayVisibilityChange}
+						/>
+					</Profiler>
 				</div>
 			</PreviewViewportProvider>
 		</Profiler>

@@ -1,8 +1,11 @@
 /** Bound bytes while reading, before allocation or JSON parsing. */
-export async function readBoundedBody(
-	request: Request,
-	maximumBytes: number,
-): Promise<ArrayBuffer> {
+export async function readBoundedBody({
+	request,
+	maximumBytes,
+}: {
+	request: Request;
+	maximumBytes: number;
+}): Promise<ArrayBuffer> {
 	const size = request.headers.get("content-length");
 	if (size && (!/^\d+$/.test(size) || Number(size) > maximumBytes))
 		throw new Error("Request too large");

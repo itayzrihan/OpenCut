@@ -1,5 +1,6 @@
 import {
 	isBatchReadOnly,
+	isBatchProjectLocked,
 	automationReadVersion,
 	acknowledgeAutomationReload,
 } from "@/batch/read-only";
@@ -13,7 +14,22 @@ import type {
 	TTimelineViewState,
 } from "@/project/types";
 import type { ExportOptions, ExportResult, ExportState } from "@/export";
-import { storageService } from "@/services/storage/service";
+import { storageService, deserializeProject } from "@/services/storage/service";
+import type {
+	SerializedProject,
+	SerializedCommandHistory,
+} from "@/services/storage/types";
+import {
+	EditorSessionClient,
+	EditorSessionFailure,
+	type EditorSessionBundle,
+} from "@/editor-agent/session-client";
+import {
+	setEditorOwnershipGuard,
+	assertEditorOwnership,
+} from "@/core/editor-ownership";
+import { batchWriteHeaders } from "@/batch/write-token";
+import { browserEditorSessionId } from "@/editor-agent/session-identity";
 import { toast } from "sonner";
 import { generateUUID } from "@/utils/id";
 import { UpdateProjectSettingsCommand } from "@/commands/project";
@@ -107,10 +123,19 @@ export function filterAndSortProjectMetadata({
 }
 
 export class ProjectManager {
-	private active: TProject | null = null;
+	private activeValue: TProject | null = null;
+	private get active(): TProject | null {
+		return this.activeValue;
+	}
+	private set active(project: TProject | null) {
+		this.editor.command.synchronizeProject(project);
+		this.activeValue = project;
+	}
 	private savedProjects: TProjectMetadata[] = [];
 	private isLoading = true;
-	private projectLoad: { id: string; promise: Promise<boolean> } | undefined;
+	private projectLoad:
+		| { id: string; takeOver: boolean; promise: Promise<boolean> }
+		| undefined;
 	private isInitialized = false;
 	private loadError: string | null = null;
 	private migrationFailures: StorageMigrationFailure[] = [];
@@ -130,8 +155,143 @@ export class ProjectManager {
 		result: null,
 	};
 	private exportCancelRequested = false;
+	private editorSession: EditorSessionClient | null = null;
+	private sessionTimer: ReturnType<typeof setInterval> | null = null;
+	private sessionReadOnly: string | null = null;
+	private sessionProjectId: string | null = null;
+	private sessionRenewing = false;
+	private sessionOwnershipLost = false;
+	private sessionWakeCleanup: (() => void) | null = null;
+	private sessionAccountId: string | null = null;
 
 	constructor(private editor: EditorCore) {}
+
+	dispose(): void {
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
+		this.editorSession?.dispose();
+		if (this.sessionTimer) clearInterval(this.sessionTimer);
+		this.sessionTimer = null;
+		if (this.sessionProjectId)
+			setEditorOwnershipGuard({
+				projectId: this.sessionProjectId,
+				reason: null,
+			});
+		this.editorSession = null;
+		this.sessionProjectId = null;
+	}
+
+	getSessionReadOnlyReason(): string | null {
+		return this.sessionReadOnly;
+	}
+	private setSessionReadOnly({
+		reason,
+		ownershipLost = true,
+	}: {
+		reason: string | null;
+		ownershipLost?: boolean;
+	}): void {
+		if (
+			this.sessionReadOnly === reason &&
+			this.sessionOwnershipLost === (!!reason && ownershipLost)
+		)
+			return;
+		this.sessionReadOnly = reason;
+		this.sessionOwnershipLost = !!reason && ownershipLost;
+		if (this.sessionProjectId)
+			setEditorOwnershipGuard({ projectId: this.sessionProjectId, reason });
+		if (reason) {
+			try {
+				if (this.editor.command.getEditingAgentSnapshot())
+					this.editor.command.executeEditingAgentCommand({ type: "pause" });
+			} catch {
+				/* An account switch invalidates the old run's scope. */
+			}
+		}
+		this.notify();
+	}
+	async takeOverEditorSession(): Promise<void> {
+		const id = this.active?.metadata.id;
+		if (!id) throw new Error("Open the project before taking ownership");
+		await this.loadProject({ id, takeOver: true });
+	}
+	private startSessionHeartbeat(): void {
+		if (this.sessionTimer) clearInterval(this.sessionTimer);
+		this.sessionWakeCleanup?.();
+		const renew = () => {
+			if (
+				this.sessionRenewing ||
+				!this.editorSession ||
+				this.sessionOwnershipLost
+			)
+				return;
+			const session = this.editorSession;
+			this.sessionRenewing = true;
+			void session
+				.renew()
+				.then(() => {
+					if (this.editorSession === session && this.sessionReadOnly)
+						this.setSessionReadOnly({ reason: null });
+				})
+				.catch((error) => {
+					// A failed heartbeat says nothing about another owner. Keep the
+					// editor mounted; actual writes remain checked by the host fence.
+					if (
+						this.editorSession === session &&
+						error instanceof EditorSessionFailure &&
+						error.definitive
+					)
+						this.setSessionReadOnly({
+							reason:
+								error instanceof Error
+									? error.message
+									: "Editor ownership could not be renewed",
+							ownershipLost:
+								error instanceof EditorSessionFailure && error.definitive,
+						});
+				})
+				.finally(() => {
+					this.sessionRenewing = false;
+				});
+		};
+		this.sessionTimer = setInterval(renew, 25_000);
+		if (
+			typeof window !== "undefined" &&
+			window.addEventListener &&
+			typeof document !== "undefined"
+		) {
+			const onVisible = () => {
+				if (document.visibilityState === "visible") renew();
+			};
+			window.addEventListener("focus", renew);
+			window.addEventListener("online", renew);
+			document.addEventListener("visibilitychange", onVisible);
+			this.sessionWakeCleanup = () => {
+				window.removeEventListener("focus", renew);
+				window.removeEventListener("online", renew);
+				document.removeEventListener("visibilitychange", onVisible);
+			};
+		}
+	}
+	private async releaseEditorSession(): Promise<void> {
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
+		if (this.sessionTimer) clearInterval(this.sessionTimer);
+		this.sessionTimer = null;
+		const session = this.editorSession;
+		if (session && !this.sessionReadOnly) await session.release();
+		session?.dispose();
+		if (this.sessionProjectId)
+			setEditorOwnershipGuard({
+				projectId: this.sessionProjectId,
+				reason: null,
+			});
+		this.editorSession = null;
+		this.sessionProjectId = null;
+		this.sessionAccountId = null;
+		this.sessionReadOnly = null;
+		this.sessionOwnershipLost = false;
+	}
 
 	private async ensureStorageMigrations(): Promise<StorageMigrationResult> {
 		if (!this.storageMigrationPromise) {
@@ -178,6 +338,17 @@ export class ProjectManager {
 		name: string;
 		id?: string;
 	}): Promise<string> {
+		if (this.editorSession) {
+			if (this.sessionReadOnly && this.editor.save.getIsDirty())
+				throw new Error(
+					"Recover this editor's unsaved changes before creating another project",
+				);
+			if (!this.sessionReadOnly) {
+				await this.editor.save.flush();
+				await this.editor.command.flushHistory();
+			}
+			await this.releaseEditorSession();
+		}
 		const sharedFonts = await this.loadSharedFonts();
 		const mainScene = buildDefaultScene({ name: "Main scene", isMain: true });
 		const newProject: TProject = {
@@ -233,11 +404,28 @@ export class ProjectManager {
 		}
 	}
 
-	async loadProject({ id }: { id: string }): Promise<boolean> {
-		if (this.projectLoad?.id === id) return this.projectLoad.promise;
+	async loadProject({
+		id,
+		takeOver = false,
+	}: {
+		id: string;
+		takeOver?: boolean;
+	}): Promise<boolean> {
+		if (this.projectLoad) {
+			if (
+				this.projectLoad.id === id &&
+				(!takeOver || this.projectLoad.takeOver)
+			)
+				return this.projectLoad.promise;
+			await this.projectLoad.promise.catch(() => {});
+			// Re-enter after the previous replacement settles, so a newer request
+			// cannot race scene clearing or overwrite an acquired session.
+			return this.loadProject({ id, takeOver });
+		}
 
-		const promise = this.loadProjectOnce({ id });
-		this.projectLoad = { id, promise };
+		if (!takeOver && this.canReuseLoadedProject(id)) return true;
+		const promise = this.loadProjectOnce({ id, takeOver });
+		this.projectLoad = { id, takeOver, promise };
 		try {
 			return await promise;
 		} finally {
@@ -245,6 +433,45 @@ export class ProjectManager {
 				this.projectLoad = undefined;
 			}
 		}
+	}
+
+	/** Reattaching a view must not release its own live editor session. */
+	canReuseLoadedProject(id: string): boolean {
+		const accountId =
+			(typeof window === "undefined" ? null : window.__opencutAccountId) ??
+			"local";
+		return (
+			this.active?.metadata.id === id &&
+			!this.isLoading &&
+			!!this.editorSession &&
+			this.sessionAccountId === accountId &&
+			!this.sessionOwnershipLost &&
+			!isBatchReadOnly(id) &&
+			this.editor.command.hasAtomicSessionStorage()
+		);
+	}
+
+	/** Host ownership handoff only: retain the canonical scene and media handles. */
+	observeBatchPreview({ id }: { id: string }): boolean {
+		if (
+			this.active?.metadata.id !== id ||
+			this.isLoading ||
+			!isBatchReadOnly(id)
+		)
+			return false;
+		// The handoff already flushed the project and history. The queue now
+		// fences ordinary writes; the worker acquires the next ownership generation.
+		if (this.sessionTimer) clearInterval(this.sessionTimer);
+		this.sessionTimer = null;
+		this.sessionWakeCleanup?.();
+		this.sessionWakeCleanup = null;
+		this.editorSession?.dispose();
+		this.editorSession = null;
+		this.editor.save.pause();
+		this.setSessionReadOnly({
+			reason: "Full Auto Edit is working on this project",
+		});
+		return true;
 	}
 
 	/** Refresh a locked viewer without clearing its active scene or editor history. */
@@ -275,12 +502,21 @@ export class ProjectManager {
 		this.notify();
 	}
 
-	private async loadProjectOnce({ id }: { id: string }): Promise<boolean> {
-		if (this.active && this.active.metadata.id !== id) {
+	private async loadProjectOnce({
+		id,
+		takeOver = false,
+	}: {
+		id: string;
+		takeOver?: boolean;
+	}): Promise<boolean> {
+		const wasReadOnly = !!this.sessionReadOnly;
+		if (this.active && !this.sessionReadOnly) {
 			// Route changes can switch projects without going through the explicit Exit
 			// action. Persist the current project before clearing any in-memory state.
 			await this.editor.save.flush();
+			await this.editor.command.flushHistory();
 		}
+		await this.releaseEditorSession();
 
 		this.isLoading = true;
 		this.notify();
@@ -296,6 +532,8 @@ export class ProjectManager {
 					`This project could not be upgraded safely: ${migrationFailure.message}. Its original stored record was preserved in recovery storage.`,
 				);
 			}
+			if (!takeOver && !wasReadOnly) await this.editor.command.flushHistory();
+			this.editor.command.detachCanonical();
 			this.editor.media.clearAllAssets();
 			this.editor.scenes.clearScenes();
 
@@ -307,7 +545,53 @@ export class ProjectManager {
 				return false;
 			}
 
-			const project = result.project;
+			const accountId =
+				(typeof window === "undefined" ? null : window.__opencutAccountId) ??
+				"local";
+			const batchWorker = !!batchWriteHeaders()["X-OpenCut-Batch-Token"];
+			const sessionId = batchWorker
+				? crypto.randomUUID()
+				: await browserEditorSessionId({ accountId, projectId: id });
+			const session = new EditorSessionClient({
+				accountId,
+				projectId: id,
+				sessionId,
+			});
+			let view = await session.read();
+			let canAcquire =
+				!isBatchProjectLocked(id) &&
+				(!view.lease ||
+					session.isCurrentOwner(view) ||
+					takeOver ||
+					batchWorker);
+			if (canAcquire) {
+				const outcome = await session.acquireOrObserve({
+					expectedGeneration: view.generation,
+					takeOver: takeOver || batchWorker,
+				});
+				view = outcome.view;
+				canAcquire = outcome.acquired;
+			}
+			this.editorSession = session;
+			this.sessionProjectId = id;
+			this.sessionAccountId = accountId;
+			this.setSessionReadOnly({
+				reason: canAcquire
+					? null
+					: "This project is open in another editor. Take ownership to edit its latest saved version.",
+			});
+			// Keep ownership alive while fonts, media and the archive hydrate.
+			if (canAcquire) this.startSessionHeartbeat();
+			// Rust validates saved projects and archives. Legacy data goes through
+			// the same canonical attachment validation before its first commit.
+			const project = deserializeProject(
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Rust validates saved documents and legacy attachment before any write.
+				(view.saved?.project ?? view.legacyProject) as SerializedProject,
+			);
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Canonical restore validates this opaque archive below.
+			const atomicBundle = view.saved?.bundle as
+				| EditorSessionBundle
+				| undefined;
 			const customFontFamilies = new Set(
 				project.customFonts?.map((font) => font.family) ?? [],
 			);
@@ -315,7 +599,13 @@ export class ProjectManager {
 			const mediaPromise = this.editor.media.loadProjectMedia({
 				projectId: id,
 			});
-			const historyPromise = this.editor.command.loadHistory({ projectId: id });
+			const historyPromise = this.editor.command.loadHistory({
+				projectId: id,
+				history: atomicBundle
+					? null
+					: // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Legacy history becomes validated canonical boundaries before adoption.
+						(view.legacyHistory as SerializedCommandHistory | null),
+			});
 			const fontFamiliesPromise = loadFonts({
 				families: [
 					...new Set(
@@ -344,13 +634,48 @@ export class ProjectManager {
 			}
 
 			await Promise.all([mediaPromise, historyPromise, fontFamiliesPromise]);
+			// Every editor session shares the same validated document and history,
+			// including projects which have never imported a HyperFrames composition.
+			await this.editor.command.enableCanonical({
+				atomicBundle,
+				persistInitial: canAcquire,
+				persistSession: async (capture) => {
+					if (this.editorSession !== session || this.sessionOwnershipLost)
+						throw new Error(
+							this.sessionReadOnly ?? "The editor session changed",
+						);
+					try {
+						await session.save(capture);
+						if (this.editorSession === session && this.sessionReadOnly)
+							this.setSessionReadOnly({ reason: null });
+					} catch (error) {
+						if (this.editorSession !== session) throw error;
+						if (error instanceof EditorSessionFailure && error.definitive) {
+							this.setSessionReadOnly({ reason: error.message });
+						} else {
+							// The client retains the exact uncertain commit and reconciles
+							// it before capturing newer edits. A transport outage is not
+							// an ownership transfer and must not tear down the editor.
+							this.editor.save.markDirty({ force: true });
+						}
+						throw error;
+					}
+				},
+			});
+			if (canAcquire) {
+				await this.editor.command.flushHistory();
+			}
 			this.editor.save.discardPending();
 			acknowledgeAutomationReload({
 				projectId: id,
 				version: automationVersion,
 			});
 
-			if (!projectWithFonts.metadata.thumbnail && !isBatchReadOnly(id)) {
+			if (
+				!projectWithFonts.metadata.thumbnail &&
+				!isBatchReadOnly(id) &&
+				!this.sessionReadOnly
+			) {
 				try {
 					const didUpdateThumbnail = await this.updateThumbnailFromTimeline();
 					if (didUpdateThumbnail) {
@@ -362,6 +687,10 @@ export class ProjectManager {
 			}
 			return true;
 		} catch (error) {
+			if (this.sessionTimer) clearInterval(this.sessionTimer);
+			this.sessionTimer = null;
+			this.sessionWakeCleanup?.();
+			this.sessionWakeCleanup = null;
 			console.error("Failed to load project:", error);
 			throw error;
 		} finally {
@@ -374,9 +703,20 @@ export class ProjectManager {
 	async saveCurrentProject(): Promise<void> {
 		if (isBatchReadOnly(this.active?.metadata.id)) return;
 		if (!this.active) return;
+		if (!this.sessionReadOnly || this.sessionOwnershipLost)
+			assertEditorOwnership(this.active.metadata.id);
 
 		const projectAtSaveStart = this.active;
 		try {
+			if (this.editor.command.hasAtomicSessionStorage()) {
+				// Saving is IO, not another edit. Reassigning active with a fresh
+				// timestamp increments the canonical revision and invalidates an
+				// in-flight agent render/review even though no content changed.
+				await this.editor.command.persistEditingSession();
+				if (this.active?.metadata.id === projectAtSaveStart.metadata.id)
+					this.updateMetadata(this.active);
+				return;
+			}
 			const scenes = this.editor.scenes.getScenes();
 			const updatedProject = {
 				...projectAtSaveStart,
@@ -555,6 +895,7 @@ export class ProjectManager {
 				this.active && idSet.has(this.active.metadata.id);
 
 			if (shouldClearActive) {
+				this.dispose();
 				this.active = null;
 				this.editor.media.clearAllAssets();
 				this.editor.scenes.clearScenes();
@@ -655,7 +996,7 @@ export class ProjectManager {
 		this.active = updatedProject;
 		this.notify();
 		this.updateMetadata(updatedProject);
-		await storageService.saveProject({ project: updatedProject });
+		await this.saveCurrentProject();
 
 		return importedFonts;
 	}
@@ -682,6 +1023,23 @@ export class ProjectManager {
 		name: string;
 	}): Promise<void> {
 		try {
+			if (this.active?.metadata.id === id) {
+				assertEditorOwnership(id);
+				this.active = {
+					...this.active,
+					metadata: { ...this.active.metadata, name },
+				};
+				await this.saveCurrentProject();
+				this.notify();
+				return;
+			}
+			const { renameSavedEditorProject } =
+				await import("@/editor-agent/saved-project");
+			const canonical = await renameSavedEditorProject({ projectId: id, name });
+			if (canonical) {
+				this.updateMetadata(canonical);
+				return;
+			}
 			const result = await storageService.loadProject({ id });
 			if (!result) {
 				toast.error("Project not found", {
@@ -851,22 +1209,19 @@ export class ProjectManager {
 		}
 	}
 
-	async updateSettings({
+	updateSettings({
 		settings,
 		pushHistory = true,
 	}: {
 		settings: Partial<TProjectSettings>;
 		pushHistory?: boolean;
-	}): Promise<void> {
+	}): void {
 		if (!this.active) return;
 
-		const command = new UpdateProjectSettingsCommand(settings);
-		if (pushHistory) {
-			this.editor.command.execute({ command });
-			return;
+		if (!this.editor.command.updateClassicSettings({ settings, pushHistory })) {
+			// Compatibility projection while replaying an existing import command.
+			new UpdateProjectSettingsCommand(settings).execute();
 		}
-
-		command.execute();
 	}
 
 	ratchetFpsForImportedMedia({
@@ -901,6 +1256,17 @@ export class ProjectManager {
 
 	async prepareExit(): Promise<void> {
 		if (!this.active) return;
+		if (this.sessionOwnershipLost) {
+			if (this.editor.save.getIsDirty())
+				throw new Error(
+					"This editor lost ownership with unsaved changes. Keep it open to recover those changes before exiting.",
+				);
+			await this.releaseEditorSession();
+			return;
+		}
+		const run = this.editor.command.getEditingAgentSnapshot();
+		if (run && run.phase !== "completed" && run.phase !== "failed")
+			this.editor.command.executeEditingAgentCommand({ type: "pause" });
 
 		try {
 			await this.updateThumbnailFromTimeline();
@@ -926,6 +1292,7 @@ export class ProjectManager {
 				"Failed to persist the project on exit",
 			);
 		}
+		await this.releaseEditorSession();
 	}
 
 	getFilteredAndSortedProjects({
@@ -1058,6 +1425,7 @@ export class ProjectManager {
 						url: stored.url,
 					};
 				}
+				if (this.sessionReadOnly) return font;
 				return (
 					(await this.restoreProjectFontFromRepository({
 						projectId: project.metadata.id,
@@ -1195,6 +1563,7 @@ export class ProjectManager {
 		const { canvasSize, background } = this.active.settings;
 
 		const scene = buildScene({
+			hyperframes: this.editor.renderer.getHyperframesRenderContext(),
 			tracks,
 			mediaAssets,
 			duration: duration || 1,

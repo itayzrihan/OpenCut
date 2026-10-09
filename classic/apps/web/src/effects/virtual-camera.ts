@@ -21,7 +21,11 @@ export function readCameraLayerSettings({
 	const depthValue = params[CAMERA_DEPTH_PARAM];
 	const depth =
 		typeof depthValue === "number" && Number.isFinite(depthValue)
-			? clamp(depthValue, CAMERA_DEPTH_MIN, CAMERA_DEPTH_MAX)
+			? clamp({
+					value: depthValue,
+					min: CAMERA_DEPTH_MIN,
+					max: CAMERA_DEPTH_MAX,
+				})
 			: DEFAULT_CAMERA_DEPTH;
 
 	return {
@@ -37,15 +41,27 @@ export function resolveCameraDepthFactor({
 	depth: number;
 	parallaxStrength: number;
 }): number {
-	const normalizedDepth = clamp(depth, CAMERA_DEPTH_MIN, CAMERA_DEPTH_MAX);
-	const strength = clamp(parallaxStrength, 0, 1);
-	return clamp(
-		1 + (normalizedDepth - DEFAULT_CAMERA_DEPTH) * strength,
-		0.15,
-		3,
-	);
+	const normalizedDepth = clamp({
+		value: depth,
+		min: CAMERA_DEPTH_MIN,
+		max: CAMERA_DEPTH_MAX,
+	});
+	const strength = clamp({ value: parallaxStrength, min: 0, max: 1 });
+	return clamp({
+		value: 1 + (normalizedDepth - DEFAULT_CAMERA_DEPTH) * strength,
+		min: 0.15,
+		max: 3,
+	});
 }
 
-function clamp(value: number, min: number, max: number): number {
+function clamp({
+	value,
+	min,
+	max,
+}: {
+	value: number;
+	min: number;
+	max: number;
+}): number {
 	return Math.max(min, Math.min(max, value));
 }

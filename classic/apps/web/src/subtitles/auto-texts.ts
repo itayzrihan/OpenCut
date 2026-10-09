@@ -24,28 +24,41 @@ export async function runAutoTexts({
 	onProgress,
 	settings,
 	language,
+	resumeTranscript = false,
 }: {
 	editor: EditorCore;
 	signal: AbortSignal;
 	onProgress: (s: string) => void;
 	settings: CaptionLayoutSettings;
 	language: TranscriptionLanguage;
+	/** Only for resuming the same failed Full Auto caption stage. */
+	resumeTranscript?: boolean;
 }) {
 	signal.throwIfAborted();
 	const cancel = () => editor.transcription.cancel();
 	signal.addEventListener("abort", cancel, { once: true });
 	try {
-		onProgress("Transcribing speech…");
-		const unsubscribe = editor.transcription.subscribe(() => {
-			const { task } = editor.transcription.getState();
-			if (task.status === "running" && task.phase) onProgress(task.phase);
-		});
-		const state = await editor.transcription
-			.start({ language, settings })
-			.finally(unsubscribe);
-		signal.throwIfAborted();
-		if (state.task.status !== "succeeded")
-			throw new Error(state.task.error || "Transcription did not complete");
+		const savedSource = resumeTranscript
+			? findCaptionSourceTrack({
+					tracks: editor.scenes.getActiveScene().tracks,
+				})?.captionSource
+			: undefined;
+		if (savedSource?.words.length) {
+			onProgress("Continuing Auto Texts from the saved transcript…");
+		} else {
+			onProgress("Transcribing speech…");
+			const unsubscribe = editor.transcription.subscribe(() => {
+				const { task } = editor.transcription.getState();
+				if (task.status === "running" && task.phase) onProgress(task.phase);
+			});
+			const state = await editor.transcription
+				.start({ language, settings })
+				.finally(unsubscribe);
+			signal.throwIfAborted();
+			if (state.task.status !== "succeeded")
+				throw new Error(state.task.error || "Transcription did not complete");
+		}
+
 		for (const operation of ["correct", "rearrange"] as const) {
 			signal.throwIfAborted();
 			const scene = editor.scenes.getActiveScene();

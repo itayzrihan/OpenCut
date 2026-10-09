@@ -16,41 +16,38 @@ test("device identities survive concurrent reads, encrypt names, and reject forg
 		previous = process.env.OPENCUT_ACCOUNTS_DIR;
 	process.env.OPENCUT_ACCOUNTS_DIR = join(root, "host");
 	try {
-		const { account } = await registerAccount(
-			"device-owner",
-			"Device Owner",
-			"device verification test password",
+		const { account } = await registerAccount({ login: "device-owner", displayName: "Device Owner", password: "device verification test password" }
 		);
 		const vault = join(root, "vault"),
 			key = randomBytes(32);
 		await accountScope.run(account, async () => {
 			const devices = await Promise.all(
 				Array.from({ length: 8 }, () =>
-					localStorageDevice(undefined, "Private machine name"),
+					localStorageDevice({ existingId: undefined, name: "Private machine name" }),
 				),
 			);
 			expect(new Set(devices.map((device) => device.id)).size).toBe(1);
 			expect(new Set(devices.map((device) => device.fingerprint)).size).toBe(1);
 			const device = devices[0];
-			await publishStorageDevice(vault, key, device);
-			expect((await listStorageDevices(vault, key))[0]).toEqual(device);
+			await publishStorageDevice({ root: vault, key: key, device: device });
+			expect((await listStorageDevices({ root: vault, key: key }))[0]).toEqual(device);
 			const path = join(vault, "devices", `${device.id}.device`),
 				bytes = await readFile(path);
 			expect(bytes.includes(Buffer.from(device.name))).toBe(false);
 			await accountScope.run(
 				{ ...account, id: "different-account" },
 				async () => {
-					await expect(listStorageDevices(vault, key)).rejects.toThrow();
+					await expect(listStorageDevices({ root: vault, key: key })).rejects.toThrow();
 				},
 			);
 			const aad = `${account.id}:device:${device.id}`,
-				forged = JSON.parse(unseal(bytes, key, aad).toString("utf8"));
+				forged = JSON.parse(unseal({ data: bytes, key: key, aad: aad }).toString("utf8"));
 			forged.name = "Forged machine name";
 			await writeFile(
 				path,
-				seal(Buffer.from(JSON.stringify(forged)), key, aad),
+				seal({ data: Buffer.from(JSON.stringify(forged)), key: key, aad: aad }),
 			);
-			await expect(listStorageDevices(vault, key)).rejects.toThrow(
+			await expect(listStorageDevices({ root: vault, key: key })).rejects.toThrow(
 				"verification failed",
 			);
 		});

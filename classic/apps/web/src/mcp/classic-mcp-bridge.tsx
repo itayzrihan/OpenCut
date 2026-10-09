@@ -87,7 +87,7 @@ async function createBridgeToolRuntime({
 			includeMediaAccess: true,
 			includePreviewImage: true,
 			includeAppControlAccess: true,
-			includeNetworkAccess: false,
+			includeNetworkAccess: !toolName || toolName === "smart_takes.start",
 		},
 	});
 }
@@ -136,6 +136,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		const sessionId = crypto.randomUUID();
 		let revision = 1;
 		let timelineDirty = true;
+		let lastProject = editor.project.getActiveOrNull();
 		let cachedTimeline: unknown = null;
 		let tools: ReturnType<typeof advertisedTool>[] = [];
 		let publishTimer: number | null = null;
@@ -234,6 +235,14 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 			revision += 1;
 			timelineDirty = true;
 			schedulePublish();
+		};
+		const markProjectChanged = () => {
+			const project = editor.project.getActiveOrNull();
+			// Export progress and library status share this store's notifications.
+			// Only a changed active project invalidates its document snapshot.
+			if (project === lastProject) return;
+			lastProject = project;
+			markDocumentChanged();
 		};
 		const markStateChanged = () => {
 			revision += 1;
@@ -360,7 +369,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		const unsubscribers = [
 			editor.timeline.subscribe(markDocumentChanged),
 			editor.scenes.subscribe(markDocumentChanged),
-			editor.project.subscribe(markDocumentChanged),
+			editor.project.subscribe(markProjectChanged),
 			editor.media.subscribe(markDocumentChanged),
 			editor.selection.subscribe(markStateChanged),
 			editor.playback.subscribe(markPlaybackChanged),

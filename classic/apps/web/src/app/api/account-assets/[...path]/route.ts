@@ -1,3 +1,4 @@
+import { globalAudioFile } from "@/shared-library/global-library";
 import { stat } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { accountDataRoot, withAccount } from "@/accounts/server";
@@ -9,13 +10,13 @@ const types: Record<string, string> = { ".mp3": "audio/mpeg", ".wav": "audio/wav
 const serve = withAccount(async (request: Request, context: { params: Promise<{ path: string[] }> }) => {
 	const { path } = await context.params;
 	if (!path.length || !["shared-library", "project-fonts"].includes(path[0]) || path.some((part) => !/^[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9]+)?$/.test(part))) return new Response(null, { status: 404 });
-	const file = join(accountDataRoot(), ...path);
+	const file = (await globalAudioFile(path)) ?? join(accountDataRoot(), ...path);
 	const type = types[extname(file).toLowerCase()];
 	if (!type) return new Response(null, { status: 404 });
 	try {
 		const info = await stat(file);
 		if (!info.isFile()) return new Response(null, { status: 404 });
-		const range = readByteRange(request.headers.get("range"), info.size);
+		const range = readByteRange({ header: request.headers.get("range"), size: info.size });
 		if (range?.invalid) return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${info.size}` } });
 		const start = range?.start ?? 0, end = range?.end ?? info.size - 1;
 		const headers = new Headers({ "Content-Type": type, "Content-Length": String(Math.max(0, end - start + 1)), "Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "sandbox" });

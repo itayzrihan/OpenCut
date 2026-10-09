@@ -1,7 +1,5 @@
+import { expectMigratedBundleAudio } from "../../../test-support/private-bundle-audio";
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import type { SharedLibraryManifest } from "@/shared-library/types";
 import { getUiElementAnimationOptions } from "@/ui-elements/animation-options";
 import {
 	CANCELLATION_CHECKLIST_GLITCH_ASSET_ID,
@@ -11,24 +9,6 @@ import {
 const preset = UI_ELEMENT_PRESETS.find(
 	(candidate) => candidate.id === "rtl-cancellation-checklist-sfx",
 );
-
-function isSharedLibraryManifest(
-	value: unknown,
-): value is SharedLibraryManifest {
-	return (
-		typeof value === "object" &&
-		value !== null &&
-		Array.isArray(Reflect.get(value, "audioAssets"))
-	);
-}
-
-function readManifest(): SharedLibraryManifest | null {
-	const manifestPath = fileURLToPath(
-		new URL("../../../public/shared-library/manifest.json", import.meta.url),
-	);
-	const parsed: unknown = JSON.parse(readFileSync(manifestPath, "utf8"));
-	return isSharedLibraryManifest(parsed) ? parsed : null;
-}
 
 describe("RTL cancellation checklist UI element", () => {
 	test("keeps transcript timing, RTL layout, red event, and stationary exit", () => {
@@ -56,7 +36,7 @@ describe("RTL cancellation checklist UI element", () => {
 		});
 	});
 
-	test("bundles the cancellation sound at the exit beat", () => {
+	test("bundles the cancellation sound at the exit beat and preserves private access", async () => {
 		expect(preset?.bundle?.graphics).toHaveLength(1);
 		expect(preset?.bundle?.audio).toHaveLength(1);
 		expect(preset?.bundle?.audio[0]).toMatchObject({
@@ -65,17 +45,6 @@ describe("RTL cancellation checklist UI element", () => {
 			durationSeconds: 1.985281,
 		});
 
-		const asset = readManifest()?.audioAssets.find(
-			(candidate) =>
-				candidate.id === CANCELLATION_CHECKLIST_GLITCH_ASSET_ID,
-		);
-		expect(asset?.name).toBe("alexzavesa-woosh-glitch-1-463012");
-		expect(asset?.repositoryPath).toBeTruthy();
-		if (!asset?.repositoryPath) return;
-		const audioPath = fileURLToPath(
-			new URL(`../../../${asset.repositoryPath}`, import.meta.url),
-		);
-		expect(existsSync(audioPath)).toBe(true);
-		expect(statSync(audioPath).size).toBeGreaterThan(0);
+		await expectMigratedBundleAudio([CANCELLATION_CHECKLIST_GLITCH_ASSET_ID]);
 	});
 });

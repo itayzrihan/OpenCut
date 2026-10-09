@@ -3,7 +3,17 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use time::MediaTime;
 
+mod caption_layout;
 mod captions;
+pub use caption_layout::*;
+mod caption_sync;
+pub use caption_sync::*;
+mod caption_presentation;
+pub use caption_presentation::*;
+mod caption_text;
+pub use caption_text::*;
+mod caption_scene;
+pub use caption_scene::*;
 mod audio_sync;
 pub use audio_sync::*;
 mod automatic_zoom;
@@ -11,14 +21,18 @@ pub use automatic_zoom::*;
 mod automatic_text_transitions;
 pub use automatic_text_transitions::*;
 mod edit_provenance;
-mod silence_analysis;
 mod restore_silence;
+mod silence_analysis;
+mod smart_silence;
 pub use restore_silence::*;
+mod restore_silence_captions;
+pub use restore_silence_captions::*;
 mod source_document;
 
 pub use captions::*;
 pub use edit_provenance::*;
 pub use silence_analysis::*;
+pub use smart_silence::*;
 pub use source_document::*;
 
 const DEFAULT_RETIME_RATE: f64 = 1.0;

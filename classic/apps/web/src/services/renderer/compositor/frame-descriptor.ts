@@ -1,3 +1,4 @@
+import { PushBrollNode, TextGraphicsNode } from "../nodes/push-broll-node";
 import { drawCssBackground } from "@/gradients";
 import { getGraphicDefinition, getGraphicLayoutSize } from "@/graphics";
 import { getMaskDefinition } from "@/masks";
@@ -72,9 +73,12 @@ const staticFrameFragmentCache = new WeakMap<
 export async function buildFrameDescriptor({
 	node,
 	renderer,
+	rootPath = "root",
 }: {
 	node: AnyBaseNode;
 	renderer: RendererSize;
+	/** Separate texture IDs for groups rendered in the same compositor batch. */
+	rootPath?: string;
 }): Promise<{
 	frame: FrameDescriptor;
 	textures: TextureUploadDescriptor[];
@@ -85,7 +89,7 @@ export async function buildFrameDescriptor({
 	await collectNode({
 		node,
 		renderer,
-		path: "root",
+		path: rootPath,
 		items,
 		textures,
 	});
@@ -278,6 +282,109 @@ async function collectNodeUncached({
 		return;
 	}
 
+	if (node instanceof TextGraphicsNode) {
+		const text = node.children[0];
+		if (!(text instanceof TextNode)) return;
+		const textItems: FrameItemDescriptor[] = [];
+		await collectNode({
+			node: text,
+			renderer,
+			path: `${path}:target`,
+			items: textItems,
+			textures,
+		});
+		const graphics: FrameItemDescriptor[] = [];
+		if (node.resolved && text.resolved)
+			for (let i = 1; i < node.children.length; i++)
+				await collectNode({
+					node: node.children[i],
+					renderer,
+					path: `${path}:graphics:${i}`,
+					items: graphics,
+					textures,
+				});
+		if (!graphics.length || !node.resolved || !text.resolved) {
+			items.push(...textItems);
+			return;
+		}
+		const progress = node.resolved.progress;
+		const sign = node.params.edge === "top" ? -1 : 1;
+		const scale = node.params.screenPercent / 100;
+		const h = renderer.height * scale;
+		const gap = renderer.height * 0.012;
+		const textHeight =
+			text.resolved.measuredText.visualRect.height *
+			Math.abs(text.resolved.transform.scaleY);
+		const anchorX =
+			text.params.canvasCenter.x + text.resolved.transform.position.x;
+		const anchorY =
+			text.params.canvasCenter.y + text.resolved.transform.position.y;
+		items.push({
+			type: "group",
+			items: textItems,
+			opacity: 1,
+			blendMode: "normal",
+			transform: {
+				...fullCanvasTransform({ renderer }),
+				centerY: renderer.height / 2 - (sign * (h + gap) * progress) / 2,
+			},
+		});
+		items.push({
+			type: "group",
+			items: graphics,
+			opacity: progress * text.resolved.opacity,
+			blendMode: "normal",
+			transform: {
+				...fullCanvasTransform({ renderer }),
+				width: renderer.width * scale * progress,
+				height: h * progress,
+				centerX: anchorX,
+				centerY: anchorY + sign * (textHeight / 2 + gap / 2) * progress,
+			},
+		});
+		return;
+	}
+	if (node instanceof PushBrollNode) {
+		if (!node.resolved) return;
+		const nestedItems: FrameItemDescriptor[] = [];
+		for (let i = 0; i < node.children.length; i++)
+			await collectNode({
+				node: node.children[i],
+				renderer,
+				path: `${path}:broll:${i}`,
+				items: nestedItems,
+				textures,
+			});
+		// An unfilled nested scene leaves the existing frame intact.
+		if (!nestedItems.length) return;
+		const band = (renderer.height * node.params.screenPercent) / 100;
+		const revealed = band * node.resolved.progress;
+		const top = node.params.edge === "top";
+		const offset = top ? revealed : -revealed;
+		const base = items.splice(0);
+		items.push({
+			type: "group",
+			items: base,
+			opacity: 1,
+			blendMode: "normal",
+			transform: {
+				...fullCanvasTransform({ renderer }),
+				centerY: renderer.height / 2 + offset,
+			},
+		});
+		const bandCenter = top
+			? revealed - band / 2
+			: renderer.height - revealed + band / 2;
+		items.push({
+			type: "group",
+			items: nestedItems,
+			opacity: 1,
+			blendMode: "normal",
+			transform: { ...fullCanvasTransform({ renderer }), centerY: bandCenter },
+			clip: [0, top ? 0 : renderer.height - revealed, renderer.width, revealed],
+		});
+		return;
+	}
 	if (node instanceof ParallaxSceneNode) {
 		if (!node.resolved) return;
 		const nestedItems: FrameItemDescriptor[] = [];
@@ -1524,7 +1631,7 @@ function getCameraLayerMetadata(
 	);
 }
 
-function computeVisualTransform({
+export function computeVisualTransform({
 	renderer,
 	resolved,
 	sourceWidth,

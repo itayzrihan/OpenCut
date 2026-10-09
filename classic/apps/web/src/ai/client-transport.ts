@@ -45,10 +45,13 @@ export function forgetClientAiPairing() {
 	const id = window.__opencutAccountId;
 	if (id) sessionStorage.removeItem(key(id));
 }
-export async function aiClientFetch(
-	path: string,
-	init: RequestInit = {},
-): Promise<Response> {
+export async function aiClientFetch({
+	path,
+	init = {},
+}: {
+	path: string;
+	init?: RequestInit;
+}): Promise<Response> {
 	if (!/^\/api\/ai\/(chat|models|oauth\/(status|device|logout))$/.test(path))
 		throw new Error("Unsupported AI operation");
 	const account = window.__opencutAccountId;

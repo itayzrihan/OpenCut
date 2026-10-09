@@ -1,3 +1,4 @@
+import { mockFetch } from "@/test-support/mock-fetch";
 import { expect, test } from "bun:test";
 import {
 	aiClientFetch,
@@ -29,38 +30,38 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 		},
 	});
 	const requests: Array<{ url: string; headers: Headers }> = [];
-	globalThis.fetch = (async (input, init) => {
+	globalThis.fetch = mockFetch(async (input, init) => {
 		requests.push({ url: String(input), headers: new Headers(init?.headers) });
 		return Response.json({ identity: "alice" });
-	}) as typeof fetch;
+	});
 	try {
 		const alice = prepareClientAiPairing();
-		await aiClientFetch("/api/ai/chat", { method: "POST", body: "{}" });
+		await aiClientFetch({ path: "/api/ai/chat", init: { method: "POST", body: "{}" } });
 		expect(requests[0].url).toBe("/api/ai/chat");
 		expect(requests[0].headers.get("authorization")).toBeNull();
 		expect(requests[0].headers.get("x-opencut-account")).toBe("alice");
 		win.__opencutAccountId = "bob";
 		expect(readClientAiPairing()).toBeNull();
-		await aiClientFetch("/api/ai/chat");
+		await aiClientFetch({ path: "/api/ai/chat" });
 		expect(requests[1].headers.get("x-opencut-account")).toBe("bob");
 		const bob = prepareClientAiPairing();
 		expect(bob.token).not.toBe(alice.token);
-		globalThis.fetch = (async () => {
+		globalThis.fetch = mockFetch(async () => {
 			win.__opencutAccountId = "alice";
 			return Response.json({ identity: "bob" });
-		}) as typeof fetch;
-		await expect(aiClientFetch("/api/ai/oauth/status")).rejects.toThrow(
+		});
+		await expect(aiClientFetch({ path: "/api/ai/oauth/status" })).rejects.toThrow(
 			"Account changed",
 		);
-		globalThis.fetch = (async () => {
+		globalThis.fetch = mockFetch(async () => {
 			throw new TypeError("network unavailable");
-		}) as typeof fetch;
-		await expect(aiClientFetch("/api/ai/chat")).rejects.toThrow(
+		});
+		await expect(aiClientFetch({ path: "/api/ai/chat" })).rejects.toThrow(
 			"Could not reach OpenCut",
 		);
 		expect(requests).toHaveLength(2);
 		win.__opencutAccountId = "";
-		await expect(aiClientFetch("/api/ai/chat")).rejects.toThrow("Sign in");
+		await expect(aiClientFetch({ path: "/api/ai/chat" })).rejects.toThrow("Sign in");
 	} finally {
 		Object.assign(globalThis, {
 			window: originalWindow,

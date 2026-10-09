@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { getSmartTakesTask } from "./smart-takes-task";
 import { restoreSilence } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import { getVisibleElementsWithBounds } from "@/preview/element-bounds";
@@ -651,6 +653,23 @@ export async function createTimelineToolRuntime({
 					editor.project.cancelExport();
 				}
 				return getSafeExportStatus({ editor });
+			case "smart_takes.start": {
+				const args = z
+					.object({
+						elementIds: z.array(z.string().min(1)).min(1).max(1000),
+						requestId: z.string().min(1).max(200),
+						mode: z.enum(["standard", "experimental"]).optional(),
+					})
+					.strict()
+					.parse(toolCall.arguments);
+				return getSmartTakesTask(editor).start(args);
+			}
+			case "smart_takes.get_status":
+				return getSmartTakesTask(editor).read(
+					toolCall.arguments.includePlan === true,
+				);
+			case "smart_takes.cancel":
+				return getSmartTakesTask(editor).cancel();
 			case "transcription.get_status":
 				return getSafeTranscriptionStatus({ editor });
 			case "transcription.cancel":
@@ -1332,6 +1351,48 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			keywords: ["cancel export", "stop render"],
 			description:
 				"Request cancellation of the running export task. Idempotent and available only with App controls enabled.",
+			parameters: objectSchema({ properties: {} }),
+		},
+		{
+			type: "function",
+			name: "smart_takes.start",
+			deferLoading: true,
+			category: "smart takes task",
+			keywords: ["best takes", "filming notes", "assemble takes"],
+			description:
+				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to experimental (fast); standard retains the original full review. Experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
+			parameters: objectSchema({
+				properties: {
+					elementIds: {
+						type: "array",
+						minItems: 1,
+						maxItems: 1000,
+						items: { type: "string" },
+					},
+					requestId: { type: "string", minLength: 1, maxLength: 200 },
+					mode: { type: "string", enum: ["standard", "experimental"] },
+				},
+				required: ["elementIds", "requestId"],
+			}),
+		},
+		{
+			type: "function",
+			name: "smart_takes.get_status",
+			deferLoading: true,
+			category: "smart takes task",
+			description:
+				"Read Smart takes progress, completion or the exact failed stage and error. includePlan opts into the bounded saved model plan and source words for diagnosis.",
+			parameters: objectSchema({
+				properties: { includePlan: { type: "boolean" } },
+			}),
+		},
+		{
+			type: "function",
+			name: "smart_takes.cancel",
+			deferLoading: true,
+			category: "app control",
+			description:
+				"Cancel running Smart takes analysis before any timeline edit is committed.",
 			parameters: objectSchema({ properties: {} }),
 		},
 		{
@@ -2749,12 +2810,17 @@ async function getAppCatalog({
 			}));
 		case "graphics":
 			registerDefaultGraphics();
-			return graphicsRegistry.getAll().map((definition) => ({
-				id: definition.id,
-				name: definition.name,
-				keywords: definition.keywords,
-				parameters: summarizeCatalogParams(definition.params),
-			}));
+			// Full compositions require a validated source package through
+			// timeline.hyperframes.import, rather than a procedural preset.
+			return graphicsRegistry
+				.getAll()
+				.filter((definition) => definition.id !== "hyperframes")
+				.map((definition) => ({
+					id: definition.id,
+					name: definition.name,
+					keywords: definition.keywords,
+					parameters: summarizeCatalogParams(definition.params),
+				}));
 		case "transitions":
 			return TRANSITION_PRESETS.map((preset) => ({
 				id: preset.id,

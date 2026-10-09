@@ -7,8 +7,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { generateUiElementPreset } from "@/ai/preset-generation";
-import { BatchCommand } from "@/commands";
-import { InsertElementCommand } from "@/commands/timeline";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { Button } from "@/components/ui/button";
@@ -173,17 +171,14 @@ function UiElementPresetItem({ preset }: { preset: UiElementPreset }) {
 
 	const handleAddToTimeline = () => {
 		if (preset.bundle) {
-			const commands = buildUiElementBundleTimelineItems({
+			const clips = buildUiElementBundleTimelineItems({
 				bundle: preset.bundle,
 				startTime: editor.playback.getCurrentTime(),
-			}).map(
-				({ element, trackType }) =>
-					new InsertElementCommand({
-						element,
-						placement: { mode: "auto", trackType },
-					}),
-			);
-			editor.command.execute({ command: new BatchCommand(commands) });
+			}).map(({ element, trackType }) => ({
+				element,
+				placement: { mode: "auto" as const, trackType },
+			}));
+			editor.command.insertClassicTimelineElements(clips);
 			return;
 		}
 

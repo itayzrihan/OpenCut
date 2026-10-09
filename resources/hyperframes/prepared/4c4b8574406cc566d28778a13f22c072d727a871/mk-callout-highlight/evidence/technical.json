@@ -1,0 +1,42 @@
+{
+  "id": "mk-callout-highlight",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "d8462cba92de7b03473e8e8b23da72125f1e9851948331fabdc9d39bc5427bdb",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "mk-callout-highlight.html",
+  "durationSeconds": 8,
+  "frames": [
+    {
+      "timeSeconds": 1.2,
+      "sha256": "71f5d2a1c461c63226bf91a3cfcc1f94e845fa5cb53900af038f5fad257118a9",
+      "file": "frame-0.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 4,
+      "sha256": "1d8243da28a83b86e35c86b642f60f4d617cf3e4547fb19ac9ca84436401a1eb",
+      "file": "frame-1.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 6.8,
+      "sha256": "c2c6988e0871acdda830b69b1c0dd34336a3cb303fb623887de272b09605e8e3",
+      "file": "frame-2.png",
+      "transparentPixels": true
+    },
+    {
+      "timeSeconds": 4,
+      "sha256": "1d8243da28a83b86e35c86b642f60f4d617cf3e4547fb19ac9ca84436401a1eb",
+      "file": "frame-3.png",
+      "transparentPixels": true
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

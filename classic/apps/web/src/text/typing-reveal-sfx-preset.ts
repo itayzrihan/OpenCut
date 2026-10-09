@@ -1,8 +1,8 @@
-export const TYPING_REVEAL_SFX_ASSET_ID =
-	"da73d7d4-9b71-4a24-84ad-f6c51034354c";
-export const TYPING_REVEAL_SFX_SOURCE_SECONDS = 15.6;
-export const TYPING_REVEAL_SFX_SOURCE_TICKS = 1_872_000;
-export const TYPING_REVEAL_SFX_VOLUME_DB = -5;
+import definition from "../../../../rust/crates/timeline/data/typing-reveal-sfx.json";
+export const TYPING_REVEAL_SFX_ASSET_ID = definition.assetId;
+export const TYPING_REVEAL_SFX_SOURCE_SECONDS = definition.sourceSeconds;
+export const TYPING_REVEAL_SFX_SOURCE_TICKS = definition.sourceTicks;
+export const TYPING_REVEAL_SFX_VOLUME_DB = definition.volumeDb;
 
 export function planTypingRevealSfxSegments({
 	durationTicks,

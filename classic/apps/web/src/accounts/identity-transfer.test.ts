@@ -38,10 +38,7 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 	const password = "private recovery test password";
 	try {
 		process.env.OPENCUT_ACCOUNTS_DIR = join(root, "first-host");
-		const { account } = await registerAccount(
-			"portable-account",
-			"Portable Account",
-			password,
+		const { account } = await registerAccount({ login: "portable-account", displayName: "Portable Account", password: password }
 		);
 		const folder = join(root, "mounted-drive");
 		await mkdir(folder);
@@ -51,10 +48,10 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 				join(accountDataRoot(), "settings.json"),
 				'{"keep":"all settings"}',
 			);
-			await configureStorageFolder(folder, policy, true, {
+			await configureStorageFolder({ folder: folder, policy: policy, automaticSnapshots: true, options: {
 				mode: "personalDevices",
 				deviceName: "Editing desktop",
-			});
+			} });
 			expect((await readStorageProfile()).account.storage.mode).toBe(
 				"personalDevices",
 			);
@@ -63,27 +60,27 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 			);
 			return {
 				recovery: await exportAccountIdentity(password),
-				snapshot: await publishAccountSnapshot(policy),
+				snapshot: await publishAccountSnapshot({ policy: policy }),
 			};
 		});
 		expect(JSON.stringify(recovery)).not.toContain(account.id);
 		process.env.OPENCUT_ACCOUNTS_DIR = join(root, "second-host");
 		await expect(
-			importAccountIdentity(recovery, "wrong recovery password"),
+			importAccountIdentity({ value: recovery, password: "wrong recovery password" }),
 		).rejects.toThrow("incorrect");
-		const restored = await importAccountIdentity(recovery, password);
+		const restored = await importAccountIdentity({ value: recovery, password: password });
 		expect(restored.account.id).toBe(account.id);
-		await expect(importAccountIdentity(recovery, password)).rejects.toThrow(
+		await expect(importAccountIdentity({ value: recovery, password: password })).rejects.toThrow(
 			"already exists",
 		);
-		expect((await loginAccount(account.login, password)).account.id).toBe(
+		expect((await loginAccount({ login: account.login, password: password })).account.id).toBe(
 			account.id,
 		);
 		await accountScope.run(restored.account, async () => {
-			await configureStorageFolder(folder, policy, true, {
+			await configureStorageFolder({ folder: folder, policy: policy, automaticSnapshots: true, options: {
 				mode: "personalDevices",
 				deviceName: "Travel laptop",
-			});
+			} });
 			const profile = await readStorageProfile();
 			expect(profile.deviceId).not.toBe(snapshot.deviceId);
 			expect((await readStorageProfile()).deviceId).toBe(profile.deviceId);
@@ -97,17 +94,17 @@ test("password-protected identity transfer opens encrypted snapshots on a second
 				new Set(connection.devices.map((device) => device.fingerprint)).size,
 			).toBe(2);
 			expect(await listAccountSnapshots(policy)).toHaveLength(1);
-			await restoreAccountSnapshot(snapshot.snapshotId, policy);
+			await restoreAccountSnapshot({ snapshotId: snapshot.snapshotId, policy: policy });
 			expect(
 				await readFile(join(accountDataRoot(), "settings.json"), "utf8"),
 			).toBe('{"keep":"all settings"}');
-			await configureStorageFolder(null, policy, false, { mode: "localOnly" });
+			await configureStorageFolder({ folder: null, policy: policy, automaticSnapshots: false, options: { mode: "localOnly" } });
 			expect((await readStorageProfile()).account.storage.devices[0].name).toBe(
 				"Travel laptop",
 			);
-			await configureStorageFolder(folder, policy, true, {
+			await configureStorageFolder({ folder: folder, policy: policy, automaticSnapshots: true, options: {
 				mode: "personalDevices",
-			});
+			} });
 			expect(
 				(await readStorageConnection(policy)).devices.find(
 					(device) => device.id === profile.deviceId,

@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import type { ImageNodeParams } from "@/services/renderer/nodes/image-node";
 import { ImageNode } from "@/services/renderer/nodes/image-node";

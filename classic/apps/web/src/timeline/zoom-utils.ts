@@ -8,6 +8,21 @@ const PADDING_MAX_RATIO = 0.75;
 const PADDING_MIN_RATIO = 0.15;
 const PADDING_MIN_AT_ZOOM_PERCENT = 0.2;
 
+/** Fit the complete displayed duration, with room to grab its final edge. */
+export function getTimelineFitZoom({
+	duration,
+	containerWidth,
+}: {
+	duration: number;
+	containerWidth: number;
+}): number {
+	const seconds = Math.max(duration / TICKS_PER_SECOND, 1);
+	return Math.min(
+		TIMELINE_ZOOM_MAX,
+		(containerWidth * 0.9) / (seconds * BASE_TIMELINE_PIXELS_PER_SECOND),
+	);
+}
+
 export function getTimelineZoomMin({
 	duration,
 	containerWidth,

@@ -51,7 +51,7 @@ async function handle(request: Request) {
 		}
 		await mkdir(join(root, "objects"), { recursive: true });
 		if (request.method === "POST") {
-			const raw = await readBoundedBody(request, 128 * 1024 * 1024),
+			const raw = await readBoundedBody({ request: request, maximumBytes: 128 * 1024 * 1024 }),
 				manifest = JSON.parse(new TextDecoder().decode(raw));
 			if (manifest.format !== "opencut-browser-archive-v1")
 				throw new Error("Invalid browser archive manifest");

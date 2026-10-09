@@ -89,9 +89,7 @@ async function absorb(response: InstanceType<typeof NextResponse>) {
 	}
 	await saveJar();
 }
-const server = createCompanionServer(
-	pair,
-	async (path, method, body, signal) => {
+const server = createCompanionServer({ pair: pair, handle: async (path, method, body, signal) => {
 		return accountScope.run(
 			{
 				id: pair.accountId,
@@ -161,7 +159,7 @@ const server = createCompanionServer(
 				return response;
 			},
 		);
-	},
+	} }
 );
 server.listen(43127, "127.0.0.1", () =>
 	console.log(

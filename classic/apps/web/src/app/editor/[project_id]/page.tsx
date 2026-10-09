@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useBatchEdit } from "@/batch/provider";
 import { batchEditIsLocked } from "opencut-wasm";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
 	ResizablePanelGroup,
 	ResizablePanel,
@@ -12,7 +12,7 @@ import {
 import { AssetsPanel } from "@/components/editor/panels/assets";
 import { PropertiesPanel } from "@/components/editor/panels/properties";
 import { Timeline } from "@/timeline/components";
-import { PreviewPanel } from "@/preview/components";
+import { PreviewPanelWithOverlays } from "@/preview/components/panel-with-overlays";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorProvider } from "@/components/providers/editor-provider";
 import { Onboarding } from "@/components/editor/onboarding";
@@ -20,75 +20,67 @@ import { MigrationDialog } from "@/project/components/migration-dialog";
 import { usePanelStore } from "@/editor/panel-store";
 import { usePasteMedia } from "@/media/use-paste-media";
 import { MobileGate } from "@/components/editor/mobile-gate";
-import { useCallback, useMemo, useState } from "react";
-import {
-	useEditorPlayback,
-	useEditorProject,
-	useEditorRenderer,
-	useEditorTimelineScenes,
-} from "@/editor/use-editor";
+import { useState } from "react";
+import { useEditorRenderer } from "@/editor/use-editor";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
 import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
-import {
-	createPreviewOverlayControl,
-	isPreviewOverlayVisible,
-	mergePreviewOverlaySources,
-} from "@/preview/overlays";
-import { usePreviewStore } from "@/preview/preview-store";
-import {
-	getSafeAreaPreviewOverlaySource,
-	safeAreaPreviewOverlay,
-} from "@/preview/safe-area-overlay";
-import { getGuidePreviewOverlaySource } from "@/guides";
-import {
-	bookmarkNotesPreviewOverlay,
-	getBookmarkPreviewOverlaySource,
-} from "@/timeline/bookmarks/index";
-import { getParallaxCanvasPreviewOverlaySource } from "@/parallax-story-teller/preview-overlay";
-import { useCameraManStore } from "@/parallax-story-teller/camera-man-store";
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
-import { ZERO_MEDIA_TIME } from "@/wasm";
-import type { EditorCore } from "@/core";
+import { EditorAgentWorkspace } from "@/editor-agent/overlay";
+import { HyperframesExamplesLibrary } from "@/hyperframes/examples-library";
 
 export default function Editor() {
 	const params = useParams();
 	const projectId = params.project_id as string;
+	const search = useSearchParams();
+	const router = useRouter();
 	const batch = useBatchEdit();
 	const job = batch.state.runs
 		.flatMap((r) => r.jobs)
 		.find((j) => j.projectId === projectId);
 	const readOnly = !!job && batchEditIsLocked({ status: job.status });
-	if (batch.preparingProjectId === projectId)
-		return <p className="p-8">Saving project for background editing...</p>;
+	const preparing = batch.preparingProjectId === projectId;
 	if (!batch.loaded) return <p className="p-8">Checking project status…</p>;
 
 	return (
 		<MobileGate>
-			<EditorProvider
-				key={`${projectId}:${readOnly}`}
-				projectId={projectId}
-				readOnly={readOnly}
-			>
-				{readOnly && (
+			<EditorProvider key={projectId} projectId={projectId} readOnly={readOnly}>
+				{(readOnly || preparing) && (
 					<div className="fixed top-0 inset-x-0 z-100 bg-background border-b p-3 flex justify-between gap-4 text-sm">
-						<span role="status">Auto Edit · Read-only · {job?.message}</span>
+						<span role="status">
+							{preparing
+								? "Saving project for background editing… Your timeline stays open."
+								: `Auto Edit · Read-only · ${job?.message ?? ""}`}
+						</span>
 						<Link href="/projects" className="underline shrink-0">
 							Back to Projects
 						</Link>
 					</div>
 				)}
 				<div
-					inert={readOnly}
+					inert={readOnly || preparing}
+					data-opencut-editor-project={projectId}
 					className="bg-background flex h-screen w-screen flex-col overflow-hidden"
-					style={readOnly ? { paddingTop: 48 } : undefined}
+					style={readOnly || preparing ? { paddingTop: 48 } : undefined}
 				>
 					<DegradedRendererBanner />
 					<EditorHeader />
 					<div className="min-h-0 min-w-0 flex-1">
-						<EditorLayout />
+						<EditorAgentWorkspace>
+							{search.get("view") === "examples" ? (
+								<HyperframesExamplesLibrary
+									projectId={projectId}
+									presentation="page"
+									onClose={() =>
+										router.push(`/editor/${encodeURIComponent(projectId)}`)
+									}
+								/>
+							) : (
+								<EditorLayout />
+							)}
+						</EditorAgentWorkspace>
 					</div>
 					<Onboarding />
 					<MigrationDialog />
@@ -118,102 +110,6 @@ function DegradedRendererBanner() {
 				<HugeiconsIcon icon={Cancel01Icon} />
 			</Button>
 		</div>
-	);
-}
-
-function PreviewPanelWithOverlays() {
-	const [activeScene, sceneDuration] = useEditorTimelineScenes((editor) => [
-		editor.scenes.getActiveSceneOrNull(),
-		editor.timeline.getTotalDuration(),
-	]);
-	const project = useEditorProject((editor) => editor.project.getActive());
-	const cameraManPhase = useCameraManStore((state) => state.phase);
-	const cameraManSceneId = useCameraManStore((state) => state.sceneId);
-	const cameraManCurrent = useCameraManStore((state) => state.current);
-	const activeGuide = usePreviewStore((state) => state.activeGuide);
-	const overlays = usePreviewStore((state) => state.overlays);
-	const setOverlayVisibility = usePreviewStore(
-		(state) => state.setOverlayVisibility,
-	);
-	const showBookmarkNotes = isPreviewOverlayVisible({
-		overlay: bookmarkNotesPreviewOverlay,
-		overlays,
-	});
-	const showSafeArea = isPreviewOverlayVisible({
-		overlay: safeAreaPreviewOverlay,
-		overlays,
-	});
-	const shouldTrackOverlayTime =
-		Boolean(activeScene?.parallax) || showBookmarkNotes;
-	const selectOverlayTime = useCallback(
-		(editor: EditorCore) =>
-			shouldTrackOverlayTime
-				? editor.playback.getCurrentTime()
-				: ZERO_MEDIA_TIME,
-		[shouldTrackOverlayTime],
-	);
-	const currentTime = useEditorPlayback(selectOverlayTime);
-
-	const overlaySource = useMemo(
-		() =>
-			mergePreviewOverlaySources({
-				sources: [
-					getParallaxCanvasPreviewOverlaySource({
-						scene: activeScene,
-						canvasSize: project?.settings.canvasSize,
-						currentTime,
-						duration: sceneDuration,
-						cameraOverride:
-							cameraManPhase !== "idle" && cameraManSceneId === activeScene?.id
-								? cameraManCurrent
-								: null,
-					}),
-					getSafeAreaPreviewOverlaySource({
-						isVisible: showSafeArea,
-					}),
-					getGuidePreviewOverlaySource({
-						guideId: activeGuide,
-					}),
-					activeScene
-						? getBookmarkPreviewOverlaySource({
-								bookmarks: activeScene.bookmarks,
-								time: currentTime,
-								isVisible: showBookmarkNotes,
-							})
-						: {
-								definitions: [bookmarkNotesPreviewOverlay],
-								instances: [],
-							},
-				],
-			}),
-		[
-			activeGuide,
-			activeScene,
-			cameraManCurrent,
-			cameraManPhase,
-			cameraManSceneId,
-			currentTime,
-			project?.settings.canvasSize,
-			sceneDuration,
-			showBookmarkNotes,
-			showSafeArea,
-		],
-	);
-
-	const overlayControls = useMemo(
-		() =>
-			overlaySource.definitions.map((overlay) =>
-				createPreviewOverlayControl({ overlay, overlays }),
-			),
-		[overlaySource.definitions, overlays],
-	);
-
-	return (
-		<PreviewPanel
-			overlayControls={overlayControls}
-			overlayInstances={overlaySource.instances}
-			onOverlayVisibilityChange={setOverlayVisibility}
-		/>
 	);
 }
 

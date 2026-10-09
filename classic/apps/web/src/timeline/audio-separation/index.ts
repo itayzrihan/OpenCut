@@ -1,13 +1,5 @@
-import { cloneAnimations } from "@/animation";
-import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
-import { DEFAULTS } from "@/timeline/defaults";
-import type {
-	CreateUploadAudioElement,
-	TimelineElement,
-	AudioElement,
-	VideoElement,
-} from "../types";
+import type { TimelineElement, AudioElement, VideoElement } from "../types";
 
 type MediaAudioState = Pick<MediaAsset, "hasAudio">;
 
@@ -72,40 +64,6 @@ export function doesElementHaveEnabledAudio({
 	);
 }
 
-export function buildSeparatedAudioElement({
-	sourceElement,
-}: {
-	sourceElement: VideoElement;
-}): CreateUploadAudioElement {
-	return {
-		type: "audio",
-		sourceType: "upload",
-		mediaId: sourceElement.mediaId,
-		name: sourceElement.name,
-		duration: sourceElement.duration,
-		startTime: sourceElement.startTime,
-		trimStart: sourceElement.trimStart,
-		trimEnd: sourceElement.trimEnd,
-		sourceDuration: sourceElement.sourceDuration,
-		params: {
-			volume:
-				typeof sourceElement.params.volume === "number"
-					? sourceElement.params.volume
-					: DEFAULTS.element.volume,
-			muted: sourceElement.params.muted === true,
-		},
-		retime: sourceElement.retime
-			? {
-					rate: sourceElement.retime.rate,
-					maintainPitch: sourceElement.retime.maintainPitch,
-				}
-			: undefined,
-		animations: cloneVolumeAnimations({
-			animations: sourceElement.animations,
-		}),
-	};
-}
-
 export function getSourceAudioActionLabel({
 	element,
 }: {
@@ -114,20 +72,4 @@ export function getSourceAudioActionLabel({
 	return isSourceAudioSeparated({ element })
 		? "Recover audio"
 		: "Extract audio";
-}
-
-function cloneVolumeAnimations({
-	animations,
-}: {
-	animations: ElementAnimations | undefined;
-}): ElementAnimations | undefined {
-	const volumeData = animations?.volume;
-	if (!volumeData) {
-		return undefined;
-	}
-
-	return cloneAnimations({
-		animations: { volume: volumeData },
-		shouldRegenerateKeyframeIds: true,
-	});
 }

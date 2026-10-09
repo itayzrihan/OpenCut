@@ -42,6 +42,9 @@ pub(crate) fn render(
         .project
         .as_ref()
         .ok_or_else(|| "no project is open".to_owned())?;
+    if project.classic.is_some() {
+        return Err("Classic projects require the Classic renderer".into());
+    }
     if Path::new(output_path).exists() && !overwrite {
         return Err(format!(
             "output `{output_path}` already exists; set overwrite to true to replace it"
@@ -221,6 +224,9 @@ fn build_ffmpeg_plan(
             let referenced_asset = assets
                 .get(asset_id)
                 .ok_or_else(|| format!("item `{}` references missing asset", item.id))?;
+            if referenced_asset.hyperframes.is_some() {
+                return Err(format!("HyperFrames clip `{}` requires the HyperFrames renderer; source packages cannot be decoded as video files", item.name));
+            }
             let (visual_asset, audio_asset) =
                 if let Some(unified) = &referenced_asset.unified_angles {
                     let visual_id = item

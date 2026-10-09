@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { expect, test } from "bun:test";
 import "./mock-ripple-wasm";
 import { rippleCaptionSources } from "../ripple-caption-sources";

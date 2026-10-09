@@ -1,5 +1,5 @@
 export interface TextTransitionSfxPreset {
-	transitionId: "push-right" | "slide-up" | "pop" | "grow" | "flicker";
+	transitionId: string;
 	side: "in" | "out";
 	assetId: string;
 	name: string;
@@ -11,105 +11,20 @@ export interface TextTransitionSfxPreset {
 	volume: number;
 }
 
-const WHOOSH_ASSET_ID = "19f29ed9-a604-4933-ae8c-e494b6cee47f";
-const METAL_SLICE_ASSET_ID = "49fd6fc0-53c5-4536-8370-ba27bb19ffcf";
-const CLICK_ASSET_ID = "bfc2e3c8-fd6f-4f80-99f5-8a32da79f709";
-
-/**
- * These values are copied from the repeated, user-authored examples in Galya2.
- * Asset IDs are deliberately stable even when the shared-library names change.
- */
-const TEXT_TRANSITION_SFX_PRESETS: Record<
-	TextTransitionSfxPreset["transitionId"],
-	TextTransitionSfxPreset
-> = {
-	"push-right": {
-		transitionId: "push-right",
-		side: "in",
-		assetId: WHOOSH_ASSET_ID,
-		name: "Push Right SFX",
-		leadInSeconds: 0.35,
-		durationSeconds: 1.38,
-		sourceDurationSeconds: 8.04,
-		trimStartSeconds: 0,
-		trimEndSeconds: 6.66,
-		volume: -12.3,
-	},
-	"slide-up": {
-		transitionId: "slide-up",
-		side: "in",
-		assetId: WHOOSH_ASSET_ID,
-		name: "Slide Up SFX",
-		leadInSeconds: 0.35,
-		durationSeconds: 1.38,
-		sourceDurationSeconds: 8.04,
-		trimStartSeconds: 0,
-		trimEndSeconds: 6.66,
-		volume: -12.3,
-	},
-	pop: {
-		transitionId: "pop",
-		side: "in",
-		assetId: METAL_SLICE_ASSET_ID,
-		name: "Pop SFX",
-		// Median of the three authored lead-ins: 0.386, 0.554, 0.537 s.
-		leadInSeconds: 0.53655,
-		durationSeconds: 1.729375,
-		sourceDurationSeconds: 1.729375,
-		trimStartSeconds: 0,
-		trimEndSeconds: 0,
-		volume: -21.9,
-	},
-	grow: {
-		transitionId: "grow",
-		side: "out",
-		// Copied exactly from the user-authored Grow Out + swoosh pairing in ROGA2.
-		assetId: "748324d3-6e31-4bff-92a2-843ea2e20127",
-		name: "Grow Out SFX",
-		leadInSeconds: 0.186225,
-		durationSeconds: 1,
-		sourceDurationSeconds: 5.88,
-		trimStartSeconds: 0.36,
-		trimEndSeconds: 4.52,
-		volume: 0,
-	},
-	flicker: {
-		transitionId: "flicker",
-		side: "in",
-		// Copied exactly from the user-authored Flicker pairing in Galya8: the
-		// dead air at the front of the source clip is trimmed off so the click
-		// transient itself lands right on the first flash.
-		assetId: CLICK_ASSET_ID,
-		name: "Flicker SFX",
-		leadInSeconds: 0.124875,
-		durationSeconds: 0.562833,
-		sourceDurationSeconds: 0.762833,
-		trimStartSeconds: 0.2,
-		trimEndSeconds: 0,
-		volume: -13,
-	},
-};
+// Authored Galya/ROGA companion timings are shared with the canonical runtime.
+import definitions from "../../../../rust/crates/timeline/data/text-transition-sfx-presets.json";
 
 export function getTextTransitionSfxPreset({
-	transitionId,
-	side,
+    transitionId,
+    side,
 }: {
-	transitionId: string;
-	side?: "in" | "out";
+    transitionId: string;
+    side?: "in" | "out";
 }): TextTransitionSfxPreset | null {
-	let preset: TextTransitionSfxPreset | null;
-	switch (transitionId) {
-		case "push-right":
-		case "slide-up":
-		case "pop":
-		case "grow":
-		case "flicker":
-			preset = TEXT_TRANSITION_SFX_PRESETS[transitionId];
-			break;
-		default:
-			return null;
-	}
-	return side && preset.side !== side ? null : preset;
+    const preset = definitions.find((entry) => entry.transitionId === transitionId);
+    if (!preset || (side && preset.side !== side)) return null;
+    if (preset.side !== "in" && preset.side !== "out") return null;
+    return { ...preset, side: preset.side };
 }
 
 export function hasTextTransitionSfx({

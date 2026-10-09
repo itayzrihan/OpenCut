@@ -1,0 +1,43 @@
+{
+  "id": "swirl-vortex",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "3e04a4d48375d73bd61d649560c957501c3af548c83bd471b607f8cb720e266d",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "swirl-vortex.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "44cd02ec71da71376efe4d2c09654ec8c2950ca24e97847bb0b406136a4cb93d",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9be414f12630f962b69665c53a6ab03d191e6cd45a9eb93bd8fdf1ba176ef1a8",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "227af724e1c77415de2e1d21e9d75ba909c7d286f61b551fb737724460b92f3d",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "9be414f12630f962b69665c53a6ab03d191e6cd45a9eb93bd8fdf1ba176ef1a8",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

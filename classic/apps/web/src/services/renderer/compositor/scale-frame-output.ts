@@ -36,8 +36,7 @@ export function scaleFrameOutput({
 		textures: textures.map((texture) => {
 			const externalScale = Math.min(
 				1,
-				Math.max(width, height) /
-					Math.max(1, texture.width, texture.height),
+				Math.max(width, height) / Math.max(1, texture.width, texture.height),
 			);
 			const rasterScale =
 				texture.kind === "external" && texture.previewScaleMode !== "frame"
@@ -86,6 +85,23 @@ function scaleFrameItem({
 	if (item.type === "group") {
 		return {
 			...item,
+			...(item.transform && {
+				transform: {
+					...item.transform,
+					centerX: item.transform.centerX * scaleX,
+					centerY: item.transform.centerY * scaleY,
+					width: item.transform.width * scaleX,
+					height: item.transform.height * scaleY,
+				},
+			}),
+			...(item.clip && {
+				clip: [
+					item.clip[0] * scaleX,
+					item.clip[1] * scaleY,
+					item.clip[2] * scaleX,
+					item.clip[3] * scaleY,
+				] as [number, number, number, number],
+			}),
 			items: item.items.map((child) =>
 				scaleFrameItem({ item: child, scaleX, scaleY, effectScale }),
 			),

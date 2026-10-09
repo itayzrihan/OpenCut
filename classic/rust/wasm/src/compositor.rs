@@ -53,7 +53,7 @@ pub fn init_compositor(width: u32, height: u32) -> Result<(), JsValue> {
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
         gpu_runtime
             .context
-            .configure_surface(&surface, width, height)
+            .configure_premultiplied_surface(&surface, width, height)
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
 
         COMPOSITOR_RUNTIME.with(|runtime| {
@@ -84,7 +84,7 @@ pub fn resize_compositor(width: u32, height: u32) -> Result<(), JsValue> {
             if runtime.surface_size != (width, height) {
                 gpu_runtime
                     .context
-                    .configure_surface(&runtime.surface, width, height)
+                    .configure_premultiplied_surface(&runtime.surface, width, height)
                     .map_err(|error| JsValue::from_str(&error.to_string()))?;
                 runtime.surface_size = (width, height);
             }
@@ -175,7 +175,7 @@ pub fn render_frame(options: JsValue) -> Result<(), JsValue> {
                 let t_surface = perf::now_ms();
                 gpu_runtime
                     .context
-                    .configure_surface(&runtime.surface, frame.width, frame.height)
+                    .configure_premultiplied_surface(&runtime.surface, frame.width, frame.height)
                     .map_err(|error| JsValue::from_str(&error.to_string()))?;
                 perf::record("wasm.surfaceConfigure", perf::now_ms() - t_surface);
                 runtime.surface_size = (frame.width, frame.height);

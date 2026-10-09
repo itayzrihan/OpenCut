@@ -377,6 +377,8 @@ pub struct CaptionTimeRange {
 
 /// Applies ripple time removals to transcript words. Fully removed words are
 /// dropped, partial words are clipped, and later words move to the cut point.
+/// With no ranges, also serves as the ingestion boundary for generated words:
+/// point timestamps get a minimal duration that survives timeline quantization.
 #[export]
 pub fn remove_caption_word_time_ranges(
     RemoveCaptionWordTimeRangesOptions { words, mut ranges }: RemoveCaptionWordTimeRangesOptions,
@@ -404,7 +406,20 @@ pub fn remove_caption_word_time_ranges(
             })
             .collect();
     }
-    sort_caption_words(&mut next_words);
+    // Equal-start words retain transcript order, including when only some of
+    // them need duration repair. Sorting by end would reorder them on retry.
+    next_words.sort_by(|left, right| left.start.total_cmp(&right.start));
+    for word in &mut next_words {
+        if word.start.is_finite()
+            && word.end.is_finite()
+            && word.start >= 0.0
+            && word.end >= word.start
+            && (word.start * TICKS_PER_SECOND as f64).round()
+                == (word.end * TICKS_PER_SECOND as f64).round()
+        {
+            word.end = word.start + 0.001;
+        }
+    }
     next_words
 }
 
@@ -662,6 +677,92 @@ mod tests {
             end,
             source: None,
         }
+    }
+
+    #[test]
+    fn point_word_normalization_survives_tick_rounding_and_is_idempotent() {
+        for start in [0.0, 0.000004, 0.999999, 1.0, 3600.123456] {
+            for duration in [0.0, 0.00000001, 0.000001, 0.001, 0.25] {
+                let original = generated_word("מילה", start, start + duration);
+                let normalized =
+                    remove_caption_word_time_ranges(RemoveCaptionWordTimeRangesOptions {
+                        words: vec![original.clone()],
+                        ranges: vec![],
+                    });
+                assert_eq!(normalized.len(), 1);
+                let word = &normalized[0];
+                assert_eq!(word.text, original.text);
+                assert_eq!(word.start, original.start);
+                assert!(
+                    (word.end * TICKS_PER_SECOND as f64).round()
+                        > (word.start * TICKS_PER_SECOND as f64).round()
+                );
+                if (original.end * TICKS_PER_SECOND as f64).round()
+                    > (original.start * TICKS_PER_SECOND as f64).round()
+                {
+                    assert_eq!(word, &original);
+                }
+                assert_eq!(
+                    remove_caption_word_time_ranges(RemoveCaptionWordTimeRangesOptions {
+                        words: normalized.clone(),
+                        ranges: vec![]
+                    }),
+                    normalized
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn mixed_point_and_timed_words_keep_transcript_order_on_retry() {
+        let original = vec![
+            generated_word("first", 1.0, 1.5),
+            generated_word("second", 1.0, 1.0),
+            generated_word("third", 1.0, 1.0001),
+        ];
+        let normalized = remove_caption_word_time_ranges(RemoveCaptionWordTimeRangesOptions {
+            words: original.clone(),
+            ranges: vec![],
+        });
+        assert_eq!(normalized[0], original[0]);
+        assert_eq!(normalized[1].text, "second");
+        assert_eq!(normalized[2], original[2]);
+        assert_eq!(
+            remove_caption_word_time_ranges(RemoveCaptionWordTimeRangesOptions {
+                words: normalized.clone(),
+                ranges: vec![]
+            }),
+            normalized
+        );
+    }
+
+    #[test]
+    fn cuts_keep_point_words_at_boundaries_positive_and_remove_only_cut_words() {
+        let words = vec![
+            generated_word("before", 0.5, 0.5),
+            generated_word("left edge", 1.0, 1.0),
+            generated_word("removed", 1.5, 1.5),
+            generated_word("right edge", 2.0, 2.0),
+            generated_word("after", 3.0, 3.0),
+        ];
+        let result = realign_caption_words_after_time_removal(RemoveCaptionWordTimeRangesOptions {
+            words,
+            ranges: vec![CaptionTimeRange {
+                start: 1.0,
+                end: 2.0,
+            }],
+        });
+        assert_eq!(
+            result.iter().map(|w| w.text.as_str()).collect::<Vec<_>>(),
+            ["before", "left edge", "right edge", "after"]
+        );
+        assert!(
+            result
+                .iter()
+                .all(|w| (w.end * TICKS_PER_SECOND as f64).round()
+                    > (w.start * TICKS_PER_SECOND as f64).round())
+        );
+        assert!(result.windows(2).all(|pair| pair[0].end <= pair[1].start));
     }
 
     fn owned_word(

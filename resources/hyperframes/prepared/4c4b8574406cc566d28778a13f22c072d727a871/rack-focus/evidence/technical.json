@@ -1,0 +1,42 @@
+{
+  "id": "rack-focus",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "2eaea67532cfa6fd11f53f3193601e0c2b3a515496a49c3c0831020d53be1826",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "rack-focus.html",
+  "durationSeconds": 6,
+  "frames": [
+    {
+      "timeSeconds": 0.8999999999999999,
+      "sha256": "8cd425196148585a64b80ee9a35d716d0c6b9f1eb5f26dd3b848f02ec296fc08",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3,
+      "sha256": "9dc937f1477d9617cbe12a634e39854fd135dc892f743331bf4ad6858d9aab5f",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 5.1,
+      "sha256": "d94c3ccad18477fea5579dd1b0fd49475cea4e4dcc52b33b9d707da7d956f828",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3,
+      "sha256": "9dc937f1477d9617cbe12a634e39854fd135dc892f743331bf4ad6858d9aab5f",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

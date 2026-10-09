@@ -24,6 +24,8 @@ test("portable settings include future keys and remove settings absent from the 
 		},
 		key: (index: number) => [...values.keys()][index] ?? null,
 		getItem: (key: string) => values.get(key) ?? null,
+		// Matches the browser Storage.setItem interface used by production code.
+		// eslint-disable-next-line opencut/prefer-object-params
 		setItem: (key: string, value: string) => {
 			values.set(key, value);
 		},

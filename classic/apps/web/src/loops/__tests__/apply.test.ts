@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { TextElement, VideoElement } from "@/timeline";
+import { isLeafChannelData } from "@/animation/channel-data";
+import { isScalarChannel } from "@/animation/interpolation";
 import {
 	LOOP_PRESETS,
 	LOOP_TARGET_ELEMENT_TYPES,
@@ -64,7 +66,7 @@ function getChannelValues({
 	property: string;
 }) {
 	const channel = animations?.[property];
-	return channel && "keys" in channel
+	return channel && isLeafChannelData(channel) && isScalarChannel(channel)
 		? channel.keys.map((key) => ({
 				time: mediaTimeToSeconds({ time: key.time }),
 				value: key.value,

@@ -1,0 +1,42 @@
+{
+  "id": "page-slide",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "f78483257eb8b5f0049d86b0e210fef42af86bc8193be78d439add77d62287b7",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "d3b2fcf6e3f776a64d3c73d91d2118d3219684ac4d2f767c771b10c792b6cdd6",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "892ac132e104c6925df526fe85bf3aeee857b48ffae9aa55ef8b19410c04b388",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "892ac132e104c6925df526fe85bf3aeee857b48ffae9aa55ef8b19410c04b388",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "892ac132e104c6925df526fe85bf3aeee857b48ffae9aa55ef8b19410c04b388",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

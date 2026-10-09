@@ -1,0 +1,765 @@
+{
+	"schemaVersion": 1,
+	"families": [
+		{
+			"id": "clip-insert",
+			"title": "Insert clips",
+			"managers": [
+				"TimelineManager.insertElement"
+			],
+			"contracts": [
+				"timeline.classic.elements.insert"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_insert.rs"
+			],
+			"gap": "Dedicated ordinary insertion exists; compound legacy insertion paths remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/insert-element.ts"
+			]
+		},
+		{
+			"id": "clip-duplicate",
+			"title": "Duplicate clips",
+			"managers": [
+				"TimelineManager.duplicateElements"
+			],
+			"contracts": [
+				"timeline.classic.elements.duplicate"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_duplicate.rs"
+			],
+			"gap": "Live model and full visible-result acceptance remain.",
+			"actions": [
+				"duplicate-selected"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "clip-remove",
+			"title": "Remove clips/tracks",
+			"managers": [
+				"TimelineManager.deleteElements",
+				"TimelineManager.removeTrack"
+			],
+			"contracts": [
+				"timeline.classic.remove"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_remove.rs"
+			],
+			"gap": "Legacy deletion remains in compound text/SFX operations.",
+			"actions": [
+				"delete-selected"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/delete-elements.ts"
+			]
+		},
+		{
+			"id": "clip-move",
+			"title": "Move clips",
+			"managers": [
+				"TimelineManager.moveElements"
+			],
+			"contracts": [
+				"timeline.classic.elements.move"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_move.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Ordinary UI moves and agent share the exact-tick contract. Live en-move passed with preserved trims, effects and keyframes plus exact Undo/Redo/reopen. Generated caption UI moves retain their reviewed bridge until font-measured visual reflow parity; broader move acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/move-elements.ts",
+				"classic/apps/web/src/timeline/hooks/use-timeline-drag-drop.ts"
+			]
+		},
+		{
+			"id": "clip-split",
+			"title": "Split / retain left / retain right",
+			"managers": [
+				"TimelineManager.splitElements"
+			],
+			"contracts": [
+				"timeline.classic.elements.split"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_split.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Ordinary UI and agent share exact-tick split semantics, retime source rounding and Bezier/text boundaries. Live he-split passed with source continuity, independent 1001-point curve comparison and Undo/Redo/reopen. Generated caption reflow and linked-audio automation remain.",
+			"actions": [
+				"split",
+				"split-left",
+				"split-right"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/split-elements.ts"
+			]
+		},
+		{
+			"id": "clip-update",
+			"title": "Clip trim, retime, parameters and visibility",
+			"managers": [
+				"TimelineManager.updateElements",
+				"TimelineManager.updateElementTrim",
+				"TimelineManager.updateElementRetime"
+			],
+			"contracts": [
+				"timeline.classic.elements.update"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_update.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Ordinary UI trim/retime/parameter updates share the Write contract with gesture history. Generated caption reflow and dedicated identity/media/HyperFrames fields retain reviewed existing paths; live acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/update-elements.ts"
+			]
+		},
+		{
+			"id": "clip-controls",
+			"title": "Clip mute and visibility",
+			"managers": [
+				"TimelineManager.toggleElementsMuted",
+				"TimelineManager.toggleElementsVisibility"
+			],
+			"contracts": [
+				"timeline.classic.elements.controls"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_element_controls.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Selection gestures and agent contract connected; inspector/general-patch paths remain until update migration. Live audio/video/model acceptance remains.",
+			"actions": [
+				"toggle-elements-muted-selected",
+				"toggle-elements-visibility-selected"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/core/managers/commands.ts",
+				"classic/apps/web/src/actions/use-editor-actions.ts"
+			]
+		},
+		{
+			"id": "clipboard",
+			"title": "Copy and paste clips",
+			"managers": [
+				"ClipboardManager.copy",
+				"ClipboardManager.paste"
+			],
+			"contracts": [
+				"clipboard.classic.elements.copy",
+				"timeline.classic.elements.paste"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_clipboard.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Ordinary UI copy/paste shares scoped snapshots, owned-media validation, relative ticks, placement and fresh identities. Live he-clipboard passed with exact field/media-byte preservation and one-step Undo/Redo/reopen. Foreign clipboard identities remain rejected; owned one-file transfer has separate contracts. Dependency-heavy copying and cross-project live acceptance remain.",
+			"actions": [
+				"copy-selected",
+				"paste-copied"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/clipboard/handlers/index.ts",
+				"classic/apps/web/src/commands/timeline/clipboard/paste.ts"
+			]
+		},
+		{
+			"id": "merge-text",
+			"title": "Merge text clips",
+			"managers": [
+				"TimelineManager.mergeTextElements"
+			],
+			"contracts": [
+				"timeline.classic.text.merge"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_text_merge.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Single-line and multiline UI merge now share the atomic Rust contract, including word/row IDs, timing, style, caption ownership and history. State parity and reopened Undo/Redo passed. Generated font-measured caption reflow and live model acceptance remain.",
+			"actions": [
+				"merge-text-selected",
+				"merge-text-selected-multiline"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/merge-text-elements.ts"
+			]
+		},
+		{
+			"id": "transitions",
+			"title": "Clip transitions",
+			"managers": [
+				"TimelineManager.applyTransitions"
+			],
+			"contracts": [
+				"timeline.classic.transitions.catalog",
+				"timeline.classic.transitions.apply"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_transitions.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "UI and agent share atomic transitions and immutable preset definitions, including managed text/SFX. Live en-transitions passed with preset discovery, actual midpoint renders and unchanged audio automation/settings. Overlap rearrangement, managed SFX availability and rendered audio acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/apply-transition.ts"
+			]
+		},
+		{
+			"id": "text-sfx",
+			"title": "Text transitions/reveal with SFX",
+			"managers": [
+				"TimelineManager.applyTextTransitionsWithSfx",
+				"TimelineManager.updateTextRevealWithTypingSfx"
+			],
+			"contracts": [
+				"timeline.classic.transitions.catalog",
+				"timeline.classic.transitions.apply",
+				"timeline.classic.elements.update"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_transitions.rs",
+				"crates/editor-api/tests/classic_update.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Canonical managedTextSfx and managedTypingSfx policies replace companions atomically, preserving authored trims/ticks/volume and unrelated audio. UI/native/WASM parity and history passed. Shared-library availability, rendered audio, linked clip timing and live agent acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/timeline/element/apply-text-transitions-with-sfx.ts",
+				"classic/apps/web/src/commands/timeline/element/update-text-reveal-with-typing-sfx.ts"
+			]
+		},
+		{
+			"id": "background-removal",
+			"title": "Background removal",
+			"managers": [
+				"TimelineManager.setBackgroundRemoval"
+			],
+			"contracts": [
+				"timeline.classic.background_removal.set"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_background_removal.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Configuration and person-layer placement are fully migrated and pass state/history parity using the product's original Rust policy. Neural preparation services remain bridged; full rendered inference/cancellation/export acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"crates/editor-api/src/operations/classic_background_removal.rs"
+			]
+		},
+		{
+			"id": "ripple",
+			"title": "Ripple editing",
+			"managers": [],
+			"contracts": [
+				"timeline.classic.ripple.plan",
+				"timeline.classic.ripple.apply"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_ripple.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Ordinary UI reactor uses native exact-tick union/subtraction/shift policy and one canonical transaction. Registry plan/apply is available to agents without UI ripple mode. Legacy host-effect preflight retains its reviewed TS bridge; persistent ripple mode, linked-audio grouping and broad live acceptance remain.",
+			"actions": [
+				"toggle-ripple-editing"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts"
+			]
+		},
+		{
+			"id": "tracks",
+			"title": "Create, order, mute and show tracks",
+			"managers": [
+				"TimelineManager.addTrack",
+				"TimelineManager.reorderTrack",
+				"TimelineManager.toggleTrackMute",
+				"TimelineManager.toggleTrackVisibility"
+			],
+			"contracts": [
+				"timeline.classic.tracks.layout",
+				"timeline.classic.track.update"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_track_layout.rs"
+			],
+			"gap": "Full control/model parity acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "source-audio",
+			"title": "Separate/recover source audio",
+			"managers": [
+				"TimelineManager.toggleSourceAudioSeparation"
+			],
+			"contracts": [
+				"timeline.classic.audio.source.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_source_audio.rs"
+			],
+			"gap": "Live en-source-audio passed with retained trims, speed, volume automation, track mute and exact Undo/Redo/reopen. Sync offsets and audio fades now survive extraction, verified natively, through real WASM and live UI. Audible playback/sync quality and actual export acceptance remain.",
+			"actions": [
+				"toggle-source-audio"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "effects",
+			"title": "Clip effects",
+			"managers": [
+				"TimelineManager.addClipEffect",
+				"TimelineManager.removeClipEffect",
+				"TimelineManager.updateClipEffectParams",
+				"TimelineManager.toggleClipEffect",
+				"TimelineManager.reorderClipEffects"
+			],
+			"contracts": [
+				"effects.classic.catalog.read",
+				"timeline.classic.effects.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_effects.rs"
+			],
+			"gap": "Catalog binding exists; complete visible-result coverage remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "masks",
+			"title": "Masks and freeform points",
+			"managers": [
+				"TimelineManager.removeMask",
+				"TimelineManager.toggleMaskInverted",
+				"TimelineManager.deleteFreeformPathMaskPoints",
+				"TimelineManager.insertFreeformPathMaskPoint"
+			],
+			"contracts": [
+				"masks.classic.catalog.read",
+				"timeline.classic.masks.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_masks.rs"
+			],
+			"gap": "Remaining complex editing/gesture parity requires acceptance.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "keyframes",
+			"title": "Animation/keyframe editing",
+			"managers": [
+				"TimelineManager.upsertKeyframes",
+				"TimelineManager.removeKeyframes",
+				"TimelineManager.retimeKeyframes",
+				"TimelineManager.updateKeyframeCurves"
+			],
+			"contracts": [
+				"animation.classic.targets.read",
+				"timeline.classic.keyframes.upsert",
+				"timeline.classic.keyframes.remove",
+				"timeline.classic.keyframes.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_keyframes.rs"
+			],
+			"gap": "Actual motion and export acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "keyframe-clipboard",
+			"title": "Copy/paste keyframes",
+			"managers": [
+				"CommandManager.copyClassicKeyframes",
+				"CommandManager.pasteClassicKeyframes"
+			],
+			"contracts": [
+				"animation.classic.keyframes.copy",
+				"timeline.classic.keyframes.paste"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_keyframes.rs"
+			],
+			"gap": "Contract exists; live model acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/clipboard/handlers/keyframes.ts",
+				"classic/apps/web/src/core/managers/commands.ts"
+			]
+		},
+		{
+			"id": "scenes",
+			"title": "Scene create/rename/switch/delete",
+			"managers": [
+				"ScenesManager.createScene",
+				"ScenesManager.renameScene",
+				"ScenesManager.switchToScene",
+				"ScenesManager.deleteScene"
+			],
+			"contracts": [
+				"project.classic.scenes.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_scenes.rs"
+			],
+			"gap": "Contract exists; complete UI acceptance remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/scenes-manager.ts"
+			]
+		},
+		{
+			"id": "bookmarks",
+			"title": "Bookmark edits",
+			"managers": [
+				"ScenesManager.toggleBookmark",
+				"ScenesManager.moveBookmark",
+				"ScenesManager.updateBookmark"
+			],
+			"contracts": [
+				"timeline.classic.bookmarks.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_scenes.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Contract exists; broad UI acceptance remains.",
+			"actions": [
+				"toggle-bookmark"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/scenes-manager.ts"
+			]
+		},
+		{
+			"id": "settings",
+			"title": "Project FPS/canvas/background",
+			"managers": [
+				"CommandManager.updateClassicSettings"
+			],
+			"contracts": [
+				"project.classic.settings.update"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_settings.rs"
+			],
+			"gap": "Preview gesture grouping exists; legacy wrapper remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts",
+				"classic/apps/web/src/commands/project/update-project-settings.ts"
+			]
+		},
+		{
+			"id": "captions",
+			"title": "Caption words/layout and generated/manual ownership",
+			"managers": [],
+			"contracts": [
+				"caption.classic.cues.read"
+			],
+			"tests": [
+				"classic/apps/web/src/subtitles/__tests__/canonical-caption-sync.test.ts",
+				"classic/apps/web/src/subtitles/__tests__/canonical-caption-presentation.test.ts"
+			],
+			"gap": "Shared Rust builders exist; dedicated mutation/preflight contract missing.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/subtitles/caption-source-sync.ts",
+				"classic/apps/web/src/subtitles/caption-tracks.ts",
+				"classic/apps/web/src/timeline/components/caption-word-timing-track.tsx",
+				"classic/apps/web/src/subtitles/components/caption-review-view.tsx"
+			]
+		},
+		{
+			"id": "silence",
+			"title": "Silence removal/recovery",
+			"managers": [
+				"TimelineManager.removeAllSilence"
+			],
+			"contracts": [
+				"timeline.silence.commit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_silence.rs"
+			],
+			"gap": "Prepared commit is scoped; complete feature/model coverage remains.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts"
+			]
+		},
+		{
+			"id": "parallax",
+			"title": "Parallax marker and canvas stories",
+			"managers": [
+				"TimelineManager.updateParallaxTrack"
+			],
+			"contracts": [
+				"timeline.classic.track.update"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_tracks.rs"
+			],
+			"gap": "Marker settings connected; story/selection compound commands remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/timeline-manager.ts",
+				"classic/apps/web/src/commands/parallax/create-canvas-pan-story.ts",
+				"classic/apps/web/src/commands/parallax/insert-selection-into-canvas.ts"
+			]
+		},
+		{
+			"id": "media",
+			"title": "Import/delete media",
+			"managers": ["MediaManager.removeMediaAssets", "CommandManager.removeClassicMedia", "MediaManager.addMediaAsset", "CommandManager.registerClassicMedia", "CommandManager.prepareClassicMediaImport"],
+			"contracts": ["media.classic.remove", "media.classic.register"],
+			"tests": [
+				"crates/editor-api/tests/classic_media.rs",
+				"crates/editor-api/tests/classic_media_register.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+				"classic/apps/web/src/editor-agent/__tests__/project-media-ownership.test.ts"
+			],
+			"gap": "Browser file upload, clipboard media paste and generated voiceover save bytes before canonical metadata registration, fenced by session/account/revision. Paste groups registration/insertion into one rollback-safe Undo. Removal retains durable bytes; retained HyperFrames/compound/nested dependencies reject removal. Relink, compound dependency validation, permanent deletion/GC and broader live acceptance remain. The unused legacy AddMediaAssetCommand definition is retained until the removal gate.",
+			"actions": [
+				"remove-media-asset",
+				"remove-media-assets"
+			],
+			"sources": [
+				"classic/apps/web/src/commands/media/add-media-asset.ts",
+				"classic/apps/web/src/commands/media/remove-media-asset.ts"
+			]
+		},
+		{
+			"id": "history",
+			"title": "Undo/Redo",
+			"managers": [
+				"CommandManager.undo",
+				"CommandManager.redo"
+			],
+			"contracts": [
+				"history.undo",
+				"history.redo"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_history.rs",
+				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
+			],
+			"gap": "Paired canonical archive recovery exists; full lifecycle acceptance remains.",
+			"actions": [
+				"undo",
+				"redo"
+			],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts"
+			]
+		},
+		{
+			"id": "playback",
+			"title": "Playback and timeline navigation",
+			"managers": [],
+			"contracts": [],
+			"tests": [
+				"classic/apps/web/src/core/managers/__tests__/playback-manager.test.ts"
+			],
+			"gap": "Existing UI actions; semantic activation and canonical playback coverage need verification.",
+			"actions": [
+				"toggle-play",
+				"stop-playback",
+				"seek-forward",
+				"seek-backward",
+				"frame-step-forward",
+				"frame-step-backward",
+				"jump-forward",
+				"jump-backward",
+				"goto-start",
+				"goto-end"
+			],
+			"sources": [
+				"classic/apps/web/src/actions/use-editor-actions.ts"
+			]
+		},
+		{
+			"id": "selection",
+			"title": "Selection/snapping/cancel interaction and scoped UI presentation",
+			"managers": [],
+			"contracts": [
+				"editor.ui.snapshot",
+				"editor.ui.control"
+			],
+			"tests": [
+				"classic/apps/web/src/editor-agent/__tests__/editor-ui-browser.test.ts",
+				"classic/apps/electron/test/editor-ui-control.test.js"
+			],
+			"gap": "Opaque snapshot focus/scroll and host-bound UI-only panel/filter/layout gestures are implemented for browser DOM and owned Electron Playwright. Canonical document actions remain separate; full selection/playback surfaces, drag coverage and manual takeover acceptance remain.",
+			"actions": [
+				"select-all",
+				"select-all-text",
+				"deselect-all",
+				"cancel-interaction",
+				"toggle-snapping"
+			],
+			"sources": [
+				"classic/apps/web/src/actions/use-editor-actions.ts",
+				"classic/apps/web/src/editor-agent/ui-control.ts",
+				"crates/editor-api/src/editor_ui_control.rs"
+			]
+		},
+		{
+			"id": "hyperframes",
+			"title": "HyperFrames import/source/variables/layer movement",
+			"managers": [
+				"CommandManager.importHyperframes",
+				"CommandManager.moveHyperframesLayer",
+				"CommandManager.setHyperframesSource",
+				"CommandManager.setHyperframesVariables"
+			],
+			"contracts": [
+				"timeline.hyperframes.import",
+				"hyperframes.layer.move",
+				"hyperframes.source.set",
+				"hyperframes.variables.set"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_hyperframes.rs",
+				"crates/editor-api/tests/classic_hyperframes_layers.rs"
+			],
+			"gap": "Stored real GPT-6-Astra runs evidence import, remix, self-detected clipped title, corrective remix, render review and export. Durable binary archive restore is implemented and locally tested. External verification of the actual returned download and broad animation/audio/recovery acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts"
+			]
+		},
+		{
+			"id": "preview-export",
+			"title": "Native preview/export",
+			"managers": [],
+			"contracts": [
+				"editor.preview.render",
+				"editor.export.render"
+			],
+			"tests": [
+				"classic/apps/web/src/editor-agent/__tests__/render-effects.test.ts"
+			],
+			"gap": "Defined real model visual correction/export and local byte/archive recovery are evidenced. Independent downloaded-byte SHA/ffprobe/full decode of that actual returned export, broad playback and packaged Electron acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/editor-agent/render-effects.ts",
+				"classic/apps/web/src/editor-agent/client.ts"
+			]
+		},
+		{
+			"id": "agent-recovery",
+			"title": "Agent conversation/run/media recovery",
+			"managers": [
+				"CommandManager.captureEditingSession",
+				"CommandManager.persistEditingSession",
+				"CommandManager.getEditingConversation",
+				"CommandManager.applyEditingConversation"
+			],
+			"contracts": [],
+			"tests": [
+				"crates/editor-agent/tests/checkpoint.rs",
+				"crates/editor-agent/tests/session_store.rs"
+			],
+			"gap": "Completed/failed-task public context seeds fresh follow-ups without replay. Conversation and referenced image/text/PDF artifacts persist. Real subscription image generation/editing pipeline, exact request digests, alpha, canonical insertion and failed-task reopening were verified. Attachment-provider, broad lifecycle/player and autonomous visual-compliance acceptance remain.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts",
+				"classic/apps/web/src/editor-agent/overlay.tsx",
+				"classic/apps/web/src/editor-agent/client.ts"
+			]
+		},
+		{
+			"id": "image-generation",
+			"title": "Subscription image generation/editing",
+			"managers": [
+				"CommandManager.storeEditingAgentImage"
+			],
+			"contracts": [
+				"imagegen.generate",
+				"media.classic.image.inspect"
+			],
+			"tests": [
+				"crates/editor-api/tests/image_generation.rs",
+				"crates/editor-api/tests/classic_image_inspection.rs",
+				"classic/apps/web/src/editor-agent/__tests__/subscription-image.test.ts"
+			],
+			"gap": "Authenticated subscription generation and owned-reference editing were verified live with decoded PNG alpha, exact request digests, canonical media/timeline registration and preserved source. Both initial tasks honestly failed full visual compliance; a separate scoped transform correction completed with unchanged media hashes. Native bounded source-PNG inspection now exposes alpha, geometry and RGB evidence for generated image artifacts. Copied/unbound images, other formats/depths, broad autonomous image acceptance, attachments and packaged acceptance remain. No paid API fallback.",
+			"actions": [],
+			"sources": [
+				"crates/editor-api/src/operations/image_generation.rs",
+				"crates/editor-api/src/operations/classic_image_inspection.rs",
+				"classic/apps/web/src/editor-agent/server/subscription-image.ts"
+			]
+		},
+		{
+			"id": "owned-project-transfer",
+			"title": "Owned project inspection and media transfer",
+			"managers": [],
+			"contracts": ["projects.owned.read", "projects.owned.media.copy"],
+			"tests": ["crates/editor-api/tests/owned_projects.rs", "classic/apps/web/src/editor-agent/__tests__/owned-projects.test.ts", "classic/apps/web/src/editor-agent/__tests__/host-effects.test.ts"],
+			"gap": "Saved owned project/scene/clip reads and one-file image/video/audio transfers use native projection, current target fences, durable content-bound IDs/checksums, cancellation and one canonical media Undo. General clip insertion maps media/clip identities. Full dependency transfer for custom fonts, HyperFrames, linked groups, compound media and complex Parallax remains; no full-project migration claim or live model acceptance yet.",
+			"actions": [],
+			"sources": ["crates/editor-api/src/operations/owned_projects.rs", "classic/apps/web/src/editor-agent/server/owned-projects.ts"]
+		},
+		{
+			"id": "smart-takes",
+			"title": "Semantic take assembly and alternatives",
+			"managers": [
+				"CommandManager.prepareSmartTakes",
+				"CommandManager.selectSmartTake"
+			],
+			"contracts": [
+				"timeline.classic.takes.prepare",
+				"timeline.classic.takes.edit"
+			],
+			"tests": [
+				"crates/editor-api/tests/classic_takes.rs",
+				"classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts",
+				"classic/apps/web/src/ai/__tests__/smart-takes-plan.test.ts"
+			],
+			"gap": "Bridged: Classic UI, canonical Rust state and editing. Transcript-only recommendations; real footage quality/90% target and full desktop playback acceptance remain. Subsequent manual timeline edits require undo before alternative selection.",
+			"actions": [],
+			"sources": [
+				"classic/apps/web/src/core/managers/commands.ts",
+				"classic/apps/web/src/core/canonical-classic-session.ts",
+				"classic/apps/web/src/timeline/smart-takes/controls.tsx",
+				"classic/apps/web/src/ai/smart-takes-plan.ts"
+			]
+		}
+	]
+}

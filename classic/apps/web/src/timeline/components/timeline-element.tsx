@@ -1,5 +1,7 @@
 "use client";
 
+import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
+
 import {
 	previewRestoreSilence,
 	restoreSelectedSilence,
@@ -359,6 +361,7 @@ function TimelineElementComponent({
 									: undefined,
 						}}
 					>
+						<SmartTakeBadge element={element} />
 						{needsKeyframeSurface ? (
 							<TimelineElementKeyframeSurface
 								element={element}
@@ -665,7 +668,9 @@ function TimelineElementMenuContent({
 	const canRestoreSilence = useMemo(() => {
 		if (!activeScene || !isCurrentElementSelected || element.type !== "video")
 			return false;
-		return previewRestoreSilence(editor, selectedElements) !== null;
+		return (
+			previewRestoreSilence({ editor, selection: selectedElements }) !== null
+		);
 	}, [
 		activeScene,
 		editor,
@@ -856,15 +861,71 @@ function TimelineElementMenuContent({
 			>
 				Split
 			</ActionMenuItem>
+			<SmartTakeMenu element={element} />
 			<CopyMenuItem />
 			{canRestoreSilence && (
 				<ContextMenuItem
-					onClick={() => {
+					onClick={async () => {
 						try {
-							const result = restoreSelectedSilence(editor, selectedElements);
-							toast.success("מחיקת הרגעים השקטים בוטלה", {
-								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות. הטיימליין והכתוביות הותאמו.`,
+							const result = await restoreSelectedSilence({
+								editor,
+								selection: selectedElements,
 							});
+							toast.success("השקטים שבין הקליפים שנבחרו הוחזרו", {
+								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות בין הקליפים בלבד. הקצוות החיצוניים נשמרו.`,
+							});
+							const { canFillRestoredCaptions, fillRestoredSilenceCaptions } =
+								await import("@/timeline/restore-silence-captions");
+							if (canFillRestoredCaptions(editor)) {
+								toast("להשלים גם את המלל בקטעים שהוחזרו?", {
+									description:
+										"המילים החסרות יתווספו בסגנון הכתוביות הסמוכות, כולל האנימציות והמעברים.",
+									duration: Infinity,
+									cancel: { label: "בלי השלמה", onClick: () => {} },
+									action: {
+										label: "השלמת המלל",
+										onClick: () => {
+											const controller = new AbortController();
+											const progressId = toast.loading(
+												"מכינים את האודיו ששוחזר…",
+												{
+													duration: Infinity,
+													cancel: {
+														label: "ביטול",
+														onClick: () => controller.abort(),
+													},
+												},
+											);
+											void fillRestoredSilenceCaptions({
+												editor,
+												restoration: result,
+												signal: controller.signal,
+												onProgress: (message) =>
+													toast.loading(message, { id: progressId }),
+											})
+												.then((captions) => {
+													toast.dismiss(progressId);
+													toast.success(
+														captions.insertedWordCount
+															? `נוספו ${captions.insertedWordCount} מילים בקטעים שהוחזרו`
+															: "לא זוהו מילים חסרות בקטעים שהוחזרו",
+													);
+												})
+												.catch((error: unknown) => {
+													toast.dismiss(progressId);
+													if (controller.signal.aborted)
+														toast("השלמת המלל בוטלה. השחזור נשמר.");
+													else
+														toast.error(
+															error instanceof Error
+																? error.message
+																: "השלמת המלל נכשלה. השחזור נשמר.",
+														);
+												});
+										},
+									},
+								});
+							}
 						} catch (error) {
 							toast.error(
 								error instanceof Error
@@ -874,7 +935,7 @@ function TimelineElementMenuContent({
 						}
 					}}
 				>
-					ביטול מחיקת רגעים שקטים
+					החזרת שקטים בין הקליפים שנבחרו
 				</ContextMenuItem>
 			)}
 			{selectedElementCount === 1 && (

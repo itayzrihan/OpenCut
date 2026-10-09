@@ -30,6 +30,7 @@ no submodule initialization step.
 | Current project/local-drive persistence                                | `classic/apps/web/src/services/local-drive`                                                              |
 | Rewrite desktop UI                                                     | `apps/desktop`                                                                                           |
 | Typed Editor API                                                       | `crates/editor-api`                                                                                      |
+| HyperFrames project source import                                    | Typed import and folder planning in `crates/editor-api`, lazy WASM, canonical Classic history and compact archives; isolated official runtime verified with eight Brag projects. Import UI, Classic compositing/audio/export and native MCP forwarding remain pending; see `HYPERFRAMES-INTEGRATION.md` |
 | MCP server and projection                                              | `apps/mcp` and `crates/mcp`                                                                              |
 
 The local Classic editor connects to the stdio MCP through an authenticated

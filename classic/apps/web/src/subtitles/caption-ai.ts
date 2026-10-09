@@ -1,3 +1,4 @@
+import { buildCaptionCuePlan } from "opencut-wasm";
 import { aiClientFetch } from "@/ai/client-transport";
 import { z } from "zod";
 import type { TranscriptionWord } from "@/transcription/types";
@@ -128,7 +129,7 @@ async function requestCaptionAiJson({
 	words: IndexedTranscriptWord[];
 	signal?: AbortSignal;
 }): Promise<unknown> {
-	const response = await aiClientFetch("/api/ai/chat", {
+	const response = await aiClientFetch({ path: "/api/ai/chat", init: {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -153,7 +154,7 @@ async function requestCaptionAiJson({
 			],
 		}),
 		signal,
-	});
+	} });
 	const data: unknown = await response.json().catch(() => ({}));
 	const routeResult = z
 		.object({
@@ -261,7 +262,12 @@ export async function requestCaptionRowRearrangement({
 	const rowEndPositions = validateCaptionRowEndPositions({
 		words,
 		wordsPerRow,
-		rowEndPositions: parsed.rowEndPositions,
+		// Rust enforces the hard layout limit even when the model misses it.
+        // Only boundaries change; original words and their clocks remain intact.
+        rowEndPositions: buildCaptionCuePlan({
+            words,
+            settingsJson: JSON.stringify({ wordsPerRow, rows: 1, rowBreaks: parsed.rowEndPositions, exactWordTimings: true }),
+        }).map((cue) => cue.wordIndices[cue.wordIndices.length - 1] + 1),
 	});
 	return {
 		rowEndPositions,

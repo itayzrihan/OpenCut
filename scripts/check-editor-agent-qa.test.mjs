@@ -1,0 +1,31 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { createHash } from "node:crypto";
+import { checkReport } from "./check-editor-agent-qa.mjs";
+const manifest = JSON.parse(await fs.readFile(new URL("../resources/editor-agent-qa/tasks.json",import.meta.url),"utf8"));
+test("QA gate fails closed for absent runs, mocked provenance, unsupported success and corrupted evidence", async (t) => {
+  const evidenceRoot = await fs.mkdtemp(path.join(os.tmpdir(),"opencut-qa-gate-"));
+  t.after(() => fs.rm(evidenceRoot,{recursive:true,force:true}));
+  const bytes = Buffer.from('Synthetic gate-validator fixture; never a live acceptance result');
+  await fs.writeFile(path.join(evidenceRoot,"fixture.txt"),bytes);
+  const evidence = [{path:"fixture.txt",sha256:createHash("sha256").update(bytes).digest("hex")}];
+  const runs = manifest.tasks.map(task => ({ taskId:task.id, provenance:"real-provider", provider:"synthetic-validator-fixture", model:"synthetic", providerRounds:1, projectId:"synthetic",runId:"synthetic",finalRevision:1,outcome:"completed",autonomous:true,manualRepairs:0,claimedSuccess:true,checks:["final-state-read",...task.checks].map(id=>({id,status:"verified",evidence})),receipts:task.capabilities.map(capabilityId=>({capabilityId,status:"completed",revision:1,committed:false})) }));
+  const invoke = values => checkReport({manifest,report:{target:"browser",runs:values},evidenceRoot});
+  assert.equal((await invoke([])).passed,false);
+  // This synthetic valid record only establishes the validator's threshold.
+  assert.equal((await invoke(runs)).passed,true);
+  const mocked = structuredClone(runs); mocked[0].provenance = "mock-provider";
+  assert.equal((await invoke(mocked)).passed,false);
+  assert.equal((await invoke(mocked)).unsupportedSuccessClaims,1);
+  const repaired = structuredClone(runs); repaired[0].manualRepairs=1;
+  assert.equal((await invoke(repaired)).passed,false);
+  const omitted = structuredClone(runs); omitted[0].checks.pop();
+  assert.equal((await invoke(omitted)).passed,false);
+  const duplicate = structuredClone(runs); duplicate[19] = duplicate[0];
+  assert.equal((await invoke(duplicate)).passed,false);
+  await fs.writeFile(path.join(evidenceRoot,"fixture.txt"),"corrupted");
+  assert.equal((await invoke(runs)).passed,false);
+});

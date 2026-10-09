@@ -11,13 +11,30 @@ async-trait = { workspace = true }
 jsonschema = { workspace = true }
 json-patch = { workspace = true }
 schemars = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["rc"] }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
+base64 = "0.22"
+png = "=0.18.1"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
+tokio = { version = "1.49.0", features = ["sync", "rt", "macros", "time"] }
 tokio-util = { workspace = true }
+scraper = { version = "0.24.0", default-features = false }
+percent-encoding = "2.3"
+html5gum = { version = "=0.8.4", default-features = false }
+culors = "=1.6.0"
+classic-timeline = { package = "timeline", path = "../../classic/rust/crates/timeline" }
+classic-background-removal = { package = "background-removal", path = "../../classic/rust/crates/background-removal" }
+regex = { version = "1", default-features = false, features = ["std", "unicode-perl", "unicode-gencat"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { workspace = true, features = ["wasm_js"] }
+js-sys = "0.3.93"
 
 [dev-dependencies]
-tokio = { workspace = true }
+tokio = { version = "1.49.0", features = ["sync", "rt", "macros", "time"] }

@@ -1,6 +1,10 @@
 #[cfg(target_arch = "wasm32")]
 mod background_removal;
 #[cfg(target_arch = "wasm32")]
+mod caption_text;
+#[cfg(target_arch = "wasm32")]
+pub use caption_text::*;
+#[cfg(target_arch = "wasm32")]
 mod compositor;
 #[cfg(target_arch = "wasm32")]
 mod effects;

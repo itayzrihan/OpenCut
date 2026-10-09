@@ -1,3 +1,5 @@
+import { TextGraphicsProperties } from "@/simple-advanced-layers/components/text-graphics-properties";
+import { PushBrollProperties } from "@/simple-advanced-layers/components/push-broll-controls";
 import type { ReactNode } from "react";
 import type {
 	EffectElement,
@@ -376,10 +378,7 @@ function buildParallaxMotionLoopsTab({
 		label: "Loops",
 		icon: <Repeat2 size={16} />,
 		content: ({ trackId }) => (
-			<ParallaxMotionLoopsPropertiesTab
-				element={element}
-				trackId={trackId}
-			/>
+			<ParallaxMotionLoopsPropertiesTab element={element} trackId={trackId} />
 		),
 	};
 }
@@ -432,6 +431,14 @@ function getTextConfig({
 		tabs: [
 			buildTextTab({ element }),
 			buildTextPlacementTab({ element }),
+			{
+				id: "text-graphics",
+				label: "Graphics",
+				icon: <HugeiconsIcon icon={MagicWand05Icon} size={16} />,
+				content: ({ trackId }) => (
+					<TextGraphicsProperties element={element} trackId={trackId} />
+				),
+			},
 			buildTextWordsTab({ element }),
 			buildTextTransitionsTab({ element }),
 			buildTransformTab({ element }),
@@ -526,6 +533,20 @@ function getEffectConfig({
 }: {
 	element: EffectElement;
 }): ElementPropertiesConfig {
+	if (element.effectType === "push-broll")
+		return {
+			defaultTab: "push-broll",
+			tabs: [
+				{
+					id: "push-broll",
+					label: "B-roll",
+					icon: <HugeiconsIcon icon={MagicWand05Icon} size={16} />,
+					content: ({ trackId }) => (
+						<PushBrollProperties element={element} trackId={trackId} />
+					),
+				},
+			],
+		};
 	if (isParallaxStoryElement(element)) {
 		return {
 			defaultTab: "parallax-story",

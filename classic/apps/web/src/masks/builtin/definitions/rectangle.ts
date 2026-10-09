@@ -46,6 +46,7 @@ function buildRectanglePath({
 }
 
 export const rectangleMaskDefinition: MaskDefinition<"rectangle"> = {
+	defaultSizing: "square",
 	type: "rectangle",
 	name: "Rectangle",
 	features: {

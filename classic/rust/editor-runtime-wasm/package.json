@@ -1,0 +1,16 @@
+{
+  "name": "opencut-editor-runtime-wasm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./pkg/opencut_editor_runtime_wasm.js",
+  "types": "./pkg/opencut_editor_runtime_wasm.d.ts",
+  "exports": {
+    ".": {
+      "types": "./pkg/opencut_editor_runtime_wasm.d.ts",
+      "import": "./pkg/opencut_editor_runtime_wasm.js",
+      "default": "./pkg/opencut_editor_runtime_wasm.js"
+    }
+  },
+  "sideEffects": ["./pkg/opencut_editor_runtime_wasm.js", "./pkg/snippets/*"]
+}

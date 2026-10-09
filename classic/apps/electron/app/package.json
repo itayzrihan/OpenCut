@@ -4,5 +4,9 @@
   "private": true,
   "description": "Electron shell for the canonical OpenCut web interface",
   "author": "OpenCut contributors",
-  "main": "main.cjs"
+  "main": "main.cjs",
+  "dependencies": {
+    "playwright-core": "1.63.0",
+    "ws": "8.22.0"
+  }
 }

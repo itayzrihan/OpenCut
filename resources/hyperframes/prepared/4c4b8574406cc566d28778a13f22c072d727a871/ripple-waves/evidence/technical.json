@@ -1,0 +1,43 @@
+{
+  "id": "ripple-waves",
+  "kind": "block",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "bd6bf48437cdbb45e8d1d0e31919c46f7d521d4200863b9f5a41cd00739f48ae",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&display=block"
+  ],
+  "entryFile": "ripple-waves.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "00f87c04d2f8d9666471a76907e1f49ed6d65ae5c5855a57aa0563dae0096865",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "be5b647032c6b5dd6353e86f41e0d868ca2b79ef308abada0b9760ccd81d25bc",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "4d0b6502b945b2864a79379bf0afd5fc54fbf179b327922c4e3354e71e4311a3",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "be5b647032c6b5dd6353e86f41e0d868ca2b79ef308abada0b9760ccd81d25bc",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

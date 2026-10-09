@@ -15,6 +15,7 @@ import { useEditor } from "@/editor/use-editor";
 import { type FullAutoOptions } from "@/ai/full-auto-edit";
 import { toast } from "sonner";
 import { useBatchEdit } from "@/batch/provider";
+import { findSceneCheckpoint } from "@/batch/scene-checkpoint";
 
 export function FullAutoEditButton({
 	disabled,
@@ -26,12 +27,17 @@ export function FullAutoEditButton({
 	const editor = useEditor();
 	const { startProject, state } = useBatchEdit();
 	const projectId = editor.project.getActive().metadata.id;
-	const previous = state.runs.find((r) =>
-		r.jobs.some((j) => j.projectId === projectId),
-	);
+	const sceneId = editor.scenes.getActiveScene().id;
+	const previous = findSceneCheckpoint({
+		runs: state.runs,
+		projectId,
+		sceneId,
+	});
 	const previousJob = previous?.jobs.find((j) => j.projectId === projectId);
 	const resumable =
-		previousJob?.status === "failed" && previousJob.completedStages >= 5;
+		(previousJob?.status === "failed" ||
+			previousJob?.status === "interrupted") &&
+		previousJob.completedStages >= 3;
 	const [open, setOpen] = useState(false);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
@@ -68,22 +74,15 @@ export function FullAutoEditButton({
 			<Button
 				className="w-full"
 				disabled={disabled || running}
-				onClick={() => setOpen(true)}
+				onClick={() => (resumable ? void run(true) : setOpen(true))}
 			>
-				<WandSparkles /> Full Auto Edit
+				<WandSparkles />{" "}
+				{resumable
+					? `Resume Full Auto Edit · stage ${previousJob.completedStages + 1}`
+					: "Full Auto Edit"}
 			</Button>
-			{resumable && (
-				<Button
-					className="w-full"
-					variant="outline"
-					disabled={disabled || running}
-					onClick={() => void run(true)}
-				>
-					Resume from stage {previousJob.completedStages + 1}
-				</Button>
-			)}
 			<p className="text-xs text-muted-foreground">
-				Vertical framing, silence removal, complete Hebrew Auto Texts and
+				Vertical framing, smart silence removal, complete Hebrew Auto Texts and
 				finishing.
 			</p>
 			<Dialog
@@ -103,8 +102,10 @@ export function FullAutoEditButton({
 					<DialogHeader>
 						<DialogTitle>Full Auto Edit</DialogTitle>
 						<DialogDescription>
-							Start from imported video in this project. Choose any optional
-							finishing steps, or leave all options off.
+							Start from imported video or your selected Smart Takes. Smart
+							Takes keeps its selected cuts without rendering; existing text and
+							take alternatives are cleared, then speech is transcribed afresh.
+							Undo restores the assembly. Choose any optional finishing steps.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3">
@@ -131,11 +132,11 @@ export function FullAutoEditButton({
 							</label>
 						))}
 						<p className="text-xs text-muted-foreground">
-							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · silence
-							0.3s · Assistant bold · fade 60% / 25%. Local face/body framing
-							uses five source samples per source; no cloud AI is used for
-							centering. Uncertain subjects use centered vertical cover
-							automatically; editing continues.
+							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · Smart
+							audio cut · protect speech · Assistant bold · fade 60% / 25%.
+							Local face/body framing uses five source samples per source; no
+							cloud AI is used for centering. Uncertain subjects use centered
+							vertical cover automatically; editing continues.
 						</p>
 						{status && (
 							<p role="status" className="text-sm whitespace-pre-wrap">

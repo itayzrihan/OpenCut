@@ -1,15 +1,16 @@
 import { readFile } from "node:fs/promises";
 
-const wasmUrl = new URL(
-	"../rust/wasm/pkg/opencut_wasm_bg.wasm",
-	import.meta.url,
-);
-const wasmBytes = await readFile(wasmUrl);
-const wasmModule = await WebAssembly.compile(wasmBytes);
-const actualExports = new Set(
-	WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
-);
 const requiredExports = [
+	"buildCaptionCuePlan",
+	"allocateCaptionLayers",
+	"normalizeCaptionLayoutSettings",
+	"planCaptionTranscriptSync",
+	"planCaptionSceneTranscriptSync",
+	"planCaptionManualWordReplacement",
+	"planCaptionPresentation",
+	"buildCaptionText",
+	"rebuildCaptionScene",
+	"planCaptionSourceSelection",
 	"mediaRelinkBinding",
 	"mediaMissingUsed",
 	"accountConfigureStorage",
@@ -18,6 +19,7 @@ const requiredExports = [
 	"resolveAudioSyncRetrim",
 	"resolveClipAudioTiming",
 	"analyzeAudioSilence",
+	"analyzeSmartAudioSilence",
 	"authorizeRegisteredAgentCapabilities",
 	"buildAiEditPlanRecord",
 	"canonicalizeTimelineSourceDocument",
@@ -25,14 +27,14 @@ const requiredExports = [
 	"sampleAutomaticZoom",
 	"classicZoomPresets",
 	"compileAutomaticTextTransitions",
-"compileAutomaticWordAnimation",
-"compileFullAutoEdit",
-"fullAutoEditStages",
-"automaticMusicCatalog",
-"compileAutomaticMusic",
-"resolveLocalSubjectFraming",
-"batchEditTransition",
-"batchEditIsLocked",
+	"compileAutomaticWordAnimation",
+	"compileFullAutoEdit",
+	"fullAutoEditStages",
+	"automaticMusicCatalog",
+	"compileAutomaticMusic",
+	"resolveLocalSubjectFraming",
+	"batchEditTransition",
+	"batchEditIsLocked",
 	"detectFastAudioSilence",
 	"normalizeTimelineTimeRanges",
 	"planAgentRangePreviewFrames",
@@ -43,19 +45,86 @@ const requiredExports = [
 	"resolveBackgroundRemovalSettings",
 	"rippleInsertTime",
 	"restoreSilence",
+	"restoreSilenceCaptions",
 	"searchAgentTools",
 	"textLayerDurationForWords",
 	"transitionAgentTask",
 	"validateTimelineSourceV2MutationScope",
 ];
-const missingExports = requiredExports.filter(
-	(name) => !actualExports.has(name),
-);
-
-if (missingExports.length > 0) {
-	throw new Error(
-		`Generated opencut-wasm is missing required exports: ${missingExports.join(", ")}`,
+async function verifyExports(relativePath, required, label) {
+	const wasmBytes = await readFile(new URL(relativePath, import.meta.url));
+	const wasmModule = await WebAssembly.compile(wasmBytes);
+	const actualExports = new Set(
+		WebAssembly.Module.exports(wasmModule).map(({ name }) => name),
 	);
+	const missingExports = required.filter((name) => !actualExports.has(name));
+
+	if (missingExports.length > 0) {
+		throw new Error(
+			`Generated ${label} is missing required exports: ${missingExports.join(", ")}`,
+		);
+	}
+	console.log(`Verified ${required.length} required ${label} exports`);
 }
 
-console.log(`Verified ${requiredExports.length} required opencut-wasm exports`);
+await verifyExports(
+	"../rust/wasm/pkg/opencut_wasm_bg.wasm",
+	requiredExports,
+	"opencut-wasm",
+);
+await verifyExports(
+	"../rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+	[
+		"canonicaleditorruntime_new",
+		"canonicaleditorruntime_installDesktopUi",
+		"canonicaleditorruntime_invoke",
+		"canonicaleditorruntime_invokeReadWithHost",
+		"canonicaleditorruntime_invokeSync",
+		"canonicaleditorruntime_beginTransaction",
+		"canonicaleditorruntime_commitTransaction",
+		"canonicaleditorruntime_rollbackTransaction",
+		"canonicaleditorruntime_snapshot",
+		"canonicaleditorruntime_capabilities",
+		"canonicaleditorruntime_setEffectCatalog",
+		"canonicaleditorruntime_setMaskCatalog",
+		"canonicaleditorruntime_setAnimationCatalog",
+		"canonicaleditorruntime_serialize",
+		"canonicaleditorruntime_restore",
+		"canonicaleditorruntime_readArtifact",
+		"canonicaleditorruntime_storeArtifact",
+		"canonicaleditorruntime_removeArtifact",
+		"canonicaleditorruntime_agentStart",
+		"canonicaleditorruntime_conversationRead",
+		"canonicaleditorruntime_agentInputAttachments",
+		"canonicaleditorruntime_storeInputAttachment",
+		"canonicaleditorruntime_conversationArtifacts",
+		"canonicaleditorruntime_restoreConversationArtifacts",
+		"canonicaleditorruntime_pinArtifact",
+		"canonicaleditorruntime_artifactMetadata",
+		"canonicaleditorruntime_conversationApply",
+		"canonicaleditorruntime_conversationRestore",
+		"canonicaleditorruntime_agentCommand",
+		"canonicaleditorruntime_agentSnapshot",
+		"canonicaleditorruntime_agentVerify",
+		"canonicaleditorruntime_agentModelSchema",
+		"canonicaleditorruntime_agentModelAction",
+		"canonicaleditorruntime_agentProviderRequest",
+		"canonicaleditorruntime_agentProviderResponse",
+		"canonicaleditorruntime_agentReviewPlan",
+		"canonicaleditorruntime_agentReviewRequest",
+		"canonicaleditorruntime_agentReviewResponse",
+		"canonicaleditorruntime_agentKnowledge",
+        "canonicaleditorruntime_agentCheckpoint",
+        "canonicaleditorruntime_agentRestoreCheckpoint",
+        "canonicaleditorruntime_agentPendingHost",
+        "canonicaleditorruntime_agentSettleHost",
+		"knowledgeDispatch",
+        "sessionStoreTransition",
+		"hyperframesEmbeddingPlan",
+		"hyperframesReferenceSource",
+		"subscriptionImagePlan",
+		"ownedProjectRead",
+		"ownedMediaTransferPlan",
+	],
+	"opencut-editor-runtime-wasm",
+);

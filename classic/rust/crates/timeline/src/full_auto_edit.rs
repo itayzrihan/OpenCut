@@ -4,6 +4,66 @@ use bridge::export;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
+/// Shared preflight and framing contract; an explicit 1x rate is ordinary footage.
+pub fn supports_full_auto_framing(clip: &Value) -> bool {
+    clip["type"] == "video"
+        && clip.get("animations").is_none_or(Value::is_null)
+        && clip
+            .get("retime")
+            .is_none_or(|r| r.is_null() || r["rate"].as_f64() == Some(1.0))
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FullAutoFramingSampleOptions {
+    pub clips_json: String,
+}
+
+/// Five duration-weighted samples of the retained source intervals, in timeline order.
+/// Never sample discarded footage between distant or reordered takes.
+#[export]
+pub fn full_auto_framing_sample_times(o: FullAutoFramingSampleOptions) -> Vec<f64> {
+    let Ok(mut clips) = serde_json::from_str::<Vec<Value>>(&o.clips_json) else {
+        return vec![];
+    };
+    if clips.is_empty()
+        || clips.iter().any(|c| {
+            !supports_full_auto_framing(c)
+                || c["duration"]
+                    .as_f64()
+                    .is_none_or(|d| !d.is_finite() || d <= 0.0)
+                || c["trimStart"]
+                    .as_f64()
+                    .is_none_or(|t| !t.is_finite() || t < 0.0)
+        })
+    {
+        return vec![];
+    }
+    clips.sort_by(|a, b| {
+        a["startTime"]
+            .as_f64()
+            .unwrap_or(0.0)
+            .total_cmp(&b["startTime"].as_f64().unwrap_or(0.0))
+    });
+    let total: f64 = clips.iter().map(|c| c["duration"].as_f64().unwrap()).sum();
+    [0.02, 0.25, 0.5, 0.75, 0.98]
+        .iter()
+        .map(|fraction| {
+            let mut remaining = total * fraction;
+            for c in &clips {
+                let duration = c["duration"].as_f64().unwrap();
+                if remaining < duration {
+                    return (c["trimStart"].as_f64().unwrap() + remaining) / 120_000.0;
+                }
+                remaining -= duration;
+            }
+            unreachable!("fractions are strictly below one")
+        })
+        .collect()
+}
+
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
 #[derive(Deserialize)]
@@ -94,6 +154,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
         return Err("Invalid Timeline Source".into());
     }
     let mut doc: Value = serde_json::from_str(&c.formatted_json).map_err(|e| e.to_string())?;
+    let scene_id = doc["scene"]["id"].as_str().unwrap_or("scene").to_owned();
     if o.stage == "framing" || o.stage == "framing-auto" || o.stage == "center-subject" {
         let unattended = o.stage == "framing-auto";
         let center_only = o.stage == "center-subject";
@@ -117,10 +178,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
             return Err("Every main clip needs framing samples".into());
         }
         for e in es {
-            if e["type"] != "video"
-                || e.get("retime").is_some_and(|v| !v.is_null())
-                || e.get("animations").is_some_and(|v| !v.is_null())
-            {
+            if !supports_full_auto_framing(e) {
                 return Err("Full Auto Edit starts from ordinary imported video clips, without retiming or animated transforms".into());
             }
             let f = framing
@@ -262,7 +320,7 @@ fn compile(o: CompileFullAutoEditOptions) -> Result<String, String> {
             .iter()
             .position(|t| t["area"] == "main")
             .ok_or("Missing main track")?;
-        tracks.insert(at,json!({"id":"full-auto-edit:edge-track","type":"effect","area":"overlay","name":"Editorial Edge Feather","hidden":false,"fullAutoEditOwner":"edge-feather-v1","elements":[{"id":"full-auto-edit:edge","name":"Editorial Edge Feather","type":"effect","effectType":"editorial-edge-feather","startTime":0,"duration":end,"trimStart":0,"trimEnd":0,"fullAutoEditOwner":"edge-feather-v1","params":{"intensity":60,"height":30,"softness":80,"color":"#000000"}}]}));
+        tracks.insert(at,json!({"id":format!("full-auto-edit:{scene_id}:edge-track"),"type":"effect","area":"overlay","name":"Editorial Edge Feather","hidden":false,"fullAutoEditOwner":"edge-feather-v1","elements":[{"id":format!("full-auto-edit:{scene_id}:edge"),"name":"Editorial Edge Feather","type":"effect","effectType":"editorial-edge-feather","startTime":0,"duration":end,"trimStart":0,"trimEnd":0,"fullAutoEditOwner":"edge-feather-v1","params":{"intensity":60,"height":30,"softness":80,"color":"#000000"}}]}));
     } else {
         return Err("Unknown Full Auto stage".into());
     }
@@ -283,6 +341,65 @@ mod tests {
     }
     fn frame(x: f64) -> FullAutoEditResult {
         compile_full_auto_edit(CompileFullAutoEditOptions{source_json:source().to_string(),stage:"framing".into(),font_family:String::new(),framing_json:json!([{"elementId":"v1","width":1920,"height":1080,"samples":[{"faceX":x,"bodyX":x,"confidence":0.95,"personCount":1},{"faceX":x,"bodyX":x,"confidence":0.95,"personCount":1},{"faceX":x,"bodyX":x,"confidence":0.95,"personCount":1}]}]).to_string()})
+    }
+    #[test]
+    fn samples_follow_chosen_cuts_not_discarded_source_gaps() {
+        let clips = json!([
+            {"type":"video","startTime":240000,"trimStart":1200000,"duration":240000,"retime":{"rate":1,"maintainPitch":true}},
+            {"type":"video","startTime":0,"trimStart":12000000,"duration":240000}
+        ]);
+        let times = full_auto_framing_sample_times(FullAutoFramingSampleOptions {
+            clips_json: clips.to_string(),
+        });
+        assert_eq!(times, vec![100.08, 101.0, 10.0, 11.0, 11.92]);
+        let mut unsupported = clips;
+        unsupported[0]["retime"]["rate"] = json!(2);
+        assert!(
+            full_auto_framing_sample_times(FullAutoFramingSampleOptions {
+                clips_json: unsupported.to_string()
+            })
+            .is_empty()
+        );
+    }
+    #[test]
+    fn framing_and_finish_preserve_reordered_cut_clocks() {
+        let mut source = source();
+        let mut first = source["scene"]["tracks"][0]["elements"][0].clone();
+        first["trimStart"] = json!(12000000);
+        first["duration"] = json!(240000);
+        let mut second = first.clone();
+        second["id"] = json!("v2");
+        second["trimStart"] = json!(1200000);
+        second["startTime"] = json!(240000);
+        second["retime"] = json!({"rate":1});
+        source["scene"]["tracks"][0]["elements"] = json!([first, second]);
+        let framed = compile_full_auto_edit(CompileFullAutoEditOptions {
+            source_json: source.to_string(), stage: "framing-auto".into(), font_family: "".into(),
+            framing_json: json!([{"elementId":"v1","width":1920,"height":1080,"samples":[]},{"elementId":"v2","width":1920,"height":1080,"samples":[]}]).to_string()
+        });
+        assert!(framed.valid, "{}", framed.error);
+        let finished = compile_full_auto_edit(CompileFullAutoEditOptions {
+            source_json: framed.source_json,
+            stage: "finish".into(),
+            font_family: "Assistant Bold".into(),
+            framing_json: "[]".into(),
+        });
+        assert!(finished.valid, "{}", finished.error);
+        let result: Value = serde_json::from_str(&finished.source_json).unwrap();
+        let clips = &result["scene"]["tracks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["area"] == "main")
+            .unwrap()["elements"];
+        for i in 0..2 {
+            for key in ["id", "startTime", "duration", "trimStart"] {
+                assert_eq!(
+                    clips[i][key],
+                    source["scene"]["tracks"][0]["elements"][i][key]
+                );
+            }
+        }
     }
     #[test]
     fn options_are_independent_and_base_order_is_fixed() {
@@ -412,5 +529,30 @@ mod tests {
     #[test]
     fn untrusted_detections_fail_closed() {
         assert!(!frame(2.0).valid);
+    }
+
+    #[test]
+    fn finishing_ids_do_not_collide_between_scenes() {
+        let mut ids = std::collections::HashSet::new();
+        for scene in ["smart-a", "smart-b"] {
+            let mut input = source();
+            input["scene"]["id"] = json!(scene);
+            let result = compile_full_auto_edit(CompileFullAutoEditOptions {
+                source_json: input.to_string(),
+                stage: "finish".into(),
+                framing_json: "[]".into(),
+                font_family: "Assistant Bold".into(),
+            });
+            assert!(result.valid, "{}", result.error);
+            let output: Value = serde_json::from_str(&result.source_json).unwrap();
+            let track = output["scene"]["tracks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|t| t["fullAutoEditOwner"] == "edge-feather-v1")
+                .unwrap();
+            assert!(ids.insert(track["id"].as_str().unwrap().to_owned()));
+            assert!(ids.insert(track["elements"][0]["id"].as_str().unwrap().to_owned()));
+        }
     }
 }

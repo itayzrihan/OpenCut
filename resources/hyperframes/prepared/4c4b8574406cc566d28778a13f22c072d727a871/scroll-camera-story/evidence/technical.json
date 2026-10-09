@@ -1,0 +1,42 @@
+{
+  "id": "scroll-camera-story",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "ad5dbab5634d06999063a73054e6f27a12b9279c49f4cd343bd26c1893585eae",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5.5,
+  "frames": [
+    {
+      "timeSeconds": 0.825,
+      "sha256": "2a493266cc188b62afe92e5f69e060e8fc2b82208f27977906eab0103cc8a633",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.75,
+      "sha256": "0ebeeab237a9fc9a7811d682b3229a5c0470323485b604824641a61fb7de5de3",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.675,
+      "sha256": "437e7f4076063fe769bf2b6e17b28af3d592f6e8372f119ab210371c4fab46ef",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.75,
+      "sha256": "0ebeeab237a9fc9a7811d682b3229a5c0470323485b604824641a61fb7de5de3",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

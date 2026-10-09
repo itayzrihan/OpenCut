@@ -1,0 +1,42 @@
+{
+  "id": "conic-progress-ring",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "93e0429b62a67fb74c1e8db1516414aa831fb3ca9fb9ea366c3a312fe472d282",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 4,
+  "frames": [
+    {
+      "timeSeconds": 0.6,
+      "sha256": "aa3cd2abd9c06a8fbe4f14101edef774b8ec5f3b6a4cc568ffa1d60ca427bff0",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "72103d5fd5ae92e210b7ce66164873d2c78d7012a35a4969da998210e79389b7",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 3.4,
+      "sha256": "72103d5fd5ae92e210b7ce66164873d2c78d7012a35a4969da998210e79389b7",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2,
+      "sha256": "72103d5fd5ae92e210b7ce66164873d2c78d7012a35a4969da998210e79389b7",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

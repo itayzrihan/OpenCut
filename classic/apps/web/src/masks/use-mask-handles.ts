@@ -21,7 +21,6 @@ import {
 } from "@/preview/preview-snap";
 import type { SelectedMaskPointSelection } from "@/selection/editor-selection";
 import type { Mask, MaskHandleId, MaskInteractionResult } from "@/masks/types";
-import type { MaskableElement } from "@/timeline";
 import { isMaskableElement } from "@/timeline/element-utils";
 import { registerCanceller } from "@/editor/cancel-interaction";
 import type { ElementRef, SceneTracks, TimelineElement } from "@/timeline";
@@ -69,31 +68,6 @@ function isMaskSelectionForElement({
 		selection.elementId === elementId &&
 		selection.maskId === maskId
 	);
-}
-
-function replaceElementMask({
-	masks,
-	updatedMask,
-}: {
-	masks: MaskableElement["masks"];
-	updatedMask: Mask;
-}): Mask[] {
-	return (masks ?? []).map((mask) =>
-		mask.id === updatedMask.id ? updatedMask : mask,
-	);
-}
-
-function withUpdatedMaskParams<TMask extends Mask>({
-	mask,
-	params,
-}: {
-	mask: TMask;
-	params: TMask["params"];
-}): TMask {
-	return {
-		...mask,
-		params,
-	};
 }
 
 function getElementForRef({
@@ -419,26 +393,11 @@ export function useMaskHandles({
 					customMaskPointIds.length >= 3 &&
 					selectedWithMask.mask.type === "freeform"
 				) {
-					const updatedMask = withUpdatedMaskParams({
-						mask: selectedWithMask.mask,
-						params: {
-							...selectedWithMask.mask.params,
-							closed: true,
-						},
-					});
-					editor.timeline.updateElements({
-						updates: [
-							{
-								trackId: selectedWithMask.trackId,
-								elementId: selectedWithMask.elementId,
-								patch: {
-									masks: replaceElementMask({
-										masks: selectedWithMask.element.masks,
-										updatedMask,
-									}),
-								} as Partial<MaskableElement>,
-							},
-						],
+					editor.command.editClassicMask({
+						trackId: selectedWithMask.trackId,
+						elementId: selectedWithMask.elementId,
+						maskId: selectedWithMask.mask.id,
+						change: { type: "update", params: { closed: true } },
 					});
 				}
 				return;
@@ -503,8 +462,8 @@ export function useMaskHandles({
 		},
 		[
 			customMaskPointIds,
+			editor.command,
 			editor.selection,
-			editor.timeline,
 			isCreatingFreeformPathMask,
 			selectedWithMask,
 			updateFreeformPathMaskPointSelection,
@@ -538,27 +497,14 @@ export function useMaskHandles({
 				canvasPoint: pos,
 				bounds: selectedWithMask.bounds,
 			});
-			const updatedMask = withUpdatedMaskParams({
-				mask: selectedWithMask.mask,
-				params: nextParams,
-			});
-
-			editor.timeline.updateElements({
-				updates: [
-					{
-						trackId: selectedWithMask.trackId,
-						elementId: selectedWithMask.elementId,
-						patch: {
-							masks: replaceElementMask({
-								masks: selectedWithMask.element.masks,
-								updatedMask,
-							}),
-						} as Partial<MaskableElement>,
-					},
-				],
+			editor.command.editClassicMask({
+				trackId: selectedWithMask.trackId,
+				elementId: selectedWithMask.elementId,
+				maskId: selectedWithMask.mask.id,
+				change: { type: "update", params: { ...nextParams } },
 			});
 		},
-		[editor.timeline, isCreatingFreeformPathMask, selectedWithMask, viewport],
+		[editor.command, isCreatingFreeformPathMask, selectedWithMask, viewport],
 	);
 
 	const handlePointerMove = useCallback(
@@ -624,59 +570,53 @@ export function useMaskHandles({
 
 			onSnapLinesChange?.(activeLines);
 
-			const updatedMask = withUpdatedMaskParams({
-				mask: selectedWithMask.mask,
-				params: nextParams as typeof selectedWithMask.mask.params,
-			});
-			editor.timeline.previewElements({
-				updates: [
-					{
-						trackId: drag.trackId,
-						elementId: drag.elementId,
-						updates: {
-							masks: replaceElementMask({
-								masks: selectedWithMask.element.masks,
-								updatedMask,
-							}),
-						} as Partial<MaskableElement>,
-					},
-				],
-			});
+			try {
+				editor.timeline.previewMask({
+					trackId: drag.trackId,
+					elementId: drag.elementId,
+					maskId: selectedWithMask.mask.id,
+					change: { type: "update", params: { ...nextParams } },
+				});
+			} catch (error) {
+				clearMaskHandleState();
+				releaseCapturedPointer();
+				throw error;
+			}
 		},
 		[
 			selectedWithMask,
 			canvasSize,
+			clearMaskHandleState,
 			editor,
 			isShiftHeldRef,
 			onSnapLinesChange,
+			releaseCapturedPointer,
 			viewport,
 		],
 	);
 
 	const handlePointerUp = useCallback(() => {
-		const pendingSegmentInsert = pendingSegmentInsertRef.current;
-		if (pendingSegmentInsert && !dragStateRef.current) {
-			editor.timeline.insertFreeformPathMaskPoint({
-				trackId: pendingSegmentInsert.trackId,
-				elementId: pendingSegmentInsert.elementId,
-				maskId: pendingSegmentInsert.maskId,
-				segmentIndex: pendingSegmentInsert.segmentIndex,
-				canvasPoint: {
-					x: pendingSegmentInsert.startCanvasX,
-					y: pendingSegmentInsert.startCanvasY,
-				},
-				bounds: pendingSegmentInsert.bounds,
-			});
+		try {
+			const pendingSegmentInsert = pendingSegmentInsertRef.current;
+			if (pendingSegmentInsert && !dragStateRef.current) {
+				editor.timeline.insertFreeformPathMaskPoint({
+					trackId: pendingSegmentInsert.trackId,
+					elementId: pendingSegmentInsert.elementId,
+					maskId: pendingSegmentInsert.maskId,
+					segmentIndex: pendingSegmentInsert.segmentIndex,
+					canvasPoint: {
+						x: pendingSegmentInsert.startCanvasX,
+						y: pendingSegmentInsert.startCanvasY,
+					},
+					bounds: pendingSegmentInsert.bounds,
+				});
+			} else if (dragStateRef.current) {
+				editor.timeline.commitPreview();
+			}
+		} finally {
 			clearMaskHandleState();
 			releaseCapturedPointer();
-			return;
 		}
-
-		if (dragStateRef.current) {
-			editor.timeline.commitPreview();
-			clearMaskHandleState();
-		}
-		releaseCapturedPointer();
 	}, [clearMaskHandleState, editor, releaseCapturedPointer]);
 
 	return {

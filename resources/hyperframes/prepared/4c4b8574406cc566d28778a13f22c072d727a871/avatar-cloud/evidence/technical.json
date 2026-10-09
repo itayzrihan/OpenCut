@@ -1,0 +1,42 @@
+{
+  "id": "avatar-cloud",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "46e557c8489a38df68c195d1c164219e265edb5afd3b01037e75b9b4489dbbe7",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 5,
+  "frames": [
+    {
+      "timeSeconds": 0.75,
+      "sha256": "5895b63df06265918e1347d97489075dfeb80a03902232819778afaef2c1c91b",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "0e110742f49402b1c3e3ee88e53fe3018c49807c1af1c1520c9631845fb843c1",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 4.25,
+      "sha256": "f3f4caf9db7621b6dd50b2fba4e17bdf88704cae5e82f7b729906d2312c9fe73",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.5,
+      "sha256": "0e110742f49402b1c3e3ee88e53fe3018c49807c1af1c1520c9631845fb843c1",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

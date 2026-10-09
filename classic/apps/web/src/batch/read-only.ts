@@ -1,3 +1,4 @@
+import { assertEditorOwnership } from "@/core/editor-ownership";
 /** Read-only lock cache from the host queue; never a second project document. */
 const locked = new Set<string>();
 const preparing = new Set<string>();
@@ -37,7 +38,12 @@ export function setBatchReadOnlyProjects(ids: string[]) {
 export function isBatchReadOnly(projectId: string | undefined) {
 	return !!projectId && (locked.has(projectId) || stale.has(projectId));
 }
+/** A stale preview needs reloading, but is not an active worker's ownership. */
+export function isBatchProjectLocked(projectId: string) {
+	return locked.has(projectId);
+}
 export function assertBatchEditable(projectId: string | undefined) {
+	assertEditorOwnership(projectId);
 	if (isBatchReadOnly(projectId) || (!!projectId && preparing.has(projectId)))
 		throw new Error(
 			"This project is read-only while Full Auto Edit is working",

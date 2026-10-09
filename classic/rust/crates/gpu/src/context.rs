@@ -414,6 +414,25 @@ impl GpuContext {
         Ok(())
     }
 
+    pub fn configure_premultiplied_surface(
+        &self,
+        surface: &wgpu::Surface<'_>,
+        width: u32,
+        height: u32,
+    ) -> Result<(), GpuError> {
+        let mut config = self.build_surface_configuration(surface, width, height)?;
+        // WebGPU supports premultiplied canvas output even though wgpu 29's
+        // browser capabilities report only Opaque. The compositor produces
+        // premultiplied pixels, including transparent preview overlay groups.
+        // WebGL keeps its advertised mode; its canvas context already uses
+        // alpha=true and premultipliedAlpha=true by default.
+        if self.adapter.get_info().backend == wgpu::Backend::BrowserWebGpu {
+            config.alpha_mode = wgpu::CompositeAlphaMode::PreMultiplied;
+        }
+        surface.configure(&self.device, &config);
+        Ok(())
+    }
+
     fn build_surface_configuration(
         &self,
         surface: &wgpu::Surface<'_>,

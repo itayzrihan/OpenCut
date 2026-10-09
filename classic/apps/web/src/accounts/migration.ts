@@ -52,14 +52,21 @@ function legacyPublicRoot() {
 			join(process.cwd(), "../../../.local/legacy-public"),
 	);
 }
-async function walk(root: string, prefix = ""): Promise<Entry[]> {
+async function walk({
+	root,
+	prefix = "",
+}: {
+	root: string;
+	prefix?: string;
+}): Promise<Entry[]> {
 	const result: Entry[] = [];
 	for (const entry of await readdir(root, { withFileTypes: true })) {
 		const source = join(root, entry.name),
 			relativePath = join(prefix, entry.name);
 		if (entry.isSymbolicLink())
 			throw new Error(`Symbolic link requires review: ${relativePath}`);
-		if (entry.isDirectory()) result.push(...(await walk(source, relativePath)));
+		if (entry.isDirectory())
+			result.push(...(await walk({ root: source, prefix: relativePath })));
 		else if (entry.isFile()) {
 			const info = await stat(source);
 			result.push({
@@ -72,33 +79,49 @@ async function walk(root: string, prefix = ""): Promise<Entry[]> {
 	}
 	return result;
 }
-async function optionalWalk(root: string, prefix = "") {
+async function optionalWalk({
+	root,
+	prefix = "",
+}: {
+	root: string;
+	prefix?: string;
+}) {
 	try {
-		return await walk(root, prefix);
+		return await walk({ root: root, prefix: prefix });
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
 		throw error;
 	}
 }
-export async function hashFile(path: string, signal?: AbortSignal) {
+export async function hashFile({
+	path,
+	signal,
+}: {
+	path: string;
+	signal?: AbortSignal;
+}) {
 	const hash = createHash("sha256");
 	for await (const bytes of createReadStream(path, { signal }))
 		hash.update(bytes);
 	return hash.digest("hex");
 }
-async function copyVerified(
-	source: string,
-	target: string,
-	signal?: AbortSignal,
-) {
+async function copyVerified({
+	source,
+	target,
+	signal,
+}: {
+	source: string;
+	target: string;
+	signal?: AbortSignal;
+}) {
 	const before = await stat(source);
 	await pipeline(
 		createReadStream(source),
 		createWriteStream(target, { flags: "wx" }),
 		{ signal },
 	);
-	const sourceHash = await hashFile(source, signal),
-		targetHash = await hashFile(target, signal),
+	const sourceHash = await hashFile({ path: source, signal: signal }),
+		targetHash = await hashFile({ path: target, signal: signal }),
 		after = await stat(source);
 	if (
 		sourceHash !== targetHash ||
@@ -110,7 +133,7 @@ async function copyVerified(
 		);
 	return { sha256: sourceHash, bytes: before.size, mtimeMs: before.mtimeMs };
 }
-function contained(root: string, name: string) {
+function contained({ root, name }: { root: string; name: string }) {
 	const target = resolve(root, name),
 		rel = relative(root, target);
 	if (rel.startsWith("..") || isAbsolute(rel) || !rel)
@@ -122,9 +145,14 @@ async function inventory() {
 		throw new Error(
 			"Legacy import belongs to the first account created on this installation",
 		);
-	const entries = await optionalWalk(legacyRoot());
+	const entries = await optionalWalk({ root: legacyRoot() });
 	for (const name of ["shared-library", "project-fonts"])
-		entries.push(...(await optionalWalk(join(legacyPublicRoot(), name), name)));
+		entries.push(
+			...(await optionalWalk({
+				root: join(legacyPublicRoot(), name),
+				prefix: name,
+			})),
+		);
 	const paths = new Set<string>();
 	for (const item of entries) {
 		const key = item.relativePath.toLowerCase();
@@ -151,11 +179,12 @@ async function inventory() {
 				const source =
 					record.storageKind === "linked"
 						? record.sourcePath
-						: contained(
-								dirname(dirname(item.source)),
-								record.storedPath ||
+						: contained({
+								root: dirname(dirname(item.source)),
+								name:
+									record.storedPath ||
 									`media/files/${record.id}--${record.fileName || record.name}`,
-							);
+							});
 				const info = await stat(source).catch((error) => {
 					if (error.code === "ENOENT") return null;
 					throw error;
@@ -209,17 +238,20 @@ function rewritePrivateUrls(value: unknown): unknown {
 		);
 	return value;
 }
-export async function importLegacyAccount(
-	onProgress: (files: number, total: number) => void = () => {},
-	signal?: AbortSignal,
-) {
+export async function importLegacyAccount({
+	onProgress = () => {},
+	signal,
+}: {
+	onProgress?: (files: number, total: number) => void;
+	signal?: AbortSignal;
+}) {
 	const { entries, linked } = await inventory();
 	if (!entries.length) throw new Error("No legacy data found");
 	// Offline references are part of the project, not a reason to discard it.
 	const missing = linked.filter((item) => item.missing);
 	const available = linked.filter((item) => !item.missing);
 	const destination = accountDataRoot();
-	if ((await optionalWalk(destination)).length)
+	if ((await optionalWalk({ root: destination })).length)
 		throw new Error(
 			"Import requires an empty account. Existing account data will not be overwritten.",
 		);
@@ -232,9 +264,13 @@ export async function importLegacyAccount(
 	const verified: Verified[] = [];
 	for (const entry of entries) {
 		signal?.throwIfAborted();
-		const target = contained(staging, entry.relativePath);
+		const target = contained({ root: staging, name: entry.relativePath });
 		await mkdir(dirname(target), { recursive: true });
-		const copied = await copyVerified(entry.source, target, signal);
+		const copied = await copyVerified({
+			source: entry.source,
+			target: target,
+			signal: signal,
+		});
 		if (entry.bytes !== copied.bytes || entry.mtimeMs !== copied.mtimeMs)
 			throw new Error(
 				`Source changed during import: ${entry.relativePath}. Staging preserved for recovery.`,
@@ -244,18 +280,22 @@ export async function importLegacyAccount(
 	}
 	for (const entry of available) {
 		signal?.throwIfAborted();
-		const target = contained(
-			staging,
-			join(
+		const target = contained({
+			root: staging,
+			name: join(
 				"projects",
 				entry.projectId,
 				"media",
 				"files",
 				`${entry.mediaId}--${basename(entry.source)}`,
 			),
-		);
+		});
 		await mkdir(dirname(target), { recursive: true });
-		const copied = await copyVerified(entry.source, target, signal);
+		const copied = await copyVerified({
+			source: entry.source,
+			target: target,
+			signal: signal,
+		});
 		if (entry.bytes !== copied.bytes || entry.mtimeMs !== copied.mtimeMs)
 			throw new Error("Linked source changed during import");
 		const indexPath = join(
@@ -266,16 +306,16 @@ export async function importLegacyAccount(
 			"index.json",
 		);
 		const records = JSON.parse(await readFile(indexPath, "utf8"));
-		const originalIndex = contained(
-			staging,
-			join(
+		const originalIndex = contained({
+			root: staging,
+			name: join(
 				"migration-originals",
 				"projects",
 				entry.projectId,
 				"media",
 				"index.json",
 			),
-		);
+		});
 		await mkdir(dirname(originalIndex), { recursive: true });
 		await copyFile(indexPath, originalIndex, constants.COPYFILE_EXCL).catch(
 			(error) => {
@@ -303,20 +343,26 @@ export async function importLegacyAccount(
 	// Retain exact pre-transform JSON for reversibility; only private URL routing changes.
 	for (const entry of entries.filter((e) => e.relativePath.endsWith(".json"))) {
 		signal?.throwIfAborted();
-		const target = contained(staging, entry.relativePath),
+		const target = contained({ root: staging, name: entry.relativePath }),
 			raw = await readFile(target, "utf8");
 		const value = JSON.parse(raw),
 			updated = rewritePrivateUrls(value);
 		if (JSON.stringify(value) !== JSON.stringify(updated)) {
 			await mkdir(
 				dirname(
-					contained(staging, join("migration-originals", entry.relativePath)),
+					contained({
+						root: staging,
+						name: join("migration-originals", entry.relativePath),
+					}),
 				),
 				{ recursive: true },
 			);
 			await copyFile(
 				entry.source,
-				contained(staging, join("migration-originals", entry.relativePath)),
+				contained({
+					root: staging,
+					name: join("migration-originals", entry.relativePath),
+				}),
 				constants.COPYFILE_EXCL,
 			).catch((error) => {
 				if (error.code !== "EEXIST") throw error;
@@ -325,11 +371,11 @@ export async function importLegacyAccount(
 		}
 	}
 	const activated = [];
-	for (const entry of await walk(staging))
+	for (const entry of await walk({ root: staging }))
 		activated.push({
 			relativePath: entry.relativePath,
 			bytes: entry.bytes,
-			sha256: await hashFile(entry.source, signal),
+			sha256: await hashFile({ path: entry.source, signal: signal }),
 		});
 	await writeFile(
 		join(staging, "migration-receipt.json"),
@@ -354,7 +400,7 @@ export async function importLegacyAccount(
 		);
 	signal?.throwIfAborted();
 	// Never remove even an empty destination: retain it under a recoverable name.
-	if ((await optionalWalk(destination)).length)
+	if ((await optionalWalk({ root: destination })).length)
 		throw new Error("Account changed during import; verified staging retained");
 	await mkdir(dirname(destination), { recursive: true });
 	try {
@@ -370,4 +416,54 @@ export async function importLegacyAccount(
 			/^projects[\\/][^\\/]+[\\/]project\.json$/.test(e.relativePath),
 		).length,
 	};
+}
+
+/** Recover omitted private assets after projects were already migrated. Only
+ * the legacy owner may copy them; existing libraries are never overwritten. */
+export async function recoverMissingLegacyAssets({
+	publicRoot = legacyPublicRoot(),
+	signal,
+}: { publicRoot?: string; signal?: AbortSignal } = {}) {
+	if (!(await canImportLegacy()))
+		throw new Error("Legacy assets belong to the first account");
+	const recovered: string[] = [];
+	for (const name of ["shared-library", "project-fonts"]) {
+		const target = join(accountDataRoot(), name);
+		if ((await optionalWalk({ root: target })).length) continue;
+		const entries = await optionalWalk({ root: join(publicRoot, name) });
+		if (!entries.length) continue;
+		const staging = join(
+			accountsRoot(),
+			"imports",
+			`${requireAccount().id}-assets-${randomUUID()}`,
+		);
+		await mkdir(staging, { recursive: true });
+		for (const entry of entries) {
+			signal?.throwIfAborted();
+			const destination = contained({
+				root: staging,
+				name: entry.relativePath,
+			});
+			await mkdir(dirname(destination), { recursive: true });
+			await copyVerified({ source: entry.source, target: destination, signal });
+			if (entry.relativePath.endsWith(".json")) {
+				const value = JSON.parse(await readFile(destination, "utf8"));
+				await writeFile(destination, JSON.stringify(rewritePrivateUrls(value)));
+			}
+		}
+		signal?.throwIfAborted();
+		if ((await optionalWalk({ root: target })).length)
+			throw new Error(
+				"Account assets changed during recovery; staged copy retained",
+			);
+		await mkdir(dirname(target), { recursive: true });
+		try {
+			await rename(target, `${target}.before-recovery-${randomUUID()}`);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+		}
+		await rename(staging, target);
+		recovered.push(name);
+	}
+	return { recovered };
 }

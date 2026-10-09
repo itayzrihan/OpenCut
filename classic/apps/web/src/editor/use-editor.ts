@@ -47,6 +47,8 @@ const subscribeScenes: EditorSubscribe = ({ editor, onChange }) =>
 	editor.scenes.subscribe(onChange);
 const subscribeProject: EditorSubscribe = ({ editor, onChange }) =>
 	editor.project.subscribe(onChange);
+const subscribeHistory: EditorSubscribe = ({ editor, onChange }) =>
+	editor.command.subscribeHistory(onChange);
 const subscribeMedia: EditorSubscribe = ({ editor, onChange }) =>
 	editor.media.subscribe(onChange);
 const subscribeRenderer: EditorSubscribe = ({ editor, onChange }) =>
@@ -61,9 +63,11 @@ const subscribeTranscription: EditorSubscribe = ({ editor, onChange }) =>
 function useSubscribedEditor<T>({
 	selector,
 	stores,
+	suspendDuringProjectLoad = false,
 }: {
 	selector: (editor: EditorCore) => T;
 	stores: EditorSubscribe[];
+	suspendDuringProjectLoad?: boolean;
 }): T {
 	const editor = useMemo(() => EditorCore.getInstance(), []);
 	const snapshotCacheRef = useRef<T | typeof SNAPSHOT_UNSET>(SNAPSHOT_UNSET);
@@ -74,6 +78,16 @@ function useSubscribedEditor<T>({
 	);
 
 	const getSnapshot = useCallback((): T => {
+		// Project replacement clears scenes before restoring the validated bundle.
+		// Keep the last rendered snapshot until the provider unmounts the view;
+		// never evaluate a scene-dependent selector against this transient gap.
+		if (
+			suspendDuringProjectLoad &&
+			editor.project.getIsLoading() &&
+			snapshotCacheRef.current !== SNAPSHOT_UNSET
+		) {
+			return snapshotCacheRef.current;
+		}
 		const next = selector(editor);
 		if (
 			snapshotCacheRef.current !== SNAPSHOT_UNSET &&
@@ -87,7 +101,7 @@ function useSubscribedEditor<T>({
 
 		snapshotCacheRef.current = next;
 		return next;
-	}, [editor, selector]);
+	}, [editor, selector, suspendDuringProjectLoad]);
 
 	return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
@@ -152,13 +166,19 @@ export function useEditor<T>(
 
 const PLAYBACK_STORES = [subscribePlayback];
 const TIMELINE_STORES = [subscribeTimeline];
-const TIMELINE_SCENE_STORES = [subscribeTimeline, subscribeScenes];
+const TIMELINE_SCENE_STORES = [
+	subscribeTimeline,
+	subscribeScenes,
+	subscribeProject,
+];
 const TIMELINE_SELECTION_STORES = [
 	subscribeTimeline,
 	subscribeScenes,
 	subscribeSelection,
+	subscribeProject,
 ];
 const PROJECT_STORES = [subscribeProject];
+const HISTORY_STORES = [subscribeHistory, subscribeProject];
 const MEDIA_STORES = [subscribeMedia];
 const RENDERER_STORES = [subscribeRenderer];
 const SELECTION_STORES = [subscribeSelection];
@@ -176,17 +196,29 @@ export function useEditorTimeline<T>(selector: (editor: EditorCore) => T): T {
 export function useEditorTimelineScenes<T>(
 	selector: (editor: EditorCore) => T,
 ): T {
-	return useSubscribedEditor({ selector, stores: TIMELINE_SCENE_STORES });
+	return useSubscribedEditor({
+		selector,
+		stores: TIMELINE_SCENE_STORES,
+		suspendDuringProjectLoad: true,
+	});
 }
 
 export function useEditorTimelineSelection<T>(
 	selector: (editor: EditorCore) => T,
 ): T {
-	return useSubscribedEditor({ selector, stores: TIMELINE_SELECTION_STORES });
+	return useSubscribedEditor({
+		selector,
+		stores: TIMELINE_SELECTION_STORES,
+		suspendDuringProjectLoad: true,
+	});
 }
 
 export function useEditorProject<T>(selector: (editor: EditorCore) => T): T {
 	return useSubscribedEditor({ selector, stores: PROJECT_STORES });
+}
+
+export function useEditorHistory<T>(selector: (editor: EditorCore) => T): T {
+	return useSubscribedEditor({ selector, stores: HISTORY_STORES });
 }
 
 export function useEditorMedia<T>(selector: (editor: EditorCore) => T): T {

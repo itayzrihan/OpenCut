@@ -1,3 +1,4 @@
+import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { SceneTracks, TScene } from "@/timeline";
 import { CUSTOM_AI_EFFECT_TYPE } from "@/effects/custom-ai-effect";
@@ -312,6 +313,7 @@ mock.module("../edit-provenance-builder", () => ({
 }));
 
 mock.module("opencut-wasm", () => ({
+	...wasm,
 	initCompositor: () => undefined,
 	getCompositorCanvas: () => null,
 	getLastFrameProfile: () => null,
@@ -379,7 +381,9 @@ mock.module("opencut-wasm", () => ({
 	canonicalizeTimelineSourceDocument: canonicalizeTimelineSourceDocumentForTest,
 }));
 
+const originalStorage = await import("@/services/storage/service");
 mock.module("@/services/storage/service", () => ({
+	deserializeProject: originalStorage.deserializeProject,
 	storageService: {
 		saveCommandHistory: async () => undefined,
 	},
@@ -2195,7 +2199,7 @@ describe("AI edit plan validation", () => {
 	});
 
 	test("starts a reviewed export task without returning its buffer", () => {
-		let startedOptions: Record<string, unknown> | null = null;
+		let startedOptions: Record<string, unknown> = {};
 		let transactionCount = 0;
 		const editor = {
 			command: {
@@ -2245,7 +2249,7 @@ describe("AI edit plan validation", () => {
 	});
 
 	test("starts a reviewed transcription task outside the command transaction", () => {
-		let startedOptions: Record<string, unknown> | null = null;
+		let startedOptions: Record<string, unknown> = {};
 		let transactionCount = 0;
 		const editor = {
 			command: {

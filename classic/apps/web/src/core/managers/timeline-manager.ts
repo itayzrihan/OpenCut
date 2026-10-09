@@ -15,7 +15,6 @@ import type {
 	VideoElement,
 	ParallaxTrackDirection,
 } from "@/timeline";
-import { clampParallaxSpeed } from "@/parallax-story-teller/parallax-tracks";
 import * as wasm from "opencut-wasm";
 import { calculateTotalDuration, isExactGlobalTimelineGap } from "@/timeline";
 import { TimelineDragSource } from "@/timeline/drag-source";
@@ -42,10 +41,7 @@ import {
 	FAST_AUDIO_FRAME_SECONDS,
 } from "@/timeline/audio-silence-analysis";
 import { extractCompactAudioFeaturesGPU } from "@/timeline/audio-silence-analysis-gpu";
-import {
-	canElementBeHidden,
-	canElementHaveAudio,
-} from "@/timeline/element-utils";
+import {} from "@/timeline/element-utils";
 import { isElementMuted } from "@/timeline/audio-state";
 import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
 import { getEffectiveRateAt, getSourceTimeAtClipTime } from "@/retime";
@@ -62,46 +58,14 @@ import type {
 	ScalarCurveKeyframePatch,
 } from "@/animation/types";
 import type { ParamValue } from "@/params";
+import { buildEffectParamPath } from "@/animation/effect-param-channel";
 import {
-	getElementLocalTime,
-	resolveAnimationPathValueAtTime,
-} from "@/animation";
-import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import { BatchCommand, SetBookmarksCommand } from "@/commands";
-import {
-	AddTrackCommand,
-	RemoveTrackCommand,
-	ReorderTrackCommand,
-	ToggleTrackMuteCommand,
-	ToggleTrackVisibilityCommand,
-	InsertElementCommand,
-	DeleteElementsCommand,
-	DuplicateElementsCommand,
 	UpdateElementsCommand,
-	ApplyTransitionCommand,
 	ApplyTextTransitionsWithSfxCommand,
 	UpdateTextRevealWithTypingSfxCommand,
 	SplitElementsCommand,
-	MergeTextElementsCommand,
 	MoveElementCommand,
 	TracksSnapshotCommand,
-	UpsertKeyframeCommand,
-	RemoveKeyframeCommand,
-	RetimeKeyframeCommand,
-	UpdateScalarKeyframeCurveCommand,
-	AddClipEffectCommand,
-	DeleteFreeformPathMaskPointsCommand,
-	InsertFreeformPathMaskPointCommand,
-	RemoveClipEffectCommand,
-	UpdateClipEffectParamsCommand,
-	ToggleClipEffectCommand,
-	ReorderClipEffectsCommand,
-	RemoveMaskCommand,
-	ToggleMaskInvertedCommand,
-	UpsertEffectParamKeyframeCommand,
-	RemoveEffectParamKeyframeCommand,
-	ToggleSourceAudioSeparationCommand,
-	SetBackgroundRemovalCommand,
 } from "@/commands/timeline";
 import type { InsertElementParams } from "@/commands/timeline/element/insert-element";
 import type {
@@ -110,6 +74,7 @@ import type {
 } from "@/timeline/group-move";
 import { withNormalizedTrackOrder } from "@/timeline";
 import { removeSilenceRangesFromTracks } from "@/timeline/cut-silence";
+import { removeSmartSilence } from "@/timeline/smart-silence";
 import { applyReorganizeTakes } from "@/timeline/reorganize-takes/apply-reorganize-takes";
 import { segmentWordsIntoPhrases } from "@/timeline/reorganize-takes/segment-phrases";
 import {
@@ -177,22 +142,20 @@ export class TimelineManager {
 		{ trackId: string; elementId: string }
 	>();
 	private previewTracks: SceneTracks | null = null;
+	private maskPreviewActive = false;
 	public readonly dragSource = new TimelineDragSource();
 
 	constructor(private editor: EditorCore) {}
 
 	addTrack({ type, index }: { type: TrackType; index?: number }): string {
-		if (
-			type === "parallax" &&
-			!this.editor.scenes.getActiveSceneOrNull()?.parallax
-		) {
-			throw new Error(
-				"Parallax tracks are only available inside canvas scenes",
-			);
-		}
-		const command = new AddTrackCommand({ type, index });
-		this.editor.command.execute({ command });
-		return command.getTrackId();
+		const trackId = generateUUID();
+		this.editor.command.editClassicTrackLayout({
+			type: "add",
+			trackId,
+			trackType: type,
+			index,
+		});
+		return trackId;
 	}
 
 	updateParallaxTrack({
@@ -206,29 +169,18 @@ export class TimelineManager {
 	}): void {
 		const scene = this.editor.scenes.getActiveSceneOrNull();
 		if (!scene?.parallax) return;
-		const before = scene.tracks;
-		let changed = false;
-		const overlay = before.overlay.map((track) => {
-			if (track.id !== trackId || track.type !== "parallax") return track;
-			changed = true;
-			return {
-				...track,
-				...(direction ? { direction } : {}),
-				...(speedPercent !== undefined
-					? { speedPercent: clampParallaxSpeed(speedPercent) }
-					: {}),
-			};
-		});
-		if (!changed) return;
-		const after = { ...before, overlay };
-		this.editor.command.execute({
-			command: new TracksSnapshotCommand({ before, after }),
+		if (direction === undefined && speedPercent === undefined) return;
+		this.editor.command.updateClassicTrack({
+			trackId,
+			change: { type: "parallax", direction, speedPercent },
 		});
 	}
 
 	removeTrack({ trackId }: { trackId: string }): void {
-		const command = new RemoveTrackCommand(trackId);
-		this.editor.command.execute({ command });
+		this.editor.command.removeClassicTimelineContent({
+			type: "track",
+			trackId,
+		});
 	}
 
 	reorderTrack({
@@ -238,14 +190,17 @@ export class TimelineManager {
 		trackId: string;
 		toIndex: number;
 	}): void {
-		const command = new ReorderTrackCommand({ trackId, toIndex });
-		this.editor.command.execute({ command });
+		this.editor.command.editClassicTrackLayout({
+			type: "reorder",
+			trackId,
+			toIndex,
+		});
 	}
 
 	insertElement({ element, placement }: InsertElementParams): string {
-		const command = new InsertElementCommand({ element, placement });
-		this.editor.command.execute({ command });
-		return command.getElementId();
+		return this.editor.command.insertClassicTimelineElements([
+			{ element, placement },
+		])[0].elementId;
 	}
 
 	updateElementTrim({
@@ -327,6 +282,25 @@ export class TimelineManager {
 			return;
 		}
 
+		// Generated caption movement also reflows other text using host font
+		// measurements. Retain that reviewed bridge until its reflow contract
+		// passes parity; ordinary clips use the registry directly.
+		const captionTracks = this.editor.scenes
+			.getActiveScene()
+			.tracks.overlay.filter(
+				(track) => track.type === "text" && track.captionSource,
+			);
+		const needsCaptionReflow = moves.some((move) =>
+			captionTracks.some(
+				(track) =>
+					track.id === move.sourceTrackId || track.id === move.targetTrackId,
+			),
+		);
+		if (!needsCaptionReflow) {
+			this.editor.command.moveClassicTimelineElements({ moves, createTracks });
+			return;
+		}
+
 		const command = new MoveElementCommand({
 			moves,
 			createTracks,
@@ -335,13 +309,17 @@ export class TimelineManager {
 	}
 
 	toggleTrackMute({ trackId }: { trackId: string }): void {
-		const command = new ToggleTrackMuteCommand(trackId);
-		this.editor.command.execute({ command });
+		this.editor.command.updateClassicTrack({
+			trackId,
+			change: { type: "toggleMute" },
+		});
 	}
 
 	toggleTrackVisibility({ trackId }: { trackId: string }): void {
-		const command = new ToggleTrackVisibilityCommand(trackId);
-		this.editor.command.execute({ command });
+		this.editor.command.updateClassicTrack({
+			trackId,
+			change: { type: "toggleVisibility" },
+		});
 	}
 
 	splitElements({
@@ -353,6 +331,19 @@ export class TimelineManager {
 		splitTime: MediaTime;
 		retainSide?: "both" | "left" | "right";
 	}): { trackId: string; elementId: string }[] {
+		const tracks = this.editor.scenes.getActiveScene().tracks;
+		const generatedCaption = elements.some(({ trackId }) =>
+			[tracks.main, ...tracks.overlay, ...tracks.audio].some(
+				(track) =>
+					track.id === trackId && track.type === "text" && track.captionSource,
+			),
+		);
+		if (!generatedCaption)
+			return this.editor.command.splitClassicTimelineElements({
+				elements,
+				splitTime,
+				retainSide,
+			});
 		const command = new SplitElementsCommand({
 			elements,
 			splitTime,
@@ -373,8 +364,7 @@ export class TimelineManager {
 			return;
 		}
 
-		const command = new MergeTextElementsCommand({ elements, mode });
-		this.editor.command.execute({ command });
+		this.editor.command.mergeClassicTextElements({ elements, mode });
 	}
 
 	getTotalDuration(): MediaTime {
@@ -429,8 +419,10 @@ export class TimelineManager {
 	}: {
 		elements: { trackId: string; elementId: string }[];
 	}): void {
-		const command = new DeleteElementsCommand({ elements });
-		this.editor.command.execute({ command });
+		this.editor.command.removeClassicTimelineContent({
+			type: "elements",
+			elements,
+		});
 	}
 
 	createSpeakerTile({
@@ -528,24 +520,20 @@ export class TimelineManager {
 			(track) => track.id === trackId,
 		);
 		if (targetIndex < 0) return null;
-		const addTrackCommand = new AddTrackCommand({
-			type: "effect",
-			index: targetIndex,
-		});
-		const insertElementCommand = new InsertElementCommand({
-			element,
-			placement: {
-				mode: "explicit",
-				trackId: addTrackCommand.getTrackId(),
+		return this.editor.command.executeTransaction({
+			execute: () => {
+				const newTrackId = this.addTrack({
+					type: "effect",
+					index: targetIndex,
+				});
+				return this.editor.command.insertClassicTimelineElements([
+					{
+						element,
+						placement: { mode: "explicit", trackId: newTrackId },
+					},
+				])[0];
 			},
 		});
-		this.editor.command.execute({
-			command: new BatchCommand([addTrackCommand, insertElementCommand]),
-		});
-		return {
-			trackId: addTrackCommand.getTrackId(),
-			elementId: insertElementCommand.getElementId(),
-		};
 	}
 
 	createMaterializedSpeakerFrameBreakout({
@@ -1248,10 +1236,16 @@ export class TimelineManager {
 		minSilenceSeconds,
 		signal,
 	}: {
-		mode?: "audio" | "fast" | "deep";
+		mode?: "audio" | "smart" | "fast" | "deep";
 		minSilenceSeconds?: number;
 		signal?: AbortSignal;
 	} = {}): Promise<void> {
+		if (mode === "smart")
+			return removeSmartSilence({
+				editor: this.editor,
+				minSilenceSeconds,
+				signal,
+			});
 		signal?.throwIfAborted();
 		const scene = this.editor.scenes.getActiveScene();
 		const before = scene.tracks;
@@ -1545,12 +1539,9 @@ export class TimelineManager {
 					command: new TracksSnapshotCommand({ before, after: result.tracks }),
 				});
 				if (newBookmarks.length > 0) {
-					this.editor.command.execute({
-						command: new SetBookmarksCommand({
-							sceneId: scene.id,
-							before: bookmarksBefore,
-							after: bookmarksAfter,
-						}),
+					this.editor.command.editClassicBookmarks({
+						sceneId: scene.id,
+						change: { type: "replace", bookmarks: bookmarksAfter },
 					});
 				}
 			},
@@ -1564,11 +1555,11 @@ export class TimelineManager {
 		trackId: string;
 		elementId: string;
 	}): void {
-		const command = new ToggleSourceAudioSeparationCommand({
+		this.editor.command.editClassicSourceAudio({
 			trackId,
 			elementId,
+			action: "toggle",
 		});
-		this.editor.command.execute({ command });
 	}
 
 	updateElements({
@@ -1585,6 +1576,31 @@ export class TimelineManager {
 		if (updates.length === 0) {
 			return;
 		}
+		const tracks = this.editor.scenes.getActiveScene().tracks;
+		const requiresLegacyLayoutOrBinding = updates.some((update) => {
+			const track = findTrackInSceneTracks({ tracks, trackId: update.trackId });
+			return (
+				(track?.type === "text" && !!track.captionSource) ||
+				Object.keys(update.patch).some((key) =>
+					[
+						"id",
+						"type",
+						"mediaId",
+						"sourceAudio",
+						"linkedSourceId",
+						"hyperframes",
+						"captionSource",
+					].includes(key),
+				)
+			);
+		});
+		if (!requiresLegacyLayoutOrBinding) {
+			this.editor.command.updateClassicTimelineElements({
+				updates,
+				pushHistory,
+			});
+			return;
+		}
 
 		const command = new UpdateElementsCommand({
 			updates,
@@ -1599,14 +1615,12 @@ export class TimelineManager {
 	applyTransitions({
 		applications,
 	}: {
-		applications: ConstructorParameters<typeof ApplyTransitionCommand>[0];
+		applications: import("@/core/canonical-classic-session").ClassicTransitionApplication[];
 	}): void {
 		if (applications.length === 0) {
 			return;
 		}
-		this.editor.command.execute({
-			command: new ApplyTransitionCommand(applications),
-		});
+		this.editor.command.applyClassicTransitions({ applications });
 	}
 
 	applyTextTransitionsWithSfx({
@@ -1617,6 +1631,10 @@ export class TimelineManager {
 		>[0];
 	}): void {
 		if (applications.length === 0) {
+			return;
+		}
+		if (this.editor.command.hasCanonicalHistory()) {
+			this.editor.command.applyClassicTransitions({ applications, managedTextSfx: true });
 			return;
 		}
 		this.editor.command.execute({
@@ -1631,6 +1649,10 @@ export class TimelineManager {
 		typeof UpdateTextRevealWithTypingSfxCommand
 	>[0]): void {
 		if (updates.length === 0) return;
+		if (this.editor.command.hasCanonicalHistory()) {
+			this.editor.command.updateClassicTimelineElements({ updates, managedTypingSfx: revealMode === "letter-by-letter" });
+			return;
+		}
 		this.editor.command.execute({
 			command: new UpdateTextRevealWithTypingSfxCommand({
 				updates,
@@ -1683,14 +1705,13 @@ export class TimelineManager {
 		effectType: string;
 		params?: Partial<ParamValues>;
 	}): string {
-		const command = new AddClipEffectCommand({
-			trackId,
-			elementId,
-			effectType,
-			params,
-		});
-		this.editor.command.execute({ command });
-		return command.getEffectId() ?? "";
+		return (
+			this.editor.command.editClassicEffects({
+				trackId,
+				elementId,
+				change: { type: "add", effectType, params, allowCustomFallback: true },
+			}) ?? ""
+		);
 	}
 
 	removeClipEffect({
@@ -1702,12 +1723,11 @@ export class TimelineManager {
 		elementId: string;
 		effectId: string;
 	}): void {
-		const command = new RemoveClipEffectCommand({
+		this.editor.command.editClassicEffects({
 			trackId,
 			elementId,
-			effectId,
+			change: { type: "remove", effectId },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	removeMask({
@@ -1719,12 +1739,12 @@ export class TimelineManager {
 		elementId: string;
 		maskId: string;
 	}): void {
-		const command = new RemoveMaskCommand({
+		this.editor.command.editClassicMask({
 			trackId,
 			elementId,
 			maskId,
+			change: { type: "remove" },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	deleteFreeformPathMaskPoints({
@@ -1741,13 +1761,12 @@ export class TimelineManager {
 		if (pointIds.length === 0) {
 			return;
 		}
-		const command = new DeleteFreeformPathMaskPointsCommand({
+		this.editor.command.editClassicMask({
 			trackId,
 			elementId,
 			maskId,
-			pointIds,
+			change: { type: "deletePoints", pointIds },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	insertFreeformPathMaskPoint({
@@ -1765,15 +1784,12 @@ export class TimelineManager {
 		canvasPoint: { x: number; y: number };
 		bounds: ElementBounds;
 	}): void {
-		const command = new InsertFreeformPathMaskPointCommand({
+		this.editor.command.editClassicMask({
 			trackId,
 			elementId,
 			maskId,
-			segmentIndex,
-			canvasPoint,
-			bounds,
+			change: { type: "insertPoint", segmentIndex, canvasPoint, bounds },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	updateClipEffectParams({
@@ -1789,17 +1805,12 @@ export class TimelineManager {
 		params: Partial<ParamValues>;
 		pushHistory?: boolean;
 	}): void {
-		const command = new UpdateClipEffectParamsCommand({
+		this.editor.command.editClassicEffects({
 			trackId,
 			elementId,
-			effectId,
-			params,
+			change: { type: "update", effectId, params },
+			pushHistory,
 		});
-		if (pushHistory) {
-			this.editor.command.execute({ command });
-		} else {
-			command.execute();
-		}
 	}
 
 	toggleClipEffect({
@@ -1811,12 +1822,11 @@ export class TimelineManager {
 		elementId: string;
 		effectId: string;
 	}): void {
-		const command = new ToggleClipEffectCommand({
+		this.editor.command.editClassicEffects({
 			trackId,
 			elementId,
-			effectId,
+			change: { type: "toggle", effectId },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	toggleMaskInverted({
@@ -1828,12 +1838,12 @@ export class TimelineManager {
 		elementId: string;
 		maskId: string;
 	}): void {
-		const command = new ToggleMaskInvertedCommand({
+		this.editor.command.editClassicMask({
 			trackId,
 			elementId,
 			maskId,
+			change: { type: "toggleInverted" },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	reorderClipEffects({
@@ -1847,13 +1857,11 @@ export class TimelineManager {
 		fromIndex: number;
 		toIndex: number;
 	}): void {
-		const command = new ReorderClipEffectsCommand({
+		this.editor.command.editClassicEffects({
 			trackId,
 			elementId,
-			fromIndex,
-			toIndex,
+			change: { type: "reorder", fromIndex, toIndex },
 		});
-		this.editor.command.execute({ command });
 	}
 
 	upsertKeyframes({
@@ -1873,29 +1881,11 @@ export class TimelineManager {
 			return;
 		}
 
-		const commands = keyframes.map(
-			({
-				trackId,
-				elementId,
-				propertyPath,
-				time,
-				value,
-				interpolation,
-				keyframeId,
-			}) =>
-				new UpsertKeyframeCommand({
-					trackId,
-					elementId,
-					propertyPath,
-					time,
-					value,
-					interpolation,
-					keyframeId,
-				}),
-		);
-		const command =
-			commands.length === 1 ? commands[0] : new BatchCommand(commands);
-		this.editor.command.execute({ command });
+		try {
+			this.editor.command.upsertClassicKeyframes({ keyframes });
+		} finally {
+			this.discardPreview();
+		}
 	}
 
 	removeKeyframes({
@@ -1912,59 +1902,15 @@ export class TimelineManager {
 			return;
 		}
 
-		// Pre-sample values at playhead for each (element, property) pair.
-		// This preserves "what you see is what you get" when all keyframes are deleted.
-		const playheadTime = this.editor.playback.getCurrentTime();
-		const valueAtPlayheadMap = new Map<string, ParamValue | null>();
-
-		for (const { trackId, elementId, propertyPath } of keyframes) {
-			const key = `${elementId}:${propertyPath}`;
-			if (valueAtPlayheadMap.has(key)) {
-				continue;
-			}
-
-			const element = this.getElementByRef({ trackId, elementId });
-			if (!element) {
-				valueAtPlayheadMap.set(key, null);
-				continue;
-			}
-
-			const localTime = getElementLocalTime({
-				timelineTime: playheadTime,
-				elementStartTime: element.startTime,
-				elementDuration: element.duration,
+		try {
+			this.editor.command.removeClassicKeyframes({
+				keyframes,
+				playheadTime: this.editor.playback.getCurrentTime(),
+				preserveAtPlayhead: true,
 			});
-
-			const target = resolveAnimationTarget({ element, path: propertyPath });
-			const baseValue = target?.getBaseValue() ?? null;
-			if (baseValue === null) {
-				valueAtPlayheadMap.set(key, null);
-				continue;
-			}
-
-			const value = resolveAnimationPathValueAtTime({
-				animations: element.animations,
-				propertyPath,
-				localTime,
-				fallbackValue: baseValue,
-			});
-			valueAtPlayheadMap.set(key, value);
+		} finally {
+			this.discardPreview();
 		}
-
-		const commands = keyframes.map(
-			({ trackId, elementId, propertyPath, keyframeId }) =>
-				new RemoveKeyframeCommand({
-					trackId,
-					elementId,
-					propertyPath,
-					keyframeId,
-					valueAtPlayhead:
-						valueAtPlayheadMap.get(`${elementId}:${propertyPath}`) ?? null,
-				}),
-		);
-		const command =
-			commands.length === 1 ? commands[0] : new BatchCommand(commands);
-		this.editor.command.execute({ command });
 	}
 
 	retimeKeyframe({
@@ -1980,14 +1926,32 @@ export class TimelineManager {
 		keyframeId: string;
 		time: MediaTime;
 	}): void {
-		const command = new RetimeKeyframeCommand({
-			trackId,
-			elementId,
-			propertyPath,
-			keyframeId,
-			nextTime: time,
+		this.retimeKeyframes({
+			keyframes: [{ trackId, elementId, propertyPath, keyframeId, time }],
 		});
-		this.editor.command.execute({ command });
+	}
+
+	retimeKeyframes({
+		keyframes,
+	}: {
+		keyframes: Array<{
+			trackId: string;
+			elementId: string;
+			propertyPath: AnimationPath;
+			keyframeId: string;
+			time: MediaTime;
+		}>;
+	}): void {
+		try {
+			this.editor.command.editClassicKeyframes({
+				edits: keyframes.map(({ time, ...target }) => ({
+					...target,
+					change: { type: "retime", time },
+				})),
+			});
+		} finally {
+			this.discardPreview();
+		}
 	}
 
 	updateKeyframeCurves({
@@ -2006,20 +1970,16 @@ export class TimelineManager {
 			return;
 		}
 
-		const commands = keyframes.map(
-			({ trackId, elementId, propertyPath, componentKey, keyframeId, patch }) =>
-				new UpdateScalarKeyframeCurveCommand({
-					trackId,
-					elementId,
-					propertyPath,
-					componentKey,
-					keyframeId,
-					patch,
-				}),
-		);
-		const command =
-			commands.length === 1 ? commands[0] : new BatchCommand(commands);
-		this.editor.command.execute({ command });
+		try {
+			this.editor.command.editClassicKeyframes({
+				edits: keyframes.map(({ componentKey, patch, ...target }) => ({
+					...target,
+					change: { type: "curve", componentKey, patch },
+				})),
+			});
+		} finally {
+			this.discardPreview();
+		}
 	}
 
 	upsertEffectParamKeyframe({
@@ -2037,21 +1997,23 @@ export class TimelineManager {
 		effectId: string;
 		paramKey: string;
 		time: MediaTime;
-		value: number;
-		interpolation?: "linear" | "hold";
+		value: ParamValue;
+		interpolation?: AnimationInterpolation;
 		keyframeId?: string;
 	}): void {
-		const command = new UpsertEffectParamKeyframeCommand({
-			trackId,
-			elementId,
-			effectId,
-			paramKey,
-			time,
-			value,
-			interpolation,
-			keyframeId,
+		this.upsertKeyframes({
+			keyframes: [
+				{
+					trackId,
+					elementId,
+					propertyPath: `effects.${effectId}.params.${paramKey}`,
+					time,
+					value,
+					interpolation,
+					keyframeId,
+				},
+			],
 		});
-		this.editor.command.execute({ command });
 	}
 
 	removeEffectParamKeyframe({
@@ -2067,21 +2029,68 @@ export class TimelineManager {
 		paramKey: string;
 		keyframeId: string;
 	}): void {
-		const command = new RemoveEffectParamKeyframeCommand({
-			trackId,
-			elementId,
-			effectId,
-			paramKey,
-			keyframeId,
-		});
-		this.editor.command.execute({ command });
+		try {
+			this.editor.command.removeClassicKeyframes({
+				keyframes: [
+					{
+						trackId,
+						elementId,
+						propertyPath: buildEffectParamPath({ effectId, paramKey }),
+						keyframeId,
+					},
+				],
+				playheadTime: this.editor.playback.getCurrentTime(),
+				preserveAtPlayhead: false,
+			});
+		} finally {
+			this.discardPreview();
+		}
 	}
 
 	isPreviewActive(): boolean {
 		return this.previewOverlay.size > 0;
 	}
 
+	previewMask(
+		input: Parameters<EditorCore["command"]["previewClassicMask"]>[0],
+	): void {
+		if (!this.editor.command.hasClassicMaskPreview()) this.discardPreview();
+		try {
+			const masks = this.editor.command.previewClassicMask(input);
+			this.maskPreviewActive = true;
+			this.previewOverlay.clear();
+			this.previewRefs.clear();
+			this.previewTracks = null;
+			this.applyElementPreviews({
+				updates: [
+					{
+						trackId: input.trackId,
+						elementId: input.elementId,
+						updates: { masks },
+					},
+				],
+			});
+		} catch (error) {
+			this.discardPreview();
+			throw error;
+		}
+	}
+
 	previewElements({
+		updates,
+	}: {
+		updates: readonly {
+			trackId: string;
+			elementId: string;
+			updates: Partial<TimelineElement>;
+		}[];
+	}): void {
+		if (this.maskPreviewActive || this.editor.command.hasClassicMaskPreview())
+			this.discardPreview();
+		this.applyElementPreviews({ updates });
+	}
+
+	private applyElementPreviews({
 		updates,
 	}: {
 		updates: readonly {
@@ -2124,6 +2133,14 @@ export class TimelineManager {
 	}
 
 	commitPreview(): void {
+		if (this.maskPreviewActive || this.editor.command.hasClassicMaskPreview()) {
+			try {
+				this.editor.command.commitClassicMaskPreview();
+			} finally {
+				this.discardPreview();
+			}
+			return;
+		}
 		if (this.previewOverlay.size === 0) return;
 		const committedTracks = this.editor.scenes.getActiveSceneOrNull()?.tracks;
 		if (!committedTracks) {
@@ -2147,15 +2164,19 @@ export class TimelineManager {
 			before: committedTracks,
 			after: afterTracks,
 		});
-		const beforeSnapshot = this.editor.command.captureProjectSnapshot();
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
 		this.previewTracks = null;
-		this.updateTracks(afterTracks);
-		this.editor.command.push({ command, beforeSnapshot });
+		this.editor.command.execute({
+			command,
+			applyRipple: false,
+			runReactors: false,
+		});
 	}
 
 	discardPreview(): void {
+		this.editor.command.discardClassicMaskPreview();
+		this.maskPreviewActive = false;
 		if (this.previewOverlay.size === 0) return;
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
@@ -2203,9 +2224,7 @@ export class TimelineManager {
 	}: {
 		elements: { trackId: string; elementId: string }[];
 	}): { trackId: string; elementId: string }[] {
-		const command = new DuplicateElementsCommand({ elements });
-		this.editor.command.execute({ command });
-		return command.getDuplicatedElements();
+		return this.editor.command.duplicateClassicTimelineElements(elements);
 	}
 
 	setBackgroundRemoval({
@@ -2219,14 +2238,12 @@ export class TimelineManager {
 		settings: BackgroundRemovalSettings;
 		duplicate?: boolean;
 	}): { trackId: string; elementId: string } | null {
-		const command = new SetBackgroundRemovalCommand({
+		return this.editor.command.setClassicBackgroundRemoval({
 			trackId,
 			elementId,
 			settings,
 			duplicate,
 		});
-		this.editor.command.execute({ command });
-		return command.getTarget();
 	}
 
 	toggleElementsVisibility({
@@ -2234,27 +2251,10 @@ export class TimelineManager {
 	}: {
 		elements: { trackId: string; elementId: string }[];
 	}): void {
-		const shouldHide = elements.some(({ trackId, elementId }) => {
-			const element = this.getElementByRef({ trackId, elementId });
-			return element && canElementBeHidden(element) && !element.hidden;
+		this.editor.command.editClassicElementControls({
+			elements,
+			change: { type: "toggleVisibility" },
 		});
-
-		const nextUpdates = elements.flatMap(({ trackId, elementId }) => {
-			const element = this.getElementByRef({ trackId, elementId });
-			if (!element || !canElementBeHidden(element)) {
-				return [];
-			}
-
-			return [
-				{
-					trackId,
-					elementId,
-					patch: { hidden: shouldHide },
-				},
-			];
-		});
-
-		this.updateElements({ updates: nextUpdates });
 	}
 
 	toggleElementsMuted({
@@ -2262,32 +2262,17 @@ export class TimelineManager {
 	}: {
 		elements: { trackId: string; elementId: string }[];
 	}): void {
-		const shouldMute = elements.some(({ trackId, elementId }) => {
-			const element = this.getElementByRef({ trackId, elementId });
-			return (
-				element && canElementHaveAudio(element) && !isElementMuted({ element })
-			);
+		this.editor.command.editClassicElementControls({
+			elements,
+			change: { type: "toggleMute" },
 		});
-
-		const nextUpdates = elements.flatMap(({ trackId, elementId }) => {
-			const element = this.getElementByRef({ trackId, elementId });
-			if (!element || !canElementHaveAudio(element)) {
-				return [];
-			}
-
-			return [
-				{
-					trackId,
-					elementId,
-					patch: { params: { muted: shouldMute } },
-				},
-			];
-		});
-
-		this.updateElements({ updates: nextUpdates });
 	}
 
 	getPreviewTracks(): SceneTracks | null {
+		// Releasing a session clears its prepared request. Never reuse its
+		// projected masks as a generic whole-track edit in another session.
+		if (this.maskPreviewActive && !this.editor.command.hasClassicMaskPreview())
+			return this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null;
 		return (
 			this.previewTracks ??
 			this.editor.scenes.getActiveSceneOrNull()?.tracks ??
@@ -2358,6 +2343,8 @@ export class TimelineManager {
 		newTracks: SceneTracks,
 		options?: { captionsAlreadySynced: boolean },
 	): void {
+		this.editor.command.discardClassicMaskPreview();
+		this.maskPreviewActive = false;
 		this.previewOverlay.clear();
 		this.previewRefs.clear();
 		this.previewTracks = null;

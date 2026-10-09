@@ -1,6 +1,7 @@
 import type { MediaAssetData } from "@/services/storage/types";
 
-export type MediaType = "image" | "video" | "audio";
+/** Package files (fonts, shaders and binary data) use the same durable asset store. */
+export type MediaType = "image" | "video" | "audio" | "file";
 
 export interface MediaAsset extends Omit<
 	MediaAssetData,

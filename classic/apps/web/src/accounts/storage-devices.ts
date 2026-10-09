@@ -76,10 +76,13 @@ function fingerprint(publicKey: string) {
 		.digest("hex");
 }
 
-export async function localStorageDevice(
-	existingId?: string,
+export async function localStorageDevice({
+	existingId,
 	name = hostname(),
-): Promise<StorageDevice> {
+}: {
+	existingId?: string;
+	name?: string;
+}): Promise<StorageDevice> {
 	const keys = await identity(existingId);
 	if (existingId && keys.id !== existingId)
 		throw new Error("Local storage device identity mismatch");
@@ -104,10 +107,13 @@ function payload(device: StorageDevice) {
 	);
 }
 
-export async function listStorageDevices(
-	root: string,
-	key: Buffer,
-): Promise<StorageDevice[]> {
+export async function listStorageDevices({
+	root,
+	key,
+}: {
+	root: string;
+	key: Buffer;
+}): Promise<StorageDevice[]> {
 	const directory = join(root, "devices");
 	const files = await readdir(directory).catch((error) => {
 		if (error.code === "ENOENT") return [];
@@ -123,18 +129,20 @@ export async function listStorageDevices(
 		if (!validId.test(id) || (await stat(path)).size > 16_384)
 			throw new Error("Invalid device record");
 		const record: SignedDevice = JSON.parse(
-			unseal(
-				await readFile(path),
-				key,
-				`${requireAccount().id}:device:${id}`,
-			).toString("utf8"),
+			unseal({
+				data: await readFile(path),
+				key: key,
+				aad: `${requireAccount().id}:device:${id}`,
+			}).toString("utf8"),
 		);
 		if (
 			record.id !== id ||
 			typeof record.name !== "string" ||
 			!record.name.trim() ||
 			Buffer.byteLength(record.name) > 256 ||
-			/[\u0000-\u001f\u007f]/.test(record.name) ||
+			[...record.name].some(
+				(letter) => letter.charCodeAt(0) <= 31 || letter.charCodeAt(0) === 127,
+			) ||
 			typeof record.enabled !== "boolean" ||
 			typeof record.lastSeenAt !== "string" ||
 			!Number.isFinite(Date.parse(record.lastSeenAt)) ||
@@ -163,18 +171,22 @@ export async function listStorageDevices(
 	return devices.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function publishStorageDevice(
-	root: string,
-	key: Buffer,
-	device: StorageDevice,
-) {
+export async function publishStorageDevice({
+	root,
+	key,
+	device,
+}: {
+	root: string;
+	key: Buffer;
+	device: StorageDevice;
+}) {
 	const keys = await identity(device.id);
 	if (
 		keys.id !== device.id ||
 		fingerprint(keys.publicKey) !== device.fingerprint
 	)
 		throw new Error("Local storage device identity mismatch");
-	const devices = await listStorageDevices(root, key),
+	const devices = await listStorageDevices({ root: root, key: key }),
 		existing = devices.find((entry) => entry.id === device.id);
 	if (!existing && devices.length >= 64)
 		throw new Error("At most 64 personal devices are supported");
@@ -191,11 +203,11 @@ export async function publishStorageDevice(
 	};
 	await writeFile(
 		temporary,
-		seal(
-			Buffer.from(JSON.stringify(record)),
-			key,
-			`${requireAccount().id}:device:${device.id}`,
-		),
+		seal({
+			data: Buffer.from(JSON.stringify(record)),
+			key: key,
+			aad: `${requireAccount().id}:device:${device.id}`,
+		}),
 		{ flag: "wx" },
 	);
 	await rename(temporary, target);

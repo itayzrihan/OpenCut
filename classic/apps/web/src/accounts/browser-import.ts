@@ -100,7 +100,12 @@ async function copyDatabase(name: string) {
 				item.keys.map((key) => requestValue(target.get(key))),
 			);
 			for (let index = 0; index < copied.length; index++)
-				if (!(await sameBrowserRecord(copied[index], item.values[index])))
+				if (
+					!(await sameBrowserRecord({
+						left: copied[index],
+						right: item.values[index],
+					}))
+				)
 					throw new Error(
 						`A different browser record already exists: ${name}/${item.name}. Both originals are preserved; resolve the conflict before completing import.`,
 					);
@@ -110,18 +115,24 @@ async function copyDatabase(name: string) {
 		destination?.close();
 	}
 }
-async function copyDirectory(
-	source: FileSystemDirectoryHandle,
-	destination: FileSystemDirectoryHandle,
-	onFile: () => void,
-) {
+async function copyDirectory({
+	source,
+	destination,
+	onFile,
+}: {
+	source: FileSystemDirectoryHandle;
+	destination: FileSystemDirectoryHandle;
+	onFile: () => void;
+}) {
 	for await (const [name, handle] of source.entries()) {
 		if (handle.kind === "directory") {
-			await copyDirectory(
-				handle as FileSystemDirectoryHandle,
-				await destination.getDirectoryHandle(name, { create: true }),
-				onFile,
-			);
+			await copyDirectory({
+				source: handle as FileSystemDirectoryHandle,
+				destination: await destination.getDirectoryHandle(name, {
+					create: true,
+				}),
+				onFile: onFile,
+			});
 			continue;
 		}
 		const original = await (handle as FileSystemFileHandle).getFile();
@@ -225,13 +236,15 @@ export async function importLegacyBrowserData(
 			!/^(media-files-|font-files-|shared-library-)/.test(name)
 		)
 			continue;
-		await copyDirectory(
-			handle as FileSystemDirectoryHandle,
-			await root.getDirectoryHandle(accountNamespace(name), { create: true }),
-			() => {
+		await copyDirectory({
+			source: handle as FileSystemDirectoryHandle,
+			destination: await root.getDirectoryHandle(accountNamespace(name), {
+				create: true,
+			}),
+			onFile: () => {
 				onProgress(`Verified ${++files} browser media files`);
 			},
-		);
+		});
 	}
 	for (const [key, value] of Object.entries(preferences)) {
 		if (key.startsWith("pocut-local-drive-") || key.startsWith("legacy-"))

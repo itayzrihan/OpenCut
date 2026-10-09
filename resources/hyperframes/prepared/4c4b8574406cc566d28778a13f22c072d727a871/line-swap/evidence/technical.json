@@ -1,0 +1,42 @@
+{
+  "id": "line-swap",
+  "kind": "component",
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "sourceSha256": "c627b860af78d7e37c5f326ea26590fd99cbe8b60df42772593aca868a63ab58",
+  "replacements": [
+    "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  ],
+  "entryFile": "demo.html",
+  "durationSeconds": 3.5,
+  "frames": [
+    {
+      "timeSeconds": 0.525,
+      "sha256": "5b523d4d67bc11c0bf6c06c99cb81e4b3d7756756752d2ad5d947a6b9138f75f",
+      "file": "frame-0.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "2e23d9f6c7f02ee0a5421f58fecfba249e2ea3f2e9370b2f3b4f7a22ca773e4c",
+      "file": "frame-1.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 2.975,
+      "sha256": "98575f5eed41b61add76f3debd9afa5c5dff090d6e9781d74180bf0b6172a360",
+      "file": "frame-2.png",
+      "transparentPixels": false
+    },
+    {
+      "timeSeconds": 1.75,
+      "sha256": "2e23d9f6c7f02ee0a5421f58fecfba249e2ea3f2e9370b2f3b4f7a22ca773e4c",
+      "file": "frame-3.png",
+      "transparentPixels": false
+    }
+  ],
+  "offline": true,
+  "import": true,
+  "reopen": true,
+  "deterministicSeek": true,
+  "verified": false
+}

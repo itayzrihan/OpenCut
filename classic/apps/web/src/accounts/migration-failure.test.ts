@@ -46,28 +46,25 @@ test("cancellation preserves originals; offline media and interrupted jobs recov
 				},
 			]),
 		);
-		const { account } = await registerAccount(
-			"owner",
-			"Owner",
-			"a recovery test password",
+		const { account } = await registerAccount({ login: "owner", displayName: "Owner", password: "a recovery test password" }
 		);
 		const destination = accountScope.run(account, accountDataRoot);
 		await accountScope.run(account, async () => {
 			const cancellation = new AbortController();
 			cancellation.abort();
 			await expect(
-				importLegacyAccount(() => {}, cancellation.signal),
+				importLegacyAccount({ onProgress: () => {}, signal: cancellation.signal }),
 			).rejects.toThrow();
 			expect(await readdir(destination).catch(() => [])).toEqual([]);
 			expect(await readFile(project, "utf8")).toContain('"unknown":"retain"');
 		});
 		await accountScope.run(account, async () => {
-			await markAccountImport(account.id, true);
+			await markAccountImport({ id: account.id, active: true });
 			expect(await importLocked(account.id)).toBe(true);
-			await expect(markAccountImport(account.id, true)).rejects.toThrow(
+			await expect(markAccountImport({ id: account.id, active: true })).rejects.toThrow(
 				"already running",
 			);
-			await markAccountImport(account.id, false);
+			await markAccountImport({ id: account.id, active: false });
 			expect(await importLocked(account.id)).toBe(false);
 			await mkdir(join(process.env.OPENCUT_ACCOUNTS_DIR!, "import-jobs"), {
 				recursive: true,
@@ -84,7 +81,7 @@ test("cancellation preserves originals; offline media and interrupted jobs recov
 				status: "failed",
 				files: 1,
 			});
-			await importLegacyAccount();
+			await importLegacyAccount({  });
 			expect(await migrationJob()).toMatchObject({
 				status: "complete",
 				files: 2,
