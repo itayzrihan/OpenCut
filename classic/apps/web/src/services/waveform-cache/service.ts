@@ -1,17 +1,16 @@
 "use client";
 
-import { ALL_FORMATS, AudioBufferSink, Input } from "mediabunny";
-import { createMediaSource } from "@/media/source";
+import { buildStreamingSourceWaveformSummary } from "./streaming";
 import {
 	buildSourceWaveformSummaryAsync,
 	type SourceWaveformSummary,
 } from "@/media/waveform-summary";
+import { buildStreamingWaveformInWorker } from "./streaming-client";
+import { isRenderPerfEnabled } from "@/diagnostics/render-perf";
+import { publishPerformanceReport } from "@/diagnostics/performance-reports";
 import type { WaveformWorkerMessage, WaveformWorkerResponse } from "./worker";
 
 const WAVEFORM_WORKER_MIN_TOTAL_SAMPLES = 1_000_000;
-const STREAMING_WAVEFORM_WINDOW_SECONDS = 0.01;
-const STREAMING_WAVEFORM_MAX_BUCKETS = 500_000;
-const STREAMING_SOURCE_CACHE_BYTES = 8 * 1024 * 1024;
 
 interface GetSourceWaveformSummaryArgs {
 	sourceKey: string;
@@ -106,120 +105,10 @@ async function buildSourceWaveformSummaryInWorker({
 	});
 }
 
-async function buildStreamingSourceWaveformSummary({
-	sourceKey,
-	sourceFile,
-	audioUrl,
-}: {
-	sourceKey: string;
-	sourceFile?: File;
-	audioUrl?: string;
-}): Promise<SourceWaveformSummary> {
-	const input = new Input({
-		source: createMediaSource({
-			file: sourceFile,
-			url: audioUrl,
-			urlOptions: {
-				maxCacheSize: STREAMING_SOURCE_CACHE_BYTES,
-				parallelism: 1,
-			},
-		}),
-		formats: ALL_FORMATS,
-	});
-
-	try {
-		const audioTrack = await input.getPrimaryAudioTrack();
-		if (!audioTrack) {
-			throw new Error(`Waveform source ${sourceKey} has no audio track`);
-		}
-
-		const sampleRate = audioTrack.sampleRate;
-		if (!(sampleRate > 0)) {
-			throw new Error(`Waveform source ${sourceKey} has no sample rate`);
-		}
-
-		const duration = await audioTrack.computeDuration();
-		const estimatedTotalSamples = Math.max(
-			1,
-			Math.ceil(Math.max(0, duration) * sampleRate),
-		);
-		const bucketSize = Math.max(
-			128,
-			Math.ceil(sampleRate * STREAMING_WAVEFORM_WINDOW_SECONDS),
-			Math.ceil(estimatedTotalSamples / STREAMING_WAVEFORM_MAX_BUCKETS),
-		);
-		let amplitudes = new Float32Array(
-			Math.max(1, Math.ceil(estimatedTotalSamples / bucketSize)),
-		);
-		let decodedEndSample = 0;
-
-		const ensureBucket = (bucketIndex: number) => {
-			if (bucketIndex < amplitudes.length) return;
-			const grown = new Float32Array(
-				Math.max(bucketIndex + 1, amplitudes.length * 2),
-			);
-			grown.set(amplitudes);
-			amplitudes = grown;
-		};
-
-		const sink = new AudioBufferSink(audioTrack);
-		for await (const { buffer, timestamp } of sink.buffers(0)) {
-			const rawStartSample = Math.round(timestamp * sampleRate);
-			let bufferOffset = Math.max(0, -rawStartSample);
-			const absoluteStartSample = Math.max(0, rawStartSample);
-			const channelData = Array.from(
-				{ length: buffer.numberOfChannels },
-				(_, channel) => buffer.getChannelData(channel),
-			);
-
-			while (bufferOffset < buffer.length) {
-				const absoluteSample = absoluteStartSample + bufferOffset;
-				const bucketIndex = Math.floor(absoluteSample / bucketSize);
-				ensureBucket(bucketIndex);
-				const bucketEndSample = (bucketIndex + 1) * bucketSize;
-				const segmentLength = Math.min(
-					buffer.length - bufferOffset,
-					bucketEndSample - absoluteSample,
-				);
-				const segmentEnd = bufferOffset + segmentLength;
-				let peak = amplitudes[bucketIndex] ?? 0;
-
-				for (const channel of channelData) {
-					for (let sample = bufferOffset; sample < segmentEnd; sample++) {
-						peak = Math.max(peak, Math.abs(channel[sample] ?? 0));
-					}
-				}
-				amplitudes[bucketIndex] = peak;
-				bufferOffset = segmentEnd;
-			}
-
-			decodedEndSample = Math.max(
-				decodedEndSample,
-				absoluteStartSample + buffer.length,
-			);
-		}
-
-		if (decodedEndSample === 0) {
-			throw new Error(`Waveform source ${sourceKey} has no decodable audio`);
-		}
-
-		const totalSamples = Math.max(estimatedTotalSamples, decodedEndSample);
-		const bucketCount = Math.max(1, Math.ceil(totalSamples / bucketSize));
-		return {
-			sourceKey,
-			sampleRate,
-			totalSamples,
-			bucketSize,
-			amplitudes: amplitudes.slice(0, bucketCount),
-		};
-	} finally {
-		input.dispose();
-	}
-}
-
 export class WaveformCache {
 	private summaries = new Map<string, Promise<SourceWaveformSummary>>();
 	private buildQueue: Promise<void> = Promise.resolve();
+	private controllers = new Map<string, AbortController>();
 
 	getSourceSummary({
 		sourceKey,
@@ -232,6 +121,8 @@ export class WaveformCache {
 			return existing;
 		}
 
+		const controller = new AbortController();
+		this.controllers.set(sourceKey, controller);
 		const promise = this.buildQueue
 			.catch(() => undefined)
 			.then(() =>
@@ -240,12 +131,14 @@ export class WaveformCache {
 					audioBuffer,
 					sourceFile,
 					audioUrl,
+					signal: controller.signal,
 				}),
 			)
 			.catch((error) => {
-			this.summaries.delete(sourceKey);
-			throw error;
-		});
+				if (this.controllers.get(sourceKey) === controller)
+					this.summaries.delete(sourceKey);
+				throw error;
+			});
 		this.buildQueue = promise.then(
 			() => undefined,
 			() => undefined,
@@ -256,19 +149,27 @@ export class WaveformCache {
 	}
 
 	clearSource({ sourceKey }: { sourceKey: string }): void {
+		this.controllers.get(sourceKey)?.abort();
+		this.controllers.delete(sourceKey);
 		this.summaries.delete(sourceKey);
 	}
 
 	clearAll(): void {
+		for (const controller of this.controllers.values()) controller.abort();
+		this.controllers.clear();
 		this.summaries.clear();
 	}
 
 	private async buildSummary({
+		signal,
 		sourceKey,
 		audioBuffer,
 		sourceFile,
 		audioUrl,
-	}: GetSourceWaveformSummaryArgs): Promise<SourceWaveformSummary> {
+	}: GetSourceWaveformSummaryArgs & {
+		signal: AbortSignal;
+	}): Promise<SourceWaveformSummary> {
+		signal.throwIfAborted();
 		if (audioBuffer) {
 			return this.buildSummaryForBuffer({
 				sourceKey,
@@ -280,11 +181,50 @@ export class WaveformCache {
 			throw new Error(`No waveform source available for ${sourceKey}`);
 		}
 
-		return buildStreamingSourceWaveformSummary({
-			sourceKey,
-			sourceFile,
-			audioUrl,
-		});
+		const start = performance.now();
+		let mode = "main";
+		const forceMain =
+			isRenderPerfEnabled() &&
+			new URLSearchParams(window.location.search).get("waveformThread") ===
+				"main";
+		try {
+			if (typeof Worker !== "undefined" && !forceMain) {
+				try {
+					const result = await buildStreamingWaveformInWorker({
+						sourceKey,
+						sourceFile,
+						audioUrl,
+						signal,
+					});
+					mode = "worker";
+					return result;
+				} catch (error) {
+					signal.throwIfAborted();
+					mode = "fallback";
+					console.warn(
+						"Streaming waveform worker failed; using original path",
+						error,
+					);
+				}
+			}
+			return await buildStreamingSourceWaveformSummary({
+				sourceKey,
+				sourceFile,
+				audioUrl,
+				useAudioBuffer: true,
+				signal,
+			});
+		} finally {
+			if (isRenderPerfEnabled())
+				publishPerformanceReport({
+					kind: "waveform",
+					data: {
+						mode,
+						durationMs: performance.now() - start,
+						cancelled: signal.aborted,
+					},
+				});
+		}
 	}
 
 	private async buildSummaryForBuffer({

@@ -1,3 +1,4 @@
+import { mergeRenewal } from "./session-renewal";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
@@ -99,7 +100,10 @@ export async function withEditorProjectWrite<T>({
 						sessionId: scope?.authority?.sessionId ?? null,
 						generation: scope?.authority?.generation ?? null,
 					};
-					let record = previous ?? "";
+					let record =
+						previous === undefined
+							? ""
+							: await mergeRenewal({ path, record: previous });
 					const assertWrite = () => {
 						scope?.signal.throwIfAborted();
 						assertBatchLock();

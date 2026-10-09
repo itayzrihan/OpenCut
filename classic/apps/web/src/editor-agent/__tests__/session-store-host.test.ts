@@ -23,9 +23,10 @@ mock.module("opencut-editor-runtime-wasm", () => ({
 		transition(...args),
 }));
 mock.module("opencut-wasm", () => ({
-	mediaLinkThresholdBytes: () => {
-		throw new Error("Media IO is outside this session test");
-	},
+	fullAutoEditStages: () => [],
+	batchEditIsLocked: () => false,
+	batchEditTransition: () => "interrupted",
+	mediaLinkThresholdBytes: () => 1,
 	mediaStorageDisposition: () => {
 		throw new Error("Media IO is outside this session test");
 	},
@@ -496,4 +497,98 @@ test("an ownership race reopens the latest saved version read-only without repea
 	expect(ambiguousRequests).toEqual(["acquire"]);
 	ambiguous.dispose();
 	winnerClient.dispose();
+});
+
+test("renewal journal preserves the project bytes and fences stale owners after takeover and release", async () => {
+	const owner = "renewal-test";
+	const directory = join(root, owner, "projects", projectId);
+	await mkdir(directory, { recursive: true });
+	await writeFile(
+		join(directory, "project.json"),
+		JSON.stringify(classic.document),
+	);
+	const acquired = await operate(owner, {
+		type: "acquire",
+		sessionId: "renewing",
+		expectedGeneration: 0,
+		takeOver: false,
+	});
+	const path = join(directory, "project.json");
+	const original = await readFile(path, "utf8");
+	const renew = {
+		type: "renew",
+		sessionId: "renewing",
+		generation: acquired.generation,
+	};
+	const before = Date.now;
+	let now = before();
+	Date.now = () => now;
+	try {
+		now += 80_000;
+		await operate(owner, renew);
+		expect(await readFile(path, "utf8")).toBe(original);
+		const journal = JSON.parse(await readFile(`${path}.renewal.json`, "utf8"));
+		expect(JSON.parse(journal.record).saved).toBeNull();
+		now += 80_000; // Original project lease expired; journal renewal is authoritative.
+		const second = await operate(owner, renew);
+		expect(second.lease).toMatchObject({
+			sessionId: "renewing",
+			expiresAtMs: now + 90_000,
+		});
+		expect(await readFile(path, "utf8")).toBe(original);
+		await expect(
+			operate(owner, {
+				type: "acquire",
+				sessionId: "rival",
+				expectedGeneration: acquired.generation,
+				takeOver: false,
+			}),
+		).rejects.toThrow("another editor");
+		const { withProjectWriteRequest, withEditorProjectWrite } =
+			await import("../server/project-write");
+		await account.run(owner, () =>
+			withProjectWriteRequest({
+				request: new Request("http://localhost", {
+					headers: {
+						"X-OpenCut-Editor-Project": projectId,
+						"X-OpenCut-Editor-Session": "renewing",
+						"X-OpenCut-Editor-Generation": String(acquired.generation),
+					},
+				}),
+				run: () =>
+					withEditorProjectWrite({
+						projectId,
+						write: async ({ assertWrite }) => {
+							assertWrite();
+						},
+					}),
+			}),
+		);
+		const stolen = await operate(owner, {
+			type: "acquire",
+			sessionId: "rival",
+			expectedGeneration: acquired.generation,
+			takeOver: true,
+		});
+		await expect(operate(owner, renew)).rejects.toThrow("transferred");
+		await operate(owner, {
+			type: "renew",
+			sessionId: "rival",
+			generation: stolen.generation,
+		});
+		await operate(owner, {
+			type: "release",
+			sessionId: "rival",
+			generation: stolen.generation,
+		});
+		await expect(
+			operate(owner, {
+				type: "renew",
+				sessionId: "rival",
+				generation: stolen.generation,
+			}),
+		).rejects.toThrow("released");
+	} finally {
+		Date.now = before;
+	}
 });

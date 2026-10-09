@@ -1,3 +1,10 @@
+import {
+	projectFileIdentity,
+	readRenewal,
+	writeRenewal,
+	metadataOnly,
+	mergeRenewal,
+} from "./session-renewal";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
@@ -38,6 +45,50 @@ export async function operateEditorSession({
 		projectId,
 		write: async ({ directory, path, assertLock }) => {
 			assertHostLock();
+			const renewing = z
+				.object({ type: z.literal("renew") })
+				.passthrough()
+				.safeParse(request).success;
+			const { sessionStoreTransition } =
+				await import("opencut-editor-runtime-wasm");
+			const transition = (record: string) => {
+				try {
+					return transitionResult.parse(
+						sessionStoreTransition(
+							record,
+							accountId,
+							projectId,
+							request,
+							Date.now(),
+						),
+					);
+				} catch (error) {
+					throw new SessionRejected(
+						error instanceof Error ? error.message : String(error),
+					);
+				}
+			};
+			if (renewing) {
+				const identity = await projectFileIdentity(path);
+				const metadata = await readRenewal({ path, identity });
+				if (metadata) {
+					const next = transition(metadata);
+					await writeRenewal({
+						path,
+						identity,
+						record: next.record,
+						assertLock: () => {
+							assertLock();
+							assertHostLock();
+						},
+					});
+					return {
+						...z.record(z.string(), z.unknown()).parse(next.result),
+						legacyProject: null,
+						legacyHistory: null,
+					};
+				}
+			}
 			const project = storedProject.parse(
 				JSON.parse(await readFile(path, "utf8")),
 			);
@@ -48,27 +99,30 @@ export async function operateEditorSession({
 				throw new SessionRejected(
 					"Stored project identity does not match its directory",
 				);
-			const previous = project[EDITOR_SESSION_FIELD];
+			let previous = project[EDITOR_SESSION_FIELD];
 			if (previous !== undefined && typeof previous !== "string")
 				throw new SessionRejected("Unsupported editor session record");
-			const { sessionStoreTransition } =
-				await import("opencut-editor-runtime-wasm");
-			let next: z.infer<typeof transitionResult>;
-			try {
-				next = transitionResult.parse(
-					sessionStoreTransition(
-						previous ?? "",
-						accountId,
-						projectId,
-						request,
-						Date.now(),
-					),
-				);
-			} catch (error) {
-				throw new SessionRejected(
-					error instanceof Error ? error.message : String(error),
-				);
+			if (typeof previous === "string")
+				previous = await mergeRenewal({ path, record: previous });
+			if (renewing && typeof previous === "string") {
+				const identity = await projectFileIdentity(path);
+				const next = transition(metadataOnly(previous));
+				await writeRenewal({
+					path,
+					identity,
+					record: next.record,
+					assertLock: () => {
+						assertLock();
+						assertHostLock();
+					},
+				});
+				return {
+					...z.record(z.string(), z.unknown()).parse(next.result),
+					legacyProject: null,
+					legacyHistory: null,
+				};
 			}
+			const next = transition(typeof previous === "string" ? previous : "");
 			// Initial adoption reads the legacy history under the same lock as
 			// the project. The client never combines independently fetched saves.
 			const legacyHistory =
