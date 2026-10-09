@@ -294,6 +294,18 @@ export function useEditorActions() {
 	);
 
 	useActionHandler(
+		"ripple-delete-selected",
+		() => {
+			if (editor.selection.getActiveSelectionKind() !== "elements") return;
+			editor.timeline.deleteElements({
+				elements: selectedElements,
+				ripple: true,
+			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
 		"delete-selected",
 		() => {
 			switch (editor.selection.getActiveSelectionKind()) {

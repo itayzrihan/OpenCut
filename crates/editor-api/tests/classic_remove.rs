@@ -156,3 +156,121 @@ async fn invalid_removals_do_not_partially_delete_or_create_history() {
     );
     assert_eq!(read(&runtime).await, before);
 }
+
+async fn ripple_fixture(locked: bool) -> OpenCutRuntime {
+    let runtime = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    let scene = &mut classic["document"]["scenes"][0];
+    let video = scene["tracks"]["main"]["elements"][0].clone();
+    scene["tracks"]["main"]["elements"] = json!(
+        (0..3)
+            .map(|index| {
+                let mut clip = video.clone();
+                clip["id"] = json!(format!("clip-{index}"));
+                clip["startTime"] = json!(index * 240000);
+                clip["duration"] = json!(240000);
+                clip["trimStart"] = json!(index * 240000);
+                clip["trimEnd"] = json!((2 - index) * 240000);
+                clip
+            })
+            .collect::<Vec<_>>()
+    );
+    let caption = &mut scene["tracks"]["overlay"][0];
+    caption["locked"] = json!(locked);
+    caption["elements"][0]["startTime"] = json!(360000);
+    caption["elements"][0]["duration"] = json!(120000);
+    caption["elements"][0]["wordRuns"] =
+        json!([{"id":"later-word","text":"later","lineIndex":0,"startTime":0,"endTime":120000}]);
+    caption["captionSource"]["words"] =
+        json!([{"text":"cut","start":0.5,"end":1.0},{"text":"later","start":3.0,"end":4.0}]);
+    scene["bookmarks"] = json!([{"time":600000,"note":"end cue"}]);
+    call(
+        &runtime,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    runtime
+}
+#[tokio::test]
+async fn explicit_ripple_delete_closes_only_selected_time_with_captions_markers_and_undo() {
+    for ripple in [false, true] {
+        let runtime = ripple_fixture(false).await;
+        let before = read(&runtime).await;
+        let request = input(
+            &before,
+            json!({"type":"elements","ripple":ripple,"elements":[{"trackId":"video-track","elementId":"clip-0"}]}),
+        );
+        runtime
+            .registry()
+            .invoke(
+                ID,
+                InvocationContext {
+                    dry_run: true,
+                    ..Default::default()
+                },
+                request.clone(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(read(&runtime).await, before);
+        call(&runtime, ID, request).await;
+        let after = read(&runtime).await;
+        let scene = &after["project"]["classic"]["document"]["scenes"][0];
+        let tracks = &scene["tracks"];
+        assert_eq!(tracks["main"]["elements"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            tracks["main"]["elements"][0]["startTime"],
+            if ripple { 0 } else { 240000 }
+        );
+        assert_eq!(tracks["main"]["elements"][0]["trimStart"], 240000);
+        assert_eq!(tracks["main"]["elements"][0]["duration"], 240000);
+        assert_eq!(
+            tracks["overlay"][0]["elements"][0]["startTime"],
+            if ripple { 120000 } else { 360000 }
+        );
+        assert_eq!(
+            scene["bookmarks"][0]["time"],
+            if ripple { 360000 } else { 600000 }
+        );
+        if ripple {
+            assert_eq!(
+                tracks["overlay"][0]["captionSource"]["words"],
+                json!([{"text":"later","start":1.0,"end":2.0}])
+            );
+        }
+        call(&runtime, "history.undo", json!({})).await;
+        assert_eq!(read(&runtime).await["project"], before["project"]);
+        call(&runtime, "history.redo", json!({})).await;
+        assert_eq!(read(&runtime).await["project"], after["project"]);
+    }
+}
+#[tokio::test]
+async fn ripple_delete_merges_duplicate_ranges_and_rejects_locked_companions() {
+    let runtime = ripple_fixture(false).await;
+    let before = read(&runtime).await;
+    call(
+        &runtime,
+        ID,
+        input(
+            &before,
+            json!({"type":"elements","ripple":true,"elements":[
+                {"trackId":"video-track","elementId":"clip-0"},
+                {"trackId":"video-track","elementId":"clip-0"},
+                {"trackId":"video-track","elementId":"clip-2"}
+            ]}),
+        ),
+    )
+    .await;
+    let after = read(&runtime).await;
+    let clips = &after["project"]["classic"]["document"]["scenes"][0]["tracks"]["main"]["elements"];
+    assert_eq!(clips.as_array().unwrap().len(), 1);
+    assert_eq!(clips[0]["id"], "clip-1");
+    assert_eq!(clips[0]["startTime"], 0);
+    assert_eq!(clips[0]["duration"], 240000);
+    let runtime = ripple_fixture(true).await;
+    let before = read(&runtime).await;
+    assert!(runtime.registry().invoke(ID, InvocationContext::default(), input(&before, json!({"type":"elements","ripple":true,"elements":[{"trackId":"video-track","elementId":"clip-0"}]}))).await.is_err());
+    assert_eq!(read(&runtime).await, before);
+}

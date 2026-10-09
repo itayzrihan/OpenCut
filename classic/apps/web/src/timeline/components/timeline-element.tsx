@@ -1129,6 +1129,13 @@ function TimelineElementMenuContent({
 				</>
 			)}
 			<ContextMenuSeparator />
+			<ActionMenuItem
+				action="ripple-delete-selected"
+				disabled={!isCurrentElementSelected}
+				icon={<HugeiconsIcon icon={Delete02Icon} />}
+			>
+				Delete and close timeline space
+			</ActionMenuItem>
 			<DeleteMenuItem
 				isMultipleSelected={selectedElementCount > 1}
 				isCurrentElementSelected={isCurrentElementSelected}

@@ -19,6 +19,8 @@ enum Removal {
     Elements {
         #[schemars(length(min = 1, max = 1000))]
         elements: Vec<ElementRef>,
+        #[serde(default)]
+        ripple: bool,
     },
     Track {
         track_id: String,
@@ -45,7 +47,7 @@ pub(super) fn register_classic_remove(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.remove",
         "Remove Classic elements or an auxiliary track",
-        "Undoably remove explicit elements (1..1000 trackId/elementId references) or one overlay/audio track in a Classic scene. Read IDs from app.state.read at /project/classic/document/scenes. Removes linked transcript words and reconciles remaining manual text-layer ownership. Track deletion updates display order and cannot remove the main track; deleting its elements is allowed. Element deletion retains empty tracks and order. Preserves unrelated clips, source/media assets, other scenes and unknown fields. No ripple shift or automatic companion-media deletion. Requires project, scene and expectedRevision; validates all targets before editing, deduplicates element references, supports dry run, exact retry keys, atomic transactions and Undo/Redo. This removes timeline content only; it never deletes media files.",
+        "Undoably remove explicit elements (1..1000 trackId/elementId references) or one overlay/audio track in a Classic scene. Read IDs from app.state.read at /project/classic/document/scenes. Removes linked transcript words and reconciles remaining manual text-layer ownership. Track deletion updates display order and cannot remove the main track; deleting its elements is allowed. Element deletion retains empty tracks and order. Preserves unrelated clips, source/media assets, other scenes and unknown fields. By default, no ripple shift or automatic companion-media deletion. For elements, ripple=true removes the union of their timeline intervals across all layers using the trim splice policy, shifts later clips and bookmarks, maps captions/animation times, removes fully consumed companions and rejects changes to locked tracks. Requires project, scene and expectedRevision; validates all targets before editing, deduplicates element references, supports dry run, exact retry keys, atomic transactions and Undo/Redo. This removes timeline content only; it never deletes media files.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -85,10 +87,24 @@ pub(super) fn register_classic_remove(
                                     .find(|scene| scene["id"] == input.scene_id)
                             })
                             .ok_or_else(|| invalid("Scene not found"))?;
+                        let ranges = match &input.removal {
+                            Removal::Elements {
+                                elements,
+                                ripple: true,
+                            } => Some(super::classic_ripple_delete::ranges(
+                                &scene["tracks"],
+                                elements,
+                            )?),
+                            _ => None,
+                        };
                         let tracks = scene
                             .get_mut("tracks")
                             .ok_or_else(|| invalid("Tracks missing"))?;
+                        let before_tracks = tracks.clone();
                         apply(tracks, input.removal)?;
+                        if let Some(ranges) = ranges {
+                            super::classic_ripple_delete::apply(scene, &before_tracks, &ranges)?;
+                        }
                         Ok(vec![input.project_id, input.scene_id])
                     },
                 )?;
@@ -115,7 +131,7 @@ fn all(tracks: &Value) -> impl Iterator<Item = &Value> {
 fn apply(tracks: &mut Value, removal: Removal) -> Result<(), CapabilityError> {
     let before = tracks.clone();
     let (elements, removed_track) = match removal {
-        Removal::Elements { elements } => {
+        Removal::Elements { elements, .. } => {
             for target in &elements {
                 let track = all(&before)
                     .find(|track| track["id"] == target.track_id)
@@ -195,7 +211,13 @@ pub(super) fn remove_explicit_elements(
     tracks: &mut Value,
     elements: Vec<ElementRef>,
 ) -> Result<(), CapabilityError> {
-    apply(tracks, Removal::Elements { elements })
+    apply(
+        tracks,
+        Removal::Elements {
+            elements,
+            ripple: false,
+        },
+    )
 }
 
 fn remove_elements(

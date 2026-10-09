@@ -124,6 +124,7 @@ export class PlayheadController {
 	// --- Public event handlers (bound, stable references) ---
 
 	onPlayheadMouseDown(event: ReactMouseEvent): void {
+		if (event.button !== 0) return;
 		event.preventDefault();
 		event.stopPropagation();
 		this.session = {
@@ -132,6 +133,7 @@ export class PlayheadController {
 			hasMoved: false,
 			currentTime: null,
 		};
+		this.lastMouseClientX = event.clientX;
 		this.config.setScrubbing(true);
 		this.scrub({ event, isElementSnappingEnabled: true });
 		this.activate();
@@ -155,6 +157,7 @@ export class PlayheadController {
 			hasMoved: false,
 			currentTime: null,
 		};
+		this.lastMouseClientX = event.clientX;
 		this.config.setScrubbing(true);
 		// No element-edge snapping on initial ruler click — avoids a jarring jump.
 		this.scrub({ event, isElementSnappingEnabled: false });
@@ -218,6 +221,16 @@ export class PlayheadController {
 		}
 	}
 
+	/** A stationary pointer at an edge must seek into the newly revealed time. */
+	handleScroll(time: MediaTime): void {
+		if (this.isActive) {
+			this.scrub({
+				event: { clientX: this.lastMouseClientX },
+				isElementSnappingEnabled: true,
+			});
+		} else this.updatePlayheadLeft(time);
+	}
+
 	// --- Private ---
 
 	private activate(): void {
@@ -239,7 +252,7 @@ export class PlayheadController {
 		event,
 		isElementSnappingEnabled,
 	}: {
-		event: MouseEvent | ReactMouseEvent;
+		event: Pick<MouseEvent, "clientX">;
 		isElementSnappingEnabled: boolean;
 	}): void {
 		const ruler = this.config.getRulerEl();

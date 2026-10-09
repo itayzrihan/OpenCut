@@ -23,6 +23,8 @@ import {
 type ElementUpdateField = keyof TimelineElement | string;
 
 export interface ElementUpdateContext {
+	/** Visual drag previews must retain the pointer position until commit. */
+	preview?: boolean;
 	tracks: SceneTracks;
 	trackId: string;
 }
@@ -123,7 +125,7 @@ const enforceRules: ElementUpdateRule[] = [
 				element.startTime < ZERO_MEDIA_TIME
 					? ZERO_MEDIA_TIME
 					: element.startTime;
-			if (context.trackId !== context.tracks.main.id) {
+			if (context.preview || context.trackId !== context.tracks.main.id) {
 				return {
 					element: {
 						...element,

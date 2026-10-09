@@ -151,7 +151,7 @@ describe("main-track trim gesture", () => {
 				listeners.get("mousemove")!({ clientX: 100 + pixels });
 				expect(
 					preview.find((u) => u.elementId === "target")?.patch.startTime,
-				).toBe(t(5));
+				).toBe(t(side === "left" ? 5 + pixels / 50 : 5));
 				expect(
 					preview.find((u) => u.elementId === "target")?.patch.duration,
 				).toBe(t(expectedDuration));
@@ -160,19 +160,25 @@ describe("main-track trim gesture", () => {
 						side === "left" ? "trimStart" : "trimEnd"
 					],
 				).toBe(t(expectedTrim));
-				expect(
-					preview.find((u) => u.elementId === "next")?.patch.startTime,
-				).toBe(t(5 + expectedDuration));
-				expect(preview.find((u) => u.elementId === "fx")?.patch.duration).toBe(
-					t(10 + expectedDuration),
-				);
-				expect(
-					preview.find((u) => u.elementId === "caption")?.patch.startTime,
-				).toBe(t(6 + expectedDuration));
-				expect(
-					preview.find((u) => u.elementId === "caption")?.patch.wordRuns?.[0]
-						.endTime,
-				).toBe(t(2));
+				if (side === "left") {
+					expect(preview.map((u) => u.elementId)).toEqual(["target"]);
+					const patch = preview[0].patch;
+					expect(patch.startTime + patch.duration).toBe(t(10));
+				} else {
+					expect(
+						preview.find((u) => u.elementId === "next")?.patch.startTime,
+					).toBe(t(5 + expectedDuration));
+					expect(
+						preview.find((u) => u.elementId === "fx")?.patch.duration,
+					).toBe(t(10 + expectedDuration));
+					expect(
+						preview.find((u) => u.elementId === "caption")?.patch.startTime,
+					).toBe(t(6 + expectedDuration));
+					expect(
+						preview.find((u) => u.elementId === "caption")?.patch.wordRuns?.[0]
+							.endTime,
+					).toBe(t(2));
+				}
 				listeners.get("mousemove")!({ clientX: 100 });
 				expect(preview.every((u) => u.elementId === "target")).toBe(true);
 				listeners.get("mousemove")!({ clientX: 100 + pixels });

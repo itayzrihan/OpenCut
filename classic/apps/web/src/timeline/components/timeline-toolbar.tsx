@@ -270,6 +270,20 @@ function ToolbarLeftSection() {
 					}
 				/>
 
+				<ToolbarButton
+					icon={
+						<span className="relative">
+							<HugeiconsIcon icon={Delete02Icon} />
+							<span className="absolute -right-1 -bottom-1 text-[10px]">↤</span>
+						</span>
+					}
+					tooltip="Delete and close timeline space"
+					disabled={selectedElements.length === 0}
+					onClick={({ event }) =>
+						handleAction({ action: "ripple-delete-selected", event })
+					}
+				/>
+
 				<div className="bg-border mx-1 h-6 w-px" />
 
 				<BookmarkToolbarButton />
