@@ -158,6 +158,7 @@ export type ClassicTrackLayoutChange =
 export type ClassicRemoval =
 	| {
 			type: "elements";
+			ripple?: boolean;
 			elements: Array<{ trackId: string; elementId: string }>;
 	  }
 	| { type: "track"; trackId: string };

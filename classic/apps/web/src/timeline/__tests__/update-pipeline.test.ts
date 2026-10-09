@@ -369,3 +369,30 @@ describe("applyElementUpdate", () => {
 		});
 	});
 });
+
+test("left trim preview keeps the first clip's right edge fixed until the commit anchors it", () => {
+	const element = buildVideoElement();
+	const tracks = buildTracks(element);
+	const patch = {
+		startTime: mediaTime({ ticks: 3 }),
+		duration: mediaTime({ ticks: 7 }),
+		trimStart: mediaTime({ ticks: 3 }),
+	};
+	const preview = applyElementUpdate({
+		element,
+		patch,
+		context: { tracks, trackId: "main-track", preview: true },
+	});
+	expect(preview.startTime).toBe(mediaTime({ ticks: 3 }));
+	expect(preview.startTime + preview.duration).toBe(
+		element.startTime + element.duration,
+	);
+	const committed = applyElementUpdate({
+		element,
+		patch,
+		context: { tracks, trackId: "main-track" },
+	});
+	expect(committed.startTime).toBe(ZERO_MEDIA_TIME);
+	expect(committed.duration).toBe(preview.duration);
+	expect(committed.trimStart).toBe(preview.trimStart);
+});

@@ -416,12 +416,15 @@ export class TimelineManager {
 
 	deleteElements({
 		elements,
+		ripple = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
+		ripple?: boolean;
 	}): void {
 		this.editor.command.removeClassicTimelineContent({
 			type: "elements",
 			elements,
+			ripple,
 		});
 	}
 
@@ -1634,7 +1637,10 @@ export class TimelineManager {
 			return;
 		}
 		if (this.editor.command.hasCanonicalHistory()) {
-			this.editor.command.applyClassicTransitions({ applications, managedTextSfx: true });
+			this.editor.command.applyClassicTransitions({
+				applications,
+				managedTextSfx: true,
+			});
 			return;
 		}
 		this.editor.command.execute({
@@ -1650,7 +1656,10 @@ export class TimelineManager {
 	>[0]): void {
 		if (updates.length === 0) return;
 		if (this.editor.command.hasCanonicalHistory()) {
-			this.editor.command.updateClassicTimelineElements({ updates, managedTypingSfx: revealMode === "letter-by-letter" });
+			this.editor.command.updateClassicTimelineElements({
+				updates,
+				managedTypingSfx: revealMode === "letter-by-letter",
+			});
 			return;
 		}
 		this.editor.command.execute({
@@ -2203,7 +2212,7 @@ export class TimelineManager {
 					? applyElementUpdate({
 							element,
 							patch: overlay,
-							context: { tracks, trackId: track.id },
+							context: { tracks, trackId: track.id, preview: true },
 						})
 					: element;
 			});

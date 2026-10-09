@@ -72,6 +72,7 @@ mod classic_split;
 mod classic_text;
 mod classic_text_merge;
 mod classic_ripple;
+mod classic_ripple_delete;
 mod classic_insert;
 mod classic_scenes;
 mod classic_push_broll;

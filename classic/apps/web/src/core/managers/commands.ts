@@ -1032,8 +1032,9 @@ export class CommandManager {
 				this.synchronizeCanonicalViews();
 				this.canonical!.removeTimelineContent({ sceneId, removal });
 				this.publishCanonical();
-				// The shared ripple contract is grouped with deletion for one undo.
-				this.applyRippleIfEnabled({ beforeTracks });
+				// Explicit delete-and-close already spliced all layers in the Rust mutation.
+				if (removal.type !== "elements" || !removal.ripple)
+					this.applyRippleIfEnabled({ beforeTracks });
 				if (removal.type === "elements")
 					this.applySelectionOverride({
 						selection: {

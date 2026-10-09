@@ -62,8 +62,7 @@ export function useTimelinePlayhead({
 	useEffect(() => {
 		const scrollEl = rulerScrollRef.current;
 		if (!scrollEl) return;
-		const handler = () =>
-			ctrl.updatePlayheadLeft(editor.playback.getCurrentTime());
+		const handler = () => ctrl.handleScroll(editor.playback.getCurrentTime());
 		scrollEl.addEventListener("scroll", handler, { passive: true });
 		return () => scrollEl.removeEventListener("scroll", handler);
 	}, [ctrl, editor.playback, rulerScrollRef]);
@@ -81,7 +80,8 @@ export function useTimelinePlayhead({
 	}, [ctrl, editor.playback]);
 
 	useEdgeAutoScroll({
-		isActive: isScrubbing,
+		isActive: isScrubbing && ctrl.isActive,
+		edgeThreshold: 24,
 		getMouseClientX: () => ctrl.getLastMouseClientX(),
 		rulerScrollRef,
 		tracksScrollRef,

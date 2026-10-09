@@ -399,7 +399,13 @@ export class ResizeController {
 		session.result = result;
 		// Each frame is computed from committed tracks, never accumulated previews.
 		this.config.discardPreview();
-		this.config.previewElements(result.updates);
+		// Keep the dragged edge under the pointer. Ripple is committed on release,
+		// so neighboring clips remain stable while choosing the trim boundary.
+		this.config.previewElements(
+			session.rippleInsertion && session.side === "left"
+				? groupResult.updates
+				: result.updates,
+		);
 	}
 
 	private handleMouseUp(): void {
