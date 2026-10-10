@@ -89,3 +89,26 @@ test("fit supports empty and short timelines, clamps zoom and ignores unavailabl
 	expect(f.controller.zoomLevel).toBe(TIMELINE_ZOOM_MAX);
 	f.controller.destroy();
 });
+
+test("playback following defers persistence until pause, including a timer queued before Play", async () => {
+	const f = fixture();
+	let playing = false;
+	f.config.getIsPlaybackActive = () => playing;
+	f.controller.saveScrollPosition();
+	playing = true;
+	await new Promise((resolve) => setTimeout(resolve, 350));
+	expect(f.saved).toHaveLength(0);
+	for (let i = 0; i < 20; i++) {
+		f.tracks.scrollLeft += 100;
+		f.controller.saveScrollPosition();
+	}
+	expect(f.saved).toHaveLength(0);
+	playing = false;
+	f.controller.flushScrollPosition();
+	expect(f.saved).toEqual([
+		{ zoomLevel: 5, scrollLeft: 11000, playheadTime: f.playhead },
+	]);
+	f.controller.flushScrollPosition();
+	expect(f.saved).toHaveLength(1);
+	f.controller.destroy();
+});

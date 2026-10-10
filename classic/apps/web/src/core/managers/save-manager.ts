@@ -67,7 +67,8 @@ export class SaveManager {
 	}
 
 	markDirty({ force = false }: { force?: boolean } = {}): void {
-		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id)) return;
+		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id))
+			return;
 		if (this.isPaused && !force) return;
 		this.hasPendingSave = true;
 		if (!this.isPaused) {
@@ -75,9 +76,14 @@ export class SaveManager {
 		}
 	}
 
-	async flush(): Promise<void> {
-		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id)) { this.discardPending(); return; }
-		this.hasPendingSave = true;
+	async flush({
+		onlyPending = false,
+	}: { onlyPending?: boolean } = {}): Promise<void> {
+		if (isBatchReadOnly(this.editor.project.getActiveOrNull()?.metadata.id)) {
+			this.discardPending();
+			return;
+		}
+		if (!onlyPending) this.hasPendingSave = true;
 		this.clearTimer();
 
 		// A change can arrive while a write is in flight. Keep flushing until the

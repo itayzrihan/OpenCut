@@ -5,7 +5,12 @@ import { createMediaSource, type BrowserMediaSource } from "./source";
 export class AudioSinkCache {
 	private entries = new Map<
 		string,
-		{ input: Input; ready: Promise<AudioBufferSink | null> }
+		{
+			input: Input;
+			ready: Promise<AudioBufferSink | null>;
+			codec?: string | null;
+			sampleRate?: number;
+		}
 	>();
 
 	get({
@@ -20,7 +25,12 @@ export class AudioSinkCache {
 			source: createMediaSource(source),
 			formats: ALL_FORMATS,
 		});
-		const entry = {
+		const entry: {
+			input: Input;
+			ready: Promise<AudioBufferSink | null>;
+			codec?: string | null;
+			sampleRate?: number;
+		} = {
 			input,
 			ready: Promise.resolve<AudioBufferSink | null>(null),
 		};
@@ -28,7 +38,11 @@ export class AudioSinkCache {
 			.getPrimaryAudioTrack()
 			.then((track) => {
 				if (this.entries.get(sourceKey) !== entry) return null;
-				if (track) return new AudioBufferSink(track);
+				if (track) {
+					entry.codec = track.codec;
+					entry.sampleRate = track.sampleRate;
+					return new AudioBufferSink(track);
+				}
 				this.entries.delete(sourceKey);
 				input.dispose();
 				return null;
@@ -42,6 +56,21 @@ export class AudioSinkCache {
 			});
 		this.entries.set(sourceKey, entry);
 		return entry.ready;
+	}
+
+	/** Compressed codecs need decoder priming; resampling needs filter handles. */
+	canReadIndependentRanges({
+		sourceKey,
+		sampleRate,
+	}: {
+		sourceKey: string;
+		sampleRate: number;
+	}): boolean {
+		const entry = this.entries.get(sourceKey);
+		return (
+			entry?.codec?.startsWith("pcm-") === true &&
+			entry.sampleRate === sampleRate
+		);
 	}
 
 	clear(): void {

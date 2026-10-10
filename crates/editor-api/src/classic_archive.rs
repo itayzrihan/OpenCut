@@ -56,16 +56,25 @@ impl ArchivedHistorySnapshot {
 
     pub(crate) fn restore(
         self,
-        base: Option<&Value>,
+        base: &mut Option<Value>,
+        chained: bool,
         sources: &SourcePool,
         budget: &mut usize,
     ) -> Result<ClassicProject, ModelError> {
         let classic = match self {
-            Self::Full(classic) => classic,
+            Self::Full(classic) => {
+                if chained {
+                    *base =
+                        Some(serde_json::to_value(&classic).map_err(|e| invalid(&e.to_string()))?);
+                }
+                classic
+            }
             Self::Delta { delta } => {
-                let mut value = base
-                    .ok_or_else(|| invalid("history delta requires archive version 2"))?
-                    .clone();
+                // Chained deltas consume their preceding JSON tree. The resulting tree
+                // is retained directly for the next boundary instead of rebuilding
+                // it from the restored project (including all media metadata).
+                let mut value = if chained { base.take() } else { base.clone() }
+                    .ok_or_else(|| invalid("history delta requires archive version 2"))?;
                 let patch: json_patch::Patch = serde_json::from_value(Value::Array(delta))
                     .map_err(|e| invalid(&e.to_string()))?;
                 // Our encoder uses only these operations. Copy/move can amplify
@@ -81,12 +90,21 @@ impl ArchivedHistorySnapshot {
                     return Err(invalid("unsupported history delta operation"));
                 }
                 json_patch::patch(&mut value, &patch).map_err(|e| invalid(&e.to_string()))?;
-                serde_json::from_value(value).map_err(|e| invalid(&e.to_string()))?
+                if chained {
+                    let classic = ArchivedClassicProject::deserialize(&value)
+                        .map_err(|e| invalid(&e.to_string()))?;
+                    *base = Some(value);
+                    classic
+                } else {
+                    serde_json::from_value(value).map_err(|e| invalid(&e.to_string()))?
+                }
             }
         };
-        let bytes = serde_json::to_vec(&classic)
-            .map_err(|e| invalid(&e.to_string()))?
-            .len();
+        // Count exactly the same serialized bytes without allocating a temporary
+        // multi-megabyte byte vector for every undo/redo boundary.
+        let mut counter = ByteCounter(0);
+        serde_json::to_writer(&mut counter, &classic).map_err(|e| invalid(&e.to_string()))?;
+        let bytes = counter.0;
         *budget = budget
             .checked_sub(bytes)
             .ok_or_else(|| invalid("expanded history exceeds its storage budget"))?;
@@ -196,4 +214,18 @@ fn source_key(sources: &SourcePool, source: &Arc<HyperframesSource>) -> String {
         .find(|(_, existing)| Arc::ptr_eq(existing, source))
         .map(|(id, _)| id.clone())
         .unwrap_or_else(|| source.fingerprint())
+}
+
+struct ByteCounter(usize);
+impl std::io::Write for ByteCounter {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.0 = self
+            .0
+            .checked_add(bytes.len())
+            .ok_or_else(|| std::io::Error::other("archive size overflow"))?;
+        Ok(bytes.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
 }

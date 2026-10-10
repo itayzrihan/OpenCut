@@ -115,7 +115,11 @@ mock.module("@/fps/defaults", () => ({
 mock.module("@/fps/utils", () => ({
 	getRaisedProjectFpsForImportedMedia: () => null,
 }));
-mock.module("@/timeline/defaults", () => ({ DEFAULTS: {} }));
+mock.module("@/timeline/defaults", () => ({
+	DEFAULTS: {
+		timeline: { viewState: { zoomLevel: 1, scrollLeft: 0, playheadTime: 0 } },
+	},
+}));
 mock.module("@/timeline/scenes", () => ({
 	buildDefaultScene: () => {},
 	getProjectDurationFromScenes: () => fixture.document.metadata.duration,
@@ -294,6 +298,20 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 		expect(first.project.getActive()).toBe(mountedProject);
 		expect(first.editor.scenes.getScenes()).toBe(mountedScenes);
 		expect(first.project.getSessionReadOnlyReason()).toBeNull();
+		// Restored/programmatic scroll events must not create canonical revisions or saves.
+		const viewBefore = first.command.getStateRevision();
+		const dirtyView = spyOn(first.editor.save, "markDirty");
+		const viewState = first.project.getTimelineViewState();
+		for (let i = 0; i < 20; i++)
+			first.project.setTimelineViewState({ viewState: { ...viewState } });
+		expect(first.command.getStateRevision()).toBe(viewBefore);
+		expect(dirtyView).not.toHaveBeenCalled();
+		first.project.setTimelineViewState({
+			viewState: { ...viewState, scrollLeft: viewState.scrollLeft + 1 },
+		});
+		expect(first.command.getStateRevision()).toBeGreaterThan(viewBefore);
+		expect(dirtyView).toHaveBeenCalledTimes(1);
+		dirtyView.mockRestore();
 		// Slow storage must not create one full archive write per UI action.
 		let releaseCommit!: () => void;
 		commitGate = new Promise<void>((resolve) => {

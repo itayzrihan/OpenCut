@@ -49,6 +49,8 @@ export function useTimelineZoom({
 		getTracksScrollEl: () => tracksScrollRef.current,
 		getRulerScrollEl: () => rulerScrollRef.current,
 		getCurrentPlayheadTime: () => editor.playback.getCurrentTime(),
+		getIsPlaybackActive: () =>
+			editor.playback.getIsPlaying() || editor.playback.getIsBuffering(),
 		seek: (time) => editor.playback.seek({ time }),
 		setTimelineViewState: ({ zoomLevel, scrollLeft, playheadTime }) =>
 			editor.project.setTimelineViewState({
@@ -83,6 +85,17 @@ export function useTimelineZoom({
 	useEffect(() => {
 		controller.restoreInitialPlayheadIfNeeded(initialPlayheadTime);
 	}, [controller, initialPlayheadTime]);
+
+	useEffect(() => {
+		let wasActive =
+			editor.playback.getIsPlaying() || editor.playback.getIsBuffering();
+		return editor.playback.subscribe(() => {
+			const active =
+				editor.playback.getIsPlaying() || editor.playback.getIsBuffering();
+			if (wasActive && !active) controller.flushScrollPosition();
+			wasActive = active;
+		});
+	}, [controller, editor]);
 
 	useEffect(() => controller.bindPreventBrowserZoom(), [controller]);
 

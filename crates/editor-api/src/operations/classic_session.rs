@@ -463,17 +463,12 @@ fn register_archive_operations(
                 let mut expanded_budget = 512_000_000usize;
                 let mut restore = |entries: Vec<ArchivedBoundary>| {
                     let mut previous = base.clone();
-                    let mut sources = archive.sources.clone();
                     entries
                         .into_iter()
                         .map(|entry| {
                             let classic = entry.classic
-                                .restore(previous.as_ref(), &archive.sources, &mut expanded_budget)
+                                .restore(&mut previous, archive.schema_version == 3, &archive.sources, &mut expanded_budget)
                                 .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-                            if archive.schema_version == 3 {
-                                previous = Some(serde_json::to_value(classic.to_archive(&mut sources))
-                                    .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?);
-                            }
                             Ok(ClassicHistoryBoundary {
                                 label: entry.label,
                                 host_context: entry.host_context,

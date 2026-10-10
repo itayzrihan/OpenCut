@@ -1,3 +1,4 @@
+import { startOperationTiming } from "@/diagnostics/operation";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Rust validates the live registry contracts before returning these JSON projections. */
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
 import type {
@@ -1687,10 +1688,15 @@ export class CanonicalClassicSession {
 		input: unknown;
 		context?: unknown;
 	}): T {
-		const receipt = this.runtime.invokeSync(capability, input, context) as {
-			result: { data: T };
-		};
-		return receipt.result.data;
+		const finish = startOperationTiming(capability);
+		try {
+			const receipt = this.runtime.invokeSync(capability, input, context) as {
+				result: { data: T };
+			};
+			return receipt.result.data;
+		} finally {
+			finish();
+		}
 	}
 }
 

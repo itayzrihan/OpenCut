@@ -77,6 +77,7 @@ function ProjectDropdown() {
 		setIsExiting(true);
 
 		try {
+			editor.playback.pause();
 			await editor.project.prepareExit();
 			editor.project.closeProject();
 			router.push("/projects");
@@ -162,6 +163,7 @@ function ProjectDropdown() {
 
 		setIsArchiveImporting(true);
 		try {
+			editor.playback.pause();
 			await editor.project.prepareExit();
 			const result = await editor.project.importProjectArchive({ file });
 			const linkedSharedCount =

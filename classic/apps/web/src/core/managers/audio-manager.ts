@@ -356,7 +356,7 @@ export class AudioManager {
 		if (signal.aborted) return;
 
 		const currentTime = time / TICKS_PER_SECOND;
-		const windowEnd = currentTime + lookaheadSeconds;
+		const windowEnd = currentTime + Math.min(lookaheadSeconds, 1);
 		const upcoming = this.clips.filter(
 			(clip) =>
 				!clip.muted &&
@@ -367,39 +367,59 @@ export class AudioManager {
 			upcoming.map(async (clip) => {
 				if (signal.aborted) return;
 				if (this.shouldUsePreparedClipBuffer({ clip })) {
-					await this.getPreparedClipBuffer({ clip });
+					await this.getAudioSink({ clip });
+					let nextTime = Math.max(currentTime, clip.startTime);
+					const until = Math.min(windowEnd, clip.startTime + clip.duration);
+					while (nextTime < until - 1e-9) {
+						if (signal.aborted) return;
+						const windowClip = this.getPreparedWindow({ clip, time: nextTime });
+						const buffer = await this.getPreparedClipBuffer({
+							clip: windowClip,
+						});
+						if (!buffer && !signal.aborted)
+							throw new Error(
+								"Could not decode playback audio. Try Play again.",
+							);
+						if (windowClip === clip) break;
+						nextTime = windowClip.startTime + windowClip.duration;
+					}
 				} else {
 					await this.getAudioSink({ clip });
 				}
 			}),
 		);
 		if (signal.aborted) return;
-		const generation = this.audioCacheGeneration;
-		const initiallyPreparedIds = new Set(upcoming.map((clip) => clip.id));
-		void this.prepareRemainingPlaybackAudio({
-			generation,
-			excludeClipIds: initiallyPreparedIds,
-		});
+		// The playback scheduler prepares only its moving lookahead window.
+		// Do not scan every later clip here: distant seeks compete with Play.
 	};
 
-	private async prepareRemainingPlaybackAudio({
-		generation,
-		excludeClipIds,
+	private getPreparedWindow({
+		clip,
+		time,
 	}: {
-		generation: number;
-		excludeClipIds: ReadonlySet<string>;
-	}): Promise<void> {
-		for (const clip of this.clips) {
-			if (generation !== this.audioCacheGeneration) return;
-			if (clip.muted || excludeClipIds.has(clip.id)) continue;
-			try {
-				if (this.shouldUsePreparedClipBuffer({ clip })) {
-					await this.getPreparedClipBuffer({ clip });
-				}
-			} catch (error) {
-				console.warn(`Failed to prebuffer audio clip ${clip.id}:`, error);
-			}
-		}
+		clip: AudioClipSource;
+		time: number;
+	}): AudioClipSource {
+		// Preserve the existing full-buffer path for retiming/pitch and AAC
+		// sync handles. Ordinary cuts can be decoded in bounded 2s windows.
+		if (
+			clip.retime ||
+			!this.audioSinks.canReadIndependentRanges({
+				sourceKey: clip.sourceKey,
+				sampleRate: this.audioContext?.sampleRate ?? 0,
+			}) ||
+			Number(clip.timelineElement.params.audioSyncOffset ?? 0) !== 0
+		)
+			return clip;
+		const local = Math.max(0, time - clip.startTime);
+		const start = Math.floor((local + 1e-9) / 2) * 2;
+		return {
+			...clip,
+			id: `${clip.id}:audio-window:${start}`,
+			startTime: clip.startTime + start,
+			trimStart: clip.trimStart + start,
+			duration: Math.min(2, clip.duration - start),
+		};
 	}
 
 	private async ensureCurrentAudioClips({
@@ -803,6 +823,45 @@ export class AudioManager {
 		startTime: number;
 		sessionId: number;
 	}): Promise<boolean> {
+		await this.getAudioSink({ clip });
+		let time = Math.max(startTime, clip.startTime);
+		let started = false;
+		while (time < clip.startTime + clip.duration - 1e-9) {
+			if (
+				sessionId !== this.playbackSessionId ||
+				!this.editor.playback.getIsPlaying()
+			)
+				return started;
+			const windowClip = this.getPreparedWindow({ clip, time });
+			started =
+				(await this.schedulePreparedWindow({
+					clip: windowClip,
+					startTime: time,
+					sessionId,
+					automationClip: clip,
+				})) || started;
+			if (windowClip === clip) break;
+			time = windowClip.startTime + windowClip.duration;
+			if (time >= clip.startTime + clip.duration - 1e-9) break;
+			await this.waitUntilCaughtUp({
+				timelineTime: time,
+				targetAhead: this.streamingAheadSeconds,
+			});
+		}
+		return started;
+	}
+
+	private async schedulePreparedWindow({
+		clip,
+		startTime,
+		sessionId,
+		automationClip,
+	}: {
+		clip: AudioClipSource;
+		startTime: number;
+		sessionId: number;
+		automationClip: AudioClipSource;
+	}): Promise<boolean> {
 		const audioContext = this.ensureAudioContext();
 		if (!audioContext) return false;
 
@@ -850,14 +909,15 @@ export class AudioManager {
 		);
 		if (sourceDuration <= 0) return false;
 		node.start(actualStartTimestamp, actualClipOffset, sourceDuration);
-		this.scheduledClipIds.add(clip.id);
+		this.scheduledClipIds.add(automationClip.id);
 
 		this.scheduleClipGainAutomation({
 			audioContext,
-			clip,
+			clip: automationClip,
 			clipGain,
 			startTimestamp: actualStartTimestamp,
-			startLocalTime: actualClipOffset,
+			startLocalTime:
+				actualClipOffset + clip.startTime - automationClip.startTime,
 		});
 
 		this.queuedSources.add(node);
@@ -876,6 +936,11 @@ export class AudioManager {
 		timelineTime: number;
 		targetAhead: number;
 	}): Promise<void> {
+		if (
+			!this.editor.playback.getIsPlaying() ||
+			timelineTime - this.getPlaybackTime() < targetAhead
+		)
+			return Promise.resolve();
 		return new Promise((resolve) => {
 			const checkInterval = setInterval(() => {
 				if (!this.editor.playback.getIsPlaying()) {
@@ -1167,11 +1232,6 @@ export class AudioManager {
 			const outputSamples = Math.ceil(
 				totalSamples * (targetSampleRate / nativeSampleRate),
 			);
-			const offlineContext = new OfflineAudioContext(
-				numChannels,
-				outputSamples,
-				targetSampleRate,
-			);
 			const nativeBuffer = audioContext.createBuffer(
 				numChannels,
 				totalSamples,
@@ -1181,6 +1241,13 @@ export class AudioManager {
 			for (let channel = 0; channel < numChannels; channel++) {
 				nativeBuffer.copyToChannel(nativeChannels[channel], channel);
 			}
+
+			if (nativeSampleRate === targetSampleRate) return nativeBuffer;
+			const offlineContext = new OfflineAudioContext(
+				numChannels,
+				outputSamples,
+				targetSampleRate,
+			);
 
 			const sourceNode = offlineContext.createBufferSource();
 			sourceNode.buffer = nativeBuffer;

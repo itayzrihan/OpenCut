@@ -90,8 +90,7 @@ describe("playback manager", () => {
 		expect(pendingFrame).toBeNull();
 
 		releaseBuffer();
-		await Promise.resolve();
-		await Promise.resolve();
+		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(playback.getIsBuffering()).toBe(false);
 		expect(playback.getIsPlaying()).toBe(true);
@@ -160,4 +159,25 @@ describe("playback manager", () => {
 		expect(playback.getIsPlaying()).toBe(false);
 		expect(pendingFrame).toBeNull();
 	});
+});
+
+test("a failed required preparer does not start silent playback and allows retry", async () => {
+	installMockClock();
+	const playback = createPlaybackManager();
+	let fails = true;
+	playback.registerPlaybackPreparer({
+		id: "audio",
+		prepare: async () => {
+			if (fails) throw new Error("decode failed");
+		},
+	});
+	playback.play();
+	await new Promise((resolve) => setTimeout(resolve, 0));
+	expect(playback.getIsPlaying()).toBe(false);
+	expect(playback.getIsBuffering()).toBe(false);
+	fails = false;
+	playback.play();
+	await new Promise((resolve) => setTimeout(resolve, 0));
+	expect(playback.getIsPlaying()).toBe(true);
+	playback.pause();
 });

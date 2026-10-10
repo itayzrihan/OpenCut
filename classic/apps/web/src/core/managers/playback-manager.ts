@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+import { prepareWithDeadline } from "./playback-preparation";
 import type { FrameRate } from "opencut-wasm";
 import { isRenderPerfEnabled } from "@/diagnostics/render-perf";
 import { publishPerformanceReport } from "@/diagnostics/performance-reports";
@@ -115,7 +117,10 @@ export class PlaybackManager {
 		void Promise.allSettled(
 			[...this.preparers.entries()].map(([id, prepare]) => {
 				const start = performance.now();
-				const pending = prepare(context);
+				const pending = prepareWithDeadline({
+					prepare: () => prepare(context),
+					signal: context.signal,
+				});
 				if (measuring) {
 					const finished = () =>
 						publishPerformanceReport({
@@ -151,7 +156,14 @@ export class PlaybackManager {
 			}
 			for (const result of results) {
 				if (result.status === "rejected") {
-					console.warn("Playback prebuffer failed:", result.reason);
+					this.pause();
+					toast.error("Could not prepare playback", {
+						description:
+							result.reason instanceof Error
+								? result.reason.message
+								: "Try Play again.",
+					});
+					return;
 				}
 			}
 			this.preparationAbortController = null;

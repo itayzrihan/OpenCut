@@ -4,6 +4,8 @@ let closes = 0;
 let reads = 0;
 let resolveTrack: ((track: object | null) => void) | undefined;
 let delayed = false;
+let codec = "pcm-s16be";
+let sampleRate = 48000;
 mock.module("@/media/source", () => ({ createMediaSource: () => ({}) }));
 mock.module("mediabunny", () => ({
 	ALL_FORMATS: [],
@@ -17,7 +19,7 @@ mock.module("mediabunny", () => ({
 				? new Promise<object | null>((resolve) => {
 						resolveTrack = resolve;
 					})
-				: Promise.resolve({});
+				: Promise.resolve({ codec, sampleRate });
 		}
 		dispose() {
 			closes++;
@@ -65,4 +67,37 @@ test("missing audio releases the input and allows a later retry", async () => {
 		await cache.get({ sourceKey: "missing", url: "/source" }),
 	).not.toBeNull();
 	cache.clear();
+});
+
+test("independent windows are enabled only for native-rate PCM", async () => {
+	delayed = false;
+	for (const [format, rate, supported] of [
+		["pcm-s16be", 48000, true],
+		["aac", 48000, false],
+		["pcm-s16be", 44100, false],
+	] as const) {
+		codec = format;
+		sampleRate = rate;
+		const cache = new AudioSinkCache();
+		expect(
+			cache.canReadIndependentRanges({
+				sourceKey: "source",
+				sampleRate: 48000,
+			}),
+		).toBe(false);
+		await cache.get({ sourceKey: "source", url: "/source" });
+		expect(
+			cache.canReadIndependentRanges({
+				sourceKey: "source",
+				sampleRate: 48000,
+			}),
+		).toBe(supported);
+		cache.clear();
+		expect(
+			cache.canReadIndependentRanges({
+				sourceKey: "source",
+				sampleRate: 48000,
+			}),
+		).toBe(false);
+	}
 });

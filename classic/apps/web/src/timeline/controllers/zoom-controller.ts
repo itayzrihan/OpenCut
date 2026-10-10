@@ -13,6 +13,7 @@ export interface ZoomConfig {
 	getTracksScrollEl: () => HTMLDivElement | null;
 	getRulerScrollEl: () => HTMLDivElement | null;
 	getCurrentPlayheadTime: () => MediaTime;
+	getIsPlaybackActive?: () => boolean;
 	seek: (time: MediaTime) => void;
 	setTimelineViewState: (viewState: {
 		zoomLevel: number;
@@ -48,6 +49,7 @@ export class ZoomController {
 	private prePlayheadAnchorScrollLeft = 0;
 	private isInPlayheadAnchorMode = false;
 	private fitLayoutPending = false;
+	private scrollSavePending = false;
 	private scrollSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(deps: { configRef: ZoomConfigRef; initialZoom?: number }) {
@@ -251,20 +253,26 @@ export class ZoomController {
 	}
 
 	saveScrollPosition(): void {
-		if (this.scrollSaveTimeout) {
-			clearTimeout(this.scrollSaveTimeout);
-		}
+		if (this.scrollSaveTimeout) clearTimeout(this.scrollSaveTimeout);
+		this.scrollSaveTimeout = null;
+		this.scrollSavePending = true;
+		// Following playback is presentation work, not a project edit per scroll.
+		if (this.config.getIsPlaybackActive?.()) return;
+		this.scrollSaveTimeout = setTimeout(() => this.flushScrollPosition(), 300);
+	}
 
-		this.scrollSaveTimeout = setTimeout(() => {
-			const scrollElement = this.config.getTracksScrollEl();
-			if (!scrollElement) return;
-
-			this.config.setTimelineViewState({
-				zoomLevel: this.zoomLevelValue,
-				scrollLeft: scrollElement.scrollLeft,
-				playheadTime: this.config.getCurrentPlayheadTime(),
-			});
-		}, 300);
+	flushScrollPosition(): void {
+		if (this.scrollSaveTimeout) clearTimeout(this.scrollSaveTimeout);
+		this.scrollSaveTimeout = null;
+		if (!this.scrollSavePending || this.config.getIsPlaybackActive?.()) return;
+		const scrollElement = this.config.getTracksScrollEl();
+		if (!scrollElement) return;
+		this.scrollSavePending = false;
+		this.config.setTimelineViewState({
+			zoomLevel: this.zoomLevelValue,
+			scrollLeft: scrollElement.scrollLeft,
+			playheadTime: this.config.getCurrentPlayheadTime(),
+		});
 	}
 
 	restoreInitialScrollIfNeeded(

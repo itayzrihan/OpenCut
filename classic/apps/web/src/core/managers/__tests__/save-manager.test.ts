@@ -132,3 +132,19 @@ describe("SaveManager", () => {
 		}
 	});
 });
+
+test("exit flush skips a clean project but persists dirty changes", async () => {
+	const save = mock(async () => {});
+	const manager = createSaveManager({
+		saveCurrentProject: save,
+		debounceMs: 10000,
+	});
+	await manager.flush({ onlyPending: true });
+	expect(save).toHaveBeenCalledTimes(0);
+	manager.markDirty();
+	await manager.flush({ onlyPending: true });
+	expect(save).toHaveBeenCalledTimes(1);
+	await manager.flush({ onlyPending: true });
+	expect(save).toHaveBeenCalledTimes(1);
+	manager.stop();
+});

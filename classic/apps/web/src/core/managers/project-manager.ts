@@ -1,3 +1,4 @@
+import { startOperationTiming } from "@/diagnostics/operation";
 import {
 	isBatchReadOnly,
 	isBatchProjectLocked,
@@ -124,6 +125,7 @@ export function filterAndSortProjectMetadata({
 }
 
 export class ProjectManager {
+	private thumbnailRevision: number | undefined;
 	private activeValue: TProject | null = null;
 	private get active(): TProject | null {
 		return this.activeValue;
@@ -510,6 +512,7 @@ export class ProjectManager {
 		id: string;
 		takeOver?: boolean;
 	}): Promise<boolean> {
+		const finishLoad = startOperationTiming("project.load");
 		const wasReadOnly = !!this.sessionReadOnly;
 		if (this.active && !this.sessionReadOnly) {
 			// Route changes can switch projects without going through the explicit Exit
@@ -693,6 +696,7 @@ export class ProjectManager {
 					console.error("Failed to generate project thumbnail:", error);
 				}
 			}
+			this.thumbnailRevision = this.editor.command.getStateRevision();
 			return true;
 		} catch (error) {
 			if (this.sessionTimer) clearInterval(this.sessionTimer);
@@ -705,6 +709,7 @@ export class ProjectManager {
 			this.isLoading = false;
 			this.notify();
 			this.editor.save.resume();
+			finishLoad();
 		}
 	}
 
@@ -1276,18 +1281,27 @@ export class ProjectManager {
 		if (run && run.phase !== "completed" && run.phase !== "failed")
 			this.editor.command.executeEditingAgentCommand({ type: "pause" });
 
+		const finishThumbnail = startOperationTiming("project.exit.thumbnail");
 		try {
-			await this.updateThumbnailFromTimeline();
+			if (
+				this.thumbnailRevision !== this.editor.command.getStateRevision() ||
+				!this.active.metadata.thumbnail
+			)
+				await this.updateThumbnailFromTimeline();
 		} catch (error) {
 			console.error("Failed to generate project thumbnail on exit:", error);
+		} finally {
+			finishThumbnail();
 		}
 
 		// The project write and command-history write are independent. Start both so
 		// one failure cannot prevent the other from getting its final flush.
+		const finishSave = startOperationTiming("project.exit.flush");
 		const results = await Promise.allSettled([
-			this.editor.save.flush(),
+			this.editor.save.flush({ onlyPending: true }),
 			this.editor.command.flushHistory(),
 		]);
+		finishSave();
 		const failures = results.flatMap((result) =>
 			result.status === "rejected" ? [result.reason] : [],
 		);
@@ -1353,6 +1367,13 @@ export class ProjectManager {
 
 	setTimelineViewState({ viewState }: { viewState: TTimelineViewState }): void {
 		if (!this.active) return;
+		const current = this.getTimelineViewState();
+		if (
+			current.zoomLevel === viewState.zoomLevel &&
+			current.scrollLeft === viewState.scrollLeft &&
+			current.playheadTime === viewState.playheadTime
+		)
+			return;
 		this.active = {
 			...this.active,
 			timelineViewState: viewState ?? undefined,
@@ -1572,6 +1593,7 @@ export class ProjectManager {
 
 		const scene = buildScene({
 			hyperframes: this.editor.renderer.getHyperframesRenderContext(),
+			isPreview: true,
 			tracks,
 			mediaAssets,
 			duration: duration || 1,
@@ -1581,15 +1603,25 @@ export class ProjectManager {
 			activeSceneId: this.editor.scenes.getActiveScene().id,
 		});
 
+		// This derivative is 640x360. Keep logical coordinates unchanged, but
+		// render at thumbnail scale through the same preview/proxy pipeline.
+		const scale = Math.min(
+			1,
+			640 / Math.min(canvasSize.width, canvasSize.height),
+		);
+		const width = Math.max(1, Math.round(canvasSize.width * scale));
+		const height = Math.max(1, Math.round(canvasSize.height * scale));
 		const renderer = new CanvasRenderer({
-			width: canvasSize.width,
-			height: canvasSize.height,
+			width,
+			height,
+			logicalWidth: canvasSize.width,
+			logicalHeight: canvasSize.height,
 			fps: this.active.settings.fps,
 		});
 
 		const tempCanvas = document.createElement("canvas");
-		tempCanvas.width = canvasSize.width;
-		tempCanvas.height = canvasSize.height;
+		tempCanvas.width = width;
+		tempCanvas.height = height;
 
 		await renderer.renderToCanvas({
 			node: scene,
@@ -1628,6 +1660,7 @@ export class ProjectManager {
 		const thumbnailDataUrl = thumbnailCanvas.toDataURL("image/webp", 0.76);
 
 		await this.updateThumbnail({ thumbnail: thumbnailDataUrl });
+		this.thumbnailRevision = this.editor.command.getStateRevision();
 		return true;
 	}
 
