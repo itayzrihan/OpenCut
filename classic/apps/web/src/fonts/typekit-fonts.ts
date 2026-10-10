@@ -91,7 +91,12 @@ export async function loadTypekitFonts({
 	if (!refresh && cachedFonts) return cachedFonts;
 	if (!refresh && fontFetchPromise) return fontFetchPromise;
 
-	fontFetchPromise = fetch(TYPEKIT_STYLESHEET_URL, { cache: "no-store" })
+	// Load Adobe fonts on demand. An unavailable font provider must not block
+	// workspace hydration or leave the font picker waiting indefinitely.
+	fontFetchPromise = fetch(TYPEKIT_STYLESHEET_URL, {
+		cache: "no-store",
+		signal: AbortSignal.timeout(8_000),
+	})
 		.then(async (response) => {
 			if (!response.ok) {
 				throw new Error(`Typekit CSS failed: ${response.status}`);

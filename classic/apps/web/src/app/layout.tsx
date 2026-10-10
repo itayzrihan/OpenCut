@@ -11,7 +11,6 @@ import { baseMetaData } from "./metadata";
 import { BotIdClient } from "botid/client";
 import { webEnv } from "@/env/web";
 import { Inter } from "next/font/google";
-import { TYPEKIT_STYLESHEET_URL } from "@/fonts/typekit-fonts";
 
 const siteFont = Inter({ subsets: ["latin"] });
 
@@ -34,7 +33,6 @@ export default function RootLayout({
 			<head>
 				<Script src="/account-scope.js" strategy="beforeInteractive" />
 				<BotIdClient protect={protectedRoutes} />
-				<link rel="stylesheet" href={TYPEKIT_STYLESHEET_URL} />
 			</head>
 			<body className={`${siteFont.className} font-sans antialiased`}>
 				<ThemeProvider
