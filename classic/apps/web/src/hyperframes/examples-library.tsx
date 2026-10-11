@@ -10,6 +10,8 @@ import type {
 	ExampleSourcePage,
 } from "./example-types";
 import { offerEditingAgentDraft } from "@/editor-agent/draft";
+import { CatalogLivePreview } from "./catalog-live-preview";
+import type { ExampleHit } from "./example-types";
 import { importHyperframesExample } from "./import-example";
 
 /** Disposable projections of the canonical catalog; no second library store. */
@@ -23,6 +25,7 @@ export function HyperframesExamplesLibrary({
 	presentation?: "dialog" | "page";
 }) {
 	const editor = useEditor();
+	const [hovered, setHovered] = useState<ExampleHit | null>(null);
 	const [query, setQuery] = useState("");
 	const [kind, setKind] = useState<"" | "block" | "component" | "example">("");
 	const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -165,16 +168,20 @@ export function HyperframesExamplesLibrary({
 			setProgress("");
 		}
 	};
+	const promptText = selected
+		? (selected.item.prompt.text ??
+			`Use the HyperFrames ${selected.item.kind} “${selected.item.title}” (${selected.item.id}). ${selected.item.description}\n\nRead its pinned source: ${selected.item.sourceUrl}. Adapt its content and colors to my project while preserving the original motion.`)
+		: "";
 	const content = (
 		<>
 			<header className="flex items-start justify-between gap-4 p-4">
 				<div>
 					<h1 className="text-lg font-semibold">
-						HyperFrames examples + prompts
+						Catalog · HyperFrames + OpenCut
 					</h1>
 					<p className="text-sm text-muted-foreground">
-						Find a reference, inspect its source, and adapt it with the editing
-						agent.
+						Hover to play live code. Open a card for its prompt, source and
+						timeline import.
 					</p>
 				</div>
 				{presentation === "page" && (
@@ -266,27 +273,53 @@ export function HyperframesExamplesLibrary({
 						{progress}
 					</p>
 				)}
-				<div className="grid min-h-0 gap-5 md:grid-cols-[minmax(200px,1fr)_2fr]">
-					<div className="max-h-[55vh] space-y-2 overflow-auto">
-						{search?.items.map((item) => (
-							<button
-								key={item.id}
-								type="button"
-								aria-pressed={selected?.item.id === item.id}
-								className="w-full rounded border p-3 text-left hover:bg-accent aria-pressed:bg-accent"
-								onClick={() => void choose(item.id)}
-							>
-								<span className="block text-sm font-medium">{item.title}</span>
-								<span className="text-xs text-muted-foreground">
-									{item.kind} ·{" "}
-									{item.verified
-										? "Verified"
-										: item.reviewStatus === "excluded"
-											? "Excluded after review"
-											: "Captured — validation pending"}
-								</span>
-							</button>
-						))}
+				<div className="grid min-h-0 gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)]">
+					<div className="min-w-0 space-y-3">
+						<div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+							{search?.items.map((item) => (
+								<button
+									key={item.id}
+									type="button"
+									aria-pressed={selected?.item.id === item.id}
+									className="group w-full overflow-hidden rounded-lg border text-left transition-colors hover:bg-accent hover:border-foreground/40 aria-pressed:border-foreground aria-pressed:bg-accent"
+									onPointerEnter={() => setHovered(item)}
+									onPointerLeave={() => setHovered(null)}
+									onFocus={() => setHovered(item)}
+									onBlur={() => setHovered(null)}
+									onClick={() => void choose(item.id)}
+								>
+									<span className="flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-muted to-background">
+										{item.posterUrl ? (
+											// eslint-disable-next-line @next/next/no-img-element -- Optional upstream poster artwork; live source is loaded only on hover.
+											<img
+												src={item.posterUrl}
+												alt=""
+												loading="lazy"
+												onError={(event) => {
+													event.currentTarget.style.display = "none";
+												}}
+												className="h-full w-full object-contain"
+											/>
+										) : (
+											<span className="px-4 text-center text-sm text-muted-foreground">
+												{item.title}
+											</span>
+										)}
+									</span>
+									<span className="block px-3 pt-3 text-sm font-medium">
+										{item.title}
+									</span>
+									<span className="block px-3 pb-3 pt-1 text-xs text-muted-foreground">
+										{item.kind} ·{" "}
+										{item.verified
+											? "Verified"
+											: item.reviewStatus === "excluded"
+												? "Excluded after review"
+												: "Captured — validation pending"}
+									</span>
+								</button>
+							))}
+						</div>
 						{search?.totalMatches === 0 && (
 							<p className="text-sm text-muted-foreground">
 								No matching references. Try another term or include captured
@@ -314,227 +347,204 @@ export function HyperframesExamplesLibrary({
 							</Button>
 						</div>
 					</div>
-					{selected ? (
-						<div className="max-h-[55vh] min-w-0 space-y-3 overflow-auto">
-							<h3 className="font-medium">{selected.item.title}</h3>
-							<p className="text-sm">{selected.item.description}</p>
-							{selected.item.prepared && (
-								<figure>
-									<div className="grid grid-cols-3 gap-2">
-										{selected.item.prepared.evidence.frames.map((frame) => (
-											<div
-												key={`${frame.sha256}:${frame.timeSeconds}`}
-												className="min-w-0"
-											>
-												{/* Immutable bundled reference PNGs; preserve portrait framing. */}
-												{/* eslint-disable-next-line @next/next/no-img-element -- Content-addressed local evidence does not need image optimization. */}
-												<img
-													src={`/hyperframes-reference-previews/${frame.sha256}.png`}
-													alt={`${selected.item.title} local render at ${frame.timeSeconds.toFixed(2)} seconds`}
-													className="h-36 w-full rounded bg-muted object-contain"
-													loading="lazy"
-												/>
-												<p className="text-center text-xs text-muted-foreground">
-													{frame.timeSeconds.toFixed(2)}s
-													{frame.transparentPixels ? " · alpha" : " · opaque"}
-												</p>
-											</div>
-										))}
-									</div>
-									<figcaption className="text-xs text-muted-foreground">
-										Local renders of this prepared package. Sampled frames show
-										the actual source, including its background.
-									</figcaption>
-								</figure>
-							)}
-							{typeof selected.item.preview?.video === "string" &&
-								selected.item.preview.video.startsWith("https://") && (
-									<figure>
-										<video
-											className="max-h-60 w-full rounded bg-black"
-											key={selected.item.id}
-											controls
-											muted
-											preload="none"
-											src={selected.item.preview.video}
-											poster={
-												typeof selected.item.preview.poster === "string" &&
-												selected.item.preview.poster.startsWith("https://")
-													? selected.item.preview.poster
-													: undefined
-											}
-											aria-label={`${selected.item.title} upstream preview`}
-										/>
-										<figcaption className="text-xs text-muted-foreground">
-											Upstream preview. Local verification is reported
-											separately below.
-										</figcaption>
-									</figure>
-								)}
-							<a
-								className="text-sm underline"
-								href={selected.item.sourceUrl}
-								target="_blank"
-								rel="noreferrer"
-							>
-								View pinned upstream source
-							</a>
-							<p className="text-xs text-muted-foreground">
-								Validation: {selected.item.verification.status}.{" "}
-								{selected.item.verification.reviewNote}{" "}
-								{selected.item.verification.missingDeclaredFiles.length}{" "}
-								declared files missing.{" "}
-								{selected.item.kind === "component" &&
-									(selected.item.prepared
-										? "Includes the upstream component demo wrapper."
-										: "This component needs a composition wrapper.")}
-							</p>
-							<details>
-								<summary className="cursor-pointer text-sm">
-									Variables, dependencies and licenses
-								</summary>
-								<pre className="overflow-auto whitespace-pre-wrap text-xs">
-									{JSON.stringify(
-										{
-											parameters: selected.item.parameters,
-											variables: selected.item.variables,
-											dependencies: selected.item.registryDependencies,
-											licenses: selected.item.licensePaths,
-										},
-										null,
-										2,
-									)}
-								</pre>
-							</details>
-							<h4 className="text-sm font-medium">Prompt</h4>
-							<p className="whitespace-pre-wrap text-sm">
-								{selected.item.prompt.text ??
-									"A reviewed prompt is not available for this reference yet."}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								Prompt provenance:{" "}
-								{selected.item.prompt.status === "reconstructed"
-									? "Reconstructed by OpenCut · שוחזר על ידי OpenCut"
-									: selected.item.prompt.status}
-							</p>
-							<label className="block text-sm">
-								Adapt this reference
-								<textarea
-									className="mt-1 block w-full rounded border bg-transparent p-2"
-									maxLength={4000}
-									value={remixBrief}
-									onChange={(event) => setRemixBrief(event.target.value)}
-									placeholder="Describe the changes for your video…"
-								/>
-							</label>
-							<Button
-								variant="outline"
-								disabled={!remixBrief.trim()}
-								onClick={() => {
-									offerEditingAgentDraft({
-										projectId,
-										text: `Use HyperFrames reference ${selected.item.id} from upstream commit ${selected.upstreamCommit}. Read its manifest with hyperframes.examples.read and the relevant files with hyperframes.examples.source.read; use its original or reviewed prompt when available. Captured entries are not certified: check dependencies and licensing, preview the result and verify the composed output before treating the edit as complete.\n\nMy requested remix: ${remixBrief.trim()}`,
-									});
-									onClose();
-								}}
-							>
-								Prepare remix in chat
-							</Button>
-							<label className="block text-sm">
-								Source file
-								<select
-									className="mt-1 block w-full rounded border bg-background p-2"
-									value={page?.filePath ?? ""}
-									disabled={busy}
-									onChange={(event) => {
-										if (event.target.value)
-											void readSource({ filePath: event.target.value });
-									}}
+					<aside className="order-first min-w-0 space-y-4 lg:order-last lg:sticky lg:top-0 lg:self-start">
+						{search && (hovered || selected) ? (
+							<CatalogLivePreview
+								key={`${search.upstreamCommit}:${(hovered ?? selected!.item).id}`}
+								id={(hovered ?? selected!.item).id}
+								title={(hovered ?? selected!.item).title}
+								upstreamCommit={search.upstreamCommit}
+							/>
+						) : (
+							<div className="flex aspect-video items-center justify-center rounded-lg border bg-muted text-sm text-muted-foreground">
+								Hover over a card to preview its live code
+							</div>
+						)}
+						<p className="text-xs text-muted-foreground">
+							Live HTML preview · silent · no video render required
+						</p>
+						{selected ? (
+							<div className="max-h-[50vh] min-w-0 space-y-3 overflow-auto">
+								<h3 className="font-medium">{selected.item.title}</h3>
+								<p className="text-sm">{selected.item.description}</p>
+								<a
+									className="text-sm underline"
+									href={selected.item.sourceUrl}
+									target="_blank"
+									rel="noreferrer"
 								>
-									<option value="">Choose a text file</option>
-									{selected.item.prepared && (
-										<optgroup label="Prepared package">
-											{selected.item.prepared.files.map((file) => (
-												<option
-													key={`@prepared/${file.path}`}
-													value={`@prepared/${file.path}`}
-												>
-													{file.path} (prepared)
-												</option>
-											))}
-										</optgroup>
-									)}
-									{selected.item.files
-										.filter((file) =>
-											/\.(html|css|js|mjs|json|svg|md|txt)$/.test(file.path),
-										)
-										.map((file) => (
-											<option key={file.path} value={file.path}>
-												{file.path} ({file.bytes} bytes)
-											</option>
-										))}
-								</select>
-							</label>
-							{selected.item.prepared && (
-								<div className="space-y-2 rounded border p-3">
-									<p className="text-xs text-muted-foreground">
-										Prepared package: offline rendering, deterministic seeking,
-										import and reopen passed.{" "}
-										{selected.item.prompt.status === "reconstructed"
-											? "A source and sampled-frame prompt review is available. "
-											: "Prompt review remains pending. "}
-										{selected.item.verification.status === "verified"
-											? "Verified as a local reference package. Visual review covers three sampled frames; preview your own remix before export."
-											: "Full library verification remains pending."}
-									</p>
+									View pinned upstream source
+								</a>
+								<p className="text-xs text-muted-foreground">
+									Validation: {selected.item.verification.status}.{" "}
+									{selected.item.verification.reviewNote}{" "}
+									{selected.item.verification.missingDeclaredFiles.length}{" "}
+									declared files missing.{" "}
+									{selected.item.kind === "component" &&
+										(selected.item.prepared
+											? "Includes the upstream component demo wrapper."
+											: "This component needs a composition wrapper.")}
+								</p>
+								<details>
+									<summary className="cursor-pointer text-sm">
+										Variables, dependencies and licenses
+									</summary>
+									<pre className="overflow-auto whitespace-pre-wrap text-xs">
+										{JSON.stringify(
+											{
+												parameters: selected.item.parameters,
+												variables: selected.item.variables,
+												dependencies: selected.item.registryDependencies,
+												licenses: selected.item.licensePaths,
+											},
+											null,
+											2,
+										)}
+									</pre>
+								</details>
+								<div className="flex items-center justify-between">
+									<h4 className="text-sm font-medium">Prompt</h4>
 									<Button
-										disabled={busy || importing}
-										onClick={() => void addPrepared()}
+										size="sm"
+										variant="outline"
+										disabled={!promptText}
+										onClick={() =>
+											void navigator.clipboard
+												.writeText(promptText)
+												.catch(() => setError("Could not copy the prompt"))
+										}
 									>
-										Add prepared example to timeline
+										Copy prompt
 									</Button>
 								</div>
-							)}
-							{busy && (
-								<p role="status" className="text-sm">
-									Checking and reading source…
+								<p className="whitespace-pre-wrap text-sm">{promptText}</p>
+								<p className="text-xs text-muted-foreground">
+									Prompt provenance:{" "}
+									{selected.item.prompt.status === "reconstructed"
+										? "Reconstructed by OpenCut · שוחזר על ידי OpenCut"
+										: selected.item.prompt.text
+											? selected.item.prompt.status
+											: "Suggested usage prompt · based on catalog metadata"}
 								</p>
-							)}
-							{page && (
-								<>
-									<pre
-										className="max-h-64 overflow-auto rounded bg-muted p-3 text-xs"
-										dir="ltr"
+								<label className="block text-sm">
+									Adapt this reference
+									<textarea
+										className="mt-1 block w-full rounded border bg-transparent p-2"
+										maxLength={4000}
+										value={remixBrief}
+										onChange={(event) => setRemixBrief(event.target.value)}
+										placeholder="Describe the changes for your video…"
+									/>
+								</label>
+								<Button
+									variant="outline"
+									disabled={!remixBrief.trim()}
+									onClick={() => {
+										offerEditingAgentDraft({
+											projectId,
+											text: `Use HyperFrames reference ${selected.item.id} from pinned source ${selected.item.sourceUrl} (catalog generation ${selected.upstreamCommit}). Read its manifest with hyperframes.examples.read and the relevant files with hyperframes.examples.source.read; use its original or reviewed prompt when available. Captured entries are not certified: check dependencies and licensing, preview the result and verify the composed output before treating the edit as complete.\n\nMy requested remix: ${remixBrief.trim()}`,
+										});
+										onClose();
+									}}
+								>
+									Prepare remix in chat
+								</Button>
+								<label className="block text-sm">
+									Source file
+									<select
+										className="mt-1 block w-full rounded border bg-background p-2"
+										value={page?.filePath ?? ""}
+										disabled={busy}
+										onChange={(event) => {
+											if (event.target.value)
+												void readSource({ filePath: event.target.value });
+										}}
 									>
-										{page.text}
-									</pre>
-									<div className="flex items-center gap-2">
-										<span className="text-xs">
-											Character {page.offset} of {page.totalCharacters}
-										</span>
+										<option value="">Choose a text file</option>
+										{selected.item.prepared && (
+											<optgroup label="Prepared package">
+												{selected.item.prepared.files.map((file) => (
+													<option
+														key={`@prepared/${file.path}`}
+														value={`@prepared/${file.path}`}
+													>
+														{file.path} (prepared)
+													</option>
+												))}
+											</optgroup>
+										)}
+										{selected.item.files
+											.filter((file) =>
+												/\.(html|css|js|mjs|json|svg|md|txt)$/.test(file.path),
+											)
+											.map((file) => (
+												<option key={file.path} value={file.path}>
+													{file.path} ({file.bytes} bytes)
+												</option>
+											))}
+									</select>
+								</label>
+								{selected.item.prepared && (
+									<div className="space-y-2 rounded border p-3">
+										<p className="text-xs text-muted-foreground">
+											Prepared package: offline rendering, deterministic
+											seeking, import and reopen passed.{" "}
+											{selected.item.prompt.status === "reconstructed"
+												? "A source and sampled-frame prompt review is available. "
+												: "Prompt review remains pending. "}
+											{selected.item.verification.status === "verified"
+												? "Verified as a local reference package. Visual review covers three sampled frames; preview your own remix before export."
+												: "Full library verification remains pending."}
+										</p>
 										<Button
-											size="sm"
-											variant="outline"
-											disabled={busy || page.nextOffset === null}
-											onClick={() => {
-												if (page.nextOffset !== null)
-													void readSource({
-														filePath: page.filePath,
-														sourceOffset: page.nextOffset,
-													});
-											}}
+											disabled={busy || importing}
+											onClick={() => void addPrepared()}
 										>
-											Read next part
+											Add prepared example to timeline
 										</Button>
 									</div>
-								</>
-							)}
-						</div>
-					) : (
-						<p className="text-sm text-muted-foreground">
-							Select a reference to inspect its source and validation status.
-						</p>
-					)}
+								)}
+								{busy && (
+									<p role="status" className="text-sm">
+										Checking and reading source…
+									</p>
+								)}
+								{page && (
+									<>
+										<pre
+											className="max-h-64 overflow-auto rounded bg-muted p-3 text-xs"
+											dir="ltr"
+										>
+											{page.text}
+										</pre>
+										<div className="flex items-center gap-2">
+											<span className="text-xs">
+												Character {page.offset} of {page.totalCharacters}
+											</span>
+											<Button
+												size="sm"
+												variant="outline"
+												disabled={busy || page.nextOffset === null}
+												onClick={() => {
+													if (page.nextOffset !== null)
+														void readSource({
+															filePath: page.filePath,
+															sourceOffset: page.nextOffset,
+														});
+												}}
+											>
+												Read next part
+											</Button>
+										</div>
+									</>
+								)}
+							</div>
+						) : (
+							<p className="text-sm text-muted-foreground">
+								Select a reference to inspect its source and validation status.
+							</p>
+						)}
+					</aside>
 				</div>
 			</div>
 		</>
@@ -560,7 +570,7 @@ export function HyperframesExamplesLibrary({
 				className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
 			>
 				<DialogTitle className="sr-only">
-					HyperFrames examples + prompts
+					Catalog · HyperFrames + OpenCut
 				</DialogTitle>
 				{content}
 			</DialogContent>

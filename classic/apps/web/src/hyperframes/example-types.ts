@@ -1,4 +1,5 @@
 export interface ExampleHit {
+	posterUrl?: string | null;
 	id: string;
 	kind: "block" | "component" | "example";
 	title: string;

@@ -7,5 +7,5 @@ export default async function ExamplesPage({
 	params: Promise<{ project_id: string }>;
 }) {
 	const { project_id } = await params;
-	redirect(`/editor/${encodeURIComponent(project_id)}?view=examples`);
+	redirect(`/editor/${encodeURIComponent(project_id)}?view=catalog`);
 }

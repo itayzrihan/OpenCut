@@ -52,6 +52,7 @@ const nextConfig: NextConfig = {
 	},
 	output: "standalone",
 	outputFileTracingIncludes: {
+        "/api/editor-agent/hyperframes-catalog-preview": ["./.hyperframes-references/**/*"],
 		"/api/editor-agent/hyperframes-references": [
 			"./.hyperframes-references/**/*",
 		],

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
 	memo,
 	useCallback,
@@ -64,7 +65,6 @@ import {
 import { buildElementFromMedia } from "@/timeline/element-utils";
 import { PodcastSyncDialog } from "@/podcast-sync/components/podcast-sync-dialog";
 import { HyperframesImportDialog } from "@/hyperframes/import-dialog";
-import { HyperframesExamplesLibrary } from "@/hyperframes/examples-library";
 import {
 	HyperframesLibraryCard,
 	useHyperframesLibrary,
@@ -213,7 +213,6 @@ function MediaViewContent() {
 		[],
 	);
 	const [hyperframesImportOpen, setHyperframesImportOpen] = useState(false);
-	const [hyperframesExamplesOpen, setHyperframesExamplesOpen] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [podcastSyncAssets, setPodcastSyncAssets] = useState<
 		MediaAsset[] | null
@@ -540,7 +539,6 @@ function MediaViewContent() {
 					onClose={() => setHyperframesImportOpen(false)}
 				/>
 			)}
-			{hyperframesExamplesOpen && <HyperframesExamplesLibrary key={activeProject.metadata.id} projectId={activeProject.metadata.id} onClose={() => setHyperframesExamplesOpen(false)} />}
 
 			<PanelView
 				title="Assets"
@@ -567,7 +565,7 @@ function MediaViewContent() {
 				{...dragProps}
 			>
 				<div className="shrink-0 space-y-2 pb-2">
-					<Button variant="outline" size="sm" onClick={() => setHyperframesExamplesOpen(true)}>HyperFrames examples + prompts</Button>
+					<Button variant="outline" size="sm" asChild><Link href={`/editor/${encodeURIComponent(activeProject.metadata.id)}?view=catalog`}>Catalog · examples + prompts</Link></Button>
 					<div className="flex h-8 items-center gap-2 rounded border px-2">
 						<Search className="size-3.5 shrink-0 text-muted-foreground" />
 						<input

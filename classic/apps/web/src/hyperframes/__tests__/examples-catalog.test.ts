@@ -11,7 +11,7 @@ test("the browser runtime discovers the pinned reference catalog without loading
 			{ query: "גרף", limit: 3 },
 			null,
 		);
-		expect(result.result.data.totalCatalogItems).toBe(394);
+		expect(result.result.data.totalCatalogItems).toBe(454);
 		expect(result.result.data.totalVerified).toBe(150);
 		expect(result.result.data.items.length).toBe(3);
 		expect(result.result.data.searchMode).toBe("lexicalWithHebrewAliases");

@@ -1,0 +1,5884 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "83b6419e975548f54cbe4a771f3ac00b04915757",
+  "registrySha256": "099b0698f52d2b50ec504a8f1a48801235cbe0d52fca2f8857b087cf56e92d44",
+  "registryUrl": "https://raw.githubusercontent.com/heygen-com/hyperframes/83b6419e975548f54cbe4a771f3ac00b04915757/registry/registry.json",
+  "items": [
+    {
+      "id": "ai-answer-rank",
+      "kind": "block",
+      "title": "AI Answer Rank",
+      "description": "Is your brand in the AI answer? A question types into a chat card, the assistant answers with a ranked list of three picks, then re-ranks: the promoted brand slides into its slot, the picks below step down, and the brand row lands with the one accent highlight and a check. For answer-engine and AI-visibility marketing",
+      "tags": [
+        "mock-ui",
+        "ai",
+        "chat",
+        "ranking",
+        "list",
+        "marketing",
+        "ad-template",
+        "square"
+      ],
+      "dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "durationSeconds": 9,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "prompt",
+          "type": "string",
+          "role": "content",
+          "label": "Prompt",
+          "description": "The question typed into the user bubble. Up to about 60 characters keeps it on one or two lines.",
+          "default": "What's the best CRM for a small team?"
+        },
+        {
+          "id": "lead",
+          "type": "string",
+          "role": "content",
+          "label": "Answer lead-in",
+          "description": "The assistant line above the ranked list.",
+          "default": "Here are the top picks:"
+        },
+        {
+          "id": "rowA",
+          "type": "string",
+          "role": "content",
+          "label": "Pick 1",
+          "description": "First pick in the original answer: a product other than the brand this video promotes.",
+          "portrays": [
+            "competitor_name"
+          ],
+          "default": "Brand A"
+        },
+        {
+          "id": "rowB",
+          "type": "string",
+          "role": "content",
+          "label": "Pick 2",
+          "description": "Second pick in the original answer: a product other than the brand this video promotes.",
+          "portrays": [
+            "competitor_name"
+          ],
+          "default": "Brand B"
+        },
+        {
+          "id": "rowC",
+          "type": "string",
+          "role": "content",
+          "label": "Pick 3",
+          "description": "Third pick in the original answer. It drops out of the top three when the brand lands.",
+          "portrays": [
+            "competitor_name"
+          ],
+          "default": "Brand C"
+        },
+        {
+          "id": "brand",
+          "type": "string",
+          "role": "content",
+          "label": "Brand",
+          "description": "The brand this video promotes, by its real name. It slides into the answer and takes the highlight.",
+          "portrays": [
+            "subject_name"
+          ],
+          "default": "Your brand"
+        },
+        {
+          "id": "brandRank",
+          "type": "enum",
+          "role": "content",
+          "label": "Brand rank",
+          "description": "The slot the brand lands in. Picks at and below it step down one place.",
+          "portrays": [
+            "recommended_position"
+          ],
+          "default": "1",
+          "options": [
+            {
+              "value": "1",
+              "label": "1st"
+            },
+            {
+              "value": "2",
+              "label": "2nd"
+            },
+            {
+              "value": "3",
+              "label": "3rd"
+            }
+          ]
+        },
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "description": "Highlight, monogram and check on the brand row, the one accent element.",
+          "default": "#16a34a"
+        },
+        {
+          "id": "ink",
+          "type": "color",
+          "role": "style",
+          "label": "Ink",
+          "description": "Text colour; every placeholder surface is this ink at an alpha step.",
+          "default": "#18181b"
+        },
+        {
+          "id": "ground",
+          "type": "color",
+          "role": "style",
+          "label": "Ground",
+          "description": "Chat card surface; the page around it is the ground tinted toward the ink.",
+          "default": "#fcfcfb"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/ai-answer-rank",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/ai-answer-rank",
+      "manifestSha256": "3f8dba48fc30dc449d8c5c29f7bbc1916a7334e9affc854dbb2cdb3a5e7045da",
+      "files": [
+        {
+          "path": "TEMPLATE.md",
+          "bytes": 1517,
+          "sha256": "eab80aee07319a256acd549a791cf11161b44d261e475152ca8c53db3e5d83a9"
+        },
+        {
+          "path": "ai-answer-rank.html",
+          "bytes": 20408,
+          "sha256": "2356710971ba7d4e565af910d362c70fae81dc75da678bd39619c239f2d53dce"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 3843,
+          "sha256": "3f8dba48fc30dc449d8c5c29f7bbc1916a7334e9affc854dbb2cdb3a5e7045da"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "ai-answer-rank.html",
+          "target": "compositions/ai-answer-rank.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "TEMPLATE.md",
+          "target": "TEMPLATE.md",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "aurora",
+      "kind": "block",
+      "title": "Aurora",
+      "description": "Green and violet aurora curtains ripple across a night sky. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "aurora",
+        "sky"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/aurora",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/aurora",
+      "manifestSha256": "85369fb760db53715ab91ba8b880fd7ecbfb594fd875c6b557bc88893b81e189",
+      "files": [
+        {
+          "path": "aurora.html",
+          "bytes": 758,
+          "sha256": "02d560c5e7fb654b874af3ea2b52941733a4e59f0e8b14550543744833c4c203"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1044,
+          "sha256": "85369fb760db53715ab91ba8b880fd7ecbfb594fd875c6b557bc88893b81e189"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "aurora.html",
+          "target": "compositions/aurora.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/aurora.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "blob",
+      "kind": "block",
+      "title": "Blob",
+      "description": "A soft coral and pink blob with a warm highlight slowly changes shape on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "abstract",
+        "organic",
+        "gradient"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/blob",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/blob",
+      "manifestSha256": "6073e89a8ec286589ed4ab9300d05f2512e2c2156a87504c28c211883286587f",
+      "files": [
+        {
+          "path": "blob.html",
+          "bytes": 752,
+          "sha256": "d87ce5327b32a64f0dffab31a416daa04e8bc14fb32336d33ff533b1942aa333"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1063,
+          "sha256": "6073e89a8ec286589ed4ab9300d05f2512e2c2156a87504c28c211883286587f"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "blob.html",
+          "target": "compositions/blob.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/blob.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "chrome-orb",
+      "kind": "block",
+      "title": "Chrome Orb",
+      "description": "A mirror-chrome orb reflects a bright studio light, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "chrome",
+        "metal",
+        "material"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/chrome-orb",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/chrome-orb",
+      "manifestSha256": "f3bce3aa032f988cf15bd6bbfc4e8121e451c4706fbc1ebf001d8f40d95be395",
+      "files": [
+        {
+          "path": "chrome-orb.html",
+          "bytes": 766,
+          "sha256": "04e68fa062d1f5c06b0b4c03ae26897a11cd8b98b26b216670ec13f45828d200"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1067,
+          "sha256": "f3bce3aa032f988cf15bd6bbfc4e8121e451c4706fbc1ebf001d8f40d95be395"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "chrome-orb.html",
+          "target": "compositions/chrome-orb.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/chrome-orb.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cinemagraph",
+      "kind": "block",
+      "title": "Cinemagraph",
+      "description": "A still photograph with one living region: the frame is frozen while a single feathered window keeps moving - here, steam rising over a cup - drawn from the seek time alone with a period that divides the duration, so the render loops seamlessly. Swap the placeholder scene for a freeze-frame still masked over a looping video to cinemagraph real footage.",
+      "tags": [
+        "effect",
+        "cinemagraph",
+        "photo",
+        "loop",
+        "freeze-frame"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 10,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/cinemagraph",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/cinemagraph",
+      "manifestSha256": "ac019eed975a2001adb8f79fb943e8f9af440632304158560e43886f93848eb9",
+      "files": [
+        {
+          "path": "cinemagraph.html",
+          "bytes": 9753,
+          "sha256": "8b2a982b91d9e8fa2a9040069536915f0c3b7a4cc506581729e584b1a77218ae"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 825,
+          "sha256": "ac019eed975a2001adb8f79fb943e8f9af440632304158560e43886f93848eb9"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cinemagraph.html",
+          "target": "compositions/cinemagraph.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "color-wheel",
+      "kind": "block",
+      "title": "Color Wheel",
+      "description": "A wide gradient slides slowly through the colours of the rainbow. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "gradient",
+        "rainbow",
+        "color"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/color-wheel",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/color-wheel",
+      "manifestSha256": "3dde949b9f35af5c06c80eb46ab2953cd6a6ef34b0ca42c481e4b12f86dc6324",
+      "files": [
+        {
+          "path": "color-wheel.html",
+          "bytes": 772,
+          "sha256": "5736912d019e1efcdba4d8337bf1d8a3b6f4f482aec79204582646622daa161f"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1081,
+          "sha256": "3dde949b9f35af5c06c80eb46ab2953cd6a6ef34b0ca42c481e4b12f86dc6324"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "color-wheel.html",
+          "target": "compositions/color-wheel.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/color-wheel.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "exploded-stack",
+      "kind": "block",
+      "title": "Exploded Stack",
+      "description": "Isometric layer plates explode apart with a label beside each layer, hold, then collapse back into one stack. Built for architecture and system diagrams.",
+      "tags": [
+        "3d-object",
+        "three-js",
+        "webgl",
+        "isometric",
+        "exploded-view",
+        "layers",
+        "diagram",
+        "architecture"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 5,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/exploded-stack",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/exploded-stack",
+      "manifestSha256": "99d0adbfe014edae087c0c4c2b1a57a62b0eef68a5357bfdccaa8172cc504713",
+      "files": [
+        {
+          "path": "exploded-stack.html",
+          "bytes": 15293,
+          "sha256": "db1773cd9f93ea8ea875444f7877fed64966fd70bada6dedc9f008eadcdd82d5"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 724,
+          "sha256": "99d0adbfe014edae087c0c4c2b1a57a62b0eef68a5357bfdccaa8172cc504713"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "exploded-stack.html",
+          "target": "compositions/exploded-stack.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "extruded-logo",
+      "kind": "block",
+      "title": "Extruded Logo",
+      "description": "Beveled 3D letters flip up one by one, the word swings so light runs across the bevels, then settles for a readable hold. Chrome, gold or matte.",
+      "tags": [
+        "3d-object",
+        "three-js",
+        "webgl",
+        "logo",
+        "text",
+        "extruded",
+        "title-card"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 5,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/extruded-logo",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/extruded-logo",
+      "manifestSha256": "0ccaf8cefaf7518e0c5ba73ff9f4f8b1816502a0d9f64bfbaa84432f299c3cb7",
+      "files": [
+        {
+          "path": "assets/fonts/Geist-Bold.typeface.json",
+          "bytes": 32737,
+          "sha256": "0413a22e5ea454b0dfcc7283d86e651305d4e47f53abe55f78fe3f858213fc63"
+        },
+        {
+          "path": "assets/fonts/Geist-OFL.txt",
+          "bytes": 4368,
+          "sha256": "930853ee1daa68554d9e35c8a9175affb74f699fad9a5da6ee5ebe76379d9137"
+        },
+        {
+          "path": "extruded-logo.html",
+          "bytes": 12271,
+          "sha256": "69c53cb6c43f8b5faf5eabe148cc022d1c173a416b707475e64e7f7fa3069f52"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 972,
+          "sha256": "0ccaf8cefaf7518e0c5ba73ff9f4f8b1816502a0d9f64bfbaa84432f299c3cb7"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "extruded-logo.html",
+          "target": "compositions/extruded-logo.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "assets/fonts/Geist-Bold.typeface.json",
+          "target": "compositions/assets/fonts/Geist-Bold.typeface.json",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "assets/fonts/Geist-OFL.txt",
+          "target": "compositions/assets/fonts/Geist-OFL.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "falling-lines",
+      "kind": "block",
+      "title": "Falling Lines",
+      "description": "White lines fall down the frame at varied speeds, each fading into a trail. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "texture",
+        "lines",
+        "rain",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/falling-lines",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/falling-lines",
+      "manifestSha256": "4992bbe752d18d250cec678fdc5038ffa7745df6c0aa656c52a66b6653667bd5",
+      "files": [
+        {
+          "path": "falling-lines.html",
+          "bytes": 778,
+          "sha256": "394014d1f4ca4ac3cc20162faf3e9a36086d9477b90c496cd40922d5cd4019a2"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1111,
+          "sha256": "4992bbe752d18d250cec678fdc5038ffa7745df6c0aa656c52a66b6653667bd5"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "falling-lines.html",
+          "target": "compositions/falling-lines.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/falling-lines.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "flowing-gradient",
+      "kind": "block",
+      "title": "Flowing Gradient",
+      "description": "Bands of orange and violet flow across the frame in a smooth gradient. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "gradient",
+        "color",
+        "flow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/flowing-gradient",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/flowing-gradient",
+      "manifestSha256": "ffbef85e613b59cfe25075857e1173991d67d89dd1a13a59ca40cba97a247ccf",
+      "files": [
+        {
+          "path": "flowing-gradient.html",
+          "bytes": 787,
+          "sha256": "fba75b937108db6c9b5281e2d946b8e96d3cafe7fed8befd60077b373754e7e1"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1108,
+          "sha256": "ffbef85e613b59cfe25075857e1173991d67d89dd1a13a59ca40cba97a247ccf"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "flowing-gradient.html",
+          "target": "compositions/flowing-gradient.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/flowing-gradient.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "fractal-noise",
+      "kind": "block",
+      "title": "Fractal Noise",
+      "description": "Soft grey fractal noise drifts across the frame like slow clouds. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "noise",
+        "texture",
+        "clouds"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/fractal-noise",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/fractal-noise",
+      "manifestSha256": "6c31694a1bd3e58d84c15376add26cc6dec72a5bcdc88ca6689e12b58388164d",
+      "files": [
+        {
+          "path": "fractal-noise.html",
+          "bytes": 778,
+          "sha256": "5d871bc3bd4ea10aaa9023a9c7f108bc0301612f54b0833a4a6640afa07b68bd"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1089,
+          "sha256": "6c31694a1bd3e58d84c15376add26cc6dec72a5bcdc88ca6689e12b58388164d"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "fractal-noise.html",
+          "target": "compositions/fractal-noise.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/fractal-noise.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "frost",
+      "kind": "block",
+      "title": "Frost",
+      "description": "A frozen blue orb with frost creeping in from its edge, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "orb",
+        "ice",
+        "frost",
+        "material"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/frost",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/frost",
+      "manifestSha256": "2f238bf18a95b554414754ec6963dccf43a88b0be5c24e8dbd904f228deb095e",
+      "files": [
+        {
+          "path": "frost.html",
+          "bytes": 755,
+          "sha256": "63c7a115a882031c1e199388ec72ff53e5f0341697706d6012a47e2dfcaed1e3"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1040,
+          "sha256": "2f238bf18a95b554414754ec6963dccf43a88b0be5c24e8dbd904f228deb095e"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "frost.html",
+          "target": "compositions/frost.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/frost.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "gabor-noise",
+      "kind": "block",
+      "title": "Gabor Noise",
+      "description": "Grey streaky noise drifts across the frame like a moving fingerprint. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "texture",
+        "noise",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/gabor-noise",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/gabor-noise",
+      "manifestSha256": "4a88bd5bcc3527d6ee7070218e3a4b098798ac9bfcef9be3d1bd4608b46cb382",
+      "files": [
+        {
+          "path": "gabor-noise.html",
+          "bytes": 772,
+          "sha256": "4f6551038a372440aec43fa78bc020540cca4e541bb5a3b8b9079ad6e7e6a111"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1087,
+          "sha256": "4a88bd5bcc3527d6ee7070218e3a4b098798ac9bfcef9be3d1bd4608b46cb382"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "gabor-noise.html",
+          "target": "compositions/gabor-noise.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/gabor-noise.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "glass-hero",
+      "kind": "block",
+      "title": "Glass Hero",
+      "description": "A solid glass object rises in front of a giant headline and keeps turning, so the type bends and splits into colour through it.",
+      "tags": [
+        "3d-object",
+        "three-js",
+        "webgl",
+        "glass",
+        "refraction",
+        "hero",
+        "title-card"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 5,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/glass-hero",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/glass-hero",
+      "manifestSha256": "a987f42dd14be91db236909f34b7e6858accdaf659585e04864caec29c5d2f8e",
+      "files": [
+        {
+          "path": "glass-hero.html",
+          "bytes": 10050,
+          "sha256": "94b37462c917c6b35ef53418bfa53a3fc6f14c345a740822a291765404c1a05f"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 624,
+          "sha256": "a987f42dd14be91db236909f34b7e6858accdaf659585e04864caec29c5d2f8e"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "glass-hero.html",
+          "target": "compositions/glass-hero.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "godrays",
+      "kind": "block",
+      "title": "Godrays",
+      "description": "Rays of light fan out from a corner and drift across a deep blue field. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "rays"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/godrays",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/godrays",
+      "manifestSha256": "5d19eca9cb068399860f44d61a4a050c99e7b8865347000becfb1a43265bfb62",
+      "files": [
+        {
+          "path": "godrays.html",
+          "bytes": 761,
+          "sha256": "fdfaa1e4e92f34604fe2b3a1f437f79f3943c6d3269a818c4ae36c749a57ade3"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1052,
+          "sha256": "5d19eca9cb068399860f44d61a4a050c99e7b8865347000becfb1a43265bfb62"
+        },
+        {
+          "path": "source/README.md",
+          "bytes": 888,
+          "sha256": "d3a1a2e2d78fecd260eb00391f523b79e9576913d027a4d675c9e236328c5dd2"
+        },
+        {
+          "path": "source/build.mjs",
+          "bytes": 3663,
+          "sha256": "95e89755c0018abab3189558f08dab710ddefccf7c5a669715b3064b75aed7fc"
+        },
+        {
+          "path": "source/driver.js",
+          "bytes": 2284,
+          "sha256": "2a795ce8265ea2d4cbd1c8887b01ba91b66b9e583d91bf49492ca384cde0124c"
+        },
+        {
+          "path": "source/package-lock.json",
+          "bytes": 16947,
+          "sha256": "7206adbcc6063dcf857cdee109bc5e1de5f687d373708fb828214beca877f9f0"
+        },
+        {
+          "path": "source/package.json",
+          "bytes": 202,
+          "sha256": "e71f02b451d2762a05fde98372c1f4ca8bf614c08d9fdcd3157e8c2e46f1338b"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "godrays.html",
+          "target": "compositions/godrays.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/godrays.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "goo",
+      "kind": "block",
+      "title": "Goo",
+      "description": "A glossy green liquid ball whose surface bulges and ripples like wet goo, centred on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "liquid",
+        "3d",
+        "organic",
+        "orb"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/goo",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/goo",
+      "manifestSha256": "0296f1bd32710e46ffdd105102a16d687f66e07b2d8d77b9728b36548e60c733",
+      "files": [
+        {
+          "path": "goo.html",
+          "bytes": 749,
+          "sha256": "61750986f226301fe192843768057d0d6fefd67aa4c53a16e0845c0898fb93ef"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1055,
+          "sha256": "0296f1bd32710e46ffdd105102a16d687f66e07b2d8d77b9728b36548e60c733"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "goo.html",
+          "target": "compositions/goo.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/goo.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "gooey-split",
+      "kind": "block",
+      "title": "Gooey Split",
+      "description": "A dot splits into a three-dot menu with a gooey metaball neck, spins into a swirl mark under directional shutter motion blur, then breaks back into three dots and merges into one. The goo is an SVG blur-and-threshold filter on the dots; the blur integrates each part along its real trajectory, so the smear follows the direction and speed of the spin.",
+      "tags": [
+        "effect",
+        "gooey",
+        "metaball",
+        "motion-blur",
+        "morph",
+        "logo",
+        "icon"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 4.7,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/gooey-split",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/gooey-split",
+      "manifestSha256": "b6eeb12d9a859a0a48665907eee53b7de620478dff04aff64b6b75a46394bd1f",
+      "files": [
+        {
+          "path": "gooey-split.html",
+          "bytes": 39646,
+          "sha256": "4752d7d73f59aa151105234531c913538481700166b74f1078beb3af71b27db2"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 836,
+          "sha256": "b6eeb12d9a859a0a48665907eee53b7de620478dff04aff64b6b75a46394bd1f"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "gooey-split.html",
+          "target": "compositions/gooey-split.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "heatmap",
+      "kind": "block",
+      "title": "Heatmap",
+      "description": "Thermal colours flow through a glowing orb, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "heat",
+        "thermal",
+        "glow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/heatmap",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/heatmap",
+      "manifestSha256": "09eaeb9893239fd23ad05264e07565630e28514ba64a62f28340811d61012f89",
+      "files": [
+        {
+          "path": "heatmap.html",
+          "bytes": 761,
+          "sha256": "2cf03f5361a522c5d48611703f355ef323aa22ffd1d5d57f6d7a88d706c2777a"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1040,
+          "sha256": "09eaeb9893239fd23ad05264e07565630e28514ba64a62f28340811d61012f89"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "heatmap.html",
+          "target": "compositions/heatmap.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/heatmap.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "hologram",
+      "kind": "block",
+      "title": "Hologram",
+      "description": "A pale blue holographic orb with scan rings and flicker, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "hologram",
+        "sci-fi",
+        "blue"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/hologram",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/hologram",
+      "manifestSha256": "81b4ed9ebb26bed5d364a4fe72629af8c059fa27e2cee85aa3fffb4ca543485b",
+      "files": [
+        {
+          "path": "hologram.html",
+          "bytes": 764,
+          "sha256": "4b0a376fd99ab1ec0fe7fda515fee7959092e9618915ccad418fec7547f1669d"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1061,
+          "sha256": "81b4ed9ebb26bed5d364a4fe72629af8c059fa27e2cee85aa3fffb4ca543485b"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "hologram.html",
+          "target": "compositions/hologram.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/hologram.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "holographic",
+      "kind": "block",
+      "title": "Holographic",
+      "description": "An iridescent foil orb with a shifting rainbow sheen, centred on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "holographic",
+        "iridescent",
+        "rainbow",
+        "orb"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/holographic",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/holographic",
+      "manifestSha256": "44b67f09fd250ae9c87ae253c1bfc5a5bda39d4fb0fa68f5a02b5e5812d0ba8c",
+      "files": [
+        {
+          "path": "holographic.html",
+          "bytes": 773,
+          "sha256": "90aa626b536bb293dedf3c5b6be0152c0d4a77a998d4ad66fd952e9b062d1cbf"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1088,
+          "sha256": "44b67f09fd250ae9c87ae253c1bfc5a5bda39d4fb0fa68f5a02b5e5812d0ba8c"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "holographic.html",
+          "target": "compositions/holographic.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/holographic.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "lens-flare",
+      "kind": "block",
+      "title": "Lens Flare",
+      "description": "A camera lens flare: a bright star burst and a faint rainbow halo that slowly shimmer on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "flare",
+        "glow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/lens-flare",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/lens-flare",
+      "manifestSha256": "851a76ddb9148562b1d4fe5b15530c882eb2276903306e09b55f8e1221ea80c6",
+      "files": [
+        {
+          "path": "lens-flare.html",
+          "bytes": 769,
+          "sha256": "cc3d5ce2053a343d5af3e0c1be10ea9079e3e5035ab338aaea89406aef55ef8d"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1100,
+          "sha256": "851a76ddb9148562b1d4fe5b15530c882eb2276903306e09b55f8e1221ea80c6"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "lens-flare.html",
+          "target": "compositions/lens-flare.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/lens-flare.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "light-edge",
+      "kind": "block",
+      "title": "Light Edge",
+      "description": "Purple and cyan light races around the edge of an orb on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "light",
+        "glow",
+        "neon",
+        "edge"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/light-edge",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/light-edge",
+      "manifestSha256": "dd7537f5e217b75f48d74334d8bf4c3b68f2852d380df4d2bc9675fcb356328e",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "light-edge.html",
+          "bytes": 769,
+          "sha256": "896659288db8e5d936ab79c16f9c0d32b0b5b1bed9041576674c1d03499cca2e"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1071,
+          "sha256": "dd7537f5e217b75f48d74334d8bf4c3b68f2852d380df4d2bc9675fcb356328e"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "light-edge.html",
+          "target": "compositions/light-edge.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/light-edge.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "liquid-metal",
+      "kind": "block",
+      "title": "Liquid Metal",
+      "description": "A chrome sphere ripples and flows like molten metal on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "metal",
+        "chrome",
+        "liquid",
+        "sphere"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/liquid-metal",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/liquid-metal",
+      "manifestSha256": "21b3b227b952cb332422cd0557bd974af9ad19327abd3eb888991e96bebdb250",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "liquid-metal.html",
+          "bytes": 775,
+          "sha256": "450f5fe2c53f8159b9e29a6c1eb7a636861f0d9545a13e3e3732e5602e49a7e8"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1085,
+          "sha256": "21b3b227b952cb332422cd0557bd974af9ad19327abd3eb888991e96bebdb250"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "liquid-metal.html",
+          "target": "compositions/liquid-metal.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/liquid-metal.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "marble",
+      "kind": "block",
+      "title": "Marble",
+      "description": "Ink-dark veins wind through white in a marbled pattern that slowly shifts. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "marble",
+        "texture"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/marble",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/marble",
+      "manifestSha256": "b07c50612f508abca7351626803ad56715586f63dc9125c903e24d46346f9832",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "marble.html",
+          "bytes": 758,
+          "sha256": "22d51f5988b19cc75e462d652fa655df60ceb98e1e05f16459bb96ea35375ae7"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1054,
+          "sha256": "b07c50612f508abca7351626803ad56715586f63dc9125c903e24d46346f9832"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "marble.html",
+          "target": "compositions/marble.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/marble.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "mesh-gradient",
+      "kind": "block",
+      "title": "Mesh Gradient",
+      "description": "Soft coral, orange and violet fields blend and drift in a mesh gradient. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "gradient",
+        "color"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/mesh-gradient",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/mesh-gradient",
+      "manifestSha256": "6fb7afdaf1b43901d8f9e8d017f18503e104e665ece4cadee53afb95bebb8a21",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "mesh-gradient.html",
+          "bytes": 778,
+          "sha256": "2139779300cd01858ff6c9b31c7018cce0d1cbcf3e5560d2dd561d0afcd0fc8f"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1087,
+          "sha256": "6fb7afdaf1b43901d8f9e8d017f18503e104e665ece4cadee53afb95bebb8a21"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "mesh-gradient.html",
+          "target": "compositions/mesh-gradient.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/mesh-gradient.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "nebula",
+      "kind": "block",
+      "title": "Nebula",
+      "description": "A small world of pink and blue gas swirls inside a sphere on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "space",
+        "nebula",
+        "sphere"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/nebula",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/nebula",
+      "manifestSha256": "7c760ef7a4b01a9561df1b3c710c9553d58471f0e2473d6edd6d09d8a1dbeaef",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "nebula.html",
+          "bytes": 758,
+          "sha256": "31c60eb6575dafa583b903f9bd75d3a94d16a8bd3b979dcda0c6863775b5e0ed"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1051,
+          "sha256": "7c760ef7a4b01a9561df1b3c710c9553d58471f0e2473d6edd6d09d8a1dbeaef"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "nebula.html",
+          "target": "compositions/nebula.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/nebula.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "obsidian",
+      "kind": "block",
+      "title": "Obsidian",
+      "description": "A dark glass orb catches pink and cyan iridescent light on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "glass",
+        "iridescent",
+        "dark"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/obsidian",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/obsidian",
+      "manifestSha256": "c7bcd9505848eb0eb28be2abb01982a2410c62e942a9599e2047c0328812f382",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "obsidian.html",
+          "bytes": 764,
+          "sha256": "655be1e8e8bd3325b6703bb363ad82262d21baf7aac5cf62ea7840c761057b3b"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1061,
+          "sha256": "c7bcd9505848eb0eb28be2abb01982a2410c62e942a9599e2047c0328812f382"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "obsidian.html",
+          "target": "compositions/obsidian.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/obsidian.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "plasma",
+      "kind": "block",
+      "title": "Plasma",
+      "description": "Deep violet plasma folds and churns across the whole frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "texture",
+        "plasma",
+        "purple"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/plasma",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/plasma",
+      "manifestSha256": "1ef4d13e9d9e4312ad370306a5f4934f7d1e22df80e971ea2f116ea907fff640",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "plasma.html",
+          "bytes": 758,
+          "sha256": "445a73b44e92b13c8417ffaefaa209610874587e56ffea8d900badbf8d7e1352"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1049,
+          "sha256": "1ef4d13e9d9e4312ad370306a5f4934f7d1e22df80e971ea2f116ea907fff640"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "plasma.html",
+          "target": "compositions/plasma.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/plasma.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "plastic",
+      "kind": "block",
+      "title": "Plastic",
+      "description": "A glossy white plastic orb with soft studio reflections, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "plastic",
+        "material",
+        "white"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/plastic",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/plastic",
+      "manifestSha256": "518bd125f0a005c761ccaa42ad52a5de0ee2fae582162b1e61784e17c58b7a2a",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "plastic.html",
+          "bytes": 761,
+          "sha256": "73d11ff76b58583277dd33ad5c354a8b1d1a687185611e9f0bfbdc6782f0b60b"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1058,
+          "sha256": "518bd125f0a005c761ccaa42ad52a5de0ee2fae582162b1e61784e17c58b7a2a"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "plastic.html",
+          "target": "compositions/plastic.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/plastic.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "prism",
+      "kind": "block",
+      "title": "Prism",
+      "description": "A white beam of light splits into a slowly turning rainbow. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "prism",
+        "rainbow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/prism",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/prism",
+      "manifestSha256": "27918986918e7a247a5a6944469108ea37c28c0f4be7f3cd9d843990a2bf7f70",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "prism.html",
+          "bytes": 755,
+          "sha256": "8e30f5f08ec6b2d9122b59c5ef70729b42fd4b1a1a220297d4f2b682954588e4"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1042,
+          "sha256": "27918986918e7a247a5a6944469108ea37c28c0f4be7f3cd9d843990a2bf7f70"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "prism.html",
+          "target": "compositions/prism.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/prism.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "product-turntable",
+      "kind": "block",
+      "title": "Product Turntable",
+      "description": "A product turns a full revolution on a studio plinth in a seamless loop. Drop in a GLB or glTF model, or keep the built-in drink can with your own label.",
+      "tags": [
+        "3d-object",
+        "three-js",
+        "webgl",
+        "product",
+        "turntable",
+        "glb",
+        "loop"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 6,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/product-turntable",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/product-turntable",
+      "manifestSha256": "d29e7114b8af07acd0c309da2f5d44f0630d6eeab9fb79ea00047e850a650096",
+      "files": [
+        {
+          "path": "product-turntable.html",
+          "bytes": 13493,
+          "sha256": "ee2694cd507206594edbd62395677cfaffed4a1a9a3ad40b1688b513edb249c1"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 672,
+          "sha256": "d29e7114b8af07acd0c309da2f5d44f0630d6eeab9fb79ea00047e850a650096"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "product-turntable.html",
+          "target": "compositions/product-turntable.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "ripples",
+      "kind": "block",
+      "title": "Ripples",
+      "description": "Concentric rings ripple outward from the centre, white on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "texture",
+        "rings",
+        "waves",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/ripples",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/ripples",
+      "manifestSha256": "f3da4c7b50192cfe7f9eef45d8b7de1e3f046e4a63e2ec9b59e46b636ec2a0ba",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1071,
+          "sha256": "f3da4c7b50192cfe7f9eef45d8b7de1e3f046e4a63e2ec9b59e46b636ec2a0ba"
+        },
+        {
+          "path": "ripples.html",
+          "bytes": 761,
+          "sha256": "2a43848513f9e532a81ae37d785c1d73269faddf892f0fa55d89e3f575ec2775"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "ripples.html",
+          "target": "compositions/ripples.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ripples.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "sine-wave",
+      "kind": "block",
+      "title": "Sine Wave",
+      "description": "A glowing white sine wave travels across a black frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "wave",
+        "line",
+        "glow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/sine-wave",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/sine-wave",
+      "manifestSha256": "cbdd006a8659d27ea0ccbb2a40b5bb08f30508b1e39865df68e403870309e6f3",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1053,
+          "sha256": "cbdd006a8659d27ea0ccbb2a40b5bb08f30508b1e39865df68e403870309e6f3"
+        },
+        {
+          "path": "sine-wave.html",
+          "bytes": 766,
+          "sha256": "d937d7bb5fbb9280ae22a9c7abb9f4f869bffe352a95f07910731a917f1d9138"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "sine-wave.html",
+          "target": "compositions/sine-wave.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/sine-wave.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "snow",
+      "kind": "block",
+      "title": "Snow",
+      "description": "Seek-safe falling-snow overlay: sparse or dense flakes drift down with size, speed and opacity correlated per flake for depth, radial-masked so the frame center stays clear",
+      "tags": [
+        "snow",
+        "snowfall",
+        "winter",
+        "weather",
+        "overlay",
+        "ambient",
+        "particles",
+        "media-treatment-overlay",
+        "loopable"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 6,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "density",
+          "type": "enum",
+          "role": "style",
+          "label": "Density",
+          "description": "Flake count across the frame.",
+          "default": "sparse",
+          "options": [
+            {
+              "value": "sparse",
+              "label": "Sparse"
+            },
+            {
+              "value": "dense",
+              "label": "Dense"
+            }
+          ]
+        },
+        {
+          "id": "speed",
+          "type": "enum",
+          "role": "style",
+          "label": "Fall speed",
+          "description": "How fast flakes fall and sway.",
+          "default": "calm",
+          "options": [
+            {
+              "value": "calm",
+              "label": "Calm"
+            },
+            {
+              "value": "gust",
+              "label": "Gust"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/snow",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/snow",
+      "manifestSha256": "abe3adbf358bb8e18c40eab8e4eaf61ddc2ca47e95f69ab42d6825700515a633",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 4569,
+          "sha256": "2c24c979451c6e3ccfa81b83f7a0a4fe1e6a8b063937c9b99f59e1333366ed52"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1566,
+          "sha256": "abe3adbf358bb8e18c40eab8e4eaf61ddc2ca47e95f69ab42d6825700515a633"
+        },
+        {
+          "path": "snow.html",
+          "bytes": 8235,
+          "sha256": "40ab276706377dd4d35d155ae80da818129f0f1d324db01b54b17448c8f67879"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "snow.html",
+          "target": "compositions/snow.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/snow.png",
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/snow.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "spiral",
+      "kind": "block",
+      "title": "Spiral",
+      "description": "A bold black and white spiral turns in the frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "pattern",
+        "spiral",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/spiral",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/spiral",
+      "manifestSha256": "d6648b579cd227ebb69dbf24bc68b5b6f00bfbbb7bfd6831c38369f9a33a3d8e",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1043,
+          "sha256": "d6648b579cd227ebb69dbf24bc68b5b6f00bfbbb7bfd6831c38369f9a33a3d8e"
+        },
+        {
+          "path": "spiral.html",
+          "bytes": 758,
+          "sha256": "2a272c4ab13ec616edd2c13db253ab5eb4d93179e6566d1c5a1e57972afc1cdd"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "spiral.html",
+          "target": "compositions/spiral.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/spiral.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "starfield",
+      "kind": "block",
+      "title": "Starfield",
+      "description": "Seek-safe night-sky overlay: sparse or dense stars in three size tiers that twinkle and drift in two parallax layers, radial-masked to keep the frame center clear",
+      "tags": [
+        "starfield",
+        "night-sky",
+        "stars",
+        "twinkle",
+        "sky",
+        "weather",
+        "overlay",
+        "ambient",
+        "particles",
+        "media-treatment-overlay",
+        "loopable"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 6,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "density",
+          "type": "enum",
+          "role": "style",
+          "label": "Density",
+          "description": "Star count across the frame.",
+          "default": "sparse",
+          "options": [
+            {
+              "value": "sparse",
+              "label": "Sparse"
+            },
+            {
+              "value": "dense",
+              "label": "Dense"
+            }
+          ]
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Tone",
+          "description": "Star color mix.",
+          "default": "warm",
+          "options": [
+            {
+              "value": "warm",
+              "label": "Warm (white + yellow)"
+            },
+            {
+              "value": "cool",
+              "label": "Cool (white + blue)"
+            },
+            {
+              "value": "white",
+              "label": "White only"
+            }
+          ]
+        },
+        {
+          "id": "speed",
+          "type": "enum",
+          "role": "style",
+          "label": "Twinkle speed",
+          "description": "How fast stars pulse.",
+          "default": "slow",
+          "options": [
+            {
+              "value": "slow",
+              "label": "Slow"
+            },
+            {
+              "value": "fast",
+              "label": "Fast"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/starfield",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/starfield",
+      "manifestSha256": "abea97b2ad01591a3ecb90fca8d7a64e79468508be8c40abdf52396f1848568f",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 2735,
+          "sha256": "1719b89e9add864151719fbdc71d3966378b769214dc855f5860a9010a6a5118"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1979,
+          "sha256": "abea97b2ad01591a3ecb90fca8d7a64e79468508be8c40abdf52396f1848568f"
+        },
+        {
+          "path": "starfield.html",
+          "bytes": 7257,
+          "sha256": "3465d75b46e12c5e770b4caaf65fa81e7fd0b88aefed9ff5c56a37d64ae6b199"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "starfield.html",
+          "target": "compositions/starfield.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/starfield.png",
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/starfield.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "strands",
+      "kind": "block",
+      "title": "Strands",
+      "description": "Thin ribbons of pink and blue light weave across a black field. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "lines",
+        "ribbons"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/strands",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/strands",
+      "manifestSha256": "a45cd63f58d4cb0c5a3ad3ed49589398daf230609179b5217ae43e2d97847868",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1056,
+          "sha256": "a45cd63f58d4cb0c5a3ad3ed49589398daf230609179b5217ae43e2d97847868"
+        },
+        {
+          "path": "strands.html",
+          "bytes": 761,
+          "sha256": "323f85e0cd952c532efd95a24ae7894e91e112c0d43a0deee3366feef4731a54"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "strands.html",
+          "target": "compositions/strands.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/strands.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "stripes",
+      "kind": "block",
+      "title": "Stripes",
+      "description": "Bold black and white diagonal stripes slide across the frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "pattern",
+        "stripes",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/stripes",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/stripes",
+      "manifestSha256": "3584efa1763f7bae3000e85a5379641fbdff9d32a08ec370f078b941a1c3128f",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1061,
+          "sha256": "3584efa1763f7bae3000e85a5379641fbdff9d32a08ec370f078b941a1c3128f"
+        },
+        {
+          "path": "stripes.html",
+          "bytes": 761,
+          "sha256": "db8ada6f0c554e4eb2f02d7e6fd39ea06408a58602e23ec399bfdaaa3902fe84"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "stripes.html",
+          "target": "compositions/stripes.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/stripes.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "sun-burst",
+      "kind": "block",
+      "title": "Sun Burst",
+      "description": "Cream and black rays fan out from the centre and slowly turn. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "light",
+        "rays",
+        "radial"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/sun-burst",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/sun-burst",
+      "manifestSha256": "2222150fde06c0c0f2230e314dc4db92e070753ed4c4cec99f1d2d1d316e147f",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1062,
+          "sha256": "2222150fde06c0c0f2230e314dc4db92e070753ed4c4cec99f1d2d1d316e147f"
+        },
+        {
+          "path": "sun-burst.html",
+          "bytes": 766,
+          "sha256": "4eb8558e79be19d8f49e596da341bc24a4a98d0335e189c74d11c6d96dc509e5"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "sun-burst.html",
+          "target": "compositions/sun-burst.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/sun-burst.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "swirl",
+      "kind": "block",
+      "title": "Swirl",
+      "description": "Orange and blue color fields swirl and flow into each other across the whole frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "gradient",
+        "flow",
+        "abstract"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/swirl",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/swirl",
+      "manifestSha256": "97ef7c5e6753a7670ef3b2f0564ad0bd12631ed6eac3783333d492f691664731",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1069,
+          "sha256": "97ef7c5e6753a7670ef3b2f0564ad0bd12631ed6eac3783333d492f691664731"
+        },
+        {
+          "path": "swirl.html",
+          "bytes": 755,
+          "sha256": "d7db34845f0f428176524c576c6fb6b6985d6f3e47d3d3c341e95b15000c773a"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "swirl.html",
+          "target": "compositions/swirl.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/swirl.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "thin-film",
+      "kind": "block",
+      "title": "Thin Film",
+      "description": "An orb's rim shimmers with soap-bubble iridescence on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "object",
+        "iridescent",
+        "bubble",
+        "rainbow"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/thin-film",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/thin-film",
+      "manifestSha256": "26a50ebd881947ef1218ecd69938d0f1cd3bac4f3bf3f36019c7e005c9f398d6",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1065,
+          "sha256": "26a50ebd881947ef1218ecd69938d0f1cd3bac4f3bf3f36019c7e005c9f398d6"
+        },
+        {
+          "path": "thin-film.html",
+          "bytes": 766,
+          "sha256": "b7774c1cab8646fb76149b7ef3d78989e8c272124950df19e714dfe04f261d21"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "thin-film.html",
+          "target": "compositions/thin-film.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/thin-film.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "voronoi",
+      "kind": "block",
+      "title": "Voronoi",
+      "description": "Magenta cells with glowing blue centres shift and reshape across the frame. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "pattern",
+        "cells",
+        "voronoi"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/voronoi",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/voronoi",
+      "manifestSha256": "58ae8fa4a0593c4c81a8dbb2acb0e34e1842c324c9c62bfeba7a78c2a53499cd",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1070,
+          "sha256": "58ae8fa4a0593c4c81a8dbb2acb0e34e1842c324c9c62bfeba7a78c2a53499cd"
+        },
+        {
+          "path": "voronoi.html",
+          "bytes": 761,
+          "sha256": "fd28e80558cba1989feb11fec63838fcd0b73d9bd168d58c3a5e66a9da0ea27b"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "voronoi.html",
+          "target": "compositions/voronoi.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/voronoi.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "water",
+      "kind": "block",
+      "title": "Water",
+      "description": "A sphere of wind-rippled water reflecting a blue sky, on black. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "orb",
+        "water",
+        "material",
+        "blue"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/water",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/water",
+      "manifestSha256": "7bf87f50977e83793fd35c431a84e893a5f7aebc383d8092d4916c2abb74aed0",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1039,
+          "sha256": "7bf87f50977e83793fd35c431a84e893a5f7aebc383d8092d4916c2abb74aed0"
+        },
+        {
+          "path": "water.html",
+          "bytes": 755,
+          "sha256": "68c2840a23b37e40df0908a45e84896f84f135faaaf4274e2c5627834f5a979c"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "water.html",
+          "target": "compositions/water.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/water.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "waveform",
+      "kind": "block",
+      "title": "Waveform",
+      "description": "Equalizer bars in a blue to pink gradient pulse across the middle of the frame, like an audio visualizer. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "audio",
+        "music",
+        "visualizer",
+        "bars"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/waveform",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/waveform",
+      "manifestSha256": "497629062c64170ec624f339a5e256f2afb537e5be241bbcd3af660916ab1c3b",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1100,
+          "sha256": "497629062c64170ec624f339a5e256f2afb537e5be241bbcd3af660916ab1c3b"
+        },
+        {
+          "path": "waveform.html",
+          "bytes": 764,
+          "sha256": "008a6e7a851160f8d4d3ab8f29c3d1e72ff978527b085e12db5d00cc4a8c8493"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "waveform.html",
+          "target": "compositions/waveform.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/waveform.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "week-in-merges",
+      "kind": "block",
+      "title": "Week in Merges",
+      "description": "Each author's avatar bounces across their row at a speed set by how many pull requests they merged",
+      "tags": [
+        "data",
+        "chart",
+        "ranking",
+        "leaderboard"
+      ],
+      "dimensions": {
+        "width": 1080,
+        "height": 1350
+      },
+      "durationSeconds": 16,
+      "parameters": [
+        {
+          "key": "eyebrow",
+          "label": "Eyebrow",
+          "type": "text",
+          "default": "ACME / WEEK IN MERGES"
+        },
+        {
+          "key": "title",
+          "label": "Title",
+          "type": "text",
+          "default": "Pull requests merged this week"
+        },
+        {
+          "key": "period",
+          "label": "Period",
+          "type": "text",
+          "default": "1 September - 7 September 2026 \u00b7 America/Los_Angeles"
+        },
+        {
+          "key": "total",
+          "label": "Total",
+          "type": "text",
+          "default": "12 PRs"
+        },
+        {
+          "key": "footer",
+          "label": "Footer",
+          "type": "text",
+          "default": "Speed proportional to merges \u00b7 By PR author"
+        },
+        {
+          "key": "source",
+          "label": "Source line",
+          "type": "text",
+          "default": "Example org \u00b7 1 repo \u00b7 Bots \u00b7 0"
+        },
+        {
+          "key": "rows",
+          "label": "Rows (JSON array of name, merges, avatar)",
+          "type": "text",
+          "default": "[{\"name\":\"Ada\",\"merges\":12,\"avatar\":\"\"},{\"name\":\"Bao\",\"merges\":7,\"avatar\":\"\"},{\"name\":\"Cam\",\"merges\":4,\"avatar\":\"\"},{\"name\":\"Dee\",\"merges\":2,\"avatar\":\"\"},{\"name\":\"Eli\",\"merges\":1,\"avatar\":\"\"}]"
+        },
+        {
+          "key": "rows_max",
+          "label": "Maximum rows",
+          "type": "number",
+          "default": "12",
+          "min": 1,
+          "max": 12,
+          "step": 1
+        },
+        {
+          "key": "overflow",
+          "label": "Overflow line",
+          "type": "text",
+          "default": ""
+        }
+      ],
+      "variables": [
+        {
+          "id": "eyebrow",
+          "type": "string",
+          "label": "Eyebrow",
+          "default": "ACME / WEEK IN MERGES"
+        },
+        {
+          "id": "title",
+          "type": "string",
+          "label": "Title",
+          "default": "Pull requests merged this week"
+        },
+        {
+          "id": "period",
+          "type": "string",
+          "label": "Period",
+          "default": "1 September - 7 September 2026 \u00b7 America/Los_Angeles"
+        },
+        {
+          "id": "total",
+          "type": "string",
+          "label": "Total",
+          "default": "12 PRs"
+        },
+        {
+          "id": "footer",
+          "type": "string",
+          "label": "Footer",
+          "default": "Speed proportional to merges \u00b7 By PR author"
+        },
+        {
+          "id": "source",
+          "type": "string",
+          "label": "Source line",
+          "default": "Example org \u00b7 1 repo \u00b7 Bots \u00b7 0"
+        },
+        {
+          "id": "rows",
+          "type": "string",
+          "label": "Rows (JSON array of name, merges, avatar)",
+          "default": "[{\"name\":\"Ada\",\"merges\":12,\"avatar\":\"\"},{\"name\":\"Bao\",\"merges\":7,\"avatar\":\"\"},{\"name\":\"Cam\",\"merges\":4,\"avatar\":\"\"},{\"name\":\"Dee\",\"merges\":2,\"avatar\":\"\"},{\"name\":\"Eli\",\"merges\":1,\"avatar\":\"\"}]"
+        },
+        {
+          "id": "rows_max",
+          "type": "number",
+          "label": "Maximum rows",
+          "default": 12,
+          "min": 1,
+          "max": 12,
+          "step": 1,
+          "description": "Authors drawn, highest merge count first."
+        },
+        {
+          "id": "overflow",
+          "type": "string",
+          "label": "Overflow line",
+          "default": "",
+          "description": "Line for everyone past the cap. Empty writes it from the rows left out."
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/week-in-merges",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/week-in-merges",
+      "manifestSha256": "29295e9007db899779c26e4d0eb20452a3f7928bd9246333d757d775695b6bef",
+      "files": [
+        {
+          "path": "registry-item.json",
+          "bytes": 3710,
+          "sha256": "29295e9007db899779c26e4d0eb20452a3f7928bd9246333d757d775695b6bef"
+        },
+        {
+          "path": "week-in-merges.html",
+          "bytes": 15833,
+          "sha256": "f6a989512c338008950615189d3036395e990eed684003d26359e51997fd6026"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "week-in-merges.html",
+          "target": "compositions/week-in-merges.html",
+          "type": "hyperframes:composition"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "worley-noise",
+      "kind": "block",
+      "title": "Worley Noise",
+      "description": "A field of drifting cells, light at their centres and dark at their edges. A WebGPU shader from the Shaders library (shaders.com, MIT).",
+      "tags": [
+        "webgpu",
+        "webgpu-shader",
+        "background",
+        "texture",
+        "noise",
+        "cells",
+        "monochrome"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 2,
+      "parameters": [],
+      "variables": null,
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/worley-noise",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/blocks/worley-noise",
+      "manifestSha256": "a0c10d6f9f1de20274dcbc056dac80ddb6f98b194750dba433c12c8ede0c62b2",
+      "files": [
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "bytes": 16426,
+          "sha256": "ace6fbd142afaa20894b285ab6d4e20f164f6ec8557978d23db36197f1bc067c"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "bytes": 1444793,
+          "sha256": "6ad60b5fe00c6f092ddc9ccc6138743d89401e2886d550b275fc8ce0d0345f2d"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1106,
+          "sha256": "a0c10d6f9f1de20274dcbc056dac80ddb6f98b194750dba433c12c8ede0c62b2"
+        },
+        {
+          "path": "worley-noise.html",
+          "bytes": 775,
+          "sha256": "024f513f9d85d341c6219b8a517649b48d93146873a83678589d3a21716458fb"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "worley-noise.html",
+          "target": "compositions/worley-noise.html",
+          "type": "hyperframes:composition"
+        },
+        {
+          "path": "lib/shaders.iife.js",
+          "target": "compositions/lib/shaders.iife.js",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "target": "compositions/lib/shaders.THIRD-PARTY-LICENSES.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/worley-noise.mp4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "agent-cursor",
+      "kind": "component",
+      "title": "Agent Cursor",
+      "description": "An AI agent operating a UI: a cursor with an accent name label that types out each step, clicks each target with a small ring, and ends on a check.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "agent",
+        "ai",
+        "status",
+        "click"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "agent_name",
+          "type": "string",
+          "role": "content",
+          "label": "Agent name",
+          "default": "Agent"
+        },
+        {
+          "id": "steps",
+          "type": "string",
+          "role": "content",
+          "label": "Status steps",
+          "description": "Comma-separated: a reading line, one line per target, then a done line.",
+          "default": "Reading the page,Opening Settings,Turning on backups,Done"
+        },
+        {
+          "id": "targets",
+          "type": "string",
+          "role": "layout",
+          "label": "Click targets",
+          "description": "Semicolon-separated x,y points in percent of the frame.",
+          "default": "25,47;76,30"
+        },
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "default": "#0a84ff"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/agent-cursor",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/agent-cursor",
+      "manifestSha256": "aab406af768baccf84b018ec30385eb261011e6fd22b1bae3506254f23aab343",
+      "files": [
+        {
+          "path": "agent-cursor.html",
+          "bytes": 15194,
+          "sha256": "3a2717e792269d0fe39b40d57e631cd7c3280c1f06be1e47a3adbbc6993d8727"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 7485,
+          "sha256": "669de2279221c82599eee64205deebe0449073e76bfac65f4b0cc23dff062d95"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1654,
+          "sha256": "aab406af768baccf84b018ec30385eb261011e6fd22b1bae3506254f23aab343"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "agent-cursor.html",
+          "target": "compositions/components/agent-cursor.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "caret-swap",
+      "kind": "component",
+      "title": "Caret Swap",
+      "description": "A gradient caret expands over one phrase, collapses to the left, then types its replacement with a blinking caret.",
+      "tags": [
+        "motion-primitive",
+        "text-effects",
+        "typography",
+        "swap",
+        "typewriter",
+        "remocn-port"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "from_text",
+          "type": "string",
+          "role": "content",
+          "label": "From text",
+          "description": "The phrase covered by the expanding caret.",
+          "default": "Executing it?"
+        },
+        {
+          "id": "to_text",
+          "type": "string",
+          "role": "content",
+          "label": "To text",
+          "description": "The replacement phrase, typed one character at a time.",
+          "default": "That's where everyone quits"
+        },
+        {
+          "id": "font_size",
+          "type": "number",
+          "role": "style",
+          "label": "Font size",
+          "description": "Maximum size in pixels. Both phrases shrink together to fit the host.",
+          "default": 72,
+          "min": 36,
+          "max": 160,
+          "step": 2,
+          "unit": "px"
+        },
+        {
+          "id": "font_weight",
+          "type": "enum",
+          "role": "style",
+          "label": "Font weight",
+          "description": "Weight used by both phrases. Every option is included in the bundled Geist font.",
+          "default": "400",
+          "options": [
+            {
+              "value": "400",
+              "label": "Regular"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semibold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ]
+        },
+        {
+          "id": "color",
+          "type": "color",
+          "role": "style",
+          "label": "Text color",
+          "description": "Color of both phrases.",
+          "default": "#171717"
+        },
+        {
+          "id": "caret_color",
+          "type": "color",
+          "role": "style",
+          "label": "Caret top",
+          "description": "Top color of the caret gradient.",
+          "default": "#FF4DAA"
+        },
+        {
+          "id": "caret_color_end",
+          "type": "color",
+          "role": "style",
+          "label": "Caret bottom",
+          "description": "Bottom color of the caret gradient.",
+          "default": "#8A5CF6"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/caret-swap",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/caret-swap",
+      "manifestSha256": "b8ad8131ac0eeac3780bda64feb14c0e0142474525803a1a34fe408f3cdfa733",
+      "files": [
+        {
+          "path": "Geist-Latin.woff2",
+          "bytes": 29400,
+          "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+        },
+        {
+          "path": "Geist-OFL.txt",
+          "bytes": 4387,
+          "sha256": "1781d2806a07d91c4edf4740b88449fab7d0eadad53f7c351b94cd4d4eb8c00f"
+        },
+        {
+          "path": "caret-swap.html",
+          "bytes": 13899,
+          "sha256": "984f2d648d676f408be3ead124555d7700b147d349e376b3dec6fbcb0640ba3c"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1771,
+          "sha256": "daa76eeba0250499dc3942a74d5240b9859bf4c9c6a2a60030df418c26a14d88"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 3239,
+          "sha256": "b8ad8131ac0eeac3780bda64feb14c0e0142474525803a1a34fe408f3cdfa733"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "caret-swap.html",
+          "target": "compositions/components/caret-swap/caret-swap.html",
+          "type": "hyperframes:snippet"
+        },
+        {
+          "path": "Geist-Latin.woff2",
+          "target": "compositions/components/caret-swap/Geist-Latin.woff2",
+          "type": "hyperframes:asset"
+        },
+        {
+          "path": "Geist-OFL.txt",
+          "target": "compositions/components/caret-swap/Geist-OFL.txt",
+          "type": "hyperframes:asset"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-annotate",
+      "kind": "component",
+      "title": "Annotate Cursor",
+      "description": "A marker pen glides onto the frame and hand-draws a loose loop, an underline, or an arrow around a region, the ink laid exactly under its nib, then lifts and leaves.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "pen",
+        "annotation",
+        "draw-on",
+        "highlight"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "shape",
+          "type": "enum",
+          "role": "style",
+          "label": "Mark",
+          "default": "circle",
+          "options": [
+            {
+              "value": "circle",
+              "label": "Loose loop"
+            },
+            {
+              "value": "underline",
+              "label": "Underline"
+            },
+            {
+              "value": "arrow",
+              "label": "Arrow"
+            }
+          ]
+        },
+        {
+          "id": "color",
+          "type": "color",
+          "role": "style",
+          "label": "Ink",
+          "default": "#f43f5e"
+        },
+        {
+          "id": "target_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Region left",
+          "default": 40,
+          "min": 0,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Region top",
+          "default": 38,
+          "min": 0,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target_w",
+          "type": "number",
+          "role": "layout",
+          "label": "Region width",
+          "default": 20,
+          "min": 2,
+          "max": 90,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target_h",
+          "type": "number",
+          "role": "layout",
+          "label": "Region height",
+          "default": 16,
+          "min": 2,
+          "max": 90,
+          "step": 1,
+          "unit": "%"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-annotate",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-annotate",
+      "manifestSha256": "8c5066561d7edf5cf1b063cbfc4055f1bbd7971ecb4b65cf5df7883aa668b644",
+      "files": [
+        {
+          "path": "cursor-annotate.html",
+          "bytes": 19532,
+          "sha256": "c0b3aab76981ab76ac9679c283e3dc48b6dd7ce567f68b5d40fe31baa80a5d74"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 5239,
+          "sha256": "ada47d46bcf1db18cdc0be7915de734cb82672d6abff0d4987ea76d5c7ab5ab6"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 2105,
+          "sha256": "8c5066561d7edf5cf1b063cbfc4055f1bbd7971ecb4b65cf5df7883aa668b644"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-annotate.html",
+          "target": "compositions/components/cursor-annotate.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-context-menu",
+      "kind": "component",
+      "title": "Context Menu Cursor",
+      "description": "A cursor right-clicks a file, a context menu blooms from its tip, the hover highlight tracks the item under it, and the chosen action plays out: duplicate, rename, move to trash, or a confirmation toast.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "menu",
+        "right-click",
+        "desktop",
+        "files"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "items",
+          "type": "string",
+          "role": "content",
+          "label": "Menu items",
+          "default": "Open,Rename,Duplicate,Share,Move to Trash"
+        },
+        {
+          "id": "pick",
+          "type": "number",
+          "role": "content",
+          "label": "Chosen item (0 = first)",
+          "default": 2,
+          "min": 0,
+          "max": 9,
+          "step": 1
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Tone",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-context-menu",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-context-menu",
+      "manifestSha256": "24cf9fce7c0db4623d03bd4d6014942f34ae5bd3fc2eb1efb31c31a57ca4fada",
+      "files": [
+        {
+          "path": "cursor-context-menu.html",
+          "bytes": 23233,
+          "sha256": "5dc40ed2c492743c56e8bd324c2e251599e620e624587d5296874bdfa3af3cea"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1898,
+          "sha256": "b5954879290010cb902cc096848cbefe5db47e7b6901a146a8db39a681901a44"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1514,
+          "sha256": "24cf9fce7c0db4623d03bd4d6014942f34ae5bd3fc2eb1efb31c31a57ca4fada"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-context-menu.html",
+          "target": "compositions/components/cursor-context-menu.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-drag-drop",
+      "kind": "component",
+      "title": "Drag and Drop Cursor",
+      "description": "A cursor grabs a task card, lifts and tilts it into its motion, carries it in lockstep to an empty column, drops it with a small settle, and the list closes the gap behind it.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "drag",
+        "drop",
+        "kanban",
+        "product-demo"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "card_label",
+          "type": "string",
+          "role": "content",
+          "label": "Dragged card",
+          "default": "Fix checkout validation"
+        },
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "default": "#0a84ff"
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Board tone",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-drag-drop",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-drag-drop",
+      "manifestSha256": "88e37acdd47db516b9d440bd3e2dfcc978eedd1c63d792f0eb65fca538924fad",
+      "files": [
+        {
+          "path": "cursor-drag-drop.html",
+          "bytes": 16814,
+          "sha256": "c89ba20707cefb71022808c742029da1ce6726a404ea88577a373569267be7d4"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1720,
+          "sha256": "52c902763068aedb8022ffd3f99a5baad1781cd531f8f89157d031205bbca573"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1398,
+          "sha256": "88e37acdd47db516b9d440bd3e2dfcc978eedd1c63d792f0eb65fca538924fad"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-drag-drop.html",
+          "target": "compositions/components/cursor-drag-drop.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-marquee-select",
+      "kind": "component",
+      "title": "Marquee Select Cursor",
+      "description": "A cursor drags a selection rectangle across a photo grid; each tile rings and pops a check the frame the rectangle touches it, while a pill counts the selection up.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "select",
+        "marquee",
+        "grid",
+        "product-demo"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "default": "#0a84ff"
+        },
+        {
+          "id": "start_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Drag start X",
+          "default": 20.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "start_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Drag start Y",
+          "default": 25.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "end_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Drag end X",
+          "default": 57,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "end_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Drag end Y",
+          "default": 52,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "pill_label",
+          "type": "string",
+          "role": "content",
+          "label": "Pill label",
+          "default": "selected"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-marquee-select",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-marquee-select",
+      "manifestSha256": "b05a6e9a8466d6e68ba646a6c329e9689386097adc5b47b1e36a4d66556ec5e9",
+      "files": [
+        {
+          "path": "cursor-marquee-select.html",
+          "bytes": 42263,
+          "sha256": "c0e165570334397b3e208d4648f73a6e6caab32f4a0e880ec813ddf72f1beda0"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1727,
+          "sha256": "730d53137f29dfe252a6bc407ef9c59d666703cd3433474a177e9f56f97f7eda"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1933,
+          "sha256": "b05a6e9a8466d6e68ba646a6c329e9689386097adc5b47b1e36a4d66556ec5e9"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-marquee-select.html",
+          "target": "compositions/components/cursor-marquee-select.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-text-select",
+      "kind": "component",
+      "title": "Text Select Cursor",
+      "description": "An arrow turns into an I-beam over a document, drags a selection across a phrase character by character, raises a format toolbar, turns back into an arrow and clicks Bold.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "text",
+        "selection",
+        "editor",
+        "toolbar"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "title",
+          "type": "string",
+          "role": "content",
+          "label": "Heading",
+          "default": "Spring release notes"
+        },
+        {
+          "id": "text",
+          "type": "string",
+          "role": "content",
+          "label": "Paragraph",
+          "default": "Our spring release ships on Thursday. Teams can now share a live review link, collect time-stamped comments, and approve the final cut without leaving the editor. Early customers cut their review rounds in half."
+        },
+        {
+          "id": "phrase",
+          "type": "string",
+          "role": "content",
+          "label": "Phrase to select",
+          "default": "approve the final cut"
+        },
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "default": "#0a84ff"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-text-select",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-text-select",
+      "manifestSha256": "3e9dd090c6feaac345fe582e8c81a199d63c7ea807459f229fd8c6a7ea864769",
+      "files": [
+        {
+          "path": "cursor-text-select.html",
+          "bytes": 16433,
+          "sha256": "a80b90330f132f337d3c1a606b52dfae34468d170dc32162895822494039ce47"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1868,
+          "sha256": "1f90637929584f0f3acc6feacabc48e4b5f88830f1adf4e366df2f02be732303"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1656,
+          "sha256": "3e9dd090c6feaac345fe582e8c81a199d63c7ea807459f229fd8c6a7ea864769"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-text-select.html",
+          "target": "compositions/components/cursor-text-select.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "cursor-zoom-follow",
+      "kind": "component",
+      "title": "Zoom Follow Cursor",
+      "description": "Screen-recording auto-zoom: the camera pushes in toward each upcoming click, trails the cursor on a smooth spring, marks every click with a press and a ring, then eases back out to the full screen as the cursor leaves.",
+      "tags": [
+        "cursor",
+        "camera",
+        "zoom",
+        "screen-recording",
+        "click",
+        "product-demo"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "image",
+          "type": "image",
+          "role": "content",
+          "label": "Screenshot",
+          "description": "Your own screen capture. Leave empty for the built-in dashboard.",
+          "default": ""
+        },
+        {
+          "id": "zoom",
+          "type": "number",
+          "role": "style",
+          "label": "Zoom",
+          "default": 1.8,
+          "min": 1.2,
+          "max": 2.6,
+          "step": 0.1
+        },
+        {
+          "id": "click1_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 1 X",
+          "default": 68.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "click1_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 1 Y",
+          "default": 7.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "click2_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 2 X",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "click2_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 2 Y",
+          "default": 48.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "click3_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 3 X",
+          "default": 90.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "click3_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Click 3 Y",
+          "default": 7.5,
+          "min": 0,
+          "max": 100,
+          "step": 0.5,
+          "unit": "%"
+        },
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Ripple",
+          "default": "#0a84ff"
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-zoom-follow",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/cursor-zoom-follow",
+      "manifestSha256": "cd602a796b7538b6c6a6cf51e3ab113529cb2e7c9804232b3612d6520e585481",
+      "files": [
+        {
+          "path": "cursor-zoom-follow.html",
+          "bytes": 27737,
+          "sha256": "827327986216100b6c20c0e136dfcafa177fa247eab851514c705ef61a9afafe"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 1913,
+          "sha256": "165bdecbf10f7bcefdc409dad1715857486c183fbcd7bd05b7b674b79226ad9a"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 2801,
+          "sha256": "cd602a796b7538b6c6a6cf51e3ab113529cb2e7c9804232b3612d6520e585481"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "cursor-zoom-follow.html",
+          "target": "compositions/components/cursor-zoom-follow.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "curtain-reveal",
+      "kind": "component",
+      "title": "Curtain Reveal",
+      "description": "Two pleated stage curtains gather outward from center, the way real velvet bunches at the tieback, revealing the stage underneath. A static pelmet frames the top; a soft spotlight can bloom in as they part.",
+      "tags": [
+        "curtain",
+        "stage reveal",
+        "transition",
+        "motion-primitive"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Curtain tone",
+          "description": "Curtain color.",
+          "default": "burgundy",
+          "options": [
+            {
+              "value": "red",
+              "label": "Red"
+            },
+            {
+              "value": "burgundy",
+              "label": "Burgundy"
+            },
+            {
+              "value": "navy",
+              "label": "Navy"
+            },
+            {
+              "value": "forest",
+              "label": "Forest"
+            }
+          ]
+        },
+        {
+          "id": "pelmet",
+          "type": "enum",
+          "role": "style",
+          "label": "Pelmet",
+          "description": "Static valance framing the top of the stage.",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "spotlight",
+          "type": "enum",
+          "role": "style",
+          "label": "Spotlight",
+          "description": "Soft glow blooming over the stage as the curtains part.",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/curtain-reveal",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/curtain-reveal",
+      "manifestSha256": "ddc9691a2be73cf199f01253a38480349bd775afbb724e1777ef49bff63f1fe2",
+      "files": [
+        {
+          "path": "curtain-reveal.html",
+          "bytes": 14995,
+          "sha256": "9bfd9ec72d42f7968cf73e45ff9b1d7b70537b09e7d3357808df29001eb5eb6d"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 2837,
+          "sha256": "f4a6a1f9f0b2d54d58ac994709d6d88820ca1fb24b486e692070278d57928d69"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1687,
+          "sha256": "ddc9691a2be73cf199f01253a38480349bd775afbb724e1777ef49bff63f1fe2"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "curtain-reveal.html",
+          "target": "compositions/components/curtain-reveal.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "dart-cursor",
+      "kind": "component",
+      "title": "Dart Cursor",
+      "description": "A bold outlined arrowhead that dives in from camera depth, flies nose-first with motion blur along its path, squashes on two clicks, and whips out of frame.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "pointer",
+        "click",
+        "motion-blur",
+        "depth"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Tone",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark body, white outline"
+            },
+            {
+              "value": "light",
+              "label": "Light body, dark outline"
+            }
+          ]
+        },
+        {
+          "id": "target_x",
+          "type": "number",
+          "role": "layout",
+          "label": "First click X",
+          "default": 34,
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target_y",
+          "type": "number",
+          "role": "layout",
+          "label": "First click Y",
+          "default": 58,
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target2_x",
+          "type": "number",
+          "role": "layout",
+          "label": "Second click X",
+          "default": 64,
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "target2_y",
+          "type": "number",
+          "role": "layout",
+          "label": "Second click Y",
+          "default": 46,
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "id": "enter_from",
+          "type": "enum",
+          "role": "timing",
+          "label": "Enter from",
+          "default": "right",
+          "options": [
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            }
+          ]
+        },
+        {
+          "id": "exit_to",
+          "type": "enum",
+          "role": "timing",
+          "label": "Exit to",
+          "default": "right",
+          "options": [
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            }
+          ]
+        },
+        {
+          "id": "blur",
+          "type": "number",
+          "role": "style",
+          "label": "Motion blur",
+          "default": 1,
+          "min": 0,
+          "max": 1.5,
+          "step": 0.1
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/dart-cursor",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/dart-cursor",
+      "manifestSha256": "97ab5387edb2f239bbfed29ea5cde4f523baeeaa8f2a5111a6c0c9ba7999aa58",
+      "files": [
+        {
+          "path": "dart-cursor.html",
+          "bytes": 14522,
+          "sha256": "cb45359056ff75e8412bb1476ca194e1cb85d1ecb18dcbde2d770c7fb068546e"
+        },
+        {
+          "path": "demo.html",
+          "bytes": 10367,
+          "sha256": "1a0b62087fa3abfe7918841ae19dceb9a989cb6d79d5d334104b11c49bb3904f"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 2823,
+          "sha256": "97ab5387edb2f239bbfed29ea5cde4f523baeeaa8f2a5111a6c0c9ba7999aa58"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "dart-cursor.html",
+          "target": "compositions/components/dart-cursor.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "magnetic-cursor",
+      "kind": "component",
+      "title": "Magnetic Cursor",
+      "description": "A soft dot pointer glides across an editor toolbar, is pulled into each button and morphs into its rounded hover plate while the icon leans toward it, presses one, and leaves as a dot.",
+      "tags": [
+        "cursor",
+        "motion-primitive",
+        "pointer",
+        "hover",
+        "morph",
+        "toolbar"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "accent",
+          "type": "color",
+          "role": "style",
+          "label": "Accent",
+          "default": "#3b82f6"
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Tone",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light toolbar"
+            },
+            {
+              "value": "dark",
+              "label": "Dark toolbar"
+            }
+          ]
+        },
+        {
+          "id": "visits",
+          "type": "string",
+          "role": "content",
+          "label": "Buttons visited",
+          "description": "Comma-separated indexes 0-5: bold, italic, underline, link, list, image.",
+          "default": "0,3"
+        },
+        {
+          "id": "press",
+          "type": "number",
+          "role": "timing",
+          "label": "Pressed visit",
+          "default": 2,
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/magnetic-cursor",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/magnetic-cursor",
+      "manifestSha256": "7041f1bec8a545be3cb8cd1b9a24a2d480fdd9be839dd1dd522be29af9c7c2e0",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 3584,
+          "sha256": "264b398130367331d78ea5c4fc6e6f6b2f9b6908a2d2950eb9fc3c3f7da7be23"
+        },
+        {
+          "path": "magnetic-cursor.html",
+          "bytes": 16392,
+          "sha256": "bf6be7611f569c977bea037587970e350a7d7aa80eb5d6cb674323f33a9c1a7b"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1577,
+          "sha256": "7041f1bec8a545be3cb8cd1b9a24a2d480fdd9be839dd1dd522be29af9c7c2e0"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "magnetic-cursor.html",
+          "target": "compositions/components/magnetic-cursor.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "paper-collage-reveal",
+      "kind": "component",
+      "title": "Paper Collage Reveal",
+      "description": "A scrapbook patchwork of torn paper scraps, each with its own texture and tilt, flutters away in a staggered scatter to reveal the content underneath.",
+      "tags": [
+        "collage",
+        "scrapbook",
+        "torn paper",
+        "reveal",
+        "transition",
+        "motion-primitive"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "panels",
+          "type": "number",
+          "role": "content",
+          "label": "Panels",
+          "description": "How many torn paper scraps cover the frame.",
+          "default": 6,
+          "min": 4,
+          "max": 8,
+          "step": 1
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Paper tone",
+          "description": "Color per scrap. Mixed seeds a different tone per scrap for a real scrapbook mix.",
+          "default": "mixed",
+          "options": [
+            {
+              "value": "cream",
+              "label": "Cream"
+            },
+            {
+              "value": "kraft",
+              "label": "Kraft"
+            },
+            {
+              "value": "mixed",
+              "label": "Mixed"
+            }
+          ]
+        },
+        {
+          "id": "spread",
+          "type": "enum",
+          "role": "motion",
+          "label": "Spread",
+          "description": "Outward sends each scrap away from the frame center. Scatter sends every scrap the same general direction with seeded variance.",
+          "default": "outward",
+          "options": [
+            {
+              "value": "outward",
+              "label": "Outward"
+            },
+            {
+              "value": "scatter",
+              "label": "Scatter"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/paper-collage-reveal",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/paper-collage-reveal",
+      "manifestSha256": "0181ebc8e70d66766cf7d3de7063f0f8e5142df5c1b2b39210298b12f6a68081",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 5879,
+          "sha256": "d68298ebeb6e2041eb38278bb6ba48a23dec0bcde8df6944b73fe05e0c6930b5"
+        },
+        {
+          "path": "paper-collage-reveal.html",
+          "bytes": 17540,
+          "sha256": "e7d138d73785cda61179b1c821d3b2590f90e61b8ac9e22e3bccb245eec9fafa"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1714,
+          "sha256": "0181ebc8e70d66766cf7d3de7063f0f8e5142df5c1b2b39210298b12f6a68081"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "paper-collage-reveal.html",
+          "target": "compositions/components/paper-collage-reveal.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "pendulum-swing",
+      "kind": "component",
+      "title": "Pendulum Swing",
+      "description": "Content hangs from a fixed pivot and swings into rest with gravity-damped oscillation, like a hanging sign settling on its hook.",
+      "tags": [
+        "motion-primitive",
+        "physics",
+        "swing",
+        "settle",
+        "reveal"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "pivot",
+          "type": "enum",
+          "role": "layout",
+          "label": "Pivot",
+          "description": "Where the content hangs from. The swing rotates about this point, so the top edge stays pinned.",
+          "default": "top-center",
+          "options": [
+            {
+              "value": "top-center",
+              "label": "Top center"
+            },
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top-right",
+              "label": "Top right"
+            }
+          ]
+        },
+        {
+          "id": "amplitude",
+          "type": "enum",
+          "role": "motion",
+          "label": "Amplitude",
+          "description": "How far the first swing reaches before it settles. Every later swing scales with it, so the pendulum still comes to rest upright.",
+          "default": "standard",
+          "options": [
+            {
+              "value": "gentle",
+              "label": "Gentle"
+            },
+            {
+              "value": "standard",
+              "label": "Standard"
+            },
+            {
+              "value": "wide",
+              "label": "Wide"
+            }
+          ]
+        },
+        {
+          "id": "direction",
+          "type": "enum",
+          "role": "motion",
+          "label": "Direction",
+          "description": "Which side the pendulum swings in from: right lifts the first swing clockwise, left mirrors it.",
+          "default": "right",
+          "options": [
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            }
+          ]
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Tone",
+          "description": "Content colour: ink for light frames, paper for dark ones, accent rides --brand.",
+          "default": "ink",
+          "options": [
+            {
+              "value": "ink",
+              "label": "Ink"
+            },
+            {
+              "value": "paper",
+              "label": "Paper"
+            },
+            {
+              "value": "accent",
+              "label": "Accent"
+            }
+          ]
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/pendulum-swing",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/pendulum-swing",
+      "manifestSha256": "a8f53818ba6ae5e47b395109add2f0cc5bfadcfce01d263b907f9f15ab22d8a7",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 7325,
+          "sha256": "9461f947e9afd7d84eb8c58b85f5853541a8156c9a02c9513295655835cd4984"
+        },
+        {
+          "path": "pendulum-swing.html",
+          "bytes": 6641,
+          "sha256": "51c542c7da0fd6304134be89b0d63bc6f433622ae23594d4bc31038982600eb0"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 2399,
+          "sha256": "a8f53818ba6ae5e47b395109add2f0cc5bfadcfce01d263b907f9f15ab22d8a7"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "pendulum-swing.html",
+          "target": "compositions/components/pendulum-swing.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/pendulum-swing.png"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    },
+    {
+      "id": "torn-paper-rip",
+      "kind": "component",
+      "title": "Torn Paper Rip",
+      "description": "A fibrous paper tear runs across the frame: the torn sheet shows its white paper core along the edge and lifts away on a soft shadow, leaving the next scene standing.",
+      "tags": [
+        "torn paper",
+        "paper rip",
+        "paper tear",
+        "transition",
+        "texture",
+        "motion-primitive"
+      ],
+      "dimensions": null,
+      "durationSeconds": null,
+      "parameters": [],
+      "variables": [
+        {
+          "id": "direction",
+          "type": "enum",
+          "role": "motion",
+          "label": "Direction",
+          "description": "Which way the tear travels across the frame.",
+          "default": "left-to-right",
+          "options": [
+            {
+              "value": "left-to-right",
+              "label": "Left to right"
+            },
+            {
+              "value": "right-to-left",
+              "label": "Right to left"
+            }
+          ]
+        },
+        {
+          "id": "tone",
+          "type": "enum",
+          "role": "style",
+          "label": "Paper tone",
+          "description": "Color of the exposed paper cross-section riding the tear.",
+          "default": "cream",
+          "options": [
+            {
+              "value": "cream",
+              "label": "Cream"
+            },
+            {
+              "value": "kraft",
+              "label": "Kraft"
+            },
+            {
+              "value": "white",
+              "label": "White"
+            }
+          ]
+        },
+        {
+          "id": "roughness",
+          "type": "number",
+          "role": "style",
+          "label": "Roughness",
+          "description": "How jagged and fibrous the tear edge is. Low is a clean deckle edge, high is roughly torn.",
+          "default": 55,
+          "min": 20,
+          "max": 90,
+          "step": 1
+        }
+      ],
+      "registryDependencies": [],
+      "sourcePath": "upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/torn-paper-rip",
+      "sourceUrl": "https://github.com/heygen-com/hyperframes/tree/83b6419e975548f54cbe4a771f3ac00b04915757/registry/components/torn-paper-rip",
+      "manifestSha256": "e3daffde47e9ac6bb38d8f1c1a3d98fbeb9df7fa31aae06f036549297a14ebff",
+      "files": [
+        {
+          "path": "demo.html",
+          "bytes": 11635,
+          "sha256": "fe59274fd64d89dfebd6d4292037e36306443bfb39c02cb52e5f3cc9f0418acd"
+        },
+        {
+          "path": "registry-item.json",
+          "bytes": 1693,
+          "sha256": "e3daffde47e9ac6bb38d8f1c1a3d98fbeb9df7fa31aae06f036549297a14ebff"
+        },
+        {
+          "path": "torn-paper-rip.html",
+          "bytes": 16106,
+          "sha256": "9459fa4d1b3ebefb45d34e276b2a2181dccfb132d1ba5060dbc25e6f429764df"
+        }
+      ],
+      "declaredFiles": [
+        {
+          "path": "torn-paper-rip.html",
+          "target": "compositions/components/torn-paper-rip.html",
+          "type": "hyperframes:snippet"
+        }
+      ],
+      "preview": null,
+      "licensePaths": [
+        "LICENSE"
+      ],
+      "prompt": {
+        "status": "unreviewed",
+        "text": null,
+        "provenance": null
+      },
+      "popularity": null,
+      "verification": {
+        "status": "captured",
+        "missingDeclaredFiles": [],
+        "dependencyClosure": false,
+        "preview": false,
+        "reopen": false,
+        "transparentOverlay": null,
+        "import": false
+      }
+    }
+  ]
+}

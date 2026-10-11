@@ -98,10 +98,27 @@ impl Item {
 fn catalog() -> &'static Catalog {
     static CATALOG: OnceLock<Catalog> = OnceLock::new();
     CATALOG.get_or_init(|| {
-        serde_json::from_str(include_str!(
+        let mut base: Catalog = serde_json::from_str(include_str!(
             "../../../../resources/hyperframes/catalog.json"
         ))
-        .expect("checked bundled reference catalog")
+        .expect("checked bundled reference catalog");
+        let supplement: Catalog = serde_json::from_str(include_str!(
+            "../../../../resources/hyperframes/catalog-supplement.json"
+        ))
+        .expect("checked additive official catalog");
+        // Keep reviewed OpenCut packages/prompts for existing identities. Each
+        // entry retains its exact source URL and source path provenance.
+        for item in supplement.items {
+            assert!(
+                !base.items.iter().any(|old| old.id == item.id),
+                "duplicate supplement identity"
+            );
+            base.items.push(item);
+        }
+        base.upstream_commit = supplement.upstream_commit;
+        base.registry_sha256 = supplement.registry_sha256;
+        base.items.sort_by(|a, b| a.id.cmp(&b.id));
+        base
     })
 }
 #[derive(Deserialize, JsonSchema)]
@@ -127,6 +144,7 @@ fn limit() -> usize {
 #[derive(Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct Hit {
+    poster_url: Option<String>,
     id: String,
     kind: Kind,
     title: String,
@@ -162,6 +180,89 @@ struct ReadOutput {
     upstream_commit: String,
     registry_sha256: String,
     item: Item,
+}
+
+/// Immutable package projection. The host verifies every listed hash before
+/// serving source in an isolated preview origin; this does not edit a project.
+#[derive(Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct PreviewPlan {
+    missing_files: Vec<String>,
+    source_path: String,
+    entry_file: String,
+    files: Vec<File>,
+    width: u32,
+    height: u32,
+    duration_seconds: f64,
+}
+fn preview_plan(input: Read) -> Result<PreviewPlan, CapabilityError> {
+    let invalid = |s: &str| CapabilityError::InvalidInput(s.into());
+    if input.upstream_commit != catalog().upstream_commit {
+        return Err(invalid(
+            "Reference catalog generation changed; search again",
+        ));
+    }
+    let item = catalog()
+        .items
+        .iter()
+        .find(|i| i.id == input.id)
+        .ok_or_else(|| invalid("Unknown HyperFrames reference"))?;
+    let (source_path, files, entry_file) = if let Some(prepared) = &item.prepared {
+        (
+            prepared.source_path.clone(),
+            prepared.files.clone(),
+            prepared.entry_file.clone(),
+        )
+    } else {
+        let entry = if item.kind == Kind::Component {
+            item.files.iter().find(|f| f.path == "demo.html")
+        } else {
+            item.files
+                .iter()
+                .find(|f| f.path == "index.html")
+                .or_else(|| {
+                    item.files
+                        .iter()
+                        .find(|f| f.path == format!("{}.html", item.id))
+                })
+                .or_else(|| item.files.iter().find(|f| f.path.ends_with(".html")))
+        }
+        .ok_or_else(|| invalid("This catalog item has no runnable HTML demo"))?;
+        (
+            item.source_path.clone(),
+            item.files.clone(),
+            entry.path.clone(),
+        )
+    };
+    if files.len() > 512 || files.iter().map(|f| f.bytes).sum::<u64>() > 64 * 1024 * 1024 {
+        return Err(invalid(
+            "Reference preview package exceeds the preview budget",
+        ));
+    }
+    let dimension = |key: &str, default| {
+        item.dimensions
+            .as_ref()
+            .and_then(|d| d[key].as_u64())
+            .filter(|v| (1..=8192).contains(v))
+            .map(|v| v as u32)
+            .unwrap_or(default)
+    };
+    Ok(PreviewPlan {
+        missing_files: if item.prepared.is_some() {
+            vec![]
+        } else {
+            item.verification.missing_declared_files.clone()
+        },
+        source_path,
+        entry_file,
+        files,
+        width: dimension("width", 1920),
+        height: dimension("height", 1080),
+        duration_seconds: item
+            .duration_seconds
+            .filter(|v| v.is_finite() && *v > 0.0)
+            .unwrap_or(10.0),
+    })
 }
 
 #[derive(Deserialize, Serialize, JsonSchema)]
@@ -716,6 +817,12 @@ fn search(input: Search) -> Result<SearchOutput, CapabilityError> {
         .skip(input.offset)
         .take(input.limit)
         .map(|(_, item)| Hit {
+            poster_url: item
+                .preview
+                .as_ref()
+                .and_then(|p| p["poster"].as_str())
+                .filter(|url| url.starts_with("https://"))
+                .map(str::to_owned),
             id: item.id.clone(),
             kind: item.kind.clone(),
             title: item.title.clone(),
@@ -744,6 +851,23 @@ fn search(input: Search) -> Result<SearchOutput, CapabilityError> {
 pub(super) fn register_hyperframes_examples(
     registry: &CapabilityRegistry,
 ) -> Result<(), RegistryError> {
+    register::<Read, PreviewPlan, _, _>(
+        registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
+        "hyperframes.examples.preview.plan",
+        "Plan a live catalog preview",
+        "Read the immutable bundled package identity, entry, bounded file hashes and dimensions for an isolated live source preview. No network, execution, render, project edits or verification promotion occurs in this capability. The host owns checked file IO and sandbox delivery.",
+        "hyperframes",
+        AccessLevel::Read,
+        true,
+        false,
+        &["hyperframes", "catalog", "preview"],
+        |context, input| async move {
+            check_cancelled(&context)?;
+            Ok(OperationSuccess::new(preview_plan(input)?))
+        },
+    )?;
     register::<Search, SearchOutput, _, _>(
         registry,
         DocumentSupport::Both,

@@ -5,6 +5,8 @@ import { spawnSync } from "node:child_process";
 const audit = fileURLToPath(new URL("../../scripts/hyperframes/audit.mjs", import.meta.url));
 const result = spawnSync(process.execPath, [audit], { stdio: "inherit" });
 if (result.status !== 0) throw new Error("Pinned HyperFrames reference audit failed");
+const supplementAudit = fileURLToPath(new URL("../../scripts/hyperframes/audit-supplement.mjs", import.meta.url));
+if (spawnSync(process.execPath, [supplementAudit], { stdio: "inherit" }).status !== 0) throw new Error("Official catalog supplement audit failed");
 const destination = fileURLToPath(new URL("../apps/web/.hyperframes-references/", import.meta.url));
 await mkdir(destination, { recursive: true });
 await cp(fileURLToPath(new URL("../../resources/hyperframes/", import.meta.url)), destination, { recursive: true });

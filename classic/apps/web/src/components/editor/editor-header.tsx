@@ -46,10 +46,10 @@ export function EditorHeader() {
 			</div>
 			<nav className="flex items-center gap-2">
 				<Link
-					href={`/editor/${encodeURIComponent(projectId)}?view=examples`}
+					href={`/editor/${encodeURIComponent(projectId)}?view=catalog`}
 					className="text-sm"
 				>
-					HyperFrames examples
+					Catalog
 				</Link>
 				<FeedbackPopover />
 				<ExportButton />

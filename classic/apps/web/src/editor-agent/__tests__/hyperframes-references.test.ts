@@ -33,7 +33,7 @@ const request = {
 	projectId: "classic-project",
 	expectedRevision: 1,
 	id: "lt-clean-bar",
-	upstreamCommit: "4c4b8574406cc566d28778a13f22c072d727a871",
+	upstreamCommit: "83b6419e975548f54cbe4a771f3ac00b04915757",
 	filePath: "lt-clean-bar.html",
 	limit: 71,
 };

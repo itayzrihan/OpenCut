@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { acquireBrowser } from "@hyperframes/engine";
 import { createCanonicalTestRuntime } from "@/core/__tests__/canonical-runtime-fixture";
+import { HyperframesPreviewHost } from "../preview-host";
+import { loadCatalogPreviewPackage } from "../catalog-preview-server";
 import { CanonicalClassicSession } from "@/core/canonical-classic-session";
 
 for (const presentation of ["dialog", "page"] as const) {
@@ -61,6 +63,12 @@ for (const presentation of ["dialog", "page"] as const) {
 			enableBrowserPool: false,
 			forceScreenshot: true,
 		});
+		const previewHost = new HyperframesPreviewHost();
+		let previewCreated = 0;
+		let previewReleased: () => void = () => {};
+		const released = new Promise<void>((resolve) => {
+			previewReleased = resolve;
+		});
 		try {
 			session.attach({
 				classic: JSON.parse(
@@ -99,6 +107,55 @@ for (const presentation of ["dialog", "page"] as const) {
 					return;
 				}
 				const url = new URL(request.url());
+				if (url.hostname.endsWith(".localhost")) {
+					await request.continue();
+					return;
+				}
+				if (url.pathname === "/api/editor-agent/hyperframes-catalog-preview") {
+					if (request.method() === "OPTIONS") {
+						await request.respond({
+							status: 204,
+							headers: {
+								"Access-Control-Allow-Origin": "*",
+								"Access-Control-Allow-Methods": "POST, DELETE, OPTIONS",
+								"Access-Control-Allow-Headers": "content-type",
+							},
+						});
+						return;
+					}
+					if (request.method() === "DELETE") {
+						previewHost.remove({ id: url.searchParams.get("id")! });
+						previewReleased();
+						await request.respond({
+							status: 204,
+							headers: { "Access-Control-Allow-Origin": "*" },
+						});
+						return;
+					}
+					const input = JSON.parse(request.postData()!);
+					const plan = runtime.invokeSync(
+						"hyperframes.examples.preview.plan",
+						input,
+						null,
+					).result.data;
+					const prepared = await loadCatalogPreviewPackage({
+						input: plan,
+						directory: join(root, "resources/hyperframes"),
+					});
+					const lease = await previewHost.add(prepared);
+					previewCreated++;
+					await request.respond({
+						status: 200,
+						contentType: "application/json",
+						headers: { "Access-Control-Allow-Origin": "*" },
+						body: JSON.stringify({
+							...lease,
+							width: prepared.plan.width,
+							height: prepared.plan.height,
+						}),
+					});
+					return;
+				}
 				const file =
 					url.origin === "https://reference-test.local"
 						? previewFiles.get(url.pathname)
@@ -166,7 +223,7 @@ for (const presentation of ["dialog", "page"] as const) {
 				{ code: await bundle.outputs[0].text(), presentation },
 			);
 			await page.waitForFunction(() =>
-				document.body.textContent?.includes("394 captured"),
+				document.body.textContent?.includes("454 captured"),
 			);
 			expect((await page.$('[role="dialog"]')) !== null).toBe(
 				presentation === "dialog",
@@ -186,21 +243,32 @@ for (const presentation of ["dialog", "page"] as const) {
 			await page.waitForFunction(() =>
 				document.body.textContent?.includes("1 matches"),
 			);
+			await page.hover('button[aria-pressed="false"]');
+			await page.waitForSelector('iframe[title$="live preview"]');
 			await page.click('button[aria-pressed="false"]');
 			await page.waitForFunction(() =>
 				document.body.textContent?.includes("Source file"),
 			);
-			await page.waitForFunction(() => {
-				const frames = [
-					...document.querySelectorAll<HTMLImageElement>(
-						'img[src*="hyperframes-reference-previews"]',
-					),
-				];
-				return (
-					frames.length === 3 &&
-					frames.every((frame) => frame.complete && frame.naturalWidth > 0)
-				);
-			});
+			await page.waitForSelector('iframe[title$="live preview"]');
+			await page.waitForFunction(
+				() => !document.body.textContent?.includes("Loading live source…"),
+			);
+			const live = page
+				.frames()
+				.find((frame) => frame.url().includes(".localhost"))!;
+			await live.waitForFunction(
+				() => (window as any).__player?.getTime() > 0.2,
+			);
+			const first = await live.evaluate(() =>
+				(window as any).__player.getTime(),
+			);
+			await live.waitForFunction(
+				(first: number) => (window as any).__player.getTime() > first + 0.2,
+				{},
+				first,
+			);
+			expect(await page.$("video")).toBeNull();
+			expect(previewCreated).toBe(1);
 			await page.select("label select", "lt-clean-bar.html");
 			await page.waitForFunction(() =>
 				document.querySelector('pre[dir="ltr"]')?.textContent?.includes("gsap"),
@@ -209,9 +277,10 @@ for (const presentation of ["dialog", "page"] as const) {
 				await page.$eval('pre[dir="ltr"]', (element) => element.textContent),
 			).toContain("<!doctype html>");
 			await page.click('input[aria-label="Search HyperFrames examples"]');
-			await page.keyboard.down("Control");
-			await page.keyboard.press("A");
-			await page.keyboard.up("Control");
+			await page.$eval(
+				'input[aria-label="Search HyperFrames examples"]',
+				(node) => (node as HTMLInputElement).select(),
+			);
 			await page.keyboard.press("Backspace");
 			await page.type(
 				'input[aria-label="Search HyperFrames examples"]',
@@ -228,10 +297,46 @@ for (const presentation of ["dialog", "page"] as const) {
 			await page.waitForFunction(() =>
 				document.body.textContent?.includes("No matching references"),
 			);
+			if (presentation === "page" && process.env.OPENCUT_CATALOG_SCREENSHOT) {
+				const { default: postcss } = await import("postcss");
+				const { default: tailwind } = await import("@tailwindcss/postcss");
+				const cssPath = join(root, "classic/apps/web/src/app/globals.css");
+				const css = (
+					await postcss([tailwind()]).process(await readFile(cssPath, "utf8"), {
+						from: cssPath,
+					})
+				).css;
+				await page.addStyleTag({ content: css });
+				await page.evaluate(() => {
+					document.documentElement.classList.add("dark");
+					document.body.style.cssText =
+						"height:100vh;background:var(--background);color:var(--foreground)";
+					document.getElementById("examples")!.style.height = "100vh";
+				});
+				await page.click('input[type="checkbox"]');
+				await page.$eval(
+					'input[aria-label="Search HyperFrames examples"]',
+					(node) => (node as HTMLInputElement).select(),
+				);
+				await page.keyboard.press("Backspace");
+				await page.waitForFunction(() =>
+					document.body.textContent?.includes("454 matches"),
+				);
+				await page.screenshot({ path: process.env.OPENCUT_CATALOG_SCREENSHOT });
+			}
 			expect(errors).toEqual([]);
 			expect(session.read()).toEqual(before);
+			if (presentation === "page") {
+				await page.$eval("button", (node) => {
+					if (node.textContent === "Back to editor") node.click();
+				});
+			} else {
+				await page.keyboard.press("Escape");
+			}
+			await released;
 			await page.close();
 		} finally {
+			await previewHost.close();
 			await lease.release();
 			session.dispose();
 		}

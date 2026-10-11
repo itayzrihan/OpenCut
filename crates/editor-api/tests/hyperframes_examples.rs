@@ -85,7 +85,7 @@ async fn pinned_catalog_is_bounded_discoverable_and_does_not_claim_captured_item
     let runtime = OpenCutRuntime::default();
     let before = call(&runtime, "app.state.read", json!({})).await;
     let page = call(&runtime, "hyperframes.examples.search", json!({"limit":50})).await;
-    assert_eq!(page["totalCatalogItems"], 394);
+    assert_eq!(page["totalCatalogItems"], 454);
     assert_eq!(page["totalVerified"], 150);
     assert_eq!(page["searchMode"], "lexicalWithHebrewAliases");
     assert_eq!(page["items"].as_array().unwrap().len(), 50);
@@ -136,7 +136,7 @@ async fn pinned_catalog_is_bounded_discoverable_and_does_not_claim_captured_item
     )
     .await;
     assert!(prompt_query["totalMatches"].as_u64().unwrap() > 0);
-    for (kind, count) in [("block", 164), ("component", 222), ("example", 8)] {
+    for (kind, count) in [("block", 210), ("component", 236), ("example", 8)] {
         let result = call(
             &runtime,
             "hyperframes.examples.search",
@@ -199,7 +199,7 @@ async fn pinned_catalog_is_bounded_discoverable_and_does_not_claim_captured_item
         item["item"]["sourceUrl"]
             .as_str()
             .unwrap()
-            .contains(page["upstreamCommit"].as_str().unwrap())
+            .contains("4c4b8574406cc566d28778a13f22c072d727a871")
     );
     let missing = call(
         &runtime,
@@ -271,4 +271,80 @@ async fn invalid_or_cancelled_reference_requests_are_rejected() {
             .await
             .is_err()
     );
+}
+
+#[tokio::test]
+async fn live_preview_plans_preserve_reviewed_packages_and_cover_the_official_union() {
+    let runtime = OpenCutRuntime::default();
+    let before = call(&runtime, "app.state.read", json!({})).await;
+    let search = call(&runtime, "hyperframes.examples.search", json!({})).await;
+    let generation = &search["upstreamCommit"];
+    let base: Value =
+        serde_json::from_str(include_str!("../../../resources/hyperframes/catalog.json")).unwrap();
+    let extra: Value = serde_json::from_str(include_str!(
+        "../../../resources/hyperframes/catalog-supplement.json"
+    ))
+    .unwrap();
+    let official: Value = serde_json::from_str(include_str!("../../../resources/hyperframes/upstream/83b6419e975548f54cbe4a771f3ac00b04915757/registry/registry.json")).unwrap();
+    for reference in official["items"].as_array().unwrap() {
+        let read = call(
+            &runtime,
+            "hyperframes.examples.read",
+            json!({"id":reference["name"],"upstreamCommit":generation}),
+        )
+        .await;
+        assert_eq!(read["item"]["id"], reference["name"]);
+    }
+    for item in base["items"].as_array().unwrap() {
+        let read = call(
+            &runtime,
+            "hyperframes.examples.read",
+            json!({"id":item["id"],"upstreamCommit":generation}),
+        )
+        .await;
+        assert_eq!(read["item"]["prompt"], item["prompt"]);
+        if item["prepared"].is_object() {
+            let plan = call(
+                &runtime,
+                "hyperframes.examples.preview.plan",
+                json!({"id":item["id"],"upstreamCommit":generation}),
+            )
+            .await;
+            assert_eq!(plan["sourcePath"], item["prepared"]["sourcePath"]);
+            assert_eq!(plan["entryFile"], item["prepared"]["entryFile"]);
+        }
+    }
+    for item in extra["items"].as_array().unwrap() {
+        let plan = call(
+            &runtime,
+            "hyperframes.examples.preview.plan",
+            json!({"id":item["id"],"upstreamCommit":generation}),
+        )
+        .await;
+        assert_eq!(plan["sourcePath"], item["sourcePath"]);
+        assert!(
+            plan["files"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|f| f["path"] == plan["entryFile"])
+        );
+    }
+    for input in [
+        json!({"id":"../escape","upstreamCommit":generation}),
+        json!({"id":"lt-clean-bar","upstreamCommit":"wrong"}),
+    ] {
+        assert!(
+            runtime
+                .registry()
+                .invoke(
+                    "hyperframes.examples.preview.plan",
+                    InvocationContext::default(),
+                    input
+                )
+                .await
+                .is_err()
+        );
+    }
+    assert_eq!(call(&runtime, "app.state.read", json!({})).await, before);
 }

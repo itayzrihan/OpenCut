@@ -69,7 +69,7 @@ export default function Editor() {
 					<EditorHeader />
 					<div className="min-h-0 min-w-0 flex-1">
 						<EditorAgentWorkspace>
-							{search.get("view") === "examples" ? (
+							{["examples", "catalog"].includes(search.get("view") ?? "") ? (
 								<HyperframesExamplesLibrary
 									projectId={projectId}
 									presentation="page"
