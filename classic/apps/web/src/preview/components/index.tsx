@@ -41,6 +41,7 @@ import type {
 } from "@/preview/overlays";
 import { PreviewContextMenu } from "./context-menu";
 import { PreviewToolbar } from "./toolbar";
+import { VideoLookahead } from "../video-lookahead";
 import {
 	PreviewViewportProvider,
 	usePreviewViewportState,
@@ -220,6 +221,16 @@ function PreviewCanvas({
 	const playbackProbe = useMemo(() => new PreviewPlaybackProbe(), []);
 	const activeProject = useEditorProject((e) => e.project.getActive());
 	const renderTree = useEditorRenderer((e) => e.renderer.getRenderTree());
+	const videoLookaheadRef = useRef<VideoLookahead | null>(null);
+	useEffect(() => {
+		const lookahead = new VideoLookahead({ node: renderTree });
+		videoLookaheadRef.current = lookahead;
+		return () => {
+			lookahead.dispose();
+			if (videoLookaheadRef.current === lookahead)
+				videoLookaheadRef.current = null;
+		};
+	}, [renderTree]);
 	const isExporting = useEditorRenderer((e) => e.renderer.isExporting);
 	isExportingRef.current = isExporting;
 	const viewport = usePreviewViewportState({
@@ -424,6 +435,10 @@ function PreviewCanvas({
 			: renderer.render({ node: renderTree, time: renderTime });
 		const completion = rendered
 			.then(() => {
+				if (!isExportingRef.current && !editor.renderer.isExporting)
+					videoLookaheadRef.current?.warm({
+						time: editor.playback.getCurrentTime(),
+					});
 				if (ticket) {
 					playbackProbe.completeFrame({
 						ticket,

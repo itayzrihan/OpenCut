@@ -48,6 +48,13 @@ struct SettingsPatch {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "non_null"
     )]
+    #[schemars(range(min = 80, max = 480))]
+    timeline_track_controls_width: Option<u32>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "non_null"
+    )]
     #[schemars(with = "Rational")]
     fps: Option<Rational>,
     #[serde(
@@ -87,6 +94,14 @@ struct SettingsPatch {
 
 impl SettingsPatch {
     fn validate(&self) -> Result<(), CapabilityError> {
+        if self
+            .timeline_track_controls_width
+            .is_some_and(|w| !(80..=480).contains(&w))
+        {
+            return Err(CapabilityError::InvalidInput(
+                "Timeline track controls width must be 80..480 pixels".into(),
+            ));
+        }
         if let Some(rate) = &self.fps {
             rate.validate("Classic fps")
                 .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
@@ -138,7 +153,11 @@ pub(crate) fn validate_settings(settings: &Value) -> Result<(), String> {
         .filter(|(key, _)| {
             matches!(
                 key.as_str(),
-                "canvasSizeMode" | "lastCustomCanvasSize" | "originalCanvasSize" | "background"
+                "canvasSizeMode"
+                    | "lastCustomCanvasSize"
+                    | "originalCanvasSize"
+                    | "background"
+                    | "timelineTrackControlsWidth"
             )
         })
         .map(|(key, value)| (key.clone(), value.clone()))
@@ -188,7 +207,7 @@ pub(super) fn register_classic_settings(
         crate::CapabilityExecution::Immediate,
         "project.classic.settings.update",
         "Update Classic project settings",
-        "Change Classic canvas dimensions, rational FPS, color/CSS gradient or blur background, canvas preset/custom mode and remembered original/custom dimensions. Supply only changed settings; each supplied object replaces that setting. Explicit null clears remembered dimensions. Does not scale or retime clips. Preserves all other project fields/media/sources. Requires projectId and expectedRevision; supports undo/redo, dry run, exact retries and atomic transactions. Optional historyGroup coalesces an uninterrupted UI gesture into one undo boundary; agent edits normally omit it. Every preview remains a validated committed revision, and any intervening edit or undo breaks coalescing.",
+        "Change Classic timeline track controls width (80..480 pixels; absent defaults to 112), canvas dimensions, rational FPS, color/CSS gradient or blur background, canvas preset/custom mode and remembered original/custom dimensions. Supply only changed settings; each supplied object replaces that setting. Explicit null clears remembered dimensions. Does not scale or retime clips. Preserves all other project fields/media/sources. Requires projectId and expectedRevision; supports undo/redo, dry run, exact retries and atomic transactions. Optional historyGroup coalesces an uninterrupted UI gesture into one undo boundary; agent edits normally omit it. Every preview remains a validated committed revision, and any intervening edit or undo breaks coalescing.",
         "project",
         AccessLevel::Write,
         false,

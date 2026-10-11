@@ -1,3 +1,9 @@
+import {
+	noiseReductionAmount,
+	hasAudioProcessing,
+	renderNoiseReducedWindow,
+	NOISE_REDUCTION_WINDOW_SECONDS,
+} from "@/media/noise-reduction";
 import { getClipAudioTiming } from "@/media/audio-sync";
 import type {
 	AudioElement,
@@ -765,6 +771,48 @@ export async function createTimelineAudioBuffer({
 	for (const element of audioElements) {
 		if (element.muted || element.duration <= 0) continue;
 
+		const amount = noiseReductionAmount(element.timelineElement.params);
+		if (hasAudioProcessing(element.timelineElement.params)) {
+			for (
+				let offset = 0;
+				offset < element.duration;
+				offset += NOISE_REDUCTION_WINDOW_SECONDS
+			) {
+				const windowDuration = Math.min(
+					NOISE_REDUCTION_WINDOW_SECONDS,
+					element.duration - offset,
+				);
+				const buffer = await renderNoiseReducedWindow({
+					audioContext: context,
+					clip: element,
+					offset,
+					duration: windowDuration,
+					amount,
+					readSource: async (sourceStart) => ({
+						buffer: element.buffer,
+						trimStart: sourceStart,
+					}),
+				});
+				if (!buffer)
+					throw new Error("Could not prepare noise-reduced export audio");
+				mixAudioChannels({
+					element: {
+						...element,
+						startTime: element.startTime + offset,
+						duration: windowDuration,
+					},
+					buffer,
+					trimStart: 0,
+					outputBuffer,
+					outputLength,
+					sampleRate,
+					localTimeOffset: offset,
+					gainBaked: element.timelineElement.params.hardLimiterEnabled === true,
+				});
+			}
+			continue;
+		}
+
 		const renderedBuffer = shouldMaintainPitch({
 			rate: element.retime?.rate ?? 1,
 			maintainPitch: element.retime?.maintainPitch,
@@ -927,6 +975,8 @@ function mixAudioChannels({
 	outputBuffer,
 	outputLength,
 	sampleRate,
+	localTimeOffset = 0,
+	gainBaked = false,
 }: {
 	element: CollectedAudioElement;
 	buffer: AudioBuffer;
@@ -935,6 +985,8 @@ function mixAudioChannels({
 	outputBuffer: AudioBuffer;
 	outputLength: number;
 	sampleRate: number;
+	localTimeOffset?: number;
+	gainBaked?: boolean;
 }): void {
 	const { startTime, duration: elementDuration } = element;
 
@@ -960,12 +1012,14 @@ function mixAudioChannels({
 			const lowerIndex = Math.floor(sourceIndex);
 			const upperIndex = Math.min(sourceData.length - 1, lowerIndex + 1);
 			const fraction = sourceIndex - lowerIndex;
-			const gain = hasVariableAudioGain({ element: element.timelineElement })
-				? resolveEffectiveAudioGain({
-						element: element.timelineElement,
-						localTime: clipTime,
-					})
-				: element.volume;
+			const gain = gainBaked
+				? 1
+				: hasVariableAudioGain({ element: element.timelineElement })
+					? resolveEffectiveAudioGain({
+							element: element.timelineElement,
+							localTime: clipTime + localTimeOffset,
+						})
+					: element.volume;
 			outputData[outputIndex] +=
 				(sourceData[lowerIndex] * (1 - fraction) +
 					sourceData[upperIndex] * fraction) *

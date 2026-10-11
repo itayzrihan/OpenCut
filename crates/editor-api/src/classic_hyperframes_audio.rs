@@ -32,7 +32,8 @@ impl ClassicProject {
                 continue;
             }
             for element in track["elements"].as_array().into_iter().flatten() {
-                if element["type"] != "graphic"
+                if element["enabled"] == false
+                    || element["type"] != "graphic"
                     || element["definitionId"] != "hyperframes"
                     || element["params"]["muted"] == true
                 {

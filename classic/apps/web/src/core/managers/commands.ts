@@ -736,6 +736,36 @@ export class CommandManager {
 		});
 	}
 
+	createMulticam(plan: {
+		settings: import("@/podcast-sync/engine").PodcastSyncSettings;
+		channels: Array<{
+			id: string;
+			name: string;
+			videoId: string;
+			audioId: string;
+			videoBindingRevision: number;
+			audioBindingRevision: number;
+			videoOffset: number;
+			audioOffset: number;
+			audioDelay: number;
+		}>;
+		duration: number;
+		cuts: import("@/podcast-sync/router").PodcastSyncCut[];
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before creating multicam");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.multicam.create",
+					input: { plan, finishPodcast: true },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	editClassicScene(
 		change: import("@/core/canonical-classic-session").ClassicSceneChange,
 	): void {
@@ -1032,8 +1062,9 @@ export class CommandManager {
 				this.synchronizeCanonicalViews();
 				this.canonical!.removeTimelineContent({ sceneId, removal });
 				this.publishCanonical();
-				// Explicit delete-and-close already spliced all layers in the Rust mutation.
-				if (removal.type !== "elements" || !removal.ripple)
+				// Explicit deletion modes already applied their shifts in Rust.
+				const samePoint = removal.type === "elements" && removal.samePoint;
+				if (!samePoint && (removal.type !== "elements" || !removal.ripple))
 					this.applyRippleIfEnabled({ beforeTracks });
 				if (removal.type === "elements")
 					this.applySelectionOverride({
@@ -1044,7 +1075,8 @@ export class CommandManager {
 							selectedMaskPoints: null,
 						},
 					});
-				this.runReactors();
+				// Track-scoped deletion retains all other tracks, including empty ones.
+				if (!samePoint) this.runReactors();
 			},
 		});
 	}

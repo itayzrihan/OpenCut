@@ -25,6 +25,7 @@ import { usePropertyDraft } from "../hooks/use-property-draft";
 import { KeyframeToggle } from "./keyframe-toggle";
 import { Textarea } from "@/components/ui/textarea";
 import { FontPicker } from "@/components/ui/font-picker";
+import { useEditor } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
 
 export function PropertyParamField({
@@ -280,6 +281,7 @@ function NumberParamField({
 	onPreview: (value: number) => void;
 	onCommit: () => void;
 }) {
+	const editor = useEditor();
 	const { min, max, step, displayMultiplier = 1 } = param;
 	const displayValue = value * displayMultiplier;
 	const clampDisplayValue = (nextDisplayValue: number) =>
@@ -324,8 +326,14 @@ function NumberParamField({
 			onFocus={draft.onFocus}
 			onChange={draft.onChange}
 			onBlur={draft.onBlur}
-			onScrub={isMixed ? undefined : previewFromDisplay}
-			onScrubEnd={isMixed ? undefined : onCommit}
+			aria-label={param.label}
+			scrubLabel={param.label}
+			scrubValue={displayValue}
+			scrubStep={step}
+			scrubClamp={{ min, max }}
+			onScrub={previewFromDisplay}
+			onScrubEnd={onCommit}
+			onScrubCancel={() => editor.timeline.discardPreview()}
 			onReset={handleReset}
 		/>
 	);

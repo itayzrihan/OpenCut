@@ -1,3 +1,8 @@
+import {
+	noiseReductionAmount,
+	hasAudioProcessing,
+	renderNoiseReducedWindow,
+} from "@/media/noise-reduction";
 import type { EditorCore } from "@/core";
 import { toast } from "sonner";
 import type { TProject } from "@/project/types";
@@ -403,12 +408,13 @@ export class AudioManager {
 		// Preserve the existing full-buffer path for retiming/pitch and AAC
 		// sync handles. Ordinary cuts can be decoded in bounded 2s windows.
 		if (
-			clip.retime ||
-			!this.audioSinks.canReadIndependentRanges({
-				sourceKey: clip.sourceKey,
-				sampleRate: this.audioContext?.sampleRate ?? 0,
-			}) ||
-			Number(clip.timelineElement.params.audioSyncOffset ?? 0) !== 0
+			!hasAudioProcessing(clip.timelineElement.params) &&
+			(clip.retime ||
+				!this.audioSinks.canReadIndependentRanges({
+					sourceKey: clip.sourceKey,
+					sampleRate: this.audioContext?.sampleRate ?? 0,
+				}) ||
+				Number(clip.timelineElement.params.audioSyncOffset ?? 0) !== 0)
 		)
 			return clip;
 		const local = Math.max(0, time - clip.startTime);
@@ -911,14 +917,17 @@ export class AudioManager {
 		node.start(actualStartTimestamp, actualClipOffset, sourceDuration);
 		this.scheduledClipIds.add(automationClip.id);
 
-		this.scheduleClipGainAutomation({
-			audioContext,
-			clip: automationClip,
-			clipGain,
-			startTimestamp: actualStartTimestamp,
-			startLocalTime:
-				actualClipOffset + clip.startTime - automationClip.startTime,
-		});
+		if (automationClip.timelineElement.params.hardLimiterEnabled === true)
+			clipGain.gain.value = 1;
+		else
+			this.scheduleClipGainAutomation({
+				audioContext,
+				clip: automationClip,
+				clipGain,
+				startTimestamp: actualStartTimestamp,
+				startLocalTime:
+					actualClipOffset + clip.startTime - automationClip.startTime,
+			});
 
 		this.queuedSources.add(node);
 		node.addEventListener("ended", () => {
@@ -976,7 +985,11 @@ export class AudioManager {
 		// Short clips are cheap to prepare in full and give sample-accurate
 		// automation. Long clips stream from a warmed sink so Play never waits
 		// for an entire podcast/video soundtrack to decode.
-		return clip.duration <= 12 || clip.retime?.maintainPitch === true;
+		return (
+			hasAudioProcessing(clip.timelineElement.params) ||
+			clip.duration <= 12 ||
+			clip.retime?.maintainPitch === true
+		);
 	}
 
 	private scheduleClipGainAutomation({
@@ -1035,6 +1048,9 @@ export class AudioManager {
 			trimStart: clip.trimStart,
 			trimEnd: clip.trimEnd,
 			retime: clip.retime ?? null,
+			noiseReduction: noiseReductionAmount(clip.timelineElement.params),
+			dynamics: clip.timelineElement.params,
+			animations: clip.timelineElement.animations,
 		});
 	}
 
@@ -1053,6 +1069,30 @@ export class AudioManager {
 			const audioContext = this.ensureAudioContext();
 			if (!audioContext) {
 				return null;
+			}
+
+			const amount = noiseReductionAmount(clip.timelineElement.params);
+			if (hasAudioProcessing(clip.timelineElement.params)) {
+				const original =
+					this.clips.find(
+						(item) => item.timelineElement === clip.timelineElement,
+					) ?? clip;
+				return renderNoiseReducedWindow({
+					audioContext,
+					signal: this.audioCollectionAbort.signal,
+					clip: original,
+					offset: clip.startTime - original.startTime,
+					duration: clip.duration,
+					amount,
+					readSource: async (sourceStart, sourceEnd) => {
+						const buffer = await this.decodeClipBuffer({
+							clip,
+							sourceStart,
+							sourceEnd,
+						});
+						return buffer ? { buffer, trimStart: 0 } : null;
+					},
+				});
 			}
 
 			// Use the same complete source decoder as export for sync-adjusted
@@ -1080,6 +1120,15 @@ export class AudioManager {
 			});
 		})();
 
+		// Keep only the moving preview window; an hour-long denoised recording
+		// must not retain an hour of processed PCM in the editor.
+		if (hasAudioProcessing(clip.timelineElement.params)) {
+			while (this.preparedClipBuffers.size >= 16) {
+				const oldest = this.preparedClipBuffers.keys().next().value;
+				if (oldest === undefined) break;
+				this.preparedClipBuffers.delete(oldest);
+			}
+		}
 		this.preparedClipBuffers.set(cacheKey, promise);
 		void promise.then(
 			(buffer) => {

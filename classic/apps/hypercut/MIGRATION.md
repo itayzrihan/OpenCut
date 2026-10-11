@@ -5,6 +5,7 @@ New product based on HyperFrames Studio 0.8.146. New projects only; old OpenCut 
 ## Architecture
 
 - The product entry renders the complete original `StudioApp` from pinned `@hyperframes/studio` 0.8.146, with its own styles, panels, tools and player. The former custom shell is retired.
+- The native timeline label column is always visible, including projects without keyframes. `studio-customizations.ts` applies this presentation-only change at build/dev time, with a guarded upstream hook match; installations do not modify dependency files. Position/Scale lanes still reflect actual authored animations.
 - `OpenCutRuntime` owns the typed `hypercutStudio` source extension inside `EditorDocument.project.extensions`. `project.studio.source.commit` validates and accepts edits atomically, with project/revision fencing, history, dry-run and registry idempotency.
 - The official Studio server prepares candidate file edits in a private materialization. A serialized host gate commits the resulting source and asset bindings through Rust, persists them, and only then acknowledges the write. Rejected writes restore the materialization; readers cannot observe candidates during this process.
 - The canonical runtime runs in the local host process, outside the browser UI thread. The old OpenCut Canvas renderer and all-media audio preparation are not mounted.
@@ -12,8 +13,17 @@ New product based on HyperFrames Studio 0.8.146. New projects only; old OpenCut 
 - Media bytes live in immutable host blobs; only paths, SHA-256 and sizes enter history. `.data/workspace` is a disposable private cache, not another editable project store.
 - No writes to existing OpenCut projects, the user's running HyperFrames project, or the npx cache.
 - Full frontend parity is pending. Current history claims do not yet coalesce multi-file gestures, and the shared source representation still needs semantic adapters for Classic Smart Takes/Full Auto. Those capabilities are not silently applied to an independent Classic timeline.
+- Catalog browsing is connected to the official HyperFrames registry (blocks and components), with concurrent metadata loading, a persistent 24-hour cache and stale-cache fallback. Registry requests run outside the document queue. Catalog installation into a project remains pending; browsing does not imply installation parity.
 
 ## Inventory
+
+### Remote-vs-official source audit (2026-10-11)
+
+The [searchable comparison](audit/comparison.html) and [machine-readable evidence](audit/comparison.json) compare fetched `itayzrihan/OpenCut` main (`92bb6765d015`) plus the editor branch (`d05f933b6e79`) against official Classic (`cf5e79e91914`) and the official rewrite (`e66801077856`). Classic paths are normalized against our `classic/` subtree. Local HyperCut (`9606bdacafae`) and subsequent uncommitted UI/catalog changes are assessed separately; they are not presented as remote features.
+
+The audit identifies 90 migration requirements: 72 custom additions and 18 extensions of existing behavior, with 217 verified source references. These are work items, including subfeatures, not an exact count of independent product features. The audit also records native baseline functions, the 11 added asset tabs (20 vs 9), explicit preset ID literals, performance requirements, and local-only commits. `Adjustment` remains a placeholder in our Classic UI; the color-correction effect is distinct from that unfinished tab.
+
+This supplements the 75-family inventory below rather than replacing it or claiming parity. Every requirement has a strategy and acceptance criterion. Private assets stored outside Git require a separate manifest audit; the repository alone cannot establish that all user-created SFX/font/preset bytes are available. No 90-workflow end-to-end acceptance run was performed during this source audit. Reproduce with `python3 classic/apps/hypercut/audit/build_report.py` after explicitly fetching the intended refs.
 
 75 rows cover feature families and the 20 existing asset panels. These are not 75 missing features: several have native HyperFrames equivalents. Native availability is distinct from a working HyperCut integration. A row marked bridged is not a full parity claim.
 

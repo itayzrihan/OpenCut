@@ -5,6 +5,11 @@ import { TICKS_PER_SECOND } from "@/wasm";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "./audio-constants";
 import type { TimelineElement } from "./types";
 const DEFAULT_STEP_SECONDS = 1 / 60;
+function resolveClipGain(value: unknown): number {
+	return typeof value === "number" && Number.isFinite(value)
+		? 10 ** (Math.max(-60, Math.min(30, value)) / 20)
+		: 1;
+}
 
 export type AudioCapableElement = Extract<
 	TimelineElement,
@@ -98,7 +103,7 @@ export function resolveEffectiveAudioGain({
 	trackMuted?: boolean;
 	localTime: number;
 }): number {
-	if (trackMuted || isElementMuted({ element })) {
+	if (element.enabled === false || trackMuted || isElementMuted({ element })) {
 		return 0;
 	}
 
@@ -111,6 +116,7 @@ export function resolveEffectiveAudioGain({
 
 	return (
 		dBToLinear(resolvedDb) *
+		resolveClipGain(element.params.gainDb) *
 		resolveAudioFadeMultiplier({
 			durationSeconds: element.duration / TICKS_PER_SECOND,
 			fadeInDuration: getElementFadeInDuration({ element }),
@@ -149,10 +155,12 @@ export function buildCompactWaveformGainSamples({
 		fadeOutDuration: element.params.fadeOutDuration,
 		muted: isElementMuted({ element }),
 		volume: getElementVolume({ element }),
+		gainDb: element.params.gainDb,
 	});
 }
 
 export function buildCompactWaveformGainSamplesFromState({
+	gainDb,
 	animations,
 	count,
 	duration,
@@ -168,6 +176,7 @@ export function buildCompactWaveformGainSamplesFromState({
 	fadeOutDuration?: unknown;
 	muted: boolean;
 	volume: unknown;
+	gainDb?: unknown;
 }): number[] | undefined {
 	const volumeDb = getAudioVolumeValue({ volume });
 	const safeFadeInDuration = getAudioFadeDurationValue({
@@ -188,15 +197,18 @@ export function buildCompactWaveformGainSamplesFromState({
 		const durationSeconds = duration / TICKS_PER_SECOND;
 		return Array.from({ length: count }, (_, i) => {
 			const localTime = ((i + 0.5) / count) * durationSeconds;
-			return resolveEffectiveAudioGainFromState({
-				animations,
-				durationSeconds,
-				fadeInDuration: safeFadeInDuration,
-				fadeOutDuration: safeFadeOutDuration,
-				localTime,
-				muted,
-				volume: volumeDb,
-			});
+			return (
+				resolveClipGain(gainDb) *
+				resolveEffectiveAudioGainFromState({
+					animations,
+					durationSeconds,
+					fadeInDuration: safeFadeInDuration,
+					fadeOutDuration: safeFadeOutDuration,
+					localTime,
+					muted,
+					volume: volumeDb,
+				})
+			);
 		});
 	}
 
@@ -204,7 +216,7 @@ export function buildCompactWaveformGainSamplesFromState({
 		return [0];
 	}
 
-	const gain = dBToLinear(volumeDb);
+	const gain = dBToLinear(volumeDb) * resolveClipGain(gainDb);
 	return gain === 1 ? undefined : [gain];
 }
 

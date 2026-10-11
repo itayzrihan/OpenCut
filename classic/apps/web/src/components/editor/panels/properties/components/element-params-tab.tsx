@@ -1,6 +1,11 @@
 "use client";
 
-import { resolveAnimationPathValueAtTime } from "@/animation";
+import {
+	resolveAnimationPathValueAtTime,
+	hasKeyframesForPath,
+	upsertPathKeyframe,
+} from "@/animation";
+import { coerceParamValue, getParamChannelLayout } from "@/params";
 import { Section, SectionContent, SectionFields } from "@/components/section";
 import { useEditor } from "@/editor/use-editor";
 import {
@@ -132,6 +137,18 @@ export function ElementParamsTab({
 		<Section sectionKey={`${element.id}:${sectionKey}`}>
 			<SectionContent className="pt-4">
 				<SectionFields>
+					{visibleParams.some((p) => p.key === "transform.scaleX") &&
+						visibleParams.some((p) => p.key === "transform.scaleY") && (
+							<CombinedScaleField
+								element={element}
+								trackId={trackId}
+								elementsWithTracks={bulkElements ?? undefined}
+								params={visibleParams}
+								localTime={localTime}
+								isPlayheadWithinElementRange={isPlayheadWithinElementRange}
+								textScope={textScope}
+							/>
+						)}
 					{visibleParams.map((param) => (
 						<ElementParamField
 							key={param.key}
@@ -159,6 +176,123 @@ export function ElementParamsTab({
 				</SectionFields>
 			</SectionContent>
 		</Section>
+	);
+}
+
+/** One inspector control sends both existing channels in the same preview/commit. */
+function CombinedScaleField({
+	element,
+	trackId,
+	elementsWithTracks,
+	params,
+	localTime,
+	isPlayheadWithinElementRange,
+	textScope,
+}: {
+	element: TimelineElement;
+	trackId: string;
+	elementsWithTracks?: ElementWithTrackForParams[];
+	params: ElementParamDefinition[];
+	localTime: MediaTime;
+	isPlayheadWithinElementRange: boolean;
+	textScope?: TextOverrideScope;
+}) {
+	const editor = useEditor();
+	const axes = params.filter(
+		(p) => p.key === "transform.scaleX" || p.key === "transform.scaleY",
+	);
+	const x = axes.find((p) => p.key === "transform.scaleX")!;
+	const targets = elementsWithTracks ?? [{ track: { id: trackId }, element }];
+	const values = targets.flatMap((entry) =>
+		axes.map((param) => {
+			const base =
+				readElementParamValue({ element: entry.element, param }) ??
+				param.default;
+			if (
+				entry.element.type === "text" &&
+				textScope &&
+				textScope.type !== "layer"
+			) {
+				const scope = resolveTextScopeForEntry({ entry, textScope });
+				return scope
+					? readScopedTextParamValue({
+							element: entry.element,
+							scope,
+							key: param.key,
+							fallbackValue: base,
+						})
+					: base;
+			}
+			return elementsWithTracks
+				? base
+				: resolveAnimationPathValueAtTime({
+						animations: entry.element.animations,
+						propertyPath: param.key,
+						localTime,
+						fallbackValue: base,
+					});
+		}),
+	);
+	return (
+		<PropertyParamField
+			param={{
+				...x,
+				key: "inspector.scaleXY",
+				label: "Scale X + Y",
+				keyframable: false,
+			}}
+			value={values[0] ?? x.default}
+			isMixed={values.some((v) => v !== values[0])}
+			onPreview={(value) =>
+				editor.timeline.previewElements({
+					updates: targets.map((entry) => {
+						let next = entry.element;
+						for (const param of axes) {
+							if (
+								next.type === "text" &&
+								textScope &&
+								textScope.type !== "layer"
+							) {
+								const scope = resolveTextScopeForEntry({ entry, textScope });
+								const patch = textParamToScopedPatch({ key: param.key, value });
+								if (scope && patch)
+									next = {
+										...next,
+										...buildScopedTextPatch({ element: next, scope, patch }),
+									};
+							} else if (
+								!elementsWithTracks &&
+								isPlayheadWithinElementRange &&
+								hasKeyframesForPath({
+									animations: next.animations,
+									propertyPath: param.key,
+								})
+							) {
+								next = {
+									...next,
+									animations: upsertPathKeyframe({
+										animations: next.animations,
+										propertyPath: param.key,
+										time: localTime,
+										value,
+										channelLayout: getParamChannelLayout({ param }),
+										coerceValue: ({ value: v }) =>
+											coerceParamValue({ param, value: v }),
+									}),
+								};
+							} else
+								next = writeElementParamValue({ element: next, param, value });
+						}
+						return {
+							trackId: entry.track.id,
+							elementId: entry.element.id,
+							updates: next,
+						};
+					}),
+				})
+			}
+			onCommit={() => editor.timeline.commitPreview()}
+		/>
 	);
 }
 

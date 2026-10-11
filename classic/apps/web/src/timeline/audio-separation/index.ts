@@ -53,6 +53,7 @@ export function doesElementHaveEnabledAudio({
 	element: AudioElement | VideoElement;
 	mediaAsset?: MediaAudioState | null;
 }): boolean {
+	if (element.enabled === false) return false;
 	if (element.type === "audio") {
 		return true;
 	}

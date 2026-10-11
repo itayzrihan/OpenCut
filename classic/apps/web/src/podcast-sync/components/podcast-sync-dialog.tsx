@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Check,
 	ChevronLeft,
@@ -48,8 +48,8 @@ import {
 	type PodcastSyncResult,
 	type PodcastSyncSettings,
 } from "@/podcast-sync/engine";
-import { buildPodcastSyncScene } from "@/podcast-sync/scene";
 import { cn } from "@/utils/ui";
+import { PodcastFinishPanel } from "./podcast-finish-panel";
 
 interface ChannelDraft {
 	id: string;
@@ -62,7 +62,7 @@ type WizardMode = "quick" | "guided";
 type WizardStep = "media" | "sync" | "multicam" | "sequence";
 
 const NONE_VALUE = "none";
-const MAX_CHANNELS = 5;
+const MAX_CHANNELS = 32;
 const STEPS: Array<{ id: WizardStep; label: string }> = [
 	{ id: "media", label: "Link Files" },
 	{ id: "sync", label: "Sync" },
@@ -178,6 +178,9 @@ export function PodcastSyncDialog({
 	const [sequenceCreated, setSequenceCreated] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [progress, setProgress] = useState({ step: "", value: 0 });
+	const analysisAbort = useRef<AbortController | null>(null);
+	const analysisProject = useRef<string | null>(null);
+	useEffect(() => () => analysisAbort.current?.abort(), []);
 
 	const assetById = useMemo(
 		() => new Map(assets.map((asset) => [asset.id, asset])),
@@ -186,6 +189,9 @@ export function PodcastSyncDialog({
 	const currentStepIndex = STEPS.findIndex((item) => item.id === step);
 
 	const setChannelCount = (nextCount: number) => {
+		setAlignment(null);
+		setResult(null);
+		setSequenceCreated(false);
 		const count = Math.max(1, Math.min(MAX_CHANNELS, Math.floor(nextCount)));
 		setChannels((current) => {
 			if (count <= current.length) return current.slice(0, count);
@@ -205,6 +211,9 @@ export function PodcastSyncDialog({
 		channelId: string;
 		patch: Partial<Omit<ChannelDraft, "id">>;
 	}) => {
+		setAlignment(null);
+		setResult(null);
+		setSequenceCreated(false);
 		setChannels((current) =>
 			current.map((channel) =>
 				channel.id === channelId ? { ...channel, ...patch } : channel,
@@ -268,15 +277,26 @@ export function PodcastSyncDialog({
 		resolvedResult: PodcastSyncResult;
 	}) => {
 		if (sequenceCreated) return;
-		const scene = buildPodcastSyncScene({
-			name: resolvedSettings.sequenceName,
-			channels: resolvedChannels,
-			result: resolvedResult,
-			keepCameraMics: resolvedSettings.keepCameraMics,
-		});
-		editor.scenes.setScenes({
-			scenes: [...editor.scenes.getScenes(), scene],
-			activeSceneId: scene.id,
+		analysisAbort.current?.signal.throwIfAborted();
+		if (
+			editor.project.getActiveOrNull()?.metadata.id !== analysisProject.current
+		)
+			throw new Error("The active project changed. Run synchronization again.");
+		editor.command.createMulticam({
+			settings: resolvedSettings,
+			channels: resolvedChannels.map((channel) => ({
+				id: channel.id,
+				name: channel.name,
+				videoId: channel.video.id,
+				audioId: channel.audio.id,
+				videoBindingRevision: channel.video.bindingRevision ?? 0,
+				audioBindingRevision: channel.audio.bindingRevision ?? 0,
+				videoOffset: resolvedResult.videoOffsets[channel.id] ?? 0,
+				audioOffset: resolvedResult.audioOffsets[channel.id] ?? 0,
+				audioDelay: resolvedResult.audioDelays[channel.id] ?? 0,
+			})),
+			duration: resolvedResult.duration,
+			cuts: resolvedResult.cuts,
 		});
 		await editor.save.flush();
 		setSequenceCreated(true);
@@ -289,16 +309,21 @@ export function PodcastSyncDialog({
 		setSettings(resolvedSettings);
 		setIsRunning(true);
 		setProgress({ step: "Starting synchronization", value: 0 });
+		analysisAbort.current?.abort();
+		analysisAbort.current = new AbortController();
+		analysisProject.current = activeProject?.metadata.id ?? null;
 		try {
 			const nextAlignment = await runPodcastAlignment({
 				channels: resolvedChannels,
 				settings: resolvedSettings,
+				signal: analysisAbort.current.signal,
 				onProgress: ({ step: nextStep, progress: value }) =>
 					setProgress({ step: nextStep, value }),
 			});
 			setAlignment(nextAlignment);
 			return { resolvedChannels, resolvedSettings, nextAlignment };
 		} catch (error) {
+			if (analysisAbort.current?.signal.aborted) return null;
 			console.error("Podcast synchronization failed:", error);
 			toast.error("Podcast synchronization failed", {
 				description: error instanceof Error ? error.message : undefined,
@@ -323,17 +348,21 @@ export function PodcastSyncDialog({
 		setSettings(resolvedSettings);
 		setIsRunning(true);
 		setProgress({ step: "Starting multicam analysis", value: 0 });
+		analysisAbort.current?.abort();
+		analysisAbort.current = new AbortController();
 		try {
 			const nextResult = await runPodcastMulticam({
 				channels: resolvedChannels,
 				settings: resolvedSettings,
 				alignment: resolvedAlignment,
+				signal: analysisAbort.current.signal,
 				onProgress: ({ step: nextStep, progress: value }) =>
 					setProgress({ step: nextStep, value }),
 			});
 			setResult(nextResult);
 			return { resolvedChannels, resolvedSettings, nextResult };
 		} catch (error) {
+			if (analysisAbort.current?.signal.aborted) return null;
 			console.error("Podcast multicam analysis failed:", error);
 			toast.error("Podcast multicam analysis failed", {
 				description: error instanceof Error ? error.message : undefined,
@@ -347,13 +376,13 @@ export function PodcastSyncDialog({
 	const handleAutoEdit = async () => {
 		setStep("sync");
 		const syncRun = await handleRunAlignment();
-		if (!syncRun) return;
+		if (!syncRun || analysisAbort.current?.signal.aborted) return;
 		setStep("multicam");
 		const multicamRun = await handleRunMulticam({
 			alignmentOverride: syncRun.nextAlignment,
 			quick: true,
 		});
-		if (!multicamRun) return;
+		if (!multicamRun || analysisAbort.current?.signal.aborted) return;
 		setStep("sequence");
 		setIsRunning(true);
 		try {
@@ -401,13 +430,15 @@ export function PodcastSyncDialog({
 				<DialogHeader>
 					<DialogTitle>Podcast Multicam</DialogTitle>
 					<DialogDescription>
-						Sync every camera to its microphone, detect the active speaker, and
-						build an editable multicam sequence.
+						Sync all cameras and microphones together, detect the active
+						speaker, then apply microphone gain, limiting, noise reduction and
+						Sharpen automatically.
 					</DialogDescription>
 					<WizardSteps currentIndex={currentStepIndex} />
 				</DialogHeader>
 
 				<DialogBody className="min-h-0 overflow-y-auto">
+					{step === "media" ? <PodcastFinishPanel /> : null}
 					{step === "media" ? (
 						<MediaStep
 							mode={mode}
@@ -460,6 +491,19 @@ export function PodcastSyncDialog({
 				</DialogBody>
 
 				<DialogFooter>
+					{isRunning ? (
+						<Button
+							variant="outline"
+							onClick={() => {
+								analysisAbort.current?.abort();
+								setStep("media");
+								setAlignment(null);
+								setResult(null);
+							}}
+						>
+							Cancel analysis
+						</Button>
+					) : null}
 					{step === "media" ? (
 						<>
 							<Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -494,7 +538,10 @@ export function PodcastSyncDialog({
 								<ChevronLeft className="size-4" /> Back
 							</Button>
 							{alignment ? (
-								<Button onClick={() => setStep("multicam")}>
+								<Button
+									disabled={isRunning}
+									onClick={() => setStep("multicam")}
+								>
 									Continue to Multicam <ChevronRight className="size-4" />
 								</Button>
 							) : (
@@ -517,7 +564,10 @@ export function PodcastSyncDialog({
 								<ChevronLeft className="size-4" /> Back
 							</Button>
 							{result ? (
-								<Button onClick={() => setStep("sequence")}>
+								<Button
+									disabled={isRunning}
+									onClick={() => setStep("sequence")}
+								>
 									Continue <ChevronRight className="size-4" />
 								</Button>
 							) : (
@@ -647,14 +697,14 @@ function MediaStep({
 					selected={mode === "quick"}
 					icon={<WandSparkles className="size-5" />}
 					title="Quick Auto Edit"
-					description="One click runs sync and multicam with the original app defaults, then creates the sequence."
+					description="One click syncs the cameras and microphones, mutes camera audio, and cuts between speakers with 1–20 second shots."
 					onClick={() => onModeChange("quick")}
 				/>
 				<ModeCard
 					selected={mode === "guided"}
 					icon={<SlidersHorizontal className="size-5" />}
 					title="Step by Step"
-					description="Review synchronization first, then choose multicam behavior before creating the sequence."
+					description="Review synchronization and camera cuts, then finish with the podcast audio and Sharpen preset."
 					onClick={() => onModeChange("guided")}
 				/>
 			</div>
@@ -828,8 +878,8 @@ function SyncStep({
 			<div>
 				<h3 className="font-medium">Synchronization</h3>
 				<p className="text-muted-foreground text-sm">
-					Camera audio aligns all angles to one timeline; each professional mic
-					is then aligned to its camera.
+					All camera and microphone recordings are analyzed together and aligned
+					to one shared timeline.
 				</p>
 			</div>
 			{isRunning || auto ? <ProgressPanel progress={progress} /> : null}
@@ -933,6 +983,28 @@ function MulticamStep({
 						}
 					/>
 					<NumberSetting
+						label="Max shot (seconds, 0 = off)"
+						value={settings.maxCutDuration}
+						min={0}
+						max={3600}
+						step={1}
+						disabled={isRunning || !!result}
+						onChange={(maxCutDuration) =>
+							onSettingsChange({ ...settings, maxCutDuration })
+						}
+					/>
+					<NumberSetting
+						label="Reaction shot (seconds)"
+						value={settings.reactionDuration ?? 5}
+						min={settings.minCutDuration}
+						max={60}
+						step={0.1}
+						disabled={isRunning || !!result || settings.maxCutDuration === 0}
+						onChange={(reactionDuration) =>
+							onSettingsChange({ ...settings, reactionDuration })
+						}
+					/>
+					<NumberSetting
 						label="Pre-roll (seconds)"
 						value={settings.preRoll}
 						min={0}
@@ -1022,7 +1094,9 @@ function CutTimeline({
 						style={{
 							width: `${(cut.duration / result.duration) * 100}%`,
 							backgroundColor:
-								CHANNEL_COLORS[channelIndex.get(cut.channelId) ?? 0],
+								CHANNEL_COLORS[
+									(channelIndex.get(cut.channelId) ?? 0) % CHANNEL_COLORS.length
+								],
 						}}
 					/>
 				))}
@@ -1032,7 +1106,9 @@ function CutTimeline({
 					<div key={channel.id} className="flex items-center gap-1.5 text-xs">
 						<span
 							className="size-2.5 rounded-sm"
-							style={{ backgroundColor: CHANNEL_COLORS[index] }}
+							style={{
+								backgroundColor: CHANNEL_COLORS[index % CHANNEL_COLORS.length],
+							}}
 						/>
 						{channel.name}
 					</div>
@@ -1074,7 +1150,7 @@ function SequenceStep({
 			</h3>
 			<p className="text-muted-foreground mt-2 max-w-md text-sm">
 				{created
-					? `“${sequenceName}” is open in the editor with routed and leftover camera tracks plus continuous microphone audio.`
+					? `“${sequenceName}” is ready: synchronized cameras with enabled/disabled cuts, muted camera sound, microphone Volume +15 dB, Gain −1 dB, Hard Limiter −1 dB, noise reduction 100% and Sharpen 15%.`
 					: `${result?.summary.totalCuts ?? 0} cuts across ${channelCount} channels are ready for an editable PoCut sequence.`}
 			</p>
 		</div>

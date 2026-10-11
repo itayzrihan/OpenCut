@@ -243,7 +243,10 @@ impl ClassicProject {
             }
         }
         for scene in scenes {
-            crate::operations::classic_takes::validate_scene(scene, &asset_ids).map_err(|e| invalid(&e))?;
+            crate::operations::classic_multicam::validate_scene(scene, &asset_ids)
+                .map_err(|e| invalid(&e))?;
+            crate::operations::classic_takes::validate_scene(scene, &asset_ids)
+                .map_err(|e| invalid(&e))?;
             if !scene_ids.insert(string_at(scene, "id")?) {
                 return Err(invalid("duplicate scene id"));
             }
@@ -310,21 +313,107 @@ impl ClassicProject {
                         return Err(invalid("duplicate track or element id"));
                     }
                     string_at(element, "type")?;
+
+                    for (key, min, max) in [
+                        ("gainDb", -60.0, 30.0),
+                        ("hardLimiterCeilingDb", -60.0, 0.0),
+                        ("hardLimiterLookAheadMs", 1.0, 20.0),
+                        ("hardLimiterReleaseMs", 10.0, 250.0),
+                    ] {
+                        if let Some(value) = element["params"].get(key) {
+                            if !matches!(element["type"].as_str(), Some("video" | "audio"))
+                                || !value
+                                    .as_f64()
+                                    .is_some_and(|n| n.is_finite() && (min..=max).contains(&n))
+                            {
+                                return Err(invalid(&format!("Invalid audio {key}")));
+                            }
+                        }
+                    }
+                    if let Some(value) = element["params"].get("hardLimiterEnabled") {
+                        if !matches!(element["type"].as_str(), Some("video" | "audio"))
+                            || !value.is_boolean()
+                        {
+                            return Err(invalid(
+                                "hardLimiterEnabled requires an audio/video clip and a boolean",
+                            ));
+                        }
+                    }
+                    if let Some(amount) = element["params"].get("noiseReduction") {
+                        if !matches!(element["type"].as_str(), Some("video" | "audio"))
+                            || !amount
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (0.0..=100.0).contains(&n))
+                        {
+                            return Err(invalid(
+                                "noiseReduction requires an audio/video clip and a percentage in 0..100",
+                            ));
+                        }
+                    }
+                    if element["effectType"] == "sharpen" {
+                        if let Some(amount) = element["params"].get("intensity") {
+                            if !amount
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (0.0..=100.0).contains(&n))
+                            {
+                                return Err(invalid(
+                                    "Sharpen intensity must be a percentage in 0..100",
+                                ));
+                            }
+                        }
+                    }
+
+                    if element
+                        .get("podcastFinishingVersion")
+                        .is_some_and(|v| v.as_u64() != Some(1))
+                    {
+                        return Err(invalid("Unsupported podcast finishing version"));
+                    }
+                    if element
+                        .get("enabled")
+                        .is_some_and(|value| !value.is_boolean())
+                    {
+                        return Err(invalid("element enabled must be a boolean"));
+                    }
                     if element["params"].get("textGraphicsSceneId").is_some() {
                         let p = &element["params"];
-                        if element["type"] != "text" || !matches!(p["textGraphicsEdge"].as_str(),Some("top"|"bottom"))
-                            || !p["textGraphicsSizePercent"].as_f64().is_some_and(|n| n.is_finite() && (1.0..=60.0).contains(&n))
-                            || !p["textGraphicsTransitionSeconds"].as_f64().is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
-                            || !p["textGraphicsSceneId"].as_str().is_some_and(|id| id != scene["id"].as_str().unwrap_or_default() && scenes.iter().any(|s|s["id"]==id)) {
+                        if element["type"] != "text"
+                            || !matches!(p["textGraphicsEdge"].as_str(), Some("top" | "bottom"))
+                            || !p["textGraphicsSizePercent"]
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (1.0..=60.0).contains(&n))
+                            || !p["textGraphicsTransitionSeconds"]
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
+                            || !p["textGraphicsSceneId"].as_str().is_some_and(|id| {
+                                id != scene["id"].as_str().unwrap_or_default()
+                                    && scenes.iter().any(|s| s["id"] == id)
+                            })
+                        {
                             return Err(invalid("Invalid text graphics attachment"));
                         }
                     }
                     if element["effectType"] == "push-broll" {
                         let params = &element["params"];
                         if !matches!(params["edge"].as_str(), Some("top" | "bottom"))
-                            || !params["screenPercent"].as_f64().is_some_and(|n| n.is_finite() && (1.0..=90.0).contains(&n))
-                            || !params["transitionSeconds"].as_f64().is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
-                            || !params["brollSceneId"].as_str().is_some_and(|id| id != scene["id"].as_str().unwrap_or_default() && self.document.get("scenes").unwrap().as_array().unwrap().iter().any(|s| s["id"] == id)) {
+                            || !params["screenPercent"]
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (1.0..=90.0).contains(&n))
+                            || !params["transitionSeconds"]
+                                .as_f64()
+                                .is_some_and(|n| n.is_finite() && (0.0..=10.0).contains(&n))
+                            || !params["brollSceneId"].as_str().is_some_and(|id| {
+                                id != scene["id"].as_str().unwrap_or_default()
+                                    && self
+                                        .document
+                                        .get("scenes")
+                                        .unwrap()
+                                        .as_array()
+                                        .unwrap()
+                                        .iter()
+                                        .any(|s| s["id"] == id)
+                            })
+                        {
                             return Err(invalid("Invalid push B-roll settings or nested scene"));
                         }
                     }

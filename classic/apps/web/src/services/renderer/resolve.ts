@@ -10,6 +10,7 @@ import {
 	resolveAnimationPathValueAtTime,
 } from "@/animation";
 import { resolveEffectParamsAtTime } from "@/animation/effect-param-channel";
+import { resolveGraphicParamsAtTime } from "@/animation/graphic-param-channel";
 import {
 	buildGaussianBlurPasses,
 	intensityToSigma,
@@ -246,6 +247,20 @@ function resolveParallaxSceneNode({
 	});
 	return movement
 		? {
+				opacity: Math.max(
+					0,
+					Math.min(
+						1,
+						resolveOpacityAtTime({
+							baseOpacity:
+								typeof node.params.storyParams.opacity === "number"
+									? node.params.storyParams.opacity
+									: 1,
+							animations: node.params.storyAnimations,
+							localTime,
+						}),
+					),
+				),
 				movement: {
 					...movement,
 					// Camera coordinates describe the center of the viewport in world
@@ -762,7 +777,7 @@ async function resolveVideoNode({
 			retime: node.params.retime,
 		});
 	const frame = await videoCache.getFrameAt({
-		mediaId: node.params.mediaId,
+		mediaId: node.previewDecoderId ?? node.params.mediaId,
 		file: node.params.file,
 		url: node.params.url,
 		maxSourceSize: node.params.maxSourceSize,
@@ -1160,10 +1175,16 @@ function resolveEffectLayerNode({
 
 	const localTime = time - node.params.timeOffset;
 	const definition = getEffectDefinition(node.params.effectType);
+	const effectParams = resolveGraphicParamsAtTime({
+		params: node.params.effectParams,
+		definitions: definition.params,
+		animations: node.params.effectAnimations,
+		localTime,
+	});
 	const movement =
 		definition.type === CUSTOM_AI_EFFECT_TYPE
 			? resolveOverlayMovementFrame({
-					effectParams: node.params.effectParams,
+					effectParams,
 					animations: node.params.effectAnimations,
 					localTime,
 					duration: node.params.duration,
@@ -1178,10 +1199,10 @@ function resolveEffectLayerNode({
 				effectParams:
 					definition.type === "automatic-zoom"
 						? {
-								...node.params.effectParams,
+								...effectParams,
 								spanSeconds: node.params.duration / 120000,
 							}
-						: node.params.effectParams,
+						: effectParams,
 				width: context.renderer.width,
 				height: context.renderer.height,
 				localTime,
@@ -1190,7 +1211,7 @@ function resolveEffectLayerNode({
 		definition.type === CUSTOM_AI_EFFECT_TYPE && !movement
 			? resolveEffectLayerVisualOverlay({
 					effectType: node.params.effectType,
-					effectParams: node.params.effectParams,
+					effectParams,
 					localTime,
 					duration: node.params.duration,
 				})

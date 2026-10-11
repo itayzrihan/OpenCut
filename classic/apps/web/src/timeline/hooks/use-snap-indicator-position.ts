@@ -1,7 +1,7 @@
 import { useContainerSize } from "@/hooks/use-container-size";
 import { timelineTimeToSnappedPixels } from "@/timeline";
-import { TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX } from "@/timeline/components/layout";
 interface UseSnapIndicatorPositionParams {
+	controlsWidth: number;
 	snapPoint: { time: number } | null;
 	zoomLevel: number;
 	scrollLeft: number;
@@ -15,6 +15,7 @@ interface SnapIndicatorPosition {
 }
 
 export function useSnapIndicatorPosition({
+	controlsWidth,
 	snapPoint,
 	zoomLevel,
 	scrollLeft,
@@ -30,8 +31,7 @@ export function useSnapIndicatorPosition({
 		time: snapPoint?.time ?? 0,
 		zoomLevel,
 	});
-	const leftPosition =
-		TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX + timelinePosition - scrollLeft;
+	const leftPosition = controlsWidth + timelinePosition - scrollLeft;
 
 	return {
 		leftPosition,

@@ -38,6 +38,46 @@ async fn read(runtime: &OpenCutRuntime) -> Value {
         .clone()
 }
 #[tokio::test]
+async fn inspector_combined_scale_commits_both_axes_and_undoes_atomically() {
+    let runtime = setup().await;
+    let before = read(&runtime).await;
+    call(
+        &runtime,
+        "timeline.classic.elements.update",
+        input(
+            &runtime,
+            json!([
+                {"trackId":"video-track","elementId":"item-2","patch":{"params":{
+                    "transform.scaleX":1.25,"transform.scaleY":1.25,
+                    "transform.positionX":32,"transform.positionY":-20,
+                    "transform.rotate":15,"transform.perspectiveX":10,"transform.perspectiveY":-5
+                }}}
+            ]),
+        ),
+    )
+    .await;
+    let after = read(&runtime).await;
+    let clip = &after["main"]["elements"][0];
+    assert_eq!(clip["params"]["transform.scaleX"], 1.25);
+    assert_eq!(clip["params"]["transform.scaleY"], 1.25);
+    assert_eq!(clip["params"]["transform.positionX"], 32);
+    assert_eq!(clip["params"]["transform.perspectiveY"], -5);
+    for field in [
+        "duration",
+        "startTime",
+        "trimStart",
+        "trimEnd",
+        "animations",
+        "masks",
+    ] {
+        assert_eq!(clip[field], before["main"]["elements"][0][field]);
+    }
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await, before);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await, after);
+}
+#[tokio::test]
 async fn retime_uses_original_source_span_and_trim_curves_transitions_round_trip_through_history() {
     let runtime = setup().await;
     let before = read(&runtime).await;

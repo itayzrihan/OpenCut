@@ -3,6 +3,7 @@ import { withProjectWriteRequest } from "@/editor-agent/server/project-write";
 /* eslint-disable opencut/prefer-object-params -- HTTP range helpers mirror protocol parameters. */
 import { NextResponse } from "next/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
+import { mediaRangeEnd } from "@/services/local-drive/media-range";
 import {
 	assertLocalDriveRequest,
 	getMediaFile,
@@ -23,7 +24,7 @@ function parseRange(rangeHeader: string | null, size: number) {
 	const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
 	if (!match) return null;
 	let start = match[1] ? Number(match[1]) : 0;
-	let end = match[2] ? Number(match[2]) : size - 1;
+	let end = mediaRangeEnd({ start, requestedEnd: match[2], size });
 	if (!match[1] && match[2]) {
 		const suffixLength = Number(match[2]);
 		start = Math.max(0, size - suffixLength);

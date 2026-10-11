@@ -173,6 +173,8 @@ export interface LibraryAudioElement extends BaseAudioElement {
 export type AudioElement = UploadAudioElement | LibraryAudioElement;
 
 interface BaseTimelineElement {
+	/** Absent means enabled; false bypasses picture, effects and audio. */
+	enabled?: boolean;
 	takeGroup?: { assemblyId: string; groupIndex: number };
 	id: string;
 	name: string;
@@ -419,7 +421,9 @@ export type CreateImageElement = Omit<ImageElement, "id">;
 export type CreateTextElement = Omit<TextElement, "id">;
 export type CreateStickerElement = Omit<StickerElement, "id">;
 export type CreateGraphicElement = Omit<GraphicElement, "id">;
-export type CreateEffectElement = Omit<EffectElement, "id">;
+export type CreateEffectElement = Omit<EffectElement, "id"> & {
+	fullScene?: boolean;
+};
 export type CreateTimelineElement =
 	| CreateAudioElement
 	| CreateVideoElement

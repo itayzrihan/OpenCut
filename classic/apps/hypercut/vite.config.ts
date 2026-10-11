@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { getHyperframeRuntimeScript } from "@hyperframes/core/runtime-script";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { persistentTimelineLabels } from "./studio-customizations";
 const require = createRequire(import.meta.url);
 function runtimeAssets(): Plugin {
 	const assets: Record<string, string> = {
@@ -30,7 +31,9 @@ function runtimeAssets(): Plugin {
 	};
 }
 export default defineConfig({
-	plugins: [react(), runtimeAssets()],
+	plugins: [persistentTimelineLabels(), react(), runtimeAssets()],
+	// Keep the Studio hook visible to the same transform in development and builds.
+	optimizeDeps: { exclude: ["@hyperframes/studio"] },
 	worker: { format: "es" },
 	build: { target: "es2022" },
 	server: { fs: { allow: ["../.."] }, proxy: { "/api": { target: "http://127.0.0.1:3221", changeOrigin: false } } },

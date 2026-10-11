@@ -8,6 +8,7 @@ import { unlink } from "node:fs/promises";
 import { CanonicalStudio, type Source } from "./canonical";
 import { initialHTML } from "./fixture";
 import { digest, materialize, readCandidate } from "./materialization";
+import { createCatalog } from "./catalog";
 const error = (message: string, status = 409) => Response.json({ error: message }, { status });
 const changed = (a: Source, b: Source) => [...new Set([...Object.keys(a.files), ...Object.keys(b.files), ...Object.keys(a.assets), ...Object.keys(b.assets)])].filter(p => a.files[p] !== b.files[p] || JSON.stringify(a.assets[p]) !== JSON.stringify(b.assets[p]));
 export async function createHypercut(dataDir: string) {
@@ -31,6 +32,7 @@ export async function createHypercut(dataDir: string) {
     }
   };
   const project = () => ({ id: canonical.id, dir: projectDir, title: "HyperCut" });
+  const listRegistryCatalog = createCatalog(join(dataDir, "cache", "catalog.json"));
   const upstream = createStudioApi({
     listProjects: () => [project()], resolveProject: id => id === canonical.id ? project() : null,
     bundle: (dir, options) => bundleToSingleHtml(dir, { ...PREVIEW_BUNDLE_OPTIONS, ...options }),
@@ -39,6 +41,7 @@ export async function createHypercut(dataDir: string) {
     rendersDir: () => join(dataDir, "renders"),
     startRender: () => { throw new Error("HyperCut export adapter is not connected yet"); },
     getProjectSignature: () => String(canonical.revision),
+    listRegistryCatalog,
   });
   const app = new Hono();
   app.use("*", async (c, next) => {
@@ -57,6 +60,11 @@ export async function createHypercut(dataDir: string) {
   }));
   app.get("/api/hypercut/state", () => exclusive(async () => Response.json(canonical.snapshot())));
   app.get("/api/hypercut/status", c => c.json({ editor: "@hyperframes/studio/StudioApp", upstream: "0.8.146", canonical: true, featureParity: false }));
+  // Catalog network I/O must never hold the editor's save/read queue.
+  app.get("/api/registry/blocks", async c => {
+    try { return c.json(await listRegistryCatalog()); }
+    catch { return c.json({ error: "Catalog is temporarily unavailable; please retry" }, 503); }
+  });
   // Presentation only: the canonical registry owns Undo/Redo and its persisted stack.
   const historyView = () => {
     const h = canonical.history(), paths = Object.keys(canonical.source().files);

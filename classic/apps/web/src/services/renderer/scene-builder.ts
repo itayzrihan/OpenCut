@@ -63,7 +63,10 @@ export const PREVIEW_MAX_VIDEO_SIZE = 1280;
 
 function getVisibleSortedElements({ track }: { track: TimelineTrack }) {
 	return track.elements
-		.filter((element) => !("hidden" in element && element.hidden))
+		.filter(
+			(element) =>
+				element.enabled !== false && !("hidden" in element && element.hidden),
+		)
 		.slice()
 		.sort((a, b) => {
 			if (a.startTime !== b.startTime) return a.startTime - b.startTime;
@@ -183,6 +186,7 @@ function buildTrackNodes({
 							sourceDuration,
 							effectParams: cameraParams,
 							storyParams: element.params,
+							storyAnimations: element.animations,
 							effectAnimations: hasInternalCamera
 								? cameraGuide.animations
 								: element.animations,

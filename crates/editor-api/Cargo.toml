@@ -25,6 +25,7 @@ scraper = { version = "0.24.0", default-features = false }
 percent-encoding = "2.3"
 html5gum = { version = "=0.8.4", default-features = false }
 culors = "=1.6.0"
+classic-podcast = { package = "podcast", path = "../../classic/rust/crates/podcast", features = ["schema"] }
 classic-timeline = { package = "timeline", path = "../../classic/rust/crates/timeline" }
 classic-background-removal = { package = "background-removal", path = "../../classic/rust/crates/background-removal" }
 regex = { version = "1", default-features = false, features = ["std", "unicode-perl", "unicode-gencat"] }

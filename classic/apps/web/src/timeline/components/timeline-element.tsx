@@ -1091,6 +1091,21 @@ function TimelineElementMenuContent({
 					{sourceAudioLabel}
 				</ContextMenuItem>
 			)}
+			<ContextMenuItem
+				onClick={() =>
+					editor.command.editClassicElementControls({
+						elements: isCurrentElementSelected
+							? selectedElements
+							: [{ trackId, elementId: element.id }],
+						change: { type: "setEnabled", value: element.enabled === false },
+					})
+				}
+			>
+				{element.enabled === false ? "Enable" : "Disable"}
+				{isCurrentElementSelected && selectedElementCount > 1
+					? " selected clips"
+					: " clip"}
+			</ContextMenuItem>
 			{canElementBeHidden(element) && (
 				<VisibilityMenuItem
 					element={element}
@@ -1129,6 +1144,13 @@ function TimelineElementMenuContent({
 				</>
 			)}
 			<ContextMenuSeparator />
+			<ActionMenuItem
+				action="delete-to-same-point"
+				disabled={!isCurrentElementSelected}
+				icon={<HugeiconsIcon icon={Delete02Icon} />}
+			>
+				Delete to the same point
+			</ActionMenuItem>
 			<ActionMenuItem
 				action="ripple-delete-selected"
 				disabled={!isCurrentElementSelected}
@@ -1189,7 +1211,9 @@ function ElementInner({
 	elementWidth: number;
 }) {
 	const isReducedOpacity =
-		(canElementBeHidden(element) && element.hidden) || isDropTarget;
+		element.enabled === false ||
+		(canElementBeHidden(element) && element.hidden) ||
+		isDropTarget;
 	return (
 		<div
 			className="absolute top-0 bottom-0"
@@ -1217,6 +1241,7 @@ function ElementInner({
 					{/* eslint-disable-next-line jsx-a11y/click-events-have-key-events -- timeline clips are pointer gesture surfaces; nested clip controls must remain valid interactive elements. */}
 					<div
 						role="button"
+						aria-label={`${element.name}${element.enabled === false ? " (disabled)" : ""}`}
 						tabIndex={-1}
 						className="absolute inset-0 size-full flex flex-col"
 						onClick={(event) => onElementClick({ event, element, track })}
@@ -2227,6 +2252,7 @@ function AudioElementContent({
 				fadeOutDuration: element.params.fadeOutDuration,
 				muted: element.params.muted === true,
 				volume: element.params.volume,
+				gainDb: element.params.gainDb,
 			}),
 		[
 			element.animations,
@@ -2235,6 +2261,7 @@ function AudioElementContent({
 			element.params.fadeOutDuration,
 			element.params.muted,
 			element.params.volume,
+			element.params.gainDb,
 		],
 	);
 	if (audioBuffer || audioUrl || sourceFile) {

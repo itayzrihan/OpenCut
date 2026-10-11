@@ -74,6 +74,8 @@ mod classic_text_merge;
 mod classic_ripple;
 mod classic_ripple_delete;
 mod classic_insert;
+pub(crate) mod classic_multicam;
+mod classic_podcast_finish;
 mod classic_scenes;
 mod classic_push_broll;
 mod classic_text_graphics;
@@ -106,6 +108,8 @@ pub(crate) fn register_all(
     classic_masks: crate::ClassicMaskCatalog,
     classic_animation: crate::ClassicAnimationCatalog,
 ) -> Result<(), RegistryError> {
+    classic_multicam::register_multicam(registry, state.clone(), events.clone())?;
+    classic_podcast_finish::register_podcast_finish(registry, state.clone(), events.clone())?;
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;

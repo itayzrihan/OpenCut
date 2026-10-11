@@ -417,14 +417,17 @@ export class TimelineManager {
 	deleteElements({
 		elements,
 		ripple = false,
+		samePoint = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
 		ripple?: boolean;
+		samePoint?: boolean;
 	}): void {
 		this.editor.command.removeClassicTimelineContent({
 			type: "elements",
 			elements,
 			ripple,
+			samePoint,
 		});
 	}
 

@@ -29,6 +29,7 @@ export interface TProjectMetadata {
 }
 
 export interface TProjectSettings {
+	timelineTrackControlsWidth?: number;
 	fps: FrameRate;
 	canvasSize: TCanvasSize;
 	canvasSizeMode?: "preset" | "custom";

@@ -294,6 +294,18 @@ export function useEditorActions() {
 	);
 
 	useActionHandler(
+		"delete-to-same-point",
+		() => {
+			if (editor.selection.getActiveSelectionKind() !== "elements") return;
+			editor.timeline.deleteElements({
+				elements: selectedElements,
+				samePoint: true,
+			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
 		"ripple-delete-selected",
 		() => {
 			if (editor.selection.getActiveSelectionKind() !== "elements") return;

@@ -114,7 +114,7 @@ fn reconcile_typing(
         let start = ticks(&text["startTime"])?;
         while offset < duration {
             let span = (duration - offset).min(segment);
-            let mut audio = json!({"id":classic_duplicate::fresh(document,&mut occupied,"element"),"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":definition["assetId"],"name":"Letter by letter typing SFX","startTime":start+offset,"duration":span,"trimStart":0,"trimEnd":segment-span,"sourceDuration":segment,"params":{"audioSyncOffset":0,"volume":definition["volumeDb"],"muted":false,"fadeInDuration":0,"fadeOutDuration":0,KIND:"letter-by-letter-typing-sfx",TEXT:text["id"],"opencut.typingRevealSfx.segmentIndex":offset/segment}});
+            let mut audio = json!({"id":classic_duplicate::fresh(document,&mut occupied,"element"),"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":definition["assetId"],"name":"Letter by letter typing SFX","startTime":start+offset,"duration":span,"trimStart":0,"trimEnd":segment-span,"sourceDuration":segment,"params":{"audioSyncOffset":0,"noiseReduction":0,"gainDb":0,"hardLimiterEnabled":false,"hardLimiterCeilingDb":-1,"hardLimiterLookAheadMs":7,"hardLimiterReleaseMs":100,"volume":definition["volumeDb"],"muted":false,"fadeInDuration":0,"fadeOutDuration":0,KIND:"letter-by-letter-typing-sfx",TEXT:text["id"],"opencut.typingRevealSfx.segmentIndex":offset/segment}});
             let new_track = classic_duplicate::fresh(document, &mut occupied, "track");
             classic_insert::place_library_audio(scene, &mut audio, &new_track)?;
             offset += span;
@@ -365,6 +365,8 @@ pub(super) fn register_classic_update(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register_noise_reduction(registry, state.clone(), events.clone())?;
+    register_audio_dynamics(registry, state.clone(), events.clone())?;
     register::<Input, MutationOutput, _, _>(
         registry,
         DocumentSupport::Classic,
@@ -390,101 +392,239 @@ pub(super) fn register_classic_update(
         move |context, input| {
             let state = state.clone();
             let events = events.clone();
+            async move { apply_updates(&state, &events, &context, input) }
+        },
+    )
+}
+
+fn apply_updates(
+    state: &Arc<RwLock<EditorStore>>,
+    events: &broadcast::Sender<u64>,
+    context: &InvocationContext,
+    input: Input,
+) -> Result<OperationSuccess<MutationOutput>, CapabilityError> {
+    let result = mutate_grouped(
+        state,
+        events,
+        context,
+        "Update Classic clips",
+        Some(input.expected_revision),
+        input.history_group.as_deref(),
+        |document| {
+            let project = project_mut(document)?;
+            if project.id != input.project_id {
+                return Err(CapabilityError::Conflict(
+                    "Clip update target is not active".into(),
+                ));
+            }
+            let mut scene = project
+                .classic
+                .as_mut()
+                .ok_or_else(|| invalid("Requires Classic project"))?
+                .document["scenes"]
+                .as_array()
+                .and_then(|v| v.iter().find(|s| s["id"] == input.scene_id))
+                .ok_or_else(|| invalid("Scene not found"))?
+                .clone();
+            let before = scene["tracks"].clone();
+            let tracks = &mut scene["tracks"];
+            let mut seen = HashSet::new();
+            for update in &input.updates {
+                if !seen.insert(&update.element_id) {
+                    return Err(invalid("Duplicate clip update"));
+                }
+                let location = all(tracks)
+                    .find(|t| t["id"] == update.track_id)
+                    .ok_or_else(|| invalid("Track not found"))?;
+                let original = location["elements"]
+                    .as_array()
+                    .and_then(|v| v.iter().find(|e| e["id"] == update.element_id))
+                    .cloned()
+                    .ok_or_else(|| invalid("Clip not found in target track"))?;
+                let main = tracks["main"]["id"] == update.track_id;
+                let earliest = if main {
+                    location["elements"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .filter(|e| e["id"] != update.element_id)
+                        .map(|e| ticks(&e["startTime"]))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .min()
+                } else {
+                    None
+                };
+                let prefix = format!(
+                    "trim-{:x}",
+                    Sha256::digest(format!(
+                        "{}:{}:{}",
+                        input.scene_id, update.element_id, input.expected_revision
+                    ))
+                );
+                let next = apply(&original, &update.patch, main, earliest, &prefix)?;
+                let track = track_mut(tracks, &update.track_id)
+                    .ok_or_else(|| invalid("Track not found"))?;
+                let target = track["elements"]
+                    .as_array_mut()
+                    .unwrap()
+                    .iter_mut()
+                    .find(|e| e["id"] == update.element_id)
+                    .unwrap();
+                *target = next;
+            }
+            classic_captions::sync_after_edit(tracks, &before, &json!(input.updates))?;
+            if let Some(enabled) = input.managed_typing_sfx {
+                reconcile_typing(document, &mut scene, &before, &input.updates, enabled)?;
+            }
+            *project_mut(document)?.classic.as_mut().unwrap().document["scenes"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|s| s["id"] == input.scene_id)
+                .unwrap() = scene;
+            Ok(input.updates.iter().map(|u| u.element_id.clone()).collect())
+        },
+    )?;
+    Ok(
+        OperationSuccess::new(result).changed([
+            STATE_RESOURCE,
+            PROJECT_RESOURCE,
+            TIMELINE_RESOURCE,
+        ]),
+    )
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct NoiseTarget {
+    track_id: String,
+    element_id: String,
+    #[schemars(range(min = 0, max = 100))]
+    amount: f64,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct NoiseInput {
+    project_id: String,
+    scene_id: String,
+    expected_revision: u64,
+    #[schemars(length(min = 1, max = 1000))]
+    elements: Vec<NoiseTarget>,
+}
+fn register_noise_reduction(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+    events: broadcast::Sender<u64>,
+) -> Result<(), RegistryError> {
+    register::<NoiseInput, MutationOutput, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.audio.noise-reduction",
+        "Set audio noise reduction",
+        "Set speech noise reduction on explicit audio/video clips. amount is a dry/wet percentage in 0..100; zero bypasses processing. Uses the same validated params.noiseReduction state as the Audio inspector, preview and export. Preserves timing, sync offsets, source audio, gain and unrelated parameters. Local RNNoise processing is performed by the media host in bounded windows, never by this state transaction. Supports expectedRevision, dry run, cancellation, idempotent retries and Undo/Redo. Classic renderer feature bridged through the canonical runtime.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["classic", "audio", "noise", "denoise", "סינון רעשים"],
+        move |context, input| {
+            let state = state.clone();
+            let events = events.clone();
             async move {
-                let result = mutate_grouped(
+                let updates = input
+                    .elements
+                    .into_iter()
+                    .map(|target| Update {
+                        track_id: target.track_id,
+                        element_id: target.element_id,
+                        patch: Map::from_iter([(
+                            "params".into(),
+                            json!({"noiseReduction": target.amount}),
+                        )]),
+                    })
+                    .collect();
+                apply_updates(
                     &state,
                     &events,
                     &context,
-                    "Update Classic clips",
-                    Some(input.expected_revision),
-                    input.history_group.as_deref(),
-                    |document| {
-                        let project = project_mut(document)?;
-                        if project.id != input.project_id {
-                            return Err(CapabilityError::Conflict(
-                                "Clip update target is not active".into(),
-                            ));
-                        }
-                        let mut scene = project
-                            .classic
-                            .as_mut()
-                            .ok_or_else(|| invalid("Requires Classic project"))?
-                            .document["scenes"]
-                            .as_array()
-                            .and_then(|v| v.iter().find(|s| s["id"] == input.scene_id))
-                            .ok_or_else(|| invalid("Scene not found"))?
-                            .clone();
-                        let before = scene["tracks"].clone();
-                        let tracks = &mut scene["tracks"];
-                        let mut seen = HashSet::new();
-                        for update in &input.updates {
-                            if !seen.insert(&update.element_id) {
-                                return Err(invalid("Duplicate clip update"));
-                            }
-                            let location = all(tracks)
-                                .find(|t| t["id"] == update.track_id)
-                                .ok_or_else(|| invalid("Track not found"))?;
-                            let original = location["elements"]
-                                .as_array()
-                                .and_then(|v| v.iter().find(|e| e["id"] == update.element_id))
-                                .cloned()
-                                .ok_or_else(|| invalid("Clip not found in target track"))?;
-                            let main = tracks["main"]["id"] == update.track_id;
-                            let earliest = if main {
-                                location["elements"]
-                                    .as_array()
-                                    .unwrap()
-                                    .iter()
-                                    .filter(|e| e["id"] != update.element_id)
-                                    .map(|e| ticks(&e["startTime"]))
-                                    .collect::<Result<Vec<_>, _>>()?
-                                    .into_iter()
-                                    .min()
-                            } else {
-                                None
-                            };
-                            let prefix = format!(
-                                "trim-{:x}",
-                                Sha256::digest(format!(
-                                    "{}:{}:{}",
-                                    input.scene_id, update.element_id, input.expected_revision
-                                ))
-                            );
-                            let next = apply(&original, &update.patch, main, earliest, &prefix)?;
-                            let track = track_mut(tracks, &update.track_id)
-                                .ok_or_else(|| invalid("Track not found"))?;
-                            let target = track["elements"]
-                                .as_array_mut()
-                                .unwrap()
-                                .iter_mut()
-                                .find(|e| e["id"] == update.element_id)
-                                .unwrap();
-                            *target = next;
-                        }
-                        classic_captions::sync_after_edit(tracks, &before, &json!(input.updates))?;
-                        if let Some(enabled) = input.managed_typing_sfx {
-                            reconcile_typing(
-                                document,
-                                &mut scene,
-                                &before,
-                                &input.updates,
-                                enabled,
-                            )?;
-                        }
-                        *project_mut(document)?.classic.as_mut().unwrap().document["scenes"]
-                            .as_array_mut()
-                            .unwrap()
-                            .iter_mut()
-                            .find(|s| s["id"] == input.scene_id)
-                            .unwrap() = scene;
-                        Ok(input.updates.iter().map(|u| u.element_id.clone()).collect())
+                    Input {
+                        project_id: input.project_id,
+                        scene_id: input.scene_id,
+                        expected_revision: input.expected_revision,
+                        updates,
+                        history_group: None,
+                        managed_typing_sfx: None,
                     },
-                )?;
-                Ok(OperationSuccess::new(result).changed([
-                    STATE_RESOURCE,
-                    PROJECT_RESOURCE,
-                    TIMELINE_RESOURCE,
-                ]))
+                )
+            }
+        },
+    )
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct DynamicsInput {
+    project_id: String,
+    scene_id: String,
+    expected_revision: u64,
+    #[schemars(length(min = 1, max = 1000))]
+    elements: Vec<super::classic_remove::ElementRef>,
+    #[schemars(range(min=-60,max=30))]
+    gain_db: f64,
+    hard_limiter_enabled: bool,
+    #[schemars(range(min=-60,max=0))]
+    ceiling_db: f64,
+    #[schemars(range(min = 1, max = 20))]
+    look_ahead_ms: f64,
+    #[schemars(range(min = 10, max = 250))]
+    release_ms: f64,
+}
+fn register_audio_dynamics(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+    events: broadcast::Sender<u64>,
+) -> Result<(), RegistryError> {
+    register::<DynamicsInput, MutationOutput, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.audio.dynamics",
+        "Set audio Gain and Hard Limiter",
+        "Set explicit audio/video clips' gain in dB and a linked-channel sample-peak Hard Limiter, applied after clip volume/fades and noise reduction. Ceiling is -60..0 dB, lookahead 1..20 ms, release 10..250 ms (12 dB recovery). Shared local Rust DSP in preview/export preserves source alignment and length. Disabling bypasses limiting; gain remains independent. Canonical state, validation, expected revision, dry run, cancellation, idempotency and Undo/Redo. No IO.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["classic", "audio", "gain", "limiter"],
+        move |context, input| {
+            let state = state.clone();
+            let events = events.clone();
+            async move {
+                let params = json!({"gainDb":input.gain_db,"hardLimiterEnabled":input.hard_limiter_enabled,"hardLimiterCeilingDb":input.ceiling_db,"hardLimiterLookAheadMs":input.look_ahead_ms,"hardLimiterReleaseMs":input.release_ms});
+                let updates = input
+                    .elements
+                    .into_iter()
+                    .map(|e| Update {
+                        track_id: e.track_id,
+                        element_id: e.element_id,
+                        patch: Map::from_iter([("params".into(), params.clone())]),
+                    })
+                    .collect();
+                apply_updates(
+                    &state,
+                    &events,
+                    &context,
+                    Input {
+                        project_id: input.project_id,
+                        scene_id: input.scene_id,
+                        expected_revision: input.expected_revision,
+                        updates,
+                        history_group: None,
+                        managed_typing_sfx: None,
+                    },
+                )
             }
         },
     )

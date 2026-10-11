@@ -158,3 +158,23 @@ describe("audio fades", () => {
 		expect(hasVariableAudioGain({ element: audioElement() })).toBe(false);
 	});
 });
+
+test("independent Gain combines with Volume without clamping to Volume's range", () => {
+	const element = audioElement({ volume: 15 });
+	element.params.gainDb = -1;
+	expect(resolveEffectiveAudioGain({ element, localTime: 0 })).toBeCloseTo(
+		10 ** (14 / 20),
+		8,
+	);
+	expect(
+		buildCompactWaveformGainSamples({ element, count: 4 })?.[0],
+	).toBeCloseTo(10 ** (14 / 20), 8);
+	element.params.volume = 0;
+	element.params.gainDb = 30;
+	expect(resolveEffectiveAudioGain({ element, localTime: 0 })).toBeCloseTo(
+		10 ** (30 / 20),
+		8,
+	);
+	element.params.muted = true;
+	expect(resolveEffectiveAudioGain({ element, localTime: 0 })).toBe(0);
+});

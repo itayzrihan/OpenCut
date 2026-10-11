@@ -284,6 +284,20 @@ function ToolbarLeftSection() {
 					}
 				/>
 
+				<ToolbarButton
+					icon={
+						<span className="relative">
+							<HugeiconsIcon icon={Delete02Icon} />
+							<span className="absolute -right-1 -bottom-1 text-[10px]">↶</span>
+						</span>
+					}
+					tooltip="Delete to the same point"
+					disabled={selectedElements.length === 0}
+					onClick={({ event }) =>
+						handleAction({ action: "delete-to-same-point", event })
+					}
+				/>
+
 				<div className="bg-border mx-1 h-6 w-px" />
 
 				<BookmarkToolbarButton />

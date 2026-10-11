@@ -1,21 +1,37 @@
+mod hard_limiter;
+pub use hard_limiter::*;
+mod noise_reduction;
+pub use noise_reduction::*;
+mod group_alignment;
+pub use group_alignment::*;
+mod energy;
+pub use energy::*;
+mod alignment;
+pub use alignment::*;
+
 use bridge::export;
 use serde::{Deserialize, Serialize};
 
 const RESOLUTION_SECONDS: f64 = 0.01;
-const INTEGRATION_SECONDS: f64 = 1.0;
+// Short evidence windows avoid the previous ~1 second late speaker changes.
+const INTEGRATION_SECONDS: f64 = 0.2;
 const HOLD_SECONDS: f64 = 0.8;
-const CONFIRM_SECONDS: f64 = 0.5;
+const CONFIRM_SECONDS: f64 = 0.15;
 const ACTIVITY_FLOOR: f32 = 0.02;
 const DOMINANCE_RATIO: f32 = 1.4;
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PodcastMulticamSettings {
     pub sequence_name: String,
     pub min_cut_duration: f64,
     pub max_cut_duration: f64,
+    /// Brief listener shot after a long speaking turn; old projects use five seconds.
+    #[serde(default = "default_reaction_duration")]
+    pub reaction_duration: f64,
     pub pre_roll: f64,
     pub max_lag_seconds: f64,
     pub crosstalk_behavior: String,
@@ -24,12 +40,17 @@ pub struct PodcastMulticamSettings {
     pub keep_camera_mics: bool,
 }
 
+fn default_reaction_duration() -> f64 {
+    5.0
+}
+
 impl PodcastMulticamSettings {
     fn defaults(quick: bool) -> Self {
         Self {
             sequence_name: "Podcast Multicam".to_owned(),
             min_cut_duration: if quick { 1.0 } else { 2.0 },
-            max_cut_duration: 0.0,
+            max_cut_duration: 20.0,
+            reaction_duration: default_reaction_duration(),
             pre_roll: 0.15,
             max_lag_seconds: 1200.0,
             crosstalk_behavior: "stay".to_owned(),
@@ -46,7 +67,17 @@ impl PodcastMulticamSettings {
             self.sequence_name = self.sequence_name.trim().to_owned();
         }
         self.min_cut_duration = finite_or(self.min_cut_duration, 1.0).clamp(0.1, 10.0);
-        self.max_cut_duration = finite_or(self.max_cut_duration, 0.0).max(0.0);
+        self.max_cut_duration = finite_or(self.max_cut_duration, 20.0).clamp(0.0, 3600.0);
+        if self.max_cut_duration > 0.0 {
+            self.max_cut_duration = self.max_cut_duration.max(self.min_cut_duration);
+        }
+        let reaction_max = if self.max_cut_duration > 0.0 {
+            self.max_cut_duration
+        } else {
+            60.0
+        };
+        self.reaction_duration =
+            finite_or(self.reaction_duration, 5.0).clamp(self.min_cut_duration, reaction_max);
         self.pre_roll = finite_or(self.pre_roll, 0.15).clamp(0.0, 1.0);
         self.max_lag_seconds = finite_or(self.max_lag_seconds, 1200.0).clamp(1.0, 3600.0);
         if self.crosstalk_behavior != "priority" {
@@ -86,6 +117,7 @@ pub fn normalize_podcast_multicam_settings(
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RoutePodcastMulticamOptions {
@@ -97,7 +129,8 @@ pub struct RoutePodcastMulticamOptions {
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PodcastMulticamCut {
     pub timestamp: f64,
@@ -115,11 +148,23 @@ pub fn route_podcast_multicam(
     }: RoutePodcastMulticamOptions,
 ) -> Vec<PodcastMulticamCut> {
     let settings = settings.normalized();
-    if channel_ids.is_empty() || !(duration > 0.0) || !duration.is_finite() {
+    if channel_ids.is_empty()
+        || channel_ids.len() > MAX_PODCAST_CHANNELS
+        || !(duration > 0.0)
+        || !duration.is_finite()
+        || duration > 36000.0
+        || timeline.len() > 3_600_001
+        || timeline
+            .iter()
+            .any(|r| r.len() != channel_ids.len() || r.iter().any(|v| !v.is_finite() || *v < 0.0))
+    {
         return Vec::new();
     }
+    let usable = timeline
+        .len()
+        .min((duration / RESOLUTION_SECONDS).ceil() as usize);
     let dominant = compute_dominant_track(
-        &timeline,
+        &timeline[..usable],
         channel_ids.len(),
         settings.crosstalk_behavior == "priority",
     );
@@ -131,7 +176,7 @@ pub fn route_podcast_multicam(
         settings.pre_roll,
     );
     let smoothed = smooth_cuts(cuts, settings.min_cut_duration);
-    split_long_cuts(smoothed, settings.max_cut_duration)
+    insert_reaction_shots(smoothed, &channel_ids, &settings, &timeline)
 }
 
 fn argmax(row: &[f32], num_channels: usize) -> usize {
@@ -336,7 +381,7 @@ fn dominant_track_to_cuts(
         if index > 0
             && let Some(previous) = cuts.last_mut()
         {
-            start_seconds = (previous.timestamp + previous.duration).max(start_seconds - pre_roll);
+            start_seconds = (previous.timestamp + min_cut_duration).max(start_seconds - pre_roll);
             previous.duration = start_seconds - previous.timestamp;
         }
         let cut_duration = if index + 1 == merged.len() {
@@ -369,36 +414,6 @@ fn smooth_cuts(cuts: Vec<PodcastMulticamCut>, min_segment: f64) -> Vec<PodcastMu
             smoothed.push(cut);
         }
     }
-    let bounce_threshold = min_segment * 2.5;
-    loop {
-        if smoothed.len() < 3 {
-            break;
-        }
-        let mut changed = false;
-        let mut next = vec![smoothed[0].clone()];
-        let mut index = 1;
-        while index + 1 < smoothed.len() {
-            let current = &smoothed[index];
-            let following = &smoothed[index + 1];
-            if following.channel_id == next.last().unwrap().channel_id
-                && current.duration < bounce_threshold
-            {
-                next.last_mut().unwrap().duration += current.duration + following.duration;
-                index += 2;
-                changed = true;
-            } else {
-                next.push(current.clone());
-                index += 1;
-            }
-        }
-        if index < smoothed.len() {
-            next.push(smoothed[index].clone());
-        }
-        smoothed = next;
-        if !changed {
-            break;
-        }
-    }
     let mut merged = Vec::<PodcastMulticamCut>::new();
     for cut in smoothed {
         if let Some(previous) = merged.last_mut()
@@ -412,35 +427,88 @@ fn smooth_cuts(cuts: Vec<PodcastMulticamCut>, min_segment: f64) -> Vec<PodcastMu
     merged
 }
 
-fn split_long_cuts(
+/// The displayed camera has its own clock, independent of acoustic speaker changes.
+/// This prevents same-camera splits, premature returns, and maximum violations when
+/// a listener begins speaking during their reaction shot. Only the final tail may
+/// be shorter than the minimum, as the recording can end mid-shot.
+fn insert_reaction_shots(
     cuts: Vec<PodcastMulticamCut>,
-    max_cut_duration: f64,
+    channel_ids: &[String],
+    settings: &PodcastMulticamSettings,
+    timeline: &[Vec<f32>],
 ) -> Vec<PodcastMulticamCut> {
-    if !(max_cut_duration > 0.0) {
+    if settings.max_cut_duration <= 0.0 || channel_ids.len() < 2 || cuts.is_empty() {
         return cuts;
     }
+    let duration = cuts.last().map(|c| c.timestamp + c.duration).unwrap_or(0.0);
+    let minimum = (settings.min_cut_duration / RESOLUTION_SECONDS).ceil() as usize;
+    let maximum = (settings.max_cut_duration / RESOLUTION_SECONDS)
+        .floor()
+        .max(minimum as f64) as usize;
+    let reaction_length = (settings.reaction_duration / RESOLUTION_SECONDS).round() as usize;
+    let mut visual = cuts[0].channel_id.clone();
+    let mut start = 0usize;
+    let mut source = 0usize;
+    let mut reaction: Option<(String, usize)> = None;
     let mut result = Vec::new();
-    for cut in cuts {
-        let mut remaining = cut.duration;
-        let mut timestamp = cut.timestamp;
-        while remaining > max_cut_duration {
-            result.push(PodcastMulticamCut {
-                timestamp,
-                channel_id: cut.channel_id.clone(),
-                duration: max_cut_duration,
-            });
-            timestamp += max_cut_duration;
-            remaining -= max_cut_duration;
+    for frame in 1..(duration / RESOLUTION_SECONDS).ceil() as usize {
+        let time = frame as f64 * RESOLUTION_SECONDS;
+        while source + 1 < cuts.len() && cuts[source + 1].timestamp <= time + 1e-8 {
+            source += 1;
         }
-        if remaining > 0.0 {
-            result.push(PodcastMulticamCut {
-                timestamp,
-                channel_id: cut.channel_id,
-                duration: remaining,
-            });
+        let speaker = &cuts[source].channel_id;
+        if reaction
+            .as_ref()
+            .is_some_and(|(original, until)| original != speaker || frame >= *until)
+        {
+            reaction = None;
+        }
+        let elapsed = frame - start;
+        let mut next = visual.clone();
+        if elapsed >= minimum && reaction.is_none() {
+            next = speaker.clone();
+        }
+        let audible = timeline
+            .get(frame)
+            .is_some_and(|row| row.iter().any(|v| *v >= ACTIVITY_FLOOR));
+        if elapsed >= maximum && next == visual && audible {
+            let index = channel_ids.iter().position(|id| id == &visual).unwrap_or(0);
+            next = channel_ids[(index + 1) % channel_ids.len()].clone();
+            reaction = Some((speaker.clone(), frame + reaction_length));
+        }
+        if next != visual {
+            append_cut(
+                &mut result,
+                start as f64 * RESOLUTION_SECONDS,
+                &visual,
+                elapsed as f64 * RESOLUTION_SECONDS,
+            );
+            start = frame;
+            visual = next;
         }
     }
+    append_cut(
+        &mut result,
+        start as f64 * RESOLUTION_SECONDS,
+        &visual,
+        duration - start as f64 * RESOLUTION_SECONDS,
+    );
     result
+}
+
+fn append_cut(cuts: &mut Vec<PodcastMulticamCut>, timestamp: f64, channel: &str, duration: f64) {
+    if let Some(previous) = cuts.last_mut()
+        && previous.channel_id == channel
+        && (previous.timestamp + previous.duration - timestamp).abs() < 1e-7
+    {
+        previous.duration += duration;
+        return;
+    }
+    cuts.push(PodcastMulticamCut {
+        timestamp,
+        channel_id: channel.into(),
+        duration,
+    });
 }
 
 #[cfg(test)]
@@ -475,5 +543,92 @@ mod tests {
         assert!(!cuts.is_empty());
         assert_eq!(cuts.first().unwrap().channel_id, "one");
         assert!(cuts.iter().any(|cut| cut.channel_id == "two"));
+    }
+}
+
+#[cfg(test)]
+mod routing_contract_tests {
+    use super::*;
+    fn plan(seconds: usize, switches: &[(usize, usize)], max: f64) -> Vec<PodcastMulticamCut> {
+        let mut timeline = vec![vec![1.0, 0.0]; seconds * 100];
+        for &(at, channel) in switches {
+            for row in &mut timeline[at * 100..] {
+                *row = if channel == 0 {
+                    vec![1.0, 0.0]
+                } else {
+                    vec![0.0, 1.0]
+                };
+            }
+        }
+        let mut settings = PodcastMulticamSettings::defaults(true);
+        settings.max_cut_duration = max;
+        route_podcast_multicam(RoutePodcastMulticamOptions {
+            timeline,
+            channel_ids: vec!["a".into(), "b".into()],
+            duration: seconds as f64,
+            settings,
+        })
+    }
+    #[test]
+    fn monologue_shows_listener_then_returns() {
+        let cuts = plan(70, &[], 20.0);
+        assert_eq!(
+            cuts.iter()
+                .map(|c| (c.timestamp, c.channel_id.as_str(), c.duration))
+                .collect::<Vec<_>>(),
+            vec![
+                (0.0, "a", 20.0),
+                (20.0, "b", 5.0),
+                (25.0, "a", 20.0),
+                (45.0, "b", 5.0),
+                (50.0, "a", 20.0)
+            ]
+        );
+    }
+    #[test]
+    fn limits_apply_to_visual_camera_even_when_listener_becomes_speaker() {
+        let cuts = plan(80, &[(23, 1), (63, 0)], 20.0);
+        let mut end = 0.0;
+        for (i, c) in cuts.iter().enumerate() {
+            assert!((c.timestamp - end).abs() < 1e-8);
+            assert!(c.duration > 0.0 && c.duration <= 20.0 + 1e-8);
+            if i + 1 < cuts.len() {
+                assert!(c.duration >= 1.0);
+                assert_ne!(c.channel_id, cuts[i + 1].channel_id);
+            }
+            end = c.timestamp + c.duration;
+        }
+        assert!((end - 80.0).abs() < 1e-8);
+    }
+    #[test]
+    fn no_reactions_with_one_camera_or_disabled_maximum() {
+        assert_eq!(plan(70, &[], 0.0).len(), 1);
+        let cuts = route_podcast_multicam(RoutePodcastMulticamOptions {
+            timeline: vec![vec![1.0]; 7000],
+            channel_ids: vec!["a".into()],
+            duration: 70.0,
+            settings: PodcastMulticamSettings::defaults(true),
+        });
+        assert_eq!(cuts.len(), 1);
+        assert_eq!(cuts[0].duration, 70.0);
+    }
+    #[test]
+    fn preroll_moves_boundary_without_gaps_or_erasing_valid_interjection() {
+        let dominant = [vec![0; 400], vec![1; 150], vec![0; 400]].concat();
+        let ids = vec!["a".into(), "b".into()];
+        let cuts = smooth_cuts(dominant_track_to_cuts(&dominant, &ids, 9.5, 1.0, 0.15), 1.0);
+        assert_eq!(cuts.len(), 3);
+        assert!((cuts[1].timestamp - 3.85).abs() < 1e-8);
+        assert!((cuts[0].duration - cuts[1].timestamp).abs() < 1e-8);
+    }
+    #[test]
+    fn invalid_limits_are_normalized() {
+        let mut s = PodcastMulticamSettings::defaults(true);
+        s.min_cut_duration = 4.0;
+        s.max_cut_duration = 2.0;
+        s.reaction_duration = 1.0;
+        let s = s.normalized();
+        assert_eq!(s.max_cut_duration, 4.0);
+        assert_eq!(s.reaction_duration, 4.0);
     }
 }

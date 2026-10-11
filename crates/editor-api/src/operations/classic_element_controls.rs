@@ -15,6 +15,8 @@ struct ElementRef {
 enum Change {
     SetHidden { value: bool },
     SetMuted { value: bool },
+    SetEnabled { value: bool },
+    ToggleEnabled,
     ToggleVisibility,
     ToggleMute,
 }
@@ -49,8 +51,8 @@ pub(super) fn register_classic_element_controls(
         DocumentSupport::Classic,
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.controls",
-        "Mute or hide Classic clips",
-        "Set or toggle visibility/mute for 1..1000 explicit trackId/elementId references in one Classic scene. Validates every target before writing and deduplicates repeated references. Visibility applies to video/image/text/sticker/graphic clips; effect/audio clips are skipped. Mute applies to video/audio clips and writes params.muted; other kinds are skipped. Group toggle hides/mutes all eligible clips if any is currently visible/unmuted, otherwise shows/unmutes them all. Prefer setHidden/setMuted with an explicit value in plans. Returns applied/skipped references and the group value. Preserves clip timing, media/source-audio bindings, gain, animations, effects, captions, unrelated scenes and all unknown fields. Supports revisions, dry run, exact registry retry keys, cancellation, atomic transactions and undo/redo. Does not extract source audio or mute a whole track.",
+        "Enable, disable, mute or hide Classic clips",
+        "Set or toggle enabled/visibility/mute for 1..1000 explicit trackId/elementId references in one Classic scene. Validates every target before writing and deduplicates repeated references. Enable applies to every clip kind, defaults to true when absent, and bypasses both picture and sound without changing mute/hidden/source-audio settings. toggleEnabled disables the group when any clip is enabled, otherwise enables all. Prefer setEnabled with an explicit value. Visibility applies to video/image/text/sticker/graphic clips; effect/audio clips are skipped. Mute applies to video/audio clips and writes params.muted; other kinds are skipped. Group toggle hides/mutes all eligible clips if any is currently visible/unmuted, otherwise shows/unmutes them all. Prefer setHidden/setMuted with an explicit value in plans. Returns applied/skipped references and the group value. Preserves clip timing, media/source-audio bindings, gain, animations, effects, captions, unrelated scenes and all unknown fields. Supports revisions, dry run, exact registry retry keys, cancellation, atomic transactions and undo/redo. Does not extract source audio or mute a whole track.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -102,6 +104,10 @@ pub(super) fn register_classic_element_controls(
                             input.change,
                             Change::SetHidden { .. } | Change::ToggleVisibility
                         );
+                        let enabled = matches!(
+                            input.change,
+                            Change::SetEnabled { .. } | Change::ToggleEnabled
+                        );
                         let mut seen = HashSet::new();
                         let mut targets = vec![];
                         for target in &input.elements {
@@ -115,7 +121,9 @@ pub(super) fn register_classic_element_controls(
                                     items.iter().find(|e| e["id"] == target.element_id)
                                 })
                                 .ok_or_else(|| invalid("Element not found in target track"))?;
-                            let eligible = if hidden {
+                            let eligible = if enabled {
+                                true
+                            } else if hidden {
                                 matches!(
                                     element["type"].as_str(),
                                     Some("video" | "image" | "text" | "sticker" | "graphic")
@@ -125,6 +133,7 @@ pub(super) fn register_classic_element_controls(
                             };
                             if eligible
                                 && !hidden
+                                && !enabled
                                 && element
                                     .get("params")
                                     .is_some_and(|p| !p.is_object() && !p.is_null())
@@ -134,7 +143,9 @@ pub(super) fn register_classic_element_controls(
                             if eligible {
                                 targets.push((
                                     target.clone(),
-                                    if hidden {
+                                    if enabled {
+                                        element["enabled"] != false
+                                    } else if hidden {
                                         element["hidden"] == true
                                     } else {
                                         element["params"]["muted"] == true
@@ -145,7 +156,10 @@ pub(super) fn register_classic_element_controls(
                             }
                         }
                         value = match input.change {
-                            Change::SetHidden { value } | Change::SetMuted { value } => value,
+                            Change::SetHidden { value }
+                            | Change::SetMuted { value }
+                            | Change::SetEnabled { value } => value,
+                            Change::ToggleEnabled => !targets.iter().any(|(_, flag)| *flag),
                             _ => targets.iter().any(|(_, flag)| !flag),
                         };
                         for (target, _) in targets {
@@ -163,7 +177,9 @@ pub(super) fn register_classic_element_controls(
                                 .iter_mut()
                                 .find(|e| e["id"] == target.element_id)
                                 .unwrap();
-                            if hidden {
+                            if enabled {
+                                element["enabled"] = json!(value);
+                            } else if hidden {
                                 element["hidden"] = json!(value);
                             } else {
                                 element["params"]["muted"] = json!(value);

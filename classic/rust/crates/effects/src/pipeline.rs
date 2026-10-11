@@ -7,6 +7,8 @@ use wgpu::util::DeviceExt;
 
 use crate::{EffectPass, UniformValue};
 
+const SHARPEN_SHADER_ID: &str = "sharpen";
+const SHARPEN_SHADER_SOURCE: &str = include_str!("shaders/sharpen.wgsl");
 const GAUSSIAN_BLUR_SHADER_ID: &str = "gaussian-blur";
 const AUTOMATIC_ZOOM_SHADER_ID: &str = "automatic-zoom";
 const AUTOMATIC_ZOOM_SHADER_SOURCE: &str = include_str!("shaders/automatic_zoom.wgsl");
@@ -183,6 +185,16 @@ impl EffectPipeline {
                     &vertex_shader_module,
                     VIGNETTE_SHADER_ID,
                     VIGNETTE_SHADER_SOURCE,
+                ),
+            ),
+            (
+                SHARPEN_SHADER_ID.to_string(),
+                create_effect_pipeline(
+                    context,
+                    &pipeline_layout,
+                    &vertex_shader_module,
+                    SHARPEN_SHADER_ID,
+                    SHARPEN_SHADER_SOURCE,
                 ),
             ),
             (
@@ -501,6 +513,15 @@ fn pack_effect_uniforms(
                 direction: [0.0, 0.0],
                 scalars: [read_number_uniform(pass, "u_intensity")?, 0.0, 0.0, 0.0],
                 color: read_vec4_uniform(pass, "u_color")?,
+            })
+        }
+        SHARPEN_SHADER_ID => {
+            ensure_supported_uniforms(pass, &["u_intensity"])?;
+            Ok(EffectUniformBuffer {
+                resolution: [width as f32, height as f32],
+                direction: [0.0; 2],
+                scalars: [read_number_uniform(pass, "u_intensity")?, 0.0, 0.0, 0.0],
+                color: [0.0; 4],
             })
         }
         EDITORIAL_EDGE_FEATHER_SHADER_ID => {

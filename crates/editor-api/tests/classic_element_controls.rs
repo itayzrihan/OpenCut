@@ -208,3 +208,64 @@ async fn opaque_legacy_scalar_parameters_are_rejected_without_poisoning_the_runt
     );
     assert_eq!(read(&rt).await, before);
 }
+
+#[tokio::test]
+async fn enable_disable_preserves_clip_controls_and_round_trips_history() {
+    let rt = setup().await;
+    let before = read(&rt).await;
+    let mut input = request(&before, json!({"type":"toggleEnabled"}));
+    input["elements"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"trackId":"audio-lane","elementId":"audio-clip"}));
+    let dry = InvocationContext {
+        dry_run: true,
+        ..Default::default()
+    };
+    rt.registry().invoke(ID, dry, input.clone()).await.unwrap();
+    assert_eq!(read(&rt).await, before);
+    call(&rt, ID, input.clone()).await;
+    let after = read(&rt).await;
+    let mut expected = before["project"].clone();
+    let tracks = &mut expected["classic"]["document"]["scenes"][0]["tracks"];
+    for e in tracks["main"]["elements"].as_array_mut().unwrap() {
+        e["enabled"] = json!(false);
+    }
+    tracks["overlay"][0]["elements"][0]["enabled"] = json!(false);
+    tracks["audio"][0]["elements"][0]["enabled"] = json!(false);
+    assert_eq!(after["project"], expected);
+    call(&rt, "history.undo", json!({})).await;
+    assert_eq!(read(&rt).await["project"], before["project"]);
+    call(&rt, "history.redo", json!({})).await;
+    assert_eq!(read(&rt).await["project"], after["project"]);
+    input["expectedRevision"] = read(&rt).await["revision"].clone();
+    call(&rt, ID, input.clone()).await;
+    let enabled = read(&rt).await;
+    assert_eq!(
+        enabled["project"]["classic"]["document"]["scenes"][0]["tracks"]["main"]["elements"][1]["enabled"],
+        true
+    );
+    // Explicit disabling is idempotent and does not flip hidden or muted state.
+    input["expectedRevision"] = enabled["revision"].clone();
+    input["change"] = json!({"type":"setEnabled","value":false});
+    call(&rt, ID, input).await;
+    assert_eq!(read(&rt).await["project"], after["project"]);
+}
+
+#[tokio::test]
+async fn non_boolean_enabled_is_rejected_on_attach() {
+    let rt = OpenCutRuntime::full_access().unwrap();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    classic["document"]["scenes"][0]["tracks"]["main"]["elements"][0]["enabled"] = json!("false");
+    assert!(
+        rt.registry()
+            .invoke(
+                "project.classic.session.attach",
+                InvocationContext::default(),
+                json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})
+            )
+            .await
+            .is_err()
+    );
+}

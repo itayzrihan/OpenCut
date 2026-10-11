@@ -70,7 +70,7 @@ fn companion(source: &Value, app: &Application) -> Result<Option<Value>, Capabil
             0
         };
     Ok(Some(
-        json!({"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":p["assetId"],"name":p["name"],"startTime":(start-seconds("leadInSeconds")).max(0),"duration":seconds("durationSeconds"),"sourceDuration":seconds("sourceDurationSeconds"),"trimStart":seconds("trimStartSeconds"),"trimEnd":seconds("trimEndSeconds"),"params":{"audioSyncOffset":0,"volume":p["volume"],"muted":false,"fadeInDuration":0,"fadeOutDuration":0,SFX_KIND:"text-transition-in-sfx",SFX_TEXT:app.element_id,SFX_PRESET:app.preset_id}}),
+        json!({"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":p["assetId"],"name":p["name"],"startTime":(start-seconds("leadInSeconds")).max(0),"duration":seconds("durationSeconds"),"sourceDuration":seconds("sourceDurationSeconds"),"trimStart":seconds("trimStartSeconds"),"trimEnd":seconds("trimEndSeconds"),"params":{"audioSyncOffset":0,"noiseReduction":0,"gainDb":0,"hardLimiterEnabled":false,"hardLimiterCeilingDb":-1,"hardLimiterLookAheadMs":7,"hardLimiterReleaseMs":100,"volume":p["volume"],"muted":false,"fadeInDuration":0,"fadeOutDuration":0,SFX_KIND:"text-transition-in-sfx",SFX_TEXT:app.element_id,SFX_PRESET:app.preset_id}}),
     ))
 }
 fn invalid(message: &str) -> CapabilityError {

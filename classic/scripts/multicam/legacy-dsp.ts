@@ -1,3 +1,4 @@
+// Frozen pre-migration DSP for benchmark reproduction only. Product DSP lives in rust/crates/podcast.
 export const PODCAST_SYNC_RESOLUTION_SECONDS = 0.01;
 
 export function mean({ values }: { values: ArrayLike<number> }): number {

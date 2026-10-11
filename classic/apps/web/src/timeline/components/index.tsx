@@ -1,6 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TrackControlsResizer } from "./track-controls-resizer";
 import { CanonicalButton } from "@/components/editor/canonical-button";
 import {
 	HyperframesTimelineProvider,
@@ -36,6 +37,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -269,6 +271,25 @@ function TimelineContent() {
 	} = useElementSelection();
 	const editor = useEditor();
 	const timeline = editor.timeline;
+	const savedControlsWidth = useEditorProject(
+		(e) =>
+			e.project.getActiveOrNull()?.settings.timelineTrackControlsWidth ??
+			TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX,
+	);
+	const [draftControlsWidth, setDraftControlsWidth] = useState<number | null>(
+		null,
+	);
+	const controlsWidth = draftControlsWidth ?? savedControlsWidth;
+	const commitControlsWidth = (width: number) => {
+		try {
+			if (width !== savedControlsWidth)
+				editor.command.updateClassicSettings({
+					settings: { timelineTrackControlsWidth: width },
+				});
+		} finally {
+			setDraftControlsWidth(null);
+		}
+	};
 	const scene = useEditorTimelineScenes((currentEditor) =>
 		currentEditor.scenes.getActiveSceneOrNull(),
 	);
@@ -497,6 +518,19 @@ function TimelineContent() {
 
 			const tracks = tracksScrollRef.current;
 			if (!tracks) return;
+			const labels = trackLabelsScrollRef.current;
+			if (
+				labels &&
+				e.target instanceof Node &&
+				labels.contains(e.target) &&
+				(e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY))
+			) {
+				e.preventDefault();
+				labels.scrollLeft +=
+					(Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) *
+					(e.deltaMode === 1 ? 16 : 1);
+				return;
+			}
 
 			const isHorizontal =
 				e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY);
@@ -872,6 +906,9 @@ function TimelineContent() {
 
 			<div className="relative flex flex-1 overflow-hidden" ref={timelineRef}>
 				<TrackLabelsPanel
+					width={controlsWidth}
+					onWidthPreview={setDraftControlsWidth}
+					onWidthCommit={commitControlsWidth}
 					trackLabelsRef={trackLabelsRef}
 					trackLabelsScrollRef={trackLabelsScrollRef}
 					timelineHeaderHeight={timelineHeaderHeight}
@@ -1087,6 +1124,7 @@ function TimelineContent() {
 					/>
 				</div>
 				<SnapIndicator
+					controlsWidth={controlsWidth}
 					snapPoint={currentSnapPoint}
 					zoomLevel={zoomLevel}
 					scrollLeft={tracksScrollLeft}
@@ -1135,6 +1173,9 @@ function TimelineRangeOverlay({
 }
 
 function TrackLabelsPanel({
+	width,
+	onWidthPreview,
+	onWidthCommit,
 	trackLabelsRef,
 	trackLabelsScrollRef,
 	timelineHeaderHeight,
@@ -1146,6 +1187,9 @@ function TrackLabelsPanel({
 	scrollTop,
 	viewportHeight,
 }: {
+	width: number;
+	onWidthPreview: (width: number | null) => void;
+	onWidthCommit: (width: number) => void;
 	trackLabelsRef: React.RefObject<HTMLDivElement | null>;
 	trackLabelsScrollRef: React.RefObject<HTMLDivElement | null>;
 	timelineHeaderHeight: number;
@@ -1214,23 +1258,78 @@ function TrackLabelsPanel({
 				trackLayouts[trackLayouts.length - 1].height
 			: labelTrackStartTop;
 
+	// Initial measurement and resize can clamp the follower before its full
+	// content exists. Reapply the canonical viewport offset after layout.
+	useLayoutEffect(() => {
+		if (trackLabelsScrollRef.current) {
+			trackLabelsScrollRef.current.scrollTop = scrollTop;
+		}
+	}, [
+		scrollTop,
+		labelContentHeight,
+		viewportHeight,
+		width,
+		timelineHeaderHeight,
+		hasHorizontalScrollbar,
+		trackLabelsScrollRef,
+	]);
+
 	return (
 		<div
-			className="flex shrink-0 flex-col border-r"
-			style={{ width: `${TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX}px` }}
+			className="relative flex shrink-0 flex-col border-r"
+			data-track-controls-panel
+			style={{ width }}
 		>
 			<div
-				className="shrink-0"
+				className="flex shrink-0 items-end justify-between gap-1 px-2 pb-1"
 				style={{ height: timelineHeaderHeight || 48 }}
-			/>
-			<div ref={trackLabelsRef} className="flex-1 overflow-hidden">
-				<div ref={trackLabelsScrollRef} className="size-full overflow-hidden">
+			>
+				<button
+					type="button"
+					aria-label="Scroll track controls left"
+					title="Scroll track controls left"
+					onClick={() =>
+						trackLabelsScrollRef.current?.scrollBy({
+							left: -64,
+							behavior: "smooth",
+						})
+					}
+				>
+					←
+				</button>
+				<span className="truncate text-[10px] text-muted-foreground">
+					Tracks
+				</span>
+				<button
+					type="button"
+					aria-label="Scroll track controls right"
+					title="Scroll track controls right"
+					onClick={() =>
+						trackLabelsScrollRef.current?.scrollBy({
+							left: 64,
+							behavior: "smooth",
+						})
+					}
+				>
+					→
+				</button>
+			</div>
+			<div ref={trackLabelsRef} className="min-h-0 flex-1 overflow-hidden">
+				<div
+					ref={trackLabelsScrollRef}
+					role="region"
+					aria-label="Track controls"
+					// eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- Scroll regions need keyboard focus for native arrow-key scrolling.
+					tabIndex={0}
+					className="size-full overflow-x-auto overflow-y-hidden overscroll-x-contain"
+					style={{ scrollbarWidth: "thin" }}
+				>
 					{(tracks.length > 0 ||
 						hasCaptionWordTimingTrack ||
 						hasAiEditTrack) && (
 						<div
 							className="relative"
-							style={{ height: `${labelContentHeight}px` }}
+							style={{ height: `${labelContentHeight}px`, minWidth: 240 }}
 						>
 							{hasCaptionWordTimingTrack && (
 								<div
@@ -1284,6 +1383,11 @@ function TrackLabelsPanel({
 				style={{
 					height: hasHorizontalScrollbar ? TIMELINE_SCROLLBAR_SIZE_PX : 0,
 				}}
+			/>
+			<TrackControlsResizer
+				width={width}
+				onPreview={onWidthPreview}
+				onCommit={onWidthCommit}
 			/>
 		</div>
 	);
@@ -1758,7 +1862,7 @@ const TrackLabelRow = memo(function TrackLabelRow({
 			}}
 		>
 			<div
-				className="flex shrink-0 items-center justify-end gap-2 px-3"
+				className="flex shrink-0 items-center justify-start gap-2 px-3 [&>*]:shrink-0"
 				style={{ height: `${layout.baseHeight}px` }}
 			>
 				{track.type === "parallax" && (

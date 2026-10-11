@@ -8,6 +8,7 @@ import {
 } from "@/timeline";
 import { TIMELINE_LAYERS } from "./layers";
 interface SnapIndicatorProps {
+	controlsWidth: number;
 	snapPoint: SnapPoint | null;
 	zoomLevel: number;
 	scrollLeft: number;
@@ -16,6 +17,7 @@ interface SnapIndicatorProps {
 }
 
 export function SnapIndicator({
+	controlsWidth,
 	snapPoint,
 	zoomLevel,
 	scrollLeft,
@@ -23,6 +25,7 @@ export function SnapIndicator({
 	timelineRef,
 }: SnapIndicatorProps) {
 	const { leftPosition, topPosition, height } = useSnapIndicatorPosition({
+		controlsWidth,
 		snapPoint,
 		zoomLevel,
 		scrollLeft,

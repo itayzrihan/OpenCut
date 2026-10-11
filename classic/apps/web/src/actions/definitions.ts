@@ -78,6 +78,10 @@ export const ACTIONS = {
 		description: "Split and remove right",
 		category: "editing",
 	},
+	"delete-to-same-point": {
+		description: "Delete to the same point",
+		category: "editing",
+	},
 	"ripple-delete-selected": {
 		description: "Delete selected clips and close timeline space",
 		category: "editing",

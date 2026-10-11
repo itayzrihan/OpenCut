@@ -7002,22 +7002,37 @@ test(
 	INTEGRATION_TIMEOUT,
 );
 
-test("reopening an atomic checkpoint does not rewrite its archive before the next edit", async () => {
- const source = createHost();
- let bundle: EditorSessionBundle | null = null;
- await source.manager.enableCanonical({runtime: await createCanonicalTestRuntime(), persistSession: async (capture) => { bundle = structuredClone(capture()); }});
- await source.manager.flushHistory();
- expect(bundle).not.toBeNull();
- source.manager.detachCanonical();
- const reopened = createHost();
- let writes = 0;
- await reopened.manager.enableCanonical({runtime: await createCanonicalTestRuntime(), atomicBundle: bundle!, persistSession: async () => { writes++; }});
- await reopened.manager.flushHistory();
- expect(writes).toBe(0);
- await reopened.manager.persistEditingSession();
- expect(writes).toBe(1);
- reopened.manager.detachCanonical();
-}, INTEGRATION_TIMEOUT);
+test(
+	"reopening an atomic checkpoint does not rewrite its archive before the next edit",
+	async () => {
+		const source = createHost();
+		let bundle: EditorSessionBundle | null = null;
+		await source.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			persistSession: async (capture) => {
+				bundle = structuredClone(capture());
+			},
+		});
+		await source.manager.flushHistory();
+		expect(bundle).not.toBeNull();
+		source.manager.detachCanonical();
+		const reopened = createHost();
+		let writes = 0;
+		await reopened.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			atomicBundle: bundle!,
+			persistSession: async () => {
+				writes++;
+			},
+		});
+		await reopened.manager.flushHistory();
+		expect(writes).toBe(0);
+		await reopened.manager.persistEditingSession();
+		expect(writes).toBe(1);
+		reopened.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
 
 test(
 	"an old viewer save rejection cannot poison a reopened canonical session",
@@ -7100,6 +7115,63 @@ test(
 				value: originalWindow,
 			});
 		}
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"same-point deletion bypasses global ripple and pruning and restores selection in one undo",
+	async () => {
+		const { TimelineManager } =
+			await import("@/core/managers/timeline-manager");
+		const seed = createHost();
+		const project = structuredClone(seed.project());
+		const original = project.scenes[0].tracks.main.elements[0];
+		project.scenes[0].tracks.main.elements.push({
+			...structuredClone(original),
+			id: "later",
+			startTime: mediaTime({ ticks: 1200000 }),
+		});
+		const host = createHost({ project, media: seed.media() });
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		host.manager.isRippleEnabled = true;
+		let reactorCalls = 0;
+		host.manager.registerReactor(() => {
+			reactorCalls += 1;
+		});
+		const target = { trackId: "video-track", elementId: "item-2" };
+		host.editor.selection.applySelectionPatch({
+			patch: { selectedElements: [target] },
+		});
+		const before = host.manager.captureProjectSnapshot()!;
+		new TimelineManager(host.editor).deleteElements({
+			elements: [target],
+			samePoint: true,
+		});
+		const after = host.manager.captureProjectSnapshot()!;
+		expect(after.scenes[0].tracks.main.elements).toEqual([
+			{
+				...before.scenes[0].tracks.main.elements[1],
+				startTime: mediaTime({ ticks: 0 }),
+			},
+		]);
+		expect(after.scenes[0].tracks.overlay).toEqual(
+			before.scenes[0].tracks.overlay,
+		);
+		expect(after.scenes[0].tracks.audio).toEqual(before.scenes[0].tracks.audio);
+		expect(after.scenes[0].bookmarks).toEqual(before.scenes[0].bookmarks);
+		expect(reactorCalls).toBe(0);
+		expect(host.selection().selectedElements).toEqual([]);
+		assertCoherent({ host, runtime });
+		host.manager.undo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		expect(host.selection().selectedElements).toEqual([target]);
+		expect(host.manager.canUndo()).toBe(false);
+		host.manager.redo();
+		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		await host.manager.flushHistory();
+		host.manager.detachCanonical();
 	},
 	INTEGRATION_TIMEOUT,
 );

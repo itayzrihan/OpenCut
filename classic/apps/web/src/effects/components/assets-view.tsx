@@ -33,7 +33,10 @@ import { PERSON_CUTOUT_LAYER_EFFECT_TYPE } from "@/simple-advanced-layers/person
 import { EDITORIAL_EDGE_FEATHER_EFFECT_TYPE } from "@/effects/definitions/editorial-edge-feather";
 import { ZERO_MEDIA_TIME } from "@/wasm";
 
-const FULL_LENGTH_EFFECT_TYPES = new Set([EDITORIAL_EDGE_FEATHER_EFFECT_TYPE]);
+const FULL_LENGTH_EFFECT_TYPES = new Set([
+	EDITORIAL_EDGE_FEATHER_EFFECT_TYPE,
+	"sharpen",
+]);
 const SMART_LAYER_ONLY_EFFECT_TYPES = new Set([
 	"push-broll",
 	SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE,
@@ -181,7 +184,7 @@ function EffectItem({ effect }: { effect: EffectDefinition }) {
 
 		editor.timeline.insertElement({
 			placement: { mode: "auto", trackType: "effect" },
-			element,
+			element: { ...element, fullScene: isFullLength },
 		});
 	}, [editor, effect.type]);
 

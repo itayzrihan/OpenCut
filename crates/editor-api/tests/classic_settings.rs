@@ -237,3 +237,49 @@ async fn settings_reject_invalid_input_targets_and_generic_commit_without_mutati
         remembered["project"]["classic"]["document"]["settings"]["originalCanvasSize"]
     );
 }
+
+#[tokio::test]
+async fn track_controls_width_is_canonical_bounded_and_undoable() {
+    let r = attached().await;
+    let before = read(&r).await;
+    for width in [json!(79), json!(481), json!(null), json!(120.5)] {
+        assert!(
+            r.registry()
+                .invoke(
+                    SETTINGS,
+                    InvocationContext::default(),
+                    input(&before, json!({"timelineTrackControlsWidth":width}))
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&r).await, before);
+    }
+    let request = input(&before, json!({"timelineTrackControlsWidth":280}));
+    r.registry()
+        .invoke(
+            SETTINGS,
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            request.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(read(&r).await, before);
+    call(&r, SETTINGS, request).await;
+    let after = read(&r).await;
+    assert_eq!(
+        after["project"]["classic"]["document"]["settings"]["timelineTrackControlsWidth"],
+        280
+    );
+    assert_eq!(
+        after["project"]["classic"]["document"]["scenes"],
+        before["project"]["classic"]["document"]["scenes"]
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(read(&r).await["project"], after["project"]);
+}

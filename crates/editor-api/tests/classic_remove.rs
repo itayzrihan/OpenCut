@@ -274,3 +274,221 @@ async fn ripple_delete_merges_duplicate_ranges_and_rejects_locked_companions() {
     assert!(runtime.registry().invoke(ID, InvocationContext::default(), input(&before, json!({"type":"elements","ripple":true,"elements":[{"trackId":"video-track","elementId":"clip-0"}]}))).await.is_err());
     assert_eq!(read(&runtime).await, before);
 }
+
+#[tokio::test]
+async fn same_point_preserves_other_tracks_and_clip_payloads_with_history_and_retry() {
+    let runtime = ripple_fixture(true).await; // An unrelated locked intro is allowed.
+    let before = read(&runtime).await;
+    let request = input(
+        &before,
+        json!({"type":"elements","samePoint":true,"elements":[
+            {"trackId":"video-track","elementId":"clip-0"},
+            {"trackId":"video-track","elementId":"clip-0"}
+        ]}),
+    );
+    runtime
+        .registry()
+        .invoke(
+            ID,
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            request.clone(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(read(&runtime).await, before);
+    let mut context = InvocationContext::default();
+    context
+        .metadata
+        .insert("opencut/idempotencyKey".into(), json!("same-point"));
+    let receipt = runtime
+        .registry()
+        .invoke(ID, context.clone(), request.clone())
+        .await
+        .unwrap();
+    assert_eq!(
+        runtime
+            .registry()
+            .invoke(ID, context, request)
+            .await
+            .unwrap(),
+        receipt
+    );
+    let after = read(&runtime).await;
+    let mut expected = before["project"].clone();
+    let clips = expected["classic"]["document"]["scenes"][0]["tracks"]["main"]["elements"]
+        .as_array_mut()
+        .unwrap();
+    clips.remove(0);
+    for clip in clips {
+        clip["startTime"] = json!(clip["startTime"].as_i64().unwrap() - 240000);
+    }
+    assert_eq!(after["project"], expected); // Everything except removal/start times is identical.
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], before["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], after["project"]);
+}
+
+#[tokio::test]
+async fn same_point_handles_multiple_tracks_intervals_overlaps_and_empty_tracks() {
+    let runtime = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    let tracks = &mut classic["document"]["scenes"][0]["tracks"];
+    let video = tracks["main"]["elements"][0].clone();
+    let make = |id: &str, start: i64, duration: i64| {
+        let mut clip = video.clone();
+        clip["id"] = json!(id);
+        clip["startTime"] = json!(start);
+        clip["duration"] = json!(duration);
+        clip
+    };
+    tracks["main"]["elements"] = json!([
+        make("before", 0, 120000),
+        make("remove-a", 240000, 240000),
+        make("overlap", 360000, 120000),
+        make("middle", 480000, 120000),
+        make("remove-b", 720000, 120000),
+        make("remove-c", 780000, 120000),
+        make("after", 960000, 120000)
+    ]);
+    let mut second = tracks["main"].clone();
+    second["id"] = json!("camera-2");
+    second["elements"] = json!([
+        make("second-remove", 240000, 120000),
+        make("second-after", 480000, 120000)
+    ]);
+    tracks["overlay"].as_array_mut().unwrap().push(second);
+    tracks["order"] = json!(["titles", "camera-2", "video-track"]);
+    call(
+        &runtime,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&runtime).await;
+    call(
+        &runtime,
+        ID,
+        input(
+            &before,
+            json!({"type":"elements","samePoint":true,"elements":[
+                {"trackId":"video-track","elementId":"remove-a"},
+                {"trackId":"video-track","elementId":"remove-b"},
+                {"trackId":"video-track","elementId":"remove-c"},
+                {"trackId":"camera-2","elementId":"second-remove"}
+            ]}),
+        ),
+    )
+    .await;
+    let after = read(&runtime).await;
+    let tracks = &after["project"]["classic"]["document"]["scenes"][0]["tracks"];
+    let mut expected = before["project"]["classic"]["document"]["scenes"][0]["tracks"].clone();
+    expected["main"]["elements"] = json!([
+        make("before", 0, 120000),
+        make("overlap", 360000, 120000),
+        make("middle", 240000, 120000),
+        make("after", 540000, 120000)
+    ]);
+    expected["overlay"][1]["elements"] = json!([make("second-after", 360000, 120000)]);
+    assert_eq!(tracks, &expected);
+    call(&runtime, ID, input(&after, json!({"type":"elements","samePoint":true,"elements":[{"trackId":"camera-2","elementId":"second-after"}]}))).await;
+    let empty = read(&runtime).await;
+    assert_eq!(
+        empty["project"]["classic"]["document"]["scenes"][0]["tracks"]["overlay"][1]["elements"],
+        json!([])
+    );
+}
+
+#[tokio::test]
+async fn same_point_rejects_conflicts_missing_targets_locked_tracks_stale_and_cancelled() {
+    let runtime = ripple_fixture(true).await;
+    let before = read(&runtime).await;
+    let valid = json!({"type":"elements","samePoint":true,"elements":[{"trackId":"video-track","elementId":"clip-0"}]});
+    let mut conflicting = valid.clone();
+    conflicting["ripple"] = json!(true);
+    for removal in [
+        conflicting,
+        json!({"type":"elements","samePoint":true,"elements":[{"trackId":"titles","elementId":"text-1"}]}),
+        json!({"type":"elements","samePoint":true,"elements":[{"trackId":"video-track","elementId":"clip-0"},{"trackId":"missing","elementId":"missing"}]}),
+    ] {
+        assert!(
+            runtime
+                .registry()
+                .invoke(ID, InvocationContext::default(), input(&before, removal))
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&runtime).await, before);
+    }
+    let cancelled = InvocationContext::default();
+    cancelled.cancellation.cancel();
+    assert!(
+        runtime
+            .registry()
+            .invoke(ID, cancelled, input(&before, valid.clone()))
+            .await
+            .is_err()
+    );
+    let mut stale = input(&before, valid);
+    stale["expectedRevision"] = json!(0);
+    assert!(
+        runtime
+            .registry()
+            .invoke(ID, InvocationContext::default(), stale)
+            .await
+            .is_err()
+    );
+    assert_eq!(read(&runtime).await, before);
+}
+
+#[tokio::test]
+async fn same_point_moves_selected_caption_tracks_without_rewriting_other_caption_copies() {
+    let runtime = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    let tracks = &mut classic["document"]["scenes"][0]["tracks"];
+    let first = &mut tracks["overlay"][0]["elements"][0];
+    first["wordRuns"] =
+        json!([{"id":"word-1","text":"שלום","startTime":0,"endTime":120000,"lineIndex":0}]);
+    let mut later = first.clone();
+    later["id"] = json!("later-caption");
+    later["startTime"] = json!(240000);
+    later["wordRuns"][0]["id"] = json!("later-word");
+    tracks["overlay"][0]["elements"]
+        .as_array_mut()
+        .unwrap()
+        .push(later);
+    tracks["overlay"][0]["captionSource"]["words"] = json!([
+        {"text":"שלום","start":0,"end":1},{"text":"שלום","start":2,"end":3}
+    ]);
+    let mut copy = tracks["overlay"][0].clone();
+    copy["id"] = json!("caption-copy");
+    for e in copy["elements"].as_array_mut().unwrap() {
+        e["id"] = json!(format!("copy-{}", e["id"].as_str().unwrap()));
+    }
+    tracks["overlay"].as_array_mut().unwrap().push(copy);
+    tracks["order"] = json!(["titles", "caption-copy", "video-track"]);
+    call(
+        &runtime,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&runtime).await;
+    call(&runtime,ID,input(&before,json!({"type":"elements","samePoint":true,"elements":[{"trackId":"titles","elementId":"text-1"}]}))).await;
+    let after = read(&runtime).await;
+    let tracks = &after["project"]["classic"]["document"]["scenes"][0]["tracks"];
+    assert_eq!(tracks["overlay"][0]["elements"][0]["startTime"], 120000);
+    assert_eq!(
+        tracks["overlay"][0]["captionSource"]["words"],
+        json!([{"text":"שלום","start":1.0,"end":2.0}])
+    );
+    assert_eq!(
+        tracks["overlay"][1],
+        before["project"]["classic"]["document"]["scenes"][0]["tracks"]["overlay"][1]
+    );
+}

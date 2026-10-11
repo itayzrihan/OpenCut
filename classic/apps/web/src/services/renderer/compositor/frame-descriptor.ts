@@ -423,7 +423,7 @@ async function collectNodeUncached({
 			items.push({
 				type: "group",
 				items: nestedItems,
-				opacity: 1,
+				opacity: node.resolved.opacity ?? 1,
 				blendMode: "normal",
 			});
 		}

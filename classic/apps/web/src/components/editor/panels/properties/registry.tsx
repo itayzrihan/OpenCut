@@ -78,6 +78,12 @@ const DIMENSION_BACKGROUND_TRANSFORM_PARAM_KEYS = [
 
 const BLENDING_PARAM_KEYS = ["opacity", "blendMode"] as const;
 const AUDIO_PARAM_KEYS = [
+	"gainDb",
+	"hardLimiterEnabled",
+	"hardLimiterCeilingDb",
+	"hardLimiterLookAheadMs",
+	"hardLimiterReleaseMs",
+	"noiseReduction",
 	"audioSyncOffset",
 	"volume",
 	"muted",

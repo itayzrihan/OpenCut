@@ -69,11 +69,17 @@ function buildVideoTrack({
 	mediaById: Map<string, MediaAsset>;
 }): PremiereExportTrack | null {
 	const clips = track.elements.flatMap((element) => {
-		if (element.type !== "video" || element.hidden || !hasMediaId(element)) {
+		if (
+			element.type !== "video" ||
+			element.enabled === false ||
+			element.hidden ||
+			!hasMediaId(element)
+		) {
 			return [];
 		}
 		const asset = mediaById.get(element.mediaId);
-		if (!asset) throw new Error(`${element.name} is missing from project media`);
+		if (!asset)
+			throw new Error(`${element.name} is missing from project media`);
 		return [
 			buildClip({
 				asset,
@@ -97,6 +103,7 @@ function buildAudioTrack({
 	if (track.muted) return null;
 	const clips = track.elements.flatMap((element) => {
 		if (
+			element.enabled === false ||
 			element.sourceType !== "upload" ||
 			element.params.muted === true ||
 			!hasMediaId(element)
@@ -104,7 +111,8 @@ function buildAudioTrack({
 			return [];
 		}
 		const asset = mediaById.get(element.mediaId);
-		if (!asset) throw new Error(`${element.name} is missing from project media`);
+		if (!asset)
+			throw new Error(`${element.name} is missing from project media`);
 		return [
 			buildClip({
 				asset,

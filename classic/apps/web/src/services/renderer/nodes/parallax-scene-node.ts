@@ -10,6 +10,7 @@ export interface ParallaxSceneNodeParams {
 	sourceDuration: number;
 	effectParams: ParamValues;
 	storyParams: ParamValues;
+	storyAnimations?: ElementAnimations;
 	effectAnimations?: ElementAnimations;
 	cameraWidth?: number;
 	cameraHeight?: number;
@@ -21,6 +22,7 @@ export interface ParallaxSceneNodeParams {
 }
 
 export interface ResolvedParallaxSceneNodeState {
+	opacity?: number;
 	movement: OverlayMovementFrame;
 	motionLoop: ParallaxMotionLoopFrame | null;
 }

@@ -53,8 +53,8 @@ export interface ClassicSourceAudioChange {
 }
 
 export type ClassicElementControlChange =
-	| { type: "setHidden" | "setMuted"; value: boolean }
-	| { type: "toggleVisibility" | "toggleMute" };
+	| { type: "setHidden" | "setMuted" | "setEnabled"; value: boolean }
+	| { type: "toggleVisibility" | "toggleMute" | "toggleEnabled" };
 
 export type ClassicMaskChange =
 	| {
@@ -160,6 +160,7 @@ export type ClassicRemoval =
 	| {
 			type: "elements";
 			ripple?: boolean;
+			samePoint?: boolean;
 			elements: Array<{ trackId: string; elementId: string }>;
 	  }
 	| { type: "track"; trackId: string };

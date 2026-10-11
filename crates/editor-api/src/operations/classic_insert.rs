@@ -21,6 +21,9 @@ struct Draft {
     #[serde(rename = "type")]
     kind: Kind,
     name: String,
+    /// Effect-only: resolve zero start and current scene duration atomically.
+    #[serde(default, skip_serializing)]
+    full_scene: bool,
     start_time: i64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     duration: Option<i64>,
@@ -162,7 +165,7 @@ pub(super) fn register_classic_insert(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.insert",
         "Insert Classic clips",
-        "Atomically insert 1..1000 video, image, audio, text, sticker, graphic or effect drafts in one explicit Classic scene. Each clip supplies element and placement. Timing uses nonnegative exact integer ticks at 120000/second; omitted duration defaults to five seconds and trims to zero. Runtime allocates fresh identities and preserves serialized extension fields; do not supply id or browser buffer/file handles. Explicit placement requires a compatible track and allows overlaps. Auto chooses the first non-overlapping compatible track in display order, otherwise creates one at the top (insertIndex only overrides new-track placement). Video/image go on video tracks, text on text, audio on audio, sticker/graphic on graphic, effect on effect. Main-track first/earliest inserts anchor at zero. Graphics require a current catalogRevision and registered definitionId from timeline.classic.elements.catalog. Media clips must reference existing compatible project media, including offline records; no media is uploaded/decoded/copied. The first visual media clip in an empty scene adopts known canvas dimensions/original dimensions and video FPS. Text ownership is reconciled with retained caption sources. Returns created track/clip references. Supports dry run, exact retries, revision checks, cancellation, transactional rollback and Undo/Redo for the whole batch.",
+        "Atomically insert 1..1000 video, image, audio, text, sticker, graphic or effect drafts in one explicit Classic scene. Each clip supplies element and placement. Timing uses nonnegative exact integer ticks at 120000/second; omitted duration defaults to five seconds and trims to zero. Effect drafts may set fullScene=true to atomically cover zero through the current scene end (requires a non-empty scene). Runtime allocates fresh identities and preserves serialized extension fields; do not supply id or browser buffer/file handles. Explicit placement requires a compatible track and allows overlaps. Auto chooses the first non-overlapping compatible track in display order, otherwise creates one at the top (insertIndex only overrides new-track placement). Video/image go on video tracks, text on text, audio on audio, sticker/graphic on graphic, effect on effect. Main-track first/earliest inserts anchor at zero. Graphics require a current catalogRevision and registered definitionId from timeline.classic.elements.catalog. Media clips must reference existing compatible project media, including offline records; no media is uploaded/decoded/copied. The first visual media clip in an empty scene adopts known canvas dimensions/original dimensions and video FPS. Text ownership is reconciled with retained caption sources. Returns created track/clip references. Supports dry run, exact retries, revision checks, cancellation, transactional rollback and Undo/Redo for the whole batch.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -225,6 +228,15 @@ pub(super) fn register_classic_insert(
                                     "identity and browser handles are not clip drafts",
                                 ));
                             }
+                            if matches!(clip.element.kind, Kind::Effect)
+                                && element["effectType"] == "sharpen"
+                            {
+                                element["params"]
+                                    .as_object_mut()
+                                    .unwrap()
+                                    .entry("intensity")
+                                    .or_insert(json!(15));
+                            }
                             element["duration"] = json!(clip.element.duration.unwrap_or(600000));
                             element["trimStart"] = json!(clip.element.trim_start.unwrap_or(0));
                             element["trimEnd"] = json!(clip.element.trim_end.unwrap_or(0));
@@ -261,6 +273,29 @@ pub(super) fn register_classic_insert(
                                     scenes.iter_mut().find(|s| s["id"] == input.scene_id)
                                 })
                                 .ok_or_else(|| invalid("Scene not found"))?;
+                            if clip.element.full_scene {
+                                if !matches!(clip.element.kind, Kind::Effect) {
+                                    return Err(invalid("fullScene only supports effect layers"));
+                                }
+                                let duration = all(&scene["tracks"])
+                                    .flat_map(|t| t["elements"].as_array().into_iter().flatten())
+                                    .filter_map(|e| {
+                                        e["startTime"]
+                                            .as_i64()?
+                                            .checked_add(e["duration"].as_i64()?)
+                                    })
+                                    .max()
+                                    .unwrap_or(0);
+                                if duration <= 0 {
+                                    return Err(invalid(
+                                        "Add a clip before applying a full-scene effect",
+                                    ));
+                                }
+                                element["startTime"] = json!(0);
+                                element["duration"] = json!(duration);
+                                element["trimStart"] = json!(0);
+                                element["trimEnd"] = json!(0);
+                            }
                             let empty = all(&scene["tracks"])
                                 .all(|t| t["elements"].as_array().is_none_or(Vec::is_empty));
                             let target = place(
@@ -270,7 +305,10 @@ pub(super) fn register_classic_insert(
                                 &mut element,
                                 &new_track_id,
                             )?;
-                            if empty && scene.get("brollParentSceneId").is_none() && matches!(clip.element.kind, Kind::Video | Kind::Image) {
+                            if empty
+                                && scene.get("brollParentSceneId").is_none()
+                                && matches!(clip.element.kind, Kind::Video | Kind::Image)
+                            {
                                 if let Some(asset) = asset {
                                     adopt_media_settings(&mut classic.document, &asset)?;
                                 }
@@ -419,7 +457,16 @@ pub(super) fn place_library_audio(
     element: &mut Value,
     new_track_id: &str,
 ) -> Result<String, CapabilityError> {
-    place(scene, &Placement::Auto { track_type: Some(ClassicTrackType::Audio), insert_index: None }, ClassicTrackType::Audio, element, new_track_id)
+    place(
+        scene,
+        &Placement::Auto {
+            track_type: Some(ClassicTrackType::Audio),
+            insert_index: None,
+        },
+        ClassicTrackType::Audio,
+        element,
+        new_track_id,
+    )
 }
 
 fn place(

@@ -21,6 +21,8 @@ enum Removal {
         elements: Vec<ElementRef>,
         #[serde(default)]
         ripple: bool,
+        #[serde(default)]
+        same_point: bool,
     },
     Track {
         track_id: String,
@@ -47,7 +49,7 @@ pub(super) fn register_classic_remove(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.remove",
         "Remove Classic elements or an auxiliary track",
-        "Undoably remove explicit elements (1..1000 trackId/elementId references) or one overlay/audio track in a Classic scene. Read IDs from app.state.read at /project/classic/document/scenes. Removes linked transcript words and reconciles remaining manual text-layer ownership. Track deletion updates display order and cannot remove the main track; deleting its elements is allowed. Element deletion retains empty tracks and order. Preserves unrelated clips, source/media assets, other scenes and unknown fields. By default, no ripple shift or automatic companion-media deletion. For elements, ripple=true removes the union of their timeline intervals across all layers using the trim splice policy, shifts later clips and bookmarks, maps captions/animation times, removes fully consumed companions and rejects changes to locked tracks. Requires project, scene and expectedRevision; validates all targets before editing, deduplicates element references, supports dry run, exact retry keys, atomic transactions and Undo/Redo. This removes timeline content only; it never deletes media files.",
+        "Undoably remove explicit elements (1..1000 trackId/elementId references) or one overlay/audio track in a Classic scene. Read IDs from app.state.read at /project/classic/document/scenes. Removes linked transcript words and reconciles remaining manual text-layer ownership. Track deletion updates display order and cannot remove the main track; deleting its elements is allowed. Element deletion retains empty tracks and order. Preserves unrelated clips, source/media assets, other scenes and unknown fields. By default, no ripple shift or automatic companion-media deletion. For elements, samePoint=true deletes only the selected clips and closes their coalesced intervals independently on each selected track by moving later clips, preserving surviving clip durations, source timing, every unselected track and scene bookmarks. Empty tracks are retained; selected locked tracks are rejected. samePoint and ripple are mutually exclusive. For elements, ripple=true removes the union of their timeline intervals across all layers using the trim splice policy, shifts later clips and bookmarks, maps captions/animation times, removes fully consumed companions and rejects changes to locked tracks. Requires project, scene and expectedRevision; validates all targets before editing, deduplicates element references, supports dry run, exact retry keys, atomic transactions and Undo/Redo. This removes timeline content only; it never deletes media files.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -87,10 +89,23 @@ pub(super) fn register_classic_remove(
                                     .find(|scene| scene["id"] == input.scene_id)
                             })
                             .ok_or_else(|| invalid("Scene not found"))?;
+                        if let Removal::Elements {
+                            elements,
+                            ripple,
+                            same_point: true,
+                        } = &input.removal
+                        {
+                            if *ripple {
+                                return Err(invalid("Choose either samePoint or ripple deletion"));
+                            }
+                            apply_same_point(&mut scene["tracks"], elements)?;
+                            return Ok(vec![input.project_id, input.scene_id]);
+                        }
                         let ranges = match &input.removal {
                             Removal::Elements {
                                 elements,
                                 ripple: true,
+                                ..
                             } => Some(super::classic_ripple_delete::ranges(
                                 &scene["tracks"],
                                 elements,
@@ -216,6 +231,7 @@ pub(super) fn remove_explicit_elements(
         Removal::Elements {
             elements,
             ripple: false,
+            same_point: false,
         },
     )
 }
@@ -232,5 +248,76 @@ fn remove_elements(
         .as_array_mut()
         .ok_or_else(|| invalid("Invalid track elements"))?
         .retain(|item| !targets.contains(&(id.as_str(), item["id"].as_str().unwrap_or(""))));
+    Ok(())
+}
+
+// Work on one track at a time so caption reconciliation cannot rewrite a
+// transcript owned by another track. The enclosing runtime mutation is atomic.
+fn apply_same_point(tracks: &mut Value, elements: &[ElementRef]) -> Result<(), CapabilityError> {
+    let before = tracks.clone();
+    let ids: HashSet<_> = elements.iter().map(|e| e.track_id.as_str()).collect();
+    let mut replacements = std::collections::HashMap::new();
+    for id in ids {
+        let original = all(&before)
+            .find(|t| t["id"] == id)
+            .ok_or_else(|| invalid("Track not found in target scene"))?;
+        if original["locked"] == true {
+            return Err(invalid(
+                "Delete to the same point cannot change a locked track",
+            ));
+        }
+        let selected: Vec<_> = elements
+            .iter()
+            .filter(|e| e.track_id == id)
+            .cloned()
+            .collect();
+        let ranges = super::classic_ripple_delete::ranges(&before, &selected)?;
+        let targets = selected
+            .iter()
+            .map(|e| (e.track_id.as_str(), e.element_id.as_str()))
+            .collect();
+        let mut isolated =
+            serde_json::json!({"overlay":[original],"main":{"elements":[]},"audio":[]});
+        let original_isolated = isolated.clone();
+        remove_elements(&mut isolated["overlay"][0], &targets)?;
+        super::classic_captions::remove_words(&mut isolated, &original_isolated, &selected)?;
+        let before_move = isolated.clone();
+        let mut updates = Vec::new();
+        for clip in isolated["overlay"][0]["elements"].as_array_mut().unwrap() {
+            let start = clip["startTime"]
+                .as_i64()
+                .ok_or_else(|| invalid("Invalid start"))?;
+            // Use original coordinates for all intervals. Duplicate or overlapping
+            // selections count once; gaps and surviving clips are never trimmed.
+            let shift: i64 = ranges
+                .iter()
+                .filter(|(_, end)| *end <= start)
+                .map(|(start, end)| end - start)
+                .sum();
+            if shift > 0 {
+                clip["startTime"] = serde_json::json!(start - shift);
+                updates.push(serde_json::json!({"trackId":id,"elementId":clip["id"],"updates":{"startTime":start-shift}}));
+            }
+        }
+        super::classic_captions::sync_after_edit(
+            &mut isolated,
+            &before_move,
+            &serde_json::json!(updates),
+        )?;
+        replacements.insert(id.to_owned(), isolated["overlay"][0].take());
+    }
+    for bucket in ["overlay", "audio"] {
+        for track in tracks[bucket]
+            .as_array_mut()
+            .ok_or_else(|| invalid("Invalid tracks"))?
+        {
+            if let Some(next) = replacements.remove(track["id"].as_str().unwrap_or("")) {
+                *track = next;
+            }
+        }
+    }
+    if let Some(next) = replacements.remove(tracks["main"]["id"].as_str().unwrap_or("")) {
+        tracks["main"] = next;
+    }
     Ok(())
 }

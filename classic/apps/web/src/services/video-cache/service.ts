@@ -269,6 +269,10 @@ export class VideoCache {
 			sinkData.currentFrame &&
 			this.isFrameValid({ frame: sinkData.currentFrame, time })
 		) {
+			// Keep the forward-read window relative to the last displayed frame,
+			// not the initial seek. Otherwise a skipped display frame after two
+			// seconds restarts decoding from a keyframe during continuous playback.
+			sinkData.lastTime = time;
 			if (!sinkData.nextFrame && !sinkData.prefetching) {
 				this.startPrefetch({ sinkData });
 			}
@@ -323,12 +327,12 @@ export class VideoCache {
 				}
 
 				// Check if the nextFrame (which might have just arrived) is what we need
-				if (
-					sinkData.nextFrame &&
-					sinkData.nextFrame.timestamp <= targetTime + 0.05 // Tolerance
-				) {
+				if (sinkData.nextFrame && sinkData.nextFrame.timestamp <= targetTime) {
 					sinkData.currentFrame = sinkData.nextFrame;
 					sinkData.nextFrame = null;
+				} else if (sinkData.nextFrame) {
+					// Never consume a frame after the requested presentation interval.
+					return null;
 				} else {
 					const { value: frame, done } = await sinkData.iterator.next();
 
@@ -346,7 +350,7 @@ export class VideoCache {
 					return frame;
 				}
 
-				if (frame.timestamp > targetTime + 1.0) break;
+				if (frame.timestamp > targetTime) break;
 			}
 		} catch (error) {
 			console.warn("Iterator failed, will restart:", error);
@@ -362,6 +366,8 @@ export class VideoCache {
 		sinkData: VideoSinkData;
 		time: number;
 	}): Promise<WrappedCanvas | null> {
+		incrementCounter({ name: "videoCache.seek" });
+		const start = performance.now();
 		try {
 			if (sinkData.prefetching && sinkData.prefetchPromise) {
 				await sinkData.prefetchPromise;
@@ -386,6 +392,11 @@ export class VideoCache {
 			}
 		} catch (error) {
 			console.warn("Failed to seek video:", error);
+		} finally {
+			recordSpan({
+				name: "videoCache.seek",
+				durationMs: performance.now() - start,
+			});
 		}
 
 		return null;

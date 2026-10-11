@@ -99,3 +99,24 @@ test("concurrent distinct readers receive their exact source times instead of a 
 	expect((first?.canvas as unknown as FakeCanvas).stamp).toBe(4);
 	cache.clearAll();
 });
+
+test("long continuous playback can skip a display frame without restarting the decoder", async () => {
+	const cache = new VideoCache();
+	const input = {
+		mediaId: "continuous",
+		url: "blob:continuous",
+		maxSourceSize: 1280,
+	};
+	const before = seeks.length;
+	for (let index = 0; index < 90; index++) {
+		const frame = await cache.getFrameAt({
+			...input,
+			time: index / 30 + 0.001,
+		});
+		expect(frame).not.toBeNull();
+	}
+	const frame = await cache.getFrameAt({ ...input, time: 92 / 30 + 0.001 });
+	expect(frame?.timestamp).toBeCloseTo(92 / 30, 6);
+	expect(seeks.length - before).toBe(1);
+	cache.clearAll();
+});

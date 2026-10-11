@@ -30,4 +30,7 @@ export interface ResolvedVideoNodeState extends ResolvedVisualSourceNodeState {
 export class VideoNode extends VisualNode<
 	VideoNodeParams,
 	ResolvedVideoNodeState
-> {}
+> {
+	/** Derived preview decoder lane; never serialized into the editor document. */
+	previewDecoderId?: string;
+}

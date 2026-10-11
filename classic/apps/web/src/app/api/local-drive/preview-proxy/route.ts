@@ -2,6 +2,7 @@ import { stat } from "node:fs/promises";
 import { withAccount } from "@/accounts/server";
 import { assertLocalDriveRequest } from "@/services/local-drive/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
+import { mediaRangeEnd } from "@/services/local-drive/media-range";
 import {
 	cancelProxy,
 	prepareProxy,
@@ -40,8 +41,8 @@ async function handle(request: Request): Promise<Response> {
 		const match = range?.match(/^bytes=(\d+)-(\d*)$/);
 		if (range && !match) return new Response(null, { status: 416 });
 		const start = match ? Number(match[1]) : 0;
-		const end = match?.[2]
-			? Math.min(Number(match[2]), info.size - 1)
+		const end = match
+			? mediaRangeEnd({ start, requestedEnd: match[2], size: info.size })
 			: info.size - 1;
 		if (
 			!Number.isSafeInteger(start) ||

@@ -184,7 +184,8 @@ function getElementBounds({
 	localTime: number;
 }): ElementBounds | null {
 	if (element.type === "audio" || element.type === "effect") return null;
-	if ("hidden" in element && element.hidden) return null;
+	if (element.enabled === false || ("hidden" in element && element.hidden))
+		return null;
 
 	const { width: canvasWidth, height: canvasHeight } = canvasSize;
 
@@ -346,7 +347,10 @@ export function getVisibleElementsWithBounds({
 
 		const activeElements: TimelineElement[] = [];
 		for (const element of track.elements) {
-			if ("hidden" in element && element.hidden) {
+			if (
+				element.enabled === false ||
+				("hidden" in element && element.hidden)
+			) {
 				continue;
 			}
 			if (
@@ -418,7 +422,11 @@ export function getElementWithBounds({
 	const element = track.elements.find(
 		(candidate) => candidate.id === elementRef.elementId,
 	);
-	if (!element || ("hidden" in element && element.hidden)) {
+	if (
+		!element ||
+		element.enabled === false ||
+		("hidden" in element && element.hidden)
+	) {
 		return null;
 	}
 	if (

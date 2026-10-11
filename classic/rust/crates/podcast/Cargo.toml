@@ -8,10 +8,21 @@ path = "src/podcast.rs"
 crate-type = ["rlib"]
 
 [dependencies]
+rustfft = "6.4"
 bridge = { version = "0.1.0", path = "../bridge" }
 serde = { version = "1", features = ["derive"] }
 tsify-next = { version = "0.5", optional = true }
 wasm-bindgen = { version = "0.2.115", optional = true }
 
+schemars = { version = "1", optional = true }
+
 [features]
+schema = ["dep:schemars"]
 wasm = ["dep:wasm-bindgen", "dep:tsify-next", "tsify-next/js"]
+
+[dev-dependencies]
+serde_json = "1"
+
+[dependencies.nnnoiseless]
+version = "0.5.2"
+default-features = false

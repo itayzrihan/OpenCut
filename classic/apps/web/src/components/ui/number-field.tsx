@@ -1,5 +1,6 @@
 "use client";
 
+import { NumberScrubHandle } from "./number-scrub-handle";
 import { cn } from "@/utils/ui";
 import { clamp } from "@/utils/math";
 import { useRef, useState, useLayoutEffect, type ComponentProps } from "react";
@@ -97,8 +98,10 @@ function scrubAcrossRanges({
 	return clampScrubValue({ value: currentValue, min, max });
 }
 
-interface NumberFieldProps
-	extends Omit<ComponentProps<"input">, "size" | "type"> {
+interface NumberFieldProps extends Omit<
+	ComponentProps<"input">,
+	"size" | "type"
+> {
 	icon?: React.ReactNode;
 	suffix?: string;
 	suffixClassName?: string;
@@ -107,6 +110,10 @@ interface NumberFieldProps
 	scrubClamp?: ScrubClamp;
 	onScrub?: (value: number) => void;
 	onScrubEnd?: () => void;
+	onScrubCancel?: () => void;
+	scrubValue?: number;
+	scrubStep?: number;
+	scrubLabel?: string;
 	allowExpressions?: boolean;
 	onReset?: () => void;
 	isDefault?: boolean;
@@ -123,6 +130,10 @@ function NumberField({
 	scrubClamp,
 	onScrub,
 	onScrubEnd,
+	onScrubCancel,
+	scrubValue,
+	scrubStep,
+	scrubLabel = "value",
 	value,
 	allowExpressions = true,
 	onKeyDown,
@@ -134,14 +145,13 @@ function NumberField({
 	ref,
 	...props
 }: NumberFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
-	const iconRef = useRef<HTMLButtonElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const ghostRef = useRef<HTMLSpanElement>(null);
-	const startValueRef = useRef(0);
-	const cumulativeDeltaRef = useRef(0);
 	const [isInputFocused, setIsInputFocused] = useState(false);
 	const [suffixLeft, setSuffixLeft] = useState(0);
-	const ghostValue = Array.isArray(value) ? value.join(", ") : String(value ?? "");
+	const ghostValue = Array.isArray(value)
+		? value.join(", ")
+		: String(value ?? "");
 
 	useLayoutEffect(() => {
 		if (!suffix) {
@@ -164,46 +174,28 @@ function NumberField({
 		allowSelector: "input, textarea, [contenteditable]",
 	});
 
-	const handleIconPointerDown = (event: React.PointerEvent) => {
-		if (!onScrub || disabled || event.button !== 0) return;
-		const parsed = parseFloat(String(value ?? "0"));
-		startValueRef.current = Number.isNaN(parsed) ? 0 : parsed;
-		cumulativeDeltaRef.current = 0;
-		let hasReceivedFirstMove = false;
-		iconRef.current?.requestPointerLock();
-
-		const handlePointerMove = (moveEvent: PointerEvent) => {
-			// first movementX after pointer lock often contains a bogus warp delta
-			if (!hasReceivedFirstMove) {
-				hasReceivedFirstMove = true;
-				return;
-			}
-			cumulativeDeltaRef.current += moveEvent.movementX;
-			const newValue = scrubRanges
-				? scrubAcrossRanges({
-						startValue: startValueRef.current,
-						pixelDelta: cumulativeDeltaRef.current,
-						ranges: scrubRanges,
-						min: scrubClamp?.min,
-						max: scrubClamp?.max,
-					})
-				: startValueRef.current +
-					cumulativeDeltaRef.current * DRAG_SENSITIVITIES[dragSensitivity];
-			onScrub(newValue);
-		};
-
-		const handlePointerUp = () => {
-			document.removeEventListener("pointermove", handlePointerMove);
-			document.removeEventListener("pointerup", handlePointerUp);
-			document.exitPointerLock();
-			onScrubEnd?.();
-		};
-
-		document.addEventListener("pointermove", handlePointerMove);
-		document.addEventListener("pointerup", handlePointerUp);
-	};
-
-	const canScrub = Boolean(icon && onScrub);
+	const canScrub = Boolean(onScrub);
+	const calculateScrub = ({
+		start,
+		pixels,
+	}: {
+		start: number;
+		pixels: number;
+	}) =>
+		scrubRanges
+			? scrubAcrossRanges({
+					startValue: start,
+					pixelDelta: pixels,
+					ranges: scrubRanges,
+					min: scrubClamp?.min,
+					max: scrubClamp?.max,
+				})
+			: clampScrubValue({
+					value:
+						start + pixels * (scrubStep ?? DRAG_SENSITIVITIES[dragSensitivity]),
+					min: scrubClamp?.min,
+					max: scrubClamp?.max,
+				});
 
 	const inputNode = (
 		<input
@@ -251,24 +243,22 @@ function NumberField({
 				className,
 			)}
 		>
-			{icon &&
-				(canScrub ? (
-					<button
-						ref={iconRef}
-						type="button"
-						aria-label="Drag to adjust value"
-						disabled={disabled}
-						className="text-muted-foreground [&_svg]:size-3.5! shrink-0 select-none pl-2.5 text-sm leading-none cursor-ew-resize"
-						onMouseDown={(event) => event.preventDefault()}
-						onPointerDown={handleIconPointerDown}
-					>
-						{icon}
-					</button>
-				) : (
-					<span className="text-muted-foreground [&_svg]:size-3.5! shrink-0 select-none pl-2.5 text-sm leading-none">
-						{icon}
-					</span>
-				))}
+			{canScrub && onScrub && (
+				<NumberScrubHandle
+					label={scrubLabel}
+					disabled={disabled}
+					value={scrubValue ?? (parseFloat(String(value ?? "0")) || 0)}
+					calculate={calculateScrub}
+					onPreview={onScrub}
+					onCommit={onScrubEnd}
+					onCancel={onScrubCancel}
+				/>
+			)}
+			{icon && (
+				<span className="text-muted-foreground [&_svg]:size-3.5! shrink-0 select-none pl-2.5 text-sm leading-none">
+					{icon}
+				</span>
+			)}
 			<span
 				className={cn(
 					"relative flex flex-1 min-w-0 items-center",

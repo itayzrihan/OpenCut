@@ -213,7 +213,13 @@ fn apply_source_audio(
     // These parameters feed the same native timing/gain adapters in playback
     // and export. Dropping an offset changes the source sample after extraction;
     // dropping fades makes an otherwise identical source audible differently.
-    for key in ["audioSyncOffset", "fadeInDuration", "fadeOutDuration"] {
+    for key in [
+        "audioSyncOffset",
+        "fadeInDuration",
+        "fadeOutDuration",
+        "noiseReduction",
+        "gainDb", "hardLimiterEnabled", "hardLimiterCeilingDb", "hardLimiterLookAheadMs", "hardLimiterReleaseMs",
+    ] {
         if let Some(value) = source["params"].get(key) {
             audio["params"][key] = value.clone();
         }

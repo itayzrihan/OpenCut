@@ -1,21 +1,12 @@
 import type { MediaAsset } from "@/media/types";
-import type { PodcastMulticamSettings } from "opencut-wasm";
-import { ALL_FORMATS, AudioBufferSink, Input } from "mediabunny";
-import { createMediaSource } from "@/media/source";
-import {
-	applyAntiBleedPipeline,
-	buildActivityTimeline,
-	crossCorrelationOffset,
-	detectSpeechFromEnvelope,
-	normalizeEnergyEnvelope,
-	PODCAST_SYNC_RESOLUTION_SECONDS,
-	smoothEnergyTimeline,
-} from "@/podcast-sync/dsp";
-import { routePodcastSync, type PodcastSyncCut } from "@/podcast-sync/router";
+import { type PodcastMulticamSettings } from "opencut-wasm";
 
-const SYNC_WINDOW_SECONDS = 0.1;
+import { readEnergyEnvelope } from "./energy-reader";
+import { mapConcurrent, runSyncWorker } from "./sync-jobs";
+import type { PodcastSyncCut } from "@/podcast-sync/router";
+const PODCAST_SYNC_RESOLUTION_SECONDS = 0.01;
+
 const DEFAULT_MAX_LAG_SECONDS = 1200;
-const PODCAST_SOURCE_CACHE_BYTES = 8 * 1024 * 1024;
 
 export interface PodcastSyncChannel {
 	id: string;
@@ -32,6 +23,12 @@ export interface PodcastSyncAlignment {
 	audioOffsets: Record<string, number>;
 	audioDelays: Record<string, number>;
 }
+
+// Ephemeral analysis cache, never editor state. Released with its alignment result.
+const alignmentEnvelopes = new WeakMap<
+	PodcastSyncAlignment,
+	Map<string, Float32Array>
+>();
 
 export interface PodcastSyncResult {
 	cuts: PodcastSyncCut[];
@@ -60,160 +57,13 @@ function report({
 	onProgress?.({ step, progress });
 }
 
-async function readEnergyEnvelope({
-	asset,
-	windowSeconds,
-	startSeconds = 0,
-	durationSeconds,
-}: {
-	asset: MediaAsset;
-	windowSeconds: number;
-	startSeconds?: number;
-	durationSeconds?: number;
-}): Promise<Float32Array> {
-	const input = new Input({
-		source: createMediaSource({
-			...asset,
-			urlOptions: {
-				maxCacheSize: PODCAST_SOURCE_CACHE_BYTES,
-				parallelism: 1,
-			},
-		}),
-		formats: ALL_FORMATS,
-	});
-
-	try {
-		const audioTrack = await input.getPrimaryAudioTrack();
-		if (!audioTrack) {
-			throw new Error(`${asset.name} does not contain an audio track`);
-		}
-
-		const sink = new AudioBufferSink(audioTrack);
-		const sums: number[] = [];
-		const counts: number[] = [];
-		const endSeconds =
-			durationSeconds != null
-				? startSeconds + Math.max(0, durationSeconds)
-				: Number.POSITIVE_INFINITY;
-		let fallbackTimestamp = startSeconds;
-
-		for await (const { buffer, timestamp } of sink.buffers(startSeconds)) {
-			const sampleRate = buffer.sampleRate;
-			const chunkTimestamp =
-				typeof timestamp === "number" && Number.isFinite(timestamp)
-					? timestamp
-					: fallbackTimestamp;
-			fallbackTimestamp = chunkTimestamp + buffer.length / sampleRate;
-
-			if (chunkTimestamp >= endSeconds) break;
-
-			const firstSample = Math.max(
-				0,
-				Math.floor((startSeconds - chunkTimestamp) * sampleRate),
-			);
-			const lastSampleExclusive = Math.min(
-				buffer.length,
-				Number.isFinite(endSeconds)
-					? Math.ceil((endSeconds - chunkTimestamp) * sampleRate)
-					: buffer.length,
-			);
-			if (lastSampleExclusive <= firstSample) continue;
-
-			const channelCount = Math.max(1, Math.min(2, buffer.numberOfChannels));
-			const channels = Array.from({ length: channelCount }, (_, channel) =>
-				buffer.getChannelData(channel),
-			);
-
-			let sampleStart = firstSample;
-			while (sampleStart < lastSampleExclusive) {
-				const localStart = Math.max(
-					0,
-					chunkTimestamp + sampleStart / sampleRate - startSeconds,
-				);
-				const windowIndex = Math.floor(localStart / windowSeconds);
-				const windowEndSeconds =
-					startSeconds + (windowIndex + 1) * windowSeconds;
-				const sampleEnd = Math.min(
-					lastSampleExclusive,
-					Math.max(
-						sampleStart + 1,
-						Math.ceil((windowEndSeconds - chunkTimestamp) * sampleRate),
-					),
-				);
-
-				let sum = 0;
-				let count = 0;
-				for (let i = sampleStart; i < sampleEnd; i++) {
-					let mono = 0;
-					for (const data of channels) mono += data[i] ?? 0;
-					mono /= channelCount;
-					sum += mono * mono;
-					count++;
-				}
-
-				sums[windowIndex] = (sums[windowIndex] ?? 0) + sum;
-				counts[windowIndex] = (counts[windowIndex] ?? 0) + count;
-				sampleStart = sampleEnd;
-			}
-		}
-
-		const expectedLength =
-			durationSeconds != null
-				? Math.max(1, Math.ceil(durationSeconds / windowSeconds))
-				: sums.length;
-		if (expectedLength === 0) {
-			throw new Error(`${asset.name} has no decodable audio`);
-		}
-
-		const envelope = new Float32Array(expectedLength);
-		for (let i = 0; i < expectedLength; i++) {
-			const count = counts[i] ?? 0;
-			envelope[i] = count > 0 ? Math.sqrt((sums[i] ?? 0) / count) : 0;
-		}
-		return envelope;
-	} finally {
-		input.dispose();
-	}
-}
-
-function buildSpeechMask({
-	envelope,
-	numSteps,
-}: {
-	envelope: Float32Array;
-	numSteps: number;
-}): Uint8Array {
-	const speech = detectSpeechFromEnvelope({
-		envelope,
-		options: {
-			minSpeechDuration: 0.25,
-			mergeGap: 0.3,
-		},
-	});
-	const mask = new Uint8Array(numSteps);
-
-	for (const segment of speech) {
-		const start = Math.max(
-			0,
-			Math.round(segment.start / PODCAST_SYNC_RESOLUTION_SECONDS),
-		);
-		const end = Math.min(
-			numSteps,
-			Math.round(segment.end / PODCAST_SYNC_RESOLUTION_SECONDS),
-		);
-		for (let i = start; i < end; i++) mask[i] = 1;
-	}
-
-	return mask;
-}
-
 function validatePodcastChannels({
 	channels,
 }: {
 	channels: PodcastSyncChannel[];
 }) {
-	if (channels.length < 1) {
-		throw new Error("Add at least one podcast channel");
+	if (channels.length < 1 || channels.length > 32) {
+		throw new Error("Choose between 1 and 32 podcast channels");
 	}
 	for (const channel of channels) {
 		if (channel.video.type !== "video") {
@@ -229,86 +79,93 @@ export async function runPodcastAlignment({
 	channels,
 	settings,
 	onProgress,
+	signal,
 }: {
 	channels: PodcastSyncChannel[];
 	settings: PodcastSyncSettings;
 	onProgress?: ProgressCallback;
+	signal?: AbortSignal;
 }): Promise<PodcastSyncAlignment> {
+	signal?.throwIfAborted();
 	validatePodcastChannels({ channels });
 
-	const maxLagWindows = Math.round(
-		(settings.maxLagSeconds || DEFAULT_MAX_LAG_SECONDS) / SYNC_WINDOW_SECONDS,
-	);
-
-	report({ onProgress, step: "Syncing cameras", progress: 0.05 });
-	const cameraEnvelopes: Record<string, Float32Array> = {};
-	for (let i = 0; i < channels.length; i++) {
-		const channel = channels[i]!;
-		cameraEnvelopes[channel.id] = await readEnergyEnvelope({
-			asset: channel.video,
-			windowSeconds: SYNC_WINDOW_SECONDS,
-		});
-		report({
-			onProgress,
-			step: "Syncing cameras",
-			progress: 0.05 + 0.5 * ((i + 1) / channels.length),
-		});
+	// One job and one clock for all unique camera/microphone sources. Decode
+	// each asset once; bounded Workers keep IO and sample processing off the UI.
+	const assets = [
+		...new Map(
+			channels.flatMap((c) => [c.video, c.audio]).map((a) => [a.id, a]),
+		).values(),
+	];
+	let completed = 0;
+	report({
+		onProgress,
+		step: `Reading all sources (0/${assets.length})`,
+		progress: 0.02,
+	});
+	const envelopes = await mapConcurrent({
+		items: assets,
+		concurrency: Math.min(
+			4,
+			Math.max(2, Math.floor((navigator.hardwareConcurrency || 4) / 2)),
+		),
+		task: async (asset, jobSignal) => {
+			const envelope = await runSyncWorker<Float32Array>({
+				message: {
+					type: "read",
+					asset: { file: asset.file, url: asset.url, name: asset.name },
+				},
+				signal: jobSignal,
+			});
+			completed++;
+			report({
+				onProgress,
+				step: `Reading all sources (${completed}/${assets.length})`,
+				progress: 0.02 + (0.78 * completed) / assets.length,
+			});
+			return envelope;
+		},
+		signal,
+	});
+	if (envelopes.reduce((sum, e) => sum + e.length, 0) > 32_000_000) {
+		throw new Error(
+			"Combined recordings exceed the synchronization memory limit. Use shorter recordings or fewer sources.",
+		);
 	}
-
-	const anchor = channels[0]!;
-	const cameraLag: Record<string, number> = { [anchor.id]: 0 };
-	for (let i = 1; i < channels.length; i++) {
-		const channel = channels[i]!;
-		const result = crossCorrelationOffset({
-			refEnvelope: cameraEnvelopes[anchor.id]!,
-			targetEnvelope: cameraEnvelopes[channel.id]!,
-			windowSeconds: SYNC_WINDOW_SECONDS,
-			maxLagWindows,
-		});
-		cameraLag[channel.id] = result.offsetSeconds;
-	}
-
-	let maxLag = 0;
-	for (const channel of channels) {
-		maxLag = Math.max(maxLag, cameraLag[channel.id] ?? 0);
-	}
-
+	report({
+		onProgress,
+		step: "Synchronizing all sources on one timeline",
+		progress: 0.82,
+	});
+	const group = await runSyncWorker<{
+		offsets: (number | null)[];
+		confidence: number[];
+		referenceIndex: number;
+	}>({
+		message: {
+			type: "align",
+			envelopes,
+			maxLagSeconds: settings.maxLagSeconds || DEFAULT_MAX_LAG_SECONDS,
+		},
+		signal,
+	});
+	const missing = assets.filter((_, i) => group.offsets[i] == null);
+	if (missing.length)
+		throw new Error(
+			`Cannot reliably synchronize: ${missing.map((a) => a.name).join(", ")}. Check recording overlap and audible reference sound.`,
+		);
+	const offsets = new Map(assets.map((a, i) => [a.id, group.offsets[i]!]));
+	const origin = Math.max(...channels.map((c) => offsets.get(c.video.id)!));
 	const videoOffsets: Record<string, number> = {};
+	const audioOffsets: Record<string, number> = {};
+	const audioDelays: Record<string, number> = {};
 	for (const channel of channels) {
 		videoOffsets[channel.id] = Math.max(
 			0,
-			maxLag - (cameraLag[channel.id] ?? 0),
+			origin - offsets.get(channel.video.id)!,
 		);
-	}
-
-	report({ onProgress, step: "Aligning microphones", progress: 0.58 });
-	const audioOffsets: Record<string, number> = {};
-	const audioDelays: Record<string, number> = {};
-	for (let i = 0; i < channels.length; i++) {
-		const channel = channels[i]!;
-		const proEnvelope = await readEnergyEnvelope({
-			asset: channel.audio,
-			windowSeconds: SYNC_WINDOW_SECONDS,
-		});
-		const result = crossCorrelationOffset({
-			refEnvelope: cameraEnvelopes[channel.id]!,
-			targetEnvelope: proEnvelope,
-			windowSeconds: SYNC_WINDOW_SECONDS,
-			maxLagWindows,
-		});
-		const sourceAtZero = (videoOffsets[channel.id] ?? 0) - result.offsetSeconds;
-		if (sourceAtZero >= 0) {
-			audioOffsets[channel.id] = sourceAtZero;
-			audioDelays[channel.id] = 0;
-		} else {
-			audioOffsets[channel.id] = 0;
-			audioDelays[channel.id] = -sourceAtZero;
-		}
-		report({
-			onProgress,
-			step: "Aligning microphones",
-			progress: 0.58 + 0.37 * ((i + 1) / channels.length),
-		});
+		const sourceAtZero = origin - offsets.get(channel.audio.id)!;
+		audioOffsets[channel.id] = Math.max(0, sourceAtZero);
+		audioDelays[channel.id] = Math.max(0, -sourceAtZero);
 	}
 
 	let duration = Number.POSITIVE_INFINITY;
@@ -325,7 +182,12 @@ export async function runPodcastAlignment({
 		);
 	}
 	report({ onProgress, step: "Synchronization complete", progress: 1 });
-	return { duration, videoOffsets, audioOffsets, audioDelays };
+	const alignment = { duration, videoOffsets, audioOffsets, audioDelays };
+	alignmentEnvelopes.set(
+		alignment,
+		new Map(assets.map((a, i) => [a.id, envelopes[i]!])),
+	);
+	return alignment;
 }
 
 export async function runPodcastMulticam({
@@ -333,12 +195,15 @@ export async function runPodcastMulticam({
 	settings,
 	alignment,
 	onProgress,
+	signal,
 }: {
 	channels: PodcastSyncChannel[];
 	settings: PodcastSyncSettings;
 	alignment: PodcastSyncAlignment;
 	onProgress?: ProgressCallback;
+	signal?: AbortSignal;
 }): Promise<PodcastSyncResult> {
+	signal?.throwIfAborted();
 	validatePodcastChannels({ channels });
 	const { duration, videoOffsets, audioOffsets, audioDelays } = alignment;
 
@@ -355,12 +220,21 @@ export async function runPodcastMulticam({
 		const delay = audioDelays[channel.id] ?? 0;
 		const startSeconds = delay > 0 ? 0 : (audioOffsets[channel.id] ?? 0);
 		const decodeDuration = Math.max(0, duration - delay);
-		const envelope = await readEnergyEnvelope({
-			asset: channel.audio,
-			windowSeconds: PODCAST_SYNC_RESOLUTION_SECONDS,
-			startSeconds,
-			durationSeconds: decodeDuration,
-		});
+		const cached = alignmentEnvelopes.get(alignment)?.get(channel.audio.id);
+		const envelope = cached
+			? cached.subarray(
+					Math.round(startSeconds / PODCAST_SYNC_RESOLUTION_SECONDS),
+					Math.round(
+						(startSeconds + decodeDuration) / PODCAST_SYNC_RESOLUTION_SECONDS,
+					),
+				)
+			: await readEnergyEnvelope({
+					asset: channel.audio,
+					windowSeconds: PODCAST_SYNC_RESOLUTION_SECONDS,
+					startSeconds,
+					durationSeconds: decodeDuration,
+					signal,
+				});
 
 		const padded = new Float32Array(numSteps);
 		const padFrames = Math.round(delay / PODCAST_SYNC_RESOLUTION_SECONDS);
@@ -370,16 +244,7 @@ export async function runPodcastMulticam({
 			padded[target] = envelope[frame] ?? 0;
 		}
 
-		const speechMask = buildSpeechMask({ envelope: padded, numSteps });
-		const normalized = normalizeEnergyEnvelope({
-			envelope: padded,
-			speechMask,
-		});
-		const masked = new Float32Array(numSteps);
-		for (let frame = 0; frame < numSteps; frame++) {
-			masked[frame] = speechMask[frame] ? (normalized[frame] ?? 0) : 0;
-		}
-		channelEnergies[channel.id] = masked;
+		channelEnergies[channel.id] = padded;
 		report({
 			onProgress,
 			step: "Analyzing speech",
@@ -388,27 +253,21 @@ export async function runPodcastMulticam({
 	}
 
 	report({ onProgress, step: "Routing cameras", progress: 0.84 });
-	let timeline = buildActivityTimeline({
-		channelIds,
-		numSteps,
-		channelEnergies,
+	signal?.throwIfAborted();
+	const cuts = await runSyncWorker<PodcastSyncCut[]>({
+		message: {
+			type: "route",
+			envelopes: channelIds.map((id) => channelEnergies[id]!),
+			channelIds,
+			duration,
+			settings,
+		},
+		signal,
 	});
-	if (channelIds.length >= 2) {
-		timeline = settings.antiBleed
-			? applyAntiBleedPipeline({ timeline, numChannels: channelIds.length })
-			: smoothEnergyTimeline({
-					timeline,
-					windowMs: 300,
-					numChannels: channelIds.length,
-				});
-	}
-
-	const cuts = routePodcastSync({
-		timeline,
-		channelIds,
-		duration,
-		settings,
-	});
+	if (cuts.length === 0)
+		throw new Error(
+			"No valid multicam plan could be produced from these microphones.",
+		);
 
 	const perChannel: Record<string, number> = {};
 	for (const cut of cuts) {
@@ -434,14 +293,17 @@ export async function runPodcastSync({
 	channels,
 	settings,
 	onProgress,
+	signal,
 }: {
 	channels: PodcastSyncChannel[];
 	settings: PodcastSyncSettings;
 	onProgress?: ProgressCallback;
+	signal?: AbortSignal;
 }): Promise<PodcastSyncResult> {
 	const alignment = await runPodcastAlignment({
 		channels,
 		settings,
+		signal,
 		onProgress: ({ step, progress }) =>
 			onProgress?.({ step, progress: progress * 0.45 }),
 	});
@@ -449,6 +311,7 @@ export async function runPodcastSync({
 		channels,
 		settings,
 		alignment,
+		signal,
 		onProgress: ({ step, progress }) =>
 			onProgress?.({ step, progress: 0.45 + progress * 0.55 }),
 	});
