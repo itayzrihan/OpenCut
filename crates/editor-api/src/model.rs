@@ -288,6 +288,15 @@ impl Project {
             ));
         }
         self.settings.validate()?;
+        if let Some(value) = self.extensions.get(crate::studio::STUDIO_KEY) {
+            let source: crate::studio::StudioDocument = serde_json::from_value(value.clone())
+                .map_err(|e| ModelError::Invalid(e.to_string()))?;
+            source.validate()?;
+            if self.classic.is_some() || self.timeline.tracks.iter().any(|track| !track.items.is_empty())
+                || !self.timeline.markers.is_empty() || !self.timeline.transitions.is_empty() || !self.assets.is_empty() {
+                return Err(ModelError::Invalid("Studio source owns this project's timeline and assets".into()));
+            }
+        }
         if let Some(classic) = &self.classic {
             classic.validate()?;
             if classic.id()? != self.id || classic.name()? != self.name || classic.settings()? != self.settings {

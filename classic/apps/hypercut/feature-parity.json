@@ -1,0 +1,1132 @@
+{
+  "schemaVersion": 1,
+  "product": "HyperCut",
+  "upstream": {
+    "package": "@hyperframes/studio",
+    "version": "0.8.146"
+  },
+  "scope": "New editing projects only. Existing OpenCut project conversion is excluded.",
+  "features": [
+    {
+      "id": "clip-insert",
+      "title": "Insert clips",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/insert-element.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.insert"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useTimelineEditing.ts",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "clip-duplicate",
+      "title": "Duplicate clips",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.duplicate"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useClipboard.ts",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "clip-remove",
+      "title": "Remove clips/tracks",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/delete-elements.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.remove"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useTimelineEditing.ts",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "clip-move",
+      "title": "Move clips",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/move-elements.ts",
+        "classic/apps/web/src/timeline/hooks/use-timeline-drag-drop.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.move"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useTimelineClipTimingEditing.ts",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "clip-split",
+      "title": "Split / retain left / retain right",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/split-elements.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.split"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useTimelineClipTimingEditing.ts",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "clip-update",
+      "title": "Clip trim, retime, parameters and visibility",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/update-elements.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.update"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useTimelineClipTimingEditing.ts",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "clip-controls",
+      "title": "Clip mute and visibility",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/core/managers/commands.ts",
+        "classic/apps/web/src/actions/use-editor-actions.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.elements.controls"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/timelineCallbacks.ts"
+    },
+    {
+      "id": "clipboard",
+      "title": "Copy and paste clips",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/clipboard/handlers/index.ts",
+        "classic/apps/web/src/commands/timeline/clipboard/paste.ts"
+      ],
+      "capabilities": [
+        "clipboard.classic.elements.copy",
+        "timeline.classic.elements.paste"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useClipboard.ts"
+    },
+    {
+      "id": "merge-text",
+      "title": "Merge text clips",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/merge-text-elements.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.text.merge"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "transitions",
+      "title": "Clip transitions",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/apply-transition.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.transitions.catalog",
+        "timeline.classic.transitions.apply"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/TimelineTransitionOverlays.tsx"
+    },
+    {
+      "id": "text-sfx",
+      "title": "Text transitions/reveal with SFX",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/timeline/element/apply-text-transitions-with-sfx.ts",
+        "classic/apps/web/src/commands/timeline/element/update-text-reveal-with-typing-sfx.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.transitions.catalog",
+        "timeline.classic.transitions.apply",
+        "timeline.classic.elements.update"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "background-removal",
+      "title": "Background removal",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "crates/editor-api/src/operations/classic_background_removal.rs"
+      ],
+      "capabilities": [
+        "timeline.classic.background_removal.set"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "ripple",
+      "title": "Ripple editing",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.ripple.plan",
+        "timeline.classic.ripple.apply"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/store/playerStore.ts"
+    },
+    {
+      "id": "tracks",
+      "title": "Create, order, mute and show tracks",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.tracks.layout",
+        "timeline.classic.track.update"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/timelineCallbacks.ts"
+    },
+    {
+      "id": "source-audio",
+      "title": "Separate/recover source audio",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.audio.source.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "effects",
+      "title": "Clip effects",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "effects.classic.catalog.read",
+        "timeline.classic.effects.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "masks",
+      "title": "Masks and freeform points",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "masks.classic.catalog.read",
+        "timeline.classic.masks.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "keyframes",
+      "title": "Animation/keyframe editing",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "animation.classic.targets.read",
+        "timeline.classic.keyframes.upsert",
+        "timeline.classic.keyframes.remove",
+        "timeline.classic.keyframes.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useGsapKeyframeOps.ts"
+    },
+    {
+      "id": "keyframe-clipboard",
+      "title": "Copy/paste keyframes",
+      "source": [
+        "classic/apps/web/src/clipboard/handlers/keyframes.ts",
+        "classic/apps/web/src/core/managers/commands.ts"
+      ],
+      "capabilities": [
+        "animation.classic.keyframes.copy",
+        "timeline.classic.keyframes.paste"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/useClipboard.ts"
+    },
+    {
+      "id": "scenes",
+      "title": "Scene create/rename/switch/delete",
+      "source": [
+        "classic/apps/web/src/core/managers/scenes-manager.ts"
+      ],
+      "capabilities": [
+        "project.classic.scenes.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/sidebar/CompositionsPanel.tsx"
+    },
+    {
+      "id": "bookmarks",
+      "title": "Bookmark edits",
+      "source": [
+        "classic/apps/web/src/core/managers/scenes-manager.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.bookmarks.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "settings",
+      "title": "Project FPS/canvas/background",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts",
+        "classic/apps/web/src/commands/project/update-project-settings.ts"
+      ],
+      "capabilities": [
+        "project.classic.settings.update"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/App.tsx",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "captions",
+      "title": "Caption words/layout and generated/manual ownership",
+      "source": [
+        "classic/apps/web/src/subtitles/caption-source-sync.ts",
+        "classic/apps/web/src/subtitles/caption-tracks.ts",
+        "classic/apps/web/src/timeline/components/caption-word-timing-track.tsx",
+        "classic/apps/web/src/subtitles/components/caption-review-view.tsx"
+      ],
+      "capabilities": [
+        "caption.classic.cues.read"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/captions/components/CaptionPropertyPanel.tsx"
+    },
+    {
+      "id": "silence",
+      "title": "Silence removal/recovery",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts"
+      ],
+      "capabilities": [
+        "timeline.silence.commit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "parallax",
+      "title": "Parallax marker and canvas stories",
+      "source": [
+        "classic/apps/web/src/core/managers/timeline-manager.ts",
+        "classic/apps/web/src/commands/parallax/create-canvas-pan-story.ts",
+        "classic/apps/web/src/commands/parallax/insert-selection-into-canvas.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.track.update"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "media",
+      "title": "Import/delete media",
+      "source": [
+        "classic/apps/web/src/commands/media/add-media-asset.ts",
+        "classic/apps/web/src/commands/media/remove-media-asset.ts"
+      ],
+      "capabilities": [
+        "media.classic.remove",
+        "media.classic.register"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/sidebar/AssetsTab.tsx",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "history",
+      "title": "Undo/Redo",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts"
+      ],
+      "capabilities": [
+        "history.undo",
+        "history.redo"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/hooks/usePersistentEditHistory.ts",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "playback",
+      "title": "Playback and timeline navigation",
+      "source": [
+        "classic/apps/web/src/actions/use-editor-actions.ts"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/hooks/useTimelinePlayer.ts",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "selection",
+      "title": "Selection/snapping/cancel interaction and scoped UI presentation",
+      "source": [
+        "classic/apps/web/src/actions/use-editor-actions.ts",
+        "classic/apps/web/src/editor-agent/ui-control.ts",
+        "crates/editor-api/src/editor_ui_control.rs"
+      ],
+      "capabilities": [
+        "editor.ui.snapshot",
+        "editor.ui.control"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/store/playerStore.ts"
+    },
+    {
+      "id": "hyperframes",
+      "title": "HyperFrames import/source/variables/layer movement",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts"
+      ],
+      "capabilities": [
+        "timeline.hyperframes.import",
+        "hyperframes.layer.move",
+        "hyperframes.source.set",
+        "hyperframes.variables.set"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/EditorShell.tsx"
+    },
+    {
+      "id": "preview-export",
+      "title": "Native preview/export",
+      "source": [
+        "classic/apps/web/src/editor-agent/render-effects.ts",
+        "classic/apps/web/src/editor-agent/client.ts"
+      ],
+      "capabilities": [
+        "editor.preview.render",
+        "editor.export.render"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/renders/RenderQueue.tsx"
+    },
+    {
+      "id": "agent-recovery",
+      "title": "Agent conversation/run/media recovery",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts",
+        "classic/apps/web/src/editor-agent/overlay.tsx",
+        "classic/apps/web/src/editor-agent/client.ts"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "image-generation",
+      "title": "Subscription image generation/editing",
+      "source": [
+        "crates/editor-api/src/operations/image_generation.rs",
+        "crates/editor-api/src/operations/classic_image_inspection.rs",
+        "classic/apps/web/src/editor-agent/server/subscription-image.ts"
+      ],
+      "capabilities": [
+        "imagegen.generate",
+        "media.classic.image.inspect"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "owned-project-transfer",
+      "title": "Owned project inspection and media transfer",
+      "source": [
+        "crates/editor-api/src/operations/owned_projects.rs",
+        "classic/apps/web/src/editor-agent/server/owned-projects.ts"
+      ],
+      "capabilities": [
+        "projects.owned.read",
+        "projects.owned.media.copy"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "smart-takes",
+      "title": "Semantic take assembly and alternatives",
+      "source": [
+        "classic/apps/web/src/core/managers/commands.ts",
+        "classic/apps/web/src/core/canonical-classic-session.ts",
+        "classic/apps/web/src/timeline/smart-takes/controls.tsx",
+        "classic/apps/web/src/ai/smart-takes-plan.ts"
+      ],
+      "capabilities": [
+        "timeline.classic.takes.prepare",
+        "timeline.classic.takes.edit"
+      ],
+      "strategy": "Reuse canonical Rust capability; adapt Studio interaction and HTML playback.",
+      "status": "classic-only",
+      "acceptance": "Same visible result, undo/redo, save/reopen, preview/export; test with new HyperCut project.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "full-auto",
+      "title": "Full Automatic Edit + resume + cancellation",
+      "source": [
+        "AUTOMATIC-WORD-ANIMATION-AND-FULL-EDIT.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse Rust recipes; replace EditorCore host orchestration. Include Smart Takes input and stage checkpoints.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "batch-auto",
+      "title": "Batch Full Auto Edit",
+      "source": [
+        "BATCH-FULL-AUTO-EDIT.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse queue/state policy; isolated per-project host jobs and recovery.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "smart-silence",
+      "title": "Smart silence detection and word-safe cuts",
+      "source": [
+        "SMART-SILENCE.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse Rust analysis; bounded audio decode adapter. Default smart algorithm.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "restore-between",
+      "title": "Restore silence only BETWEEN selected clips",
+      "source": [
+        "SMART-SILENCE.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse canonical restoration; preserve outer selection boundaries.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "ripple-delete",
+      "title": "Delete and close gap",
+      "source": [
+        "TIMELINE-INTERACTION-FIXES.md"
+      ],
+      "capabilities": [],
+      "strategy": "Use canonical ripple delete; ordinary Delete retains gaps.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/store/playerStore.ts",
+      "retiredPrototypeStatus": "bridged"
+    },
+    {
+      "id": "trim-preview",
+      "title": "Leading trim preview and deferred ripple",
+      "source": [
+        "TIMELINE-INTERACTION-FIXES.md"
+      ],
+      "capabilities": [],
+      "strategy": "HF drag preview; canonical ripple commit only on pointer release.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/TimelineProvider.tsx"
+    },
+    {
+      "id": "playhead-scroll",
+      "title": "Playhead drag scrolls only near viewport edges",
+      "source": [
+        "TIMELINE-INTERACTION-FIXES.md"
+      ],
+      "capabilities": [],
+      "strategy": "Verify upstream gesture behavior; patch only if mismatch.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/timelineLayout.ts"
+    },
+    {
+      "id": "auto-zoom",
+      "title": "Automatic zoom and subject framing",
+      "source": [
+        "AUTOMATIC-ZOOM.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse Rust planning; native HF transform animation.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "auto-transitions",
+      "title": "Automatic text transitions",
+      "source": [
+        "AUTOMATIC-TEXT-TRANSITIONS.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse planning/presets; native HF animation plus managed SFX.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "auto-words",
+      "title": "Automatic semantic word animation",
+      "source": [
+        "AUTOMATIC-WORD-ANIMATION-AND-FULL-EDIT.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse analysis; word-level HTML/GSAP projection.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "auto-music",
+      "title": "Automatic music placement and mixing",
+      "source": [
+        "AUTOMATIC-MUSIC.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse selection/planning; HF audio mix adapter.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "subject-framing",
+      "title": "Local subject tracking / reframe",
+      "source": [
+        "LOCAL-SUBJECT-FRAMING.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse analysis service; HF transform/keyframe projection.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "podcast-extracts",
+      "title": "Podcast extracts, speaker sync and multicam",
+      "source": [
+        "PODCAST-EXTRACTS.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse canonical workflow; adapt source references and HF preview.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "accounts",
+      "title": "Internal accounts, login, isolation",
+      "source": [
+        "ACCOUNTS-LOCAL-FIRST.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse account-core and authenticated host services.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "global-library",
+      "title": "Global music/SFX + commercial license review tags",
+      "source": [
+        "classic/apps/web/src/shared-library"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse shared library and asset ownership; no re-download or license assumptions.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "session-storage",
+      "title": "Project ownership, autosave, recovery and storage errors",
+      "source": [
+        "EDITOR-SESSION-LIFECYCLE.md"
+      ],
+      "capabilities": [],
+      "strategy": "Single runtime worker; event-driven Web Locks, durable storage and visible errors.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null,
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "project-load",
+      "title": "Fast opening, bounded caches, background preparation",
+      "source": [
+        "PREVIEW-PERFORMANCE-AUDIT-2026-10-09.md"
+      ],
+      "capabilities": [],
+      "strategy": "Fresh new projects; runtime in worker, native HF media lifecycle; benchmark real footage.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "export",
+      "title": "Export video/audio with fonts, effects and A/V sync",
+      "source": [
+        "classic/apps/web/src/export"
+      ],
+      "capabilities": [],
+      "strategy": "HF render path; visible parity acceptance for new projects.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/renders/RenderQueue.tsx"
+    },
+    {
+      "id": "project-zip",
+      "title": "New HyperCut project backup / restore ZIP",
+      "source": [
+        "classic/apps/web/src/project"
+      ],
+      "capabilities": [],
+      "strategy": "New format only, include media and bounded canonical archive.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "electron",
+      "title": "Desktop launch, production start/stop, Electron",
+      "source": [
+        "LOCAL-PRODUCTION.md"
+      ],
+      "capabilities": [],
+      "strategy": "Reuse launcher conventions with isolated app/version/port.",
+      "status": "classic-only",
+      "acceptance": "New-project end-to-end UI, history, persistence, preview/export and performance checks.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-media",
+      "title": "Panel: media",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/sidebar/AssetsTab.tsx",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "panel-ai",
+      "title": "Panel: ai",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-timeline-code",
+      "title": "Panel: timeline-code",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-sounds",
+      "title": "Panel: sounds",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/sidebar/GlobalAssetsView.tsx"
+    },
+    {
+      "id": "panel-text",
+      "title": "Panel: text",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "bridged",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/EditorShell.tsx",
+      "retiredPrototypeStatus": "bridged",
+      "verification": "VERIFICATION.md — native StudioApp integration; partial coverage, not full parity"
+    },
+    {
+      "id": "panel-stickers",
+      "title": "Panel: stickers",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-templates",
+      "title": "Panel: templates",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/components/sidebar/BlocksTab.tsx"
+    },
+    {
+      "id": "panel-ui-elements",
+      "title": "Panel: ui-elements",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-simple-advanced-layers",
+      "title": "Panel: simple-advanced-layers",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-backgrounds",
+      "title": "Panel: backgrounds",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-effects",
+      "title": "Panel: effects",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-overlays",
+      "title": "Panel: overlays",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-overlay-movement",
+      "title": "Panel: overlay-movement",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-parallax-story-teller",
+      "title": "Panel: parallax-story-teller",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-loops",
+      "title": "Panel: loops",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-transitions",
+      "title": "Panel: transitions",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/player/components/TimelineTransitionOverlays.tsx"
+    },
+    {
+      "id": "panel-captions",
+      "title": "Panel: captions",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/captions/components/CaptionPropertyPanel.tsx"
+    },
+    {
+      "id": "panel-see-captions",
+      "title": "Panel: see-captions",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-adjustment",
+      "title": "Panel: adjustment",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Every existing control produces its intended visible and saved result.",
+      "upstreamAssessment": "No equivalent to the custom OpenCut workflow identified in inspected Studio source; port required or further audit.",
+      "upstreamSource": null
+    },
+    {
+      "id": "panel-settings",
+      "title": "Panel: settings",
+      "source": [
+        "classic/apps/web/src/components/editor/panels/assets/assets-panel-store.tsx"
+      ],
+      "capabilities": [],
+      "strategy": "Audit each control; retain existing backend where useful, implement native HF presentation. Do not count a tab label as a migrated feature.",
+      "status": "classic-only",
+      "acceptance": "Initial canonical adapter implemented. Automated/UI evidence in VERIFICATION.md; complete family parity is still pending.",
+      "upstreamAssessment": "Native analogue; OpenCut behavior still needs adaptation and acceptance.",
+      "upstreamSource": "https://github.com/heygen-com/hyperframes/blob/bb34e301ec3c5f7b9edad07932356bd02a9f7934/packages/studio/src/App.tsx",
+      "retiredPrototypeStatus": "bridged"
+    }
+  ],
+  "interface": "Unmodified @hyperframes/studio StudioApp, 0.8.146; no replacement editor shell"
+}

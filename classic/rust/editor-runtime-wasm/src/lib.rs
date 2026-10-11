@@ -277,6 +277,15 @@ impl CanonicalEditorRuntime {
         self.runtime.serialize_application_state().map_err(js_error)
     }
 
+    /// Opt-in canonical history persistence; hosts own durable byte storage.
+    #[wasm_bindgen(js_name = serializeWithHistory)]
+    pub fn serialize_with_history(&self) -> Result<Vec<u8>, JsValue> {
+        if self.transaction.borrow().is_some() {
+            return Err(js_error("Finish the transaction before persisting"));
+        }
+        self.runtime.serialize_application_state_with_history().map_err(js_error)
+    }
+
     /// Restores a previously serialized session after full model validation.
     pub fn restore(&self, bytes: &[u8]) -> Result<(), JsValue> {
         if self.transaction.borrow().is_some() {

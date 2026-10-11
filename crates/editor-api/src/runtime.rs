@@ -65,6 +65,10 @@ pub struct RecentProjectInfo {
 #[serde(rename_all = "camelCase")]
 struct PersistedSession {
     document: EditorDocument,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    undo: Vec<HistoryEntry>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    redo: Vec<HistoryEntry>,
     last_saved_revision: Option<u64>,
     opened_at_ms: u64,
     last_opened_at_ms: u64,
@@ -462,11 +466,23 @@ impl OpenCutRuntime {
     /// Portable session bytes for host-owned storage (IndexedDB, files, etc.).
     /// Storage handles and implementation stay outside the editor runtime.
     pub fn serialize_application_state(&self) -> Result<Vec<u8>, RuntimeError> {
+        self.serialize_session(false)
+    }
+
+    /// Opt-in bounded history persistence for hosts which need durable Undo.
+    /// The existing default serializer remains document-only.
+    pub fn serialize_application_state_with_history(&self) -> Result<Vec<u8>, RuntimeError> {
+        self.serialize_session(true)
+    }
+
+    fn serialize_session(&self, history: bool) -> Result<Vec<u8>, RuntimeError> {
         let store = self.state.read().map_err(|_| RuntimeError::LockPoisoned)?;
         let persisted = PersistedApplicationState {
             version: 1,
             active: PersistedSession {
                 document: store.document.clone(),
+                undo: if history { store.undo.clone() } else { Vec::new() },
+                redo: if history { store.redo.clone() } else { Vec::new() },
                 last_saved_revision: store.last_saved_revision,
                 opened_at_ms: store.active_opened_at_ms,
                 last_opened_at_ms: now_ms(),
@@ -477,6 +493,8 @@ impl OpenCutRuntime {
                 .values()
                 .map(|session| PersistedSession {
                     document: session.document.clone(),
+                    undo: if history { session.undo.clone() } else { Vec::new() },
+                    redo: if history { session.redo.clone() } else { Vec::new() },
                     last_saved_revision: session.last_saved_revision,
                     opened_at_ms: session.opened_at_ms,
                     last_opened_at_ms: session.last_opened_at_ms,
@@ -486,7 +504,11 @@ impl OpenCutRuntime {
             recent_projects: store.recent_projects.clone(),
         };
         drop(store);
-        Ok(serde_json::to_vec_pretty(&persisted)?)
+        let bytes = if history { serde_json::to_vec(&persisted)? } else { serde_json::to_vec_pretty(&persisted)? };
+        if history && bytes.len() > 128 * 1024 * 1024 {
+            return Err(crate::ModelError::Invalid("Session history exceeds 128 MiB".into()).into());
+        }
+        Ok(bytes)
     }
 
     pub fn restore_application_state(&self, path: impl AsRef<Path>) -> Result<bool, RuntimeError> {
@@ -511,6 +533,19 @@ impl OpenCutRuntime {
             session.document.migrate_to_current()?;
             session.document.validate()?;
         }
+        for session in std::iter::once(&mut persisted.active).chain(persisted.inactive.iter_mut()) {
+            if session.undo.len() + session.redo.len() > 1000 {
+                return Err(crate::ModelError::Invalid("Too many persisted history entries".into()).into());
+            }
+            let project_id = session.document.project.as_ref().map(|p| &p.id);
+            for entry in session.undo.iter_mut().chain(session.redo.iter_mut()) {
+                entry.document.migrate_to_current()?;
+                entry.document.validate()?;
+                if entry.document.project.as_ref().map(|p| &p.id) != project_id {
+                    return Err(crate::ModelError::Invalid("History belongs to another project".into()).into());
+                }
+            }
+        }
         let mut inactive_sessions = BTreeMap::new();
         for session in persisted.inactive {
             let Some(project_id) = session
@@ -525,8 +560,8 @@ impl OpenCutRuntime {
                 project_id,
                 StoredProjectSession {
                     document: session.document,
-                    undo: Vec::new(),
-                    redo: Vec::new(),
+                    undo: session.undo,
+                    redo: session.redo,
                     last_saved_revision: session.last_saved_revision,
                     opened_at_ms: session.opened_at_ms,
                     last_opened_at_ms: session.last_opened_at_ms,
@@ -539,8 +574,8 @@ impl OpenCutRuntime {
         // after restoring an older saved revision into this same runtime.
         self.registry.clear_idempotency()?;
         store.document = persisted.active.document;
-        store.undo.clear();
-        store.redo.clear();
+        store.undo = persisted.active.undo;
+        store.redo = persisted.active.redo;
         store.last_saved_revision = persisted.active.last_saved_revision;
         store.active_opened_at_ms = persisted.active.opened_at_ms;
         store.active_thumbnail_uri = persisted.active.thumbnail_uri;

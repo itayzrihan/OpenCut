@@ -32,6 +32,7 @@ mod hyperframes_source_edits;
 mod hyperframes_variables;
 mod job;
 mod model;
+mod studio;
 mod operations;
 mod policy;
 mod registry;

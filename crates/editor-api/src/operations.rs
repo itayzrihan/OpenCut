@@ -93,6 +93,7 @@ pub use owned_projects::{owned_project_read, owned_media_transfer_plan, register
 pub use image_generation::subscription_image_plan;
 pub use image_generation::register_editor_image_generation;
 pub use hyperframes_examples::{hyperframes_reference_source, register_hyperframes_reference_source, hyperframes_embedding_plan, register_hyperframes_embedding};
+mod studio;
 mod silence;
 
 pub(crate) fn register_all(
@@ -108,6 +109,7 @@ pub(crate) fn register_all(
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;
+    studio::register_studio(registry, state.clone(), events.clone())?;
     register_account_storage(registry, state.clone(), events.clone())?;
     register_account_snapshot_validation(registry, state.clone())?;
     register_application_operations(registry, state.clone(), events.clone())?;
@@ -6749,6 +6751,25 @@ pub(crate) fn trim_history(history: &mut Vec<HistoryEntry>) {
             .is_some_and(|project| project.classic.is_some())
     }) {
         return;
+    }
+    // Studio source is textual, so bound retained history by source bytes as well
+    // as entry count. Media bytes are external immutable blobs. Keep at least one
+    // undo boundary even for a large source; old history must not block new edits.
+    if history.last().is_some_and(|entry| entry.document.project.as_ref()
+        .is_some_and(|p| p.extensions.contains_key(crate::studio::STUDIO_KEY))) {
+        let mut bytes = 0usize;
+        let mut keep_from = history.len();
+        for (index, entry) in history.iter().enumerate().rev() {
+            let size = entry.document.project.as_ref()
+                .and_then(|p| p.extensions.get(crate::studio::STUDIO_KEY))
+                .and_then(|s| s.get("files")).and_then(Value::as_object)
+                .map_or(0, |files| files.iter().map(|(path, value)|
+                    path.len() + value.as_str().map_or(0, str::len)).sum::<usize>());
+            if keep_from < history.len() && bytes.saturating_add(size) > 16 * 1024 * 1024 { break; }
+            bytes = bytes.saturating_add(size);
+            keep_from = index;
+        }
+        if keep_from > 0 { history.drain(..keep_from); }
     }
     const MAX_HISTORY: usize = 200;
     if history.len() > MAX_HISTORY {
