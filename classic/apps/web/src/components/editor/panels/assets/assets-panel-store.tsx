@@ -21,6 +21,7 @@ export const TAB_KEYS = [
 	"media",
 	"ai",
 	"timeline-code",
+	"catalog",
 	"sounds",
 	"text",
 	"stickers",
@@ -62,6 +63,10 @@ export const tabs = {
 	"timeline-code": {
 		icon: createHugeiconsIcon({ icon: SourceCodeIcon }),
 		label: "Timeline code",
+	},
+	catalog: {
+		icon: createHugeiconsIcon({ icon: Layers01Icon }),
+		label: "Catalog",
 	},
 	sounds: {
 		icon: createHugeiconsIcon({ icon: HeadphonesIcon }),

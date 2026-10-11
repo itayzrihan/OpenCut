@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
 	memo,
 	useCallback,
@@ -565,7 +564,7 @@ function MediaViewContent() {
 				{...dragProps}
 			>
 				<div className="shrink-0 space-y-2 pb-2">
-					<Button variant="outline" size="sm" asChild><Link href={`/editor/${encodeURIComponent(activeProject.metadata.id)}?view=catalog`}>Catalog · examples + prompts</Link></Button>
+					<Button variant="outline" size="sm" onClick={() => useAssetsPanelStore.getState().setActiveTab("catalog")}>Catalog · examples + prompts</Button>
 					<div className="flex h-8 items-center gap-2 rounded border px-2">
 						<Search className="size-3.5 shrink-0 text-muted-foreground" />
 						<input

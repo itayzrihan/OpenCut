@@ -5,6 +5,7 @@ import {
 	type Tab,
 	useAssetsPanelStore,
 } from "@/components/editor/panels/assets/assets-panel-store";
+import { CatalogView } from "./views/catalog";
 import { TabBar } from "./tabbar";
 import { Captions } from "@/subtitles/components/assets-view";
 import { CaptionReviewView } from "@/subtitles/components/caption-review-view";
@@ -31,6 +32,7 @@ export function AssetsPanel() {
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
+		catalog: <CatalogView />,
 		ai: <AiChatView />,
 		"timeline-code": <TimelineCodeView />,
 		sounds: <SoundsView />,
@@ -60,7 +62,7 @@ export function AssetsPanel() {
 		<div className="panel bg-background flex h-full rounded-sm border overflow-hidden">
 			<TabBar />
 			<Separator orientation="vertical" />
-			<div className="flex-1 overflow-hidden">{viewMap[activeTab]}</div>
+			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[activeTab]}</div>
 		</div>
 	);
 }

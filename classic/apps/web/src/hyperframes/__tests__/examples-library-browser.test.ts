@@ -11,10 +11,13 @@ import { HyperframesPreviewHost } from "../preview-host";
 import { loadCatalogPreviewPackage } from "../catalog-preview-server";
 import { CanonicalClassicSession } from "@/core/canonical-classic-session";
 
-for (const presentation of ["dialog", "page"] as const) {
+type PreviewWindow = Window & { __player?: { getTime(): number } };
+let fixtureBundle: Awaited<ReturnType<typeof Bun.build>> | undefined;
+
+for (const presentation of ["dialog", "page", "panel"] as const) {
 	test(`the examples ${presentation} searches, filters and reads real pinned source through the canonical registry`, async () => {
 		const require = createRequire(import.meta.url);
-		const bundle = await Bun.build({
+		const bundle = (fixtureBundle ??= await Bun.build({
 			entrypoints: [
 				fileURLToPath(
 					new URL("./examples-library-fixture.tsx", import.meta.url),
@@ -44,12 +47,12 @@ for (const presentation of ["dialog", "page"] as const) {
 						}));
 						build.onLoad({ filter: /.*/, namespace: "fixture" }, () => ({
 							loader: "js",
-							contents: `const command={searchHyperframesExamples:input=>window.hfReferenceCall("search",input),readHyperframesExample:input=>window.hfReferenceCall("read",input),readHyperframesExampleSource:({signal,...input})=>window.hfReferenceCall("source",input)};const editor={command};export const useEditor=()=>editor;`,
+							contents: `const command={searchHyperframesExamples:input=>window.hfReferenceCall("search",input),readHyperframesExample:input=>window.hfReferenceCall("read",input),readHyperframesExampleSource:({signal,...input})=>window.hfReferenceCall("source",input)};const editor={command};export const useEditor=()=>editor;export const useEditorProject=selector=>selector({project:{getActive:()=>({metadata:{id:"classic-project"}})}});`,
 						}));
 					},
 				},
 			],
-		});
+		}));
 		if (!bundle.success) throw new Error(bundle.logs.join("\n"));
 		const runtime = await createCanonicalTestRuntime();
 		const session = new CanonicalClassicSession({
@@ -222,6 +225,24 @@ for (const presentation of ["dialog", "page"] as const) {
 				},
 				{ code: await bundle.outputs[0].text(), presentation },
 			);
+			if (presentation === "panel") {
+				await page.waitForSelector('button[aria-label="Catalog"]');
+				await page.click('button[aria-label="Catalog"]');
+				const { default: postcss } = await import("postcss");
+				const { default: tailwind } = await import("@tailwindcss/postcss");
+				const cssPath = join(root, "classic/apps/web/src/app/globals.css");
+				await page.addStyleTag({
+					content: (
+						await postcss([tailwind()]).process(
+							await readFile(cssPath, "utf8"),
+							{ from: cssPath },
+						)
+					).css,
+				});
+				await page.evaluate(() =>
+					document.documentElement.classList.add("dark"),
+				);
+			}
 			await page.waitForFunction(() =>
 				document.body.textContent?.includes("454 captured"),
 			);
@@ -245,6 +266,10 @@ for (const presentation of ["dialog", "page"] as const) {
 			);
 			await page.hover('button[aria-pressed="false"]');
 			await page.waitForSelector('iframe[title$="live preview"]');
+			if (presentation === "panel") {
+				expect(await page.$("[data-catalog-card] iframe")).not.toBeNull();
+				expect(await page.$("aside")).toBeNull();
+			}
 			await page.click('button[aria-pressed="false"]');
 			await page.waitForFunction(() =>
 				document.body.textContent?.includes("Source file"),
@@ -257,18 +282,19 @@ for (const presentation of ["dialog", "page"] as const) {
 				.frames()
 				.find((frame) => frame.url().includes(".localhost"))!;
 			await live.waitForFunction(
-				() => (window as any).__player?.getTime() > 0.2,
+				() => ((window as PreviewWindow).__player?.getTime() ?? 0) > 0.2,
 			);
 			const first = await live.evaluate(() =>
-				(window as any).__player.getTime(),
+				(window as PreviewWindow).__player!.getTime(),
 			);
 			await live.waitForFunction(
-				(first: number) => (window as any).__player.getTime() > first + 0.2,
+				(first: number) =>
+					(window as PreviewWindow).__player!.getTime() > first + 0.2,
 				{},
 				first,
 			);
 			expect(await page.$("video")).toBeNull();
-			expect(previewCreated).toBe(1);
+			expect(previewCreated).toBe(presentation === "panel" ? 2 : 1);
 			await page.select("label select", "lt-clean-bar.html");
 			await page.waitForFunction(() =>
 				document.querySelector('pre[dir="ltr"]')?.textContent?.includes("gsap"),
@@ -276,6 +302,15 @@ for (const presentation of ["dialog", "page"] as const) {
 			expect(
 				await page.$eval('pre[dir="ltr"]', (element) => element.textContent),
 			).toContain("<!doctype html>");
+			if (presentation === "panel") {
+				expect(
+					await page.$eval(
+						'[data-testid="assets-panel"]',
+						(el) => el.scrollWidth <= el.clientWidth,
+					),
+				).toBe(true);
+				await page.click("aside button");
+			}
 			await page.click('input[aria-label="Search HyperFrames examples"]');
 			await page.$eval(
 				'input[aria-label="Search HyperFrames examples"]',
@@ -330,6 +365,30 @@ for (const presentation of ["dialog", "page"] as const) {
 				await page.$eval("button", (node) => {
 					if (node.textContent === "Back to editor") node.click();
 				});
+			} else if (presentation === "panel") {
+				await page.click('button[aria-label="Sounds"]');
+				await page.waitForFunction(() =>
+					document.body.textContent?.includes("Selected tab: sounds"),
+				);
+				expect(await page.$("iframe")).toBeNull();
+				await page.click('button[aria-label="Catalog"]');
+				await page.waitForFunction(() =>
+					document.body.textContent?.includes("454 captured"),
+				);
+				expect(await page.$("iframe")).toBeNull();
+				if (process.env.OPENCUT_CATALOG_PANEL_SCREENSHOT) {
+					await page.setViewport({ width: 400, height: 740 });
+					await page.hover('[data-catalog-card="animated-bar-chart"] button');
+					await page.waitForSelector("[data-catalog-card] iframe");
+					await page.waitForFunction(
+						() => !document.body.textContent?.includes("Loading live source…"),
+					);
+					expect(await page.$('[data-catalog-card] [role="alert"]')).toBeNull();
+					await page.screenshot({
+						path: process.env.OPENCUT_CATALOG_PANEL_SCREENSHOT,
+					});
+					await page.click('button[aria-label="Sounds"]');
+				}
 			} else {
 				await page.keyboard.press("Escape");
 			}

@@ -1,16 +1,21 @@
 # Unified catalog in Classic OpenCut
 
-The Classic editor's **Catalog** tab (`?view=catalog`; `?view=examples` remains
-compatible) contains 454 unique identities: the original 394 pinned OpenCut
+The Classic editor's **Catalog** asset-panel tab (beside Media, AI, Timeline
+code, Sounds and Effects) contains 454 unique identities: the original 394 pinned
+OpenCut
 references and 60 additions from official HyperFrames commit
 `83b6419e975548f54cbe4a771f3ac00b04915757`. Existing prepared packages, reviewed
 prompts and original file hashes are preserved. Each item's source URL identifies
 its own revision; the API's `upstreamCommit` token identifies the latest unified
 catalog generation, not a claim that the older entries were rewritten.
 
-Hover or keyboard focus starts one debounced, silent source preview in the preview
-pane. Click retains the preview and opens prompts, source inspection and existing
-prepared-package import. No preview MP4, encoder, FFmpeg, render job or project
+Hover or keyboard focus starts one debounced, silent source preview inside its
+card. Click opens inline details with a larger preview, prompts, source inspection
+and existing
+prepared-package import; Back to catalog returns to the grid. The timeline and
+project preview remain mounted throughout. Header/media shortcuts and legacy
+`?view=catalog` / `?view=examples` links select the same tab. No preview MP4,
+encoder, FFmpeg, render job or project
 mutation is needed. Leaving a transient preview or closing the tab releases its
 isolated host lease. Prompt copy preserves original/reconstructed provenance;
 items without authored prompts get a clearly labelled metadata-based usage prompt.
@@ -54,7 +59,9 @@ separate from catalog coverage and this feature's interaction tests.
 - Production reference preparation runs both audits and packages both snapshots.
 - Rust registry tests cover union coverage, preserved prompts/packages, invalid
   identities/generations and unchanged canonical state.
-- Browser tests cover page/dialog search, source inspection, live clock advance,
+- Browser tests cover native tab selection, narrow-panel card previews, switching
+  tabs and releasing previews, plus page/dialog search, source inspection, live
+  clock advance,
   no video element, unchanged project and preview release on close.
 - IO tests cover source tampering, bounded reads and path confinement.
 

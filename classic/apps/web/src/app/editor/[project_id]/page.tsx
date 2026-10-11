@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useBatchEdit } from "@/batch/provider";
 import { batchEditIsLocked } from "opencut-wasm";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
 	ResizablePanelGroup,
 	ResizablePanel,
@@ -20,7 +20,7 @@ import { MigrationDialog } from "@/project/components/migration-dialog";
 import { usePanelStore } from "@/editor/panel-store";
 import { usePasteMedia } from "@/media/use-paste-media";
 import { MobileGate } from "@/components/editor/mobile-gate";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useEditorRenderer } from "@/editor/use-editor";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -29,13 +29,17 @@ import { ChangelogNotification } from "@/changelog/components/changelog-notifica
 import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
 import { EditorAgentWorkspace } from "@/editor-agent/overlay";
-import { HyperframesExamplesLibrary } from "@/hyperframes/examples-library";
+import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 
 export default function Editor() {
 	const params = useParams();
 	const projectId = params.project_id as string;
 	const search = useSearchParams();
-	const router = useRouter();
+	const view = search.get("view");
+	useEffect(() => {
+		if (view === "catalog" || view === "examples")
+			useAssetsPanelStore.getState().setActiveTab("catalog");
+	}, [projectId, view]);
 	const batch = useBatchEdit();
 	const job = batch.state.runs
 		.flatMap((r) => r.jobs)
@@ -69,17 +73,7 @@ export default function Editor() {
 					<EditorHeader />
 					<div className="min-h-0 min-w-0 flex-1">
 						<EditorAgentWorkspace>
-							{["examples", "catalog"].includes(search.get("view") ?? "") ? (
-								<HyperframesExamplesLibrary
-									projectId={projectId}
-									presentation="page"
-									onClose={() =>
-										router.push(`/editor/${encodeURIComponent(projectId)}`)
-									}
-								/>
-							) : (
-								<EditorLayout />
-							)}
+							<EditorLayout />
 						</EditorAgentWorkspace>
 					</div>
 					<Onboarding />

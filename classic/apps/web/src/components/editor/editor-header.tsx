@@ -36,8 +36,9 @@ import {
 	PROJECT_ARCHIVE_ACCEPT,
 } from "@/project/archive/project-archive";
 
+import { useAssetsPanelStore } from "./panels/assets/assets-panel-store";
+
 export function EditorHeader() {
-	const projectId = useEditorProject((e) => e.project.getActive().metadata.id);
 	return (
 		<header className="bg-background flex h-[3.4rem] items-center justify-between px-3 pt-0.5">
 			<div className="flex items-center gap-1">
@@ -45,12 +46,13 @@ export function EditorHeader() {
 				<EditableProjectName />
 			</div>
 			<nav className="flex items-center gap-2">
-				<Link
-					href={`/editor/${encodeURIComponent(projectId)}?view=catalog`}
-					className="text-sm"
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={() => useAssetsPanelStore.getState().setActiveTab("catalog")}
 				>
 					Catalog
-				</Link>
+				</Button>
 				<FeedbackPopover />
 				<ExportButton />
 				<ThemeToggle />
