@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b75f08130e48e9ebe5b4d6e6a209160d96533948c6a97b83aec196a0682eb405",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:24:01.870Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '590,700p' classic/apps/web/src/core/managers/project-manager.ts; ps -p 69138 -o pid,%cpu,rss,etime",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7301c4cb-8e63-4975-9eb5-cf092b279a26"
+      },
+      {
+        "at": "2026-10-13T09:24:01.964Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '590,700p' classic/apps/web/src/core/managers/project-manager.ts; ps -p 69138 -o pid,%cpu,rss,etime",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7301c4cb-8e63-4975-9eb5-cf092b279a26"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:24:02.358Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

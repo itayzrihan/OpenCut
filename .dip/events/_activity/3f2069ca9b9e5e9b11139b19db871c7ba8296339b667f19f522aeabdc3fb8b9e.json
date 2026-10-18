@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f2069ca9b9e5e9b11139b19db871c7ba8296339b667f19f522aeabdc3fb8b9e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:51:39.265Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-transcription-debug/dev/logs/next-development.log",
+          "classic/apps/web/.next-transcription-debug/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-transcription-debug/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/editor-session/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/local-drive/media/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/mcp-bridge/[...path]/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/transcription/chromium-probe/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/editor/[project_id]/page.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/layout.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/package.json",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/batch-worker/page.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "b78f62bc-16db-44b9-bee8-844bf513df2a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:51:39.371Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

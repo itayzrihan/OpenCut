@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a86eb0f1eb77e15ac9be3ae995a2613c272c8fa71d70ce7242c6c5cc6a40ca3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:07:14.727Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat tsconfig.json\ncat cloudflare-env.d.ts\ncat .gitignore",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-95bc5a72-f42f-4ad2-83d5-b7a5790d1b06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:07:15.468Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

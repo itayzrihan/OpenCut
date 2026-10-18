@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "eventId": "465dc1c536e29be8c8c12ab196b3fdf73a58ae9dde4e714b738869da4092fb65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:57:41.107Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-upgrade/compare.ts"
+        ],
+        "changeHash": "1a93dca30e52aa35b4ee3b84ebe13eee89fca236144553ff88ea621261944259",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-86e5a78c-c802-41b3-957a-c22e6d5ab4d3"
+      },
+      {
+        "at": "2026-10-16T10:57:41.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-upgrade/compare.ts"
+        ],
+        "changeHash": "1a93dca30e52aa35b4ee3b84ebe13eee89fca236144553ff88ea621261944259",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-86e5a78c-c802-41b3-957a-c22e6d5ab4d3"
+      },
+      {
+        "at": "2026-10-16T10:57:41.147Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -6 .local/teaser-upgrade/real-provider.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f562c59c-5adf-4a38-8950-ee1b3c236e4e"
+      },
+      {
+        "at": "2026-10-16T10:57:41.218Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -6 .local/teaser-upgrade/real-provider.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f562c59c-5adf-4a38-8950-ee1b3c236e4e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:57:41.569Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

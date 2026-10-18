@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cac2102e5293db8b4ce96ca2e805cbe897b3b8ee4a9252b09192adda739658c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:15:05.937Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.content-collections/cache/content-collection-config.mjs",
+          "classic/apps/web/.content-collections/cache/mapping.json",
+          "classic/apps/web/.content-collections/generated/index.d.ts",
+          "classic/apps/web/.content-collections/generated/allChangelogs.js",
+          "classic/apps/web/.content-collections/generated/index.js",
+          "classic/apps/web/.next-transcription-debug/dev/lock"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "d2b5fc5d-4d75-4299-8e60-77399233eeb3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:15:05.938Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

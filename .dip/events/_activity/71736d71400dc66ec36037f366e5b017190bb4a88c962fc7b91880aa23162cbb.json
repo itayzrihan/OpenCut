@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71736d71400dc66ec36037f366e5b017190bb4a88c962fc7b91880aa23162cbb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:13:21.876Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'readSource\\(|pad|handle|LOOK|WINDOW' classic/apps/web/src/media/noise-reduction.ts classic/apps/web/src/export/pitch-stream.ts | head -50; tail -5 .local/smart-shorts-audio/native-build.log; sed -n '1,110p' classic/apps/web/src/export/pitch-stream.ts; sed -n '365,415p' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a72f4193-2694-4a05-9c58-d8f359a41499"
+      },
+      {
+        "at": "2026-10-13T16:13:22.094Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'readSource\\(|pad|handle|LOOK|WINDOW' classic/apps/web/src/media/noise-reduction.ts classic/apps/web/src/export/pitch-stream.ts | head -50; tail -5 .local/smart-shorts-audio/native-build.log; sed -n '1,110p' classic/apps/web/src/export/pitch-stream.ts; sed -n '365,415p' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a72f4193-2694-4a05-9c58-d8f359a41499"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:13:22.221Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

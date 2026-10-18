@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd37ea355f81ffe1421238f7048919b6340557cf2f18e72583bf64096e06d4d9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:05:03.682Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/check-teaser-adapter.ts",
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-strategic-teaser-feature.mjs"
+        ],
+        "changeHash": "11ad2ab08750cfd66b4d1629874766016da7df4fe9cbc4c26042274eecfb6082",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d42c7dfd-b9da-4baf-b550-cbc121b70f38"
+      },
+      {
+        "at": "2026-10-16T11:05:03.727Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/check-teaser-adapter.ts",
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-strategic-teaser-feature.mjs"
+        ],
+        "changeHash": "11ad2ab08750cfd66b4d1629874766016da7df4fe9cbc4c26042274eecfb6082",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d42c7dfd-b9da-4baf-b550-cbc121b70f38"
+      },
+      {
+        "at": "2026-10-16T11:05:03.730Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .dip/tools/check-teaser-adapter.ts; tail -6 .local/teaser-upgrade/production-build-final.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2002c283-5966-45f5-9404-6533f3ec5d0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:05:04.080Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

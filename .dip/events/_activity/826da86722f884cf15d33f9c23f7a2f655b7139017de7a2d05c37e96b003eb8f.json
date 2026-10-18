@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "826da86722f884cf15d33f9c23f7a2f655b7139017de7a2d05c37e96b003eb8f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:00:21.247Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "request_user_input_async",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:call_a841c5fee1af469198f95e750d7df533"
+      },
+      {
+        "at": "2026-10-12T11:00:21.299Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "request_user_input_async",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:call_a841c5fee1af469198f95e750d7df533"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:00:21.649Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

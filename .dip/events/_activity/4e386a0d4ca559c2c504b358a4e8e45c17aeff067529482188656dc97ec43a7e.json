@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4e386a0d4ca559c2c504b358a4e8e45c17aeff067529482188656dc97ec43a7e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T09:38:05.493Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/.gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "a3259c97-f3d3-42e1-b622-cd6ebb58c69e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:38:05.496Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ec0d35934d1a98c9dd2f5d52d0beeba4566a9beeb8e56b633b820f66fd054689",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-15T01:14:09.325Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm-opt.wasm",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "cfaf7fd2-cad7-41ca-9deb-333e900011ca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:14:09.326Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

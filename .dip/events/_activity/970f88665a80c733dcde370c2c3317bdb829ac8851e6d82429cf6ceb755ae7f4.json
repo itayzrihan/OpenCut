@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "970f88665a80c733dcde370c2c3317bdb829ac8851e6d82429cf6ceb755ae7f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T19:42:38.644Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts",
+          ".local/sequence-navigation-rust-check.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "794a3b69-b5d6-4cfd-b0d4-c354311f4136"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:42:38.648Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

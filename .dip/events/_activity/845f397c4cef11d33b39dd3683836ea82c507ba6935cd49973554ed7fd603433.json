@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "845f397c4cef11d33b39dd3683836ea82c507ba6935cd49973554ed7fd603433",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:45:01.273Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts",
+          "classic/apps/web/src/accounts/storage-host.test.ts",
+          ".gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "ec442445-3787-47e9-ac08-10558ad8b19a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:45:01.275Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

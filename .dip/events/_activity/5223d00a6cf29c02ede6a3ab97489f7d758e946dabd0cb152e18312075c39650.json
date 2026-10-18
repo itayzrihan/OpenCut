@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5223d00a6cf29c02ede6a3ab97489f7d758e946dabd0cb152e18312075c39650",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:37:10.127Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nimport{readFile,writeFile}from'node:fs/promises';const path='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json';for(let i=0;i<120;i++){const raw=await readFile(path);const p=JSON.parse(raw);if(Object.keys(p.transcriptionJobs[0].chunks).length===108&&p.scenes.length===1){await writeFile('.local/smart-shorts-seven/project-transcribed-before-shorts.json',raw);console.log('Saved full transcript backup before shorts',p.transcriptionJobs[0].status);break}await new Promise(r=>setTimeout(r,10000))}\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a553bfff-97f9-4513-8e4f-137cf7fed05f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:37:11.212Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "72acae61febdeb725c7da36efc2e844e1c30051dce5b7c4ac9f764a76a0da8a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T09:52:14.508Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_transcription.rs",
+          "classic/apps/web/src/core/managers/transcription-manager.ts",
+          "classic/apps/web/.next-transcription-debug/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/editor-session/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/mcp-bridge/[...path]/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/layout.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/accounts/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/package.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/webpack-runtime.js",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/local-drive/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f170.js",
+          "classic/apps/web/.next-transcription-debug/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f171.js",
+          "classic/apps/web/.next-transcription-debug/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/pages-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "68727502-ad3c-4dbc-939a-798a5b35a7d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:52:14.510Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

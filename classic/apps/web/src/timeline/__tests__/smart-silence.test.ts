@@ -6,8 +6,9 @@ import type { TranscriptionWord } from "@/transcription/types";
 import { mediaTime } from "@/wasm";
 
 type DecodeOptions = Parameters<
-	typeof import("@/media/audio").decodeAudioToFloat32
+	typeof import("@/media/audio-window").openAudioWindowReader
 >[0];
+type ReadOptions = Parameters<Awaited<ReturnType<typeof import("@/media/audio-window").openAudioWindowReader>>["read"]>[0];
 type CutOptions = Parameters<
 	typeof import("../cut-silence").removeSilenceRangesFromTracks
 >[0];
@@ -45,6 +46,9 @@ type TestScene = {
 };
 let analysis: AnalyzeSmartAudioSilenceOptions[] = [];
 let decodeOptions: DecodeOptions[] = [];
+let readOptions: ReadOptions[] = [];
+let closedReaders = 0;
+let readWindow: (range: ReadOptions) => Float32Array;
 let onDecode: () => void = () => {};
 let committed: unknown[] = [];
 let applied: CutOptions[] = [];
@@ -73,11 +77,18 @@ mock.module("@/wasm", () => ({
 		Math.round(seconds * 120000),
 	mediaTimeToSeconds: ({ time }: { time: number }) => time / 120000,
 }));
-mock.module("@/media/audio", () => ({
-	decodeAudioToFloat32: async (options: DecodeOptions) => {
+mock.module("@/media/audio-window", () => ({
+	SPEECH_SAMPLE_RATE: 1000,
+	openAudioWindowReader: async (options: DecodeOptions) => {
 		decodeOptions.push(options);
-		onDecode();
-		return { samples, sampleRate: 1000 };
+		return {
+			read: async (range: ReadOptions) => {
+				readOptions.push(range);
+				onDecode();
+				return readWindow(range);
+			},
+			close: () => { closedReaders++; },
+		};
 	},
 }));
 mock.module("@/media/unified-angles", () => ({
@@ -121,11 +132,14 @@ const editor = {
 beforeEach(() => {
 	analysis = [];
 	decodeOptions = [];
+	readOptions = [];
+	closedReaders = 0;
 	committed = [];
 	applied = [];
 	onDecode = () => {};
 	revision = 0;
 	samples = new Float32Array(3000);
+	readWindow = (range) => samples.slice(Math.round(range.start * 1000), Math.ceil(range.end * 1000));
 	useRealAnalyzer = false;
 	plan = (tracks) => ({ ...tracks });
 	project = {
@@ -192,7 +206,9 @@ test("protects crossing words and edited words from every source; uses separate 
 	expect(analysis[0].transcriptWords).toHaveLength(2);
 	expect(analysis[0].transcriptWords?.[0].start).toBe(0);
 	expect(analysis[0].transcriptWords?.[0].end).toBeCloseTo(0.2);
-	expect(decodeOptions[0].channelMix).toBe("max-magnitude");
+	expect(readOptions[0].channelMix).toBe("max-magnitude");
+	expect(readOptions[0].missing).toBe("unknown");
+	expect(closedReaders).toBe(1);
 	expect(committed[0]).toBe("smart-remove");
 	expect(committed[1]).toMatchObject({ applyRipple: false });
 	expect(applied[0].ranges).toMatchObject([
@@ -299,4 +315,42 @@ test("overlapping clips cannot delete another selected speaker's words", async (
 		"non-overlapping",
 	);
 	expect(decodeOptions).toHaveLength(0);
+});
+
+test("a late 65-second excerpt only reads its selected source in bounded windows", async () => {
+	selection[0].element.trimStart = 5000 * 120000;
+	selection[0].element.duration = 65 * 120000;
+	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
+	await removeSmartSilence({ editor });
+	expect(readOptions.map(({ start, end }) => [start, end])).toEqual([[5000, 5030], [5030, 5060], [5060, 5065]]);
+	expect(analysis[0].frames[0].start).toBe(0);
+	expect(analysis[0].frames.at(-1)?.end).toBeCloseTo(65);
+	expect(analysis[0].frames.every((f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6)).toBe(true);
+	expect(closedReaders).toBe(3);
+});
+
+test("window clocks remain contiguous under slow playback and sync advance", async () => {
+	selection[0].element.trimStart = 5000 * 120000;
+	selection[0].element.duration = 65 * 120000;
+	selection[0].element.retime = { rate: 0.5 };
+	selection[0].element.params.audioSyncOffset = -0.3;
+	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
+	await removeSmartSilence({ editor });
+	expect(readOptions).toHaveLength(2);
+	expect(readOptions[0].start).toBeCloseTo(5000.15);
+	expect(readOptions.at(-1)?.end).toBeCloseTo(5032.65);
+	expect(analysis[0].frames.at(-1)?.end).toBeCloseTo(65);
+	expect(analysis[0].frames.every((f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6)).toBe(true);
+	expect(closedReaders).toBe(2);
+});
+
+test("cancellation between windows releases the reader and publishes no edit", async () => {
+	selection[0].element.duration = 65 * 120000;
+	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000));
+	const controller = new AbortController();
+	onDecode = () => { if (readOptions.length === 2) controller.abort(); };
+	await expect(removeSmartSilence({ editor, signal: controller.signal })).rejects.toThrow();
+	expect(readOptions).toHaveLength(2);
+	expect(closedReaders).toBe(2);
+	expect(committed).toHaveLength(0);
 });

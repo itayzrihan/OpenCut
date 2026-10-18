@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6bf30b913c3c6448879b9acdf3733f692069826b15d4892c2d0a19d15b442470",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:24:21.414Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/sequence-navigation/build-viewport.log; tail -7 .local/sequence-navigation/native-viewport-tests.log; cat .local/sequence-navigation/viewport-types.log; ps -axo pid,%cpu,rss,etime,command | rg 'wasm-opt|next.*build' | cut -c1-150",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0f478a77-ef62-4f02-bb33-0e370d1759b5"
+      },
+      {
+        "at": "2026-10-13T20:24:21.595Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/sequence-navigation/build-viewport.log; tail -7 .local/sequence-navigation/native-viewport-tests.log; cat .local/sequence-navigation/viewport-types.log; ps -axo pid,%cpu,rss,etime,command | rg 'wasm-opt|next.*build' | cut -c1-150",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0f478a77-ef62-4f02-bb33-0e370d1759b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:24:21.632Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

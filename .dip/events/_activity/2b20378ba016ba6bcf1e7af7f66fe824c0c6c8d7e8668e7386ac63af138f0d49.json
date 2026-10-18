@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2b20378ba016ba6bcf1e7af7f66fe824c0c6c8d7e8668e7386ac63af138f0d49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:37:07.029Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "analysis/source-audio-relink-2026-10-15/delivery.he.md"
+        ],
+        "changeHash": "d71f7747bbc0c847f7027736a30c5ceaa07a129cf01b523e72f4862da20b5599",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-829f7f21-7265-4b2b-81ff-c9061d77d859"
+      },
+      {
+        "at": "2026-10-15T01:37:07.082Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-28f5a112-522e-433d-a7d0-9451d91a82dc"
+      },
+      {
+        "at": "2026-10-15T01:37:07.082Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "documents": [
+          {
+            "path": "analysis/source-audio-relink-2026-10-15/delivery.he.md",
+            "role": "reference",
+            "hash": "a228aff1c411997b6d307d0c12e50eef9f2eeec4e9972f0cb010da955f325225"
+          }
+        ],
+        "files": [
+          "analysis/source-audio-relink-2026-10-15/delivery.he.md"
+        ],
+        "changeHash": "d71f7747bbc0c847f7027736a30c5ceaa07a129cf01b523e72f4862da20b5599",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-829f7f21-7265-4b2b-81ff-c9061d77d859"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:37:07.363Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

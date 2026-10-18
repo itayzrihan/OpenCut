@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "56dfa7c71b378250228b6102247918aa2e7fa0420514367db8836aadf85b1252",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:40:51.695Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate?.id || candidate.id<='2026-10-13T10-57-14-338Z-5350562c')throw Error('No newer candidate');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nconst stop=await fetch(base+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('Stop failed');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nconst start=await fetch(base+'/start',{method:'POST',headers});console.log(JSON.stringify({candidate:candidate.id,startStatus:start.status}));\nconsole.log(await(await fetch(base+'/status',{headers})).text());\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4a0ae27f-56d9-41dc-91fa-be9c314f5712"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:40:51.818Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

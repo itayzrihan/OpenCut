@@ -148,9 +148,18 @@ pub fn session_transition_json(
             SessionRecord::from_json(account_id, project_id, record_json)?
         };
         let result = record.apply(account_id, project_id, request, now_ms)?;
-        return serde_json::to_string(&json!({"record":record.to_json()?,
-            "project":record.saved.as_ref().map(|s| &s.project),"result":result}))
-        .map_err(error);
+        #[derive(Serialize)]
+        struct CommitOutput<'a> {
+            record: String,
+            project: Option<&'a Value>,
+            result: Value,
+        }
+        // Serialize by reference instead of building another complete JSON tree.
+        return serde_json::to_string(&CommitOutput {
+            record: record.to_json()?,
+            project: record.saved.as_ref().map(|s| &s.project),
+            result,
+        }).map_err(error);
     }
     if record_json.len() > MAX_BYTES {
         return Err(error("session storage quota exceeded"));
@@ -397,18 +406,7 @@ impl SessionRecord {
             } => {
                 self.require_lease(&session_id, generation, now)?;
                 id(&request_id)?;
-                let fingerprint = format!(
-                    "{:x}",
-                    Sha256::digest(
-                        serde_json::to_vec(&json!([
-                            session_id,
-                            generation,
-                            expected_storage_revision,
-                            bundle
-                        ]))
-                        .map_err(error)?
-                    )
-                );
+                let fingerprint = commit_fingerprint(&session_id, generation, expected_storage_revision, &bundle)?;
                 if let Some(retry) = self
                     .retries
                     .iter()
@@ -431,14 +429,13 @@ impl SessionRecord {
                 if let Some(previous) = &self.saved {
                     if saved.editor_revision < previous.editor_revision
                         || (saved.editor_revision == previous.editor_revision
-                            && saved.bundle.archive != previous.bundle.archive
+                            && !archive_content_equal(&saved.bundle.archive, &previous.bundle.archive, false)
                             && !(saved.bundle.archive["schemaVersion"]
                                 != previous.bundle.archive["schemaVersion"]
-                                && expanded_archive(&self.project_id, &saved.bundle.archive)?
-                                    == expanded_archive(
+                                && archive_content_equal(&expanded_archive(&self.project_id, &saved.bundle.archive)?, &expanded_archive(
                                         &self.project_id,
                                         &previous.bundle.archive,
-                                    )?))
+                                    )?, true)))
                     {
                         return Err(error(
                             "canonical revision cannot move backward or describe different contents",
@@ -472,6 +469,34 @@ impl SessionRecord {
     }
 }
 
+/// Hash the same canonical JSON as historical retry receipts, without cloning
+/// the archive into json! and then allocating a second complete byte vector.
+fn commit_fingerprint(session_id: &str, generation: u64, revision: u64, bundle: &SessionBundle) -> Result<String, AgentError> {
+    struct SortedBundle<'a>(&'a SessionBundle);
+    impl Serialize for SortedBundle<'_> {
+        fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            use serde::ser::SerializeMap;
+            let b = self.0;
+            let mut map = serializer.serialize_map(Some(2 + usize::from(b.artifacts.is_some()) + usize::from(b.conversation.is_some()) + usize::from(b.thumbnail.is_some())))?;
+            // json! previously sorted struct fields through serde_json::Map.
+            map.serialize_entry("agentCheckpoint", &b.agent_checkpoint)?;
+            map.serialize_entry("archive", &b.archive)?;
+            if let Some(value) = &b.artifacts { map.serialize_entry("artifacts", &serde_json::to_value(value).map_err(serde::ser::Error::custom)?)?; }
+            if let Some(value) = &b.conversation { map.serialize_entry("conversation", &serde_json::to_value(value).map_err(serde::ser::Error::custom)?)?; }
+            if let Some(value) = &b.thumbnail { map.serialize_entry("thumbnail", value)?; }
+            map.end()
+        }
+    }
+    struct HashWriter(Sha256);
+    impl std::io::Write for HashWriter {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> { self.0.update(bytes); Ok(bytes.len()) }
+        fn flush(&mut self) -> std::io::Result<()> { Ok(()) }
+    }
+    let mut writer = HashWriter(Sha256::new());
+    serde_json::to_writer(&mut writer, &(session_id, generation, revision, SortedBundle(bundle))).map_err(error)?;
+    Ok(format!("{:x}", writer.0.finalize()))
+}
+
 // An encoding upgrade is not an edit. Compare complete canonical history when
 // a v1 archive is first saved as v2 at the same editor revision.
 fn expanded_archive(project_id: &str, archive: &Value) -> Result<Value, AgentError> {
@@ -501,6 +526,16 @@ fn expanded_archive(project_id: &str, archive: &Value) -> Result<Value, AgentErr
         };
     }
     Ok(result)
+}
+
+// Viewer navigation is workspace presentation, not a new editor revision.
+// Every archive is still restored/validated before this comparison. Only the
+// root viewer hint is ignored; project fields and all history remain protected.
+fn archive_content_equal(a: &Value, b: &Value, expanded: bool) -> bool {
+    let (Some(a), Some(b)) = (a.as_object(), b.as_object()) else { return a == b; };
+    let included = |key: &str| key != "viewerSceneId" && !(expanded && key == "schemaVersion");
+    a.keys().filter(|key| included(key)).count() == b.keys().filter(|key| included(key)).count() &&
+        a.iter().filter(|(key, _)| included(key)).all(|(key, value)| b.get(key) == Some(value))
 }
 
 fn validate_bundle(
@@ -580,4 +615,28 @@ fn id(value: &str) -> Result<(), AgentError> {
 }
 fn error(message: impl std::fmt::Display) -> AgentError {
     AgentError::Conflict(message.to_string())
+}
+
+#[cfg(test)]
+mod fingerprint_tests {
+    use super::*;
+
+    #[test]
+    fn streaming_fingerprints_match_existing_receipts_including_optional_nested_payloads() {
+        for optional in [false, true] {
+            let bundle = SessionBundle {
+                archive: json!({"z": ["שלום",{"b":2,"a":1}], "a": null}),
+                agent_checkpoint: optional.then(|| "checkpoint".into()),
+                thumbnail: optional.then(|| "data:image/png;base64,abc".into()),
+                conversation: optional.then(|| crate::ConversationArchive::new("alice".into(), "project".into())),
+                artifacts: optional.then(|| crate::ScopedArtifactArchive {
+                    account_id: "alice".into(), project_id: "project".into(),
+                    archive: opencut_editor_api::ArtifactArchive { schema_version: 1, items: vec![] },
+                    unavailable_ids: vec!["missing".into()],
+                }),
+            };
+            let previous = format!("{:x}", Sha256::digest(serde_json::to_vec(&json!(["owner", 3_u64, 17_u64, bundle])).unwrap()));
+            assert_eq!(commit_fingerprint("owner", 3, 17, &bundle).unwrap(), previous);
+        }
+    }
 }

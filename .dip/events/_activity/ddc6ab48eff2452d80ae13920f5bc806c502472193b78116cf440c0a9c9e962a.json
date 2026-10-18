@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddc6ab48eff2452d80ae13920f5bc806c502472193b78116cf440c0a9c9e962a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:47:48.431Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -v error -ss 2.4 -i /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4 -frames:v 1 -vf scale=360:640 -y analysis/teaser-exports-2026-10-14/with-captions.jpg\nffmpeg -hide_banner -i /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4 -vn -af volumedetect -f null -",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-67c1f831-427c-4cc1-b15e-38f8f3d22d83"
+      },
+      {
+        "at": "2026-10-14T09:47:49.060Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -v error -ss 2.4 -i /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4 -frames:v 1 -vf scale=360:640 -y analysis/teaser-exports-2026-10-14/with-captions.jpg\nffmpeg -hide_banner -i /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4 -vn -af volumedetect -f null -",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-67c1f831-427c-4cc1-b15e-38f8f3d22d83"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:47:49.211Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

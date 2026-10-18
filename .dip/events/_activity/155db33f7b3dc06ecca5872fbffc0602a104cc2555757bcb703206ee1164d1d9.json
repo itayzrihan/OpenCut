@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "155db33f7b3dc06ecca5872fbffc0602a104cc2555757bcb703206ee1164d1d9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:30:39.907Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/extract-size-probe.mjs <<'EOF'\nimport assert from 'node:assert/strict';\nimport {readFile} from 'node:fs/promises';\nimport * as glue from '../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js';\nconst bytes=await readFile(new URL('../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm',import.meta.url));\nconst {instance}=await WebAssembly.instantiate(bytes,{'./opencut_editor_runtime_wasm_bg.js':glue});glue.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\nconst project=JSON.parse(await readFile(new URL('./project-transcribed-before-shorts.json',import.meta.url)));\nconst id=project.metadata.id;let runtime=new glue.CanonicalEditorRuntime();\nconst call=(cap,input)=>runtime.invokeSync(cap,input,{}).result.data;\ncall('project.classic.session.restore',{projectId:id,expectedRevision:0,archive:JSON.parse(project.__opencutEditorSession).saved.bundle.archive});\nconst before=runtime.snapshot().project.classic;const main=before.document.scenes.find(s=>s.isMain);\nconst base={projectId:id,sceneId:main.id,elementIds:main.tracks.main.elements.filter(e=>e.type==='video').map(e=>e.id),expectedRevision:runtime.snapshot().revision};\nconst prepared=call('timeline.classic.podcast.prepare',base);\nconst words=prepared.words;\nconst videos=Array.from({length:7},(_,i)=>{const first=words.findIndex(w=>w.start>=i*600*120000+10*120000);let last=first;while(last+1<words.length && words[last].end-words[first].start<25*120000)last++;return {title:'Isolated size test '+i,openingHook:'Test',endingHook:'Test',confidence:.9,alternatives:[{label:'Test',reason:'Isolated storage check',parts:[{firstWord:first,lastWord:last}]}]}});\ncall('timeline.classic.podcast.extract',{...base,options:{mode:'highlights',minSeconds:20,maxSeconds:90,maxOutputs:7},videos});\nconst after=runtime.snapshot().project.classic;assert.equal(after.document.scenes.length,8);assert.deepEqual(after.document.scenes.find(s=>s.isMain),main);",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-1cd60dbe-413f-4657-976b-fbb34f035a95"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:30:40.331Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

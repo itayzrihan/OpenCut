@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9d2d85f0d789c79ff7c711eafd6c8698b691c1982e2c2d18452eea2e75fa88ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:42:10.151Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "curl -sS -D - http://localhost:3211/api/transcription/subscription-probe | head -18; rg 'subscription-probe' .local/transcription-debug/dev.log | tail -7; rg -n 'transcription|api/' classic/apps/web/src/app/api/route.ts classic/apps/web/proxy.ts classic/apps/web/middleware.ts 2>/dev/null",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-a2b0fb21-0725-4105-a959-bf7300fac13f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:42:10.265Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

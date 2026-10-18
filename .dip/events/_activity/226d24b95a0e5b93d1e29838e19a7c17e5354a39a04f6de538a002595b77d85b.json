@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "226d24b95a0e5b93d1e29838e19a7c17e5354a39a04f6de538a002595b77d85b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:46:10.252Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/premerge-rerun",
+          ".local/brand-kit/premerge-rerun/src__core__managers____tests____command-manager-state-revision.test.ts.log",
+          ".local/brand-kit/premerge-rerun/src__accounts__storage-host.test.ts.log",
+          ".local/brand-kit/premerge-rerun/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "1c070114-ee8d-468d-a2fe-3bc095d2af59"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:46:10.415Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

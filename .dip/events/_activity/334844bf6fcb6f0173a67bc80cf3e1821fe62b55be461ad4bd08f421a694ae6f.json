@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "334844bf6fcb6f0173a67bc80cf3e1821fe62b55be461ad4bd08f421a694ae6f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:11:36.039Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '25,55p' classic/scripts/local-production/common.mjs; sed -n '39,58p' classic/scripts/local-production/server.mjs; cat crates/editor-agent/Cargo.toml | head -70; sed -n '1,70p' classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts; sed -n '1,65p' classic/apps/web/src/editor-agent/__tests__/project-font-ownership.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5b3ce393-f667-4faa-b519-3e487c32ecba"
+      },
+      {
+        "at": "2026-10-13T16:11:36.205Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '25,55p' classic/scripts/local-production/common.mjs; sed -n '39,58p' classic/scripts/local-production/server.mjs; cat crates/editor-agent/Cargo.toml | head -70; sed -n '1,70p' classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts; sed -n '1,65p' classic/apps/web/src/editor-agent/__tests__/project-font-ownership.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5b3ce393-f667-4faa-b519-3e487c32ecba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:11:37.027Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "028a91a93dcc04bd9afa046a18ef6461b646a40859c62ba5f79fd94fcd966fe3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:46:03.574Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs --jobs=4 --report=.local/brand-kit/premerge-web",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-2416722a-5186-4d47-a8ea-ab4c2dd5d972"
+      },
+      {
+        "at": "2026-10-18T15:46:03.577Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .gitattributes; sed -n '150,175p' classic/apps/web/src/hyperframes/catalog-preview-server.ts; cat classic/apps/web/src/components/ui/button.tsx | head -65; rg -n 'currentSceneId' classic/apps/web/src/project/types.ts classic/apps/web/src/services/storage/types.ts; git diff --cached --name-only --diff-filter=A | rg '\\.(env|pem|key|db|sqlite)|credentials|token|secret' | head -20; ps -o pid,etime,%cpu,command -ax | rg 'cargo test|rustc|test-web|wasm-opt' | head -12",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-0db9e9e0-797e-45d4-bda7-753f9922d540"
+      },
+      {
+        "at": "2026-10-18T15:46:03.752Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .gitattributes; sed -n '150,175p' classic/apps/web/src/hyperframes/catalog-preview-server.ts; cat classic/apps/web/src/components/ui/button.tsx | head -65; rg -n 'currentSceneId' classic/apps/web/src/project/types.ts classic/apps/web/src/services/storage/types.ts; git diff --cached --name-only --diff-filter=A | rg '\\.(env|pem|key|db|sqlite)|credentials|token|secret' | head -20; ps -o pid,etime,%cpu,command -ax | rg 'cargo test|rustc|test-web|wasm-opt' | head -12",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-0db9e9e0-797e-45d4-bda7-753f9922d540"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:46:04.261Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

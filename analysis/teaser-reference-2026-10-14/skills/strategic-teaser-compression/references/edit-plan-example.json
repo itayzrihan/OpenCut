@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "exampleNote": "Synthetic planning example, not source timecodes from the supplied reference or user project",
+  "targetSeconds": 60,
+  "ctaSeconds": 3,
+  "toleranceSeconds": 0.1,
+  "mode": "montage",
+  "protectedSceneId": "source-main-example",
+  "outputSceneId": "new-teaser-example",
+  "clips": [
+    {
+      "id": "unit-1",
+      "sourceIn": 120,
+      "sourceOut": 123,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "hook"
+    },
+    {
+      "id": "unit-2",
+      "sourceIn": 580,
+      "sourceOut": 584,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "proof"
+    },
+    {
+      "id": "unit-3",
+      "sourceIn": 610,
+      "sourceOut": 613,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "question"
+    },
+    {
+      "id": "unit-4",
+      "sourceIn": 900,
+      "sourceOut": 905,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "partial-answer"
+    },
+    {
+      "id": "unit-5",
+      "sourceIn": 1300,
+      "sourceOut": 1305,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "consequence"
+    },
+    {
+      "id": "unit-6",
+      "sourceIn": 1900,
+      "sourceOut": 1905,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "question"
+    },
+    {
+      "id": "unit-7",
+      "sourceIn": 2000,
+      "sourceOut": 2003,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "sharp-position"
+    },
+    {
+      "id": "unit-8",
+      "sourceIn": 2100,
+      "sourceOut": 2105,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "contrast"
+    },
+    {
+      "id": "unit-9",
+      "sourceIn": 2300,
+      "sourceOut": 2305,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "personal-stakes"
+    },
+    {
+      "id": "unit-10",
+      "sourceIn": 2400,
+      "sourceOut": 2406,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "analogy"
+    },
+    {
+      "id": "unit-11",
+      "sourceIn": 2700,
+      "sourceOut": 2705,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "consequence"
+    },
+    {
+      "id": "unit-12",
+      "sourceIn": 3100,
+      "sourceOut": 3108,
+      "sourceDurationSeconds": 3600,
+      "playbackRate": 1,
+      "role": "open-payoff"
+    }
+  ]
+}

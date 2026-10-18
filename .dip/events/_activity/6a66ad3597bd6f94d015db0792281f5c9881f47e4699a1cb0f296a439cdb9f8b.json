@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a66ad3597bd6f94d015db0792281f5c9881f47e4699a1cb0f296a439cdb9f8b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:37:25.857Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,190p' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'register|struct|validate_request' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'preparePodcast|reviewPodcast' classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/canonical-classic-session.ts; sed -n '1,240p' classic/apps/web/src/ai/components/podcast-controls.tsx; sed -n '1,110p' crates/editor-api/src/operations/classic_takes.rs; cat crates/editor-api/Cargo.toml | head -55; cat .dip/tools/verify-extract-preservation.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cab2d911-bb15-4575-804c-b293f0be8c75"
+      },
+      {
+        "at": "2026-10-16T10:37:25.951Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,190p' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'register|struct|validate_request' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'preparePodcast|reviewPodcast' classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/canonical-classic-session.ts; sed -n '1,240p' classic/apps/web/src/ai/components/podcast-controls.tsx; sed -n '1,110p' crates/editor-api/src/operations/classic_takes.rs; cat crates/editor-api/Cargo.toml | head -55; cat .dip/tools/verify-extract-preservation.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-cab2d911-bb15-4575-804c-b293f0be8c75"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:37:26.188Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

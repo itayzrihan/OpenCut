@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f509cc3b6279a1a4b9b0a244b213a6b567efa0d0355c7c30e8ae67427056d57e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+    "records": [
+      {
+        "at": "2026-10-15T01:19:40.122Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+        "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -d .venv* .local/*venv* 2>/dev/null; cat \"$HOME/Library/Application Support/OpenCut Local/config.json\"; cat .dip/config.json 2>/dev/null; ffprobe -v quiet -select_streams v:0 -show_frames -show_entries frame=best_effort_timestamp_time -of csv=p=0 /tmp/codex-remote-attachments/01a13d23-cc18-76f0-8e1a-cf3e55972277/2FDF740B-7745-4A23-8143-07691762B282/1-530c8b835d42449d9cb0742cd2a01ab3.mp4 | head -20",
+        "recordId": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277:PreToolUse:exec-c1ecc5d7-d6fe-4554-b187-eb0e102036d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:19:40.259Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

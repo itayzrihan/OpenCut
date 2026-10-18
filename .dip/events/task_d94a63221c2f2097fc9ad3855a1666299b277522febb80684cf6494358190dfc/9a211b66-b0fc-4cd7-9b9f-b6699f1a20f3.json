@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a211b66-b0fc-4cd7-9b9f-b6699f1a20f3",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "At chunk105, active save failed with explicit Classic archive expanded-history budget512MB. UI now read-only with Take ownership button239; Smart Shorts failed. Saved104chunks backed up project-104-before-budget-fix.json. Fixed durable archive selection to keep recent contiguous undo/redo suffixes under exact shared restore budget; live history/current project untouched. Cached byte counts on HistoryDocument; shared constant and regression unit passed. New stage build session68181 log production-budget-build.log; updated compact-history verification cell322 running. Earlier bridge-only candidate is superseded by this build; do not activate it alone.",
+    "next": "Finish budget build/test; probe real104project through newWASM using isolated runtime to verify archive roundtrip undernewbound; activate candidate/start production/reload and takeownership ifneeded. Resume104saved, rerunSmartShorts7. Watcher88479 ends11:05UTC; backupwatcher65968 ends~10:58UTC. Nooutputs yet.",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T10:47:11.685Z",
+  "parents": [
+    "7fc4fc26-cfe6-4400-b22a-fa6cf833754a"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

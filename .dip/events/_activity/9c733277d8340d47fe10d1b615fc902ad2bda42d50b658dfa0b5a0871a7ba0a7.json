@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9c733277d8340d47fe10d1b615fc902ad2bda42d50b658dfa0b5a0871a7ba0a7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:08:55.576Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,170p' classic/apps/web/src/export/__tests__/streaming-fixture.ts; rg -n 'loadMediaAssets|file:.*new File|new File\\(\\[\\]' classic/apps/web/src; sed -n '90,165p' classic/apps/web/src/services/local-drive/client.ts; rg -n 'loadMedia' classic/apps/web/src/core/managers/media-manager.ts classic/apps/web/src/services/storage*",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f1d57979-4aa2-4ce6-9c3b-35dd9977a88f"
+      },
+      {
+        "at": "2026-10-13T16:08:55.806Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,170p' classic/apps/web/src/export/__tests__/streaming-fixture.ts; rg -n 'loadMediaAssets|file:.*new File|new File\\(\\[\\]' classic/apps/web/src; sed -n '90,165p' classic/apps/web/src/services/local-drive/client.ts; rg -n 'loadMedia' classic/apps/web/src/core/managers/media-manager.ts classic/apps/web/src/services/storage*",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f1d57979-4aa2-4ce6-9c3b-35dd9977a88f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:08:56.087Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

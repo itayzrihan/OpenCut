@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d162e05d94f33fc6a44a3a060fc3953e366199489626b68497f294ae5fd6e92a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:05:45.395Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\nfor id in ['11e7e552-fd67-44e7-8795-cd2b8b5e2668','847030af-0e59-4e41-b702-5d35549f3cd5']:\n d=json.loads((r/id/'media/index.json').read_text());print(id,type(d).__name__)\n if isinstance(d,dict):print([(k,x.get('name'),x.get('missing'),x.get('storageKind'),x.get('ephemeral')) for k,x in d.items() if isinstance(x,dict)])\n else:print([(x['id'],x.get('missing'),x.get('storageKind'),x.get('ephemeral')) for x in d])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-385e571b-383b-4496-83bc-16e84e272be4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:05:46.264Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

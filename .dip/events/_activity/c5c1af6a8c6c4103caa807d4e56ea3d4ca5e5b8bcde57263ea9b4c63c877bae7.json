@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c5c1af6a8c6c4103caa807d4e56ea3d4ca5e5b8bcde57263ea9b4c63c877bae7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:05.813Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/apple-stt-benchmark",
+          ".local/apple-stt-benchmark/probe.swift",
+          ".local/apple-stt-benchmark/Info.plist"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "05cfa0ab-24e2-4274-85dc-1e8553cdff6f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:05.815Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

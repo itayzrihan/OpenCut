@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "562cc54d0f3d47adf506383cab43afd8c57de7b4fb5046f167e51a4d0a783d16",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:16:22.217Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('app/dashboard/ui.tsx');s=p.read_text();s=s.replace('complete?tasks.', 'complete&&!projection.errors.length?tasks.').replace('complete?finished:', 'complete&&!projection.errors.length?finished:')\ns=s.replace('DIP scans the repositories you authorize for a committed', 'DIP scans the default branch of each repository you authorize for a committed')\ns=s.replace(\"{!repo?<section className=\\\"welcome\\\">\", \"{!repo&&warnings.length>0&&<details className=\\\"alert\\\"><summary>Some repositories could not be scanned ({warnings.length})</summary>{warnings.map((w,i)=><p key={i}>{w}</p>)}</details>}{!repo?<section className=\\\"welcome\\\">\")\np.write_text(s)\np=Path('.gitignore');p.write_text(p.read_text()+'\\n!.env.example\\n*.tsbuildinfo\\n')\nPY\nnode --test test/*.test.mjs\nnpx tsc --noEmit",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e97fd182-24b1-4326-a80c-5e4adb3cacfb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:16:22.963Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "889f60ff-ff05-4f7f-9fbd-4d841844d609",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Found live Chrome UI freeze via native DevTools pause: caption-word-element-refs.findWordIndexForRun normalized all14050 transcript words for every run, called in3 UI projections. Indexed normalized words once; updated coverage caller and presentation matching, preserving timing/ties. Real project mapping now44.9ms for13992refs/14050words. Added normalization-count and semantic regression tests; configured compact-history passed33web+Rust suites. Also deployed saved-window replay fix in release09:40:32, but UI freeze still blocked it. New caption-index production build running exec18857, log .local/smart-shorts-seven/production-caption-build.log. Killed only stuck renderer72824 after diagnostic; 96chunks remain, main original tracks unchanged; no outputs yet.",
+    "next": "Wait new candidate build, stop launcher3210, atomically previous/current pointers, start. Close native Chrome DevTools (before reload), reload original project using native app. Resume last12windows, select Smart Shorts highlights count7, verify7separateAssets scenes and preservedmain. Prefer native app to avoid debugger overhead; browser tab1417489163. Task remains open.",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T09:55:02.562Z",
+  "parents": [
+    "3fb373ab-f6f1-4c18-8816-6ccc64f41794"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

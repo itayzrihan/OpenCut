@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "06ab14aa8130b8d05ad8384d249f080c0b72425158386b64965f1e6a0bf0105a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:55:10.530Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=json.load(open('.local/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');words=next(t['captionSource']['words'] for t in s['tracks']['overlay'] if t.get('captionSource'))\nparagraphs=[];current=[]\nfor i,w in enumerate(words):\n if current and i and w['start']-words[i-1]['end']>.8:\n  paragraphs.append(' '.join(current));current=[]\n current.append(w['text'])\nif current:paragraphs.append(' '.join(current))\nf=pathlib.Path('/Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt');f.write_text('טיזר למכור בלי לשכנע — Full Auto Edit\\nתמלול הסיקוונס הסופי · 87.56 שניות\\n\\n'+'\\n\\n'.join(paragraphs)+'\\n',encoding='utf-8-sig');print({'transcript':str(f),'sourceWordEntries':len(words),'paragraphs':len(paragraphs)})\npathlib.Path('analysis/teaser-drive-2026-10-14').mkdir(parents=True,exist_ok=True)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a99e5ee7-2c03-450b-b79d-ddefcdb10e37"
+      },
+      {
+        "at": "2026-10-14T09:55:11.234Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=json.load(open('.local/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');words=next(t['captionSource']['words'] for t in s['tracks']['overlay'] if t.get('captionSource'))\nparagraphs=[];current=[]\nfor i,w in enumerate(words):\n if current and i and w['start']-words[i-1]['end']>.8:\n  paragraphs.append(' '.join(current));current=[]\n current.append(w['text'])\nif current:paragraphs.append(' '.join(current))\nf=pathlib.Path('/Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt');f.write_text('טיזר למכור בלי לשכנע — Full Auto Edit\\nתמלול הסיקוונס הסופי · 87.56 שניות\\n\\n'+'\\n\\n'.join(paragraphs)+'\\n',encoding='utf-8-sig');print({'transcript':str(f),'sourceWordEntries':len(words),'paragraphs':len(paragraphs)})\npathlib.Path('analysis/teaser-drive-2026-10-14').mkdir(parents=True,exist_ok=True)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a99e5ee7-2c03-450b-b79d-ddefcdb10e37"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:55:11.299Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

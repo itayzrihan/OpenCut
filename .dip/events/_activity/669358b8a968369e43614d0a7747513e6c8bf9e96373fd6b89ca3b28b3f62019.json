@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "669358b8a968369e43614d0a7747513e6c8bf9e96373fd6b89ca3b28b3f62019",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:26:22.590Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'serviceWorker|service-worker|workbox|sw.js' classic/apps/web/src classic/apps/web/next.config.ts | head -30; ps -p 69138 -o %cpu,rss,etime",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-54733c53-6fb4-45c1-9a90-2115d5cee41e"
+      },
+      {
+        "at": "2026-10-13T09:26:22.746Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'serviceWorker|service-worker|workbox|sw.js' classic/apps/web/src classic/apps/web/next.config.ts | head -30; ps -p 69138 -o %cpu,rss,etime",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-54733c53-6fb4-45c1-9a90-2115d5cee41e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:26:23.504Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

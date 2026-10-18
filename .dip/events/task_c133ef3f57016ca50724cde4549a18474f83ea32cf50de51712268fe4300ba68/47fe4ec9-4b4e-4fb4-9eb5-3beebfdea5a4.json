@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "47fe4ec9-4b4e-4fb4-9eb5-3beebfdea5a4",
+  "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+  "type": "task.update",
+  "payload": {
+    "description": "Extend the teaser passage containing אין מה לשכנע by one second to restore the clipped word, ripple later scene elements/captions correctly, re-export both captioned and clean MP4s plus synchronized SRT/transcript and replace the Drive delivery files. Pending TXT/SRT upload from previous step must be completed.",
+    "acceptance": [
+      "Extend the exact source clip ending the phrase אין מה לשכנע by1s, preserve full word and ripple following picture/caption/effect/audio timing on finished duplicate only.",
+      "Re-export both MP4 variants and accurate updated SRT/transcript; verify audio, timing, original scenes and project preserved.",
+      "Replace Drive delivery files and provide current usable links."
+    ],
+    "scope": [
+      "analysis/teaser-drive-2026-10-14",
+      "analysis/teaser-word-fix-2026-10-14",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T10:02:54.882Z",
+  "parents": [
+    "a24505a9-a1d9-4c8b-8b86-4ae1dc872033"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

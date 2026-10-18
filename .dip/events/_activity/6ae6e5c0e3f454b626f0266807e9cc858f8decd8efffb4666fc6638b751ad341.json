@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ae6e5c0e3f454b626f0266807e9cc858f8decd8efffb4666fc6638b751ad341",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:42:26.869Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_383f8aaf10231cbd314052ee024750db852166702012810eea7b79e60155febb",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/services/transcription/service.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-d10d5074-ba52-4a06-9611-d39b80aa0514"
+      },
+      {
+        "at": "2026-10-12T11:42:27.180Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_383f8aaf10231cbd314052ee024750db852166702012810eea7b79e60155febb",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/transcription/windows.ts; sed -n '1,235p' classic/apps/web/src/transcription/timeline-stream.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-a32c3f93-bbe7-4683-89ac-bc9658032d2f"
+      },
+      {
+        "at": "2026-10-12T11:42:27.352Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_383f8aaf10231cbd314052ee024750db852166702012810eea7b79e60155febb",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,pcpu,rss,comm -r | head -18; memory_pressure | tail -5; sysctl vm.swapusage",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-8ef34407-b1d5-4764-b055-4e58cb6276e5"
+      },
+      {
+        "at": "2026-10-12T11:42:27.723Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_383f8aaf10231cbd314052ee024750db852166702012810eea7b79e60155febb",
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "43e36ca9-e3cc-44ba-9db9-478db89ca626"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:42:27.741Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "38def75299f6bd299644490cf32857c5eb89076d4a5a788038e62219b884dfcd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:55:03.402Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/core/__tests__/canonical-transcription.test.ts --jobs=1",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-901fd9df-ca22-4958-bac4-407810359248"
+      },
+      {
+        "at": "2026-10-12T09:55:03.407Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx eslint src/core/managers/transcription-manager.ts src/transcription/job.ts src/transcription/windows.ts src/transcription/windows.test.ts src/ai/smart-takes-task.ts src/ai/podcast-task.ts src/subtitles/auto-texts.ts src/core/managers/commands.ts src/core/managers/project-manager.ts src/transcription/timeline-stream.ts src/core/__tests__/canonical-transcription.test.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-57dc92b5-9ff4-4807-8af8-66ba23a49745"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:55:04.101Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

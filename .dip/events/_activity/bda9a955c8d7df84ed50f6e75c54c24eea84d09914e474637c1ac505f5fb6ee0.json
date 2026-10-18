@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bda9a955c8d7df84ed50f6e75c54c24eea84d09914e474637c1ac505f5fb6ee0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:47:50.360Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/teaser-word-fix-2026-10-14/check-tail.py\ncat analysis/teaser-exports-2026-10-14/audio-source-check.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2404d7d5-93a0-45b5-8f8d-a5ecbe635c50"
+      },
+      {
+        "at": "2026-10-15T01:47:50.454Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-813354dd-3810-4e83-9ad3-2e683bbbb647"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:47:51.300Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

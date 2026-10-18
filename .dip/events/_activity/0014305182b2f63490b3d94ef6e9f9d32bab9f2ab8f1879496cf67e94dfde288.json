@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0014305182b2f63490b3d94ef6e9f9d32bab9f2ab8f1879496cf67e94dfde288",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:16:11.420Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path('analysis/teaser-word-fix-2026-10-14');p=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'));s=next(x for x in p['scenes'] if x['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print([(t['name'],t.get('hidden')) for t in s['tracks']['overlay']])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c646e77c-8869-4098-8e02-d3d9b680d822"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:16:12.370Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

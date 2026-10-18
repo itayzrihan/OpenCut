@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "efef1dc5c90bc96996ab1cf63069f064cdd340a729f0bb8893b1f0f6f3a185b2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T17:51:41.163Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sample 13006 1 -file .local/apple-stt-benchmark/sample.txt >/dev/null 2>&1\nhead -65 .local/apple-stt-benchmark/sample.txt",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-9a27ad4c-9e37-49da-9901-652b2596972a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T17:51:41.456Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

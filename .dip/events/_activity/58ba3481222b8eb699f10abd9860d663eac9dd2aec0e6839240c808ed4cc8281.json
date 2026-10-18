@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "58ba3481222b8eb699f10abd9860d663eac9dd2aec0e6839240c808ed4cc8281",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+    "records": [
+      {
+        "at": "2026-10-18T10:47:11.717Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+        "taskId": "task_000f1fd009a47e1acaf663f940ab927d9bba63764d1684a1184d631d6d254d66",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -W ignore -c 'import openpyxl,pathlib,collections,re; p=pathlib.Path(\"/Users/itayzrihan/Desktop/ישראכרט - חיובים יוני-אוקטובר 2026\"); g=collections.defaultdict(list)\nfor f in sorted(p.glob(\"*.xlsx\")):\n for i,r in enumerate(openpyxl.load_workbook(f,data_only=True).active.values,1):\n  if isinstance(r[0],str) and re.fullmatch(r\"\\d{2}\\.\\d{2}\\.\\d{2}\",r[0]) and r[1] and isinstance(r[4],(float,int)) and \"תשלום\" not in str(r[7]) and \"קרדיט\" not in str(r[7]):g[str(r[1]).strip()].append((f.name[:7],r[0],r[4],r[7]))\nfor n,rs in sorted(g.items()):\n if any(\"הוראת קבע\" in str(r[3]) for r in rs) or re.search(\"[A-Za-z]\",n):print(n,\"|\",rs)'",
+        "recordId": "codex:01a14e96-321f-7942-bb68-b0a43dd2cfe9:PreToolUse:exec-0fb1313a-af15-47e3-8f89-dcb78c2d2216"
+      },
+      {
+        "at": "2026-10-18T10:47:11.982Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+        "taskId": "task_000f1fd009a47e1acaf663f940ab927d9bba63764d1684a1184d631d6d254d66",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -W ignore -c 'import openpyxl,pathlib,collections,re; p=pathlib.Path(\"/Users/itayzrihan/Desktop/ישראכרט - חיובים יוני-אוקטובר 2026\"); g=collections.defaultdict(list)\nfor f in sorted(p.glob(\"*.xlsx\")):\n for i,r in enumerate(openpyxl.load_workbook(f,data_only=True).active.values,1):\n  if isinstance(r[0],str) and re.fullmatch(r\"\\d{2}\\.\\d{2}\\.\\d{2}\",r[0]) and r[1] and isinstance(r[4],(float,int)) and \"תשלום\" not in str(r[7]) and \"קרדיט\" not in str(r[7]):g[str(r[1]).strip()].append((f.name[:7],r[0],r[4],r[7]))\nfor n,rs in sorted(g.items()):\n if any(\"הוראת קבע\" in str(r[3]) for r in rs) or re.search(\"[A-Za-z]\",n):print(n,\"|\",rs)'",
+        "recordId": "codex:01a14e96-321f-7942-bb68-b0a43dd2cfe9:PostToolUse:exec-0fb1313a-af15-47e3-8f89-dcb78c2d2216"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T10:47:12.649Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

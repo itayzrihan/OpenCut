@@ -19,11 +19,57 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 pub(crate) struct HistoryEntry {
     pub label: String,
-    pub document: EditorDocument,
+    #[schemars(with = "EditorDocument")]
+    pub document: HistoryDocument,
     /// Host presentation state (selection, side-effect callback ID), never a
     /// second copy of the editor document or executable code.
     #[serde(default, skip_serializing_if = "serde_json::Map::is_empty")]
     pub host_context: serde_json::Map<String, serde_json::Value>,
+}
+
+/// History snapshots stay lossless, but Classic's JSON tree is materialized only
+/// for the boundary being read. Thousands of captions across 100 undo steps must
+/// not expand into hundreds of thousands of separately allocated JSON objects.
+#[derive(Debug, Clone)]
+pub(crate) enum HistoryDocument {
+    Native(Box<EditorDocument>),
+    Classic { json: Arc<str>, revision: u64, archive_bytes: usize },
+}
+impl From<EditorDocument> for HistoryDocument {
+    fn from(document: EditorDocument) -> Self {
+        if let Some(classic) = document.project.as_ref().and_then(|p| p.classic.as_ref()) {
+            let archive_bytes = classic.to_archive(&mut crate::classic_archive::SourcePool::new())
+                .encoded_len().expect("validated Classic archive serializes");
+            Self::Classic { revision: document.revision,
+                archive_bytes,
+                json: serde_json::to_string(&document).expect("validated editor document serializes").into() }
+        } else { Self::Native(Box::new(document)) }
+    }
+}
+impl HistoryDocument {
+    pub(crate) fn materialize(&self) -> EditorDocument {
+        match self {
+            Self::Native(document) => (**document).clone(),
+            Self::Classic { json, .. } => serde_json::from_str(json).expect("internally serialized history"),
+        }
+    }
+    pub(crate) fn revision(&self) -> u64 {
+        match self { Self::Native(d) => d.revision, Self::Classic { revision, .. } => *revision }
+    }
+    pub(crate) fn is_classic(&self) -> bool { matches!(self, Self::Classic { .. }) }
+    pub(crate) fn classic_archive_bytes(&self) -> usize {
+        match self { Self::Classic { archive_bytes, .. } => *archive_bytes, Self::Native(_) => 0 }
+    }
+}
+impl Serialize for HistoryDocument {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.materialize().serialize(serializer)
+    }
+}
+impl<'de> Deserialize<'de> for HistoryDocument {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        EditorDocument::deserialize(deserializer).map(Self::from)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -406,7 +452,7 @@ impl OpenCutRuntime {
         let store = self.state.read().map_err(|_| RuntimeError::LockPoisoned)?;
         if store.active_project_id() != Some(project_id) { return Err(RuntimeError::UnknownProject(project_id.into())); }
         let mut pairs = BTreeMap::new();
-        for document in std::iter::once(&store.document).chain(store.undo.iter().map(|entry| &entry.document)).chain(store.redo.iter().map(|entry| &entry.document)) {
+        for document in std::iter::once(store.document.clone()).chain(store.undo.iter().map(|entry| entry.document.materialize())).chain(store.redo.iter().map(|entry| entry.document.materialize())) {
             if document.project.as_ref().is_none_or(|project| project.id != project_id) { continue; }
             collect(&serde_json::to_value(&document.project)?, &mut pairs);
             collect(&serde_json::to_value(&document.extensions)?, &mut pairs);
@@ -539,11 +585,13 @@ impl OpenCutRuntime {
             }
             let project_id = session.document.project.as_ref().map(|p| &p.id);
             for entry in session.undo.iter_mut().chain(session.redo.iter_mut()) {
-                entry.document.migrate_to_current()?;
-                entry.document.validate()?;
-                if entry.document.project.as_ref().map(|p| &p.id) != project_id {
+                let mut document = entry.document.materialize();
+                document.migrate_to_current()?;
+                document.validate()?;
+                if document.project.as_ref().map(|p| &p.id) != project_id {
                     return Err(crate::ModelError::Invalid("History belongs to another project".into()).into());
                 }
+                entry.document = document.into();
             }
         }
         let mut inactive_sessions = BTreeMap::new();
@@ -630,7 +678,7 @@ impl OpenCutRuntime {
         store.undo = checkpoint.store.undo;
         store.undo.push(HistoryEntry {
             label: label.into(),
-            document: checkpoint.store.document,
+            document: checkpoint.store.document.into(),
             host_context,
         });
         super::operations::trim_history(&mut store.undo);
@@ -707,4 +755,36 @@ pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), std::io::Err
     temporary.as_file().sync_all()?;
     temporary.persist(path).map_err(|error| error.error)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod compact_history_tests {
+    use super::*;
+
+    #[test]
+    fn classic_history_is_lossless_shared_text_and_keeps_persistence_shape() {
+        let mut document = EditorDocument::default();
+        // Deserialize a valid project via the same canonical boundary used by hosts.
+        let classic: crate::ClassicProject = serde_json::from_str(include_str!("../tests/fixtures/classic-project.json")).unwrap();
+        let project = crate::Project {
+            id: classic.id().unwrap().to_owned(), name: classic.name().unwrap().to_owned(),
+            file_path: None, settings: classic.settings().unwrap(), assets: vec![],
+            timeline: crate::Timeline::default(), classic: Some(classic),
+            metadata: BTreeMap::new(), export_presets: vec![], extensions: serde_json::Map::new(),
+        };
+        document.project = Some(project);
+        document.revision = 42;
+        let expected = serde_json::to_value(&document).unwrap();
+        let stored = HistoryDocument::from(document);
+        assert!(stored.is_classic());
+        assert_eq!(stored.revision(), 42);
+        let cloned = stored.clone();
+        match (&stored, &cloned) {
+            (HistoryDocument::Classic { json: a, .. }, HistoryDocument::Classic { json: b, .. }) => assert!(Arc::ptr_eq(a, b)),
+            _ => panic!("Classic history must not retain expanded document trees"),
+        }
+        assert_eq!(serde_json::to_value(&stored).unwrap(), expected);
+        let reopened: HistoryDocument = serde_json::from_value(expected.clone()).unwrap();
+        assert_eq!(serde_json::to_value(reopened.materialize()).unwrap(), expected);
+    }
 }

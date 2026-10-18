@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "62e052fefb89f05d78b15cb08cf2eb64fdd388d993f00520013f3ffcdb457f64",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:12:46.670Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'sourcePcm' classic/apps/web/src/export/audio-stream.ts; sed -n '1,90p' classic/apps/web/src/export/__tests__/audio-quality.test.ts; sed -n '1060,1140p' classic/apps/web/src/core/managers/audio-manager.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5b32df24-558d-4cec-a6bd-15ebeb11b26b"
+      },
+      {
+        "at": "2026-10-13T16:12:46.996Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'sourcePcm' classic/apps/web/src/export/audio-stream.ts; sed -n '1,90p' classic/apps/web/src/export/__tests__/audio-quality.test.ts; sed -n '1060,1140p' classic/apps/web/src/core/managers/audio-manager.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5b32df24-558d-4cec-a6bd-15ebeb11b26b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:12:47.521Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

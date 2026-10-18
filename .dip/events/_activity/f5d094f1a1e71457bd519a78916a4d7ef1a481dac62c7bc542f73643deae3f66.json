@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5d094f1a1e71457bd519a78916a4d7ef1a481dac62c7bc542f73643deae3f66",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:11:28.735Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "dip task finish --help",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6ed138e9-06d2-4443-854d-70a015488367"
+      },
+      {
+        "at": "2026-10-12T13:11:28.841Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "dip task finish --help",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6ed138e9-06d2-4443-854d-70a015488367"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:11:29.483Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

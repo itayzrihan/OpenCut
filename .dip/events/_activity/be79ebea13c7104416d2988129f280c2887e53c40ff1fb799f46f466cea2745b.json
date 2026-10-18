@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be79ebea13c7104416d2988129f280c2887e53c40ff1fb799f46f466cea2745b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:52:51.724Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '80,111p' classic/scripts/test-web.mjs; classic/node_modules/.bin/prettier --write classic/apps/web/src/timeline/components/caption-word-element-refs.ts classic/apps/web/src/timeline/components/caption-word-timing-track.tsx classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts classic/apps/web/src/core/managers/transcription-manager.ts classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0e7edafb-fd8c-4236-880d-18b8d429d80e"
+      },
+      {
+        "at": "2026-10-13T09:52:52.037Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '80,111p' classic/scripts/test-web.mjs; classic/node_modules/.bin/prettier --write classic/apps/web/src/timeline/components/caption-word-element-refs.ts classic/apps/web/src/timeline/components/caption-word-timing-track.tsx classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts classic/apps/web/src/core/managers/transcription-manager.ts classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0e7edafb-fd8c-4236-880d-18b8d429d80e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:52:52.363Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

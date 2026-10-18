@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b9d3e49f267ba1dee08261e28576339e4a440126603da285221413411c516a67",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:02:55.409Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print(json.dumps({'main':s['tracks']['main']['elements'][:3]},ensure_ascii=False)[:5000])\nprint('jobs',type(p['transcriptionJobs']),len(p['transcriptionJobs']))\nfor s in p['scenes']:\n if s.get('isMain'):\n  for t in s['tracks']['overlay']:\n   if t.get('captionSource'):\n    w=t['captionSource']['words'];print('original words near phrase', [x for x in w if 1960<x['start']<1967]);break\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e3f10e78-7f0d-4479-8918-f81c35ce0023"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:02:56.193Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

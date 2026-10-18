@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc416a60-50fb-45c2-9425-6bdf2183c77b",
+  "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Export native edited MP4 with captions and preserve scene snapshot",
+          "status": "completed"
+        },
+        {
+          "step": "Export clean variant without caption layers and restore state",
+          "status": "completed"
+        },
+        {
+          "step": "Build SRT from final cue/word timing and verify all three files",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T09:53:08.290Z",
+  "parents": [
+    "205d9787-38ec-40b2-83cd-0aa7961993cb"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

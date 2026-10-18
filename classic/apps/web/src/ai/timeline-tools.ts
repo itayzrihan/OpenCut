@@ -1,3 +1,4 @@
+import { hasExportOutput } from "@/export";
 import { z } from "zod";
 import { getSmartTakesTask } from "./smart-takes-task";
 import { restoreSilence } from "opencut-wasm";
@@ -698,6 +699,41 @@ export async function createTimelineToolRuntime({
 				}
 				return result;
 			}
+			case "media.relink_source": {
+				const args = z
+					.object({
+						mediaId: z.string().min(1),
+						sourcePath: z.string().min(1),
+						requestId: z.string().min(1).max(160),
+						expectedBindingRevision: z.number().int().nonnegative(),
+					})
+					.strict()
+					.parse(toolCall.arguments);
+				const project = editor.project.getActive();
+				if (!project)
+					throw new Error("Open the target project before relinking");
+				await editor.media.relink({
+					projectId: project.metadata.id,
+					id: args.mediaId,
+					source: args.sourcePath,
+					requestId: args.requestId,
+					expectedRevision: args.expectedBindingRevision,
+				});
+				const asset = editor.media
+					.getAssets()
+					.find((item) => item.id === args.mediaId);
+				if (!asset)
+					throw new Error("Media no longer belongs to the active project");
+				return {
+					mediaId: asset.id,
+					sourcePath: asset.sourcePath,
+					bindingRevision: asset.bindingRevision ?? 0,
+					missing: asset.missing ?? false,
+					duration: asset.duration,
+					size: asset.size,
+					lastModified: asset.lastModified,
+				};
+			}
 			case "scene.activate": {
 				const sceneId = requireStringArg({
 					args: toolCall.arguments,
@@ -1322,6 +1358,34 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 		},
 		{
 			type: "function",
+			name: "media.relink_source",
+			deferLoading: true,
+			category: "media source",
+			keywords: [
+				"replace source",
+				"relink media",
+				"corrected audio",
+				"preserve cuts",
+			],
+			description:
+				"Relink one existing media identity to an account-allowed absolute source path using the canonical Rust binding transaction. Preserves all scenes, cuts and captions. Host validates replacement video timing, frame rate and dimensions before accepting changed bytes. Refreshes file metadata and decode caches, with binding undo. Requires media and App controls grants. Reuse requestId for an exact retry; pass the current asset bindingRevision as expectedBindingRevision. Filesystem access is open-world.",
+			parameters: objectSchema({
+				properties: {
+					mediaId: { type: "string" },
+					sourcePath: { type: "string" },
+					requestId: { type: "string", minLength: 1, maxLength: 160 },
+					expectedBindingRevision: { type: "integer", minimum: 0 },
+				},
+				required: [
+					"mediaId",
+					"sourcePath",
+					"requestId",
+					"expectedBindingRevision",
+				],
+			}),
+		},
+		{
+			type: "function",
 			name: "scene.activate",
 			deferLoading: true,
 			category: "app control",
@@ -1360,7 +1424,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			category: "smart takes task",
 			keywords: ["best takes", "filming notes", "assemble takes"],
 			description:
-				"Start the same three-pass Smart takes workflow as the editor button on explicit main-track elementIds. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to experimental (fast); standard retains the original full review. Experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
+				"Start the same Smart takes workflow as the editor button on explicit main-track elementIds. If no transcript exists, first generate it locally and Codex-correct it; failures stop the workflow. Existing transcripts are reused. Sends the transcript to the connected ChatGPT provider and applies the validated result as one canonical undoable edit. Returns immediately; poll smart_takes.get_status. Reuse requestId for an exact retry. A failed run resumes saved analysis when the source is unchanged. mode defaults to experimental (fast); standard retains the original full review. Experimental uses a shorter analysis and focused review with full-review fallback. Checkpoints are isolated per mode. Status includes per-stage timings.",
 			parameters: objectSchema({
 				properties: {
 					elementIds: {
@@ -1392,7 +1456,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			deferLoading: true,
 			category: "app control",
 			description:
-				"Cancel running Smart takes analysis before any timeline edit is committed.",
+				"Cancel the running Smart takes workflow, including transcript preparation. Completed transcript/correction edits remain undoable; no later take plan is applied.",
 			parameters: objectSchema({ properties: {} }),
 		},
 		{
@@ -3164,7 +3228,7 @@ function getSafeExportStatus({ editor }: { editor: EditorCore }) {
 	const state = editor.project.getExportState();
 	const status = state.isExporting
 		? "running"
-		: state.result?.success && state.result.buffer
+		: hasExportOutput(state.result)
 			? "ready"
 			: state.result?.cancelled
 				? "cancelled"

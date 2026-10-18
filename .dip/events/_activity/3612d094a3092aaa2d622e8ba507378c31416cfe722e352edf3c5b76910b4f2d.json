@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3612d094a3092aaa2d622e8ba507378c31416cfe722e352edf3c5b76910b4f2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:15:48.242Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'NODE'\nimport {execFileSync} from 'node:child_process';\nimport {github,eventBatch} from './lib/github.mjs';\nconst token=[REDACTED],['auth','token'],{encoding:'utf8'}).trim();\nconst {data:r}=await github(token,'/repos/vxu-labs/dip');\nconst {data:t}=await github(token,`/repos/vxu-labs/dip/git/trees/${r.default_branch}?recursive=1`);\nconst files=t.tree.filter(x=>x.type==='blob'&&/^\\.dip\\/events\\/task_[^/]+\\/[^/]+\\.json$/.test(x.path)).slice(0,32).map(x=>({...x,path:x.path.slice(5)}));\nconst result=await eventBatch(token,'vxu-labs/dip',files);\nconsole.log(JSON.stringify({files:files.length,read:result.filter(x=>x.event).length,errors:result.filter(x=>x.error).map(x=>x.error)}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-05b3636c-5f02-49c7-bdfe-87b40e415054"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:15:48.524Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

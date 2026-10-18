@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8c842aaa279d26258e21c7a825a5af86cb7dd342f18edd2b20cce4a26c986a32",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:57:49.104Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'canonicalizeTimelineSourceDocument' classic/rust/wasm/pkg/opencut_wasm_bg.js | head -3; sed -n '1,100p' classic/AGENTS.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d5ce0341-cd6a-4323-9016-5256ea1e952e"
+      },
+      {
+        "at": "2026-10-14T07:57:49.210Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'canonicalizeTimelineSourceDocument' classic/rust/wasm/pkg/opencut_wasm_bg.js | head -3; sed -n '1,100p' classic/AGENTS.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d5ce0341-cd6a-4323-9016-5256ea1e952e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:57:49.449Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

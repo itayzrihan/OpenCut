@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25c22127-f7ba-426c-8ce5-869a2e1b456d",
+  "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+  "type": "task.update",
+  "payload": {
+    "title": "Make opening saved sequences responsive without freezing large project",
+    "description": "Reproduce double-click Sequence freeze; profile switch UI/canonical transactions and derived work. Remove full-project work from scene switch hot path, preserve canonical state, undo and source transcript. Deploy and verify actual project switch responsiveness.",
+    "acceptance": [
+      "Opening sequence does not synchronously rebuild/serialize all scenes/history or freeze UI",
+      "Canonical scene state and persistence remain correct; Main/transcription/seven sequences preserved",
+      "Regression and measured scene-switch evidence pass",
+      "Deploy production and verify real sequence switching"
+    ],
+    "scope": [
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "crates/editor-api/src/operations/classic_scenes.rs",
+      "classic/rust/editor-runtime-wasm",
+      ".dip/tools"
+    ],
+    "status": "in_progress"
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T19:25:04.528Z",
+  "parents": [
+    "a65924177d6a974d1c0fc5470d3bbedf50dc7c34d3fa2cb0198dd6cfdfdab882"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

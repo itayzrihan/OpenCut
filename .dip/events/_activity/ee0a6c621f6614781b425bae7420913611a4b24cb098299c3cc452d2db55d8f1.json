@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee0a6c621f6614781b425bae7420913611a4b24cb098299c3cc452d2db55d8f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:30:57.846Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -n -iTCP:9229 -sTCP:LISTEN; git diff --numstat -- 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'; ps -p 74537 -o pid,%cpu,rss",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6689ea84-87c7-40bf-b415-9deeffc8f4c9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:30:58.148Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a3dccc095ac4cfe9bc4050c7cb82e21b3e996e961bcb6bd586896578f636eec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T21:04:00.759Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_podcast.rs",
+          ".local/source-preservation/native.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "7c600040-b611-4ba2-9f29-dbbac329f11e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:04:00.762Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

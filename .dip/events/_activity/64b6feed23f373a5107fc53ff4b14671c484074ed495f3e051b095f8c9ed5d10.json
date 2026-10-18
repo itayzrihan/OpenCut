@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "64b6feed23f373a5107fc53ff4b14671c484074ed495f3e051b095f8c9ed5d10",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:42:38.702Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-dip-site.mjs');s=p.read_text().replace(\"html.includes('Your session ends.')\",\"html.includes('The archaeology')\").replace(\"'sites/dip-public/dist'+path\",\"'sites/dip-public/public'+path\")\ns += \"\\nconst session=JSON.parse(get('/api/dashboard'));assert.equal(session.user,null);assert.equal(typeof session.configured,'boolean');assert(get('/dashboard').toString().includes('Your projects'));\\n\"\np.write_text(s)\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-8fcb72a6-55f9-4638-8fb1-996df6bc991f"
+      },
+      {
+        "at": "2026-10-12T08:42:39.013Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c10a52ef-f7ba-4cc9-9175-c2dcd648f9aa"
+      },
+      {
+        "at": "2026-10-12T08:42:39.014Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-dip-site.mjs');s=p.read_text().replace(\"html.includes('Your session ends.')\",\"html.includes('The archaeology')\").replace(\"'sites/dip-public/dist'+path\",\"'sites/dip-public/public'+path\")\ns += \"\\nconst session=JSON.parse(get('/api/dashboard'));assert.equal(session.user,null);assert.equal(typeof session.configured,'boolean');assert(get('/dashboard').toString().includes('Your projects'));\\n\"\np.write_text(s)\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-8fcb72a6-55f9-4638-8fb1-996df6bc991f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:42:39.711Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

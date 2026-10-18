@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e94e9ff-32be-4e9b-9eb3-2c63cf328c9d",
+  "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Extracted all12 visible named effects via native frame timestamps and decoded waveform silence (-60dB tails; -38dB DigitalText/Riser valley),320kbps stereoMP3. Published existing global host catalog507→519, original507 records preserved. Actual byte hashes, decoded durations and native frame boundaries checked. Canonical readGlobalAudio/globalAudioFile/account merge finds12; existing two-account API regression passes. ZIP and waveform/range evidence saved.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "out_of_scope",
+          "summary": "Unlabelled end-card sound19.94–21.48s preserved separately. Optional question about global inclusion is unanswered; published only the12 source-labelled effects."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Global visibility verified with canonical reader/account merge and existing two-account endpoint regression; no signed-in browser session available for live UI screenshot. Source's redistribution/commercial licensing is not established and remains needs-review in existing catalog UI."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277",
+  "createdAt": "2026-10-15T01:22:25.416Z",
+  "parents": [
+    "99ca665b-7e63-4b25-922e-2fb1a0055050"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -6,7 +6,7 @@ const buffer = {
 	sampleRate: 48000,
 	length: 96000,
 	getChannelData: () => samples,
-} as AudioBuffer;
+} as unknown as AudioBuffer;
 mock.module("@/retime", () => ({
 	getSourceTimeAtClipTime: ({ clipTime }: { clipTime: number }) => clipTime,
 	renderRetimedBuffer: async () => buffer,

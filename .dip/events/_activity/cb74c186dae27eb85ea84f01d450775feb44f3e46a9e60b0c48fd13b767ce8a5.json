@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb74c186dae27eb85ea84f01d450775feb44f3e46a9e60b0c48fd13b767ce8a5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:08:15.156Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_610c38d80a1c32324da94c3b1616da9fe1298a9e539d46caa8babec29e62303e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "swift -e 'import Speech; import Foundation; for code in [\"he-IL\", \"en-US\"] { if let r = SFSpeechRecognizer(locale: Locale(identifier: code)) { print(\"\\(code): available=\\(r.isAvailable), onDevice=\\(r.supportsOnDeviceRecognition)\") } else { print(\"\\(code): unsupported\") } }'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f48424f3-519a-4e2c-9997-7f0757c8e853"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:08:15.719Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

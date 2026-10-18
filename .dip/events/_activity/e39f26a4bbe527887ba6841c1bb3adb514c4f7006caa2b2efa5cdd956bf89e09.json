@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e39f26a4bbe527887ba6841c1bb3adb514c4f7006caa2b2efa5cdd956bf89e09",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:52:35.938Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 .dip/tools/verify-teaser-exports.py > analysis/teaser-exports-2026-10-14/verification.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d770f730-5eda-4231-9a4b-4b2bbcf8b241"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:52:36.251Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa69bb4e8d5ac264df10822701a9221cc4275e7a69e1e7c2005f6b6c49d97c60",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T14:17:29.560Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/app/dashboard/ui.tsx",
+          "sites/dip-public/lib/task-writes.mjs",
+          "sites/dip-public/lib/github.mjs",
+          "sites/dip-public/test/workspace-cache.test.mjs",
+          "sites/dip-public/test/task-writes.test.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "5617df8a-f363-44b6-9579-b85aeaa8a9a7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:17:29.563Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

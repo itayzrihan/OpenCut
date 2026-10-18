@@ -2,12 +2,13 @@ import {
 	projectFileIdentity,
 	readRenewal,
 	writeRenewal,
-	metadataOnly,
 	mergeRenewal,
+	readSessionMetadata,
 } from "./session-renewal";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
+import { runSessionPolicy } from "./session-policy";
 import { requireAccount } from "@/accounts/server";
 import {
 	withProjectStorageLock,
@@ -45,22 +46,20 @@ export async function operateEditorSession({
 		projectId,
 		write: async ({ directory, path, assertLock }) => {
 			assertHostLock();
-			const renewing = z
-				.object({ type: z.literal("renew") })
+			const metadataRequest = z
+				.object({ type: z.enum(["renew", "inspect"]) })
 				.passthrough()
 				.safeParse(request).success;
-			const { sessionStoreTransition } =
-				await import("opencut-editor-runtime-wasm");
-			const transition = (record: string) => {
+			const transition = async (record: string) => {
 				try {
 					return transitionResult.parse(
-						sessionStoreTransition(
+						await runSessionPolicy({
 							record,
 							accountId,
 							projectId,
 							request,
-							Date.now(),
-						),
+							nowMs: Date.now(),
+						}),
 					);
 				} catch (error) {
 					throw new SessionRejected(
@@ -68,11 +67,11 @@ export async function operateEditorSession({
 					);
 				}
 			};
-			if (renewing) {
+			if (metadataRequest) {
 				const identity = await projectFileIdentity(path);
 				const metadata = await readRenewal({ path, identity });
 				if (metadata) {
-					const next = transition(metadata);
+					const next = await transition(metadata);
 					await writeRenewal({
 						path,
 						identity,
@@ -102,11 +101,11 @@ export async function operateEditorSession({
 			let previous = project[EDITOR_SESSION_FIELD];
 			if (previous !== undefined && typeof previous !== "string")
 				throw new SessionRejected("Unsupported editor session record");
-			if (typeof previous === "string")
-				previous = await mergeRenewal({ path, record: previous });
-			if (renewing && typeof previous === "string") {
+			if (metadataRequest && typeof previous === "string") {
 				const identity = await projectFileIdentity(path);
-				const next = transition(metadataOnly(previous));
+				const next = await transition(
+					await readSessionMetadata({ path, record: previous }),
+				);
 				await writeRenewal({
 					path,
 					identity,
@@ -122,7 +121,11 @@ export async function operateEditorSession({
 					legacyHistory: null,
 				};
 			}
-			const next = transition(typeof previous === "string" ? previous : "");
+			if (typeof previous === "string")
+				previous = await mergeRenewal({ path, record: previous });
+			const next = await transition(
+				typeof previous === "string" ? previous : "",
+			);
 			// Initial adoption reads the legacy history under the same lock as
 			// the project. The client never combines independently fetched saves.
 			const legacyHistory =

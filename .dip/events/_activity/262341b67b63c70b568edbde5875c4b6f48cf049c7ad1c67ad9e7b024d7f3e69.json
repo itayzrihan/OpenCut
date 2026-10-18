@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "262341b67b63c70b568edbde5875c4b6f48cf049c7ad1c67ad9e7b024d7f3e69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:12:05.587Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src/services/video-proxy classic/apps/web/src/app/api | rg 'video-proxy|preview'; rg -n 'abort|timeout|kill|max|duration|retry' classic/apps/web/src/services/video-proxy/server.ts | head -n 40; ps -p 653,335 -o pid,ppid,pgid,etime,%cpu,rss,command",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b1a57f42-9838-4818-a996-30b8bc449ccd"
+      },
+      {
+        "at": "2026-10-13T13:12:05.685Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src/services/video-proxy classic/apps/web/src/app/api | rg 'video-proxy|preview'; rg -n 'abort|timeout|kill|max|duration|retry' classic/apps/web/src/services/video-proxy/server.ts | head -n 40; ps -p 653,335 -o pid,ppid,pgid,etime,%cpu,rss,command",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b1a57f42-9838-4818-a996-30b8bc449ccd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:12:06.537Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

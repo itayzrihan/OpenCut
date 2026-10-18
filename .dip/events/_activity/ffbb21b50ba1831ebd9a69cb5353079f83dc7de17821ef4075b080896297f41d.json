@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffbb21b50ba1831ebd9a69cb5353079f83dc7de17821ef4075b080896297f41d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:17:33.188Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src | rg 'waveform'; rg -n 'decode|AudioBuffer|chunks|read' classic/apps/web/src/services/waveform* classic/apps/web/src/timeline/components/waveform* -g '*.ts*' | head -n 45",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8c84a788-1258-4155-a0b5-6bbd7adf0774"
+      },
+      {
+        "at": "2026-10-13T13:17:33.288Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src | rg 'waveform'; rg -n 'decode|AudioBuffer|chunks|read' classic/apps/web/src/services/waveform* classic/apps/web/src/timeline/components/waveform* -g '*.ts*' | head -n 45",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-8c84a788-1258-4155-a0b5-6bbd7adf0774"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:17:33.876Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

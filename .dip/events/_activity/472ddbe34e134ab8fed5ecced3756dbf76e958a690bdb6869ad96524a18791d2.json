@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "472ddbe34e134ab8fed5ecced3756dbf76e958a690bdb6869ad96524a18791d2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:07:46.714Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nimport struct,os\np='/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4';f=open(p,'rb');total=os.fstat(f.fileno()).st_size;at=0\nwhile at<total:\n f.seek(at);h=f.read(8)\n if len(h)<8:break\n size,typ=struct.unpack('>I4s',h)\n if size==1:size=struct.unpack('>Q',f.read(8))[0]\n if size==0:size=total-at\n print(typ.decode('ascii','replace'),size)\n if size<8:break\n at+=size\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d44a73ae-845b-4f55-a87f-736a0a8086f0"
+      },
+      {
+        "at": "2026-10-13T13:07:46.829Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nimport struct,os\np='/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4';f=open(p,'rb');total=os.fstat(f.fileno()).st_size;at=0\nwhile at<total:\n f.seek(at);h=f.read(8)\n if len(h)<8:break\n size,typ=struct.unpack('>I4s',h)\n if size==1:size=struct.unpack('>Q',f.read(8))[0]\n if size==0:size=total-at\n print(typ.decode('ascii','replace'),size)\n if size<8:break\n at+=size\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d44a73ae-845b-4f55-a87f-736a0a8086f0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:07:47.306Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

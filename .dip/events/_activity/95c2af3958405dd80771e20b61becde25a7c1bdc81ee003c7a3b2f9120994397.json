@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95c2af3958405dd80771e20b61becde25a7c1bdc81ee003c7a3b2f9120994397",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:21:56.613Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{createHash}from'node:crypto';import{createReadStream}from'node:fs';import{readFile,writeFile,copyFile}from'node:fs/promises';const before=JSON.parse(await readFile('.local/smart-shorts-performance/saved-project-before.json','utf8'));const h=createHash('sha256');for await(const b of createReadStream(before.path))h.update(b);const sha=h.digest('hex');if(sha!==before.sha256)throw Error('Project file changed during work; investigate before asserting preservation');const health=[];for(let i=0;i<3;i++){const t=performance.now();const r=await fetch('http://localhost:3211/',{signal:AbortSignal.timeout(3000)});await r.body.cancel();health.push({status:r.status,ms:performance.now()-t});if(!r.ok)throw Error('Production unhealthy');}const r=await fetch('http://localhost:3211/api/local-drive/media?projectId=11e7e552-fd67-44e7-8795-cd2b8b5e2668&id=f1115e3c-240b-4ab7-9247-c4433dc74e20',{method:'HEAD'});if(r.status!==401)throw Error('Media authentication guard failed');const result={health,projectFileExactlyPreserved:true,unauthenticatedMediaStatus:r.status};await writeFile('.local/smart-shorts-performance/production-verification.json',JSON.stringify(result,null,2));await copyFile('.local/smart-shorts-audio/real-browser-audio-verification.json','.local/smart-shorts-performance/real-seven-audio-verification.json');console.log(result);\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-da2ac840-ebd1-4281-bfbe-df3361bcb486"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:21:57.533Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

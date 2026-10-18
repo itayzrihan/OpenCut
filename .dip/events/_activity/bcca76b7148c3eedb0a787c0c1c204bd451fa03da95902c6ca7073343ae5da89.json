@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bcca76b7148c3eedb0a787c0c1c204bd451fa03da95902c6ca7073343ae5da89",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:28:36.816Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 - <<'PY'\nimport importlib.util\nfor x in ['cv2','scipy','numpy','yaml']:print(x,bool(importlib.util.find_spec(x)))\nPY\nmkdir -p analysis/teaser-reference-2026-10-14\nffprobe -v error -show_format -show_streams -of json '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' > analysis/teaser-reference-2026-10-14/media-probe.json\nffmpeg -y -hide_banner -loglevel error -ss 18.4 -t 0.5 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf scale=288:512 .local/teaser-reference-2026-10-14/glitch-%03d.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0c021aec-7bec-46f4-b4ff-af951a52c095"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:28:36.965Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

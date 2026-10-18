@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "93245bb4-fc5d-43c9-91ca-4e1f03ac34f4",
+  "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Added canonical Rust SRT import preserving cue times with estimated word timing, atomic validation, superseded pending inference and Undo/archive support. Captions now exposes canonical Local/External API choice and account-scoped OpenAI-compatible endpoint/model/key configuration. External requests use bounded audio sections, existing durable checkpoints, account/config binding, cancellation and retries; keys stay host-side outside project exports. Rebuilt browser WASM/manifests. Real Chrome verified settings UI and Hebrew/English SRT import, transcript word controls and enabled correction actions; undid synthetic captions. Proof: .local/transcription-debug/srt-import-proof.png. Expanded broad regression suite timeout after its 90-second harness limit, without assertion failures.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "No live paid external API request was made because no API key was configured; transport/provider tests use controlled responses. Existing full three-hour speech-inference verification limit remains."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:25:02.011Z",
+  "parents": [
+    "fba83e73-fb06-47f0-97c1-3a45ae50a801"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

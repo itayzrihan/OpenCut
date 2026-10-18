@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "26424e8fad449c4965900318b932c0da358beb826ca7668bb76bf93c4b1cb449",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:28:46.079Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/smart-shorts-audio/repaired-sequences.png",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e384408e-fbea-4921-8c4f-358f2c3ce6cc"
+      },
+      {
+        "at": "2026-10-13T16:28:46.190Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/smart-shorts-audio/repaired-sequences.png",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e384408e-fbea-4921-8c4f-358f2c3ce6cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:28:46.209Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

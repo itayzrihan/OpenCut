@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "893f364bfc37362cac047106629d931a2ff32b3dcbebbb9021387ee4289b5d63",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:16:59.384Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('lib/security.mjs');p.write_text(p.read_text()+'''\nexport async function readJSON(request,limit=16384){\n const reader=request.body?.getReader();if(!reader)throw new SyntaxError('Missing request');\n let size=0;const chunks=[];\n while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>limit){await reader.cancel();throw new Error('Request exceeds 16 KB');}chunks.push(value);}\n const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}\n return JSON.parse(new TextDecoder().decode(bytes));\n}\n''')\np=Path('app/api/dashboard/route.ts');s=p.read_text().replace('safeRepo,integer,sameOrigin','safeRepo,integer,sameOrigin,readJSON').replace(\"const raw=await request.text();if(raw.length>16384)return json({error:'Request too large'},413);const body=JSON.parse(raw);\",'const body=await readJSON(request);');p.write_text(s)\nPY\ncat > test/github.test.mjs <<'EOF'\nimport test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {eventBatch} from '../lib/github.mjs';\nimport {readJSON} from '../lib/security.mjs';\ntest('GitHub batch preserves valid events and reports identity mismatches',async()=>{\n const original=globalThis.fetch;\n const event={eventId:'event_a',taskId:'task_a',type:'task.create'};\n globalThis.fetch=async(url,options)=>{\n  assert.equal(url,'https://api.github.com/graphql');\n  assert.equal(options.redirect,'error');\n  const body=JSON.parse(options.body);assert.deepEqual(body.variables,{owner:'vxu-labs',name:'dip'});\n  return Response.json({data:{repository:{b0:{oid:'a'.repeat(40),text:JSON.stringify(event),byteSize:80,isTruncated:false},b1:{text:JSON.stringify(event),byteSize:80,isTruncated:false}}}});\n };\n try{const r=await eventBatch('test-token','vxu-labs/dip',[{path:'events/task_a/event_a.json',sha:'a'.repeat(40),size:80},{path:'events/task_b/event_b.json',sha:'b'.repeat(40),size:80}]);assert.deepEqual(r[0].event,ev",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-2f34831f-dd2b-47f3-9849-09ce886c8107"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:17:00.058Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

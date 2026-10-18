@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24cc948b8d72fe9b56cb40b9b072e8ebad69c6e990557f189247cca73275a827",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:29:30.072Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__search_openai_docs",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-bd28a806-87d4-4c30-9bcc-ecedd280be7a"
+      },
+      {
+        "at": "2026-10-12T10:29:30.072Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__fetch_openai_doc",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-262d676a-be21-48db-badc-10c55920f111"
+      },
+      {
+        "at": "2026-10-12T10:29:30.073Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__search_openai_docs",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-10eec621-8a3f-4a2d-81ca-bda61e384b76"
+      },
+      {
+        "at": "2026-10-12T10:29:30.343Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__fetch_openai_doc",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-262d676a-be21-48db-badc-10c55920f111"
+      },
+      {
+        "at": "2026-10-12T10:29:30.381Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__search_openai_docs",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-bd28a806-87d4-4c30-9bcc-ecedd280be7a"
+      },
+      {
+        "at": "2026-10-12T10:29:30.562Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__openaiDeveloperDocs__search_openai_docs",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-10eec621-8a3f-4a2d-81ca-bda61e384b76"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:29:30.876Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

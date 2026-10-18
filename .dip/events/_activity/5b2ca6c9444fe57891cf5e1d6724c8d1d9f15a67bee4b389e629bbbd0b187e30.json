@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b2ca6c9444fe57891cf5e1d6724c8d1d9f15a67bee4b389e629bbbd0b187e30",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:35:18.198Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport urllib.request,pathlib,tarfile\np=pathlib.Path('.local/codex-transcription-research');sha=(p/'commit.txt').read_text().strip()\nurl=f'https://codeload.github.com/openai/codex/tar.gz/{sha}'\nwith urllib.request.urlopen(url) as r, tarfile.open(fileobj=r,mode='r|gz') as t:\n n=0\n for m in t:\n  rel=pathlib.PurePosixPath(*pathlib.PurePosixPath(m.name).parts[1:])\n  if m.isfile() and '..' not in rel.parts and str(rel).startswith(('codex-rs/','docs/')) and rel.suffix in ('.rs','.md','.toml'):\n   f=p/'source'/rel; f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(t.extractfile(m).read());n+=1\nprint('Downloaded source-only files:',n,'commit',sha)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-ed407347-996d-4ed5-ae20-0b1a769fa9fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:35:18.537Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

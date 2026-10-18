@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "eventId": "979281ef795eee878ac325662967dc81ce01cfa16cf49178bb4e1c89290a2c60",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:57:45.880Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__codex_apps__sites__refresh_custom_domain_status",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-fadbc775-a785-4842-b0cc-9b3e8aa3be66"
+      },
+      {
+        "at": "2026-10-12T07:57:53.109Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:call_f7c00b38872e40f6adf720ee1b009d6a"
+      },
+      {
+        "at": "2026-10-12T07:57:57.834Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:call_f7c00b38872e40f6adf720ee1b009d6a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:58:07.248Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

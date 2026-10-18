@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed87d103978d97c5c29105a4937c2ad48242735f37ae484f3c176341322ddbca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:55:27.707Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node .local/teaser-upgrade/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-057f46a7-1136-441e-a31d-3797a441ba02"
+      },
+      {
+        "at": "2026-10-16T10:55:27.709Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node_modules/.bin/eslint apps/web/src/ai/podcast-editorial.ts apps/web/src/ai/podcast-plan.ts apps/web/src/ai/podcast-task.ts apps/web/src/ai/podcast-plan-cache.ts apps/web/src/ai/podcast-types.ts > /tmp/opencut-teaser-eslint.txt 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-76c08543-012f-4f21-84c9-a52f5ceb108c"
+      },
+      {
+        "at": "2026-10-16T10:55:27.710Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -7 .local/teaser-upgrade/real-provider.log; git diff --check -- classic/apps/web/src/ai/podcast-editorial.ts classic/apps/web/src/ai/podcast-plan.ts crates/editor-api/src/operations/classic_takes/podcast.rs; git status --short -- classic/apps/web/src/ai/podcast* crates/editor-api/src/operations/classic_takes/podcast* crates/editor-api/tests/classic_teaser_editorial.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8cff2b99-05b8-4f21-98fe-d3970e9fdeda"
+      },
+      {
+        "at": "2026-10-16T10:55:27.800Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -7 .local/teaser-upgrade/real-provider.log; git diff --check -- classic/apps/web/src/ai/podcast-editorial.ts classic/apps/web/src/ai/podcast-plan.ts crates/editor-api/src/operations/classic_takes/podcast.rs; git status --short -- classic/apps/web/src/ai/podcast* crates/editor-api/src/operations/classic_takes/podcast* crates/editor-api/tests/classic_teaser_editorial.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8cff2b99-05b8-4f21-98fe-d3970e9fdeda"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:55:28.247Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,102 @@
+{
+  "passed": true,
+  "model": "gpt-6.1-sol",
+  "oldTargetSeconds": 55,
+  "newTargetSeconds": 55,
+  "oldSeconds": 43.7,
+  "oldParts": 3,
+  "oldDominantShare": 0.5139588100686499,
+  "oldRejectedProblems": [
+    "One continuous source passage dominates >45% of the edit; reselect a chain instead of a long excerpt",
+    "Budget the complete target: aim within eight seconds of the maximum and reserve two seconds for source-audio handles; never pad by speeding speech"
+  ],
+  "manualPlanStructurallyPasses": true,
+  "newSeconds": 50.03,
+  "newParts": 9,
+  "newUnits": [
+    {
+      "firstWord": 4413,
+      "lastWord": 4432,
+      "sourceIn": 1957.18,
+      "sourceOut": 1964.52,
+      "text": "אני לא מאמין בלשכנע, אבל מראה להם את הדרך שזה טוב בשבילך. מה הכוונה לא מאמין בלשכנע? אין מה לשכנע."
+    },
+    {
+      "firstWord": 3943,
+      "lastWord": 3959,
+      "sourceIn": 1765.84,
+      "sourceOut": 1770.86,
+      "text": "האינטרס שלי זה לא למכור את המכונית הכי יקרה, זה למכור לו את המכונית שהוא הכי צריך."
+    },
+    {
+      "firstWord": 3228,
+      "lastWord": 3258,
+      "sourceIn": 1477.16,
+      "sourceOut": 1486.96,
+      "text": "אז יש ספה אחת שאהבתי ושנייה שאהבתי, אבל אני בחרתי איפה שהיה לי יותר שירותי, איפה שהיה לי יותר נעים, איפה שראיתי שהצד השני ראה אותי, ולא ראה אותי בתור שטר."
+    },
+    {
+      "firstWord": 9055,
+      "lastWord": 9073,
+      "sourceIn": 3760.51,
+      "sourceOut": 3765.36,
+      "text": "זה לא בירור צרכים של אתה צריך משרד עם חלון או בלי. זה למה אתה צריך משרד עם חלון."
+    },
+    {
+      "firstWord": 5135,
+      "lastWord": 5145,
+      "sourceIn": 2244.28,
+      "sourceOut": 2246.88,
+      "text": "ואני באמת שואל את השאלה הזאת המון פעמים מה חשוב לך"
+    },
+    {
+      "firstWord": 5250,
+      "lastWord": 5270,
+      "sourceIn": 2286.76,
+      "sourceOut": 2292.36,
+      "text": "יכול להיות שזה בן אדם סגור, שאם מתחיל לשאול אותו שאלות אישיות, הוא כרגע לא רוצה, וגם את זה אני מכבד."
+    },
+    {
+      "firstWord": 3290,
+      "lastWord": 3294,
+      "sourceIn": 1499.46,
+      "sourceOut": 1501.24,
+      "text": "איך אתה מתכונן היום לשיחה,"
+    },
+    {
+      "firstWord": 3308,
+      "lastWord": 3314,
+      "sourceIn": 1507.14,
+      "sourceOut": 1509.06,
+      "text": "אני לא מתכונן לשיחה. לא מתכונן. בכלל."
+    },
+    {
+      "firstWord": 3319,
+      "lastWord": 3341,
+      "sourceIn": 1510.7,
+      "sourceOut": 1520.52,
+      "text": "אם בעבר היו דוחפים לי תסריטי שיחה, אם בעבר היו נותנים לי איזשהם שבלונות, את הכל זרקתי לפח, כי בעיניי זה לא עובד."
+    }
+  ],
+  "newPremise": "מכירה טובה אינה מתחילה בתסריט או בלחץ לשכנע, אלא בהבנת האדם והצורך שלו. הרצף מתקדם מהצהרה מפתיעה, דרך בחירה אישית שממחישה את כוח השירות, לכלי בירור מעשי ולגבולותיו — ומסתיים בוויתור המפתיע על תסריטי שיחה.",
+  "newCritique": {
+    "earnedOpenEnding": true,
+    "evidence": "הפתיחה ביחידה 1 מציגה עמדה מובנת — ״אני לא מאמין בלשכנע״ — ושומרת גם את ההסבר ״אבל מראה להם את הדרך שזה טוב בשבילך״ ואת שאלת ההבהרה ותשובתה המקוריות. יחידה 2 מבהירה מיד שהנושא הוא מכירה ומספקת הבחנה קונקרטית: לא המכונית היקרה ביותר, אלא זו שהלקוח צריך. יחידה 3 מוסיפה תוצאה אישית ולא רק חוזרת על העיקרון: ״אני בחרתי איפה שהיה לי יותר שירותי״; אין ברצף טענה ששתי הספות זהות או שמחירן שווה. החיבור החזק ביותר הוא יחידות 4–6: ״למה אתה צריך משרד עם חלון״ מעביר מבקשת תכונה להבנת צורך, ״אני באמת שואל... מה חשוב לך״ נותן ניסוח שימושי, ו״הוא כרגע לא רוצה, וגם את זה אני מכבד״ מציב גבול לבירור. הסיכון החלש ביותר הוא המעבר מיחידה 6 לשאלת ההכנה ביחידה 7: הקשר בין כיבוד גבולות לבין הכנה לשיחה אינו נאמר במפורש. עם זאת, השאלה החדשה מובנת בפני עצמה, ויחידה 8 היא תשובתה האמיתית במקור גם לאחר הסרת החלופה הארוכה בשאלה. החזרה ״לא מתכונן. בכלל״ מחדדת את ההפתעה, ויחידה 9 מוסיפה מידע חדש — זניחת תסריטי שיחה ושבלונות — תוך שמירת ״בעיניי״. הסיום ״זה לא עובד״ הוא משפט שלם שמשאיר שאלה ממוקדת על הסיבה והחלופה, לאחר שכבר ניתנו עיקרון, תוצאה וכלי. הרצף מורכב ממקורות נפרדים לאורך השיחה, ולא מקטע רציף שפוצל למראית עין. ההערכה היא טקסטואלית בלבד ואינה מאמתת חיתוכי מילים או ביצוע קולי.",
+    "honestQuestionAnswers": true,
+    "issues": [],
+    "nonRepetitive": true,
+    "progression": true,
+    "specificPayoff": true,
+    "standaloneOpening": true,
+    "truthfulContext": true
+  },
+  "windows": 22,
+  "rounds": 1,
+  "providerCalls": 28,
+  "elapsedMs": 819062.2463378906,
+  "sourceScenesExact": true,
+  "transcriptionExact": true,
+  "isolatedExtractSceneId": "podcast-308",
+  "rendered": false,
+  "limit": "One real-provider episode; semantic critique is model judgment, no blind human rating or audio/visual export evaluation."
+}

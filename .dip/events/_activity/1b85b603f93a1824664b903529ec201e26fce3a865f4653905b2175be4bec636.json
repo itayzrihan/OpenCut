@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b85b603f93a1824664b903529ec201e26fce3a865f4653905b2175be4bec636",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T09:50:30.037Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/smart-takes-task.ts",
+          "crates/editor-api/src/operations/classic_transcription.rs",
+          "classic/apps/web/src/transcription/job.ts",
+          "classic/apps/web/src/core/managers/transcription-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "17518a99-f5d8-488f-b5d9-fd1fd3a04f69"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:50:30.039Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

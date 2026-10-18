@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b77e2d04f3409cec781346df1cd1143d04684c517f28a22f18438537e96f013b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:14:29.082Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';import {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(candidate.id<='2026-10-13T11-27-48-548Z-5350562c')throw Error('Missing candidate');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nif(!(await fetch(base+'/stop',{method:'POST',headers})).ok)throw Error('stop');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nif(!(await fetch(base+'/start',{method:'POST',headers})).ok)throw Error('start');\nconst s=await(await fetch(base+'/status',{headers})).json();console.log({id:s.release.id,running:s.running,error:s.error});\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-69fcc285-ad8d-42ed-ba14-cef3f16a29db"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:14:29.775Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

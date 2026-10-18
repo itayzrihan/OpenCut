@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9e7a7c9f-5473-4c7b-88ec-b80631bec04a",
+  "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Live bounded experiment succeeded on 2026-10-12 using existing account-bound OpenCut ChatGPT OAuth, no developer API key. Same 4.95-second synthetic Hebrew WAV and honest OpenCut-Transcription-Probe/1.0 User-Agent as earlier Node test; Electron 43.4.0 net.fetch (Chromium150) POST https://chatgpt.com/backend-api/transcribe returned HTTP200 application/json in1556ms (4997ms including child startup). Transcript exactly matches expected words, punctuation differs only. Returned fields text,asset_pointer,asset_ttl,asset_format; no word/segment timestamps. Credentials passed only from authenticated same-origin dev route to child stdin, never logged or saved. No challenge cookies, spoofing, certificate bypass or retries. Prior Node403 vs current Chromium200 strongly supports transport explanation, though sequential experiment is not simultaneous control. Temporary diagnostic route, extracted runtime and isolated profile removed; sanitized result JSON, screenshot, fixture and experiment source retained under .local/codex-transcription-research/chromium-probe-*. No product integration, long-podcast reliability, timestamp alignment or subscription accounting claims. Feasibility of short Hebrew transcription through user's existing login is now directly demonstrated.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:52:30.886Z",
+  "parents": [
+    "a54265d0-122b-48bf-95b0-7b88dfee2ca7"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

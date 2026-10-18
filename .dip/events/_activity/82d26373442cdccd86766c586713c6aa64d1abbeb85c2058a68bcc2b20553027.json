@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "82d26373442cdccd86766c586713c6aa64d1abbeb85c2058a68bcc2b20553027",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:58:08.799Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e8300e85-aa4a-4855-8349-82e34aee4044"
+      },
+      {
+        "at": "2026-10-14T07:58:08.821Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np='.local/episode-teaser-90-2026-10-14/audio-evidence.json';x=json.load(open(p));f=x[0]['frames'][-1];print(f);f['end']=6479.317333333333;json.dump(x,open(p,'w'),separators=(',',':'))\nPY\nbun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-55347f39-3514-4431-a32e-36d383ae957f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:58:09.497Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

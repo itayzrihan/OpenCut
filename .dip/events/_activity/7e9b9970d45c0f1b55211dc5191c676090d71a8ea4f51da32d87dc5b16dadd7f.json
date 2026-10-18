@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e9b9970d45c0f1b55211dc5191c676090d71a8ea4f51da32d87dc5b16dadd7f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:35:27.584Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/accounts/server.ts');s=p.read_text().replace('handler: (request: R, ...args: T) => Promise<Response>,\\n)', 'handler: (request: R, ...args: T) => Promise<Response>,\\n\\toptions: { concurrent?: boolean } = {},\\n)').replace('if ([\"GET\", \"HEAD\"].includes(request.method)) return run();','// Opt-in only for host IO that does not mutate account files. Authentication,\\n\\t\\t// origin checks, account binding and import locks still apply above.\\n\\t\\tif (options.concurrent || [\"GET\", \"HEAD\"].includes(request.method)) return run();');p.write_text(s)\np=Path('classic/apps/web/src/app/api/transcription/external/route.ts');s=p.read_text();s=s[:s.rfind('});')]+ '}, { concurrent: true });\\n';p.write_text(s)\np=Path('classic/apps/web/src/transcription/windows.test.ts');s=p.read_text().replace('duration:','prefetch: false,\\n\\t\\tduration:');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs src/transcription/windows.test.ts --jobs=1 --timeout=60000",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-bf3c0c93-3358-4f0c-9702-e9b38c6567de"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:35:27.700Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

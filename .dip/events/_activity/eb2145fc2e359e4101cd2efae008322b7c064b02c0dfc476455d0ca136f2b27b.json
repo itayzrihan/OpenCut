@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eb2145fc2e359e4101cd2efae008322b7c064b02c0dfc476455d0ca136f2b27b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:54:38.314Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/transcription/windows.test.ts';s=open(p).read().replace('({ signal, run }: any)', '({ signal, run }: Parameters<import(\"@/services/transcription/service\").TranscriptionService[\"withChunkSession\"]>[0])').replace('async ({ load }: any)', 'async ({ load })');open(p,'w').write(s)\nPY\ncat >> classic/apps/web/src/services/transcription/service.test.ts <<'EOF'\n\ntest(\"window session keeps completed work and replaces only the failed worker\", async () => {\n const loads:number[]=[];const completed:number[]=[];\n const pending=new TranscriptionService().withChunkSession({signal:new AbortController().signal,run:async(transcribe)=>{\n for(let section=0;section<2;section++){\n await transcribe({language:'en',load:async()=>{loads.push(section);return new Float32Array(160);}});\n completed.push(section);\n }\n }});\n const result={text:'hello',words:[{text:'hello',start:0,end:1}],segments:[],language:'en'};\n await new Promise(r=>setTimeout(r,0));worker().emit({type:'complete',result});\n await new Promise(r=>setTimeout(r,0));expect(completed).toEqual([0]);expect(FakeWorker.instances).toHaveLength(1);\n worker().onerror?.({message:'GPU device lost'});\n await new Promise(r=>setTimeout(r,0));expect(FakeWorker.instances).toHaveLength(2);expect(worker().terminated).toBe(true);\n FakeWorker.instances[1].emit({type:'complete',result});await pending;\n expect(loads).toEqual([0,1,1]);expect(completed).toEqual([0,1]);expect(FakeWorker.instances[1].terminated).toBe(true);\n});\nEOF\ncat > classic/apps/web/src/core/__tests__/canonical-transcription.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport {expect,test} from 'bun:test';\nimport {readFileSync} from 'node:fs';\nimport {CanonicalClassicSession,type CanonicalClassicSnapshot} from '../canonical-classic-session';\nimport {createCanonicalTestRuntime} from './canonical-runtime-fixture';\nimport {DEFAULTS} from '@/timeline/defaults';\nimport {DEFAULT_CAPTION_LAYOUT} from '@/subtitles/caption-layout';\n\ntest('browser runtime ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-0a483a39-7c00-4053-8332-960bcfcd6ac7"
+      },
+      {
+        "at": "2026-10-12T09:54:38.607Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/transcription/windows.test.ts';s=open(p).read().replace('({ signal, run }: any)', '({ signal, run }: Parameters<import(\"@/services/transcription/service\").TranscriptionService[\"withChunkSession\"]>[0])').replace('async ({ load }: any)', 'async ({ load })');open(p,'w').write(s)\nPY\ncat >> classic/apps/web/src/services/transcription/service.test.ts <<'EOF'\n\ntest(\"window session keeps completed work and replaces only the failed worker\", async () => {\n const loads:number[]=[];const completed:number[]=[];\n const pending=new TranscriptionService().withChunkSession({signal:new AbortController().signal,run:async(transcribe)=>{\n for(let section=0;section<2;section++){\n await transcribe({language:'en',load:async()=>{loads.push(section);return new Float32Array(160);}});\n completed.push(section);\n }\n }});\n const result={text:'hello',words:[{text:'hello',start:0,end:1}],segments:[],language:'en'};\n await new Promise(r=>setTimeout(r,0));worker().emit({type:'complete',result});\n await new Promise(r=>setTimeout(r,0));expect(completed).toEqual([0]);expect(FakeWorker.instances).toHaveLength(1);\n worker().onerror?.({message:'GPU device lost'});\n await new Promise(r=>setTimeout(r,0));expect(FakeWorker.instances).toHaveLength(2);expect(worker().terminated).toBe(true);\n FakeWorker.instances[1].emit({type:'complete',result});await pending;\n expect(loads).toEqual([0,1,1]);expect(completed).toEqual([0,1]);expect(FakeWorker.instances[1].terminated).toBe(true);\n});\nEOF\ncat > classic/apps/web/src/core/__tests__/canonical-transcription.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport {expect,test} from 'bun:test';\nimport {readFileSync} from 'node:fs';\nimport {CanonicalClassicSession,type CanonicalClassicSnapshot} from '../canonical-classic-session';\nimport {createCanonicalTestRuntime} from './canonical-runtime-fixture';\nimport {DEFAULTS} from '@/timeline/defaults';\nimport {DEFAULT_CAPTION_LAYOUT} from '@/subtitles/caption-layout';\n\ntest('browser runtime ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-0a483a39-7c00-4053-8332-960bcfcd6ac7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:54:39.078Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

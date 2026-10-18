@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a0210b57056afcaca539e10a0bdb3b418b8b58c0b467826bfa7c4b677104f3b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:03:27.974Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/sequence-navigation/browser-probe.ts | head -135\nsed -n '34,57p' crates/editor-api/tests/classic_update.rs\nrg -n 'sourceTracks|captionSource' crates/editor-api/src/operations/classic_transcription.rs | tail -15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ea030bc6-8add-4de7-bab1-916d5b0d53ed"
+      },
+      {
+        "at": "2026-10-13T21:03:28.098Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/sequence-navigation/browser-probe.ts | head -135\nsed -n '34,57p' crates/editor-api/tests/classic_update.rs\nrg -n 'sourceTracks|captionSource' crates/editor-api/src/operations/classic_transcription.rs | tail -15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ea030bc6-8add-4de7-bab1-916d5b0d53ed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:03:28.737Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

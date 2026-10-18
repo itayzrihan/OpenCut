@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "41303dda6ed3ba00924ac7958062ed588517b83b66dadb359439178071ac827e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:08:51.175Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/drizzle/meta/0000_snapshot.json",
+          "sites/dip-public/drizzle/meta/_journal.json",
+          "sites/dip-public/drizzle/0000_fat_mathemanic.sql"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "0dae33a3-4ff8-41d3-9425-dc433ba0e95c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:08:51.179Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

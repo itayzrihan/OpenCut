@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6a72eeb2e3b733668681bd5b88c15f2e7107d16db7d23f4c1ddee78d1c03350",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:42:49.540Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/job.ts <<'EOF'\n/** Serialized projection of the canonical Classic transcription job. */\nimport type { SceneTracks } from \"@/timeline\";\nimport type { CaptionLayoutSettings } from \"@/subtitles/caption-layout\";\nimport type { TranscriptionLanguage, TranscriptionWord } from \"./types\";\nexport interface TranscriptionJob {\n id: string; sceneId: string; language: TranscriptionLanguage;\n settings: CaptionLayoutSettings; defaults: Record<string, unknown>;\n sourceTracks: SceneTracks; sourceMedia: Record<string, unknown>[];\n totalDuration: number; status: \"running\" | \"paused\" | \"complete\";\n chunks: Record<string, TranscriptionWord[]>;\n}\nexport type TranscriptionChange =\n | {type:\"start\"; sceneId:string; language:TranscriptionLanguage; settings:CaptionLayoutSettings; defaults:unknown; totalDuration:number}\n | {type:\"append\"; index:number; words:TranscriptionWord[]}\n | {type:\"pause\"|\"resume\"};\nEOF\npython3 - <<'PY'\np='classic/apps/web/src/project/types.ts';s=open(p).read().replace('export interface TProject {','export interface TProject {\\n\\ttranscriptionJobs?: import(\"@/transcription/job\").TranscriptionJob[];');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();at=s.index('\\n\\t/** Shared entry for declarative UI controls.');s=s[:at]+'''\n\t/** Background results target their original project/scene and use the latest\n\t * canonical revision. Successive sections coalesce only across untouched history. */\n\teditTranscription(input: { projectId: string; jobId: string; change: import(\"@/transcription/job\").TranscriptionChange }): void {\n\t\tif (!this.canonical || this.canonical.projectId !== input.projectId || this.editor.project.getActiveOrNull()?.metadata.id !== input.projectId)\n\t\t\tthrow new Error(\"The transcription project is no longer open\");\n\t\tassertBatchEditable(input.projectId);\n\t\tif (this.transactionDepth !== 0) throw new Error(\"Finish the editor transaction before publishing transcription\");\n\t\tthis.synchr",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-59725dd9-dadb-4fb9-9ec7-5703c10d2ba6"
+      },
+      {
+        "at": "2026-10-12T09:42:49.657Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/job.ts <<'EOF'\n/** Serialized projection of the canonical Classic transcription job. */\nimport type { SceneTracks } from \"@/timeline\";\nimport type { CaptionLayoutSettings } from \"@/subtitles/caption-layout\";\nimport type { TranscriptionLanguage, TranscriptionWord } from \"./types\";\nexport interface TranscriptionJob {\n id: string; sceneId: string; language: TranscriptionLanguage;\n settings: CaptionLayoutSettings; defaults: Record<string, unknown>;\n sourceTracks: SceneTracks; sourceMedia: Record<string, unknown>[];\n totalDuration: number; status: \"running\" | \"paused\" | \"complete\";\n chunks: Record<string, TranscriptionWord[]>;\n}\nexport type TranscriptionChange =\n | {type:\"start\"; sceneId:string; language:TranscriptionLanguage; settings:CaptionLayoutSettings; defaults:unknown; totalDuration:number}\n | {type:\"append\"; index:number; words:TranscriptionWord[]}\n | {type:\"pause\"|\"resume\"};\nEOF\npython3 - <<'PY'\np='classic/apps/web/src/project/types.ts';s=open(p).read().replace('export interface TProject {','export interface TProject {\\n\\ttranscriptionJobs?: import(\"@/transcription/job\").TranscriptionJob[];');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();at=s.index('\\n\\t/** Shared entry for declarative UI controls.');s=s[:at]+'''\n\t/** Background results target their original project/scene and use the latest\n\t * canonical revision. Successive sections coalesce only across untouched history. */\n\teditTranscription(input: { projectId: string; jobId: string; change: import(\"@/transcription/job\").TranscriptionChange }): void {\n\t\tif (!this.canonical || this.canonical.projectId !== input.projectId || this.editor.project.getActiveOrNull()?.metadata.id !== input.projectId)\n\t\t\tthrow new Error(\"The transcription project is no longer open\");\n\t\tassertBatchEditable(input.projectId);\n\t\tif (this.transactionDepth !== 0) throw new Error(\"Finish the editor transaction before publishing transcription\");\n\t\tthis.synchr",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-59725dd9-dadb-4fb9-9ec7-5703c10d2ba6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:42:50.047Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

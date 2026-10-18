@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b900c2b01933924b52824e91703517dab79e4485de383ed95eafc45b048a4aa2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:20:04.062Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/watch-browser-memory.mjs <<'EOF'\nimport {execFileSync} from 'node:child_process';import {readFileSync,writeFileSync} from 'node:fs';\nconst baseline=new Set(JSON.parse(readFileSync('.local/smart-shorts-seven/browser-baseline-pids.json')));\nconst rows=()=>execFileSync('ps',['-axo','pid,rss,comm'],{encoding:'utf8'}).split('\\n').filter(l=>l.includes('Google Chrome Helper (Renderer)')).map(l=>{const [pid,rss]=l.trim().split(/\\s+/);return {pid:+pid,rss:+rss*1024}});\nconst targets=rows().filter(r=>!baseline.has(r.pid)).map(r=>r.pid);console.log({targets});\nconst measurements=[];let peak=0,last=-1;const began=Date.now();\nconst sample=()=>{const live=rows().filter(r=>targets.includes(r.pid));const rss=live.reduce((sum,r)=>sum+r.rss,0);peak=Math.max(peak,rss);measurements.push({at:new Date().toISOString(),rss,live});if(Math.abs(rss-last)>64*1024**2||!live.length){console.log({rss,peak,live});last=rss;}writeFileSync('.local/smart-shorts-seven/browser-memory-measurements.json',JSON.stringify({targets,peak,measurements}));if(Date.now()-began>3600000||!live.length){clearInterval(timer);console.log('Stopped memory observer');}};\nconst timer=setInterval(sample,5000);sample();\nEOF\nnode .local/smart-shorts-seven/watch-browser-memory.mjs > .local/smart-shorts-seven/browser-memory-watch.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c1d321b4-b4e8-4a35-b10e-555d8a6b74a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:20:05.064Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

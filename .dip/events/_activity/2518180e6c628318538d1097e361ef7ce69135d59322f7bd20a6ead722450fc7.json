@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2518180e6c628318538d1097e361ef7ce69135d59322f7bd20a6ead722450fc7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:42:01.852Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cargo fmt --all --check 2>&1 | head -5; node classic/scripts/test-web.mjs src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts --jobs=1 --report=.local/teaser-upgrade/initial",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ea5f5be7-c386-4637-b714-10a440d963be"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:42:02.642Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

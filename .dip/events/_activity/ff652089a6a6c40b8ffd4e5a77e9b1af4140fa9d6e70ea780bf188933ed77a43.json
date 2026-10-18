@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff652089a6a6c40b8ffd4e5a77e9b1af4140fa9d6e70ea780bf188933ed77a43",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:58:11.539Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/media/playback-audio-cache.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/media/__tests__/playback-audio-cache.test.ts"
+        ],
+        "changeHash": "623dfe5a605fc7b1a6cdb36625db0c1c1f1fa37a5369fb11f354bb9ec107e506",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-47914c5f-6724-4027-a713-8a03de34e518"
+      },
+      {
+        "at": "2026-10-13T18:58:11.604Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='.local/smart-shorts-performance/probe.mjs';s=open(p).read().replace('const mode=process.argv[2]',\"const label=process.argv[3]??'before';const mode=process.argv[2]\").replace('${mode}-before.json','${mode}-${label}.json');open(p,'w').write(s)\nPY\nnode .local/smart-shorts-performance/probe.mjs commit after > .local/smart-shorts-performance/probe-after.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-9a20d6a7-8632-4542-b076-ed7bf8d507c1"
+      },
+      {
+        "at": "2026-10-13T18:58:11.603Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/media/playback-audio-cache.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/media/__tests__/playback-audio-cache.test.ts"
+        ],
+        "changeHash": "623dfe5a605fc7b1a6cdb36625db0c1c1f1fa37a5369fb11f354bb9ec107e506",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-47914c5f-6724-4027-a713-8a03de34e518"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:58:11.805Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

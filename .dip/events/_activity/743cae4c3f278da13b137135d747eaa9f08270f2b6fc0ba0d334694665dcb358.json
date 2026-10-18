@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "743cae4c3f278da13b137135d747eaa9f08270f2b6fc0ba0d334694665dcb358",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:19:01.665Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';import {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(candidate.id<='2026-10-13T12-13-34-402Z-5350562c')throw Error('No recovery candidate');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nif(!(await fetch(base+'/stop',{method:'POST',headers})).ok)throw Error('Stop failed');await writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nif(!(await fetch(base+'/start',{method:'POST',headers})).ok)throw Error('Start failed');const s=await(await fetch(base+'/status',{headers})).json();console.log({release:s.release.id,running:s.running,error:s.error});\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8a03603a-c94c-4161-bd46-2e884181570b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:19:02.062Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

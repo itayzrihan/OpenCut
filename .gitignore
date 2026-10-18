@@ -13,3 +13,12 @@ docs/
 
 # moon runtime cache
 .moon/cache/
+
+# Checkout-local caches, generated media and independent site checkout
+/target
+/classic/target
+/.turbo
+/sites/dip-public/
+/custom-brag-output/
+__pycache__/
+*.pyc

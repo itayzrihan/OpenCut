@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a215726ad6485fee1ec543a41a989e824c1bb9e44cfad6bbb2d8163b4561344d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T20:18:54.865Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sample 19912 1 -file .local/apple-stt-benchmark/editor-load-sample.txt >/dev/null 2>&1\nhead -48 .local/apple-stt-benchmark/editor-load-sample.txt\nrg -n 'enableCanonical|restore.*archive' classic/apps/web/src/core/managers/commands.ts | head -25",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7a6731e6-c58f-4478-864f-9ab02e17e912"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T20:18:55.620Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

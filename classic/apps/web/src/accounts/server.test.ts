@@ -12,12 +12,65 @@ import {
 	assertLocalOrigin,
 	localRequestOrigin,
 	changeAccountPassword,
+	withAccount,
 } from "./server";
 import { assertAccountMediaSource } from "./media-source";
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
 	mediaStorageDisposition: () => "copy",
 }));
+
+test("private media range caching stays authenticated, Cookie-scoped and read-only", async () => {
+	const root = await mkdtemp(join(tmpdir(), "opencut-media-cache-"));
+	const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+	process.env.OPENCUT_ACCOUNTS_DIR = root;
+	try {
+		const owner = await registerAccount({
+			login: "media-cache",
+			displayName: "Media",
+			password: "cache test password",
+		});
+		const handler = (status = 206, cache = "private, max-age=60") =>
+			withAccount(
+				async () =>
+					new Response("bytes", {
+						status,
+						headers: { "Cache-Control": cache },
+					}),
+				{ privateMediaCache: true },
+			);
+		const request = (method = "GET", account = owner.account.id) =>
+			new Request(
+				`http://localhost:3000/api/local-drive/media?account=${account}`,
+				{ method, headers: { cookie: sessionCookie(owner.token) } },
+			);
+		const media = await handler()(request());
+		expect(media.headers.get("Cache-Control")).toBe("private, max-age=60");
+		expect(media.headers.get("Vary")).toBe("Cookie");
+		for (const method of ["POST", "PUT"])
+			expect(
+				(await handler()(request(method))).headers.get("Cache-Control"),
+			).toBe("private, no-store");
+		expect((await handler(404)(request())).headers.get("Cache-Control")).toBe(
+			"private, no-store",
+		);
+		expect(
+			(await handler(200, "public, max-age=60")(request())).headers.get(
+				"Cache-Control",
+			),
+		).toBe("private, no-store");
+		expect((await handler()(request("GET", "another-account"))).status).toBe(
+			409,
+		);
+		expect((await handler()(new Request(request().url))).status).toBe(401);
+		await logoutAccount(request());
+		expect((await handler()(request())).status).toBe(401);
+	} finally {
+		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+		else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+		await rm(root, { recursive: true, force: true });
+	}
+});
 
 test("browser origin survives normalized Next URLs without accepting outside hosts", () => {
 	const request = new Request("http://localhost:3100/api/ai/oauth/start", {
@@ -53,10 +106,16 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 	process.env.OPENCUT_ACCOUNTS_DIR = root;
 	try {
 		const store = await import("@/services/local-drive/server");
-		const alice = await registerAccount({ login: "alice", displayName: "Alice", password: "a secure password for Alice" }
-		);
-		const bob = await registerAccount({ login: "bob", displayName: "Bob", password: "a secure password for Bob" }
-		);
+		const alice = await registerAccount({
+			login: "alice",
+			displayName: "Alice",
+			password: "a secure password for Alice",
+		});
+		const bob = await registerAccount({
+			login: "bob",
+			displayName: "Bob",
+			password: "a secure password for Bob",
+		});
 		const privateMedia = join(root, "data", alice.account.id, "private.wav");
 		await mkdir(join(root, "data", alice.account.id), { recursive: true });
 		await writeFile(privateMedia, "alice private audio");
@@ -80,11 +139,16 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 		expect((await authenticateAccount(request(alice.token))).id).toBe(
 			alice.account.id,
 		);
-		await expect(loginAccount({ login: "alice", password: "wrong password" })).rejects.toThrow(
-			"Invalid credentials",
-		);
+		await expect(
+			loginAccount({ login: "alice", password: "wrong password" }),
+		).rejects.toThrow("Invalid credentials");
 		expect(
-			(await loginAccount({ login: "ALICE", password: "a secure password for Alice" })).account.id,
+			(
+				await loginAccount({
+					login: "ALICE",
+					password: "a secure password for Alice",
+				})
+			).account.id,
 		).toBe(alice.account.id);
 		await Promise.all(
 			[alice, bob].map(({ account }) =>
@@ -122,8 +186,10 @@ test("authenticated accounts isolate projects, preferences and asset bytes under
 			bob.account.id,
 		);
 		const changed = await accountScope.run(bob.account, () =>
-			changeAccountPassword({ currentPassword: "a secure password for Bob", password: "a new secure password for Bob" }
-			),
+			changeAccountPassword({
+				currentPassword: "a secure password for Bob",
+				password: "a new secure password for Bob",
+			}),
 		);
 		await expect(
 			loginAccount({ login: "bob", password: "a secure password for Bob" }),

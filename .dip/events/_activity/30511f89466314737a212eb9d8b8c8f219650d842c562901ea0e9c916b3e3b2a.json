@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30511f89466314737a212eb9d8b8c8f219650d842c562901ea0e9c916b3e3b2a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:20:11.320Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/timeline/smart-takes/audio-checkpoints.ts <<'EOF'\n/** Durable, bounded host analysis artifacts; editor/source authority stays in Rust. */\nimport type { AudioAnalysisFrame } from 'opencut-wasm';\nimport { accountNamespace } from '@/accounts/browser';\nconst MAX_RECORD_BYTES=8*1024*1024;\nexport interface AudioCheckpointStore {\n read(input:{key:string;duration:number}):Promise<AudioAnalysisFrame[]|undefined>;\n write(input:{key:string;duration:number;frames:AudioAnalysisFrame[]}):Promise<void>;\n}\nexport function packAudioFrames({frames,duration}:{frames:AudioAnalysisFrame[];duration:number}) {\n const data=new Float64Array(frames.length*5);let previous=0;\n for(let i=0;i<frames.length;i++){\n  const f=frames[i];const row=[f.start,f.end,f.rms,f.peak,f.zeroCrossingRate??0];\n  if(!row.every(Number.isFinite)||f.start<0||f.end<=f.start||f.end>duration+1e-8||f.start<previous-1e-8||f.rms<0||f.peak<0)throw new Error('Invalid audio checkpoint');\n  data.set(row,i*5);previous=f.end;\n }\n if(data.byteLength>MAX_RECORD_BYTES)throw new Error('Audio window checkpoint exceeds its bounded size');\n return data;\n}\nexport function unpackAudioFrames({data,duration}:{data:unknown;duration:number}):AudioAnalysisFrame[]|undefined {\n if(!(data instanceof Float64Array)||data.length%5||data.byteLength>MAX_RECORD_BYTES)return undefined;\n const frames:AudioAnalysisFrame[]=[];\n for(let i=0;i<data.length;i+=5)frames.push({start:data[i],end:data[i+1],rms:data[i+2],peak:data[i+3],zeroCrossingRate:data[i+4]});\n try{packAudioFrames({frames,duration});return frames;}catch{return undefined;}\n}\nexport class IndexedAudioCheckpoints implements AudioCheckpointStore {\n private factory:IDBFactory;private databaseName:string;private maxBytes:number;private maxEntries:number;\n constructor({factory=indexedDB,databaseName=accountNamespace('smart-audio-checkpoints-v1'),maxBytes=64*1024*1024,maxEntries=2048}:{factory?:IDBFactory;databaseName?:string;maxBytes?:number;maxEntries?:number}={}) {\n  thi",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f5629247-851a-45ad-aafb-a4879d668170"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:20:11.382Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

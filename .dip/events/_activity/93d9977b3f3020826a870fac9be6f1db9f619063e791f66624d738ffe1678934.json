@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "93d9977b3f3020826a870fac9be6f1db9f619063e791f66624d738ffe1678934",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+    "records": [
+      {
+        "at": "2026-10-18T10:40:08.488Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+        "taskId": "task_b5c03bc505536c89982bd548e67aea145c5b9439451e9619350b38de21a57edf",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14e96-321f-7942-bb68-b0a43dd2cfe9:PreToolUse:call_0096cb8fff364013bff7fb87a80382e8"
+      },
+      {
+        "at": "2026-10-18T10:40:08.640Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+        "taskId": "task_b5c03bc505536c89982bd548e67aea145c5b9439451e9619350b38de21a57edf",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14e96-321f-7942-bb68-b0a43dd2cfe9:PostToolUse:call_0096cb8fff364013bff7fb87a80382e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T10:40:08.692Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

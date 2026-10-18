@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d414adf202021ed54270a0cd1fdaf9aaee15d2ebb0c5815126aa91c85022e86",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:56:37.481Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-drive.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "ef15f898a0492cbd763e0e70730070bcf8b7d44a44efba8228b39b80adc9cea5",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c887e1ef-b22f-4b3f-a51d-b88ffc76ae01"
+      },
+      {
+        "at": "2026-10-14T09:56:37.540Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-drive.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "ef15f898a0492cbd763e0e70730070bcf8b7d44a44efba8228b39b80adc9cea5",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c887e1ef-b22f-4b3f-a51d-b88ffc76ae01"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:56:38.245Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

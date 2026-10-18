@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9420a06fd130498805235fda017f5fede871706506e9f2b525a019d3f6c411a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:57:48.501Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nimport{join}from'node:path';import{readJson,writeJson,deploymentRoot}from'./classic/scripts/local-production/common.mjs';\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate||!JSON.stringify(candidate).includes('2026-10-13T10-'))throw Error('Unexpected candidate');\nconst stopped=await fetch(base+'/stop',{method:'POST',headers});if(!stopped.ok)throw Error('Stop failed');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));\nawait writeJson(join(deploymentRoot,'current.json'),candidate);\nconst started=await fetch(base+'/start',{method:'POST',headers});console.log('start',started.status);\nconst status=await(await fetch(base+'/status',{headers})).json();console.log(JSON.stringify(status).slice(0,1600));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-1324d37b-f2cb-4fe1-8cdb-1787414b5142"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:57:48.780Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "05f2a178a4c1f6a1a3d3907b424cb42de5175d81dd2e0435eeda0de1b6c610c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:32:27.309Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temporary|temp-|משתמש זמני' classic/apps/web/src/accounts classic/apps/web/src/app/api/account classic/apps/web/src -g '*account*' -g '*gate*' -g '*route*' -g '!*.test.*' | head -60\nrg -l --hidden -F 'temp-971314' .local analysis .dip -g '!codex-transcription-research' -g '!node_modules' -g '!*.log' -g '!*.png' | head -30",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-49471731-7698-4a04-9680-b222c049ecfc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:32:27.798Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

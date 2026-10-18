@@ -2,10 +2,15 @@
 import { afterEach, expect, mock, test } from "bun:test";
 import type { EditorCore } from "@/core";
 import { getPodcastTask } from "../podcast-task";
-const original = { fetch: globalThis.fetch, window: globalThis.window };
+const original = {
+	fetch: globalThis.fetch,
+	window: globalThis.window,
+	storage: globalThis.localStorage,
+};
 afterEach(() => {
 	globalThis.fetch = original.fetch;
 	globalThis.window = original.window;
+	globalThis.localStorage = original.storage;
 });
 const options = {
 	mode: "teaser" as const,
@@ -14,6 +19,16 @@ const options = {
 	maxOutputs: 1,
 };
 function setup() {
+	const saved = new Map<string, string>();
+	globalThis.localStorage = {
+		getItem: (key: string) => saved.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			saved.set(key, value);
+		},
+		removeItem: (key: string) => {
+			saved.delete(key);
+		},
+	} as Storage;
 	globalThis.window = Object.assign(new EventTarget(), {
 		__opencutAccountId: "account",
 	}) as unknown as Window & typeof globalThis;
@@ -65,16 +80,25 @@ function setup() {
 		},
 		scenes: { getActiveScene: () => scene, getActiveSceneOrNull: () => scene },
 		command: {
+			getCanonicalRevision: () => 1,
+			planEditingProviderRetry: () => ({
+				retry: false,
+				delayMs: 0,
+				maxAttempts: 1,
+			}),
 			preparePodcast: () => ({
 				revision: 1,
 				words,
 				windows: [{ index: 0, words }],
+				editorial: () => ({policyVersion:"strategic-teaser-v1",complete:true,requests:[],videos:[video],report:{}}),
 				review: () => {},
 				analyzeAudio,
 				apply,
 			}),
 			undo: () => {},
+			flushHistory: async () => {},
 		},
+		save: { flush: async () => {} },
 		playback: { pause: () => {}, seek },
 	} as unknown as EditorCore;
 	return { task: getPodcastTask(editor), scene, apply, analyzeAudio, seek };

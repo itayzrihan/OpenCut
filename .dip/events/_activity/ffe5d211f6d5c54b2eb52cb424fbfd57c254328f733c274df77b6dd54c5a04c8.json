@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffe5d211f6d5c54b2eb52cb424fbfd57c254328f733c274df77b6dd54c5a04c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:25:06.154Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'; cat classic/AGENTS.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-440194cf-63cf-42e2-8c00-91512048a763"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:25:06.984Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

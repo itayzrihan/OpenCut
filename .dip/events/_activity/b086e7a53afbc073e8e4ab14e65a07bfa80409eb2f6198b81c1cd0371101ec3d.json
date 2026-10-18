@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b086e7a53afbc073e8e4ab14e65a07bfa80409eb2f6198b81c1cd0371101ec3d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:41:09.200Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'NODE'\nimport assert from 'node:assert/strict';\nconst origin='https://dip.vxu.me';\nconst home=await fetch(origin);assert.equal(home.status,200);assert.match(await home.text(),/The archaeology/);\nconst dash=await fetch(origin+'/dashboard');assert.equal(dash.status,200);assert.match(await dash.text(),/workspace/);\nconst session=await fetch(origin+'/api/dashboard');assert.equal(session.status,200);const data=await session.json();assert.equal(data.user,null);\nconst denied=await fetch(origin+'/api/dashboard',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify({action:'installations'})});assert.equal(denied.status,401);\nconsole.log(JSON.stringify({landing:home.status,dashboard:dash.status,session:data,unauthenticatedRead:denied.status}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-5201d7e4-e7fd-4208-b76d-394544c7fcb5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:41:09.854Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

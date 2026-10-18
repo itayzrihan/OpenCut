@@ -1329,6 +1329,108 @@ describe("AI timeline tool access", () => {
 		expect(muted).toBe(true);
 	});
 
+	test("relinks an existing media identity with binding concurrency and preserves timeline reads", async () => {
+		const scene = {
+			id: "scene-1",
+			name: "Main",
+			bookmarks: [],
+			tracks: {
+				overlay: [],
+				audio: [],
+				main: {
+					id: "main",
+					name: "Main",
+					type: "video",
+					muted: false,
+					hidden: false,
+					elements: [],
+				},
+			},
+		};
+		const asset = {
+			id: "source",
+			name: "episode.mp4",
+			type: "video",
+			sourcePath: "/old.mp4",
+			size: 100,
+			lastModified: 1,
+			duration: 60,
+			bindingRevision: 0,
+		};
+		const requests: unknown[] = [];
+		const editor = {
+			scenes: { getActiveSceneOrNull: () => scene },
+			project: { getActive: () => ({ metadata: { id: "project" } }) },
+			media: {
+				getAssets: () => [asset],
+				relink: async (request: unknown) => {
+					requests.push(request);
+					Object.assign(asset, {
+						sourcePath: "/fixed.mp4",
+						size: 105,
+						lastModified: 2,
+						bindingRevision: 1,
+					});
+				},
+			},
+		} as unknown as EditorCore;
+		const before = JSON.stringify(scene);
+		const denied = await createTimelineToolRuntime({
+			editor,
+			authorizeCapabilities: authorizeForTest,
+		});
+		expect(denied.tools.map((tool) => tool.name)).not.toContain(
+			"media.relink_source",
+		);
+		const runtime = await createTimelineToolRuntime({
+			editor,
+			options: { includeAppControlAccess: true },
+			authorizeCapabilities: authorizeForTest,
+		});
+		const descriptor = runtime.tools.find(
+			(tool) => tool.name === "media.relink_source",
+		);
+		expect(descriptor).toMatchObject({
+			readOnly: false,
+			openWorld: true,
+			idempotent: true,
+		});
+		const result = await runtime.executeTool({
+			id: "relink",
+			name: "media.relink_source",
+			arguments: {
+				mediaId: "source",
+				sourcePath: "/fixed.mp4",
+				requestId: "attempt",
+				expectedBindingRevision: 0,
+			},
+		});
+		expect(requests).toEqual([
+			{
+				projectId: "project",
+				id: "source",
+				source: "/fixed.mp4",
+				requestId: "attempt",
+				expectedRevision: 0,
+			},
+		]);
+		expect(result).toMatchObject({
+			mediaId: "source",
+			sourcePath: "/fixed.mp4",
+			duration: 60,
+			bindingRevision: 1,
+			size: 105,
+		});
+		expect(
+			await runtime.executeTool({
+				id: "read",
+				name: "timeline.list_media",
+				arguments: {},
+			}),
+		).toMatchObject({ mediaAssets: [{ id: "source", durationSeconds: 60 }] });
+		expect(JSON.stringify(scene)).toBe(before);
+	});
+
 	test("activates an existing scene by desired id", async () => {
 		const scenes = [
 			{
@@ -1920,31 +2022,34 @@ function authorizeForTest({
 			name === "timeline.edit_full_source" ||
 			name === "timeline.stage_operations"
 				? ("edit" as const)
-				: name === "playback.control" ||
+				: name === "media.relink_source" ||
+					  name === "playback.control" ||
 					  name === "scene.activate" ||
 					  name === "export.cancel" ||
 					  name === "transcription.cancel"
 					? ("control" as const)
 					: ("read" as const);
 		const requiredPermissions =
-			name === "web.research"
-				? (["network"] as const)
-				: name === "timeline.list_media" || name === "library.search"
-					? (["media"] as const)
-					: name === "preview.capture_frame" ||
-						  name === "preview.capture_range_frames"
-						? (["preview"] as const)
-						: name === "playback.control" ||
-							  name === "scene.activate" ||
-							  name === "export.cancel" ||
-							  name === "transcription.cancel"
-							? (["app_control"] as const)
-							: name === "bookmarks.list" ||
-								  name === "captions.get_source" ||
-								  (name.startsWith("timeline.") &&
-										name !== "timeline.propose_edit_plan")
-								? (["layers"] as const)
-								: ([] as const);
+			name === "media.relink_source"
+				? (["media", "app_control"] as const)
+				: name === "web.research"
+					? (["network"] as const)
+					: name === "timeline.list_media" || name === "library.search"
+						? (["media"] as const)
+						: name === "preview.capture_frame" ||
+							  name === "preview.capture_range_frames"
+							? (["preview"] as const)
+							: name === "playback.control" ||
+								  name === "scene.activate" ||
+								  name === "export.cancel" ||
+								  name === "transcription.cancel"
+								? (["app_control"] as const)
+								: name === "bookmarks.list" ||
+									  name === "captions.get_source" ||
+									  (name.startsWith("timeline.") &&
+											name !== "timeline.propose_edit_plan")
+									? (["layers"] as const)
+									: ([] as const);
 		const allowed = requiredPermissions.every((permission) =>
 			grantedPermissions.includes(permission),
 		);
@@ -1962,7 +2067,7 @@ function authorizeForTest({
 			risk,
 			readOnly: risk === "read",
 			idempotent: risk !== "edit",
-			openWorld: name === "web.research",
+			openWorld: name === "web.research" || name === "media.relink_source",
 			requiredPermissions: [...requiredPermissions],
 		};
 	});

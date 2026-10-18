@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "378d872188410077afd6a22561141270ebf1d6d17054d11a12addf700e125898",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:19.680Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/usr/bin/time -l .local/apple-stt-benchmark/probe .local/codex-transcription-research/probe-hebrew.wav .local/apple-stt-benchmark/result-short.json > .local/apple-stt-benchmark/run-short.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5506158d-27eb-4c5c-ac46-73f87eb6825e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:19.835Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

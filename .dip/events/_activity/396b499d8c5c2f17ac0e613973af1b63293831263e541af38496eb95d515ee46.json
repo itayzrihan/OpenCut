@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "396b499d8c5c2f17ac0e613973af1b63293831263e541af38496eb95d515ee46",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T09:59:28.269Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler/registry/__router-worker__",
+          "sites/dip-public/.wrangler/registry/__asset-worker__",
+          "sites/dip-public/.wrangler/registry/__vite_proxy_worker__",
+          "sites/dip-public/.wrangler/registry/site-creator-vinext-starter",
+          "sites/dip-public/.wrangler/registry/sites-connector-preview",
+          "classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_services_waveform-cache_worker_ts-_2ecc1.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_services_transcription_worker_ts-_f8bc1.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_services_transcription_worker_ts-_f8bc0.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/app/layout.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_services_background-removal_worker_ts.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/webpack.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_media_noise-reduction_worker_ts.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/chunks/_app-pages-browser_src_services_waveform-cache_worker_ts-_2ecc0.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/webpack/app/layout.9738f6ef62c5e84c.hot-update.js",
+          "classic/apps/web/.next-transcription-debug/dev/static/webpack/webpack.9738f6ef62c5e84c.hot-update.js"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "3c13eb6b-13fd-4203-816d-113ea41daacc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:59:28.270Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

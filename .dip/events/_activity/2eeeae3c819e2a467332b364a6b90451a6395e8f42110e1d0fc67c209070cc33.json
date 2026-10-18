@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2eeeae3c819e2a467332b364a6b90451a6395e8f42110e1d0fc67c209070cc33",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:27:04.565Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');r=next(r for r in json.loads(p.read_text())['runs']if r['id']=='586fe528-293c-4017-a7c4-e99cdcbdfa1a');print({'completed':r['jobs'][0]['completedStages'],'message':r['jobs'][0]['message'],'progressAge':round(time.time()-r['updatedAt']/1000),'heartbeatAge':round(time.time()-r['heartbeat']/1000)})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2cc9d42e-81c8-4473-b570-524ef685afdc"
+      },
+      {
+        "at": "2026-10-14T09:27:04.679Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');r=next(r for r in json.loads(p.read_text())['runs']if r['id']=='586fe528-293c-4017-a7c4-e99cdcbdfa1a');print({'completed':r['jobs'][0]['completedStages'],'message':r['jobs'][0]['message'],'progressAge':round(time.time()-r['updatedAt']/1000),'heartbeatAge':round(time.time()-r['heartbeat']/1000)})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2cc9d42e-81c8-4473-b570-524ef685afdc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:27:05.096Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

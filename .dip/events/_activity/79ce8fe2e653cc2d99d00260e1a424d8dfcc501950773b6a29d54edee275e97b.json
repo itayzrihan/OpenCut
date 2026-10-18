@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "79ce8fe2e653cc2d99d00260e1a424d8dfcc501950773b6a29d54edee275e97b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:04:09.676Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/production-build-final.log; cat /tmp/opencut-teaser-eslint-new.txt; git diff --check -- classic/apps/web/src/ai/podcast-editorial.ts classic/apps/web/src/ai/podcast-plan.ts classic/apps/web/src/ai/podcast-task.ts crates/editor-api/src/operations/classic_takes/podcast.rs crates/editor-api/tests/classic_teaser_editorial.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-73b2ca37-30a6-4cf8-bce6-d90cd4f8de32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:04:11.976Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

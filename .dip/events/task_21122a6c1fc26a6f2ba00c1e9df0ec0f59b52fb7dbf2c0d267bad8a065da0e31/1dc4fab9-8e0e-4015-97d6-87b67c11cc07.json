@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1dc4fab9-8e0e-4015-97d6-87b67c11cc07",
+  "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/ai/podcast*",
+      "classic/apps/web/src/ai/__tests__/podcast*",
+      "classic/apps/web/src/ai/components/podcast-controls.tsx",
+      "crates/editor-api/src/operations/classic_takes/podcast.rs",
+      "crates/editor-api/tests/classic_podcast.rs",
+      "analysis/teaser-feature-upgrade-2026-10-16",
+      ".dip",
+      "crates/editor-api/src/operations/classic_takes/podcast/editorial.rs",
+      "classic/apps/web/src/ai/podcast-types.ts",
+      "classic/apps/web/src/core/canonical-classic-session.ts",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/ai/podcast-editorial.ts",
+      "classic/apps/web/src/ai/podcast-plan.ts",
+      "classic/apps/web/src/ai/podcast-plan-cache.ts",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "crates/editor-api/tests/classic_teaser_editorial.rs",
+      "classic/apps/web/src/ai/__tests__/podcast-task.test.ts",
+      "classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts",
+      "classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+      ".local/teaser-upgrade/evaluate-live.ts",
+      "analysis/teaser-feature-upgrade-2026-10-16/audit.he.md",
+      ".local/teaser-upgrade/activate.mjs"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-16T10:54:49.142Z",
+  "parents": [
+    "660f4eb5-f0c3-4949-baa5-ea431a6bbb04"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

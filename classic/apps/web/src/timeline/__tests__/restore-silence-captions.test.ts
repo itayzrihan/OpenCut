@@ -1,6 +1,7 @@
 import { describe, expect, mock, test } from "bun:test";
 import type { EditorCore } from "@/core";
 import type { MediaAsset } from "@/media/types";
+mock.module("@/media/unified-angles", () => ({ resolveUnifiedAnglesAudioAsset: ({ asset }: { asset: MediaAsset }) => asset }));
 mock.module("@/media/audio", () => ({
 	resolveAudioBufferForAsset: () => {
 		throw new Error("Inject decoder");

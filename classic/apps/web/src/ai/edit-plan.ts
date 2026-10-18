@@ -1,3 +1,4 @@
+import { hasExportOutput } from "@/export";
 import { z } from "zod";
 import type { EditorCore } from "@/core";
 import {
@@ -818,7 +819,7 @@ function startExportTask({
 	if (state.isExporting) {
 		throw new Error("An export task is already running");
 	}
-	if (state.result?.success && state.result.buffer) {
+	if (hasExportOutput(state.result)) {
 		throw new Error(
 			"An exported file is already ready; download or clear it before starting another export",
 		);
@@ -994,7 +995,7 @@ function getRangeGuardErrors({
 		if (exportState?.isExporting) {
 			errors.push("An export task is already running");
 		}
-		if (exportState?.result?.success && exportState.result.buffer) {
+		if (hasExportOutput(exportState?.result)) {
 			errors.push(
 				"An exported file is already ready; download or clear it before starting another export",
 			);

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a044160f-c5d6-497f-9c0a-0c7f99635987",
+  "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+  "type": "task.update",
+  "payload": {
+    "title": "Duplicate current project and preserve source scenes/captions across teaser and shorts generation",
+    "acceptance": [
+      "Duplicate current saved project through canonical editor flow and verify original unchanged.",
+      "Teaser, ordinary shorts and Smart Shorts create new sequences preserving source tracks, captions and transcription across repeated runs.",
+      "Regression checks pass; deploy locally and verify copy and original remain usable."
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src/ai",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/components/editor",
+      ".dip"
+    ],
+    "status": "in_progress"
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T20:59:39.776Z",
+  "parents": [
+    "ceb8b9e6aab8bb1ae00e8e0f9d2bd667e01e1f72db2834668949177faf50fdfe"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

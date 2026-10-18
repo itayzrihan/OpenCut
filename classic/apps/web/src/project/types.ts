@@ -84,6 +84,8 @@ export interface AiEditPlanRecord {
 }
 
 export interface TProject {
+ transcriptionEngine?: import("@/transcription/job").TranscriptionEngine;
+	transcriptionJobs?: import("@/transcription/job").TranscriptionJob[];
 	hyperframesCompositions?: Record<string, HyperframesComposition>;
 	metadata: TProjectMetadata;
 	scenes: TScene[];

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aec78d0f-f261-42cd-b3db-e398528fc695",
+  "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Found existing temporary account credentials in original task creation record; signed in through standard UI in IAB and Chrome without exposing password or changing account/ownership. Corrected source relinked through authenticated live MCP in3 existingprojects; bindingrev1/newsize+mtime and originalduration preserved. All30 scene objects/cuts/captions, settings/STT hashes exact. Main/short/teaser playback advanced unmuted;3stereosourcewindows decode nonzero.50regressiontests and productionbuild/typecheck/startup passed; new sharedRust replacement timingguard deployed. Evidence/backups/delivery saved.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Sampled playback/source decode verified; full-length human listening was not performed."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Previous exported MP4s/Drive deliveries were not re-exported; original source bytes had already been overwritten by user before task."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T01:37:07.091Z",
+  "parents": [
+    "bdf4e13c-d8c0-4aab-8b19-0b106c1d7e5c"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

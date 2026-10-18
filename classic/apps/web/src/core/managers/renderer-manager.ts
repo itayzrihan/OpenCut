@@ -5,7 +5,10 @@ import type { ExportOptions, ExportResult } from "@/export";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
-import { createTimelineAudioBuffer, type AudioClipSource } from "@/media/audio";
+import type { AudioClipSource } from "@/media/audio";
+import { prepareExportAudio } from "@/export/audio-stream";
+import { ExportScratch } from "@/export/scratch";
+import { DiskExportTarget } from "@/export/disk-target";
 import { getClipAudioTiming } from "@/media/audio-sync";
 import { resolveEffectiveAudioGain } from "@/timeline/audio-state";
 import { formatTimecode, mediaMissingUsed } from "opencut-wasm";
@@ -416,9 +419,19 @@ export class RendererManager {
 		options,
 		onProgress,
 		onCancel,
+		destination,
+		maxBytes,
 	}: {
+		destination?: FileSystemFileHandle;
+		maxBytes?: number;
 		options: ExportOptions;
-		onProgress?: ({ progress }: { progress: number }) => void;
+		onProgress?: ({
+			progress,
+			phase,
+		}: {
+			progress: number;
+			phase?: string;
+		}) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
 		if (this._isExporting) {
@@ -429,6 +442,9 @@ export class RendererManager {
 		const { format, quality, fps, includeAudio } = options;
 		const cancellation = new AbortController();
 		let exporter: SceneExporter | undefined;
+		let scratch: ExportScratch | undefined;
+		let disk: DiskExportTarget | undefined;
+		let keepOutput = false;
 		const cancelInterval = setInterval(() => {
 			if (!cancellation.signal.aborted && onCancel?.()) {
 				cancellation.abort();
@@ -467,10 +483,20 @@ export class RendererManager {
 			const canvasSize = activeProject.settings.canvasSize;
 			const hyperframes = this.getHyperframesRenderContext();
 
-			let audioBuffer: AudioBuffer | null = null;
+			scratch = await ExportScratch.create();
+			const handle = destination ?? (await scratch.file(`export.${format}`));
+			disk = await DiskExportTarget.open(handle, cancellation.signal, maxBytes);
+			let audioStream;
 			if (includeAudio) {
-				onProgress?.({ progress: 0.05 });
-				audioBuffer = await createTimelineAudioBuffer({
+				onProgress?.({ progress: 0, phase: "Preparing audio" });
+				audioStream = await prepareExportAudio({
+					scratch,
+					signal: cancellation.signal,
+					onProgress: (progress, phase) =>
+						onProgress?.({
+							progress: progress * 0.2,
+							phase,
+						}),
 					tracks,
 					mediaAssets,
 					duration,
@@ -510,31 +536,45 @@ export class RendererManager {
 				format,
 				quality,
 				shouldIncludeAudio: !!includeAudio,
-				audioBuffer: audioBuffer || undefined,
+				audioStream,
+				target: disk.target,
+				signal: cancellation.signal,
 			});
 
 			exporter.on("progress", (progress) => {
 				const adjustedProgress = includeAudio
-					? 0.05 + progress * 0.95
-					: progress;
-				onProgress?.({ progress: adjustedProgress });
+					? 0.2 + progress * 0.79
+					: progress * 0.99;
+				onProgress?.({
+					progress: adjustedProgress,
+					phase: progress >= 0.99 ? "Finishing file" : "Rendering video",
+				});
 			});
 
 			try {
-				const buffer = await exporter.export({ rootNode: scene });
+				const complete = await exporter.export({ rootNode: scene });
 				clearInterval(cancelInterval);
 
 				if (cancellation.signal.aborted) {
 					return { success: false, cancelled: true };
 				}
 
-				if (!buffer) {
-					return { success: false, error: "Export failed to produce buffer" };
+				if (!complete) {
+					return { success: false, error: "Export failed to produce a file" };
 				}
 
+				cancellation.signal.throwIfAborted();
+				await disk.commit();
+				const file = await handle.getFile();
+				await scratch.remove("mix.pcm");
+				keepOutput = !destination;
+				if (keepOutput) scratch.retain();
+				onProgress?.({ progress: 1, phase: "Complete" });
 				return {
 					success: true,
-					buffer,
+					file,
+					savedFileName: destination?.name,
+					dispose: keepOutput ? () => scratch!.dispose() : undefined,
 				};
 			} finally {
 				clearInterval(cancelInterval);
@@ -549,6 +589,8 @@ export class RendererManager {
 			};
 		} finally {
 			clearInterval(cancelInterval);
+			await disk?.abort();
+			if (!keepOutput) await scratch?.dispose();
 			try {
 				this.setExporting(false);
 			} finally {

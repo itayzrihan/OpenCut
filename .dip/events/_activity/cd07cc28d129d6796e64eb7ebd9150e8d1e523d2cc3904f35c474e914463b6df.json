@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd07cc28d129d6796e64eb7ebd9150e8d1e523d2cc3904f35c474e914463b6df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:49:27.714Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile}from'node:fs/promises';import{spawnSync}from'node:child_process';let {pid}=JSON.parse(await readFile('.local/smart-shorts-performance/probe-pid.json','utf8'));let r=spawnSync('sample',[String(pid),'2','-file','.local/smart-shorts-performance/native-before-sample.txt'],{stdio:'ignore'});console.log('sample',r.status);\nJS\nrg -n 'session|validate|json|classic|attach|restore' .local/smart-shorts-performance/native-before-sample.txt | head -45; rg -n 'saveCurrentProject|createSaveBundle|capture.*thumbnail|archive' classic/apps/web/src/core/managers/project-manager.ts | tail -40; sed -n '890,1015p' classic/apps/web/src/core/managers/project-manager.ts; sed -n '280,348p' crates/editor-api/src/operations/classic_session.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5838f667-6747-43b2-91a8-cf2d423a520e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:49:28.327Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

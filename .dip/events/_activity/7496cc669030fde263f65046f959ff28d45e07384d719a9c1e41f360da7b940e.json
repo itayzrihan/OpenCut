@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7496cc669030fde263f65046f959ff28d45e07384d719a9c1e41f360da7b940e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:43:01.841Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'initialize|snapshot|JSON.stringify' classic/apps/web/src/core/canonical-classic-session.ts | head -25; sed -n '1550,1595p' classic/apps/web/src/core/managers/commands.ts; rg -n 'history' classic/apps/web/src/services/local-drive/server.ts | head -20; ps -axo pid,pcpu,rss,comm -r | head -8",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-65d7896c-6e26-4511-81bb-deacc5b9a1e2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:43:02.718Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

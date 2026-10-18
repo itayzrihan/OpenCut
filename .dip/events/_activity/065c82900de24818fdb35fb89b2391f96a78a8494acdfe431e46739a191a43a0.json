@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "065c82900de24818fdb35fb89b2391f96a78a8494acdfe431e46739a191a43a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:39:43.247Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null node /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/site-workflow.mjs --project-id appgprj_6acc90e36a008191bbd1f032c3f2b3d5",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-350b7e95-3257-4691-a7cf-32901810da92"
+      },
+      {
+        "at": "2026-10-12T08:39:43.251Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null node /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/site-workflow.mjs --project-id appgprj_6acc90e36a008191bbd1f032c3f2b3d5",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-25355502-f8a4-48e6-a1fc-9935fe240121"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:39:43.640Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

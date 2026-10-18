@@ -21,11 +21,17 @@ import {
 } from "@/transcription/audio";
 import { boundWhisperGpuOutputs } from "./gpu-lifetime";
 
-export type WorkerMessage = { audio: Float32Array; language: string };
+export type WorkerMessage = {
+	audio: Float32Array;
+	language: string;
+	lowMemory?: boolean;
+	keepAlive?: boolean;
+};
 export type WorkerResponse =
 	| { type: "progress"; progress: TranscriptionProgress }
 	| { type: "complete"; result: TranscriptionResult }
-	| { type: "error"; error: string };
+	| { type: "retry-low-memory"; audio: Float32Array }
+	| { type: "error"; error: string; diagnostic?: string };
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
@@ -46,57 +52,72 @@ const report = ({
 		progress: { status, progress, message },
 	} satisfies WorkerResponse);
 
+let resident: AutomaticSpeechRecognitionPipeline | undefined;
+
 self.onmessage = async ({
-	data: { audio, language },
+	data: { audio, language, lowMemory = false, keepAlive = false },
 }: MessageEvent<WorkerMessage>) => {
 	let transcriber: AutomaticSpeechRecognitionPipeline | undefined;
+	let device: "webgpu" | "wasm" = "wasm";
+	let phase = "loading-model";
+	const loadingFiles = new Map<string, string>();
 	try {
 		const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
-		const device = adapter?.features.has("shader-f16") ? "webgpu" : "wasm";
+		device = adapter?.features.has("shader-f16") ? "webgpu" : "wasm";
 		const label =
 			device === "webgpu"
-				? "GPU · WebGPU"
+				? `GPU · WebGPU${lowMemory ? " · reduced-memory model" : ""}`
 				: "CPU · WebAssembly (WebGPU fp16 unavailable; slower)";
 		report({
 			status: "loading-model",
 			progress: 0,
-			message: `Loading ivrit-ai Large v3 Turbo on your ${label}. First download is approximately 1.6 GB…`,
+			message: `Loading ivrit-ai Large v3 Turbo on your ${label}. ${lowMemory && device === "webgpu" ? "Quantized weights total approximately 760 MB" : "First download is approximately 1.6 GB"}…`,
 		});
 		const files = new Map<string, { loaded: number; total: number }>();
 		let lastReport = 0;
-		transcriber = (await pipeline<"automatic-speech-recognition">(
-			"automatic-speech-recognition",
-			device === "webgpu" ? BROWSER_WHISPER_MODEL : BROWSER_WHISPER_CPU_MODEL,
-			{
-				revision:
-					device === "webgpu"
-						? BROWSER_WHISPER_REVISION
-						: BROWSER_WHISPER_CPU_REVISION,
-				device,
-				dtype:
-					device === "webgpu"
-						? { encoder_model: "fp16", decoder_model_merged: "q4" }
-						: "q8",
-				progress_callback: (info) => {
-					if (info.status !== "progress") return;
-					files.set(info.file, { loaded: info.loaded, total: info.total });
-					if (Date.now() - lastReport < 250) return;
-					lastReport = Date.now();
-					let loaded = 0,
-						total = 0;
-					for (const value of files.values()) {
-						loaded += value.loaded;
-						total += value.total;
-					}
-					report({
-						status: "loading-model",
-						progress: total ? (100 * loaded) / total : 0,
-						message: `Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
-					});
+		transcriber =
+			resident ??
+			((await pipeline<"automatic-speech-recognition">(
+				"automatic-speech-recognition",
+				device === "webgpu" ? BROWSER_WHISPER_MODEL : BROWSER_WHISPER_CPU_MODEL,
+				{
+					revision:
+						device === "webgpu"
+							? BROWSER_WHISPER_REVISION
+							: BROWSER_WHISPER_CPU_REVISION,
+					device,
+					dtype:
+						device === "webgpu"
+							? {
+									encoder_model: lowMemory ? "q4" : "fp16",
+									decoder_model_merged: "q4",
+								}
+							: "q8",
+					progress_callback: (info) => {
+						if (info.status === "download" || info.status === "done")
+							loadingFiles.set(info.file, info.status);
+						if (info.status !== "progress") return;
+						files.set(info.file, { loaded: info.loaded, total: info.total });
+						if (Date.now() - lastReport < 250) return;
+						lastReport = Date.now();
+						let loaded = 0,
+							total = 0;
+						for (const value of files.values()) {
+							loaded += value.loaded;
+							total += value.total;
+						}
+						report({
+							status: "loading-model",
+							progress: total ? (100 * loaded) / total : 0,
+							message: `Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
+						});
+					},
 				},
-			},
-		)) as AutomaticSpeechRecognitionPipeline;
-		if (device === "webgpu") boundWhisperGpuOutputs(transcriber.model);
+			)) as AutomaticSpeechRecognitionPipeline);
+		if (!resident && device === "webgpu")
+			boundWhisperGpuOutputs(transcriber.model);
+		if (keepAlive) resident = transcriber;
+		phase = "transcribing";
 		report({
 			status: "transcribing",
 			progress: 0,
@@ -168,11 +189,29 @@ self.onmessage = async ({
 			},
 		} satisfies WorkerResponse);
 	} catch (error) {
+		const detail = error instanceof Error ? error.message : String(error);
+		const memoryFailure =
+			/array\s*buffer allocation failed|out of memory|memory access out of bounds|failed to allocate|cannot allocate|allocation failed/i.test(
+				detail,
+			);
+		if (memoryFailure && device === "webgpu" && !lowMemory) {
+			// Transfer ownership back, then let the service terminate this worker.
+			// A failed pipeline load may retain sessions we cannot dispose directly.
+			// Never load the fallback alongside those sessions or clone the audio.
+			self.postMessage(
+				{ type: "retry-low-memory", audio } satisfies WorkerResponse,
+				{ transfer: [audio.buffer] },
+			);
+			return;
+		}
 		self.postMessage({
 			type: "error",
-			error: `Browser transcription failed: ${error instanceof Error ? error.message : "Unknown error"}. Check available memory, model download access and browser GPU support, then retry.`,
+			diagnostic: `${phase}; ${device}; lowMemory=${lowMemory}; audioSeconds=${audio.length / 16000}; files=${JSON.stringify([...loadingFiles])}\n${error instanceof Error ? error.stack : String(error)}`,
+			error: memoryFailure
+				? `Browser transcription ran out of memory${lowMemory ? " even with the reduced-memory model" : " using the CPU model"}. ${phase === "loading-model" ? "Model loading failed before transcription started. Save your work, close this editor tab and reopen the project in a new tab to release browser memory, then retry." : "Save your work and reopen the editor to release browser memory, or retry with a shorter timeline."}${device === "wasm" ? " A browser with WebGPU and fp16 support can use the GPU instead." : ""} (${detail})`
+				: `Browser transcription failed: ${detail}. Check model download access and browser GPU support, then retry.`,
 		} satisfies WorkerResponse);
 	} finally {
-		await transcriber?.dispose();
+		if (!keepAlive) await transcriber?.dispose();
 	}
 };

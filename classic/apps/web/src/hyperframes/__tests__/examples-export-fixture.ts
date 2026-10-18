@@ -62,7 +62,7 @@ export async function exportReference(snapshot: CanonicalClassicSnapshot) {
 			audioBuffer,
 		});
 		const output = await exporter.export({ rootNode });
-		if (!output) throw new Error("Export was cancelled");
+		if (!(output instanceof ArrayBuffer)) throw new Error("Export was cancelled");
 		return Array.from(new Uint8Array(output));
 	} finally {
 		URL.revokeObjectURL(url);

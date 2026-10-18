@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d45fca7c8e76afb9e13001c0ce1aeec953b836b86dc73f442c03f11da0d15ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:21:41.286Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -hide_banner -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='gt(scene,0.12)',showinfo\" -an -f null - > .local/teaser-reference-2026-10-14/cuts.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f48d43fb-8845-48e7-93b8-fb191615dee1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:21:42.115Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

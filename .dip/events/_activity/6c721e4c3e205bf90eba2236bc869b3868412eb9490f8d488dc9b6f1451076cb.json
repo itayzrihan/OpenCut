@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6c721e4c3e205bf90eba2236bc869b3868412eb9490f8d488dc9b6f1451076cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:03:16.025Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/app/dashboard",
+          "sites/dip-public/app/api",
+          "sites/dip-public/app/api/github",
+          "sites/dip-public/app/api/github/auth",
+          "sites/dip-public/app/api/github/callback",
+          "sites/dip-public/app/api/github/logout",
+          "sites/dip-public/app/api/dashboard",
+          "sites/dip-public/test",
+          "sites/dip-public/content",
+          "sites/dip-public/.openai/hosting.json",
+          "sites/dip-public/lib/landing.ts",
+          "sites/dip-public/content/landing-original.html",
+          "sites/dip-public/public/index.html",
+          "sites/dip-public/app/layout.tsx",
+          "sites/dip-public/app/page.tsx",
+          "sites/dip-public/db/schema.ts",
+          "sites/dip-public/lib/security.mjs",
+          "sites/dip-public/lib/github.mjs",
+          "sites/dip-public/lib/auth.ts",
+          "sites/dip-public/app/api/github/auth/route.ts",
+          "sites/dip-public/app/api/github/callback/route.ts",
+          "sites/dip-public/app/api/github/logout/route.ts",
+          "sites/dip-public/lib/ledger.mjs",
+          "sites/dip-public/content/DIP-LICENSE",
+          "sites/dip-public/content/ATTRIBUTION.md"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "7e22e9db-01ea-4cec-a5ea-c1eadaa2b704"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:03:16.028Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

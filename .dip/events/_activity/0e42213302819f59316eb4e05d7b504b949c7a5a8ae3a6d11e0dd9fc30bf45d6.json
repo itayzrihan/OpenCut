@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e42213302819f59316eb4e05d7b504b949c7a5a8ae3a6d11e0dd9fc30bf45d6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14530-aa2a-7141-990e-aa1da4c284a9",
+    "records": [
+      {
+        "at": "2026-10-16T14:49:49.794Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14530-aa2a-7141-990e-aa1da4c284a9",
+        "taskId": "task_c9fc19e2d7eabd6ef31518e4aaf52f7e21a7e8f18bfd4e8c74fb4eff1e24ca78",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short --branch && git log -8 --date=short --pretty=format:'%h %ad %s' && git branch --show-current && git remote -v",
+        "recordId": "codex:01a14530-aa2a-7141-990e-aa1da4c284a9:PreToolUse:exec-4b84604f-5de3-469d-a54f-1917a686f49c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T14:49:49.925Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

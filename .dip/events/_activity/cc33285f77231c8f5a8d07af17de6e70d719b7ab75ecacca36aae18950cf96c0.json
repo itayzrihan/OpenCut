@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cc33285f77231c8f5a8d07af17de6e70d719b7ab75ecacca36aae18950cf96c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:08:21.731Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-9c3a4d0c-6f97-409a-8330-54ea77d8fa07"
+      },
+      {
+        "at": "2026-10-14T08:08:21.773Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/analysis/episode-teaser-90-2026-10-14/mcp-receipts.json"
+        ],
+        "changeHash": "967fd878611b2361be368abd1f80cd338254ae3d5485358b6a275b9bcbfc89c2",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-548896a2-9f41-4b1f-9754-efb638d7b22f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:08:22.710Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

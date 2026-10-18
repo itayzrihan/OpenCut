@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b57bfd36af328037d2a764be3c6a637f0bb33bf0329192b950c249b3c1f98d8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:18:20.776Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/transcription-debug/import-check.srt <<'EOF'\n1\n00:00:01,500 --> 00:00:04,500\nבדיקת ייבוא כתוביות\n\n2\n00:00:05,000 --> 00:00:07,000\nSRT transcript check\nEOF\ncat >> classic/BROWSER-TRANSCRIPTION.md <<'EOF'\n\n## SRT and external engines (2026-10-12)\n\nThe Captions panel now exposes **Import SRT instead of transcribing** and\n**Transcription engine → Local / External API**. SRT import is canonical Rust\n(`transcription.classic.edit`, `importSrt`): strict bounded parsing of UTF-8\nBOM/CRLF, comma/dot timestamps and multiline cues; invalid input is atomic.\nOriginal cue times are preserved. Word times are evenly estimated within each\ncue, explicitly marked in source metadata and explained in the UI. Import\nreplaces caption-source tracks in the target scene, preserves ordinary text\ntracks, supersedes unfinished transcription jobs, and is undoable. Imported\nsource words feed Smart takes, podcast excerpts and Auto Texts without inference.\n\nMigration status remains **classic-only**. Engine preference is canonical\n`document.transcriptionEngine`; jobs retain their engine and external endpoint/\nmodel identity. External execution bypasses browser model initialization and\nreuses the same bounded window, checkpoint and publication pipeline. Changing\nAPI credentials for the same endpoint/model preserves resume identity; changing\nthe endpoint/model begins a new job rather than mixing cached provider output.\n\nThe external adapter implements OpenAI-compatible multipart transcriptions with\n`verbose_json` and word timestamps (default `whisper-1`), per the\n[official file transcription guide](https://developers.openai.com/api/docs/guides/speech-to-text).\nText-only model responses fail explicitly; timing is never fabricated for API\nresults. Configure the full HTTPS endpoint, model and API key in **API settings**.\nChatGPT OAuth is unrelated. Keys stay in account-scoped host credential files\n(mode 0600) outside project/account-data exports, never in the canonical document\nor browser per",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-f1999091-abc7-4fef-b0cc-5375848bf027"
+      },
+      {
+        "at": "2026-10-12T10:18:21.014Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/transcription-debug/import-check.srt <<'EOF'\n1\n00:00:01,500 --> 00:00:04,500\nבדיקת ייבוא כתוביות\n\n2\n00:00:05,000 --> 00:00:07,000\nSRT transcript check\nEOF\ncat >> classic/BROWSER-TRANSCRIPTION.md <<'EOF'\n\n## SRT and external engines (2026-10-12)\n\nThe Captions panel now exposes **Import SRT instead of transcribing** and\n**Transcription engine → Local / External API**. SRT import is canonical Rust\n(`transcription.classic.edit`, `importSrt`): strict bounded parsing of UTF-8\nBOM/CRLF, comma/dot timestamps and multiline cues; invalid input is atomic.\nOriginal cue times are preserved. Word times are evenly estimated within each\ncue, explicitly marked in source metadata and explained in the UI. Import\nreplaces caption-source tracks in the target scene, preserves ordinary text\ntracks, supersedes unfinished transcription jobs, and is undoable. Imported\nsource words feed Smart takes, podcast excerpts and Auto Texts without inference.\n\nMigration status remains **classic-only**. Engine preference is canonical\n`document.transcriptionEngine`; jobs retain their engine and external endpoint/\nmodel identity. External execution bypasses browser model initialization and\nreuses the same bounded window, checkpoint and publication pipeline. Changing\nAPI credentials for the same endpoint/model preserves resume identity; changing\nthe endpoint/model begins a new job rather than mixing cached provider output.\n\nThe external adapter implements OpenAI-compatible multipart transcriptions with\n`verbose_json` and word timestamps (default `whisper-1`), per the\n[official file transcription guide](https://developers.openai.com/api/docs/guides/speech-to-text).\nText-only model responses fail explicitly; timing is never fabricated for API\nresults. Configure the full HTTPS endpoint, model and API key in **API settings**.\nChatGPT OAuth is unrelated. Keys stay in account-scoped host credential files\n(mode 0600) outside project/account-data exports, never in the canonical document\nor browser per",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-f1999091-abc7-4fef-b0cc-5375848bf027"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:18:21.210Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

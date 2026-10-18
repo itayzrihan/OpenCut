@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d5ea351aa3a1d38819383a413ce6e3e37c69ef013e7cd94b486f39ca02c9e3d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:09:10.547Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '630,750p' classic/apps/web/src/services/storage/service.ts; rg -n 'withAccount|cookie|request.headers' classic/apps/web/src/accounts/server.ts | head -25; sed -n '1,110p' classic/apps/web/src/accounts/server.ts; curl -I --max-time 5 'http://localhost:3211/api/local-drive/media?projectId=11e7e552-fd67-44e7-8795-cd2b8b5e2668&id=f1115e3c-240b-4ab7-9247-c4433dc74e20&account=4fec0688-9a78-4304-849c-9ea937873751'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-52b20a70-4d1d-41bc-8867-a2bcc5c1ba88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:09:11.257Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

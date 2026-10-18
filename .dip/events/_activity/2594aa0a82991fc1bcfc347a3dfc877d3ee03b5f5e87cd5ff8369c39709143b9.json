@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2594aa0a82991fc1bcfc347a3dfc877d3ee03b5f5e87cd5ff8369c39709143b9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:09:53.759Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler",
+          "sites/dip-public/.wrangler/deploy",
+          "sites/dip-public/.wrangler/deploy/config.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "1d1f4214-9166-43a8-9493-5479bb90e679"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:09:53.760Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "88b72cc84a15ff53a5a7cac723f70e7c9d467ae6a973600aa9c563183cbb9dfd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:03:32.599Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files .local/teaser-full-auto-2026-10-14 .local/episode-teaser-90-2026-10-14 | head -55\nsed -n '1,180p' .local/episode-teaser-90-2026-10-14/build-document.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-03742858-f5e7-4bef-a1d9-56dd1525d1e8"
+      },
+      {
+        "at": "2026-10-14T10:03:32.708Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files .local/teaser-full-auto-2026-10-14 .local/episode-teaser-90-2026-10-14 | head -55\nsed -n '1,180p' .local/episode-teaser-90-2026-10-14/build-document.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-03742858-f5e7-4bef-a1d9-56dd1525d1e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:03:33.220Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

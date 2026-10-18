@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6574d8d63768d9830dbd3eb0a06a947576c7f648afebb54bad21e8006b3b136d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T18:23:12.238Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/apple-stt-benchmark/result-short.json\ncat .local/apple-stt-benchmark/result-short.json.status",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e5dcd010-a045-448f-b31e-dfc5ed3efde7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T18:23:12.347Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

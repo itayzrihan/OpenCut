@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b2b51cc54614c2c7f7d7241ef74b66880137c6a49b4c9fba2d3e8772f22056d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T14:49:32.725Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/mcp/src/classic_bridge.rs",
+          ".local/smart-shorts-seven/bridge-heartbeat-all-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "fe268764-2f00-481e-b112-1033c9764651"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:49:32.726Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

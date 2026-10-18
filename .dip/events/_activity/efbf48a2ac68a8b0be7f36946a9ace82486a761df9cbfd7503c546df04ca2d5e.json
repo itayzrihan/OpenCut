@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "efbf48a2ac68a8b0be7f36946a9ace82486a761df9cbfd7503c546df04ca2d5e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:50:10.676Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nold=json.loads(pathlib.Path('.local/teaser-reexport-audio-2026-10-15/project-before.json').read_text());new=json.loads((pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json').read_text());a=next(s for s in old['scenes'] if s['id'].startswith('6125'));b=next(s for s in new['scenes'] if s['id']==a['id']);\ndef diff(a,b,p=''):\n if type(a)!=type(b):print(p,'typechange');return\n if isinstance(a,dict):\n  for k in a.keys()|b.keys():\n   if k not in a or k not in b:print(p+'/'+k,'added/removed')\n   elif a[k]!=b[k]:diff(a[k],b[k],p+'/'+k)\n elif isinstance(a,list):\n  if len(a)!=len(b):print(p,'length',len(a),len(b))\n  else:\n   for i,(x,y) in enumerate(zip(a,b)):\n    if x!=y:diff(x,y,p+'/'+str(i))\n else: print(p,repr(a)[:100],repr(b)[:100])\ndiff(a,b)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0e675981-c8c9-4408-9daf-f611dc3a304b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:50:11.395Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "617454c11cc86ad0045c942895e443a0a7120cc45544b7103a6e61a701aa6486",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:13:12.235Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/accounts/bridge-snapshot-cache.test.ts <<'EOF'\nimport {expect,test} from 'bun:test';\nimport {BridgeSnapshotCache} from './bridge-snapshot-cache';\nconst snapshot={sessionId:'account_tab',projectId:'p',projectName:'P',revision:1,timeline:{words:['original']},tools:[{name:'edit'}]};\nconst value={projectId:'p',projectName:'P',expectedRevision:1,revision:2,dirty:true,playback:{position:17},selection:['clip'],ui:{focused:true}};\ntest('legacy heartbeat preserves original document/tools and enforces account-session, project and revision scope',()=>{\n const cache=new BridgeSnapshotCache();cache.remember({snapshot,bytes:100});\n expect(cache.heartbeat({sessionId:'other_tab',value})).toBeNull();\n expect(cache.heartbeat({sessionId:'account_tab',value:{...value,projectId:'other'}})).toBeNull();\n const result=cache.heartbeat({sessionId:'account_tab',value});\n expect(result?.timeline).toBe(snapshot.timeline);expect(result?.tools).toBe(snapshot.tools);\n expect(result?.playback).toEqual({position:17});expect(snapshot.revision).toBe(1);\n expect(cache.heartbeat({sessionId:'account_tab',value})).toBeNull();\n});\ntest('legacy cache rejects large snapshots and expires inactive browser sessions',()=>{\n let now=0;const cache=new BridgeSnapshotCache(()=>now);\n cache.remember({snapshot,bytes:2*1024*1024+1});expect(cache.heartbeat({sessionId:snapshot.sessionId,value})).toBeNull();\n cache.remember({snapshot,bytes:100});now=120001;expect(cache.heartbeat({sessionId:snapshot.sessionId,value})).toBeNull();\n});\nEOF\ncat >> crates/mcp/src/classic_bridge.rs <<'EOF'\n\n#[cfg(test)]\nmod heartbeat_tests {\n    use super::*;\n    #[test]\n    fn metadata_heartbeat_keeps_document_and_tool_storage_and_requires_exact_session_revision() {\n        let runtime=OpenCutRuntime::default();let bridge=ClassicBridge::register(&runtime).unwrap();\n        let snapshot:ClassicSessionSnapshot=serde_json::from_value(json!({\"sessionId\":\"account_tab\",\"projectId\":\"p\",\"projectName\":\"P\",\"revision\":1,\"dirty\"",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e581b414-93f6-4cd7-b3c5-212e9e737d9a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:13:13.093Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

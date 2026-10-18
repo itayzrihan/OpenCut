@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a4049c9fb2a41d72401aa9b565e2a147044e0c4f5229355a42e0ad873760f26",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:05:29.012Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\nfor id in ['11e7e552-fd67-44e7-8795-cd2b8b5e2668','847030af-0e59-4e41-b702-5d35549f3cd5']:\n d=json.loads((root/id/'project.json').read_text());print(id,len(d['scenes']),d['currentSceneId'],len(d.get('transcriptionJobs',[])),[(s['id'],s['name']) for s in d['scenes']])\n print([str(p.relative_to(root/id)) for p in (root/id).glob('media/*.json')])\nPY\ntail -10 .local/source-preservation/build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0dd07ad4-794e-4df8-9866-d7c2093ebe54"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:05:29.250Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

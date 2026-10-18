@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc93a818-5db4-4237-af8b-8630939537b9",
+  "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+  "type": "task.update",
+  "payload": {
+    "title": "Restore Smart Shorts audio playback and bounded export for seven existing sequences",
+    "description": "Diagnose silent extracted sequences and Preparing Audio 0% hang. Fix playback/export cause, repair existing seven through canonical transactions where needed, preserve Main and completed transcript.",
+    "acceptance": [
+      "Seven existing scenes play audible source audio and export without Preparing Audio hang",
+      "Bounded decoding of selected source windows prevents full 108-minute audio allocation",
+      "Main scene and completed transcript preserved",
+      "Regression checks and actual production playback/export verification"
+    ],
+    "scope": [
+      "classic/apps/web/src/core/managers/audio-manager.ts",
+      "classic/apps/web/src/media",
+      "classic/apps/web/src/export",
+      "classic/apps/web/src/services/renderer",
+      "crates/editor-api/src/operations/classic_takes",
+      ".dip/tools"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T16:06:01.351Z",
+  "parents": [
+    "78df7f57-ac3d-4ff1-8be3-c5ac5fe26e11"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ff17c66d0edd61be45c0b0aa351368873e825f84d9bb50062ced34c97d7c16c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:11:17.497Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --numstat classic/apps/web/src/subtitles/components/assets-view.tsx; sed -n '175,228p' classic/apps/web/src/core/managers/transcription-manager.ts; cat classic/apps/web/src/app/api/transcription/external/route.ts; rg -n 'Change::Start|engine,' crates/editor-api/src/operations/classic_transcription.rs | head -15",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-132c0dc7-e3e7-4d8b-9f84-29fa33f8531b"
+      },
+      {
+        "at": "2026-10-12T10:11:17.631Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --numstat classic/apps/web/src/subtitles/components/assets-view.tsx; sed -n '175,228p' classic/apps/web/src/core/managers/transcription-manager.ts; cat classic/apps/web/src/app/api/transcription/external/route.ts; rg -n 'Change::Start|engine,' crates/editor-api/src/operations/classic_transcription.rs | head -15",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-132c0dc7-e3e7-4d8b-9f84-29fa33f8531b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:11:18.402Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

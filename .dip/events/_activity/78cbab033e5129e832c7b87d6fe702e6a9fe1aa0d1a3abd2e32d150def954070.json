@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78cbab033e5129e832c7b87d6fe702e6a9fe1aa0d1a3abd2e32d150def954070",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:58:17.758Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np='.local/episode-teaser-90-2026-10-14/audio-evidence.json';x=json.load(open(p));f=x[0]['frames'][-1];print(f);f['end']=6479.317333333333;json.dump(x,open(p,'w'),separators=(',',':'))\nPY\nbun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-55347f39-3514-4431-a32e-36d383ae957f"
+      },
+      {
+        "at": "2026-10-14T07:58:17.767Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.local/episode-teaser-90-2026-10-14');x=json.loads((p/'draft-scene.json').read_text());print(max(e['startTime']+e['duration']for e in x['tracks']['main']['elements'])/120000)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a7e93e6e-2bd4-462f-9787-de7ca1febcb8"
+      },
+      {
+        "at": "2026-10-14T07:58:17.984Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.local/episode-teaser-90-2026-10-14');x=json.loads((p/'draft-scene.json').read_text());print(max(e['startTime']+e['duration']for e in x['tracks']['main']['elements'])/120000)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a7e93e6e-2bd4-462f-9787-de7ca1febcb8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:58:18.485Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

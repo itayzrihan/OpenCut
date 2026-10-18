@@ -12,6 +12,8 @@ pub struct AnalyzePodcastOptions {
     pub channel_ids: Vec<String>,
     pub duration: f64,
     pub settings: PodcastMulticamSettings,
+    #[serde(default)]
+    pub camera_windows: Vec<PodcastCameraWindow>,
 }
 fn percentile(values: &[f32], p: f64) -> f32 {
     if values.is_empty() {
@@ -97,6 +99,16 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
     let n = o.channel_ids.len();
     if n == 0
         || n > crate::MAX_PODCAST_CHANNELS
+        || o.camera_windows.len() > n
+        || o.camera_windows
+            .iter()
+            .any(|w| !o.channel_ids.contains(&w.channel_id))
+        || o.camera_windows
+            .iter()
+            .map(|w| &w.channel_id)
+            .collect::<std::collections::HashSet<_>>()
+            .len()
+            != o.camera_windows.len()
         || o.envelopes.len() != n
         || !o.duration.is_finite()
         || !(0.0..=36000.0).contains(&o.duration)
@@ -172,12 +184,13 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
     let timeline = (0..frames)
         .map(|i| channels.iter().map(|c| c[i]).collect())
         .collect();
-    route_podcast_multicam(RoutePodcastMulticamOptions {
+    let cuts = route_podcast_multicam(RoutePodcastMulticamOptions {
         timeline,
         channel_ids: o.channel_ids,
         duration: o.duration,
         settings: o.settings,
-    })
+    });
+    constrain_camera_cuts(cuts, &o.camera_windows, o.duration)
 }
 #[cfg(test)]
 mod tests {

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0dbc439f9fed7416e909aa9cf5f4a2a8fffb6b765eab1c420f8b10bae8d4d18f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:26:52.614Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'private call|invokeSync|invoke\\(' classic/apps/web/src/core/canonical-classic-session.ts | tail -12; sed -n '1605,1668p' classic/apps/web/src/core/canonical-classic-session.ts; rg -n 'invoke_sync|invokeSync' classic/rust/editor-runtime-wasm/src/lib.rs -A65",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-fe4fa2cf-17d3-4a07-9f1b-44efbb4d712c"
+      },
+      {
+        "at": "2026-10-13T09:26:52.737Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'private call|invokeSync|invoke\\(' classic/apps/web/src/core/canonical-classic-session.ts | tail -12; sed -n '1605,1668p' classic/apps/web/src/core/canonical-classic-session.ts; rg -n 'invoke_sync|invokeSync' classic/rust/editor-runtime-wasm/src/lib.rs -A65",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fe4fa2cf-17d3-4a07-9f1b-44efbb4d712c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:26:53.540Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

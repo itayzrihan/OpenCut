@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9d9de32684edecac25e473cc368be7a07cd20f2354d7b6f4956076e9e3eaa43f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:49:54.110Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,300p' classic/apps/web/src/ai/podcast-plan.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-51996041-8895-4a1c-b42b-c5ccb1631e00"
+      },
+      {
+        "at": "2026-10-13T12:49:54.112Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/ai/podcast-plan-cache.ts; cat classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4230245d-792a-4faa-97d2-45525be5048a"
+      },
+      {
+        "at": "2026-10-13T12:49:54.268Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,300p' classic/apps/web/src/ai/podcast-plan.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-51996041-8895-4a1c-b42b-c5ccb1631e00"
+      },
+      {
+        "at": "2026-10-13T12:49:54.268Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/ai/podcast-plan-cache.ts; cat classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4230245d-792a-4faa-97d2-45525be5048a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:49:54.818Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

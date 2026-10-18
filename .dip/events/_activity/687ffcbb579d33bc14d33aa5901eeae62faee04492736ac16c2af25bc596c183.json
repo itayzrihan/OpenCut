@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "687ffcbb579d33bc14d33aa5901eeae62faee04492736ac16c2af25bc596c183",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:02:08.259Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -125 crates/editor-api/tests/classic_caption_cues.rs\nrg -n 'transcriptionJobs' crates/editor-api/tests/classic_transcription.rs | head\ncat classic/apps/web/src/core/managers/scenes-manager.ts | head -80",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f881e96f-6e3a-43f4-ae8c-28f471905b7d"
+      },
+      {
+        "at": "2026-10-13T21:02:08.351Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -125 crates/editor-api/tests/classic_caption_cues.rs\nrg -n 'transcriptionJobs' crates/editor-api/tests/classic_transcription.rs | head\ncat classic/apps/web/src/core/managers/scenes-manager.ts | head -80",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f881e96f-6e3a-43f4-ae8c-28f471905b7d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:02:08.764Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

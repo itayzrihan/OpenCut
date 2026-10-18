@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "edbe2c3a9133485627be47047eac5e6a3dedf7c9609a43d271fa8cfcef4de257",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:05:23.103Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/patch-bridge-heartbeat.py <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text()\npos=s.index('#[derive(Debug, Clone, Serialize)]\\n#[serde(rename_all = \"camelCase\")]\\nstruct ClassicCommand')\ns=s[:pos]+'''/// Transport liveness/UI metadata only; never a second editor document.\n#[derive(Debug, Deserialize)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct ClassicHeartbeat {\n    project_id: String,\n    project_name: String,\n    expected_revision: u64,\n    revision: u64,\n    dirty: bool,\n    playback: Value,\n    selection: Value,\n    ui: Value,\n}\n\n'''+s[pos:]\na=s.index('        {\\n            let current_id = self',s.index('fn update_session'))\nb=s.index('        let all_tools = self.all_session_tools();',a)\nblock=s[a:b].strip();inner=block[1:-1].strip();inner=inner.replace('Some(session_id);','Some(session_id.to_owned());')\ns=s[:a]+'''        self.update_active_session(&session_id, candidate_is_visible, candidate_is_focused, candidate_last_active_at_ms)?;\n'''+s[b:]\npos=s.index('    fn disconnect(&self, session_id: &str)')\ns=s[:pos]+'''    fn update_active_session(&self, session_id: &str, candidate_is_visible: bool, candidate_is_focused: bool, candidate_last_active_at_ms: u64) -> Result<(), String> {\n'''+inner+'''\n        Ok(())\n    }\n\n    fn update_heartbeat(&self, session_id: &str, heartbeat: ClassicHeartbeat) -> Result<(), String> {\n        let activity = {\n            let mut sessions = self.inner.sessions.write().map_err(|_| \"classic session lock was poisoned\")?;\n            let snapshot = sessions.get_mut(session_id).ok_or(\"Full snapshot required\")?;\n            if snapshot.project_id != heartbeat.project_id || snapshot.revision != heartbeat.expected_revision || heartbeat.revision < heartbeat.expected_revision {\n                return Err(\"Full snapshot required\".into());\n            }\n            snapshot.project_name = heartbeat.project_name;\n            snapshot.revision = heartbea",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-62c4e445-bd97-4f90-893b-a9f4b5b3c92e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:05:23.623Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

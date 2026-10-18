@@ -1,3 +1,5 @@
+mod coverage;
+pub use coverage::*;
 mod hard_limiter;
 pub use hard_limiter::*;
 mod noise_reduction;

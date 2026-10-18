@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42d30af937af6fa116719a08d11da3c8abb38c29a6d70114f901dfa1f1df2548",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:52:27.299Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nb=json.load(open('.local/teaser-exports-2026-10-14/project-before.json'));a=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'))\nx=next(s for s in b['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7')['tracks'];y=next(s for s in a['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7')['tracks']\ndef diff(a,b,path=''):\n if type(a)!=type(b):print(path,type(a),type(b));return\n if isinstance(a,dict):\n  for k in a.keys()|b.keys():\n   if k not in a or k not in b: print(path,k,'missing')\n   elif a[k]!=b[k]:diff(a[k],b[k],path+'/'+k)\n elif isinstance(a,list):\n  if len(a)!=len(b):print(path,len(a),len(b))\n  else:\n   for i,(v,w) in enumerate(zip(a,b)):\n    if v!=w:diff(v,w,path+'/'+str(i))\n else:print(path,str(a)[:100],str(b)[:100])\ndiff(x,y)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-dc634a9c-7a60-402b-83ba-5876cab54895"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:52:28.245Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

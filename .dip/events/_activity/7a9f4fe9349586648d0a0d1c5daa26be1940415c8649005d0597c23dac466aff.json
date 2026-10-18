@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a9f4fe9349586648d0a0d1c5daa26be1940415c8649005d0597c23dac466aff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:54:52.605Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/patch-podcast-recovery.py <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/podcast-plan.ts');s=p.read_text();a=s.index('const part = z');b=s.index('const contract =');schemas=s[a:b];Path('classic/apps/web/src/ai/podcast-proposal.ts').write_text('import { z } from \"zod\";\\n'+schemas)\ns=s[:a]+'import { parsePodcastProposal } from \"./podcast-proposal\";\\nexport { parsePodcastProposal, podcastVideoSchema } from \"./podcast-proposal\";\\nimport { readPodcastPlan, savePodcastPlan } from \"./podcast-plan-cache\";\\n'+s[b:]\ns=s.replace('import { readAgentResponse } from \"@/editor-agent/stream\";','import { requestAgentResponse, type ProviderFailureInput, type ProviderRetryPlan } from \"@/editor-agent/transport\";')\ns=s.replace('\\treview,\\n}: {','\\treview,\\n\\tplanRetry,\\n\\tassertScope,\\n\\tcache,\\n}: {',1)\ns=s.replace('\\treview: (input: { options: PodcastOptions; videos: PodcastVideo[] }) => void;','''\\treview: (input: { options: PodcastOptions; videos: PodcastVideo[] }) => void;\n planRetry?: (failure: ProviderFailureInput) => ProviderRetryPlan;\n assertScope?: () => void;\n cache?: { key: string; storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> };''',1)\ns=s.replace('const assertCurrent = () => {','const assertCurrent = () => {\\n\\t\\tassertScope?.();',1)\ns=s.replace('const timeout = setTimeout(\\n\\t\\t\\t\\t() => controller.abort(new Error(\"Podcast model request timed out\")),','const deadline = new AbortController();\\n\\t\\t\\tconst requestSignal = AbortSignal.any([controller.signal, deadline.signal]);\\n\\t\\t\\tconst timeout = setTimeout(\\n\\t\\t\\t\\t() => deadline.abort(new Error(\"Podcast model request timed out\")),',1)\ns=s.replace('const response = await fetch(\"/api/editor-agent/respond\", {','''const raw = await requestAgentResponse({\n                    signal: requestSignal,\n                    beforeAttempt: assertCurrent,\n                    onEvent: assertCurrent,\n                    onRetry: (attempt) => onStage(`ChatGPT temporarily bu",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a5bcc3a3-36b4-4803-bf71-e1e54c196733"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:54:53.550Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

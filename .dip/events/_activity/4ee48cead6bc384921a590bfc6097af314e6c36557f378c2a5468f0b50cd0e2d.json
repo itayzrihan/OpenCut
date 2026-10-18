@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ee48cead6bc384921a590bfc6097af314e6c36557f378c2a5468f0b50cd0e2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:00:15.571Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,ppid,%cpu,rss,etime,command | rg 'next-server|opencut-mcp-server|ffprobe' | cut -c 1-240 | head -n 15; tail -n 12 '/Users/itayzrihan/Library/Application Support/OpenCut Local/logs/production.log'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-59d49c1a-044e-4f35-8c25-1f4cc19a3786"
+      },
+      {
+        "at": "2026-10-13T11:00:15.742Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,ppid,%cpu,rss,etime,command | rg 'next-server|opencut-mcp-server|ffprobe' | cut -c 1-240 | head -n 15; tail -n 12 '/Users/itayzrihan/Library/Application Support/OpenCut Local/logs/production.log'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-59d49c1a-044e-4f35-8c25-1f4cc19a3786"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:00:15.924Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

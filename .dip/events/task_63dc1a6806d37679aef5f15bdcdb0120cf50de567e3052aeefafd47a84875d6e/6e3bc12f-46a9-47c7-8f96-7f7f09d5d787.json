@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e3bc12f-46a9-47c7-8f96-7f7f09d5d787",
+  "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Official source investigation corrects prior documentation-only conclusion. Historical commit 61429a6c1047244c91732e87b5898867853705f0, codex-rs/tui/src/voice.rs lines751-813 routes Chatgpt/ChatgptAuthTokens to POST https://chatgpt.com/backend-api/transcribe with OAuth bearer, optional ChatGPT-Account-Id, User-Agent and multipart audio.wav; API-key mode separately uses /v1/audio/transcriptions. Lines856-869 consume JSON text, not word timestamps. Removal commit 3bbc1ce00395b6b31ed5940814a2dc4cf633228f on March29 removed partially completed TUI composer transcription; this is historical evidence, not current-main behavior. Current main 6e5f665feb9b71e1500a5721036fbdb8e871f4b0 still implements RealtimeSessionMode::Transcription in codex-rs/codex-api/src/endpoint/realtime_websocket/methods_v2.rs lines145-166 with gpt-4o-mini-transcribe, with ChatGPT auth routing in model-provider-info/src/lib.rs lines426-440. Source-only files retained in .local/codex-transcription-research. Source does not establish OpenCut/account acceptance today, monthly-credit charging rules, third-party API support, or word timestamp output. No product edits, private audio upload or credential extraction/replay. Follow-up service validation needed before claiming subscription transcription is working in OpenCut.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:37:47.629Z",
+  "parents": [
+    "b482c0c7-2c40-4cd9-9b4d-e8fbccc9940a"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

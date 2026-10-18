@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f1e041598009c063ec0dab09883fef55c15cf2e876f86b4ee69a2f138d862989",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:41:02.778Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=json.loads(pathlib.Path('.local/teaser-reexport-audio-2026-10-15/project-before.json').read_text());s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');c=sorted([e for t in s['tracks']['overlay'] if t.get('captionSource') for e in t['elements']],key=lambda e:e['startTime']);end=max(e['startTime']+e['duration'] for e in s['tracks']['main']['elements']);print({'cueCount':len(c),'endSeconds':end/120000,'lastCueEnd':max(e['startTime']+e['duration'] for e in c)/120000,'overlapCount':sum(a['startTime']+a['duration']>b['startTime'] for a,b in zip(c,c[1:]))});print('lastcues',[(e['startTime']/120000,(e['startTime']+e['duration'])/120000,e['params']['content']) for e in c[-3:]])\ndef ts(t):\n m=round(t/120);return f'{m//3600000:02}:{m//60000%60:02}:{m//1000%60:02},{m%1000:03}'\nassert all(0<=e['startTime']<e['startTime']+e['duration']<=end for e in c)\ntext='\\n\\n'.join(f\"{i}\\n{ts(e['startTime'])} --> {ts(e['startTime']+e['duration'])}\\n{e['params']['content']}\" for i,e in enumerate(c,1))+'\\n'\n(pathlib.Path.home()/'Downloads/OpenCut-Teaser-FullAuto-2026-10-15.srt').write_text(text,encoding='utf-8-sig');pathlib.Path('analysis/teaser-reexport-audio-2026-10-15/caption-cues.json').write_text(json.dumps(c,ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-943c6622-9807-4986-92ca-7504c739137c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:41:03.651Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6d8a31fa-8e00-41bc-9568-0aa6cd14312b",
+  "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+  "type": "task.update",
+  "payload": {
+    "description": "Relink corrected Yomano4.mp4 source, overwritten atsameSSDpath after previousedit. Preserve3 related projects/all30 scenes, captions/cuts/settings/transcriptionjobs. Existingclassic relink rejects changedbyte size; minimally replace byteidentity rule with sharedRust timing/dimension/fps validation using host ffprobe metadata, refresh size/mtime and binding generation withundo. Browseraccountsign-in currentlyrequiresuser; asked tosign in; noauthbypass. NoSplitperformanceinvestigation.",
+    "scope": [
+      "analysis/source-audio-relink-2026-10-15",
+      ".dip",
+      "crates/account-core/src/media.rs",
+      "classic/rust/crates/storage/src/storage.rs",
+      "classic/apps/web/src/services/local-drive/server.ts"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T01:10:34.368Z",
+  "parents": [
+    "7a0234c2-8662-4e1c-a1fb-dc078b5e0108"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

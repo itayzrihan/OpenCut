@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e380025b584150980d3c603a16457a384f804aed420409e8d0ced02301c4ac53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:46:01.280Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -lh /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4\npython3 - <<'PY'\nimport json\np=json.load(open('analysis/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7')\nfor t in s['tracks']['overlay']:\n if t.get('captionSource'):\n  print(t['name'], 'keys',list(t),'elements',len(t['elements']), 'source keys',list(t['captionSource']))\n  print(json.dumps(t['elements'][:2],ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5cee152e-9285-4153-921b-ef16a6c71506"
+      },
+      {
+        "at": "2026-10-14T09:46:01.754Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -lh /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4\npython3 - <<'PY'\nimport json\np=json.load(open('analysis/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7')\nfor t in s['tracks']['overlay']:\n if t.get('captionSource'):\n  print(t['name'], 'keys',list(t),'elements',len(t['elements']), 'source keys',list(t['captionSource']))\n  print(json.dumps(t['elements'][:2],ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5cee152e-9285-4153-921b-ef16a6c71506"
+      },
+      {
+        "at": "2026-10-14T09:46:01.761Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "command -v ffprobe\nrg -n 'hidden|visible' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/renderer --glob '*.ts*'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3cde8034-3fad-4dbb-8b1b-2566a018e730"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:46:01.853Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

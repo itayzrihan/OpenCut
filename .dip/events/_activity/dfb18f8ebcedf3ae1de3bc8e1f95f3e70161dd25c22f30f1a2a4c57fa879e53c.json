@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dfb18f8ebcedf3ae1de3bc8e1f95f3e70161dd25c22f30f1a2a4c57fa879e53c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T18:23:39.796Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,comm | rg 'Speech Test|speech|recognition'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6af08fd4-c827-4583-86a7-afae4192c65f"
+      },
+      {
+        "at": "2026-10-12T18:23:40.245Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,comm | rg 'Speech Test|speech|recognition'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6af08fd4-c827-4583-86a7-afae4192c65f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T18:23:40.715Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

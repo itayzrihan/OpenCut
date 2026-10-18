@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3bfe859fe208bd61da8e0a0ed6a9b30c1000dea013693974d64035f62a1a1061",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:38:04.456Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/services/transcription/service.test.ts <<'EOF'\n\ntest(\"long jobs recycle the model worker at a bounded interval without overlapping models\", async () => {\n\tconst pending = new TranscriptionService().withChunkSession({\n\t\tsignal: new AbortController().signal,\n\t\trun: async transcribe => {\n\t\t\tfor (let i = 0; i < 17; i++) await transcribe({\n\t\t\t\tload: async () => new Float32Array(160), language: \"he\",\n\t\t\t});\n\t\t},\n\t});\n\tfor (let i = 0; i < 17; i++) {\n\t\tawait tick();\n\t\texpect(FakeWorker.instances).toHaveLength(Math.floor(i / 8) + 1);\n\t\tconst current = FakeWorker.instances.at(-1)!;\n\t\tif (i >= 8) expect(current.previousTerminated).toBe(true);\n\t\texpect(FakeWorker.instances.filter(w => !w.terminated)).toHaveLength(1);\n\t\tcurrent.emit({ type: \"complete\", result: { text: \"ok\" } });\n\t}\n\tawait pending;\n\texpect(FakeWorker.instances.every(w => w.terminated)).toBe(true);\n});\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-transcription.mjs');s=p.read_text().replace(\"'src/transcription/windows.test.ts',\",\"'src/transcription/windows.test.ts',\\n'src/transcription/overlap-reader.test.ts',\");p.write_text(s)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-1d817239-eff6-40f8-9e9b-c77112a859bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:38:05.201Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b96a82bb916cce9ed552a75da701b1085a517338f96b79e4af696bc88dac2bb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T12:37:14.967Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-transcription-debug/dev/logs/next-development.log",
+          "classic/apps/web/src/transcription/windows.test.ts",
+          "classic/apps/web/src/transcription/overlap-reader.test.ts",
+          ".local/classic-web-tests/1791808634477"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "608baeb2-5958-4991-b631-34b9fb96221d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:37:15.423Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

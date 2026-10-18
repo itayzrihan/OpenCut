@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4cc5e6d243fddc3d73caf301b7e2d6543ca0a4bce308e69bb3e68b4588b590b1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:46:38.150Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json';d=json.loads(p.read_text());s=next(s for s in d['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print([(t['name'],t.get('hidden')) for t in s['tracks']['overlay']])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c3aa1cef-5ad8-4aff-8647-8173410bbfd6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:46:38.336Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

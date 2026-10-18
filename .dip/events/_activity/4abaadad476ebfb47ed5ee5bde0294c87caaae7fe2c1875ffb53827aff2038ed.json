@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4abaadad476ebfb47ed5ee5bde0294c87caaae7fe2c1875ffb53827aff2038ed",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:23:03.900Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "classic/apps/web/node_modules/.bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json > .local/sequence-navigation/viewport-types.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3f054dca-6d25-4f7d-8e95-b710a6b38210"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:23:03.934Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

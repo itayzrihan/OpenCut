@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c668666dc7f9853c2317128b2a6d3fa9d0579b3bc5f8bb8018283b0d2b9d1d7c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:39:33.143Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'toolName|invoke.*tool|invokeSync|unknown tool|Unknown tool|canonical' classic/apps/web/src -g '*bridge*.ts' -g '*transport*.ts' -g '*mcp*.ts' | head -85\nrg -n 'scene.*(create|duplicate)|create_scene|podcast' classic/apps/web/src/ai/types.ts classic/apps/web/src/ai/edit-plan.ts classic/apps/web/src/editor-agent/capabilities.ts\nsed -n '1,110p' crates/mcp/src/classic_bridge.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-184f2409-9d8f-4557-9620-5073f37bb79e"
+      },
+      {
+        "at": "2026-10-14T07:39:33.274Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'toolName|invoke.*tool|invokeSync|unknown tool|Unknown tool|canonical' classic/apps/web/src -g '*bridge*.ts' -g '*transport*.ts' -g '*mcp*.ts' | head -85\nrg -n 'scene.*(create|duplicate)|create_scene|podcast' classic/apps/web/src/ai/types.ts classic/apps/web/src/ai/edit-plan.ts classic/apps/web/src/editor-agent/capabilities.ts\nsed -n '1,110p' crates/mcp/src/classic_bridge.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-184f2409-9d8f-4557-9620-5073f37bb79e"
+      },
+      {
+        "at": "2026-10-14T07:39:33.275Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__opencut__opencut_discover",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4f407b4f-20ac-4e74-b3a4-2f418952e1f4"
+      },
+      {
+        "at": "2026-10-14T07:39:33.352Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__opencut__opencut_discover",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4f407b4f-20ac-4e74-b3a4-2f418952e1f4"
+      },
+      {
+        "at": "2026-10-14T07:39:33.357Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-24b4d5d9-5d3b-452f-bb37-5d5f202f0dfe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:39:33.775Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

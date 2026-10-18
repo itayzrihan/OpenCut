@@ -6,7 +6,13 @@ let resolveTrack: ((track: object | null) => void) | undefined;
 let delayed = false;
 let codec = "pcm-s16be";
 let sampleRate = 48000;
-mock.module("@/media/source", () => ({ createMediaSource: () => ({}) }));
+let sourceOptions: { urlOptions?: { maxCacheSize?: number } } | undefined;
+mock.module("@/media/source", () => ({
+	createMediaSource: (options: typeof sourceOptions) => {
+		sourceOptions = options;
+		return {};
+	},
+}));
 mock.module("mediabunny", () => ({
 	ALL_FORMATS: [],
 	Input: class {
@@ -40,6 +46,7 @@ test("39 Smart Takes and concurrent warmup reuse one media parser", async () => 
 	expect(sinks[0]).not.toBeNull();
 	expect(opens - before.opens).toBe(1);
 	expect(reads - before.reads).toBe(1);
+	expect(sourceOptions?.urlOptions?.maxCacheSize).toBe(8 * 1024 ** 2);
 	cache.clear();
 	expect(closes - before.closes).toBe(1);
 });

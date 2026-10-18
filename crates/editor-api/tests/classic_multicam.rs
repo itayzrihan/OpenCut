@@ -318,3 +318,32 @@ async fn finishing_is_shared_atomic_and_preserves_existing_edit() {
     call(&r, "history.redo", json!({})).await;
     assert_eq!(read(&r).await["project"], after["project"]);
 }
+
+#[tokio::test]
+async fn short_camera_can_start_late_and_end_early_without_truncating_main_recording() {
+    let (r, mut input) = fixture().await;
+    let state = read(&r).await;
+    let mut classic = state["project"]["classic"].clone();
+    classic["mediaAssets"][1]["duration"] = json!(20.0);
+    call(&r,"project.classic.commit",json!({"projectId":"classic-project","expectedRevision":state["revision"],"classic":classic})).await;
+    input["expectedRevision"] = read(&r).await["revision"].clone();
+    input["plan"]["channels"][1]["videoDelay"] = json!(10.0);
+    input["plan"]["cuts"] = json!([
+        {"channelId":"a","timestamp":0.0,"duration":15.0},
+        {"channelId":"b","timestamp":15.0,"duration":10.0},
+        {"channelId":"a","timestamp":25.0,"duration":25.0}
+    ]);
+    call(&r, CREATE, input).await;
+    let after = read(&r).await;
+    let scene = &after["project"]["classic"]["document"]["scenes"][2];
+    assert_eq!(scene["multicam"]["duration"], 50.0);
+    for clip in scene["tracks"]["overlay"][1]["elements"]
+        .as_array()
+        .unwrap()
+    {
+        let start = clip["startTime"].as_f64().unwrap() / 120000.0;
+        let end = start + clip["duration"].as_f64().unwrap() / 120000.0;
+        assert!(start >= 10.0 && end <= 30.0);
+        assert_eq!(clip["trimStart"].as_f64().unwrap() / 120000.0, start - 10.0);
+    }
+}

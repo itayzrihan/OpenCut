@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a06045f5b53ecc30f9d9a8fa405c405f3301938ba85c9b94207b1a2ea3528bd0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:05:46.325Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,220p' 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-86e6d9d7-8711-4cd1-b7ce-bb631a7f62e1"
+      },
+      {
+        "at": "2026-10-13T12:05:46.412Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,220p' 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-86e6d9d7-8711-4cd1-b7ce-bb631a7f62e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:05:46.498Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

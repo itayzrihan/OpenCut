@@ -1,18 +1,16 @@
-import {
-	transcriptionService,
-	assertBrowserTranscriptionAvailable,
-} from "@/services/transcription/service";
+import { openAudioWindowReader } from "@/media/audio-window";
+import { transcribeAudioWindows } from "./windows";
 import type {
 	TranscriptionLanguage,
 	TranscriptionProgress,
 	TranscriptionResult,
 } from "./types";
 
-/** Web Audio decodes/resamples locally; no audio is sent to an HTTP endpoint. */
+/** Decode bounded ranges of the Blob; never materialize its complete PCM or bytes. */
 export async function transcribeTimelineAudioBlob({
 	audioBlob,
 	language,
-	signal,
+	signal = new AbortController().signal,
 	onProgress,
 }: {
 	audioBlob: Blob;
@@ -20,24 +18,19 @@ export async function transcribeTimelineAudioBlob({
 	signal?: AbortSignal;
 	onProgress?: (progress: TranscriptionProgress) => void;
 }): Promise<TranscriptionResult> {
-	assertBrowserTranscriptionAvailable();
-	signal?.throwIfAborted();
-	const account = window.__opencutAccountId;
-	const context = new OfflineAudioContext(1, 1, 16000);
-	const decoded = await context.decodeAudioData(await audioBlob.arrayBuffer());
-	signal?.throwIfAborted();
-	if (window.__opencutAccountId !== account)
-		throw new DOMException("Account changed", "AbortError");
-	const mono = new Float32Array(decoded.length);
-	for (let channel = 0; channel < decoded.numberOfChannels; channel++) {
-		const samples = decoded.getChannelData(channel);
-		for (let i = 0; i < mono.length; i++)
-			mono[i] += samples[i] / decoded.numberOfChannels;
-	}
-	return transcriptionService.transcribe({
-		audioData: mono,
-		language,
+	const reader = await openAudioWindowReader({
+		asset: { file: audioBlob },
 		signal,
-		onProgress,
 	});
+	try {
+		return await transcribeAudioWindows({
+			duration: await reader.duration(),
+			language,
+			signal,
+			onProgress,
+			load: (range) => reader.read(range),
+		});
+	} finally {
+		reader.close();
+	}
 }

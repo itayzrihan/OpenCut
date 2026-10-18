@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fa58c1ae6d0f4d5d25800059b630d53e9506e8550f36557258385bb366ef7272",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T20:18:16.595Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -30 \"$HOME/Library/Application Support/OpenCut Local/logs/production.log\"\nps -axo pid,%cpu,rss,comm | sort -k2 -nr | head -10\nsed -n '1,70p' classic/apps/web/src/transcription/windows.ts\nrg -n 'completedChunks|continue' classic/apps/web/src/transcription/windows.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-bb8d10db-85a3-4920-a46d-36e2b71aa0ee"
+      },
+      {
+        "at": "2026-10-12T20:18:16.737Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -30 \"$HOME/Library/Application Support/OpenCut Local/logs/production.log\"\nps -axo pid,%cpu,rss,comm | sort -k2 -nr | head -10\nsed -n '1,70p' classic/apps/web/src/transcription/windows.ts\nrg -n 'completedChunks|continue' classic/apps/web/src/transcription/windows.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-bb8d10db-85a3-4920-a46d-36e2b71aa0ee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T20:18:17.587Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

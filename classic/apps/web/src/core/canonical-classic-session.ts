@@ -736,6 +736,55 @@ export class CanonicalClassicSession {
 		}
 	}
 
+	currentSceneView(): {
+		projectId: string;
+		sceneId: string;
+		revision: number;
+		navigationRevision: number;
+		changed: boolean;
+		viewport: {
+			projectId: string;
+			zoomLevel: number;
+			scrollLeft: number;
+			playheadTime: number;
+		} | null;
+	} {
+		return this.call({
+			capability: "project.classic.scene.view",
+			input: { projectId: this.projectId },
+		});
+	}
+
+	openScene(
+		sceneId: string,
+	): ReturnType<CanonicalClassicSession["currentSceneView"]> {
+		const current = this.currentSceneView();
+		return this.call({
+			capability: "project.classic.scene.open",
+			input: {
+				projectId: this.projectId,
+				sceneId,
+				expectedRevision: current.revision,
+				expectedNavigationRevision: current.navigationRevision,
+			},
+		});
+	}
+
+	setViewport(viewState: {
+		zoomLevel: number;
+		scrollLeft: number;
+		playheadTime: number;
+	}): ReturnType<CanonicalClassicSession["currentSceneView"]> {
+		return this.call({
+			capability: "project.classic.viewport.set",
+			input: {
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+				...viewState,
+			},
+		});
+	}
+
 	updateSettings(input: {
 		settings: Partial<import("@/project/types").TProjectSettings>;
 		historyGroup?: string;
@@ -761,6 +810,19 @@ export class CanonicalClassicSession {
 				projectId: this.projectId,
 				expectedRevision: this.status().revision,
 			},
+		});
+	}
+
+	podcastEditorial(input: {
+		sceneId: string;
+		elementIds: string[];
+		expectedRevision: number;
+		options: import("@/ai/podcast-types").PodcastOptions;
+		responses: Record<string, unknown>;
+	}): import("@/ai/podcast-types").PodcastEditorialStep {
+		return this.call({
+			capability: "timeline.classic.podcast.editorial",
+			input: { ...input, projectId: this.projectId },
 		});
 	}
 

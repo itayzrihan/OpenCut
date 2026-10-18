@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6bc707353b3856a5ded141b4daacf7aa6621e9ecb8b2da6f5717118ae20ad08c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:57.863Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "classic/apps/web/node_modules/.bin/tsc --noEmit --project classic/apps/web/tsconfig.json > .local/smart-shorts-audio/types.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2558d22c-030f-411d-959b-be7f12ac1667"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:58.364Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

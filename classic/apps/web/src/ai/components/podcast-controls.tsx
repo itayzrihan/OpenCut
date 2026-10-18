@@ -21,7 +21,7 @@ const modes = [
 		mode: "teaser",
 		label: "יצירת טיזר",
 		icon: Film,
-		description: "הרגע הכי חזק בפתיחה, סיפור מחובר וסיום שמשאיר ציפייה להמשך.",
+		description: "מיפוי רגעים מכל הפרק, חיבור שאלות, ניגודים ורגעי שיא לטיזר קצר, וביקורת תוכן לפני היצירה. נשמר ברצף חדש.",
 	},
 	{
 		mode: "highlights",
@@ -95,6 +95,18 @@ export function PodcastControls({
 			{scene?.podcastExtract && (
 				<div className="space-y-1 rounded border p-2 text-xs" dir="auto">
 					<p className="font-medium">{scene.podcastExtract.title}</p>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={running}
+						onClick={() =>
+							void editor.scenes.switchToScene({
+								sceneId: scene.podcastExtract!.sourceSceneId,
+							})
+						}
+					>
+						פתח את פרק המקור להפקה נוספת
+					</Button>
 					<p>פתיחה: {scene.podcastExtract.openingHook}</p>
 					<p>סיום: {scene.podcastExtract.endingHook}</p>
 					{!!scene.takeAssembly?.quality?.unverifiedBoundaries && (
@@ -157,8 +169,8 @@ export function PodcastControls({
 					<DialogHeader>
 						<DialogTitle>{selected?.label}</DialogTitle>
 						<DialogDescription>
-							{selected?.description} כל תוצאה נשמרת כרצף נפרד, והפרק המקורי
-							נשאר זמין.
+							{selected?.description} כל תוצאה נשמרת כרצף נפרד. הווידאו והכתוביות בפרק המקורי
+							נשארים ללא שינוי, ואפשר להפיק ממנו שוב.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6">

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a078f5ac-0fa6-4a20-ab4e-2a88b798bbd9",
+  "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+  "type": "task.update",
+  "payload": {
+    "title": "Persist incremental transcription through timeline edits and resume interruptions",
+    "acceptance": [
+      "Every completed audio window is durably inserted through the canonical runtime exactly once, before the next window completes.",
+      "Timeline edits do not discard or abort ongoing transcription; source-bound words are mapped against current clips without overwriting unrelated edits.",
+      "Completed windows survive interruption and retry resumes missing work; bounded automatic recovery retains published words.",
+      "Tests cover edits during transcription, incremental publication, duplicate replay, cancellation/recovery and canonical state reads."
+    ],
+    "scope": [
+      "classic/apps/web/src/transcription",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/subtitles",
+      "crates/editor-api/src/operations/classic_transcription"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T09:36:12.401Z",
+  "parents": [
+    "a2bf101c-0bca-444a-9136-f0df681300fd"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

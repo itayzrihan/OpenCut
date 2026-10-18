@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2d09ae0a-9fa4-4627-8b23-c2e0cffdc0da",
+  "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Answered follow-up investigation about ChatGPT subscription transcription without an API key. Official auth documentation distinguishes ChatGPT/Codex subscription access from general Platform API calls; file-transcription guide authenticates /v1/audio/transcriptions with OPENAI_API_KEY. Voice is included on eligible ChatGPT plans inside OpenAI clients, but no documented third-party file-transcription entitlement via ChatGPT OAuth was found. Existing OpenCut OAuth adapter forwards Codex Responses requests; it does not establish audio endpoint entitlement. No credentials were extracted/replayed, no private audio uploaded and no product code changed. Sources: https://learn.chatgpt.com/docs/auth ; https://learn.chatgpt.com/docs/features/voice ; https://developers.openai.com/api/docs/guides/speech-to-text . Existing implementation verification retained.",
+    "next": "",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:30:30.804Z",
+  "parents": [
+    "ac2c3fec-055e-412f-baf4-068e4a87d14e"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

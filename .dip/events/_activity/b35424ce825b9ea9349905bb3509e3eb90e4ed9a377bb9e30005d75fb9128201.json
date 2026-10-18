@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b35424ce825b9ea9349905bb3509e3eb90e4ed9a377bb9e30005d75fb9128201",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:24:39.660Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-transcription.mjs')\ns=p.read_text().replace(\"'--jobs=1']);\", \"'--jobs=1','--timeout=240000']);\")\np.write_text(s)\np=Path('.dip/config.json')\nimport json\ns=json.loads(p.read_text())\ns['checks']['transcription-sources']['timeoutMs']=480000\ns['checks']['transcription-checkpoints']['timeoutMs']=480000\np.write_text(json.dumps(s,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-b80c0e49-15a3-4bdc-b37a-2c0c21ac98e9"
+      },
+      {
+        "at": "2026-10-12T10:24:40.085Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-transcription.mjs')\ns=p.read_text().replace(\"'--jobs=1']);\", \"'--jobs=1','--timeout=240000']);\")\np.write_text(s)\np=Path('.dip/config.json')\nimport json\ns=json.loads(p.read_text())\ns['checks']['transcription-sources']['timeoutMs']=480000\ns['checks']['transcription-checkpoints']['timeoutMs']=480000\np.write_text(json.dumps(s,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-b80c0e49-15a3-4bdc-b37a-2c0c21ac98e9"
+      },
+      {
+        "at": "2026-10-12T10:24:40.089Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-79d64169-030c-498f-8b4d-0f513fa56388"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:24:40.332Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

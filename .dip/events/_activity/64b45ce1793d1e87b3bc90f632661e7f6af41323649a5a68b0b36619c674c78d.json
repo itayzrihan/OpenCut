@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "64b45ce1793d1e87b3bc90f632661e7f6af41323649a5a68b0b36619c674c78d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T18:54:31.884Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-agent/src/session_store.rs",
+          "classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts",
+          ".local/smart-shorts-performance/native-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "6f3f2b1e-dba7-4336-89a8-12b73895508f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:54:31.887Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

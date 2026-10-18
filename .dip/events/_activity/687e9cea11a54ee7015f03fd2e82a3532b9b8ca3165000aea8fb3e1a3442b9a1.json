@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "687e9cea11a54ee7015f03fd2e82a3532b9b8ca3165000aea8fb3e1a3442b9a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:02:36.249Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cargo build --release -p opencut-mcp-server > .local/smart-shorts-performance/native-final.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-18b5a7f8-5c0b-427e-902e-79702d6515fa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:02:36.932Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

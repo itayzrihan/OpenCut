@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e8a735c16d8bd25df565324d9d2332df1e80dda117a00b08ef32a6b60d81c813",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:45:44.052Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e98ba7e6-a459-4fba-8680-a078b6fdb7df"
+      },
+      {
+        "at": "2026-10-14T07:45:44.106Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '58,80p' classic/apps/web/src/ai/edit-plan.ts; sed -n '1,120p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts; rg -n 'attach|prepare|extract' crates/editor-api/tests/classic_podcast.rs | head -35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d0a816c7-3599-4fb6-a552-b71360b596e1"
+      },
+      {
+        "at": "2026-10-14T07:45:44.212Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '58,80p' classic/apps/web/src/ai/edit-plan.ts; sed -n '1,120p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts; rg -n 'attach|prepare|extract' crates/editor-api/tests/classic_podcast.rs | head -35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d0a816c7-3599-4fb6-a552-b71360b596e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:45:44.681Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

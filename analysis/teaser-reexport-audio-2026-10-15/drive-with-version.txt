@@ -1,0 +1,252 @@
+- iframe
+- region: Uploaded
+- navigation:
+  - button:
+    - generic: Skip to main content
+  - button:
+    - generic: Keyboard shortcuts
+  - button:
+    - generic: Accessibility feedback
+- banner:
+  - link:
+    - /url: https://drive.google.com/?tab=oo&authuser=0
+    - generic: Drive
+  - search:
+    - table:
+      - rowgroup:
+        - row:
+          - cell:
+            - textbox:
+              - /placeholder: Get answers from Drive
+    - button:
+    - tooltip: AI Overview search
+    - button:
+    - button:
+  - button:
+  - button:
+  - button:
+  - button
+  - tooltip: Ask Gemini
+  - button:
+  - button:
+- button:
+  - generic: New
+- navigation:
+  - heading [level=2]: Folders and views
+  - tree:
+    - treeitem:
+      - link:
+        - generic: Home
+    - treeitem:
+      - link:
+        - generic: Projects
+    - treeitem:
+      - link:
+        - generic: My Drive
+        - text: Collapsed
+    - treeitem:
+      - link:
+        - generic: Computers
+        - text: Collapsed
+    - treeitem:
+      - link:
+        - generic: Shared with me
+    - treeitem:
+      - link:
+        - generic: Recent
+    - treeitem:
+      - link:
+        - generic: Starred
+    - treeitem:
+      - link:
+        - generic: Spam
+    - treeitem:
+      - link:
+        - generic: Trash
+    - treeitem:
+      - link:
+        - generic: Storage (80% full)
+  - generic: 4.04 TB of 5 TB used
+  - text: Get more storage
+  - link:
+    - /url: https://drive.google.com/settings/storage?authuser=0&i=m&utm_source=drive&utm_medium=web&utm_campaign=g1_widget_eighty#upgrade
+- navigation:
+  - heading: Folder Path
+  - list:
+    - link: My Drive
+    - button:
+      - generic: ‫טיזר למכור בלי לשכנע — Full Auto — 2026-10-14‬‎
+- toolbar:
+  - radiogroup:
+    - radio:
+    - radio [checked]:
+  - button:
+- toolbar:
+  - button:
+  - generic: 1 Selected
+  - button [disabled]:
+    - generic: Ask Gemini
+  - button:
+  - button:
+  - button:
+  - button:
+  - button:
+  - button:
+- main:
+  - region:
+    - generic: 80% of storage usedIf you run out, you can't create, edit, and upload files.
+    - button:
+      - generic: Clean up space
+    - button:
+      - generic: Get storage
+    - button:
+    - tooltip: Close banner
+  - region:
+    - grid:
+      - button:
+        - generic: Name
+      - tooltip: "Sort by: A to Z"
+      - row:
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-2026-10-14.srt
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-2026-10-14.srt
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-2026-10-14.srt
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt
+          - button:
+          - tooltip: More actions
+        - gridcell [selected]:
+          - generic: OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4
+          - button:
+          - tooltip: More actions
+        - gridcell:
+          - generic: OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4
+          - button:
+          - tooltip: More actions
+    - progressbar:
+- complementary:
+  - heading [level=2]:
+    - button:
+      - generic: OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4
+  - button:
+  - tooltip: Hide Details
+  - tablist:
+    - tab [selected]:
+      - generic: Details
+    - tab:
+      - generic: Activity
+  - iframe:
+    - main:
+      - region "Details":
+        - link "Open OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4":
+          - img "OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4"
+        - heading "Who has access" [level=2]
+        - grid "Sharing Info":
+          - rowgroup:
+            - row "Private to you":
+              - gridcell "Private to you":
+        - generic: Private to you
+        - button "Manage access":
+          - generic: Manage access
+        - tooltip
+        - heading "Analytics <5 opens" [level=2]:
+          - heading "Analytics" [level=3]:
+            - generic: Analytics
+          - generic: <5 opens
+        - heading "Security limitations" [level=2]:
+          - generic: Security limitations
+        - generic: No limitations applied
+        - generic: If any are applied, they will appear here
+        - region "File details":
+          - heading "File details" [level=3]
+          - listbox "File details":
+            - option "Type Video":
+              - generic: Type
+              - generic: Video
+            - tooltip: video/mp4
+            - option "Size 65.5 MB":
+              - generic: Size
+              - generic: 65.5 MB
+            - option "Storage used 130.2 MB":
+              - generic: Storage used
+              - generic: 130.2 MB
+            - option "Dimensions 1,080 x 1,920":
+              - generic: Dimensions
+              - generic: 1,080 x 1,920
+            - option "Duration 01:29":
+              - generic: Duration
+              - generic: 01:29
+            - generic: Location
+            - option "טיזר למכור בלי לשכנע — Full Auto — 2026-10-14, show location in the list of files.":
+              - generic: ‫טיזר למכור בלי לשכנע — Full Auto — 2026-10-14‬‎
+            - option "Owner me":
+              - generic: Owner
+              - generic: me
+            - tooltip
+            - option "Modified Oct 14, 2026 by me":
+              - generic: Modified
+              - generic: Oct 14, 2026 by me
+            - option "Manage versions":
+            - option "Opened Oct 14, 2026 by me":
+              - generic: Opened
+              - generic: Oct 14, 2026 by me
+            - option "Created Oct 14, 2026":
+              - generic: Created
+              - generic: Oct 14, 2026
+            - option "Caption tracks Manage caption tracks":
+              - generic: Caption tracks
+              - button "Manage caption tracks":
+                - generic: Manage caption tracks
+          - generic "File Details Description Textbox": Description
+          - textbox "File Details Description Textbox":
+            - /placeholder: Add description
+          - text: 0/25,000
+          - generic: 0 of 25000 characters entered
+- complementary:
+  - tablist:
+    - tab
+    - tab
+    - tab
+    - tab
+    - separator [disabled]
+    - tab
+- button:
+- dialog "Manage versions":
+  - heading "Manage versions"
+  - generic: Temporary versions of 'OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4' may be deleted automatically after 30 days or after 100 versions are stored. To avoid deletion, open the context menu on the file version and select Keep forever. These versions are kept forever and count towards your storage limit. Versions are displayed in the order they were uploaded to Drive.
+  - link "Learn more about versions": Learn more
+  - button "Upload new version":
+    - text: Upload new version
+  - list:
+    - generic: Current version
+    - generic: OpenCut-Teaser-FullAuto-with-captions-2026-10-15.mp4
+    - generic: 4:46 AM
+    - generic: Itay Zrihan
+    - button "More actions for the current version" [active]:
+    - generic: Version 2
+    - generic: OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4
+    - generic: Wed 1:16 PM
+    - generic: Itay Zrihan
+    - button "More actions for version 2":
+    - generic: Version 1
+    - generic: OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4
+    - generic: Wed 12:45 PM
+    - generic: Itay Zrihan
+    - button "More actions for version 1":
+  - button "Close"

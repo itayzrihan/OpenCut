@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8566bf43fb6292e51a5242c18b3989f96c1aca1ef01a2eacc94756045b5ed541",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:04:34.051Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,170p' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'audioEvidence|AudioEvidence|frames' crates/editor-api/src/operations/classic_takes/quality.rs | head -n 35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-891f9fdd-463c-485b-82af-77f84fb2c7a1"
+      },
+      {
+        "at": "2026-10-13T12:04:34.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,170p' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'audioEvidence|AudioEvidence|frames' crates/editor-api/src/operations/classic_takes/quality.rs | head -n 35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-891f9fdd-463c-485b-82af-77f84fb2c7a1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:04:35.050Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

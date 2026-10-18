@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ae96d739eac75a4c1981170d65ac0c734535a95cb19af36ca06d8f9e357ba07d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:48:43.541Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/effects/index.ts",
+          "classic/apps/web/src/animation/__tests__/product-catalog.test.ts",
+          "classic/apps/web/src/preview/__tests__/video-lookahead.test.ts",
+          ".local/brand-kit/premerge-fixes",
+          ".local/brand-kit/premerge-fixes/src__timeline____tests____restore-silence-captions.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "1a02f90f-ad22-4c1f-99cc-85262a2a47b1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:48:43.544Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

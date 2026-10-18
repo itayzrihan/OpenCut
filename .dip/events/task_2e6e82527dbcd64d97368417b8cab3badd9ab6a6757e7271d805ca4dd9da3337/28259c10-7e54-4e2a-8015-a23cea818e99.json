@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28259c10-7e54-4e2a-8015-a23cea818e99",
+  "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/transcription",
+      "classic/apps/web/src/subtitles",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/app/api/transcription",
+      "classic/apps/web/src/project/types.ts",
+      "crates/editor-api/src/operations/classic_transcription.rs",
+      "crates/editor-api/tests/classic_transcription.rs",
+      "classic/BROWSER-TRANSCRIPTION.md",
+      "crates/editor-api/src/classic.rs",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "classic/apps/web/src/ai/smart-takes-task.ts",
+      "classic/apps/web/src/core/__tests__/canonical-transcription.test.ts",
+      "classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+      ".dip/config.json",
+      ".dip/tools/verify-transcription-sources.mjs"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:21:32.139Z",
+  "parents": [
+    "ed9e7c68-4ff8-4e0e-b9d2-33990db5bdec"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

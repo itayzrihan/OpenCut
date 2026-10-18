@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ecb66a26a45434f518d8fea01466df40fafd69be01d624944c78ee7ebe81c92",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:42:42.747Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\ns=open('.local/smart-shorts-seven/restore-probe.mjs').read();s=s.replace(\"console.log('PASS exact current snapshot plus Undo/Redo');\", \"console.log('PASS exact current snapshot plus Undo/Redo'); const a=performance.now(); const archive=runtime.invokeSync('project.classic.session.archive',{projectId:d.metadata.id,persistableOnly:true,compact:true,chained:true},{}); console.log('archivedSeconds',(performance.now()-a)/1000,'bytes',JSON.stringify(archive).length);\")\nopen('.local/smart-shorts-seven/archive-probe.mjs','w').write(s)\nPY\nnode .local/smart-shorts-seven/archive-probe.mjs > .local/smart-shorts-seven/archive-probe.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-176b6aaf-9f15-4348-aac9-5fb1f3b058c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:42:43.318Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42b4b95920a1fd845f20f9fbba8440b35ae1e48e6a1e1de032f9027fad9c37f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:46:42.431Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --cached --name-only -z | python3 -c 'import sys,pathlib,re\nhits=[]\nfor x in sys.stdin.buffer.read().split(b\"\\0\"):\n if not x:continue\n p=pathlib.Path(x.decode())\n if not p.is_file():continue\n try:s=p.read_text()\n except:continue\n if re.search(r\"(?i)(?:authorization[\\\"\\x27]?\\s*[:=]\\s*[\\\"\\x27]Bearer\\s+[A-Za-z0-9._-]{20,}|(?:api[_-]?key|client[_-]?secret|password)[\\\"\\x27]?\\s*[:=]\\s*[\\\"\\x27][A-Za-z0-9_+-]{24,})\",s):hits.append(str(p))\nprint(\"Potential credential assignment files:\",len(hits))\nprint(\"\\n\".join(hits[:25]))'",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-a91005df-3a24-4e8c-9190-dca12b3d8d95"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:46:42.619Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

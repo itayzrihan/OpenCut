@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c0f37dd41bad4a1e94c6a9ac2dc7bc16eb3667091986302fead1cbdf9e1e79cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:44:59.346Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/podcast-plan.test.ts src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-editorial.test.ts src/ai/podcast-plan-cache.test.ts --jobs=1 --report=.local/teaser-upgrade/transport-v2; test -x classic/apps/web/node_modules/.bin/tsc && classic/apps/web/node_modules/.bin/tsc --noEmit --pretty false --project classic/apps/web/tsconfig.json > /tmp/opencut-teaser-tsc.txt 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9e806acc-a1be-4cf4-b726-858aeff5033e"
+      },
+      {
+        "at": "2026-10-16T10:44:59.347Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n '(podcast|commands|editorial)' /tmp/opencut-teaser-tsc.txt | head -25; rg -n 'withAccount|X-OpenCut-Account|x-opencut-account' classic/apps/web/src/accounts/server.ts | head -20; sed -n '1,100p' classic/apps/web/src/ai/skills/automatic-zoom/SKILL.md; git diff --stat -- crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-plan.ts; sed -n '1,110p' classic/scripts/local-production/common.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b653b1cf-2c38-4846-be0b-64bf32e534e4"
+      },
+      {
+        "at": "2026-10-16T10:44:59.439Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n '(podcast|commands|editorial)' /tmp/opencut-teaser-tsc.txt | head -25; rg -n 'withAccount|X-OpenCut-Account|x-opencut-account' classic/apps/web/src/accounts/server.ts | head -20; sed -n '1,100p' classic/apps/web/src/ai/skills/automatic-zoom/SKILL.md; git diff --stat -- crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-plan.ts; sed -n '1,110p' classic/scripts/local-production/common.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b653b1cf-2c38-4846-be0b-64bf32e534e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:44:59.924Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

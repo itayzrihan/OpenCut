@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30395c5455c921ee5d813425bec40b42f75da5a92c48b6312786492270692a30",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:58:28.183Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-ee4b0d84-a304-4c1d-a316-900e32e5990e"
+      },
+      {
+        "at": "2026-10-12T07:58:28.186Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__codex_app__open_in_codex",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-35f75f71-e35b-4e98-b1b6-2c1409e58974"
+      },
+      {
+        "at": "2026-10-12T07:58:28.364Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__codex_app__open_in_codex",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-35f75f71-e35b-4e98-b1b6-2c1409e58974"
+      },
+      {
+        "at": "2026-10-12T07:58:28.397Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > dist/index.html <<'EOF'\n<!doctype html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>DIP — Your session ends. Your project remembers. | VXU Labs</title>\n<meta name=\"description\" content=\"Persistent project memory for coding agents. Keep requirements, plans, handoffs and verification evidence beside your code. Local-first and open source.\">\n<link rel=\"canonical\" href=\"https://dip.vxu.me/\"><meta property=\"og:title\" content=\"DIP — Your project remembers.\"><meta property=\"og:description\" content=\"Local-first project memory for coding agents. Open source by VXU Labs.\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:url\" content=\"https://dip.vxu.me/\"><meta property=\"og:image\" content=\"https://dip.vxu.me/assets/dashboard.png\"><meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"theme-color\" content=\"#101916\">\n<link rel=\"icon\" href=\"/assets/favicon.svg\" type=\"image/svg+xml\"><link rel=\"stylesheet\" href=\"/style.css\"><script src=\"/script.js\" defer></script>\n</head>\n<body>\n<a class=\"skip\" href=\"#main\">Skip to content</a>\n<header class=\"wrap\"><a class=\"brand\" href=\"/\" aria-label=\"DIP home\"><span class=\"mark\">d<span>i</span>p</span><span class=\"brand-by\">BY VXU LABS</span></a><nav aria-label=\"Main navigation\"><a href=\"#how\">How it works</a><a href=\"https://github.com/vxu-labs/dip#readme\">Docs ↗</a><a class=\"nav-cta\" href=\"#install\">Install DIP <span>↗</span></a></nav></header>\n<main id=\"main\">\n<section class=\"hero wrap\"><div class=\"eyebrow\"><span class=\"dot\"></span> DEVELOPMENT INTELLIGENCE PLATFORM</div><div class=\"hero-grid\"><div><h1>Your session ends.<br>Your project<br><em>remembers.</em></h1><p class=\"lede\">Give your coding agent a place to pick up. Keep requirements, plans and handoffs beside your code — across sessions and Git worktrees.</p><div class=\"actions\"><a class=\"button\" href=\"#install\">Get started with DIP <span>↗</span></a><a class=\"text-link\" ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-edb25461-7c19-4e90-b14d-e443f4c34f53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:58:36.181Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

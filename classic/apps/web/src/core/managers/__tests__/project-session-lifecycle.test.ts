@@ -309,8 +309,11 @@ test("opening, autosaving and reopening restores one project/history/run and pre
 		first.project.setTimelineViewState({
 			viewState: { ...viewState, scrollLeft: viewState.scrollLeft + 1 },
 		});
-		expect(first.command.getStateRevision()).toBeGreaterThan(viewBefore);
-		expect(dirtyView).toHaveBeenCalledTimes(1);
+		expect(first.command.getStateRevision()).toBe(viewBefore);
+		expect(dirtyView).not.toHaveBeenCalled();
+		const stableView = first.project.getTimelineViewState();
+		expect(stableView.scrollLeft).toBe(viewState.scrollLeft + 1);
+		expect(first.project.getTimelineViewState()).toBe(stableView);
 		dirtyView.mockRestore();
 		// Slow storage must not create one full archive write per UI action.
 		let releaseCommit!: () => void;

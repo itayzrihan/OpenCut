@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e56af226320b6a51e26dde0d78c5e5c421864facd45ce3b2a50993d828c05007",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:18:08.830Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport subprocess,json,pathlib,time\nstart=time.monotonic()\ntry:\n r=subprocess.run(['node','.local/smart-shorts-performance/wasm-probe.mjs','after'],capture_output=True,text=True,timeout=90)\n pathlib.Path('.local/smart-shorts-performance/wasm-after.log').write_text(r.stdout+r.stderr);print(r.stdout[-1500:]);print('exit',r.returncode)\nexcept subprocess.TimeoutExpired as e:\n pathlib.Path('.local/smart-shorts-performance/wasm-after.log').write_bytes((e.stdout or b'')+(e.stderr or b''));pathlib.Path('.local/smart-shorts-performance/wasm-after.json').write_text(json.dumps({'completed':False,'timeoutSeconds':90}));print('bounded probe timeout',time.monotonic()-start)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-bd590406-2c6f-4cb6-9b3d-e19bf213a479"
+      },
+      {
+        "at": "2026-10-13T19:18:08.845Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-performance/browser-runtime-probe.ts <<'TS'\nimport {readFile,writeFile} from 'node:fs/promises';\nimport {acquireBrowser,releaseBrowser} from '../../classic/apps/web/node_modules/@hyperframes/engine/dist/index.js';\nconst root=new URL('../../classic/rust/editor-runtime-wasm/pkg/',import.meta.url);\nconst server=Bun.serve({hostname:'127.0.0.1',port:0,async fetch(req){const p=new URL(req.url).pathname;\n if(p==='/project')return new Response(Bun.file(new URL('../smart-shorts-audio/project-before.json',import.meta.url)),{headers:{'Content-Type':'application/json'}});\n if(p.endsWith('.js'))return new Response(Bun.file(new URL('opencut_editor_runtime_wasm_bg.js',root)),{headers:{'Content-Type':'text/javascript'}});\n if(p.endsWith('.wasm'))return new Response(Bun.file(new URL('opencut_editor_runtime_wasm_bg.wasm',root)),{headers:{'Content-Type':'application/wasm'}});\n return new Response('<!doctype html><title>Isolated canonical performance check</title>',{headers:{'Content-Type':'text/html'}});\n}});\nconst lease=await acquireBrowser([],{enableBrowserPool:false,forceScreenshot:true});\ntry{const page=await lease.browser.newPage();page.setDefaultTimeout(90000);page.on('console',m=>console.log(m.text()));await page.goto(`http://127.0.0.1:${server.port}`);\n const result=await page.evaluate(async()=>{\n  const g=await import('/runtime.js');const{instance}=await WebAssembly.instantiate(await(await fetch('/runtime.wasm')).arrayBuffer(),{'./opencut_editor_runtime_wasm_bg.js':g});g.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\n  const p=await(await fetch('/project')).json();const a=JSON.parse(p.__opencutEditorSession).saved.bundle.archive;const runtime=new g.CanonicalEditorRuntime();let t=performance.now();runtime.invokeSync('project.classic.session.restore',{projectId:p.metadata.id,expectedRevision:0,archive:a},{});const restoreMs=performance.now()-t;console.log('restore',restoreMs);t=performance.now();const state=runtime.snapshot();con",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3f33698f-eda2-41a4-9931-153e4c849a58"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:18:08.992Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

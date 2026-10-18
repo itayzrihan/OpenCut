@@ -165,6 +165,7 @@ export async function performRenderEffect({
 		} else {
 			const format = request.format!;
 			const result = await editor.renderer.exportProject({
+				maxBytes: 64 * 1024 * 1024,
 				options: {
 					format,
 					quality: "high",
@@ -179,14 +180,26 @@ export async function performRenderEffect({
 					}
 				},
 			});
-			if (!result.success || !result.buffer)
-				throw new Error(result.error ?? "Export cancelled");
-			media = await inspectEncodedVideo({ buffer: result.buffer, signal });
-			if (!request.includeAudio && media.audioTracks !== 0)
-				throw new Error("Silent export unexpectedly contains an audio track");
-			blob = new Blob([result.buffer], {
-				type: format === "mp4" ? "video/mp4" : "video/webm",
-			});
+			try {
+				if (!result.success || !(result.file || result.buffer))
+					throw new Error(result.error ?? "Export cancelled");
+				if (
+					(result.file?.size ?? result.buffer?.byteLength ?? 0) >
+					64 * 1024 * 1024
+				)
+					throw new Error("Export exceeds the agent artifact limit");
+				const buffer = result.file
+					? await result.file.arrayBuffer()
+					: result.buffer!;
+				media = await inspectEncodedVideo({ buffer, signal });
+				if (!request.includeAudio && media.audioTracks !== 0)
+					throw new Error("Silent export unexpectedly contains an audio track");
+				blob = new Blob([buffer], {
+					type: format === "mp4" ? "video/mp4" : "video/webm",
+				});
+			} finally {
+				await result.dispose?.();
+			}
 			filename = `OpenCut-${effect.projectId}.${format}`;
 		}
 		assertScene();

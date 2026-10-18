@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5de0b26e87c3f4e711b07868cbfbd43b7dac2c7a4151e50569e555db2001b093",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:19:42.011Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'NODE'\nconst base='http://127.0.0.1:3210';const html=await(await fetch(base)).text();const token=[REDACTED];const s=await(await fetch(base+'/status',{headers:{'x-opencut-launcher':token}})).json();console.log(JSON.stringify(s)); console.log('editor HTTP',(await fetch('http://localhost:3211/editor/11e7e552-fd67-44e7-8795-cd2b8b5e2668')).status);\nNODE",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-cf49aa14-9c56-4570-aec1-9723550722cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:19:42.077Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

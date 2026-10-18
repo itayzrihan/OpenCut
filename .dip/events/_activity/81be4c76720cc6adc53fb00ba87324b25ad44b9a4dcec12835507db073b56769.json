@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "81be4c76720cc6adc53fb00ba87324b25ad44b9a4dcec12835507db073b56769",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T15:02:52.660Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('.local/smart-shorts-seven/watch-browser-memory.mjs');s=p.read_text().replace('const targets=[24824,25234];','const targets=[62659,62648];').replace('3600000','1800000').replace('setInterval(sample,5000)','setInterval(sample,1000)');p.write_text(s)\nPY\nnode .local/smart-shorts-seven/watch-browser-memory.mjs > .local/smart-shorts-seven/browser-memory-fixed-watch.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-99c9b29b-3a7b-4ed8-9926-393ff1afbe6a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T15:02:53.098Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

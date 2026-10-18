@@ -21,6 +21,7 @@ import {
 	EDITOR_SESSION_FIELD,
 } from "./project-transaction";
 import { assertAccountMediaSource } from "@/accounts/media-source";
+import { mediaBinary, runMediaProcess } from "@/services/video-proxy/transcode";
 import { hyperframesImportDraftSchema } from "@/hyperframes/import-recovery-schema";
 import type {
 	HyperframesImportRecovery,
@@ -954,6 +955,9 @@ function clientMediaRecord(
 	record: StoredMediaRecord,
 ): LocalDriveMediaRecord {
 	const { bindingHistory, uploadToken: _uploadToken, ...publicRecord } = record;
+	// Older native imports persisted fs.stat().mtimeMs with sub-millisecond
+	// precision. The editor uses the same integer milliseconds as File.lastModified.
+	publicRecord.lastModified = Math.max(0, Math.trunc(record.lastModified));
 	if (record.unifiedAngles) {
 		return { ...publicRecord, sourcePath: "", missing: false };
 	}
@@ -978,6 +982,7 @@ export async function relinkMedia(
 		source: string;
 		expectedRevision: number;
 		undo: boolean;
+		replacementMetadataJson?: string;
 	}) => string,
 ) {
 	assertId(mediaId, "media id");
@@ -999,18 +1004,65 @@ export async function relinkMedia(
 			return records;
 		}
 		let path = "";
+		let replacementMetadataJson: string | undefined;
 		if (!undo) {
 			if (!isAbsolute(source))
 				throw new Error("Choose an absolute source path");
 			path = await assertAccountMediaSource(source);
 			const info = await stat(path);
 			if (!info.isFile()) throw new Error("Replacement source is not a file");
-			if (record.size > 0 && info.size !== record.size)
-				throw new Error(
-					"The file size differs from the original. Choose the original source file to preserve all cut timings.",
-				);
 			if (!mimeTypeForPath(path).startsWith(`${record.type}/`))
 				throw new Error("Replacement media type differs from the original");
+			let metadata: Record<string, unknown> = {};
+			if (info.size !== record.size && record.type === "video") {
+				// Host I/O only. Compatibility policy and metadata publication are Rust-owned.
+				const probe = JSON.parse(
+					await runMediaProcess({
+						command: mediaBinary("ffprobe"),
+						args: [
+							"-v",
+							"error",
+							"-show_entries",
+							"stream=codec_type,duration,start_time,width,height,r_frame_rate:format=duration",
+							"-of",
+							"json",
+							path,
+						],
+					}),
+				) as {
+					streams: Array<{
+						codec_type: string;
+						duration?: string;
+						start_time?: string;
+						width?: number;
+						height?: number;
+						r_frame_rate?: string;
+					}>;
+					format?: { duration?: string };
+				};
+				const video = probe.streams.find(
+					(stream) => stream.codec_type === "video",
+				);
+				if (!video) throw new Error("Replacement source has no video stream");
+				const [numerator, denominator = 1] = (video.r_frame_rate ?? "0/1")
+					.split("/")
+					.map(Number);
+				metadata = {
+					duration: Number(video.duration ?? probe.format?.duration),
+					startTime: Number(video.start_time ?? "0"),
+					width: video.width,
+					height: video.height,
+					fps: numerator / denominator,
+					hasAudio: probe.streams.some(
+						(stream) => stream.codec_type === "audio",
+					),
+				};
+			}
+			replacementMetadataJson = JSON.stringify({
+				...metadata,
+				size: info.size,
+				lastModified: info.mtimeMs,
+			});
 		}
 		result = JSON.parse(
 			transaction({
@@ -1018,6 +1070,7 @@ export async function relinkMedia(
 				source: path,
 				expectedRevision,
 				undo,
+				replacementMetadataJson,
 			}),
 		);
 		result!.bindingRequestId = requestId;
@@ -1119,7 +1172,7 @@ export async function registerMediaPath({
 	const baseRecord: StoredMediaRecord = {
 		...record,
 		size: sourceStat.size,
-		lastModified: sourceStat.mtimeMs,
+		lastModified: Math.max(0, Math.trunc(sourceStat.mtimeMs)),
 		fileName: safeFileName(record.fileName || basename(sourcePath), record.id),
 		mimeType: record.mimeType || mimeTypeForPath(sourcePath),
 		storageKind: storageDisposition === "link" ? "linked" : "copied",
@@ -1426,7 +1479,10 @@ export async function finishMediaUpload(
 				}
 				// Retry cleanup must also respect files retained by a different record.
 				for (const record of records) {
-					if (record.uploadToken !== uploadToken && record.storageKind === "copied")
+					if (
+						record.uploadToken !== uploadToken &&
+						record.storageKind === "copied"
+					)
 						paths.delete(storedMediaPath(projectId, record));
 				}
 				journal.cleanupFiles = [...cleanupFiles];
@@ -1584,7 +1640,7 @@ export async function registerPickedMediaPaths(
 					name: basename(sourcePath),
 					type,
 					size: sourceStat.size,
-					lastModified: sourceStat.mtimeMs,
+					lastModified: Math.max(0, Math.trunc(sourceStat.mtimeMs)),
 					fileName: basename(sourcePath),
 					mimeType,
 					storageKind: "copied",

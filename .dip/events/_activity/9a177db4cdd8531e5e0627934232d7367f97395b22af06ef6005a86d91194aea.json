@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a177db4cdd8531e5e0627934232d7367f97395b22af06ef6005a86d91194aea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:00:27.805Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('.local/smart-shorts-seven/disassemble-crash.py');s=p.read_text().replace(\"n=struct.unpack_from('<I',b,16)[0];o=32;segments=[]\", \"fatn=struct.unpack_from('>I',b,4)[0];arm=next(struct.unpack_from('>IIIII',b,8+i*20) for i in range(fatn) if struct.unpack_from('>I',b,8+i*20)[0]==0x100000c);b=memoryview(b)[arm[2]:arm[2]+arm[3]];n=struct.unpack_from('<I',b,16)[0];o=32;segments=[]\");p.write_text(s)\nPY\npython3 .local/smart-shorts-seven/disassemble-crash.py",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-65453ca6-15d3-473d-9853-152fd757ae8d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:00:28.682Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

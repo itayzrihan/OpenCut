@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a44e07945baa8dfae24424e53a0fb5de1710b7c14d004cb9e0e1e28be6d3951c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:51:58.908Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts <<'EOF'\n\nfunction incrementalEditor() {\n const editor=createEditor();\n const project={metadata:{id:'project-1'},scenes:[editor.scenes.getActiveScene()],transcriptionJobs:[] as import('@/transcription/job').TranscriptionJob[]};\n const saved: typeof project.transcriptionJobs[]=[];\n Object.assign(editor.project,{getActive:()=>project,getActiveOrNull:()=>project,getSessionReadOnlyReason:()=>null,\n saveCurrentProject:async()=>{await Promise.resolve();saved.push(structuredClone(project.transcriptionJobs));}});\n Object.assign(editor.command,{waitForTranscriptionPublication:async()=>{},editTranscription:({jobId,change}:{jobId:string;change:import('@/transcription/job').TranscriptionChange})=>{\n let job=project.transcriptionJobs.find(j=>j.id===jobId);\n if(change.type==='start'){job={id:jobId,sceneId:change.sceneId,language:change.language,settings:change.settings,defaults:{},sourceTracks:project.scenes[0].tracks,sourceMedia:[],totalDuration:120*120000,status:'running',chunks:{}};project.transcriptionJobs.push(job);}\n else if(change.type==='append'){job!.chunks[change.index]=change.words;if(Object.keys(job!.chunks).length===2)job!.status='complete';}\n else if(change.type==='pause')job!.status='paused';\n else if(change.type==='resume')job!.status='running';\n else if(change.type==='restore')project.transcriptionJobs.push({...structuredClone(change.snapshot),chunks:{},status:'running'});\n }});\n return {editor,project,saved};\n}\nfunction incrementalManager(editor:EditorCore,transcribeTimeline:NonNullable<import('../transcription-manager').TranscriptionManagerDependencies['transcribeTimeline']>) {\n return new TranscriptionManager({editor,dependencies:{transcribeTimeline,extractAudio:async()=>new Blob(),transcribe:async()=>{throw new Error('legacy path');},insertCaptions:()=>{throw new Error('legacy insertion');},generateId:()=> 'durable-job',transitionTask:transitionTaskForTest}});\n}\ntest('incremental",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-59a22ae1-f0a3-4b67-a5d9-d2390ef9a097"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:51:59.258Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

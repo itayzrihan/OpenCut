@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab8fff27e38fdf5858e46e38d8283c9e0e8256a11319f87d84806bbfa223d972",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T17:51:32.545Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/apple-stt-benchmark/app.swift\nps -axo pid,etime,command | rg 'Speech Test|tccd|UserNotification'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2a402df6-5cdb-43bd-8b13-c94a959fbe1b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T17:51:33.448Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

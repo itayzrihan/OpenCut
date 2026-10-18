@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ffac5d499910847d8cef6f1ec71be7af2cfcd990bc58c755a6a428a460039aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:37:35.127Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '195,255p' classic/apps/web/src/services/transcription/service.test.ts; rg -n 'group|merge' crates/editor-api/src/operations/classic_transcription.rs | tail -15",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-3d6f2b85-eeae-4a3a-8760-fd5e5439ee62"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:37:36.086Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

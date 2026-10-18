@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25ab4b47f3b3e8c55945ce8f4cf60e6eebcb1c52e5d1a8ec9a76041e6a16387e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:09:23.742Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/test/ledger.test.mjs",
+          "sites/dip-public/test/security.test.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "a1b3cfa8-1a96-43aa-bd95-ed58c1a476a8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:09:23.756Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fc90eb3f58f07486bcbfa1660e033ea3b2022779f31432f07f1a3a51cf153c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:06:50.513Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/package.json classic/package.json classic/bun.lock; curl --max-time 30 -s -o /dev/null -w '%{http_code}' http://localhost:3211/api/transcription/timing-probe",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-faef3e26-f2fb-4298-8285-dc3c4019159f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:06:51.039Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

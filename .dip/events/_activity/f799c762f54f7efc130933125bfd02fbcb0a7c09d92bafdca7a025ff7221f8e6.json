@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f799c762f54f7efc130933125bfd02fbcb0a7c09d92bafdca7a025ff7221f8e6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:51:04.705Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nparts=[(3811,3818),(4425,4432),(1411,1425),(3290,3294),(3308,3314),(3319,3341),(3511,3524),(12068,12086),(12130,12155),(12401,12415),(12416,12442),(4800,4806)]\ns=0\nfor a,b in parts:\n d=(w[b]['end']-w[a]['start'])/120000;s+=d\n print(a,b,round(d,3),' '.join(z['text'] for z in w[a:b+1]))\nprint('total',s)\nfor a,b in [(1590,1640),(12396,12443)]:print(' '.join(f\"{z['id']}:{z['text']}@{z['start']/120000:.2f}\" for z in w[a:b+1]))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b47e34b2-60b3-40c2-b5ea-3bfd894005a3"
+      },
+      {
+        "at": "2026-10-14T07:51:04.942Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nparts=[(3811,3818),(4425,4432),(1411,1425),(3290,3294),(3308,3314),(3319,3341),(3511,3524),(12068,12086),(12130,12155),(12401,12415),(12416,12442),(4800,4806)]\ns=0\nfor a,b in parts:\n d=(w[b]['end']-w[a]['start'])/120000;s+=d\n print(a,b,round(d,3),' '.join(z['text'] for z in w[a:b+1]))\nprint('total',s)\nfor a,b in [(1590,1640),(12396,12443)]:print(' '.join(f\"{z['id']}:{z['text']}@{z['start']/120000:.2f}\" for z in w[a:b+1]))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b47e34b2-60b3-40c2-b5ea-3bfd894005a3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:51:05.584Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

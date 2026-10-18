@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fdc40de76537968261681cbb14b46ae6945928def7d9b88b4a76ac1118947542",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:50:09.680Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '238,283p' classic/apps/web/src/ai/server/openai-codex-oauth.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-5fcdfa2a-41ff-44ab-9c47-051ddab76646"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:50:10.663Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

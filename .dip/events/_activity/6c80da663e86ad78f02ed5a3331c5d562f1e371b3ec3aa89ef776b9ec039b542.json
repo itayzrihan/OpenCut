@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6c80da663e86ad78f02ed5a3331c5d562f1e371b3ec3aa89ef776b9ec039b542",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T18:24:23.131Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp .local/apple-stt-benchmark/result-short.json .local/apple-stt-benchmark/result-warm.json\npython3 - <<'PY'\nimport json\nfor n in ['cold','warm']:\n d=json.load(open('.local/apple-stt-benchmark/result-'+n+'.json')); print(n, d['recognitionSeconds'],d['text'],len(d['segments']))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-41748310-e7bc-425e-96b4-b02ecfb69ad6"
+      },
+      {
+        "at": "2026-10-12T18:24:23.476Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp .local/apple-stt-benchmark/result-short.json .local/apple-stt-benchmark/result-warm.json\npython3 - <<'PY'\nimport json\nfor n in ['cold','warm']:\n d=json.load(open('.local/apple-stt-benchmark/result-'+n+'.json')); print(n, d['recognitionSeconds'],d['text'],len(d['segments']))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-41748310-e7bc-425e-96b4-b02ecfb69ad6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T18:24:23.983Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

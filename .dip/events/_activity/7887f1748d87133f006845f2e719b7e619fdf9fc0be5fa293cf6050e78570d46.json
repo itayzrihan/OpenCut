@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7887f1748d87133f006845f2e719b7e619fdf9fc0be5fa293cf6050e78570d46",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T11:19:28.308Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler/registry/__router-worker__",
+          "sites/dip-public/.wrangler/registry/__asset-worker__",
+          "sites/dip-public/.wrangler/registry/__vite_proxy_worker__",
+          "sites/dip-public/.wrangler/registry/site-creator-vinext-starter",
+          "sites/dip-public/.wrangler/registry/sites-connector-preview"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "bf8ecffb-7905-4eec-9b25-615497bc8874"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:19:28.310Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

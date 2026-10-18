@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8316e4d4b5c0933625fd5bc589250a4465f2a5f6a0c9ef4261d90e04c257a4a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:32:42.420Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -n 6 .local/smart-shorts-seven/production-bridge-build.log; node -e 'const p=require(\"./.local/smart-shorts-seven/browser-memory-measurements.json\"); console.log({peakGB:(p.peak/1024**3).toFixed(2),latestGB:(p.measurements.at(-1).rss/1024**3).toFixed(2)})'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-45db5431-a7b4-411f-b205-eaf8f347266c"
+      },
+      {
+        "at": "2026-10-13T13:32:42.645Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d3f782ff-5980-49ed-b342-6e97aa5cd4ac"
+      },
+      {
+        "at": "2026-10-13T13:32:42.646Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -n 6 .local/smart-shorts-seven/production-bridge-build.log; node -e 'const p=require(\"./.local/smart-shorts-seven/browser-memory-measurements.json\"); console.log({peakGB:(p.peak/1024**3).toFixed(2),latestGB:(p.measurements.at(-1).rss/1024**3).toFixed(2)})'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-45db5431-a7b4-411f-b205-eaf8f347266c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:32:42.852Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

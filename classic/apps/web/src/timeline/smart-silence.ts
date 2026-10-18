@@ -2,7 +2,7 @@
 import { analyzeSmartAudioSilence } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import { TracksSnapshotCommand } from "@/commands/timeline/tracks-snapshot";
-import { decodeAudioToFloat32 } from "@/media/audio";
+import { openAudioWindowReader, SPEECH_SAMPLE_RATE } from "@/media/audio-window";
 import { getClipAudioTiming } from "@/media/audio-sync";
 import { resolveUnifiedAnglesAudioAsset } from "@/media/unified-angles";
 import { doesElementHaveEnabledAudio } from "./audio-separation";
@@ -61,10 +61,7 @@ export async function removeSmartSilence({
 	const mediaById = new Map(
 		editor.media.getAssets().map((asset) => [asset.id, asset]),
 	);
-	const decodedByMediaId = new Map<
-		string,
-		Awaited<ReturnType<typeof decodeAudioToFloat32>>
-	>();
+	const decodeSignal = signal ?? new AbortController().signal;
 	const ranges: TimelineTimeRange[] = [];
 	let analyzedClips = 0;
 	const holdReasons = new Set<string>();
@@ -116,30 +113,39 @@ export async function removeSmartSilence({
 			holdReasons.add("no-audible-source-span");
 			continue;
 		}
-		let decoded = decodedByMediaId.get(asset.id);
-		if (!decoded) {
-			decoded = await decodeAudioToFloat32({
-				audioBlob: asset.file,
-				url: asset.url,
-				channelMix: "max-magnitude",
-				signal,
+		// A short cut can point deep into an hours-long source. Decode only its
+		// audible interval, in frame-aligned windows, rather than retain the whole
+		// recording's PCM. Unknown coverage reaches Rust unchanged as NaN.
+		const frameDurationSeconds = 0.01 * Math.min(1, playbackRate);
+		const frameSize = Math.max(1, Math.round(SPEECH_SAMPLE_RATE * frameDurationSeconds));
+		const windowSeconds = Math.max(1, Math.floor(30 * SPEECH_SAMPLE_RATE / frameSize)) * frameSize / SPEECH_SAMPLE_RATE;
+		const sourceEnd = sourceStart + durationSeconds * playbackRate;
+		const frames: Awaited<ReturnType<typeof extractCompactAudioFeatures>> = [];
+		for (let start = sourceStart; start < sourceEnd; start += windowSeconds) {
+			signal?.throwIfAborted();
+			const end = Math.min(sourceEnd, start + windowSeconds);
+			const reader = await openAudioWindowReader({ asset, signal: decodeSignal });
+			let samples: Float32Array;
+			try {
+				samples = await reader.read({ start, end, missing: "unknown", channelMix: "max-magnitude" });
+			} finally {
+				reader.close();
+			}
+			const windowFrames = await extractCompactAudioFeatures({
+				samples,
+				sampleRate: SPEECH_SAMPLE_RATE,
+				sourceStartSeconds: 0,
+				sourceEndSeconds: end - start,
+				playbackRate,
+				frameDurationSeconds,
+				yieldControl: async () => {
+					await new Promise<void>((resolve) => setTimeout(resolve, 0));
+					signal?.throwIfAborted();
+				},
 			});
-			decodedByMediaId.set(asset.id, decoded);
+			const offset = (start - sourceStart) / playbackRate;
+			for (const frame of windowFrames) frames.push({ ...frame, start: frame.start + offset, end: frame.end + offset });
 		}
-		const frames = await extractCompactAudioFeatures({
-			samples: decoded.samples,
-			sampleRate: decoded.sampleRate,
-			sourceStartSeconds: sourceStart,
-			sourceEndSeconds: sourceStart + durationSeconds * playbackRate,
-			playbackRate,
-			// Keep timeline resolution at 10ms even with slow playback. Double
-			// precision CPU timing also avoids long-recording GPU float rounding.
-			frameDurationSeconds: 0.01 * Math.min(1, playbackRate),
-			yieldControl: async () => {
-				await new Promise<void>((resolve) => setTimeout(resolve, 0));
-				signal?.throwIfAborted();
-			},
-		});
 		signal?.throwIfAborted();
 		const result = analyzeSmartAudioSilence({
 			frames,

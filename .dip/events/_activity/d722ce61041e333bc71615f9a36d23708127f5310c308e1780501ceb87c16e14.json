@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d722ce61041e333bc71615f9a36d23708127f5310c308e1780501ceb87c16e14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:56:20.333Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'function assertCoherent' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '273,303p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; head -20 classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; rg -n 'playback:' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts | head -4; classic/apps/web/node_modules/.bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json > .local/sequence-navigation/types.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0172bc38-e8ee-428b-83bf-fc0dbe468a8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:56:20.662Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

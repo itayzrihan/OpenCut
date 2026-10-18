@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d5eda40b4b5963fede3efaabf1a61eda6ba9bfab788cb37845208898030bc4f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:00:35.377Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "webrun",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-baf5a674-1573-4929-a542-5a160bb15acc"
+      },
+      {
+        "at": "2026-10-12T11:00:35.378Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'asset_pointer|audio_start_ms|audio_end_ms|transcription.*completed|timestamp_granularities' .local/codex-transcription-research/source/codex-rs/codex-api/src .local/codex-transcription-research/source/codex-rs/core/src/realtime* | head -70",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-c15b7632-153d-4bf4-9f4b-6180054f91ed"
+      },
+      {
+        "at": "2026-10-12T11:00:35.477Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'asset_pointer|audio_start_ms|audio_end_ms|transcription.*completed|timestamp_granularities' .local/codex-transcription-research/source/codex-rs/codex-api/src .local/codex-transcription-research/source/codex-rs/core/src/realtime* | head -70",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-c15b7632-153d-4bf4-9f4b-6180054f91ed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:00:35.670Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

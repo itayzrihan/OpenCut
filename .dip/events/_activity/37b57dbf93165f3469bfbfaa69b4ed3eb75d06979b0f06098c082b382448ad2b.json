@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "37b57dbf93165f3469bfbfaa69b4ed3eb75d06979b0f06098c082b382448ad2b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:43:20.896Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'HistoryDocument::Classic|Self::Classic \\{' crates/editor-api/src/runtime.rs crates/editor-api/src | head -n 20; rg -n 'struct ByteCounter|impl.*ByteCounter' crates/editor-api/src/classic_archive.rs; sed -n '110,130p' crates/editor-api/src/classic_archive.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-eeb8ff02-4b09-4f9f-80cc-71515e8c2d6c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:43:21.487Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

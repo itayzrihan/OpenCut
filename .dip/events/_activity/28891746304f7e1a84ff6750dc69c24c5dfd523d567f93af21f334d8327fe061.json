@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28891746304f7e1a84ff6750dc69c24c5dfd523d567f93af21f334d8327fe061",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:11:44.718Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f1ad3e18-411c-4dba-87d1-9a5424dd3078"
+      },
+      {
+        "at": "2026-10-14T10:11:44.719Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3aa7bd70-4d80-4fb4-a109-94ecd58d0a88"
+      },
+      {
+        "at": "2026-10-14T10:11:44.827Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f1ad3e18-411c-4dba-87d1-9a5424dd3078"
+      },
+      {
+        "at": "2026-10-14T10:11:44.832Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -select_streams v:0 -show_entries stream=duration -of csv=p=0 /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-023b4fd5-dc86-4b7a-8c19-bcc5aa604ca0"
+      },
+      {
+        "at": "2026-10-14T10:11:45.049Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -select_streams v:0 -show_entries stream=duration -of csv=p=0 /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-023b4fd5-dc86-4b7a-8c19-bcc5aa604ca0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:11:45.703Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2f99ad0c73bc8a4c2e7db2639caa7ed01bedbdee14803cdcd68117af539f315",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:45:04.446Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -18 /tmp/opencut-teaser-tsc.txt; sed -n '503,545p' classic/apps/web/src/accounts/server.ts; sed -n '85,140p' classic/scripts/local-production/build.mjs; rg -n 'enum.*Execution|Immediate|invoke_sync' classic/rust/editor-runtime-wasm/src/lib.rs | head -15; sed -n '1,90p' classic/apps/web/src/ai/podcast-plan-cache.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f637e34c-b0cc-4a18-829e-969e89ceb1c5"
+      },
+      {
+        "at": "2026-10-16T10:45:04.527Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -18 /tmp/opencut-teaser-tsc.txt; sed -n '503,545p' classic/apps/web/src/accounts/server.ts; sed -n '85,140p' classic/scripts/local-production/build.mjs; rg -n 'enum.*Execution|Immediate|invoke_sync' classic/rust/editor-runtime-wasm/src/lib.rs | head -15; sed -n '1,90p' classic/apps/web/src/ai/podcast-plan-cache.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f637e34c-b0cc-4a18-829e-969e89ceb1c5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:45:04.928Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

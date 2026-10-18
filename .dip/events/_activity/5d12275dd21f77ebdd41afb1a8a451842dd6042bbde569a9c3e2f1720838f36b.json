@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d12275dd21f77ebdd41afb1a8a451842dd6042bbde569a9c3e2f1720838f36b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:55:36.777Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'fontSize.*canvasHeight|fontSize.*100|fontSizePercent' classic/apps/web/src/preview classic/apps/web/src/captions classic/apps/web/src/text | head -18; bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7e7a8200-969d-4061-9ac9-93a897ec641d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:55:37.213Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

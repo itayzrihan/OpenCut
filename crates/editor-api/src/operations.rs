@@ -58,10 +58,12 @@ mod classic_element_controls;
 mod classic_track_layout;
 mod classic_remove;
 mod classic_media;
+pub(crate) mod classic_unified;
 mod classic_media_register;
 mod classic_image_inspection;
 mod classic_captions;
 mod classic_caption_cues;
+pub(crate) mod classic_transcription;
 mod classic_duplicate;
 mod classic_clipboard;
 mod classic_move;
@@ -108,7 +110,9 @@ pub(crate) fn register_all(
     classic_masks: crate::ClassicMaskCatalog,
     classic_animation: crate::ClassicAnimationCatalog,
 ) -> Result<(), RegistryError> {
+    classic_unified::register_unified(registry, state.clone(), events.clone())?;
     classic_multicam::register_multicam(registry, state.clone(), events.clone())?;
+    classic_transcription::register_transcription(registry, state.clone(), events.clone())?;
     classic_podcast_finish::register_podcast_finish(registry, state.clone(), events.clone())?;
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
@@ -275,6 +279,8 @@ where
                 | "project.classic.attach"
                 | "project.classic.session.attach"
                 | "project.classic.session.restore"
+                | "project.classic.scene.open"
+                | "project.classic.viewport.set"
         );
     descriptor.supports_dry_run = descriptor.transactional
         || matches!(
@@ -282,6 +288,8 @@ where
             "project.classic.attach"
                 | "project.classic.session.attach"
                 | "project.classic.session.restore"
+                | "project.classic.scene.open"
+                | "project.classic.viewport.set"
         );
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
@@ -1077,7 +1085,7 @@ fn register_observation_operations(
                 let base = history.and_then(|history| {
                     history
                         .iter()
-                        .find(|entry| entry.document.revision == input.since_revision)
+                        .find(|entry| entry.document.revision() == input.since_revision)
                 });
                 if let Some(base) = base {
                     let old = serde_json::to_value(&base.document)
@@ -1519,7 +1527,7 @@ fn register_project_operations(
                         saved_revision = store.document.revision;
                         store.undo.push(HistoryEntry {
                             label: "Set project save path".into(),
-                            document: before,
+                            document: before.into(),
                             host_context: Map::new(),
                         });
                         store.redo.clear();
@@ -6100,11 +6108,11 @@ fn register_history_operations(
                 let current_revision = store.document.revision;
                 let current = HistoryEntry {
                     label: entry.label.clone(),
-                    document: store.document.clone(),
+                    document: store.document.clone().into(),
                     host_context: entry.host_context.clone(),
                 };
                 store.redo.push(current);
-                store.document = entry.document;
+                store.document = entry.document.materialize();
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,
@@ -6161,11 +6169,11 @@ fn register_history_operations(
                 let current_revision = store.document.revision;
                 let current = HistoryEntry {
                     label: entry.label.clone(),
-                    document: store.document.clone(),
+                    document: store.document.clone().into(),
                     host_context: entry.host_context.clone(),
                 };
                 store.undo.push(current);
-                store.document = entry.document;
+                store.document = entry.document.materialize();
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,
@@ -6607,6 +6615,15 @@ where
     working
         .sync_exact_from_seconds()
         .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
+    // Content actions which remove/select scenes or replace a project cannot
+    // leave a stale viewer reference overriding their explicit editing focus.
+    if let Some(navigation) = &working.workspace.classic_scene {
+        let valid = working.project.as_ref().filter(|p| p.id == navigation.project_id).and_then(|p| p.classic.as_ref())
+            .is_some_and(|classic| classic.document["scenes"].as_array().is_some_and(|scenes| scenes.iter().any(|s| s["id"] == navigation.scene_id)));
+        let explicit_focus = before.project.as_ref().and_then(|p| p.classic.as_ref()).zip(working.project.as_ref().and_then(|p| p.classic.as_ref()))
+            .is_some_and(|(old, new)| old.document["currentSceneId"] != new.document["currentSceneId"] && new.document["currentSceneId"] != navigation.scene_id);
+        if (!valid && working.workspace.classic_scene == before.workspace.classic_scene) || explicit_focus { working.workspace.classic_scene = None; }
+    }
     working
         .validate()
         .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
@@ -6664,7 +6681,7 @@ where
     if !in_transaction && !coalesced {
         store.undo.push(HistoryEntry {
             label: label.into(),
-            document: before,
+            document: before.into(),
             host_context: context
                 .metadata
                 .get("opencut/historyContext")
@@ -6747,24 +6764,18 @@ pub(crate) fn trim_history(history: &mut Vec<HistoryEntry>) {
     // Classic keeps its complete live command history. Adopting the canonical
     // runtime must not remove older undo actions. Its durable archive retains
     // the existing host limit separately.
-    if history.last().is_some_and(|entry| {
-        entry
-            .document
-            .project
-            .as_ref()
-            .is_some_and(|project| project.classic.is_some())
-    }) {
+    if history.last().is_some_and(|entry| entry.document.is_classic()) {
         return;
     }
     // Studio source is textual, so bound retained history by source bytes as well
     // as entry count. Media bytes are external immutable blobs. Keep at least one
     // undo boundary even for a large source; old history must not block new edits.
-    if history.last().is_some_and(|entry| entry.document.project.as_ref()
+    if history.last().is_some_and(|entry| entry.document.materialize().project.as_ref()
         .is_some_and(|p| p.extensions.contains_key(crate::studio::STUDIO_KEY))) {
         let mut bytes = 0usize;
         let mut keep_from = history.len();
         for (index, entry) in history.iter().enumerate().rev() {
-            let size = entry.document.project.as_ref()
+            let size = entry.document.materialize().project.as_ref()
                 .and_then(|p| p.extensions.get(crate::studio::STUDIO_KEY))
                 .and_then(|s| s.get("files")).and_then(Value::as_object)
                 .map_or(0, |files| files.iter().map(|(path, value)|

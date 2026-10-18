@@ -76,8 +76,11 @@ function getMasteringLatencySamples({ sampleRate }: { sampleRate: number }) {
 		source.connect(input);
 		source.start();
 		const output = await context.startRendering();
-		const latency = output.getChannelData(0).findIndex((sample) => sample !== 0);
-		if (latency < 0) throw new Error("Could not measure audio mastering latency");
+		const latency = output
+			.getChannelData(0)
+			.findIndex((sample) => sample !== 0);
+		if (latency < 0)
+			throw new Error("Could not measure audio mastering latency");
 		return latency;
 	})().catch((error: unknown) => {
 		masteringLatencyBySampleRate.delete(sampleRate);
@@ -89,10 +92,12 @@ function getMasteringLatencySamples({ sampleRate }: { sampleRate: number }) {
 
 export async function applyAudioMasteringToBuffer({
 	audioBuffer,
+	force = false,
 }: {
 	audioBuffer: AudioBuffer;
+	force?: boolean;
 }): Promise<AudioBuffer> {
-	if (getAudioBufferPeak({ audioBuffer }) <= MASTER_OUTPUT_HEADROOM) {
+	if (!force && getAudioBufferPeak({ audioBuffer }) <= MASTER_OUTPUT_HEADROOM) {
 		return audioBuffer;
 	}
 

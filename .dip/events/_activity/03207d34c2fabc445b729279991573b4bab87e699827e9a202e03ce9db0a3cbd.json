@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "03207d34c2fabc445b729279991573b4bab87e699827e9a202e03ce9db0a3cbd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:14:44.375Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/transcription/external-server.ts';s=open(p).read().replace('!/[\\\\x00-\\\\x1f\\\\x7f]/.test(value)', 'Array.from(value).every(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127)');open(p,'w').write(s)\np='classic/apps/web/src/transcription/windows.ts';s=open(p).read().replace('\\t// eslint-disable-next-line opencut/prefer-object-params\\n','');s='/* eslint-disable opencut/prefer-object-params -- Worker session callbacks receive separate transcribe and abort arguments. */\\n'+s;open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-ab8d6764-468d-49b3-a53f-c0765c33f844"
+      },
+      {
+        "at": "2026-10-12T10:14:44.500Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/transcription/external-server.ts';s=open(p).read().replace('!/[\\\\x00-\\\\x1f\\\\x7f]/.test(value)', 'Array.from(value).every(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127)');open(p,'w').write(s)\np='classic/apps/web/src/transcription/windows.ts';s=open(p).read().replace('\\t// eslint-disable-next-line opencut/prefer-object-params\\n','');s='/* eslint-disable opencut/prefer-object-params -- Worker session callbacks receive separate transcribe and abort arguments. */\\n'+s;open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-ab8d6764-468d-49b3-a53f-c0765c33f844"
+      },
+      {
+        "at": "2026-10-12T10:14:44.502Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg --no-pack",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-d9bd7c41-08f4-4dc2-99f6-f51a9fe4d8a6"
+      },
+      {
+        "at": "2026-10-12T10:14:44.510Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node scripts/write-wasm-manifests.mjs && node scripts/verify-wasm-exports.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-a3c351cd-0d33-4880-8ab3-074fd6846842"
+      },
+      {
+        "at": "2026-10-12T10:14:44.718Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node scripts/write-wasm-manifests.mjs && node scripts/verify-wasm-exports.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-a3c351cd-0d33-4880-8ab3-074fd6846842"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:14:45.284Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

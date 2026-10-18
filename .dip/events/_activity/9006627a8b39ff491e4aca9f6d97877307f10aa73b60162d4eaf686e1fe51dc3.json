@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9006627a8b39ff491e4aca9f6d97877307f10aa73b60162d4eaf686e1fe51dc3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:56:15.886Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/core/managers/__tests__/project-session-lifecycle.test.ts src/core/managers/__tests__/canonical-command-manager.test.ts src/core/managers/__tests__/command-manager-state-revision.test.ts --jobs=1",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-55a053b2-2a69-456f-a629-6b4a31a6e754"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:56:16.206Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

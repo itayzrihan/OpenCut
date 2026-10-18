@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9ae4339cb87ed28bb7605a7654b6f3209139bcfd88e504377172a6fd838dac84",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T09:42:50.046Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/transcription/job.ts",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/transcription/windows.ts",
+          "classic/apps/web/src/transcription/timeline-stream.ts",
+          "classic/apps/web/src/core/managers/transcription-manager.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "bfe1f71e-86df-4209-abf7-ca405ac1dd43"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:42:50.050Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

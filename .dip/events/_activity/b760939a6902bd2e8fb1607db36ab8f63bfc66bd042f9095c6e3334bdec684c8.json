@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b760939a6902bd2e8fb1607db36ab8f63bfc66bd042f9095c6e3334bdec684c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:56:51.182Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "dig +short TXT _openai-site-verification.dip.vxu.me",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-80d757db-5547-441e-8a87-7bc81dc311a5"
+      },
+      {
+        "at": "2026-10-12T07:56:53.382Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "dig +short TXT _openai-site-verification.dip.vxu.me",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-80d757db-5547-441e-8a87-7bc81dc311a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:57:02.614Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

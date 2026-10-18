@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "52be8a7cff7911e3ea3f48f4d1db4938f73190455a3c0d0a173b818d9acd4ec5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:49:51.566Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .dip/config.json\nls -lh /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto*.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d3123624-ef1a-4690-9d67-9f66622e658b"
+      },
+      {
+        "at": "2026-10-14T09:49:51.708Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .dip/config.json\nls -lh /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto*.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d3123624-ef1a-4690-9d67-9f66622e658b"
+      },
+      {
+        "at": "2026-10-14T09:49:51.714Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'));s=next(x for x in p['scenes'] if x['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print([(t['name'],t.get('hidden')) for t in s['tracks']['overlay']]);json.dump({'captionVisibility':[(t['name'],t.get('hidden')) for t in s['tracks']['overlay']]},open('analysis/teaser-exports-2026-10-14/clean-export-state.json','w'))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0eddc302-eaf7-4fba-aa98-dcc623f0b3a9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:49:52.106Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

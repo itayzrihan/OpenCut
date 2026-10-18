@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c134adab-ea20-4d40-896a-04d942d42054",
+  "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+  "type": "task.update",
+  "payload": {
+    "title": "Export additional teaser without music or captions and upload to same Drive folder",
+    "description": "Export existing saved FullAuto teaser83.73s with correctedsourceaudio, hide only2captiontracks and muteAutomaticMusic temporarily. Preserve speech/SFX and restore project state. Add separate clearly named file in sameDrivefolder, leaving existing3files.",
+    "acceptance": [
+      "Export1080x1920 H264/AAC current teaser without captions/music; preserve speech/SFX/timing.",
+      "Restore saved project scenes/settings/STT exactly.",
+      "Upload additional MP4 to existingDrivefolder and return verifiedlink."
+    ],
+    "scope": [
+      "analysis/teaser-no-music-2026-10-15",
+      ".local/teaser-no-music-2026-10-15",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T10:20:52.852Z",
+  "parents": [
+    "42ea41bd-a186-4aa4-97fe-3cc76daaae1c"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

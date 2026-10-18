@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7bd4715644d6a9c87fa9e892d31075761d95b62b21966c0701c7361fe639036e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T17:50:51.488Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/apple-stt-benchmark/app.swift')\ns=p.read_text().replace('import Speech','import Speech\\nimport AppKit\\nlet app = NSApplication.shared\\napp.setActivationPolicy(.regular)')\ns=s.replace('RunLoop.main.run()', 'app.run()')\np.write_text(s)\nPY\nkill -TERM 12689\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-27208f18-7ab9-41fb-a7ce-9236be150172"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T17:50:52.409Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

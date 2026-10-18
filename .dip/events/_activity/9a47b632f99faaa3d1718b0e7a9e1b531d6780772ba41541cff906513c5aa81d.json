@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a47b632f99faaa3d1718b0e7a9e1b531d6780772ba41541cff906513c5aa81d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:00:10.050Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_752d6e3a0833a2dac256da431978e72b20f013414a3f77d25e3da7c4982e5309",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short | head -8\nps -axo pid,%cpu,rss,comm | sort -k2 -nr | head -7\nrg -n 'fn validate|validate\\(' crates/editor-api/src/classic.rs | head -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c97ff3c2-b1a8-47b6-84c5-5e1b3ab4e677"
+      },
+      {
+        "at": "2026-10-13T09:00:10.269Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_752d6e3a0833a2dac256da431978e72b20f013414a3f77d25e3da7c4982e5309",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short | head -8\nps -axo pid,%cpu,rss,comm | sort -k2 -nr | head -7\nrg -n 'fn validate|validate\\(' crates/editor-api/src/classic.rs | head -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c97ff3c2-b1a8-47b6-84c5-5e1b3ab4e677"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:00:10.288Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

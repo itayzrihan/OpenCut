@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71a9a6fb1a18265891bca32da1e04c311afe78da752b4f72743b75b1875861ce",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:09:51.448Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --stat -- classic/apps/web/src/ai/podcast-task.ts classic/apps/web/src/timeline/smart-takes/audio-evidence.ts classic/apps/web/src/media/audio-window.ts classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0be417ce-b511-4c59-a751-af5e68febba2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:09:51.578Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ba58a3f-d2ea-430d-81b4-6d3e151057ae",
+  "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+  "type": "task.update",
+  "payload": {
+    "title": "Publish two teaser skills in a new private GitHub repository",
+    "description": "Package installed strategic-teaser-compression and visual-teaser-editing with required references/scripts/assets, validate portability/no secrets, create fresh private repository in current GitHub account and push initial commit. Do not publish sourcevideo or existingOpenCutrepository.",
+    "acceptance": [
+      "Package both installedskills and requiredsupportfiles with README installation instructions.",
+      "Validate bothskills and no brokenrelative references or privatecredentials/sourcevideo.",
+      "Create newprivateGitHubrepository and push matching initialcommit; returnURL."
+    ],
+    "scope": [
+      "analysis/teaser-skills-github-2026-10-15",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T10:33:54.812Z",
+  "parents": [
+    "4230abb2-d4d6-4ce6-ab16-73fa4a11606e"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

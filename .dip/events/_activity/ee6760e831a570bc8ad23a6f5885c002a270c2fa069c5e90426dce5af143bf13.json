@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee6760e831a570bc8ad23a6f5885c002a270c2fa069c5e90426dce5af143bf13",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T09:07:47.469Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/runtime.rs",
+          ".local/smart-shorts-seven/compact-test.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "5f05f537-9190-4006-9236-6ea32be6137d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:07:47.472Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

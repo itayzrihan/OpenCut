@@ -2,8 +2,15 @@
 import type { EditorCore } from "@/core";
 import type { PodcastOptions } from "./podcast-types";
 import { requestPodcastPlan } from "./podcast-plan";
+import { consumePodcastEditorialDraft } from "./podcast-editorial";
+import {
+	podcastPlanCacheKey,
+	readPodcastPlan,
+	savePodcastPlan,
+} from "./podcast-plan-cache";
 import { toast } from "sonner";
 import { ZERO_MEDIA_TIME } from "@/wasm";
+import { IndexedAudioCheckpoints } from "@/timeline/smart-takes/audio-checkpoints";
 const tasks = new WeakMap<EditorCore, PodcastTask>();
 type Status = {
 	status: "idle" | "running" | "succeeded" | "failed" | "cancelled";
@@ -74,6 +81,13 @@ class PodcastTask {
 		try {
 			check();
 			if (
+				editor.project
+					.getActive()
+					.transcriptionJobs?.some(
+						(j) =>
+							j.sceneId === sceneId &&
+							(j.status === "running" || j.status === "paused"),
+					) ||
 				!editor.scenes
 					.getActiveScene()
 					.tracks.overlay.some((t) => t.type === "text" && t.captionSource)
@@ -103,22 +117,77 @@ class PodcastTask {
 				.tracks.main.elements.filter((e) => e.type === "video")
 				.map((e) => e.id);
 			const source = editor.command.preparePodcast(ids);
-			const videos = await requestPodcastPlan({
-				source,
+			const cacheKey = await podcastPlanCacheKey({
+				account,
+				projectId,
+				sceneId,
 				options,
-				signal: controller.signal,
-				onStage: (stage) => {
-					check();
-					this.update({ stage });
-				},
-				review: source.review,
+				words: source.words,
+				sourceFingerprint: source.sourceFingerprint,
 			});
 			check();
+			// Teasers resume the canonical editorial journal, including critique;
+			// an old structurally valid final short cannot bypass narrative review.
+			let videos =
+				options.mode === "teaser"
+					? null
+					: readPodcastPlan(localStorage, cacheKey);
+			if (videos) {
+				source.review({ options, videos });
+				this.update({ stage: "Resuming saved clip selection…" });
+			} else {
+				videos = await requestPodcastPlan({
+					source,
+					options,
+					signal: controller.signal,
+					onStage: (stage) => {
+						check();
+						this.update({ stage });
+					},
+					review: source.review,
+					planRetry: (failure) =>
+						editor.command.planEditingProviderRetry(failure),
+					assertScope: () => {
+						check();
+						if (editor.command.getCanonicalRevision() !== source.revision)
+							throw new Error(
+								"The source changed during analysis. Analyze the episode again.",
+							);
+					},
+					cache: { key: cacheKey, storage: localStorage },
+				});
+				check();
+				source.review({ options, videos });
+				savePodcastPlan(localStorage, cacheKey, videos);
+			}
+			check();
 			this.update({ stage: "Protecting word boundaries with source audio…" });
-			const audioEvidence = await source.analyzeAudio(controller.signal);
+			const audioEvidence = await source.analyzeAudio(
+				controller.signal,
+				(seconds, total) => {
+					check();
+					this.update({
+						stage: `Protecting word boundaries · ${Math.min(100, Math.floor((seconds / total) * 100))}%`,
+					});
+				},
+				{ key: cacheKey, store: new IndexedAudioCheckpoints() },
+			);
 			check();
 			this.update({ stage: "Creating editable sequences…" });
 			source.apply({ options, videos, audioEvidence });
+			this.update({ stage: "Saving editable sequences…" });
+			await editor.save.flush();
+			await editor.command.flushHistory();
+			if (
+				window.__opencutAccountId !== account ||
+				editor.project.getActiveOrNull()?.metadata.id !== projectId
+			)
+				throw new Error(
+					"The active project changed while sequences were saved",
+				);
+			localStorage.removeItem(cacheKey);
+			if (options.mode === "teaser")
+				consumePodcastEditorialDraft({ storage: localStorage, key: cacheKey });
 			editor.playback.pause();
 			editor.playback.seek({ time: ZERO_MEDIA_TIME });
 			this.update({

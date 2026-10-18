@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bd705d353b667cbf874113f212ddd4e2d740968e1c8ea0c35cedb5a63628af71",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T19:56:19.661Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-agent/tests/session_store.rs",
+          "classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+          ".local/sequence-navigation/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "00e3d2ed-f4dd-4fad-bbe8-9959d34a88b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:56:19.671Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

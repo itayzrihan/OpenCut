@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6f752f92d9751d4a9272ffead77ce89023ab5d98316624fa53b0e59f33ab3e2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-14T09:05:02.534Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/smart-silence.ts",
+          "classic/apps/web/src/timeline/__tests__/smart-silence.test.ts",
+          ".local/classic-web-tests/1791968701898",
+          ".local/classic-web-tests/1791968701898/src__timeline____tests____smart-silence.test.ts.log",
+          ".local/classic-web-tests/1791968701898/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "acc96553-bdfc-428a-b638-81d2dfbabb85"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:05:02.535Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

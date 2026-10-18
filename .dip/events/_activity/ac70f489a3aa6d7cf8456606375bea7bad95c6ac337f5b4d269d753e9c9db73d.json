@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac70f489a3aa6d7cf8456606375bea7bad95c6ac337f5b4d269d753e9c9db73d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:33:58.032Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "renice 15 -p 79818; tail -n 7 .local/smart-shorts-seven/production-bridge-build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b5e0b58d-5a57-4f38-9f26-4c8003801562"
+      },
+      {
+        "at": "2026-10-13T10:33:58.326Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "renice 15 -p 79818; tail -n 7 .local/smart-shorts-seven/production-bridge-build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b5e0b58d-5a57-4f38-9f26-4c8003801562"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:33:58.693Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

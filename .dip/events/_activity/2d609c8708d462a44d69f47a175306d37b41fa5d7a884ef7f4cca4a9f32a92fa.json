@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2d609c8708d462a44d69f47a175306d37b41fa5d7a884ef7f4cca4a9f32a92fa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:24:27.105Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/services/local-drive/file-stream.ts; sed -n '830,920p' classic/apps/web/src/services/local-drive/server.ts; git status --short | head -n 20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e9e9b213-debf-4d7a-b28c-3a90cc68f14f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:24:27.473Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

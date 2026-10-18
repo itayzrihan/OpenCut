@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d57a70ea7dbd2aa4b2cf7d3ad710ac8aaff1a3dec4715d026057a813517f2ce2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:49:06.504Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '33,58p' .local/episode-teaser-90-2026-10-14/transcript.txt; sed -n '1,170p' /Users/itayzrihan/.codex/skills/strategic-teaser-compression/scripts/check_edit_plan.py; sed -n '200,235p' classic/apps/web/src/ai/edit-plan.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-159e0729-78a7-42ce-81cd-6a6f3371d19d"
+      },
+      {
+        "at": "2026-10-14T07:49:06.597Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '33,58p' .local/episode-teaser-90-2026-10-14/transcript.txt; sed -n '1,170p' /Users/itayzrihan/.codex/skills/strategic-teaser-compression/scripts/check_edit_plan.py; sed -n '200,235p' classic/apps/web/src/ai/edit-plan.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-159e0729-78a7-42ce-81cd-6a6f3371d19d"
+      },
+      {
+        "at": "2026-10-14T07:49:06.601Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/prepare.ts"
+        ],
+        "changeHash": "16099a3ae8a84eb56bd9cf43deee029ef04b6bd75b8368c6d667402703305085",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2a57ec55-30a3-4d74-971d-79f1fd7ebc24"
+      },
+      {
+        "at": "2026-10-14T07:49:06.652Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/prepare.ts"
+        ],
+        "changeHash": "16099a3ae8a84eb56bd9cf43deee029ef04b6bd75b8368c6d667402703305085",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2a57ec55-30a3-4d74-971d-79f1fd7ebc24"
+      },
+      {
+        "at": "2026-10-14T07:49:06.655Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-dbfc0183-5617-46cd-9b42-77ce4ab3aa42"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:49:06.827Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

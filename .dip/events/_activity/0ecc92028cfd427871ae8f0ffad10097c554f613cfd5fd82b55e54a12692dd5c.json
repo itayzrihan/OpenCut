@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ecc92028cfd427871ae8f0ffad10097c554f613cfd5fd82b55e54a12692dd5c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:56:17.097Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/__tests__/canonical-transcription.test.ts'\ns=open(p).read().replace('const change = (s: CanonicalClassicSession, change: unknown) =>','const change = ({s, change}: {s: CanonicalClassicSession; change: unknown}) =>')\ns=s.replace('change(session, {','change({s:session, change: {').replace('totalDuration: 180 * 120000,\\n\\t});','totalDuration: 180 * 120000,\\n\\t}});')\ns=s.replace('change(session, chunk(0))','change({s:session, change:chunk(0)})').replace('change(restored, chunk(1))','change({s:restored, change:chunk(1)})').replace('change(restored, chunk(2))','change({s:restored, change:chunk(2)})');open(p,'w').write(s)\np='classic/BROWSER-TRANSCRIPTION.md';s=open(p).read();s=s.replace('scene/revision and uses Rust normalization and the canonical caption command.','scene/revision and uses Rust normalization and the canonical caption command (superseded by the incremental checkpoint contract below).');s+='''\n\n## Incremental canonical checkpoints (2026-10-12)\n\nMigration status: **classic-only**, registered in the shared `OpenCutRuntime` as\n`transcription.classic.edit`. No separate UI transcript document is maintained.\nThe host owns audio decoding, inference and disk IO; Rust owns checkpoint\nvalidation, source-clock mapping, caption insertion, revision and history.\n\nEach completed 60-second ownership section is appended atomically to\n`document.transcriptionJobs` and published as caption cues before decoding the\nnext section. The host awaits the fenced atomic editing-session save. Raw\nprovider CacheStorage entries remain an additional recovery layer, not the\nsource of truth. Project/archive persistence retains the immutable source\nsnapshot and completed sections even if that disposable cache is evicted.\n\nEach append uses the latest canonical revision and original target scene. Words\nare mapped through source media time into surviving moved, trimmed, split or\nretimed clips. Prior caption IDs, manual text/style/timing and unrelated ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-789e9f74-663a-48fd-b060-8ac1fc1a5faf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:56:17.208Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

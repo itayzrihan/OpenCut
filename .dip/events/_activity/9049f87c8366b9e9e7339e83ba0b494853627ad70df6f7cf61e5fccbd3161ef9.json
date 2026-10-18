@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9049f87c8366b9e9e7339e83ba0b494853627ad70df6f7cf61e5fccbd3161ef9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:10:37.459Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-word-fix.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "59a7d72a98cca556642d5b7cfd40cf3d94e61dced363577179df1a183fe6c8ed",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4a284290-5189-41fd-8f71-809d05e30add"
+      },
+      {
+        "at": "2026-10-14T10:10:37.462Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 .local/teaser-word-fix-2026-10-14/check-tail.py",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-cc753b1a-12aa-4d38-a282-c913bda76ae5"
+      },
+      {
+        "at": "2026-10-14T10:10:37.591Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-word-fix.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "59a7d72a98cca556642d5b7cfd40cf3d94e61dced363577179df1a183fe6c8ed",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4a284290-5189-41fd-8f71-809d05e30add"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:10:38.096Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

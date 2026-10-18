@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "56c92e6aa15b6879bbb5003caf9070b5afa6857f5dec55a8623366c8f17fc8db",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1371f-7d1f-7c72-9a7d-344e21a0f6f1",
+    "records": [
+      {
+        "at": "2026-10-13T21:16:16.682Z",
+        "kind": "SessionStart",
+        "agent": "codex",
+        "session": "01a1371f-7d1f-7c72-9a7d-344e21a0f6f1",
+        "taskId": null,
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "7669a428-4a0e-4d00-848a-d69a8d8170ea"
+      },
+      {
+        "at": "2026-10-13T21:16:17.179Z",
+        "kind": "UserPromptSubmit",
+        "agent": "codex",
+        "session": "01a1371f-7d1f-7c72-9a7d-344e21a0f6f1",
+        "taskId": "task_e8ce02f75254113fd0f42b1e85af0011192c117a2c92b97c17167f83e929d714",
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1371f-7d1f-7c72-9a7d-344e21a0f6f1:prompt:01a1371f-7dae-7eb2-92b8-2eac2f6a836b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:16:17.260Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

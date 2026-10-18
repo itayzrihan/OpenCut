@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9ce2d77961d714a845ef594571d6e7462069465eb985c0ac77974ff70afcb60",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:52:17.017Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json, re, shutil\nb=Path('.local/codex-transcription-research')\nr=json.loads((b/'chromium-probe-result.json').read_text())\ndef words(s): return re.findall(r'[\\w]+',s)\nprint(json.dumps({'httpStatus':r['httpStatus'],'requestMs':r['elapsedMs'],'totalMs':r['totalElapsedMs'],'wordsMatch':words(r['expected'])==words(r['transcript']),'apiKeyUsed':r['apiKeyUsed'],'hasWords':r['hasWords'],'hasSegments':r['hasSegments']},ensure_ascii=False))\nroute=Path('classic/apps/web/src/app/api/transcription/chromium-probe/route.ts')\nroute.unlink();route.parent.rmdir()\nshutil.rmtree(b/'electron-runtime')\nif (b/'probe-electron-profile').exists(): shutil.rmtree(b/'probe-electron-profile')\nprint('Removed temporary route and extracted runtime/profile; retained sanitized results, fixture and diagnostic source.')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-28aa2f0a-8ce4-4ce9-b3d0-ae805d5497c8"
+      },
+      {
+        "at": "2026-10-12T10:52:17.162Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json, re, shutil\nb=Path('.local/codex-transcription-research')\nr=json.loads((b/'chromium-probe-result.json').read_text())\ndef words(s): return re.findall(r'[\\w]+',s)\nprint(json.dumps({'httpStatus':r['httpStatus'],'requestMs':r['elapsedMs'],'totalMs':r['totalElapsedMs'],'wordsMatch':words(r['expected'])==words(r['transcript']),'apiKeyUsed':r['apiKeyUsed'],'hasWords':r['hasWords'],'hasSegments':r['hasSegments']},ensure_ascii=False))\nroute=Path('classic/apps/web/src/app/api/transcription/chromium-probe/route.ts')\nroute.unlink();route.parent.rmdir()\nshutil.rmtree(b/'electron-runtime')\nif (b/'probe-electron-profile').exists(): shutil.rmtree(b/'probe-electron-profile')\nprint('Removed temporary route and extracted runtime/profile; retained sanitized results, fixture and diagnostic source.')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-28aa2f0a-8ce4-4ce9-b3d0-ae805d5497c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:52:17.265Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dbb8f1968f23218d425c48343d14cccbece9f5a5487b40eddc9a286c8130b058",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:04:00.210Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/classic_podcast.rs');s=p.read_text();needle='''async fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outputs() {\n    let r = setup().await;\n    let before = state(&r).await;''';replacement='''async fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outputs() {\n    let r = setup().await;\n    // Keep a completed, source-bound job alongside the corrected caption source.\n    // Silence-only sections are valid and must not replace existing captions.\n    call(&r,\"transcription.classic.edit\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":state(&r).await[\"revision\"],\"jobId\":\"completed-job\",\"change\":{\"type\":\"start\",\"sceneId\":\"main-scene\",\"language\":\"he\",\"settings\":{\"wordsPerRow\":3,\"rows\":1},\"defaults\":{\"element\":{\"type\":\"text\",\"trimStart\":0,\"trimEnd\":0,\"params\":{\"opacity\":1}},\"bottomFadeOutEndOpacity\":0.25},\"totalDuration\":650*120000}})).await;\n    for index in 0..11 {\n        call(&r,\"transcription.classic.edit\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":state(&r).await[\"revision\"],\"jobId\":\"completed-job\",\"change\":{\"type\":\"append\",\"index\":index,\"words\":[]}})).await;\n    }\n    let before = state(&r).await;\n    assert_eq!(before[\"project\"][\"classic\"][\"document\"][\"transcriptionJobs\"][0][\"status\"],\"complete\");'''\nassert needle in s;s=s.replace(needle,replacement);s=s.replace('// Changing a result\\'s alternative also cannot mutate the Main transcript.','// Undo and Redo never remove or change the Main transcript.');p.write_text(s)\nPY\ncargo test -p opencut-editor-api --test classic_podcast > .local/source-preservation/native.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-241cfa57-14f8-4c1d-8c6b-c3a30ccc58db"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:04:00.761Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

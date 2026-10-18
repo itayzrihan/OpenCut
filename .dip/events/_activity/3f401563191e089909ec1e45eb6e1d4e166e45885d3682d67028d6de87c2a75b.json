@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f401563191e089909ec1e45eb6e1d4e166e45885d3682d67028d6de87c2a75b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:23:04.946Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -y -hide_banner -loglevel error -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,15))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/frames/frame-%04d.jpg\npython3 - <<'PY'\nimport json,pathlib,re\np=pathlib.Path('.local/teaser-reference-2026-10-14/transcript.json')\nif p.exists():\n d=json.loads(p.read_text());print(d.keys()); print(json.dumps(d['transcription'],ensure_ascii=False)[:9000])\nelse: print('Transcription running')\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c9d14ee8-2c48-48d7-9367-411ebdd9e419"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:23:05.131Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25cb7d2bf4fe6da6507de3da60000171fb292731ed48106fb8aeb9f17e8c7606",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:15:37.243Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -14 .local/smart-shorts-performance/build.log; ps -axo pid,%cpu,rss,etime,command | rg 'local-production/build.mjs|next.*build' | cut -c1-165; bun .local/smart-shorts-audio/real-source-test.ts > .local/smart-shorts-performance/real-seven-audio.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b5898e67-e8ff-4a7f-8299-5048c238c686"
+      },
+      {
+        "at": "2026-10-13T19:15:37.254Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport subprocess,json,pathlib,time\nstart=time.monotonic()\ntry:\n r=subprocess.run(['node','.local/smart-shorts-performance/wasm-probe.mjs','after'],capture_output=True,text=True,timeout=90)\n pathlib.Path('.local/smart-shorts-performance/wasm-after.log').write_text(r.stdout+r.stderr);print(r.stdout[-1500:]);print('exit',r.returncode)\nexcept subprocess.TimeoutExpired as e:\n pathlib.Path('.local/smart-shorts-performance/wasm-after.log').write_bytes((e.stdout or b'')+(e.stderr or b''));pathlib.Path('.local/smart-shorts-performance/wasm-after.json').write_text(json.dumps({'completed':False,'timeoutSeconds':90}));print('bounded probe timeout',time.monotonic()-start)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-bd590406-2c6f-4cb6-9b3d-e19bf213a479"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:15:37.533Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

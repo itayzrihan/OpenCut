@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0c07e9d2c0286ff34ff71132d85113e0b0b4a8718a42910e38d8afbfc070166",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:16:07.711Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/core/__tests__/canonical-transcription.test.ts <<'EOF'\n\ntest('SRT is a durable canonical transcript and external engine preference survives reopen',async()=>{\n const session=new CanonicalClassicSession({runtime:await createCanonicalTestRuntime(),projectId:'classic-project'});\n const original=JSON.parse(readFileSync(new URL('../../../../../../crates/editor-api/tests/fixtures/classic-project.json',import.meta.url),'utf8')) as CanonicalClassicSnapshot;\n session.attach({classic:original});\n session.invokeControl({capabilityId:'transcription.classic.edit',input:{jobId:'settings',change:{type:'setEngine',engine:'external'}}});\n session.invokeControl({capabilityId:'transcription.classic.edit',input:{jobId:'srt-source',change:{type:'importSrt',sceneId:'main-scene',text:'1\\n00:00:01,500 --> 00:00:04,500\\nשלום עולם\\n\\n2\\n00:00:05,000 --> 00:00:07,000\\nA second cue',settings:DEFAULT_CAPTION_LAYOUT,defaults:DEFAULTS.text}}});\n const restored=new CanonicalClassicSession({runtime:await createCanonicalTestRuntime(),projectId:'classic-project'});restored.restore(session.archive());\n const document=restored.read().document;\n expect(document.transcriptionEngine).toBe('external');\n const track=document.scenes[0].tracks.overlay.find(t=>t.type==='text'&&t.captionSource?.sourceId==='srt-source');\n expect(track?.elements).toHaveLength(2);expect(track?.elements[0].startTime).toBe(180000);\n if(track?.type==='text')expect(track.captionSource?.words.map(w=>w.text)).toEqual(['שלום','עולם','A','second','cue']);\n expect(JSON.stringify(document)).not.toContain('apiKey');session.dispose();restored.dispose();\n});\nEOF\ncat > classic/apps/web/src/transcription/external-client.test.ts <<'EOF'\nimport {afterEach,beforeEach,expect,test} from 'bun:test';\nimport {encodeSpeechWav,transcribeExternalWindow} from './external-client';\nlet originalWindow:PropertyDescriptor|undefined;let originalFetch:typeof fetch;\nbeforeEach(()=>{originalWindow=Object.getOwnPropertyDescriptor(globalThi",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-4176736a-7dc6-4f00-8491-664b1e8a67a2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:16:08.427Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

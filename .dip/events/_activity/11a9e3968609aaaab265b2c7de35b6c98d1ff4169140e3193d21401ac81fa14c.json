@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11a9e3968609aaaab265b2c7de35b6c98d1ff4169140e3193d21401ac81fa14c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:51:21.312Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib,shutil\np=pathlib.Path('analysis/teaser-exports-2026-10-14');d=json.loads((p/'project-before.json').read_text())\nh=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()\nb={'projectId':d['metadata']['id'],'currentSceneId':d['currentSceneId'],'settingsHash':h(d['settings']),'jobsHash':h(d['transcriptionJobs']),'scenes':[{k:s[k] for k in ['id','name','isMain','createdAt']}|{'tracksHash':h(s['tracks']),'bookmarksHash':h(s['bookmarks'])} for s in d['scenes']]}\n(p/'baseline.json').write_text(json.dumps(b,ensure_ascii=False,indent=2))\nt=pathlib.Path('.local/teaser-exports-2026-10-14');t.mkdir(exist_ok=True,parents=True);shutil.move(p/'project-before.json',t/'project-before.json');print({'baselineScenes':len(b['scenes'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fb19e818-7ce2-4996-a188-802d16fcc957"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:51:22.202Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "eventId": "322fe09d049e69ba763d9e5a16a2c5d69bef3b170f75145d0846152a8993eaa1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:50:41.798Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nr=pathlib.Path('analysis/teaser-reexport-audio-2026-10-15');d=pathlib.Path.home()/'Downloads'\nspec=[('with','OpenCut-Teaser-FullAuto-with-captions-2026-10-15.mp4','10PLG8Yc_BMlMWS2py3H1_78vF3L0-1AS'),('without','OpenCut-Teaser-FullAuto-without-captions-2026-10-15.mp4','1If99ynIICXnsQDDbLTukKN8MIgHusu5Y'),('srt','OpenCut-Teaser-FullAuto-2026-10-15.srt','1igVN84-4vOASOze-bT4qkCWNm7mlSDCw')]\n(r/'manifest.json').write_text(json.dumps({'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':[{'variant':v,'name':n,'path':str(d/n),'sha256':hashlib.sha256((d/n).read_bytes()).hexdigest(),'url':f'https://drive.google.com/file/d/{i}/view'} for v,n,i in spec]},indent=2))\np=pathlib.Path('.dip/config.json');c=json.loads(p.read_text());c['verification']['teaser-corrected-audio-exports']={'command':['python3','analysis/teaser-reexport-audio-2026-10-15/verify.py'],'timeoutMs':120000};p.write_text(json.dumps(c,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-648a0a54-9fa9-4ba3-a337-def2a6cfce83"
+      },
+      {
+        "at": "2026-10-15T01:50:42.181Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nr=pathlib.Path('analysis/teaser-reexport-audio-2026-10-15');d=pathlib.Path.home()/'Downloads'\nspec=[('with','OpenCut-Teaser-FullAuto-with-captions-2026-10-15.mp4','10PLG8Yc_BMlMWS2py3H1_78vF3L0-1AS'),('without','OpenCut-Teaser-FullAuto-without-captions-2026-10-15.mp4','1If99ynIICXnsQDDbLTukKN8MIgHusu5Y'),('srt','OpenCut-Teaser-FullAuto-2026-10-15.srt','1igVN84-4vOASOze-bT4qkCWNm7mlSDCw')]\n(r/'manifest.json').write_text(json.dumps({'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':[{'variant':v,'name':n,'path':str(d/n),'sha256':hashlib.sha256((d/n).read_bytes()).hexdigest(),'url':f'https://drive.google.com/file/d/{i}/view'} for v,n,i in spec]},indent=2))\np=pathlib.Path('.dip/config.json');c=json.loads(p.read_text());c['verification']['teaser-corrected-audio-exports']={'command':['python3','analysis/teaser-reexport-audio-2026-10-15/verify.py'],'timeoutMs':120000};p.write_text(json.dumps(c,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-648a0a54-9fa9-4ba3-a337-def2a6cfce83"
+      },
+      {
+        "at": "2026-10-15T01:50:42.192Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "analysis/teaser-reexport-audio-2026-10-15/verify.py"
+        ],
+        "changeHash": "efee31a11a044080c3f710e0e14bb6956186fb9da4ebce7ce4e4eb4235b83089",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6aea58cb-5f00-44cc-a8f3-e38b167d2a25"
+      },
+      {
+        "at": "2026-10-15T01:50:42.283Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "analysis/teaser-reexport-audio-2026-10-15/verify.py"
+        ],
+        "changeHash": "efee31a11a044080c3f710e0e14bb6956186fb9da4ebce7ce4e4eb4235b83089",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6aea58cb-5f00-44cc-a8f3-e38b167d2a25"
+      },
+      {
+        "at": "2026-10-15T01:50:42.286Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8b480205-b0be-40e6-afdc-3eb768758c27"
+      },
+      {
+        "at": "2026-10-15T01:50:42.382Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-8b480205-b0be-40e6-afdc-3eb768758c27"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:50:42.415Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

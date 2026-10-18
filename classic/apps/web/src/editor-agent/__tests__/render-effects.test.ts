@@ -151,3 +151,38 @@ test("remix measures a new manifest and releases its renderer without writing ed
 	expect(disposed).toBe(before + 1);
 	expect(store).not.toHaveBeenCalled();
 });
+
+test("disk artifacts are bounded before reading and temporary files are disposed", async () => {
+	const { editor, store } = fixture();
+	const dispose = mock(async () => {}),
+		read = mock(async () => new ArrayBuffer(1));
+	editor.renderer.exportProject = async () => ({
+		success: true,
+		file: { size: 64 * 1024 * 1024 + 1, arrayBuffer: read } as unknown as File,
+		dispose,
+	});
+	const result = await performRenderEffect({
+		editor,
+		accountId: "alice",
+		signal: new AbortController().signal,
+		onExport: mock(),
+		effect: {
+			id: 1,
+			projectId: "project",
+			adapter: "editorRender",
+			request: {
+				operation: "export",
+				input: {
+					projectId: "project",
+					expectedRevision: 7,
+					sceneId: "scene",
+					format: "webm",
+				},
+			},
+		},
+	});
+	expect(result.type).toBe("rejected");
+	expect(read).not.toHaveBeenCalled();
+	expect(store).not.toHaveBeenCalled();
+	expect(dispose).toHaveBeenCalledTimes(1);
+});

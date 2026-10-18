@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a549e628f52651bfb370abf5d4b45c64d5f1ff7a0e3f26fca79b2d717ce0a2cf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:08:07.610Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '755,818p' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '82,160p' classic/rust/crates/timeline/src/smart_silence.rs; sed -n '1,65p' classic/apps/web/src/ai/podcast-types.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-10257dd2-a53b-4248-9c49-267ebbc78aa1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:08:08.499Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

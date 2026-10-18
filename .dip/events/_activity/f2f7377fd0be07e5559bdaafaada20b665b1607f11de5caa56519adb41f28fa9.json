@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f2f7377fd0be07e5559bdaafaada20b665b1607f11de5caa56519adb41f28fa9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:09:46.433Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx prettier --write src/transcription/job.ts src/transcription/windows.ts src/transcription/timeline-stream.ts src/transcription/external-client.ts src/transcription/external-server.ts src/core/managers/transcription-manager.ts src/subtitles/components/transcription-source.tsx src/app/api/transcription/settings/route.ts src/app/api/transcription/external/route.ts src/ai/podcast-task.ts src/ai/smart-takes-task.ts src/subtitles/auto-texts.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-f681ec9c-21ac-4be3-a713-38f027007b76"
+      },
+      {
+        "at": "2026-10-12T10:09:46.433Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx tsc --noEmit -p tsconfig.build.json",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-bf5de219-5760-4a10-ac8d-ed28a97e67ab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:09:47.464Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

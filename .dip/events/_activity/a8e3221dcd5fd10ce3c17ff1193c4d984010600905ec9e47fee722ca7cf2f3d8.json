@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8e3221dcd5fd10ce3c17ff1193c4d984010600905ec9e47fee722ca7cf2f3d8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:06:36.863Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil, subprocess\nb=Path('.local/codex-transcription-research/subscription-route-draft')\nfiles=['crates/editor-api/src/operations/classic_transcription.rs','classic/apps/web/src/core/canonical-classic-session.ts','classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/transcription/job.ts','classic/apps/web/src/core/managers/transcription-manager.ts','classic/apps/web/src/transcription/windows.ts','classic/apps/web/src/transcription/timeline-stream.ts','classic/apps/web/src/subtitles/components/transcription-source.tsx','classic/apps/web/package.json','classic/package.json','classic/bun.lock','classic/apps/web/next.config.ts','classic/apps/web/src/transcription/chatgpt-client.ts','classic/apps/web/src/transcription/chatgpt-server.ts','classic/apps/web/src/transcription/chatgpt-worker.cjs','classic/apps/web/src/app/api/transcription/chatgpt/route.ts']\nfor f in files:\n dest=b/f;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,dest)\n# Remove only changes made in this turn; retain all pre-existing transcription work.\np=Path(files[0]);s=p.read_text().replace('    Chatgpt,\\n','',1).replace('if matches!(job.engine, Engine::External | Engine::Chatgpt)','if job.engine == Engine::External',1).replace('persisted local/API/ChatGPT engine (API is the UI default)','persisted local/external engine',1)\ns=s.replace('\\n        if job.engine == Engine::Chatgpt {\\n            track[\"captionSource\"][\"wordTiming\"] = json!(\"estimated\");\\n            track[\"captionSource\"][\"origin\"] = json!(\"chatgpt\");\\n        }','',1)\na=s.index('    register::<EstimateInput, EstimateOutput, _, _>');z=s.index('    register::<Input, MutationOutput, _, _>',a);s=s[:a]+s[z:]\na=s.index('\\n#[derive(Deserialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\\nstruct EstimateInput');s=s[:a];p.write_text(s)\np=Path(files[1]);s=p.read_text();a=s.index('\\testimateTranscriptionWords(');z=s.index('\\tbegin(): void {',a);s",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-77868922-cbf7-414c-8099-27bf3c28bd68"
+      },
+      {
+        "at": "2026-10-12T11:06:37.077Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil, subprocess\nb=Path('.local/codex-transcription-research/subscription-route-draft')\nfiles=['crates/editor-api/src/operations/classic_transcription.rs','classic/apps/web/src/core/canonical-classic-session.ts','classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/transcription/job.ts','classic/apps/web/src/core/managers/transcription-manager.ts','classic/apps/web/src/transcription/windows.ts','classic/apps/web/src/transcription/timeline-stream.ts','classic/apps/web/src/subtitles/components/transcription-source.tsx','classic/apps/web/package.json','classic/package.json','classic/bun.lock','classic/apps/web/next.config.ts','classic/apps/web/src/transcription/chatgpt-client.ts','classic/apps/web/src/transcription/chatgpt-server.ts','classic/apps/web/src/transcription/chatgpt-worker.cjs','classic/apps/web/src/app/api/transcription/chatgpt/route.ts']\nfor f in files:\n dest=b/f;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,dest)\n# Remove only changes made in this turn; retain all pre-existing transcription work.\np=Path(files[0]);s=p.read_text().replace('    Chatgpt,\\n','',1).replace('if matches!(job.engine, Engine::External | Engine::Chatgpt)','if job.engine == Engine::External',1).replace('persisted local/API/ChatGPT engine (API is the UI default)','persisted local/external engine',1)\ns=s.replace('\\n        if job.engine == Engine::Chatgpt {\\n            track[\"captionSource\"][\"wordTiming\"] = json!(\"estimated\");\\n            track[\"captionSource\"][\"origin\"] = json!(\"chatgpt\");\\n        }','',1)\na=s.index('    register::<EstimateInput, EstimateOutput, _, _>');z=s.index('    register::<Input, MutationOutput, _, _>',a);s=s[:a]+s[z:]\na=s.index('\\n#[derive(Deserialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\\nstruct EstimateInput');s=s[:a];p.write_text(s)\np=Path(files[1]);s=p.read_text();a=s.index('\\testimateTranscriptionWords(');z=s.index('\\tbegin(): void {',a);s",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-77868922-cbf7-414c-8099-27bf3c28bd68"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:06:37.833Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

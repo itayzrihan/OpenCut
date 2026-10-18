@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e27715a0-96bf-4650-912d-41989ee90a59",
+  "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Extend clipped source phrase by1s via canonical MCP edit and ripple captions/effects/audio",
+          "status": "completed"
+        },
+        {
+          "step": "Re-export both video variants and updated SRT/transcript, verify content and source preservation",
+          "status": "completed"
+        },
+        {
+          "step": "Replace Drive videos and upload corrected transcript files; verify links",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T10:17:44.522Z",
+  "parents": [
+    "5c5b6f48-cc84-4886-b4bf-810f603768a5"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

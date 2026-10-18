@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "eventId": "705c580b8eefa995eb57c306de81f8aa170d8dc8dfb064c548a95680dc66a89c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T10:28:00.099Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nr=pathlib.Path('analysis/teaser-no-music-2026-10-15');p=pathlib.Path.home()/'Downloads/OpenCut-Teaser-FullAuto-no-music-no-captions-VeryHigh-2026-10-15.mp4';i=json.loads((r/'drive-item.json').read_text());(r/'manifest.json').write_text(json.dumps({'name':p.name,'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'driveFileId':i['driveFileId'],'url':'https://drive.google.com/file/d/'+i['driveFileId']+'/view','quality':'very_high','folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK'},indent=2));a=json.loads(pathlib.Path('.local/teaser-no-music-2026-10-15/project-before.json').read_text());b=json.loads((pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json').read_text());print({'allScenesRestored':a['scenes']==b['scenes'],'settingsRestored':a['settings']==b['settings'],'transcriptionRestored':a.get('transcriptionJobs')==b.get('transcriptionJobs')})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-298b0ab7-9dfe-4e2b-af45-83c388a94087"
+      },
+      {
+        "at": "2026-10-15T10:28:00.100Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/analysis/teaser-no-music-2026-10-15/no-captions.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2ff5d205-3f4e-4702-9219-2fb438634d65"
+      },
+      {
+        "at": "2026-10-15T10:28:00.161Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/analysis/teaser-no-music-2026-10-15/no-captions.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2ff5d205-3f4e-4702-9219-2fb438634d65"
+      },
+      {
+        "at": "2026-10-15T10:28:00.162Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7088d20f-c030-4b2d-98b8-c1d77643a3c6"
+      },
+      {
+        "at": "2026-10-15T10:28:00.266Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7088d20f-c030-4b2d-98b8-c1d77643a3c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T10:28:00.549Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

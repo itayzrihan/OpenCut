@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab53b58dc99bb8760380c3a211c01b90304888000479d8c8f7af4c46eb7fa47f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:49:04.076Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '75,90p' classic/apps/web/src/transcription/external-server.test.ts; sed -n '109,136p' classic/apps/web/src/transcription/external-server.test.ts; sed -n '54,65p' classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-1393efcf-c496-4d21-8084-c2f7290def06"
+      },
+      {
+        "at": "2026-10-18T15:49:04.168Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '75,90p' classic/apps/web/src/transcription/external-server.test.ts; sed -n '109,136p' classic/apps/web/src/transcription/external-server.test.ts; sed -n '54,65p' classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-1393efcf-c496-4d21-8084-c2f7290def06"
+      },
+      {
+        "at": "2026-10-18T15:49:04.170Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/preview/__tests__/video-lookahead.test.ts');s=p.read_text().replace('scaleX: 1, scaleY: 1, rotate: 0','scaleX: 1, scaleY: 1, perspectiveX: 0, perspectiveY: 0, rotate: 0');p.write_text(s)\np=Path('classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts');s=p.read_text().replace('id: \"r\",','id: \"r\", lineIndex: 0,');p.write_text(s)\nPY\nnode <<'JS'\nconst ts=require('./classic/node_modules/typescript'),fs=require('fs');const file='classic/apps/web/src/transcription/external-server.test.ts';let s=fs.readFileSync(file,'utf8');const ast=ts.createSourceFile(file,s,99,true),edits=[];function visit(n){if(ts.isPropertyAssignment(n)&&n.name.getText(ast)==='fetchImpl'&&ts.isArrowFunction(n.initializer))edits.push([n.initializer.getStart(ast),n.initializer.end]);ts.forEachChild(n,visit);}visit(ast);for(const [a,b]of edits.sort((a,b)=>b[0]-a[0]))s=s.slice(0,a)+'mockFetch('+s.slice(a,b)+')'+s.slice(b);fs.writeFileSync(file,s);\nJS\nbun x tsc --noEmit --pretty false > ../../../.local/brand-kit/premerge-types-final3.log 2>&1",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-a049e112-9d88-426a-9933-0094953e4a79"
+      },
+      {
+        "at": "2026-10-18T15:49:04.381Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/preview/__tests__/video-lookahead.test.ts');s=p.read_text().replace('scaleX: 1, scaleY: 1, rotate: 0','scaleX: 1, scaleY: 1, perspectiveX: 0, perspectiveY: 0, rotate: 0');p.write_text(s)\np=Path('classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts');s=p.read_text().replace('id: \"r\",','id: \"r\", lineIndex: 0,');p.write_text(s)\nPY\nnode <<'JS'\nconst ts=require('./classic/node_modules/typescript'),fs=require('fs');const file='classic/apps/web/src/transcription/external-server.test.ts';let s=fs.readFileSync(file,'utf8');const ast=ts.createSourceFile(file,s,99,true),edits=[];function visit(n){if(ts.isPropertyAssignment(n)&&n.name.getText(ast)==='fetchImpl'&&ts.isArrowFunction(n.initializer))edits.push([n.initializer.getStart(ast),n.initializer.end]);ts.forEachChild(n,visit);}visit(ast);for(const [a,b]of edits.sort((a,b)=>b[0]-a[0]))s=s.slice(0,a)+'mockFetch('+s.slice(a,b)+')'+s.slice(b);fs.writeFileSync(file,s);\nJS\nbun x tsc --noEmit --pretty false > ../../../.local/brand-kit/premerge-types-final3.log 2>&1",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-a049e112-9d88-426a-9933-0094953e4a79"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:49:04.555Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

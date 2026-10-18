@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc3fd93ac40e3b1eb9b85948f5284df0cff5e366d840d3d10f37eb7c8389adbc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:34:30.924Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nb=json.loads(pathlib.Path('analysis/source-audio-relink-2026-10-15/baseline.json').read_text());o=next(x for x in b['projects'] if x['id'].startswith('8470'));p=json.loads((pathlib.Path.home()/'Movies/OpenCut Accounts/data'/b['account']/'projects'/o['id']/'project.json').read_text());h=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();print({'all11SceneHashesUnchanged':all(h(s)==s0['hash'] for s,s0 in zip(p['scenes'],o['scenes']))})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f80aead0-eaf2-4e79-91ce-68a54aadd7ca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:34:31.770Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

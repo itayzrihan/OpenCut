@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4700caa15f260b89031446313065e4ea36162d119318f2f52300d327109f27c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:56:24.125Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nimport urllib.request\nu='https://dl.google.com/chrome/mac/stable/dsym/googlechrome-154.0.8037.97-arm64-dsym.tar.bz2'\ntry:\n r=urllib.request.urlopen(urllib.request.Request(u,method='HEAD'),timeout=20);print(r.status,r.headers.get('Content-Length'))\nexcept Exception as e:print(type(e).__name__,str(e))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0ed2b501-665d-4a09-b462-314a601f4c88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:56:24.628Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

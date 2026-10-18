@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b5136fcdc7f96cec4f5e320800cf388226942ed53ffd65875a64f93701466cd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T15:08:07.132Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node -e 'const p=require(\"./.local/smart-shorts-seven/browser-memory-measurements.json\");console.log({targets:p.targets,peakGB:(p.peak/1024**3).toFixed(2),nowGB:(p.measurements.at(-1).rss/1024**3).toFixed(2),sampleAt:p.measurements.at(-1).at})';",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-deac4c93-7090-4545-aec1-0aabb734033d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T15:08:07.174Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

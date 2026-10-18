@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e3d0a24d318c82dc1188332214aab6073094ef207168a983f4fb4278cdc8967",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:52:34.043Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '172,292p' crates/editor-api/src/operations/classic_takes/quality.rs; sed -n '450,515p' crates/editor-api/src/operations/classic_takes/quality.rs; rg -n 'canonicalizeTimelineSourceDocument' classic/apps/web/test-support/wasm.ts; sed -n '1,70p' classic/apps/web/src/ai/timeline-document-v2-canonicalizer.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-24906016-ac8a-4df7-85b2-83ef09211950"
+      },
+      {
+        "at": "2026-10-14T07:52:34.145Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-492f07f6-cd96-430e-a15f-fb35d356e64a"
+      },
+      {
+        "at": "2026-10-14T07:52:34.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '172,292p' crates/editor-api/src/operations/classic_takes/quality.rs; sed -n '450,515p' crates/editor-api/src/operations/classic_takes/quality.rs; rg -n 'canonicalizeTimelineSourceDocument' classic/apps/web/test-support/wasm.ts; sed -n '1,70p' classic/apps/web/src/ai/timeline-document-v2-canonicalizer.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-24906016-ac8a-4df7-85b2-83ef09211950"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:52:34.662Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

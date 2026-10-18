@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc1749915eacdbbfe2c581230b5a8183bc08233ba0f6d1a2a37be9b8c1cda3ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:10:17.519Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nimport {join} from 'node:path';import {writeFile} from 'node:fs/promises';\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate)throw Error('No staged release');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nconst stop=await fetch(base+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('Stop failed');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nconst start=await fetch(base+'/start',{method:'POST',headers});if(!start.ok)throw Error('Start failed');\nconst status=await(await fetch(base+'/status',{headers})).json();await writeFile('.local/source-preservation/deployment.json',JSON.stringify(status,null,2));console.log(JSON.stringify(status));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-afd4dbe9-1635-46cd-b8f0-7d8e1891f196"
+      },
+      {
+        "at": "2026-10-13T21:10:18.090Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nimport {join} from 'node:path';import {writeFile} from 'node:fs/promises';\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate)throw Error('No staged release');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nconst stop=await fetch(base+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('Stop failed');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nconst start=await fetch(base+'/start',{method:'POST',headers});if(!start.ok)throw Error('Start failed');\nconst status=await(await fetch(base+'/status',{headers})).json();await writeFile('.local/source-preservation/deployment.json',JSON.stringify(status,null,2));console.log(JSON.stringify(status));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-afd4dbe9-1635-46cd-b8f0-7d8e1891f196"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:10:18.447Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

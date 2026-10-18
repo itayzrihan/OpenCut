@@ -9,7 +9,14 @@ const test = (name: string, body: () => Promise<void>) =>
 		),
 	);
 import { describe, expect, mock, test as runTest } from "bun:test";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import {
+	mkdtemp,
+	readFile,
+	rm,
+	stat,
+	utimes,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -22,6 +29,31 @@ mock.module("opencut-wasm", () => ({
 }));
 
 describe("local-drive shared collections", () => {
+	test("native imports and older records expose integer modification times to the canonical editor", async () => {
+		const { registerPickedMediaPaths, listMedia, putMediaMetadata } =
+			await import("../server");
+		const directory = await mkdtemp(join(tmpdir(), "opencut-native-import-"));
+		const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = join(directory, "accounts");
+		try {
+			const path = join(directory, "image.png");
+			await writeFile(path, "png");
+			await utimes(path, 1791784473.127759, 1791784473.127759);
+			const modified = (await stat(path)).mtimeMs;
+			expect(Number.isInteger(modified)).toBe(false);
+			const [record] = await registerPickedMediaPaths("project", [path]);
+			expect(record.lastModified).toBe(Math.trunc(modified));
+			// Simulate an index written by the earlier native importer.
+			await putMediaMetadata("project", { ...record, lastModified: modified });
+			expect((await listMedia("project"))[0].lastModified).toBe(
+				Math.trunc(modified),
+			);
+		} finally {
+			if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+			else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+			await rm(directory, { recursive: true, force: true });
+		}
+	});
 	test("discarding a staged import removes only its copied bytes and cannot erase finalized media", async () => {
 		const {
 			storeUploadedMedia,

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dbf73fc0-eea2-4bc2-9ec2-5ccdef43fdb2",
+  "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Deployed2026-10-13T20-28-21-238Z runningtrue/errornull. OriginalSequenceDoubleClick fullcontenttransaction(copy,sync,validate,undo,fullUIproject/mediareprojection,archiveSave). Addedtypedcanonicalscene.open/view underworkspace.classicScene withnavigationrevision; noUndo/Doccontentrevision/Projectcopy. UIexistingSceneRefs only andcontent-vs-viewnotifications; legacyundoableSelect kept. Renderer/duration/Hyperframes/silence resolvecanonicalviewer. Tinyaccountprefs checkpointvalidatedNativeonreload; archive4/5 viewer/historyfocus +atomicmissingtargetrejection; same-editor-rev checksignoreONLYrootviewerhint/normalizedencoding andpreservecontent/history. Actualfirstdeployment5fastswitchesthen3secCua stall pinpointedsecondaryauto-fit/seek setTimelineViewState->markDirty causingfullbackgroundarchive. Fixedtypedcanonicalviewport.set workspace.classicViewport+stablederivedReactprojection; noarchiveSaveforzoom/scroll/playhead, tinycheckpoint. Final97web+Rustcanonical/navigation/archive/sessiontestsPASS. Real91MBarchiveisolatedChromium100switches:max1.4ms mean0.041ms noWASMmemorygrowth, unchangedhistory/contentrev/exact8scenes. ActualuserproductionChromeall7sequencesdoubleclickcheckedin2.66sectotal, control+DOMconfirmation0.297–0.484s each, nofreeze; responsiveafteridle andreloadlast49ssequencehintverified. SHAall8savedScenes+108completedSTTjobs exactbefore/after, HTTP200. Screenshotproduction-sequence.png andJSONui-switches/preservation/deployment/browser-navigation in.local/sequence-navigation.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Measured core navigation latency is isolated Chromium runtime; UI timings include control-tool and DOM confirmation overhead, not frame-by-frame paint instrumentation. Full workspace initial load remains about20–23seconds for this large archive; task addresses already-loaded sequence/viewport interaction. Other devices/projects not exhaustively tested."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T20:45:03.068Z",
+  "parents": [
+    "bb34c5a5-40a7-4453-ab49-686160e58ce2"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

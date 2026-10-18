@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0f9ec7395f6df50aad8a2b7202271e9c383aaf3f106d8313e4892daafaafb328",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:09:17.416Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,ppid,%cpu,rss,etime,command | rg 'next-server|production.mjs|server.js|local-production' | cut -c1-250; curl -sS --max-time 3 -o /dev/null -w 'root %{http_code} %{time_total}\\n' http://localhost:3211/; curl -sS --max-time 3 http://127.0.0.1:3210/status",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e0a8774e-83ef-4d16-a688-002553d04d6e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:09:18.257Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

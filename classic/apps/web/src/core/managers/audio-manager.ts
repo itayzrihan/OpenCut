@@ -26,6 +26,7 @@ import {
 } from "@/retime";
 import type { AudioBufferSink, WrappedAudioBuffer } from "mediabunny";
 import { AudioSinkCache } from "@/media/audio-sink-cache";
+import { PlaybackAudioCache } from "@/media/playback-audio-cache";
 import {
 	getAudibleContextTime,
 	getAudioContextStartTime,
@@ -149,8 +150,8 @@ export class AudioManager {
 	>();
 	private queuedSources = new Set<AudioBufferSourceNode>();
 	private scheduledClipIds = new Set<string>();
-	private preparedClipBuffers = new Map<string, Promise<AudioBuffer | null>>();
-	private decodedBuffers = new Map<string, Promise<AudioBuffer | null>>();
+	private preparedClipBuffers = new PlaybackAudioCache();
+	private decodedBuffers = new PlaybackAudioCache();
 	private clipRetryTimers = new Map<string, number>();
 	private clipRetryAttempts = new Map<string, number>();
 	private playbackSessionId = 0;
@@ -389,7 +390,11 @@ export class AudioManager {
 						nextTime = windowClip.startTime + windowClip.duration;
 					}
 				} else {
-					await this.getAudioSink({ clip });
+					const sink = await this.getAudioSink({ clip });
+					if (!sink && !signal.aborted)
+						throw new Error(
+							"Could not open source audio. Check that the source disk is connected and try Play again.",
+						);
 				}
 			}),
 		);
@@ -988,7 +993,8 @@ export class AudioManager {
 		return (
 			hasAudioProcessing(clip.timelineElement.params) ||
 			clip.duration <= 12 ||
-			clip.retime?.maintainPitch === true
+			(clip.retime?.maintainPitch === true &&
+				clampRetimeRate({ rate: clip.retime.rate }) !== 1)
 		);
 	}
 
@@ -1120,15 +1126,8 @@ export class AudioManager {
 			});
 		})();
 
-		// Keep only the moving preview window; an hour-long denoised recording
-		// must not retain an hour of processed PCM in the editor.
-		if (hasAudioProcessing(clip.timelineElement.params)) {
-			while (this.preparedClipBuffers.size >= 16) {
-				const oldest = this.preparedClipBuffers.keys().next().value;
-				if (oldest === undefined) break;
-				this.preparedClipBuffers.delete(oldest);
-			}
-		}
+		// Both decoded and prepared caches bound all clip types by PCM bytes,
+		// including ordinary Smart Shorts and completed noise reduction windows.
 		this.preparedClipBuffers.set(cacheKey, promise);
 		void promise.then(
 			(buffer) => {

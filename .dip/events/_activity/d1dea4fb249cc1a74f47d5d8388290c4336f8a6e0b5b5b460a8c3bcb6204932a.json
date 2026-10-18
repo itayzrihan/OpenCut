@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d1dea4fb249cc1a74f47d5d8388290c4336f8a6e0b5b5b460a8c3bcb6204932a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T17:51:52.664Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/apple-stt-benchmark/app.swift');s=p.read_text();s=s.replace('func run() {','func run() {\\n try? \"recognizing\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)')\ns=s.replace('SFSpeechRecognizer.requestAuthorization { status in','try? \"requesting authorization\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)\\nSFSpeechRecognizer.requestAuthorization { status in\\n try? \"authorization \\\\(status.rawValue)\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)')\ns=s.replace('func applicationDidFinishLaunching(_ notification: Notification) {','''var window: NSWindow?\n func applicationDidFinishLaunching(_ notification: Notification) {\n window = NSWindow(contentRect:NSRect(x:100,y:100,width:480,height:130), styleMask:[.titled,.closable], backing:.buffered,defer:false)\n window?.title = \"OpenCut Offline Speech Test\"\n let label = NSTextField(labelWithString:\"Testing local Hebrew recognition. Waiting for macOS permission…\")\n label.frame = NSRect(x:20,y:40,width:440,height:60)\n window?.contentView?.addSubview(label)\n window?.makeKeyAndOrderFront(nil)\n app.activate(ignoringOtherApps:true)\n''')\np.write_text(s)\nPY\nkill -TERM 13006\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-15554ccd-d913-4105-b284-4a495c9e0c86"
+      },
+      {
+        "at": "2026-10-12T17:51:53.141Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/apple-stt-benchmark/app.swift');s=p.read_text();s=s.replace('func run() {','func run() {\\n try? \"recognizing\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)')\ns=s.replace('SFSpeechRecognizer.requestAuthorization { status in','try? \"requesting authorization\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)\\nSFSpeechRecognizer.requestAuthorization { status in\\n try? \"authorization \\\\(status.rawValue)\".write(toFile: output + \".status\", atomically:true, encoding:.utf8)')\ns=s.replace('func applicationDidFinishLaunching(_ notification: Notification) {','''var window: NSWindow?\n func applicationDidFinishLaunching(_ notification: Notification) {\n window = NSWindow(contentRect:NSRect(x:100,y:100,width:480,height:130), styleMask:[.titled,.closable], backing:.buffered,defer:false)\n window?.title = \"OpenCut Offline Speech Test\"\n let label = NSTextField(labelWithString:\"Testing local Hebrew recognition. Waiting for macOS permission…\")\n label.frame = NSRect(x:20,y:40,width:440,height:60)\n window?.contentView?.addSubview(label)\n window?.makeKeyAndOrderFront(nil)\n app.activate(ignoringOtherApps:true)\n''')\np.write_text(s)\nPY\nkill -TERM 13006\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-15554ccd-d913-4105-b284-4a495c9e0c86"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T17:51:53.463Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

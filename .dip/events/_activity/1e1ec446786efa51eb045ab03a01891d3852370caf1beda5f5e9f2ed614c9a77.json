@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1e1ec446786efa51eb045ab03a01891d3852370caf1beda5f5e9f2ed614c9a77",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:59:29.247Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-editorial.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-task.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts"
+        ],
+        "changeHash": "c120327b34971fb05f49085a4a5e6ff12ebf4cc0beab7daf18d2ef8f48e766f1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3779be1c-3ba2-4d36-af56-f2721d1a7ba9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:59:29.751Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

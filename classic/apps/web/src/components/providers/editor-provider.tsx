@@ -16,6 +16,7 @@ import {
 } from "@/services/renderer/gpu-renderer";
 import { createReplacementProjectIfMissing } from "@/editor/project-loading";
 import { ClassicMcpBridge } from "@/mcp/classic-mcp-bridge";
+import { WorkspaceLoading } from "@/components/workspace-loading";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -141,14 +142,7 @@ export function EditorProvider({
 	}
 
 	if (isLoading || replacingProject || takingOwnership) {
-		return (
-			<div className="bg-background flex h-screen w-screen items-center justify-center">
-				<div className="flex flex-col items-center gap-4">
-					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Loading project...</p>
-				</div>
-			</div>
-		);
+		return <WorkspaceLoading />;
 	}
 
 	if (!activeProject) {

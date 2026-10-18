@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b8a441fd3ac5f6afe8bfd010c9c0bc90e49c5ad2eba4405ee621caf8dae142f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:14:44.191Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nconst html=await (await fetch('http://127.0.0.1:3210')).text();\nconst token=[REDACTED];\nconst headers={'x-opencut-launcher':token};\nconst r=await fetch('http://127.0.0.1:3210/start',{method:'POST',headers});\nconsole.log('start',r.status,await r.text());\nconst s=await (await fetch('http://127.0.0.1:3210/status',{headers})).json();\nconsole.log(JSON.stringify({running:s.running,error:s.error,appUrl:s.appUrl,release:s.release?.id}));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-87398ac8-6842-4a00-9dfc-aab94fe3c980"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:14:44.563Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

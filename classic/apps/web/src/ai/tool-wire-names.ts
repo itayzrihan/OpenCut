@@ -19,6 +19,7 @@ export const ALLOWED_AI_TOOL_WIRE_NAMES: ReadonlySet<string> = new Set([
 	"preview_capture_frame",
 	"preview_capture_range_frames",
 	"scene_activate",
+	"media_relink_source",
 	"skills_list",
 	"skills_load",
 	"skills_load_resource",

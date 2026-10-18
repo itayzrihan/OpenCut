@@ -18,6 +18,7 @@ import type { MediaTime } from "@/wasm";
 export interface DraggableItemProps {
 	name: string;
 	preview: ReactNode;
+	labelExtra?: ReactNode;
 	dragData: TimelineDragData;
 	onDragStart?: ({ e }: { e: React.DragEvent }) => void;
 	onAddToTimeline?: ({ currentTime }: { currentTime: MediaTime }) => void;
@@ -34,6 +35,7 @@ export interface DraggableItemProps {
 export function DraggableItem({
 	name,
 	preview,
+	labelExtra,
 	dragData,
 	onDragStart,
 	onAddToTimeline,
@@ -147,6 +149,7 @@ export function DraggableItem({
 								{name}
 							</span>
 						)}
+						{labelExtra}
 					</div>
 				</div>
 			) : (
@@ -171,6 +174,7 @@ export function DraggableItem({
 						<span className="w-full flex-1 truncate text-sm text-left">
 							{name}
 						</span>
+						{labelExtra && <span className="shrink-0">{labelExtra}</span>}
 					</button>
 				</div>
 			)}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e2288f866ae1f4445363ab9d3d58530390f30e9ace4e9d56fb12555e649e72e6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:18:55.087Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_cc5260017aeefc07a5a06d8648f054b9daad13aa59873a9f059fc7a0b785606c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -c 900 sites/dip-public/lib/landing.ts; cat sites/dip-public/app/layout.tsx; cat .dip/tools/verify-dip-site.mjs; git -C /Users/itayzrihan/Documents/dip status --short",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c4bf4fd3-fd9f-45eb-81aa-87c9a4c554ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:18:55.467Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e9477a9860cfc0adb1ff6e8176c29c0f5b5e213f681f57053f3947a87f51eb39",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:47:58.313Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -hide_banner -ss 1710.84 -t 3.36 -i '/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4' -vn -af volumedetect -f null -",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7334cb99-f06b-4b2e-aa5f-1c35785fd765"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:47:59.215Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

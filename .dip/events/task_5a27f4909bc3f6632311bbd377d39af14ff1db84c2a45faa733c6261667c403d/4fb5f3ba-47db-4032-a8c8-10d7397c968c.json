@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4fb5f3ba-47db-4032-a8c8-10d7397c968c",
+  "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented classic-only canonical transcription.classic.edit checkpoints, per-window caption publication and awaited atomic persistence. Source-bound mapping tolerates timeline moves/splits/retiming/scene switches and keeps removed-source words archived. Identical replay is idempotent; active Undo is reconciled. Project reopen resumes running jobs; explicit cancel pauses durably; partial transcript consumers await completion. Rebuilt browser runtime WASM/manifests. Real Chrome fixture confirmed first-section visibility, persistence through reload, then continuation at moved source times 81s/141s with three cues and no loss. Screenshot: .local/transcription-debug/incremental-checkpoints.png.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Full three-hour speech-model inference on the user's recording was not repeated for this change. Recovery cannot guarantee continued processing during persistent browser/GPU/storage or missing-media failures; completed canonical checkpoints are retained."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T09:59:47.135Z",
+  "parents": [
+    "2f832a67-9ff0-4479-b397-9d32c74cb2bb"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

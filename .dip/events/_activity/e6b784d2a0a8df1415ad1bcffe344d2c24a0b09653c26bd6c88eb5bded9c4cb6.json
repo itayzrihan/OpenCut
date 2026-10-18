@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e6b784d2a0a8df1415ad1bcffe344d2c24a0b09653c26bd6c88eb5bded9c4cb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:42:36.986Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 24824 -o pid,%cpu,rss,etime; node -e 'const p=require(\"./.local/smart-shorts-seven/browser-memory-measurements.json\");console.log({peakGB:(p.peak/1024**3).toFixed(2),nowGB:(p.measurements.at(-1).rss/1024**3).toFixed(2)})'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-36eae8ad-e419-4a59-81e8-2f04ce30c693"
+      },
+      {
+        "at": "2026-10-13T13:42:37.100Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 24824 -o pid,%cpu,rss,etime; node -e 'const p=require(\"./.local/smart-shorts-seven/browser-memory-measurements.json\");console.log({peakGB:(p.peak/1024**3).toFixed(2),nowGB:(p.measurements.at(-1).rss/1024**3).toFixed(2)})'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-36eae8ad-e419-4a59-81e8-2f04ce30c693"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:42:37.176Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

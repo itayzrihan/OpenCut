@@ -263,6 +263,24 @@ async fn bundle() -> SessionBundle {
 }
 
 #[tokio::test]
+async fn viewer_hint_save_at_same_editor_revision_is_validated_without_allowing_content_changes() {
+    let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
+    apply(&mut record, acquire("tab-a", 0, false), 100).unwrap();
+    let mut saved = bundle().await;
+    apply(&mut record, commit(saved.clone(), "initial", 0, 1), 200).unwrap();
+    saved.archive["viewerSceneId"] = json!("other-scene");
+    saved.archive["schemaVersion"] = json!(4);
+    apply(&mut record, commit(saved.clone(), "viewer", 1, 1), 300).unwrap();
+    let before = record.to_json().unwrap();
+    let mut invalid = saved.clone(); invalid.archive["viewerSceneId"] = json!("missing");
+    assert!(apply(&mut record, commit(invalid, "missing-viewer", 2, 1), 400).is_err());
+    assert_eq!(record.to_json().unwrap(), before);
+    saved.archive["classic"]["document"]["metadata"]["name"] = json!("Unversioned content edit");
+    assert!(apply(&mut record, commit(saved, "unversioned", 2, 1), 400).is_err());
+    assert_eq!(record.to_json().unwrap(), before);
+}
+
+#[tokio::test]
 async fn atomic_commit_materializes_project_and_retries_without_duplicate_revision() {
     let mut record = SessionRecord::new("alice".into(), PROJECT.into()).unwrap();
     apply(&mut record, acquire("tab-a", 0, false), 100).unwrap();

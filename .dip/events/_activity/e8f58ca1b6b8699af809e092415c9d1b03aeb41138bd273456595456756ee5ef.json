@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e8f58ca1b6b8699af809e092415c9d1b03aeb41138bd273456595456756ee5ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T20:06:13.145Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/sequence-navigation/web-tests.log",
+          ".local/sequence-navigation/web",
+          ".local/sequence-navigation/project-before.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "f98a870c-6b96-4e75-91c5-ee318bb5c868"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:06:13.148Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

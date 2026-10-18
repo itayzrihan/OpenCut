@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bdec4f35f03a50a86a86c3676d3d3bce3d0aa60d87d6d7fee65d7e16aec7d1d2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:59:41.104Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 /Users/itayzrihan/.codex/skills/strategic-teaser-compression/scripts/check_edit_plan.py .local/episode-teaser-90-2026-10-14/ledger.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-55fa5f10-8d55-4980-84ad-4a8c691a9561"
+      },
+      {
+        "at": "2026-10-14T07:59:41.231Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 /Users/itayzrihan/.codex/skills/strategic-teaser-compression/scripts/check_edit_plan.py .local/episode-teaser-90-2026-10-14/ledger.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-55fa5f10-8d55-4980-84ad-4a8c691a9561"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:59:41.622Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

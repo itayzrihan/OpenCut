@@ -45,6 +45,11 @@ export interface UnifiedAnglesMetadata {
 	angleAssetIds: string[];
 	defaultAngleAssetId: string;
 	audioAssetId: string;
+	sync?: {
+		method: "audio";
+		referenceAssetId: string;
+		sources: import("opencut-wasm").CameraSource[];
+	};
 }
 
 export type ProjectFontData = ProjectFont;

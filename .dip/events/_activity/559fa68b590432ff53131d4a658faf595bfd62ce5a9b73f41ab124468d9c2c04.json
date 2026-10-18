@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "559fa68b590432ff53131d4a658faf595bfd62ce5a9b73f41ab124468d9c2c04",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T09:13:06.255Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-shorts-seven/restore-real-validation.log",
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/.gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "ac290665-a682-4acb-89d1-78c2c9cfaccc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:13:06.255Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2567c0250b18de393e4d28dea3365e2084812d703f09cfcaf52cf0bf285d06bd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-15T01:13:27.283Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/services/local-drive/server.ts",
+          "classic/apps/web/src/ai/timeline-tools.ts",
+          "classic/apps/web/src/ai/__tests__/timeline-tools.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "2822531e-827c-4c19-89cd-35f96c6af81e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:13:27.285Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

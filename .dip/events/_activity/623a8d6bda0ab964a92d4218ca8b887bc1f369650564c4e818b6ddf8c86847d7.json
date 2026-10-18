@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "623a8d6bda0ab964a92d4218ca8b887bc1f369650564c4e818b6ddf8c86847d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:52:45.421Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/episode-teaser-90-2026-10-14/draft-scene.json'))\nfor t in x['tracks']['audio']:\n print(t['id'],t.get('muted'),[(e['id'],e['type'],e['startTime']/120000,e['duration']/120000,e['trimStart']/120000,e['params'].get('volume'),e.get('mediaId'),e.get('sourceType')) for e in t['elements']])\nprint('captions',[(t['id'],len(t['captionSource']['words']),len(t['elements'])) for t in x['tracks']['overlay'] if 'captionSource'in t])\nprint('part',x['takeAssembly']['plan']['groups'][0]['alternatives'][0]['parts'])\nPY\nwhich ffmpeg; sed -n '1,65p' classic/apps/web/test-support/wasm.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-babeade9-f6fd-4ee5-8b67-debcdbc3e979"
+      },
+      {
+        "at": "2026-10-14T07:52:45.581Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/episode-teaser-90-2026-10-14/draft-scene.json'))\nfor t in x['tracks']['audio']:\n print(t['id'],t.get('muted'),[(e['id'],e['type'],e['startTime']/120000,e['duration']/120000,e['trimStart']/120000,e['params'].get('volume'),e.get('mediaId'),e.get('sourceType')) for e in t['elements']])\nprint('captions',[(t['id'],len(t['captionSource']['words']),len(t['elements'])) for t in x['tracks']['overlay'] if 'captionSource'in t])\nprint('part',x['takeAssembly']['plan']['groups'][0]['alternatives'][0]['parts'])\nPY\nwhich ffmpeg; sed -n '1,65p' classic/apps/web/test-support/wasm.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-babeade9-f6fd-4ee5-8b67-debcdbc3e979"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:52:45.676Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

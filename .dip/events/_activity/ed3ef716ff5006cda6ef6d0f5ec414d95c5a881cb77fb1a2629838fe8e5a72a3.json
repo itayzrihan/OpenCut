@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed3ef716ff5006cda6ef6d0f5ec414d95c5a881cb77fb1a2629838fe8e5a72a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:33:26.852Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'saveCurrent|saveActive|flush|saveNow|waitFor' classic/apps/web/src/core/managers/save-manager.ts classic/apps/web/src/core/managers/project-manager.ts | head -n 35; tail -n 7 .local/smart-shorts-seven/bridge-heartbeat-native-tests.log; cat classic/apps/web/src/accounts/bridge-snapshot-cache.ts | head -n 36",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-58056688-2b0b-4c00-9f41-68af2b13fcf5"
+      },
+      {
+        "at": "2026-10-13T14:33:26.948Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'saveCurrent|saveActive|flush|saveNow|waitFor' classic/apps/web/src/core/managers/save-manager.ts classic/apps/web/src/core/managers/project-manager.ts | head -n 35; tail -n 7 .local/smart-shorts-seven/bridge-heartbeat-native-tests.log; cat classic/apps/web/src/accounts/bridge-snapshot-cache.ts | head -n 36",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-58056688-2b0b-4c00-9f41-68af2b13fcf5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:33:27.663Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4960ddc35242a3bc683f4d0eff3b450dbcf1ead280b29da6c3eb226beb6920ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:18:21.208Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/transcription-debug/import-check.srt",
+          "classic/BROWSER-TRANSCRIPTION.md",
+          "classic/apps/web/src/subtitles/components/transcription-source.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "f51c902f-e259-4f34-abfd-472124373d2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:18:21.212Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

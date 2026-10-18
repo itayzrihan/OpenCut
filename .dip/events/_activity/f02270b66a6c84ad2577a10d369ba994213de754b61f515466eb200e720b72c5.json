@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f02270b66a6c84ad2577a10d369ba994213de754b61f515466eb200e720b72c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:23:56.530Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src/app/api | rg 'storage|file|asset|project'; rg -n '\\.slice\\(|\\.map\\(|arrayBuffer' classic/apps/web/src/accounts/storage-host.ts classic/apps/web/src/accounts/storage*.ts | head -n 50; sed -n '1,130p' classic/apps/web/src/media/source.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-85d9ad3c-960c-4362-87b6-bf0687ad4218"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:23:56.839Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

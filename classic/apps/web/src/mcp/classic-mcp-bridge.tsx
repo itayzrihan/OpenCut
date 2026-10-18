@@ -1,5 +1,7 @@
 "use client";
 
+import { bridgePublication } from "./bridge-publication";
+
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import type { EditorCore } from "@/core";
@@ -138,6 +140,8 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		let timelineDirty = true;
 		let lastProject = editor.project.getActiveOrNull();
 		let cachedTimeline: unknown = null;
+		let lastPublishedRevision: number | undefined;
+		let lastPublishedProjectId: string | undefined;
 		let tools: ReturnType<typeof advertisedTool>[] = [];
 		let publishTimer: number | null = null;
 		let publishing = false;
@@ -178,41 +182,66 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 				const scene = editor.scenes.getActiveSceneOrNull();
 				if (!project || !scene) return;
 				const currentTime = editor.playback.getCurrentTime();
-				const response = await fetch("/api/mcp-bridge/state", {
-					method: "PUT",
+				const sentRevision = revision;
+				const metadata = {
+					projectId: project.metadata.id,
+					projectName: project.metadata.name,
+					revision,
+					dirty: editor.save.getIsDirty(),
+					playback: {
+						playing: editor.playback.getIsPlaying(),
+						positionTicks: currentTime,
+						positionSeconds: mediaTimeToSeconds({ time: currentTime }),
+						durationTicks: editor.timeline.getTotalDuration(),
+						durationSeconds: mediaTimeToSeconds({
+							time: editor.timeline.getTotalDuration(),
+						}),
+						volume: editor.playback.getVolume(),
+						muted: editor.playback.isMuted(),
+						sceneId: scene.id,
+						sceneName: scene.name,
+					},
+					selection: editor.selection.getSnapshot(),
+					ui: buildSemanticUiSnapshot({ lastActiveAtMs }),
+				};
+				const publication = bridgePublication({
+					sessionId,
+					metadata,
+					documentDirty: timelineDirty,
+					acknowledged:
+						lastPublishedRevision !== undefined &&
+						lastPublishedProjectId !== undefined
+							? {
+									projectId: lastPublishedProjectId,
+									revision: lastPublishedRevision,
+								}
+							: undefined,
+					readDocument: () => ({
+						timeline: readTimeline(),
+						tools,
+						backgroundRemoval: backgroundRemovalService.getStatus(),
+					}),
+				});
+				const response = await fetch(publication.path, {
+					method: publication.method,
 					headers: { "Content-Type": "application/json" },
 					cache: "no-store",
-					body: JSON.stringify({
-						sessionId,
-						projectId: project.metadata.id,
-						projectName: project.metadata.name,
-						revision,
-						dirty: editor.save.getIsDirty(),
-						playback: {
-							playing: editor.playback.getIsPlaying(),
-							positionTicks: currentTime,
-							positionSeconds: mediaTimeToSeconds({ time: currentTime }),
-							durationTicks: editor.timeline.getTotalDuration(),
-							durationSeconds: mediaTimeToSeconds({
-								time: editor.timeline.getTotalDuration(),
-							}),
-							volume: editor.playback.getVolume(),
-							muted: editor.playback.isMuted(),
-							sceneId: scene.id,
-							sceneName: scene.name,
-						},
-						timeline: readTimeline(),
-						selection: editor.selection.getSnapshot(),
-						backgroundRemoval: backgroundRemovalService.getStatus(),
-						ui: buildSemanticUiSnapshot({ lastActiveAtMs }),
-						tools,
-					}),
+					body: JSON.stringify(publication.payload),
 				});
 				if (!response.ok) {
 					throw new Error(`MCP bridge returned ${response.status}`);
 				}
+				const receipt = await response.json();
+				if (receipt.needsFullState) {
+					lastPublishedRevision = undefined;
+					publishAgain = true;
+				} else {
+					lastPublishedRevision = sentRevision;
+					lastPublishedProjectId = project.metadata.id;
+				}
 				if (!disposed) setStatus("connected");
 			} catch {
+				lastPublishedRevision = undefined;
 				if (!disposed) setStatus("unavailable");
 			} finally {
 				publishing = false;

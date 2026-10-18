@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "verification": {
+    "dip-public-site": {
+      "command": [
+        "node",
+        ".dip/tools/verify-dip-site.mjs"
+      ],
+      "timeoutMs": 120000
+    },
+    "dip-site-types": {
+      "command": [
+        "node",
+        "sites/dip-public/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "sites/dip-public/tsconfig.json"
+      ],
+      "timeoutMs": 120000
+    },
+    "transcription-checkpoints": {
+      "command": [
+        "node",
+        ".dip/tools/verify-transcription.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "transcription-sources": {
+      "command": [
+        "node",
+        ".dip/tools/verify-transcription-sources.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "compact-history": {
+      "command": [
+        "node",
+        ".dip/tools/verify-compact-history.mjs"
+      ],
+      "timeoutMs": 240000
+    },
+    "smart-shorts-audio": {
+      "command": [
+        "node",
+        ".dip/tools/verify-smart-shorts-audio.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "smart-shorts-performance": {
+      "command": [
+        "node",
+        ".dip/tools/verify-smart-shorts-performance.mjs"
+      ],
+      "timeoutMs": 600000
+    },
+    "sequence-navigation": {
+      "command": [
+        "node",
+        ".dip/tools/verify-sequence-navigation.mjs"
+      ],
+      "timeoutMs": 600000
+    },
+    "extract-preservation": {
+      "command": [
+        "node",
+        ".dip/tools/verify-extract-preservation.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "teaser-analysis-skills": {
+      "command": [
+        "node",
+        ".dip/tools/verify-teaser-skills.mjs"
+      ],
+      "timeoutMs": 120000
+    },
+    "episode-teaser90": {
+      "command": [
+        "node",
+        ".dip/tools/verify-episode-teaser90.mjs"
+      ],
+      "timeoutMs": 120000
+    },
+    "source-audio-relink": {
+      "command": [
+        "python3",
+        ".dip/tools/verify-source-audio-relink.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-word-fix": {
+      "command": [
+        "python3",
+        ".dip/tools/verify-teaser-word-fix.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-drive": {
+      "command": [
+        "python3",
+        ".dip/tools/verify-teaser-drive.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-exports": {
+      "command": [
+        "python3",
+        ".dip/tools/verify-teaser-exports.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-full-auto": {
+      "command": [
+        "node",
+        ".dip/tools/verify-teaser-full-auto.mjs"
+      ],
+      "timeoutMs": 120000
+    },
+    "global-sfx-import": {
+      "command": [
+        "python3",
+        "analysis/global-sfx-2026-10-15/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-corrected-audio-exports": {
+      "command": [
+        "python3",
+        "analysis/teaser-reexport-audio-2026-10-15/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-no-music": {
+      "command": [
+        "python3",
+        "analysis/teaser-no-music-2026-10-15/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "teaser-skills-github": {
+      "command": [
+        "python3",
+        "analysis/teaser-skills-github-2026-10-15/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "strategic-teaser-feature": {
+      "command": [
+        "node",
+        ".dip/tools/verify-strategic-teaser-feature.mjs"
+      ],
+      "timeoutMs": 360000
+    }
+  },
+  "mode": "coordinate"
+}

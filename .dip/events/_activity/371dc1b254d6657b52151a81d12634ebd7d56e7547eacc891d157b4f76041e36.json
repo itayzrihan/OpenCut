@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "371dc1b254d6657b52151a81d12634ebd7d56e7547eacc891d157b4f76041e36",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:32:22.860Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '235,390p' classic/apps/web/src/transcription/timeline-stream.ts; cat classic/apps/web/src/app/api/transcription/route.ts; rg -n 'withAccount|serialize|queue' classic/apps/web/src/accounts/server.ts; cat .dip/config.json",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-6cf617bb-ac9d-47a3-b8c7-2d60ed953d4d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:32:23.418Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

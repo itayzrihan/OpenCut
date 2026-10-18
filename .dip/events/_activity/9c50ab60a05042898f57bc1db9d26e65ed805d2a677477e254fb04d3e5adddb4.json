@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9c50ab60a05042898f57bc1db9d26e65ed805d2a677477e254fb04d3e5adddb4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:11:26.377Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "webrun",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-534f4884-fbf6-4e9e-a674-f3ec2b3875ba"
+      },
+      {
+        "at": "2026-10-12T08:11:26.384Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "gh api 'repos/vxu-labs/dip/git/trees/main?recursive=1' --jq '[.tree[] | select(.type==\"blob\" and (.path | startswith(\".dip/events/\")) and (.path | startswith(\".dip/events/_activity/\") | not))] | length'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-cff47f8f-e5ce-4af4-a8f4-3f78960425e5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:11:26.571Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

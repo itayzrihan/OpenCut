@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d711b875c7a0ffdb1044824abb1aaeea92147303cf646a178c24f912a31bc64d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:49:20.116Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/brand-kit/premerge-types-final3.log; git -c core.whitespace=cr-at-eol diff --cached --check | head -20; git diff --cached --name-only --diff-filter=A | rg 'private|identity|snapshot|\\.wav' | head -20",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-432b9b61-4932-4018-b8f7-9ab953f3fd71"
+      },
+      {
+        "at": "2026-10-18T15:49:22.330Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/brand-kit/premerge-types-final3.log; git -c core.whitespace=cr-at-eol diff --cached --check | head -20; git diff --cached --name-only --diff-filter=A | rg 'private|identity|snapshot|\\.wav' | head -20",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-432b9b61-4932-4018-b8f7-9ab953f3fd71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:49:22.735Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

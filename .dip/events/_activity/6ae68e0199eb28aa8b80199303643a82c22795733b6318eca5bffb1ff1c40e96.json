@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ae68e0199eb28aa8b80199303643a82c22795733b6318eca5bffb1ff1c40e96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:13:31.481Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '145,172p' classic/apps/web/src/media/noise-reduction.ts; tail -10 .local/smart-shorts-audio/native-build.log; ps -axo pid,%cpu,rss,command | rg 'rustc.*opencut|next-server' | cut -c1-180",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4c5c8945-45b1-4294-8283-f1c836d13435"
+      },
+      {
+        "at": "2026-10-13T16:13:31.845Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '145,172p' classic/apps/web/src/media/noise-reduction.ts; tail -10 .local/smart-shorts-audio/native-build.log; ps -axo pid,%cpu,rss,command | rg 'rustc.*opencut|next-server' | cut -c1-180",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4c5c8945-45b1-4294-8283-f1c836d13435"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:13:32.259Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4fcc2106ae54dae10052f8cfcf1f74c3ca8b0ff99fc285f00e2a41dc235cc8a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:10:26.929Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler/state/v3/cache",
+          "sites/dip-public/.wrangler/state/v3/do",
+          "sites/dip-public/.wrangler/state/v3/workflows"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "e993ca88-7f24-4f10-91ee-bb73ee3628bd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:10:26.931Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -37,7 +37,9 @@ export class SaveManager {
 		if (this.unsubscribeHandlers.length > 0) return;
 
 		this.unsubscribeHandlers = [
-			this.editor.scenes.subscribe(() => {
+			(
+				this.editor.scenes.subscribeContent ?? this.editor.scenes.subscribe
+			).call(this.editor.scenes, () => {
 				this.markDirty();
 			}),
 			this.editor.timeline.subscribe(() => {

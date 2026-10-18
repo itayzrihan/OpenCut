@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24324738553225ceef8dab1a5b488d1638ea976b863d4cb5f559daa88f28cc6c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:51:19.993Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -lh analysis/teaser-exports-2026-10-14/project-before.json\npython3 - <<'PY'\nimport json,pathlib\nbefore=json.load(open('analysis/teaser-exports-2026-10-14/project-before.json'));after=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'))\nprint({'changedTopKeys':[k for k in before if before[k]!=after.get(k)]})\nfor a,b in zip(before['scenes'],after['scenes']):\n if a!=b:print({'scene':a['id'],'changedKeys':[k for k in a if a[k]!=b.get(k)],'hidden':[(t['name'],t.get('hidden')) for t in b['tracks']['overlay']]})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-cb31c1c6-3e41-4d2d-bc94-ccff871e5d3d"
+      },
+      {
+        "at": "2026-10-14T09:51:20.008Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib,shutil\np=pathlib.Path('analysis/teaser-exports-2026-10-14');d=json.loads((p/'project-before.json').read_text())\nh=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()\nb={'projectId':d['metadata']['id'],'currentSceneId':d['currentSceneId'],'settingsHash':h(d['settings']),'jobsHash':h(d['transcriptionJobs']),'scenes':[{k:s[k] for k in ['id','name','isMain','createdAt']}|{'tracksHash':h(s['tracks']),'bookmarksHash':h(s['bookmarks'])} for s in d['scenes']]}\n(p/'baseline.json').write_text(json.dumps(b,ensure_ascii=False,indent=2))\nt=pathlib.Path('.local/teaser-exports-2026-10-14');t.mkdir(exist_ok=True,parents=True);shutil.move(p/'project-before.json',t/'project-before.json');print({'baselineScenes':len(b['scenes'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-fb19e818-7ce2-4996-a188-802d16fcc957"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:51:20.193Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

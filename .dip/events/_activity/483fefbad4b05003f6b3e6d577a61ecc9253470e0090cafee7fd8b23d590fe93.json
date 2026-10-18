@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "eventId": "483fefbad4b05003f6b3e6d577a61ecc9253470e0090cafee7fd8b23d590fe93",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:45:52.058Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nr=Path('analysis/teaser-reference-2026-10-14/skills')\nfor name in ['strategic-teaser-compression','visual-teaser-editing']:\n dest=Path('/Users/itayzrihan/.codex/skills')/name\n if dest.exists(): raise SystemExit(f'Refusing to replace an existing skill: {dest}')\n shutil.copytree(r/name,dest)\n print('Installed',dest)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c1228606-d518-4bd2-8ee4-3586ac8844c0"
+      },
+      {
+        "at": "2026-10-14T00:45:52.058Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > analysis/teaser-reference-2026-10-14/skills/strategic-teaser-compression/scripts/check_edit_plan.py <<'PY'\n#!/usr/bin/env python3\n\"\"\"Read-only source-to-output budget guard; does not assess meaning or edit media.\"\"\"\nimport json\nimport math\nimport sys\nfrom pathlib import Path\n\n\ndef number(value, label, minimum=0):\n    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < minimum:\n        raise ValueError(f\"{label} must be finite and >= {minimum}\")\n    return float(value)\n\n\ndef check(plan):\n    target = number(plan[\"targetSeconds\"], \"targetSeconds\", 0.001)\n    cta = number(plan.get(\"ctaSeconds\", 0), \"ctaSeconds\")\n    tolerance = number(plan.get(\"toleranceSeconds\", 0.25), \"toleranceSeconds\")\n    source = plan[\"protectedSceneId\"]\n    destination = plan[\"outputSceneId\"]\n    if not isinstance(source, str) or not source.strip() or not isinstance(destination, str) or not destination.strip() or source == destination:\n        raise ValueError(\"An explicit output scene must differ from the protected source scene\")\n    clips = plan[\"clips\"]\n    if not isinstance(clips, list) or not clips:\n        raise ValueError(\"clips must be a nonempty array\")\n    occupied = set()\n    speech = 0.0\n    gaps = 0.0\n    durations = []\n    for clip in clips:\n        identity = clip[\"id\"]\n        if not isinstance(identity, str) or not identity or identity in occupied:\n            raise ValueError(\"Clip IDs must be nonempty and unique\")\n        occupied.add(identity)\n        start = number(clip[\"sourceIn\"], f\"{identity}.sourceIn\")\n        end = number(clip[\"sourceOut\"], f\"{identity}.sourceOut\")\n        if end <= start:\n            raise ValueError(f\"{identity}: sourceOut must exceed sourceIn\")\n        if \"sourceDurationSeconds\" in clip and end > number(clip[\"sourceDurationSeconds\"], f\"{identity}.sourceDurationSeconds\"):\n            raise ValueError(f\"{identity}: range exceeds the source duration\")\n        rate = number(clip.get(\"playbackRate",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5faacff0-3e9b-458d-ba4c-1c8d1dcf3b40"
+      },
+      {
+        "at": "2026-10-14T00:45:52.232Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nr=Path('analysis/teaser-reference-2026-10-14/skills')\nfor name in ['strategic-teaser-compression','visual-teaser-editing']:\n dest=Path('/Users/itayzrihan/.codex/skills')/name\n if dest.exists(): raise SystemExit(f'Refusing to replace an existing skill: {dest}')\n shutil.copytree(r/name,dest)\n print('Installed',dest)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c1228606-d518-4bd2-8ee4-3586ac8844c0"
+      },
+      {
+        "at": "2026-10-14T00:45:52.233Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-502c633b-a501-44e6-af22-65a673480e3e"
+      },
+      {
+        "at": "2026-10-14T00:45:52.300Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-502c633b-a501-44e6-af22-65a673480e3e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:45:53.056Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a7693e1905a985d47e44276c36be22b334ed845a85b539b1e72e320c45875d49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:54:47.942Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node_modules/.bin/eslint apps/web/src/ai/podcast-editorial.ts apps/web/src/ai/podcast-plan.ts apps/web/src/ai/podcast-task.ts apps/web/src/ai/podcast-plan-cache.ts apps/web/src/ai/podcast-types.ts > /tmp/opencut-teaser-eslint.txt 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-76c08543-012f-4f21-84c9-a52f5ceb108c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:54:48.483Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

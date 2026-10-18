@@ -1,5 +1,14 @@
+import {
+	isUnifiedAnglesAsset,
+	resolveUnifiedAnglesAudioAsset,
+} from "@/media/unified-angles";
 import type { MediaAsset } from "@/media/types";
-import { type PodcastMulticamSettings } from "opencut-wasm";
+import {
+	podcastCameraClock,
+	type CameraSource,
+	type PodcastCameraWindow,
+	type PodcastMulticamSettings,
+} from "opencut-wasm";
 
 import { readEnergyEnvelope } from "./energy-reader";
 import { mapConcurrent, runSyncWorker } from "./sync-jobs";
@@ -13,6 +22,8 @@ export interface PodcastSyncChannel {
 	name: string;
 	video: MediaAsset;
 	audio: MediaAsset;
+	/** Real cameras behind a virtual Unified Angles asset. */
+	angles?: MediaAsset[];
 }
 
 export type PodcastSyncSettings = PodcastMulticamSettings;
@@ -20,6 +31,10 @@ export type PodcastSyncSettings = PodcastMulticamSettings;
 export interface PodcastSyncAlignment {
 	duration: number;
 	videoOffsets: Record<string, number>;
+	videoDelays: Record<string, number>;
+	cameraWindows: PodcastCameraWindow[];
+	unifiedSync: Array<{ mediaId: string; sources: CameraSource[] }>;
+	bindings: Record<string, number>;
 	audioOffsets: Record<string, number>;
 	audioDelays: Record<string, number>;
 }
@@ -34,6 +49,8 @@ export interface PodcastSyncResult {
 	cuts: PodcastSyncCut[];
 	duration: PodcastSyncAlignment["duration"];
 	videoOffsets: PodcastSyncAlignment["videoOffsets"];
+	videoDelays: PodcastSyncAlignment["videoDelays"];
+	bindings: PodcastSyncAlignment["bindings"];
 	audioOffsets: PodcastSyncAlignment["audioOffsets"];
 	audioDelays: PodcastSyncAlignment["audioDelays"];
 	summary: {
@@ -93,9 +110,15 @@ export async function runPodcastAlignment({
 	// each asset once; bounded Workers keep IO and sample processing off the UI.
 	const assets = [
 		...new Map(
-			channels.flatMap((c) => [c.video, c.audio]).map((a) => [a.id, a]),
+			channels
+				.flatMap((c) => [...(c.angles ?? [c.video]), c.audio])
+				.map((a) => [a.id, a]),
 		).values(),
 	];
+	if (assets.length > 64)
+		throw new Error(
+			"Choose at most 64 camera and microphone sources in one synchronization job",
+		);
 	let completed = 0;
 	report({
 		onProgress,
@@ -154,35 +177,73 @@ export async function runPodcastAlignment({
 			`Cannot reliably synchronize: ${missing.map((a) => a.name).join(", ")}. Check recording overlap and audible reference sound.`,
 		);
 	const offsets = new Map(assets.map((a, i) => [a.id, group.offsets[i]!]));
-	const origin = Math.max(...channels.map((c) => offsets.get(c.video.id)!));
+	const baseVideos = channels.map((c) => {
+		if (!c.angles) return c.video;
+		const clock = podcastCameraClock({
+			sources: c.angles.map((a) => ({
+				id: a.id,
+				duration: a.duration ?? 0,
+				start: offsets.get(a.id)!,
+				bindingRevision: a.bindingRevision ?? 0,
+			})),
+		});
+		if (!clock) throw new Error("Camera duration is missing");
+		return c.angles.find((a) => a.id === clock.referenceId)!;
+	});
+	const clock = podcastCameraClock({
+		sources: baseVideos.map((a) => ({
+			id: a.id,
+			duration: a.duration ?? 0,
+			start: offsets.get(a.id)!,
+			bindingRevision: a.bindingRevision ?? 0,
+		})),
+	});
+	if (!clock) throw new Error("Cannot determine the longest camera recording");
+	const { origin, duration } = clock;
 	const videoOffsets: Record<string, number> = {};
+	const videoDelays: Record<string, number> = {};
 	const audioOffsets: Record<string, number> = {};
 	const audioDelays: Record<string, number> = {};
-	for (const channel of channels) {
-		videoOffsets[channel.id] = Math.max(
-			0,
-			origin - offsets.get(channel.video.id)!,
-		);
-		const sourceAtZero = origin - offsets.get(channel.audio.id)!;
-		audioOffsets[channel.id] = Math.max(0, sourceAtZero);
-		audioDelays[channel.id] = Math.max(0, -sourceAtZero);
+	const cameraWindows: PodcastCameraWindow[] = [];
+	const unifiedSync: PodcastSyncAlignment["unifiedSync"] = [];
+	for (const [index, channel] of channels.entries()) {
+		const base = baseVideos[index]!;
+		const sourceAtZero = origin - offsets.get(base.id)!;
+		videoOffsets[channel.id] = Math.max(0, sourceAtZero);
+		videoDelays[channel.id] = Math.max(0, -sourceAtZero);
+		const start = Math.max(0, -sourceAtZero);
+		const end = Math.min(duration, (base.duration ?? 0) - sourceAtZero);
+		if (end <= start)
+			throw new Error(`${channel.name} has no footage on the main recording`);
+		cameraWindows.push({ channelId: channel.id, start, end });
+		const audioAtZero = origin - offsets.get(channel.audio.id)!;
+		audioOffsets[channel.id] = Math.max(0, audioAtZero);
+		audioDelays[channel.id] = Math.max(0, -audioAtZero);
+		if (channel.angles)
+			unifiedSync.push({
+				mediaId: channel.video.id,
+				sources: channel.angles.map((a) => ({
+					id: a.id,
+					duration: a.duration!,
+					start: offsets.get(a.id)!,
+					bindingRevision: a.bindingRevision ?? 0,
+				})),
+			});
 	}
-
-	let duration = Number.POSITIVE_INFINITY;
-	for (const channel of channels) {
-		const videoDuration = channel.video.duration ?? 0;
-		duration = Math.min(
-			duration,
-			videoDuration - (videoOffsets[channel.id] ?? 0),
-		);
-	}
-	if (!(duration > 0) || !Number.isFinite(duration)) {
-		throw new Error(
-			"Channels do not overlap after sync. Check that these files belong to the same recording.",
-		);
-	}
+	const bindings = Object.fromEntries(
+		assets.map((a) => [a.id, a.bindingRevision ?? 0]),
+	);
 	report({ onProgress, step: "Synchronization complete", progress: 1 });
-	const alignment = { duration, videoOffsets, audioOffsets, audioDelays };
+	const alignment = {
+		duration,
+		videoOffsets,
+		videoDelays,
+		cameraWindows,
+		unifiedSync,
+		bindings,
+		audioOffsets,
+		audioDelays,
+	};
 	alignmentEnvelopes.set(
 		alignment,
 		new Map(assets.map((a, i) => [a.id, envelopes[i]!])),
@@ -205,7 +266,8 @@ export async function runPodcastMulticam({
 }): Promise<PodcastSyncResult> {
 	signal?.throwIfAborted();
 	validatePodcastChannels({ channels });
-	const { duration, videoOffsets, audioOffsets, audioDelays } = alignment;
+	const { duration, videoOffsets, videoDelays, audioOffsets, audioDelays } =
+		alignment;
 
 	const numSteps = Math.max(
 		1,
@@ -259,6 +321,7 @@ export async function runPodcastMulticam({
 			type: "route",
 			envelopes: channelIds.map((id) => channelEnergies[id]!),
 			channelIds,
+			cameraWindows: alignment.cameraWindows,
 			duration,
 			settings,
 		},
@@ -279,6 +342,8 @@ export async function runPodcastMulticam({
 		cuts,
 		duration,
 		videoOffsets,
+		videoDelays,
+		bindings: alignment.bindings,
 		audioOffsets,
 		audioDelays,
 		summary: {
@@ -314,5 +379,50 @@ export async function runPodcastSync({
 		signal,
 		onProgress: ({ step, progress }) =>
 			onProgress?.({ step, progress: 0.45 + progress * 0.55 }),
+	});
+}
+
+/** Resolve virtual media before any decoder is called. No virtual URLs go to audio IO. */
+export function resolvePodcastChannelSources({
+	channels,
+	mediaAssets,
+}: {
+	channels: PodcastSyncChannel[];
+	mediaAssets: MediaAsset[];
+}): PodcastSyncChannel[] {
+	const map = new Map(mediaAssets.map((a) => [a.id, a]));
+	return channels.map((channel) => {
+		const video = map.get(channel.video.id) ?? channel.video;
+		const audioInput = map.get(channel.audio.id) ?? channel.audio;
+		let audio = resolveUnifiedAnglesAudioAsset({
+			asset: audioInput,
+			mediaMap: map,
+		});
+		if (isUnifiedAnglesAsset(audioInput)) {
+			const sources = audioInput.unifiedAngles.angleAssetIds
+				.map((id) => map.get(id))
+				.filter((a): a is MediaAsset => !!a);
+			const clock = podcastCameraClock({
+				sources: sources.map((a) => ({
+					id: a.id,
+					duration: a.duration ?? 0,
+					start: 0,
+					bindingRevision: a.bindingRevision ?? 0,
+				})),
+			});
+			const longest = sources.find((a) => a.id === clock?.referenceId);
+			if (longest && longest.hasAudio !== false) audio = longest;
+		}
+		if (!audio || audio.missing)
+			throw new Error(`${channel.name}: audio source is missing`);
+		const angles = isUnifiedAnglesAsset(video)
+			? video.unifiedAngles.angleAssetIds.map((id) => {
+					const a = map.get(id);
+					if (!a || a.missing || isUnifiedAnglesAsset(a))
+						throw new Error(`${channel.name}: camera source is missing`);
+					return a;
+				})
+			: undefined;
+		return { ...channel, video, audio, angles };
 	});
 }

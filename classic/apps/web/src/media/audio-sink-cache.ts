@@ -22,7 +22,10 @@ export class AudioSinkCache {
 		const existing = this.entries.get(sourceKey);
 		if (existing) return existing.ready;
 		const input = new Input({
-			source: createMediaSource(source),
+			source: createMediaSource({
+				...source,
+				urlOptions: { maxCacheSize: 8 * 1024 ** 2, ...source.urlOptions },
+			}),
 			formats: ALL_FORMATS,
 		});
 		const entry: {

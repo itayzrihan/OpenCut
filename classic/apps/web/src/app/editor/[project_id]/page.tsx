@@ -30,6 +30,7 @@ import { StoragePersistenceDialog } from "@/services/storage/components/storage-
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
 import { EditorAgentWorkspace } from "@/editor-agent/overlay";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { WorkspaceLoading } from "@/components/workspace-loading";
 
 export default function Editor() {
 	const params = useParams();
@@ -46,7 +47,7 @@ export default function Editor() {
 		.find((j) => j.projectId === projectId);
 	const readOnly = !!job && batchEditIsLocked({ status: job.status });
 	const preparing = batch.preparingProjectId === projectId;
-	if (!batch.loaded) return <p className="p-8">Checking project status…</p>;
+	if (!batch.loaded) return <WorkspaceLoading />;
 
 	return (
 		<MobileGate>

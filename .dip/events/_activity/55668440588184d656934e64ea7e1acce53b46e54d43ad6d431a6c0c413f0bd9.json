@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "55668440588184d656934e64ea7e1acce53b46e54d43ad6d431a6c0c413f0bd9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:40:35.551Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-215d13c1-5373-47ac-b7d4-6f33e9099a9c"
+      },
+      {
+        "at": "2026-10-15T01:40:36.332Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '75,94p' classic/apps/web/src/ai/types.ts\nsed -n '15,42p' .dip/tools/verify-teaser-word-fix.py\nsed -n '1,75p' .dip/tools/verify-teaser-exports.py",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-74cce6d3-3bd2-40bf-9cf7-ebcff060fbfd"
+      },
+      {
+        "at": "2026-10-15T01:40:36.352Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-215d13c1-5373-47ac-b7d4-6f33e9099a9c"
+      },
+      {
+        "at": "2026-10-15T01:40:36.502Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '75,94p' classic/apps/web/src/ai/types.ts\nsed -n '15,42p' .dip/tools/verify-teaser-word-fix.py\nsed -n '1,75p' .dip/tools/verify-teaser-exports.py",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-74cce6d3-3bd2-40bf-9cf7-ebcff060fbfd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:40:36.555Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

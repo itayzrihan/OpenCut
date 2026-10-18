@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fcd50985705bec2fdda9ee4cdee663d6887013dec63fd291e3cebab30bab3ab1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T13:01:24.350Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/lock",
+          "classic/apps/web/.next-local-production/types",
+          "classic/apps/web/.next-local-production/package.json",
+          "classic/apps/web/.next-local-production/diagnostics",
+          "classic/apps/web/.next-local-production/trace"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "4ad689bd-6d29-4c9e-87e5-93538992a103"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:01:24.350Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

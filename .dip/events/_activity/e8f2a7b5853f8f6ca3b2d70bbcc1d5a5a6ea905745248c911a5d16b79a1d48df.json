@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e8f2a7b5853f8f6ca3b2d70bbcc1d5a5a6ea905745248c911a5d16b79a1d48df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:14:28.477Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 24721,87601 -o pid,ppid,command\nlsof -nP -iTCP:3211 -sTCP:LISTEN\ncurl -sS --max-time 3 http://127.0.0.1:3210/health",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6759ec0b-446d-41a7-9fff-816539978d43"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:14:28.593Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8197fa4ad5dd65eb59f54f46313a94818774a3ed1597ba0cafd625cc6c2e9443",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:18:41.388Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'viewport:|setClassicViewport|navigation\\?\\.viewState' classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/src/core/managers/project-manager.ts; sed -n '1460,1486p' classic/apps/web/src/core/managers/project-manager.ts; node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/managers/project-manager.ts; cargo check -p opencut-editor-api > .local/sequence-navigation/viewport-check.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a8217c75-10cc-49c7-9876-7c812d19932e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:18:41.809Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

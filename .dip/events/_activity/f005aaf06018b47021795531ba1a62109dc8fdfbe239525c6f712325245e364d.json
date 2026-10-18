@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f005aaf06018b47021795531ba1a62109dc8fdfbe239525c6f712325245e364d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:49:47.743Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nfor lo,hi in [(1950,1970),(1698,1718),(660,677),(496,520),(1497,1530),(1584,1601),(4980,5028),(4728,4769),(4808,4840),(5064,5088),(2104,2134)]:\n print('\\nREGION',lo,hi)\n for a in w:\n  if lo<=a['start']/120000<hi: print(a['id'],f\"{a['start']/120000:.2f}-{a['end']/120000:.2f}\",a['text'])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-008bf6fb-ddbc-41dd-b01f-8e7cf8199e43"
+      },
+      {
+        "at": "2026-10-14T07:49:47.921Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nfor lo,hi in [(1950,1970),(1698,1718),(660,677),(496,520),(1497,1530),(1584,1601),(4980,5028),(4728,4769),(4808,4840),(5064,5088),(2104,2134)]:\n print('\\nREGION',lo,hi)\n for a in w:\n  if lo<=a['start']/120000<hi: print(a['id'],f\"{a['start']/120000:.2f}-{a['end']/120000:.2f}\",a['text'])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-008bf6fb-ddbc-41dd-b01f-8e7cf8199e43"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:49:48.706Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

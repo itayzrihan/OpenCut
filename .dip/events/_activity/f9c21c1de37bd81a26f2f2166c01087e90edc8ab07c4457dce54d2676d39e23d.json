@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f9c21c1de37bd81a26f2f2166c01087e90edc8ab07c4457dce54d2676d39e23d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:12:57.528Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/smart-shorts-performance/build.log; ps -axo pid,%cpu,rss,etime,command | rg 'wasm-opt|next.*build|local-production/build' | cut -c1-185",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-63f5198e-eccb-4133-a99d-847ef1db738f"
+      },
+      {
+        "at": "2026-10-13T19:12:57.735Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/smart-shorts-performance/build.log; ps -axo pid,%cpu,rss,etime,command | rg 'wasm-opt|next.*build|local-production/build' | cut -c1-185",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-63f5198e-eccb-4133-a99d-847ef1db738f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:12:58.406Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

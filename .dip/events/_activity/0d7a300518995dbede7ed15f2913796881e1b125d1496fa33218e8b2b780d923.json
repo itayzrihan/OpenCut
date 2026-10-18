@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d7a300518995dbede7ed15f2913796881e1b125d1496fa33218e8b2b780d923",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:58:33.486Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/ai/__tests__/podcast-plan.test.ts <<'EOF'\n\ntest(\"a failed later window resumes from reviewed checkpoints instead of requesting earlier windows again\", async () => {\n browser();\n const data = new Map<string,string>();\n const cache = {key:'same-source',storage:{getItem:(k:string)=>data.get(k)??null,setItem:(k:string,v:string)=>{data.set(k,v)},removeItem:(k:string)=>{data.delete(k)}}};\n const requested: number[]=[];let fail=true;\n globalThis.fetch=mock(async(url,init)=>{\n  if(String(url).includes('connection'))return Response.json({models:[{id:'test'}]});\n  const prompt=JSON.parse(JSON.parse(String(init?.body)).input[0].content);\n  if(prompt.index!==undefined){requested.push(prompt.index);if(prompt.index===2&&fail)return Response.json({error:'Our servers are currently overloaded. Please try again later.'},{status:503});return stream([{...video,title:`window-${prompt.index}`}]);}\n  return stream([video]);\n }) as unknown as typeof fetch;\n const input={source:{...source,windows:[0,1,2].map(index=>({index,words}))},options:{mode:'highlights' as const,minSeconds:20,maxSeconds:60,maxOutputs:4},signal:new AbortController().signal,onStage:()=>{},review:()=>{},cache};\n await expect(requestPodcastPlan(input)).rejects.toThrow('overloaded');\n expect(data.size).toBe(2);\n fail=false;\n expect(await requestPodcastPlan(input)).toEqual([video]);\n expect(requested).toEqual([0,1,2,2]);\n});\n\ntest(\"temporary provider stream failures use the native retry plan before any proposal escapes\",async()=>{\n browser();let asks=0;const retries:string[]=[];const failures:unknown[]=[];\n globalThis.fetch=mock(async(url)=>{\n  if(String(url).includes('connection'))return Response.json({models:[{id:'test'}]});\n  if(++asks===1)return new Response(`data: ${JSON.stringify({type:'error',error:{code:'overloaded',message:'Our servers are currently overloaded. Please try again later.'}})}\\n\\n`,{headers:{'Content-Type':'text/event-stream'}});\n  return stream([video]);\n }) as unknown as t",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-17f8f28f-5a5b-4639-9dae-ff2c644052d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:58:34.473Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

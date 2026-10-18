@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9bbc51cc9d3486ec247881dbb43f4abb5235d6a01f3c4a98c1ce5fc011f726d8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:16:19.772Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,ppid,%cpu,rss,etime,command | rg 'wasm-probe.mjs|session-policy' | cut -c1-175; cat .local/smart-shorts-performance/wasm-after.log 2>/dev/null; ls -lh classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm; ls -l '.local/smart-shorts-performance/commit-after.json'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-37a3228d-d570-4748-8510-7df04b773b7c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:16:19.851Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

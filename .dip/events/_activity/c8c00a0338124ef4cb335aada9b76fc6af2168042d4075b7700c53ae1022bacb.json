@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c8c00a0338124ef4cb335aada9b76fc6af2168042d4075b7700c53ae1022bacb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:14:40.457Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files --hidden .local/transcription-debug -g '*.wav' -g '*.mp4' -g '*.m4a'\nrg -n 'probe-hebrew|שלום' .local/codex-transcription-research/*json | head -8",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-49bc8f6c-864a-4a94-b4e4-628293e6cf8a"
+      },
+      {
+        "at": "2026-10-12T14:14:40.441Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -la .local/codex-transcription-research\nffprobe -v error -show_entries format=duration -of json .local/codex-transcription-research/probe-hebrew.wav\nswift -e 'import Speech; print(SFSpeechRecognizer.authorizationStatus().rawValue)'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3fece1d1-9152-4215-be1a-29d112cd2abd"
+      },
+      {
+        "at": "2026-10-12T14:14:40.896Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files --hidden .local/transcription-debug -g '*.wav' -g '*.mp4' -g '*.m4a'\nrg -n 'probe-hebrew|שלום' .local/codex-transcription-research/*json | head -8",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-49bc8f6c-864a-4a94-b4e4-628293e6cf8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:14:41.271Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

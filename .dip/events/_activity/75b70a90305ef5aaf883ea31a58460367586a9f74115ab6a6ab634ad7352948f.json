@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75b70a90305ef5aaf883ea31a58460367586a9f74115ab6a6ab634ad7352948f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:07:06.924Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > app/api/dashboard/route.ts <<'EOF'\nimport {configuration,configured,session,json} from '@/lib/auth';\nimport {safeRepo,integer,sameOrigin} from '@/lib/security.mjs';\nimport {github,GitHubError,pool,blobJSON} from '@/lib/github.mjs';\nexport async function GET(request:Request){try{const user=await session(request);return json({configured:configured(),user:user?{login:user.login,id:user.userId}:null,installUrl:configuration().appSlug?`https://github.com/apps/${encodeURIComponent(configuration().appSlug)}/installations/new`:null});}catch{return json({error:'Unable to read your session. Please sign in again.'},503);}}\nfunction repoInfo(r:any){return {id:r.id,name:r.full_name,description:r.description||'',private:r.private,branch:r.default_branch,updatedAt:r.pushed_at,url:r.html_url};}\nasync function ledgerTree(token:[REDACTED],repo:string,sha:string){if(!/^[a-f0-9]{40}$/.test(sha))throw new Error('Invalid snapshot');const {data}=await github(token,`/repos/${repo}/git/trees/${sha}?recursive=1`);if(data.truncated)throw new Error('The ledger tree exceeds GitHub’s response limit. This snapshot cannot be shown completely.');return data.tree.filter((e:any)=>e.type==='blob'&&/^events\\/[A-Za-z0-9_-]{1,100}\\/[A-Za-z0-9_-]{1,100}\\.json$/.test(e.path)).sort((a:any,b:any)=>a.path.localeCompare(b.path));}\nexport async function POST(request:Request){\n const c=configuration();if(!sameOrigin(request,c.origin)&&!(new URL(request.url).hostname==='127.0.0.1'&&request.headers.get('origin')===new URL(request.url).origin))return json({error:'Invalid origin'},403);\n // Local preview has no simulated GitHub identity. User data always needs a real session.\n try{const user=await session(request);if(!user)return json({error:'Sign in with GitHub to view your projects.',reauth:true},401);\n const raw=await request.text();if(raw.length>16384)return json({error:'Request too large'},413);const body=JSON.parse(raw);const page=integer(body.page??1,1,10000);const token=[REDACTED];\n if(body.action==='i",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a71b3ba7-47c1-482c-9e57-03112a927c57"
+      },
+      {
+        "at": "2026-10-12T08:07:06.972Z",
+        "kind": "UserPromptSubmit",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:prompt:01a12f1e-ed2d-7c00-bb25-9069034a7b28"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:07:07.425Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

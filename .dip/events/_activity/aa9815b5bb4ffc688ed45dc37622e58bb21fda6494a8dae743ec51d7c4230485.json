@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa9815b5bb4ffc688ed45dc37622e58bb21fda6494a8dae743ec51d7c4230485",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:27:11.246Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace('extract::{Path as AxumPath, Request, State}', 'extract::{DefaultBodyLimit, Path as AxumPath, Request, State}').replace('const SESSION_RESOURCE:', 'const BRIDGE_BODY_LIMIT: usize = 32 * 1024 * 1024;\\n\\nconst SESSION_RESOURCE:',1).replace('        .layer(middleware::from_fn_with_state(\\n            state.clone(),\\n            require_bridge_token,', '        // Match the authenticated account proxy limit; long transcripts exceed\\n        // Axum\\'s default 2 MiB JSON body limit. Keep a finite transport bound.\\n        .layer(DefaultBodyLimit::max(BRIDGE_BODY_LIMIT))\\n        .layer(middleware::from_fn_with_state(\\n            state.clone(),\\n            require_bridge_token,',1);s+='''\n#[cfg(test)]\nmod body_limit_tests {\n    use super::*;\n    use tokio::io::{AsyncReadExt, AsyncWriteExt};\n    async fn put(server: &ClassicBridgeServer, token: [REDACTED], body: String) -> String {\n        let mut socket=tokio::net::TcpStream::connect(server.address()).await.unwrap();\n        let headers=format!(\"PUT /bridge/state HTTP/1.1\\\\r\\\\nHost: localhost\\\\r\\\\nAuthorization: [REDACTED] {token}\\\\r\\\\nContent-Type: application/json\\\\r\\\\nContent-Length: {}\\\\r\\\\nConnection: close\\\\r\\\\n\\\\r\\\\n\",body.len());\n        socket.write_all(headers.as_bytes()).await.unwrap();\n        // A rejected oversized request may close before the remaining bytes are sent.\n        let _=socket.write_all(body.as_bytes()).await;\n        let mut response=vec![];socket.read_to_end(&mut response).await.unwrap();\n        String::from_utf8(response).unwrap()\n    }\n    #[tokio::test]\n    async fn large_transcript_snapshots_remain_authenticated_and_bounded() {\n        let runtime=OpenCutRuntime::default();\n        let dir=std::env::temp_dir().join(format!(\"opencut-bridge-body-{}-{}\",std::process::id(),now_ms()));\n        std::fs::create_dir_all(&dir).unwrap();\n        let server=spawn_classic_bridge(&runtime,\"127.",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-658e9c71-96d8-46bf-baf1-29fe619c7748"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:27:11.331Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

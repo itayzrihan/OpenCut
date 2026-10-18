@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc65ba55-3d52-4d80-9d32-b8fbcb7b1843",
+  "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Audit local changes, validate, commit, push and merge recent updates to main",
+          "status": "in_progress"
+        },
+        {
+          "step": "Implement canonical account Brand Kit model and capabilities",
+          "status": "pending"
+        },
+        {
+          "step": "Implement Brand Kit management and optional Full Auto application",
+          "status": "pending"
+        },
+        {
+          "step": "Run checks, inspect UI and deliver verified changes",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946",
+  "createdAt": "2026-10-18T15:44:01.503Z",
+  "parents": [
+    "e2e9c695-c7ec-44cb-9bd1-060620d194b2"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

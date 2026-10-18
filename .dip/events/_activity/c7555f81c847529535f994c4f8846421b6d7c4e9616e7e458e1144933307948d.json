@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7555f81c847529535f994c4f8846421b6d7c4e9616e7e458e1144933307948d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:33:33.341Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/smart-shorts-seven/restore-liftoff.log; rg -n 'source|restore' classic/apps/web/src/diagnostics/performance-reports.ts; sed -n '1,100p' classic/apps/web/src/editor-agent/session-client.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d46d3d4a-10f0-4560-b103-4934d5996901"
+      },
+      {
+        "at": "2026-10-13T09:33:33.559Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/smart-shorts-seven/restore-liftoff.log; rg -n 'source|restore' classic/apps/web/src/diagnostics/performance-reports.ts; sed -n '1,100p' classic/apps/web/src/editor-agent/session-client.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d46d3d4a-10f0-4560-b103-4934d5996901"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:33:34.197Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

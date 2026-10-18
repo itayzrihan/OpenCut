@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode, type FormEvent } from "react";
 import { hydrateAccountPreferences } from "@/services/local-drive/preferences";
 import { BackgroundSnapshots } from "./background-snapshots";
 import { ClientAiSetup } from "@/ai/components/client-ai-setup";
+import { WorkspaceLoading } from "@/components/workspace-loading";
 type Account = { id: string; displayName: string };
 export function AccountGate({ children }: { children: ReactNode }) {
 	const [account, setAccount] = useState<Account | null>(null);
@@ -12,10 +13,13 @@ export function AccountGate({ children }: { children: ReactNode }) {
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
 	useEffect(() => {
+		let cancelled = false;
 		fetch("/api/accounts", { cache: "no-store" })
 			.then((r) => r.json())
 			.then(async ({ account: current, storageBusy }) => {
+				if (cancelled) return;
 				if ((current?.id ?? null) !== window.__opencutAccountId) {
+					console.info("[workspace] Reloading after account change");
 					window.__opencutActivateAccount(current?.id ?? null);
 					return;
 				}
@@ -28,7 +32,11 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					setLoading(false);
 					return;
 				}
-				if (current && (await hydrateAccountPreferences())) {
+				const preferencesChanged =
+					current && (await hydrateAccountPreferences());
+				if (cancelled) return;
+				if (preferencesChanged) {
+					console.info("[workspace] Reloading after preference hydration");
 					window.location.reload();
 					return;
 				}
@@ -36,9 +44,13 @@ export function AccountGate({ children }: { children: ReactNode }) {
 				setLoading(false);
 			})
 			.catch(() => {
+				if (cancelled) return;
 				setError("Could not connect to account storage. Try reloading.");
 				setLoading(false);
 			});
+		return () => {
+			cancelled = true;
+		};
 	}, []);
 	async function submit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -75,12 +87,7 @@ export function AccountGate({ children }: { children: ReactNode }) {
 			setBusy(false);
 		}
 	}
-	if (loading)
-		return (
-			<main className="grid min-h-screen place-items-center">
-				Opening your workspace…
-			</main>
-		);
+	if (loading) return <WorkspaceLoading />;
 	if (account && error)
 		return (
 			<main className="grid min-h-screen place-items-center p-8">

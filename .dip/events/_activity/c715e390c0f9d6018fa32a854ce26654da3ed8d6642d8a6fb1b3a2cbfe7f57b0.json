@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c715e390c0f9d6018fa32a854ce26654da3ed8d6642d8a6fb1b3a2cbfe7f57b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:08:38.176Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '80,175p' classic/rust/editor-runtime-wasm/src/lib.rs; sed -n '228,249p' classic/rust/editor-runtime-wasm/src/lib.rs; sed -n '238,275p' classic/apps/web/src/core/canonical-classic-session.ts; head -28 .local/smart-shorts-performance/verification.log; rg -n 'to_json_js' classic/rust/editor-runtime-wasm/src/lib.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e8b80459-b9df-4cd5-b40c-1638b812f4fd"
+      },
+      {
+        "at": "2026-10-13T19:08:38.281Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '80,175p' classic/rust/editor-runtime-wasm/src/lib.rs; sed -n '228,249p' classic/rust/editor-runtime-wasm/src/lib.rs; sed -n '238,275p' classic/apps/web/src/core/canonical-classic-session.ts; head -28 .local/smart-shorts-performance/verification.log; rg -n 'to_json_js' classic/rust/editor-runtime-wasm/src/lib.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e8b80459-b9df-4cd5-b40c-1638b812f4fd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:08:38.790Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

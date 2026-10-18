@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d72a717ceec45b69022656d3559c0480687c96523f82ce86164a2a2867567ae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:26:16.860Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '945,965p' classic/apps/web/src/core/canonical-classic-session.ts; rg -n 'restoreConversationArtifacts' classic/rust/editor-runtime-wasm/src -A25; sed -n '280,370p' crates/editor-api/src/operations/classic_session.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7c9bd9fc-fc48-4f06-94f3-efc0f584183e"
+      },
+      {
+        "at": "2026-10-13T09:26:17.006Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '945,965p' classic/apps/web/src/core/canonical-classic-session.ts; rg -n 'restoreConversationArtifacts' classic/rust/editor-runtime-wasm/src -A25; sed -n '280,370p' crates/editor-api/src/operations/classic_session.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7c9bd9fc-fc48-4f06-94f3-efc0f584183e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:26:17.494Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46363956184cb080fc0fd06cb87f658d004bdef2a23ed0f06cad76dbfbf014ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:42:15.200Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,command | rg 'Chrome Helper \\(Renderer\\)' | sort -k2 -nr | head -1; rg -n 'extractAudio|prepareAudio|preload|onProgress' classic/apps/web/src/transcription/service.ts | head",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-29a07e73-70e4-4e01-9fb1-619a26b73138"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:42:15.277Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

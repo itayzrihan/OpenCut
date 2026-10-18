@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "40b90bfdc3c951de4527786d63a0123397f2ee8e8652e830bc90f33221c624f7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:47:02.702Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/brand-kit/premerge-types.log | tail -25; cat classic/apps/web/src/test-support/mock-fetch.ts; sed -n '1,28p' classic/apps/web/src/transcription/external-client.test.ts; sed -n '30,75p' classic/apps/web/src/preview/__tests__/video-lookahead.test.ts; sed -n '42,54p' classic/apps/web/src/core/__tests__/canonical-classic-session.test.ts; sed -n '125,142p' classic/apps/web/src/core/__tests__/canonical-transcription.test.ts; sed -n '1,25p' classic/apps/web/src/fonts/__tests__/typekit-loading.test.ts; sed -n '15,40p' classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-daa77ca7-c170-41cd-bc2b-5f42b6b7539a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:47:02.746Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

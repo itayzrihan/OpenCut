@@ -18,7 +18,11 @@ import {
 	getExportMimeType,
 	getExportFileExtension,
 	downloadBuffer,
+	hasExportOutput,
+	type ExportResult,
 } from "@/export";
+import { downloadBlob } from "@/utils/browser";
+import { toast } from "sonner";
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
@@ -50,10 +54,8 @@ export function ExportButton() {
 	const hasProject = !!activeProject;
 
 	const handlePopoverOpenChange = ({ open }: { open: boolean }) => {
-		if (!open) {
-			editor.project.cancelExport();
-			editor.project.clearExportState();
-		}
+		// Closing a popover must not destroy hours of export work.
+		if (!open && editor.project.getExportState().isExporting) return;
 		setIsExportPopoverOpen(open);
 	};
 
@@ -112,11 +114,43 @@ function ExportPopover({
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
-	const hasReadyExport = Boolean(exportResult?.success && exportResult.buffer);
+	const hasReadyExport = hasExportOutput(exportResult);
 	const handleExport = async () => {
 		if (!activeProject) return;
 
+		let destination: FileSystemFileHandle | undefined;
+		// The picker must run during this click's user activation, before audio
+		// preparation. All subsequent writes go straight to the chosen file.
+		try {
+			const picker = (
+				window as Window & {
+					showSaveFilePicker?: (options: {
+						suggestedName: string;
+						types: { description: string; accept: Record<string, string[]> }[];
+					}) => Promise<FileSystemFileHandle>;
+				}
+			).showSaveFilePicker;
+			if (picker)
+				destination = await picker.call(window, {
+					suggestedName: `${activeProject.metadata.name}.${format}`,
+					types: [
+						{
+							description: "Video",
+							accept: { [getExportMimeType({ format })]: [`.${format}`] },
+						},
+					],
+				});
+		} catch (error) {
+			if (!(error instanceof DOMException && error.name === "AbortError"))
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Could not choose an export file",
+				);
+			return;
+		}
 		const result = await editor.project.export({
+			destination,
 			options: {
 				format,
 				quality,
@@ -130,16 +164,29 @@ function ExportPopover({
 			return;
 		}
 
-		if (result.success && result.buffer) {
+		if (hasExportOutput(result)) {
+			deliverExport({ result, readyFormat: format });
+		}
+	};
+
+	const deliverExport = ({
+		result,
+		readyFormat,
+	}: {
+		result: ExportResult;
+		readyFormat: ExportFormat;
+	}) => {
+		const filename = `${activeProject.metadata.name}${getExportFileExtension({ format: readyFormat })}`;
+		if (result.savedFileName) toast.success(`Saved ${result.savedFileName}`);
+		else if (result.file) downloadBlob({ blob: result.file, filename });
+		else if (result.buffer)
 			downloadBuffer({
 				buffer: result.buffer,
-				filename: `${activeProject.metadata.name}${getExportFileExtension({ format })}`,
-				mimeType: getExportMimeType({ format }),
+				filename,
+				mimeType: getExportMimeType({ format: readyFormat }),
 			});
-
-			editor.project.clearExportState();
-			onOpenChange(false);
-		}
+		editor.project.clearExportState();
+		onOpenChange(false);
 	};
 
 	const handleCancel = () => {
@@ -147,15 +194,11 @@ function ExportPopover({
 	};
 
 	const handleDownloadReadyExport = () => {
-		if (!exportResult?.success || !exportResult.buffer) return;
-		const readyFormat = exportState.options?.format ?? format;
-		downloadBuffer({
-			buffer: exportResult.buffer,
-			filename: `${activeProject.metadata.name}${getExportFileExtension({ format: readyFormat })}`,
-			mimeType: getExportMimeType({ format: readyFormat }),
-		});
-		editor.project.clearExportState();
-		onOpenChange(false);
+		if (exportResult && hasExportOutput(exportResult))
+			deliverExport({
+				result: exportResult,
+				readyFormat: exportState.options?.format ?? format,
+			});
 	};
 
 	return (
@@ -298,7 +341,8 @@ function ExportPopover({
 								<div className="flex flex-col gap-2">
 									<div className="flex items-center justify-between text-center">
 										<p className="text-muted-foreground text-sm">
-											{Math.round(progress * 100)}%
+											{exportState.phase ?? "Exporting"} ·{" "}
+											{(progress * 100).toFixed(1)}%
 										</p>
 										<p className="text-muted-foreground text-sm">100%</p>
 									</div>

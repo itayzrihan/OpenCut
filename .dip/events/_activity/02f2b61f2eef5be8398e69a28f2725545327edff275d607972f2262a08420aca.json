@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "02f2b61f2eef5be8398e69a28f2725545327edff275d607972f2262a08420aca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T13:15:06.952Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/podcast-plan.ts",
+          "classic/apps/web/src/ai/podcast-plan-cache.ts",
+          "classic/apps/web/src/ai/podcast-task.ts",
+          "classic/apps/web/src/ai/__tests__/podcast-plan.test.ts",
+          "classic/apps/web/src/ai/__tests__/podcast-task.test.ts",
+          ".local/smart-shorts-seven/production-recovery-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "a45557f9-5b75-4e52-b0f6-2d3a8f2e466a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:15:06.955Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

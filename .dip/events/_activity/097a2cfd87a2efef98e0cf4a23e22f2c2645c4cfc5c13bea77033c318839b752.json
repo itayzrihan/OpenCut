@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "097a2cfd87a2efef98e0cf4a23e22f2c2645c4cfc5c13bea77033c318839b752",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:55.228Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/editor-agent/__tests__/session-store-host.test.ts src/editor-agent/__tests__/project-font-ownership.test.ts src/export/__tests__/pcm-file.test.ts --report=.local/smart-shorts-audio/unit > .local/smart-shorts-audio/unit.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6e9484ca-c5de-4831-a20f-eec692a62a6c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:55.360Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

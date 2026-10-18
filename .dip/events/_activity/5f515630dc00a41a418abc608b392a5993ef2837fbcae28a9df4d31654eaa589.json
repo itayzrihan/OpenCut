@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f515630dc00a41a418abc608b392a5993ef2837fbcae28a9df4d31654eaa589",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:08:13.265Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'engine|externalConfiguration' classic/apps/web/src/core/managers/transcription-manager.ts | head -25; cat > classic/apps/web/src/subtitles/components/transcription-source.tsx <<'EOF'\n\"use client\";\nimport {useEffect,useState} from 'react';\nimport {useEditor,useEditorProject} from '@/editor/use-editor';\nimport {Button} from '@/components/ui/button';\nimport {Input} from '@/components/ui/input';\nimport {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';\nimport {Dialog,DialogContent,DialogHeader,DialogTitle,DialogFooter} from '@/components/ui/dialog';\nimport {getExternalSettings,type ExternalSettingsView} from '@/transcription/external-client';\nimport {toast} from 'sonner';\nexport function TranscriptionSource({disabled,onImport}:{disabled:boolean;onImport:()=>void}){\n const editor=useEditor();const engine=useEditorProject(e=>e.project.getActive().transcriptionEngine??'local');\n const [open,setOpen]=useState(false);const [busy,setBusy]=useState(false);const [config,setConfig]=useState<ExternalSettingsView>({endpoint:'https://api.openai.com/v1/audio/transcriptions',model:'whisper-1',configured:false});const [key,setKey]=useState('');const [error,setError]=useState('');\n useEffect(()=>{if(!open)return;const controller=new AbortController();setError('');void getExternalSettings({signal:controller.signal}).then(setConfig).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>controller.abort();},[open]);\n const save=async()=>{setBusy(true);setError('');try{const response=await fetch('/api/transcription/settings',{method:'PUT',headers:{'Content-Type':'application/json','X-OpenCut-Account':window.__opencutAccountId??''},body:JSON.stringify({endpoint:config.endpoint,model:config.model,...(key?{apiKey:[REDACTED];const result=await response.json();if(!response.ok)throw new Error(result.error);setConfig(result);setKey('');setOpen(false);toast.success('Transcription API settings saved');}catch(e){setError(e instanceof ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-70e9135b-ce90-42ed-8b48-5cc0c31b46f3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:08:13.927Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

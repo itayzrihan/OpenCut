@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f944b8cadc6cf20a3d79627a6cea2e56dda04b61e67a3f02fbee223fe1006bd7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:08:22.138Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/source-preservation/native.log\ncat > .dip/tools/verify-extract-preservation.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nfor (const [cmd,args] of [\n ['cargo',['test','-p','opencut-editor-api','--test','classic_podcast','--test','classic_transcription','--test','classic_update','--test','classic_archive']],\n ['node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/core/managers/__tests__/canonical-command-manager.test.ts','--timeout=240000','--test-timeout=120000','--jobs=1']]\n]) { const r=spawnSync(cmd,args,{stdio:'inherit'}); if(r.status!==0)process.exit(r.status??1); }\nJS\npython3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('.dip/config.json');d=json.loads(p.read_text());d['verification']['extract-preservation']={'command':['node','.dip/tools/verify-extract-preservation.mjs'],'timeoutMs':480000};p.write_text(json.dumps(d,indent=2)+'\\n')\nPY\nnode .dip/tools/verify-extract-preservation.mjs > .local/source-preservation/check.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e71dac08-2c29-4623-be5a-de262bbb4966"
+      },
+      {
+        "at": "2026-10-13T21:08:22.172Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/source-preservation/check.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-143023a5-f9be-46a3-b92b-faafbf0c597a"
+      },
+      {
+        "at": "2026-10-13T21:08:22.370Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-02423b9b-dd18-4f17-b421-e18c65483f0d"
+      },
+      {
+        "at": "2026-10-13T21:08:22.371Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/source-preservation/check.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-143023a5-f9be-46a3-b92b-faafbf0c597a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:08:22.444Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

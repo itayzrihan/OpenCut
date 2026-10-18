@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2639286796e112e485764a45c5251982badc3c839ce140d04fdbc35da456bd02",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:43:09.798Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'waitForTranscriptionPublication' classic/apps/web/src/core/managers/commands.ts -A30; sed -n '690,745p' classic/apps/web/src/core/managers/project-manager.ts; cat .local/smart-shorts-seven/archive-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-028e768c-8926-4f9b-b41a-571700a602d1"
+      },
+      {
+        "at": "2026-10-13T09:43:09.984Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'waitForTranscriptionPublication' classic/apps/web/src/core/managers/commands.ts -A30; sed -n '690,745p' classic/apps/web/src/core/managers/project-manager.ts; cat .local/smart-shorts-seven/archive-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-028e768c-8926-4f9b-b41a-571700a602d1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:43:10.465Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

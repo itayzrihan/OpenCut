@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a82cfdda2ffa5c036e4fef7303ec7f74c159c681e26b30f9cc7293ad8626c4c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:09:44.766Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -show_entries stream=codec_name,duration -of json /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-97fe437d-6fd2-4a88-9b42-557fd37b908b"
+      },
+      {
+        "at": "2026-10-14T10:09:44.783Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,json,hashlib\np=pathlib.Path('analysis/teaser-word-fix-2026-10-14');d=json.load(open('.local/teaser-word-fix-2026-10-14/project-before.json'));h=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();b={'sceneId':'6125f350-cad1-4f95-b7b6-8cc507c24af7','settingsHash':h(d['settings']),'jobsHash':h(d['transcriptionJobs']),'protectedScenes':{s['id']:h(s) for s in d['scenes'] if s['id']!='6125f350-cad1-4f95-b7b6-8cc507c24af7'}};(p/'baseline.json').write_text(json.dumps(b,indent=2));print({'protectedScenes':len(b['protectedScenes'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-456e6445-5d35-4618-979e-b36f5db6cf4d"
+      },
+      {
+        "at": "2026-10-14T10:09:45.054Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -show_entries stream=codec_name,duration -of json /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-97fe437d-6fd2-4a88-9b42-557fd37b908b"
+      },
+      {
+        "at": "2026-10-14T10:09:45.085Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-word-fix-2026-10-14/check-tail.py"
+        ],
+        "changeHash": "0bd8f7c634a8d6b3f9fabe1d35a783cab320c71d4252c5b9429f8f05fdd67825",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5891dbfd-cc56-47e1-b6f0-573f66cacbe4"
+      },
+      {
+        "at": "2026-10-14T10:09:45.178Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-word-fix-2026-10-14/check-tail.py"
+        ],
+        "changeHash": "0bd8f7c634a8d6b3f9fabe1d35a783cab320c71d4252c5b9429f8f05fdd67825",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5891dbfd-cc56-47e1-b6f0-573f66cacbe4"
+      },
+      {
+        "at": "2026-10-14T10:09:45.184Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 .local/teaser-word-fix-2026-10-14/check-tail.py",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-cc753b1a-12aa-4d38-a282-c913bda76ae5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:09:45.281Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b97af316eed78e2bcc0beca6b6c6fb7cd920b8c8eb45d59087bf827080a1ac61",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:52:40.374Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nr=Path('classic/apps/web/src/app/api/transcription/chromium-probe/route.ts')\nr.unlink();r.parent.rmdir()\nprint('Disabled route verified HTTP404, then removed source.')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-4a452731-bb70-43f4-b750-0ea6c5226cef"
+      },
+      {
+        "at": "2026-10-12T10:52:40.496Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nr=Path('classic/apps/web/src/app/api/transcription/chromium-probe/route.ts')\nr.unlink();r.parent.rmdir()\nprint('Disabled route verified HTTP404, then removed source.')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-4a452731-bb70-43f4-b750-0ea6c5226cef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:52:41.295Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

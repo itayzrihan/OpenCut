@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e91a034e-13eb-4e95-b6b9-0ec86c14c9ab",
+  "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+  "type": "task.update",
+  "payload": {
+    "title": "Add GitHub sign-in and private DIP project dashboard",
+    "acceptance": [
+      "GitHub authentication with secure per-user repository access",
+      "Discover accessible repositories containing committed .dip data",
+      "Display project tasks, progress and event history with pagination and explicit sync limits",
+      "Preserve public product page and deploy verified dashboard"
+    ],
+    "scope": [
+      "sites/dip-public"
+    ]
+  },
+  "actor": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4",
+  "createdAt": "2026-10-12T07:59:07.023Z",
+  "parents": [
+    "e364e9a3-e93a-467c-94dc-c17947825370"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

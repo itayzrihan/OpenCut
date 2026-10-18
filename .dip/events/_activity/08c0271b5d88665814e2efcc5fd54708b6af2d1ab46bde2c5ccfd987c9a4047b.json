@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08c0271b5d88665814e2efcc5fd54708b6af2d1ab46bde2c5ccfd987c9a4047b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:49:14.445Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-dbfc0183-5617-46cd-9b42-77ce4ab3aa42"
+      },
+      {
+        "at": "2026-10-14T07:49:14.468Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'aiEditPlanSchema|operations:|summary:|title:' classic/apps/web/src/ai/edit-plan.ts | head -25; sed -n '170,232p' classic/apps/web/src/ai/timeline-document-v2.ts; rg -n 'audio_evidence|AudioEvidence|struct Evidence' crates/editor-api/src/operations/classic_takes/quality.rs | head -25",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4153627b-61cf-4c66-b2ce-b1f0639b2fef"
+      },
+      {
+        "at": "2026-10-14T07:49:14.599Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'aiEditPlanSchema|operations:|summary:|title:' classic/apps/web/src/ai/edit-plan.ts | head -25; sed -n '170,232p' classic/apps/web/src/ai/timeline-document-v2.ts; rg -n 'audio_evidence|AudioEvidence|struct Evidence' crates/editor-api/src/operations/classic_takes/quality.rs | head -25",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4153627b-61cf-4c66-b2ce-b1f0639b2fef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:49:14.652Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee79b3c57328428055a6de8d559e3455a79f889eb6535b92f69e5e2126fc6901",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:09:03.301Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -n 44 classic/apps/web/src/ai/podcast-plan.ts; cat .dip/tools/verify-compact-history.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ff8356ea-250f-4641-bcf7-037644438a44"
+      },
+      {
+        "at": "2026-10-13T12:09:03.444Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -n 44 classic/apps/web/src/ai/podcast-plan.ts; cat .dip/tools/verify-compact-history.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ff8356ea-250f-4641-bcf7-037644438a44"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:09:03.530Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4138565683348a46783da8a805f1268607846514d736e68d5d65512ab9563e02",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:59:46.568Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cargo test -p opencut-editor-api --test classic_transcription",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-66c16dde-fddb-46a3-8269-b2830432bba0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:59:46.921Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

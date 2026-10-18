@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2da3de033b8c0937331d0858da9d0b68d5926f459cbc9c2422f86c2474576789",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:37:33.052Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/windows.test.ts');s=p.read_text().replace('let siblingAborted = false;', 'let siblingAborted = false;\\n\\tlet startedCalls = 0;').replace('if (!siblingAborted && loads <= 2) {','if (startedCalls++ === 0) {').replace('expect(loads).toBeLessThanOrEqual(4);','expect(loads).toBeLessThanOrEqual(4);\\n\\texpect(siblingAborted).toBe(true);');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs src/transcription/windows.test.ts src/transcription/overlap-reader.test.ts --jobs=1 --timeout=30000",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-92bf087d-6ec6-425a-ab8e-baf8aea9c713"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:37:34.431Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

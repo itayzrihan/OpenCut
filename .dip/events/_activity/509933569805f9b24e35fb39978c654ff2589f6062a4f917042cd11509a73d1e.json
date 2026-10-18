@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "509933569805f9b24e35fb39978c654ff2589f6062a4f917042cd11509a73d1e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:49:03.942Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'));s=next(x for x in p['scenes'] if x['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print([(t['name'],t.get('hidden')) for t in s['tracks']['overlay']]);json.dump({'captionVisibility':[(t['name'],t.get('hidden')) for t in s['tracks']['overlay']]},open('analysis/teaser-exports-2026-10-14/clean-export-state.json','w'))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0eddc302-eaf7-4fba-aa98-dcc623f0b3a9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:49:04.992Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

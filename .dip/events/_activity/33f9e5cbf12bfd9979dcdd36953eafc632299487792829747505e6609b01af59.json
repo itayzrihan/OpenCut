@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "33f9e5cbf12bfd9979dcdd36953eafc632299487792829747505e6609b01af59",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:30:13.280Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json');s=next(s for s in json.loads(p.read_text())['scenes']if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print({'duration':max(e['startTime']+e['duration']for t in [s['tracks']['main']]+s['tracks']['overlay']+s['tracks']['audio']for e in t['elements'])/120000,'overlays':[(t['name'],len(t['elements']))for t in s['tracks']['overlay']],'audio':[(t['name'],len(t['elements']),[(e.get('automaticMusicOwner'),e.get('libraryAssetId'))for e in t['elements'][:1]])for t in s['tracks']['audio']]})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b2e0fb42-2db9-4660-841d-86fb34470caf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:30:14.241Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc6043ded92d5065da36c08b0e2aedaa52f8a6d15f56b11c57638d46770499d6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:19:29.756Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/lib/landing.ts",
+          "sites/dip-public/content/landing-original.html",
+          "sites/dip-public/app/page.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "d3612e9c-bc56-435e-9b9c-dd3c1179ed54"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:19:29.769Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

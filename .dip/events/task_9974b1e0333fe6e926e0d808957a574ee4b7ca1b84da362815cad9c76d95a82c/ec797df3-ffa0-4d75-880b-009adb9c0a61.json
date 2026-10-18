@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ec797df3-ffa0-4d75-880b-009adb9c0a61",
+  "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+  "type": "task.update",
+  "payload": {
+    "title": "Add ChatGPT subscription transcription choice and default to API",
+    "description": "Classic-only host transport using the proven Electron Chromium request and existing account-bound OpenAI OAuth; canonical engine selection and jobs in Rust. Three engines: API(default), ChatGPT login, local. Preserve chunk checkpoints/resume and cancellation, disclose estimated timing for text-only ChatGPT results and avoid asserting specific billing guarantees.",
+    "acceptance": [
+      "Three canonical persisted engine options with API fallback for projects lacking an explicit preference; preserve legacy job engine.",
+      "ChatGPT transcription uses existing account-bound OAuth and Chromium networking with bounded requests, cancellation, sanitized errors and no secrets in project/browser/logs.",
+      "Text-only output receives explicitly estimated timing via Rust, short bounded sections feed existing durable checkpoints without dropped progress.",
+      "Registry state/undo tests, meaningful host transport tests, typecheck, regenerated WASM and live UI selection verified."
+    ],
+    "scope": [
+      "classic/apps/web/src/transcription",
+      "classic/apps/web/src/app/api/transcription",
+      "classic/apps/web/src/subtitles/components/transcription-source.tsx",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+      "classic/apps/web/src/core/__tests__/canonical-transcription.test.ts",
+      "classic/apps/web/package.json",
+      "classic/apps/web/next.config.ts",
+      "classic/bun.lock",
+      "classic/package.json",
+      "classic/scripts",
+      "classic/rust/wasm/src",
+      "classic/BROWSER-TRANSCRIPTION.md",
+      "crates/editor-api/src/operations/classic_transcription.rs",
+      "crates/editor-api/tests/classic_transcription.rs",
+      ".dip/tools/verify-transcription-sources.mjs",
+      ".dip/config.json"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:55:43.657Z",
+  "parents": [
+    "243dd326-640b-4f67-886a-6c6e967ae357"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

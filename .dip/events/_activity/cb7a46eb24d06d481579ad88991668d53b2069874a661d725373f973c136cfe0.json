@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb7a46eb24d06d481579ad88991668d53b2069874a661d725373f973c136cfe0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:56:10.816Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a1db4c53-18e7-418c-add3-d20fbcbf232c"
+      },
+      {
+        "at": "2026-10-14T09:56:10.875Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,json,hashlib\npaths=[pathlib.Path('/Users/itayzrihan/Downloads')/n for n in ['OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-2026-10-14.srt','OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt']]\nm={'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':[{'path':str(p),'name':p.name,'size':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]}\npathlib.Path('analysis/teaser-drive-2026-10-14/manifest.json').write_text(json.dumps(m,ensure_ascii=False,indent=2));print({'files':len(paths),'bytes':sum(x['size'] for x in m['files'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-fc32f33b-9df7-47b6-8552-b8c4433551e8"
+      },
+      {
+        "at": "2026-10-14T09:56:10.876Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a1db4c53-18e7-418c-add3-d20fbcbf232c"
+      },
+      {
+        "at": "2026-10-14T09:56:11.066Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,json,hashlib\npaths=[pathlib.Path('/Users/itayzrihan/Downloads')/n for n in ['OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-2026-10-14.srt','OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt']]\nm={'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':[{'path':str(p),'name':p.name,'size':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]}\npathlib.Path('analysis/teaser-drive-2026-10-14/manifest.json').write_text(json.dumps(m,ensure_ascii=False,indent=2));print({'files':len(paths),'bytes':sum(x['size'] for x in m['files'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fc32f33b-9df7-47b6-8552-b8c4433551e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:56:11.223Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83b94b5ce3f4b09eaa0d08c248c44c1b231981a1500b2348328ccafe293b728d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T13:47:44.618Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/lib/github.mjs",
+          "sites/dip-public/app/api/github/callback/route.ts",
+          "sites/dip-public/test/github.test.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "22851153-2071-4dd5-a830-677318af15ca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:47:44.622Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

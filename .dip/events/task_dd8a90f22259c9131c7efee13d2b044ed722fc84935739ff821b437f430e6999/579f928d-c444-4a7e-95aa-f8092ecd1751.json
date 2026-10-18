@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "579f928d-c444-4a7e-95aa-f8092ecd1751",
+  "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Export saved teaser with only music muted and captions hidden",
+          "status": "in_progress"
+        },
+        {
+          "step": "Restore exact scene state and validate exported picture/audio",
+          "status": "pending"
+        },
+        {
+          "step": "Upload additional MP4 to same Drive folder and return link",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T10:21:15.486Z",
+  "parents": [
+    "c134adab-ea20-4d40-896a-04d942d42054"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "904054a577b44a79b3e0db0b9d1fef7caa5bd17efebeb6b101e6ccf6d780e207",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:41:48.722Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP:3211 -sTCP:LISTEN; ps -p 52405 -o pid,ppid,etime,comm; rg -n 'DIST_DIR|3211' classic/scripts/dev-web-with-mcp.mjs classic/apps/web/next.config.ts; git diff --stat -- classic/apps/web/src/transcription/windows.ts classic/apps/web/src/accounts/server.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-c55f0407-f88f-4d0b-83c3-b2b86ff24cd8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:41:51.990Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

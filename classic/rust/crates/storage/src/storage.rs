@@ -23,12 +23,16 @@ pub struct MediaRelinkOptions {
     pub source: String,
     pub expected_revision: u32,
     pub undo: bool,
+    #[serde(default)]
+    pub replacement_metadata_json: Option<String>,
 }
 
 #[export]
 pub fn media_relink_binding(options: MediaRelinkOptions) -> Result<String, String> {
     let record = serde_json::from_str(&options.record_json).map_err(|e| e.to_string())?;
-    let result = opencut_account_core::media::classic_binding(&record, &options.source, options.expected_revision.into(), options.undo)?;
+    let probe: Option<serde_json::Value> = options.replacement_metadata_json.as_deref()
+        .map(serde_json::from_str).transpose().map_err(|e| e.to_string())?;
+    let result = opencut_account_core::media::classic_binding_with_probe(&record, &options.source, options.expected_revision.into(), options.undo, probe.as_ref())?;
     serde_json::to_string(&result).map_err(|e| e.to_string())
 }
 

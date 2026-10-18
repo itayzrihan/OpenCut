@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fba05f23999b91c42326d5c0f84d2e4ca4a5ced4fa8524375f1e72042f16e78c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:53:12.649Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/BROWSER-TRANSCRIPTION.md <<'EOF'\n\n## Smart Shorts recovery and bridge memory\n\nThis recovery path is **classic-only host IO**. The canonical Rust podcast\ncapabilities still validate the source, apply all output scenes atomically and\npreserve the original episode. The host caches computed proposals and audio\nfeatures; it does not maintain another editable project document.\n\nEach reviewed five-minute model window and the final selection are checkpointed\nagainst the account, project, scene, options and exact canonical word inventory.\nProvider transport uses the shared Rust retry policy for bounded temporary\nfailures. Authentication, malformed output and source changes stop recovery.\n\nAudio analysis checkpoints each completed 30-second window in account-scoped\nIndexedDB. Keys include source/word identity, media binding revision, file\nmetadata, timing, rate and frame size. Float64 features preserve timing and\nnumeric precision. Only committed windows advance progress; interruption resumes\nby decoding missing windows. Missing coverage stays unknown. No full recording\nPCM is stored. The cache is bounded to 64 MiB and 2,048 window artifacts, with an\n8 MiB per-window limit. Final selection is retained until project/history saving\nconfirms success.\n\nThe authenticated loopback Classic bridge accepts bounded full snapshots up to\n32 MiB. After a full snapshot is acknowledged, unchanged document heartbeats\ncontain only UI/liveness metadata and the expected snapshot revision, at most\n512 KiB. They preserve the cached timeline and tool contracts without cloning\nthose values. Restart, stale revision or project mismatch requires a fresh full\nsnapshot. Version 2 peers advertise optional `supportsHeartbeat`; legacy small\nsnapshots are replayed by a bounded account/session-scoped server cache rather\nthan repeatedly copying a large document in the browser.\nEOF\nnode classic/scripts/local-production/build.mjs --stage > .local/smart-shorts-seven/production-resume-build.log 2>&",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-46b62337-cd9e-47d7-9a4d-6107831339dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:53:13.149Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

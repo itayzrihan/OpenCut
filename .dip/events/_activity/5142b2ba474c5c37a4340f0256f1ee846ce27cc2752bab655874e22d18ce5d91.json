@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5142b2ba474c5c37a4340f0256f1ee846ce27cc2752bab655874e22d18ce5d91",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:51:59.368Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/transcription/windows.test.ts <<'EOF'\n\ntest(\"each checkpoint finishes before decoding the next window; durable words bypass inference\", async () => {\n calls = 0; failAt = Infinity;\n const completed: Record<string, import('./types').TranscriptionWord[]> = {'0': [{text:'persisted',start:1,end:2}], '1': []};\n const events: string[] = [];\n await transcribeAudioWindows({duration:185,language:'en',signal:new AbortController().signal,completedChunks:completed,\n  load:async r => {range=r; events.push(`load:${r.start}`);return new Float32Array(1);},\n  onChunk:async ({index,words}) => {events.push(`save:${index}`);await Promise.resolve();completed[index]=words;events.push(`saved:${index}`);}\n });\n expect(calls).toBe(2);\n expect(events).toEqual(['save:0','saved:0','save:1','saved:1','load:115','save:2','saved:2','load:175','save:3','saved:3']);\n expect(completed['0'][0].text).toBe('persisted');\n});\n\ntest(\"publication failure never advances decoding and retries from cached provider text\", async () => {\n calls=0;failAt=Infinity;\n const cache = new Map<number,TranscriptionResult>();\n let failing=true;\n const input={duration:125,language:'en' as const,signal:new AbortController().signal,\n load:async (r:{start:number;end:number})=>{range=r;return new Float32Array(1);},\n cache:{read:async(i:number)=>cache.get(i),write:async(i:number,result:TranscriptionResult)=>{cache.set(i,result);return true;}},\n onChunk:async({index}:{index:number})=>{if(index===0&&failing)throw new Error('disk unavailable');}};\n await expect(transcribeAudioWindows(input)).rejects.toThrow('disk unavailable');expect(calls).toBe(1);\n failing=false;await transcribeAudioWindows(input);expect(calls).toBe(3);\n});\nEOF\ncat >> crates/editor-api/tests/classic_transcription.rs <<'EOF'\n\n#[tokio::test]\nasync fn restore_after_undo_uses_original_source_and_republishes_completed_work() {\n let r=setup().await;edit(&r,section(0)).await;let snapshot=job(&state(&r).await).clone();\n call(&r,\"history.undo\",",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-edfd6a51-b66d-4fc1-918c-e1f6ecf2a377"
+      },
+      {
+        "at": "2026-10-12T09:51:59.369Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts <<'EOF'\n\nfunction incrementalEditor() {\n const editor=createEditor();\n const project={metadata:{id:'project-1'},scenes:[editor.scenes.getActiveScene()],transcriptionJobs:[] as import('@/transcription/job').TranscriptionJob[]};\n const saved: typeof project.transcriptionJobs[]=[];\n Object.assign(editor.project,{getActive:()=>project,getActiveOrNull:()=>project,getSessionReadOnlyReason:()=>null,\n saveCurrentProject:async()=>{await Promise.resolve();saved.push(structuredClone(project.transcriptionJobs));}});\n Object.assign(editor.command,{waitForTranscriptionPublication:async()=>{},editTranscription:({jobId,change}:{jobId:string;change:import('@/transcription/job').TranscriptionChange})=>{\n let job=project.transcriptionJobs.find(j=>j.id===jobId);\n if(change.type==='start'){job={id:jobId,sceneId:change.sceneId,language:change.language,settings:change.settings,defaults:{},sourceTracks:project.scenes[0].tracks,sourceMedia:[],totalDuration:120*120000,status:'running',chunks:{}};project.transcriptionJobs.push(job);}\n else if(change.type==='append'){job!.chunks[change.index]=change.words;if(Object.keys(job!.chunks).length===2)job!.status='complete';}\n else if(change.type==='pause')job!.status='paused';\n else if(change.type==='resume')job!.status='running';\n else if(change.type==='restore')project.transcriptionJobs.push({...structuredClone(change.snapshot),chunks:{},status:'running'});\n }});\n return {editor,project,saved};\n}\nfunction incrementalManager(editor:EditorCore,transcribeTimeline:NonNullable<import('../transcription-manager').TranscriptionManagerDependencies['transcribeTimeline']>) {\n return new TranscriptionManager({editor,dependencies:{transcribeTimeline,extractAudio:async()=>new Blob(),transcribe:async()=>{throw new Error('legacy path');},insertCaptions:()=>{throw new Error('legacy insertion');},generateId:()=> 'durable-job',transitionTask:transitionTaskForTest}});\n}\ntest('incremental",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-59a22ae1-f0a3-4b67-a5d9-d2390ef9a097"
+      },
+      {
+        "at": "2026-10-12T09:51:59.376Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx tsc --noEmit -p tsconfig.build.json",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-a6c7b38b-6f29-45b2-8e24-5243cc080c92"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:52:00.253Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "22104489644a188213d25d39ada6629fee6338426517b0fe019d40ac054aa37d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T15:22:33.473Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node .local/smart-shorts-seven/verify-delivery.mjs > .local/smart-shorts-seven/delivery-verification.log\npython3 - <<'PY'\nfrom pathlib import Path\nimport struct,datetime,json\np=max((Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed').glob('*.dmp'),key=lambda p:p.stat().st_mtime)\nb=p.read_bytes();print('Latest Chrome crash:',datetime.datetime.fromtimestamp(struct.unpack_from('<I',b,20)[0]).isoformat())\nm=json.load(open('.local/smart-shorts-seven/browser-memory-measurements.json'));print('Measured peak GiB:',round(m['peak']/1024**3,2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-87af3598-beac-438c-87b8-9491ae37229a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T15:22:34.050Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

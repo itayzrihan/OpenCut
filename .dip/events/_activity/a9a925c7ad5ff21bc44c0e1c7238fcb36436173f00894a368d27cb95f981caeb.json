@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9a925c7ad5ff21bc44c0e1c7238fcb36436173f00894a368d27cb95f981caeb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:38:40.957Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md\ncat /Users/itayzrihan/.codex/skills/custom-brag/SKILL.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-95e1fcff-87c0-4037-968c-ff4c8fa4a3a7"
+      },
+      {
+        "at": "2026-10-15T01:38:41.091Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md\ncat /Users/itayzrihan/.codex/skills/custom-brag/SKILL.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-95e1fcff-87c0-4037-968c-ff4c8fa4a3a7"
+      },
+      {
+        "at": "2026-10-15T01:38:41.108Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3c2cd972-eb3b-4b36-875a-5abcaefacc78"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:38:41.437Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

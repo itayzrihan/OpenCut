@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "68b0161dee38345ee5c8ef7b8f8bdf74fc05919340299b7677c64f953d9c50c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:30:22.586Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{readJson,writeJson,deploymentRoot}from'./classic/scripts/local-production/common.mjs';import{join}from'node:path';import{writeFile}from'node:fs/promises';const base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};const candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate.id.startsWith('2026-10-13T20-28-21'))throw Error('Unexpected candidate');const prior=await readJson(join(deploymentRoot,'current.json'));await fetch(base+'/stop',{method:'POST',headers});await writeJson(join(deploymentRoot,'previous.json'),prior);await writeJson(join(deploymentRoot,'current.json'),candidate);await fetch(base+'/start',{method:'POST',headers});const status=await(await fetch(base+'/status',{headers})).json();if(!status.running||status.error)throw Error('Activation failed');await writeFile('.local/sequence-navigation/deployment-viewport.json',JSON.stringify({release:candidate.id,running:true,error:null}));console.log({release:candidate.id,running:true,error:null});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f70e6dd1-ec20-48b6-b7b0-f691bad907cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:30:22.723Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

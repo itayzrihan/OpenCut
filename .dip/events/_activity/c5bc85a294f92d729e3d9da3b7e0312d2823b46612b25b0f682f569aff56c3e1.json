@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c5bc85a294f92d729e3d9da3b7e0312d2823b46612b25b0f682f569aff56c3e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:02:44.569Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-910328dc-deba-46dd-acb6-d76cf2e2460f"
+      },
+      {
+        "at": "2026-10-14T09:02:44.571Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,220p' classic/apps/web/src/timeline/__tests__/smart-silence.test.ts; sed -n '1,160p' classic/apps/web/src/media/audio-window.ts; rg --files classic/scripts .local | rg 'deploy|release|production|launch' | head -28",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-bffc35cf-cc29-4d9e-8a5d-e1f4675484ea"
+      },
+      {
+        "at": "2026-10-14T09:02:44.758Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,220p' classic/apps/web/src/timeline/__tests__/smart-silence.test.ts; sed -n '1,160p' classic/apps/web/src/media/audio-window.ts; rg --files classic/scripts .local | rg 'deploy|release|production|launch' | head -28",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-bffc35cf-cc29-4d9e-8a5d-e1f4675484ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:02:45.092Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

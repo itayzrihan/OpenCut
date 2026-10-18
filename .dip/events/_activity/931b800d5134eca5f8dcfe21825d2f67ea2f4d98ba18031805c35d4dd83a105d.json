@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "931b800d5134eca5f8dcfe21825d2f67ea2f4d98ba18031805c35d4dd83a105d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:10:27.921Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-journal",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-wal",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-shm",
+          "sites/dip-public/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/metadata.sqlite-shm",
+          "sites/dip-public/.wrangler/registry",
+          "sites/dip-public/.wrangler/registry/__router-worker__",
+          "sites/dip-public/.wrangler/registry/__asset-worker__",
+          "sites/dip-public/.wrangler/registry/__vite_proxy_worker__",
+          "sites/dip-public/.wrangler/registry/site-creator-vinext-starter",
+          "sites/dip-public/.wrangler/registry/sites-connector-preview"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "25607771-b2d2-44e7-8bbd-44f28e6c222b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:10:27.922Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

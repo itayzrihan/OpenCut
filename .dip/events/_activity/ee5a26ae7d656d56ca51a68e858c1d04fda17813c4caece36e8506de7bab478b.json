@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee5a26ae7d656d56ca51a68e858c1d04fda17813c4caece36e8506de7bab478b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:38:03.998Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-d606598d-19bf-419e-8396-57f3288be511"
+      },
+      {
+        "at": "2026-10-12T12:38:04.026Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/services/transcription/service.test.ts <<'EOF'\n\ntest(\"long jobs recycle the model worker at a bounded interval without overlapping models\", async () => {\n\tconst pending = new TranscriptionService().withChunkSession({\n\t\tsignal: new AbortController().signal,\n\t\trun: async transcribe => {\n\t\t\tfor (let i = 0; i < 17; i++) await transcribe({\n\t\t\t\tload: async () => new Float32Array(160), language: \"he\",\n\t\t\t});\n\t\t},\n\t});\n\tfor (let i = 0; i < 17; i++) {\n\t\tawait tick();\n\t\texpect(FakeWorker.instances).toHaveLength(Math.floor(i / 8) + 1);\n\t\tconst current = FakeWorker.instances.at(-1)!;\n\t\tif (i >= 8) expect(current.previousTerminated).toBe(true);\n\t\texpect(FakeWorker.instances.filter(w => !w.terminated)).toHaveLength(1);\n\t\tcurrent.emit({ type: \"complete\", result: { text: \"ok\" } });\n\t}\n\tawait pending;\n\texpect(FakeWorker.instances.every(w => w.terminated)).toBe(true);\n});\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-transcription.mjs');s=p.read_text().replace(\"'src/transcription/windows.test.ts',\",\"'src/transcription/windows.test.ts',\\n'src/transcription/overlap-reader.test.ts',\");p.write_text(s)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-1d817239-eff6-40f8-9e9b-c77112a859bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:38:04.277Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

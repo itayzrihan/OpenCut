@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d40765ae572652e3a760e5c20155f842c59d56498b201a891546d05aa386c98a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:02:58.324Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-upgrade/replay.ts"
+        ],
+        "changeHash": "798339bce497c2f273fc0e5d25ba73ae26ded9d3bc2288e31a7bec32ecc3a057",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-867f6fac-68b7-4f30-9693-00e704b3cce1"
+      },
+      {
+        "at": "2026-10-16T11:02:58.368Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-upgrade/replay.ts"
+        ],
+        "changeHash": "798339bce497c2f273fc0e5d25ba73ae26ded9d3bc2288e31a7bec32ecc3a057",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-867f6fac-68b7-4f30-9693-00e704b3cce1"
+      },
+      {
+        "at": "2026-10-16T11:02:58.372Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -6 .local/teaser-upgrade/production-build-final.log; tail -8 .local/teaser-upgrade/real-provider.log; git diff --check -- crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-plan.ts classic/apps/web/src/ai/podcast-editorial.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-35654a39-f101-4eb6-83fe-e18635e270ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:02:58.457Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

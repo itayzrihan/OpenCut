@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "336d23e20466799b69683cb6929e93a529c57cd8ba5e72249235f51e375216da",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:14:56.022Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "curl -sS -o /dev/null --max-time 15 -w 'Projects: HTTP %{http_code}, %{time_total}s\\n' http://localhost:3211/projects\nlsof -nP -iTCP:3211 -sTCP:LISTEN\nps -p 24721,87601 -o pid,command\nnode --input-type=module <<'JS'\nimport {execFileSync} from 'node:child_process';\nconst pid=execFileSync('lsof',['-t','-iTCP:3211','-sTCP:LISTEN'],{encoding:'utf8'}).trim();\nconsole.log(execFileSync('lsof',['-a','-p',pid,'-d','cwd'],{encoding:'utf8'}));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2a4bca07-8ff7-4657-a99f-a1c5e8c75ba6"
+      },
+      {
+        "at": "2026-10-12T13:14:56.232Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "curl -sS -o /dev/null --max-time 15 -w 'Projects: HTTP %{http_code}, %{time_total}s\\n' http://localhost:3211/projects\nlsof -nP -iTCP:3211 -sTCP:LISTEN\nps -p 24721,87601 -o pid,command\nnode --input-type=module <<'JS'\nimport {execFileSync} from 'node:child_process';\nconst pid=execFileSync('lsof',['-t','-iTCP:3211','-sTCP:LISTEN'],{encoding:'utf8'}).trim();\nconsole.log(execFileSync('lsof',['-a','-p',pid,'-d','cwd'],{encoding:'utf8'}));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2a4bca07-8ff7-4657-a99f-a1c5e8c75ba6"
+      },
+      {
+        "at": "2026-10-12T13:14:56.234Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-31c08629-0c43-40a4-bc32-d0d5c127b147"
+      },
+      {
+        "at": "2026-10-12T13:14:56.283Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-31c08629-0c43-40a4-bc32-d0d5c127b147"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:14:56.598Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

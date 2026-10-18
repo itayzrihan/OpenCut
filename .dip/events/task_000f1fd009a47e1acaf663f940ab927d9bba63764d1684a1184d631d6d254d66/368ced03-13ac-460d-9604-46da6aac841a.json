@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "eventId": "368ced03-13ac-460d-9604-46da6aac841a",
+  "taskId": "task_000f1fd009a47e1acaf663f940ab927d9bba63764d1684a1184d631d6d254d66",
+  "type": "task.update",
+  "payload": {
+    "description": "Create a local standalone Hebrew RTL HTML report beside 29 exported billing files on Desktop. Analyze all five cards, exclude installment/credit repayment/one-off purchases, show latest charged amount and general service purpose without inventing personal reasons. Separate unidentified Apple/Google monthly streams, historical/infrequent/unconfirmed charges, and other standing orders. Preserve private local data; no hosting/upload. Verify source matches, totals and rendered layout.",
+    "acceptance": [
+      "Read all 29 XLSX files with complete transaction descriptions",
+      "No installment transactions in subscription report",
+      "Service, latest price/date/card and purpose or unknown clearly shown",
+      "Uncertain monthly cadence and historic subscriptions separated from monthly baseline",
+      "Standalone HTML saved in Desktop export folder and visually checked"
+    ]
+  },
+  "actor": "codex:01a14e96-321f-7942-bb68-b0a43dd2cfe9",
+  "createdAt": "2026-10-18T10:48:04.031Z",
+  "parents": [
+    "1019412e-9cc6-46e4-ad4e-8e168427f21d"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

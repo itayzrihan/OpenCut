@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "de3f0bfce2f254cf3dbf9480bd9e0832637772d40238dafeb45a42249b1b8aa1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T08:17:00.044Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/lib/security.mjs",
+          "sites/dip-public/app/api/dashboard/route.ts",
+          "sites/dip-public/test/github.test.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "0a92abb1-625f-4450-8bde-5fcf5a5bbf4d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:17:00.105Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

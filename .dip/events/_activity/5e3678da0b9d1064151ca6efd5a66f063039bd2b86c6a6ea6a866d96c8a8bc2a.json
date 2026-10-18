@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5e3678da0b9d1064151ca6efd5a66f063039bd2b86c6a6ea6a866d96c8a8bc2a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:10:40.608Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "npx tsc --noEmit\ncat drizzle/0000_fat_mathemanic.sql\ncurl -s -i http://127.0.0.1:4389/api/dashboard\ncurl -s -i -X POST -H 'Origin: http://127.0.0.1:4389' -H 'Content-Type: application/json' --data '{\"action\":\"installations\"}' http://127.0.0.1:4389/api/dashboard",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-d4855914-1455-4927-9abf-6fbf2e146b01"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:10:40.917Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "43ff6c537aae60ea0c51bb4631c1090bb4cb1771213deeb8b598bcc92d4b6847",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+    "records": [
+      {
+        "at": "2026-10-15T01:21:26.833Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+        "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp \"$HOME/Movies/OpenCut Accounts/global/shared-library/manifest.json\" analysis/global-sfx-2026-10-15/global-manifest-before.json\npython3 classic/scripts/import-global-audio.py --catalog analysis/global-sfx-2026-10-15/catalog.json --apply\ncat > analysis/global-sfx-2026-10-15/verify.py <<'PY'\n\"\"\"Check actual published files, frame provenance, retained catalog, and decoded durations.\"\"\"\nimport hashlib,json,subprocess\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parent\nlibrary=Path.home()/'Movies/OpenCut Accounts/global/shared-library'\nbefore=json.loads((ROOT/'global-manifest-before.json').read_text())['audioAssets']\nafter=json.loads((library/'manifest.json').read_text())['audioAssets']\nrecords={a['id']:a for a in after}\nassert len(records)==len(after)\nfor a in before:assert records[a['id']]==a, a['id']\nframes=json.loads((ROOT/'frame-times.json').read_text());ranges=json.loads((ROOT/'ranges.json').read_text())['effects']\nassets=json.loads((ROOT/'catalog.json').read_text())['audioAssets'];evidence=[]\nfor a,r in zip(assets,ranges):\n actual=records[a['id']];file=library/'audio/sfx'/a['fileName']\n assert actual['visibility']=='global' and actual['folder']=='sfx'\n assert actual['name']==r['name'] and actual['duration']==round(r['end']-r['start'],6)\n assert actual['sourceUrl']==f\"/api/global-assets/shared-library/audio/sfx/{file.name}\"\n assert hashlib.sha256(file.read_bytes()).hexdigest()==a['sha256']==actual['sha256']==r['sha256']\n assert frames[r['startFrame']]==r['start'] and frames[r['endFrameExclusive']]==r['end']\n probe=json.loads(subprocess.check_output(['ffprobe','-v','quiet','-show_streams','-of','json',str(file)]))['streams'][0]\n assert probe['codec_name']=='mp3' and probe['channels']==2 and probe['sample_rate']=='44100'\n decoded=subprocess.check_output(['ffmpeg','-v','error','-i',str(file),'-f','s16le','-'])\n samples=len(decoded)//4\n assert abs(samples/44100-a['duration'])<2/44100\n assert max(decoded)>0\n evidence.append({'name':a['name'],'duration':a['du",
+        "recordId": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277:PreToolUse:exec-403bf552-2bb2-4124-98b4-6969dc153808"
+      },
+      {
+        "at": "2026-10-15T01:21:27.397Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+        "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp \"$HOME/Movies/OpenCut Accounts/global/shared-library/manifest.json\" analysis/global-sfx-2026-10-15/global-manifest-before.json\npython3 classic/scripts/import-global-audio.py --catalog analysis/global-sfx-2026-10-15/catalog.json --apply\ncat > analysis/global-sfx-2026-10-15/verify.py <<'PY'\n\"\"\"Check actual published files, frame provenance, retained catalog, and decoded durations.\"\"\"\nimport hashlib,json,subprocess\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parent\nlibrary=Path.home()/'Movies/OpenCut Accounts/global/shared-library'\nbefore=json.loads((ROOT/'global-manifest-before.json').read_text())['audioAssets']\nafter=json.loads((library/'manifest.json').read_text())['audioAssets']\nrecords={a['id']:a for a in after}\nassert len(records)==len(after)\nfor a in before:assert records[a['id']]==a, a['id']\nframes=json.loads((ROOT/'frame-times.json').read_text());ranges=json.loads((ROOT/'ranges.json').read_text())['effects']\nassets=json.loads((ROOT/'catalog.json').read_text())['audioAssets'];evidence=[]\nfor a,r in zip(assets,ranges):\n actual=records[a['id']];file=library/'audio/sfx'/a['fileName']\n assert actual['visibility']=='global' and actual['folder']=='sfx'\n assert actual['name']==r['name'] and actual['duration']==round(r['end']-r['start'],6)\n assert actual['sourceUrl']==f\"/api/global-assets/shared-library/audio/sfx/{file.name}\"\n assert hashlib.sha256(file.read_bytes()).hexdigest()==a['sha256']==actual['sha256']==r['sha256']\n assert frames[r['startFrame']]==r['start'] and frames[r['endFrameExclusive']]==r['end']\n probe=json.loads(subprocess.check_output(['ffprobe','-v','quiet','-show_streams','-of','json',str(file)]))['streams'][0]\n assert probe['codec_name']=='mp3' and probe['channels']==2 and probe['sample_rate']=='44100'\n decoded=subprocess.check_output(['ffmpeg','-v','error','-i',str(file),'-f','s16le','-'])\n samples=len(decoded)//4\n assert abs(samples/44100-a['duration'])<2/44100\n assert max(decoded)>0\n evidence.append({'name':a['name'],'duration':a['du",
+        "recordId": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277:PostToolUse:exec-403bf552-2bb2-4124-98b4-6969dc153808"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:21:27.721Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

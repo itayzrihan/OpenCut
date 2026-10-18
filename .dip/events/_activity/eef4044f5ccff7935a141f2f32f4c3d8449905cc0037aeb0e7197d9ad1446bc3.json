@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eef4044f5ccff7935a141f2f32f4c3d8449905cc0037aeb0e7197d9ad1446bc3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:41:45.601Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '300,380p' classic/apps/web/src/mcp/classic-mcp-bridge.tsx\nrg -n 'apply_timeline_source_v2' classic/apps/web/src/ai/edit-plan.ts | head -10\nsed -n '30,75p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts\nrg -n 'OPENCUT_TIMELINE_SOURCE|sceneId|schemaVersion' classic/apps/web/src/ai/timeline-source-v2.ts | head -20\nmkdir -p analysis/episode-teaser-90-2026-10-14 .local/episode-teaser-90-2026-10-14\npython3 - <<'PY'\nimport json,pathlib,hashlib\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/847030af-0e59-4e41-b702-5d35549f3cd5')\np=json.loads((root/'project.json').read_text());p.pop('__opencutEditorSession',None)\ns=next(s for s in p['scenes'] if s['isMain']);print('scenes',len(p['scenes']),'Main',s['id'])\nfor t in s['tracks']['overlay']:\n if t.get('captionSource'):print(t['id'],len(t['captionSource']['words']),len(t['elements']))\nmedia=json.loads((root/'media/index.json').read_text());d={'document':p,'mediaAssets':media};pathlib.Path('.local/episode-teaser-90-2026-10-14/classic-source.json').write_text(json.dumps(d,ensure_ascii=False))\nreport={'projectId':p['metadata']['id'],'sceneHashes':{s['id']:hashlib.sha256(json.dumps(s,sort_keys=True,ensure_ascii=False).encode()).hexdigest() for s in p['scenes']},'transcriptionHash':hashlib.sha256(json.dumps(p.get('transcriptionJobs'),sort_keys=True,ensure_ascii=False).encode()).hexdigest(),'sceneCount':len(p['scenes'])};pathlib.Path('analysis/episode-teaser-90-2026-10-14/source-before.json').write_text(json.dumps(report,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8ecbfadb-d4aa-429b-9e27-80db5ebea9ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:41:45.627Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -103,8 +103,17 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		if (version === requestVersion.current) applyState(value);
 	}, [applyState]);
 	useEffect(() => {
+		let pending = false;
 		const poll = () => {
-			void refresh().catch(() => {});
+			// A slow startup request must finish before the next poll. Otherwise
+			// each poll invalidates the previous response and loaded stays false.
+			if (pending) return;
+			pending = true;
+			void refresh()
+				.catch(() => {})
+				.finally(() => {
+					pending = false;
+				});
 		};
 		poll();
 		const timer = setInterval(poll, 3000);

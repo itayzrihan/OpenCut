@@ -220,7 +220,7 @@ describe("TranscriptionManager", () => {
 		expect((await manager.start()).task.status).toBe("succeeded");
 		expect(phases).toContain("Downloading 1");
 	});
-	test("rejects a stale transcript when the timeline changed during transcription", async () => {
+	test("does not reject a transcript solely because the revision changed", async () => {
 		const editor = createEditor();
 		let revision = 0;
 		editor.command.getStateRevision = () => revision;
@@ -246,9 +246,8 @@ describe("TranscriptionManager", () => {
 			},
 		});
 		const state = await manager.start();
-		expect(state.task.status).toBe("failed");
-		expect(state.task.error).toContain("timeline changed");
-		expect(inserted).toBe(false);
+		expect(state.task.status).toBe("succeeded");
+		expect(inserted).toBe(true);
 	});
 	test.each([0.5, 0, 0.0000001])(
 		"normalizes provider word duration %s before durable transcript insertion",
@@ -361,4 +360,161 @@ describe("TranscriptionManager", () => {
 		);
 		expect(transcribeCalls).toBe(0);
 	});
+});
+
+function incrementalEditor() {
+	const editor = createEditor();
+	const project = {
+		metadata: { id: "project-1" },
+		scenes: [editor.scenes.getActiveScene()],
+		transcriptionJobs: [] as import("@/transcription/job").TranscriptionJob[],
+	};
+	const saved: (typeof project.transcriptionJobs)[] = [];
+	Object.assign(editor.project, {
+		getActive: () => project,
+		getActiveOrNull: () => project,
+		getSessionReadOnlyReason: () => null,
+		saveCurrentProject: async () => {
+			await Promise.resolve();
+			saved.push(structuredClone(project.transcriptionJobs));
+		},
+	});
+	Object.assign(editor.command, {
+		waitForTranscriptionPublication: async () => {},
+		editTranscription: ({
+			jobId,
+			change,
+		}: {
+			jobId: string;
+			change: import("@/transcription/job").TranscriptionChange;
+		}) => {
+			let job = project.transcriptionJobs.find((j) => j.id === jobId);
+			if (change.type === "start") {
+				job = {
+					id: jobId,
+					sceneId: change.sceneId,
+					language: change.language,
+					settings: change.settings,
+					defaults: {},
+					sourceTracks: project.scenes[0].tracks,
+					sourceMedia: [],
+					totalDuration: 120 * 120000,
+					status: "running",
+					chunks: {},
+				};
+				project.transcriptionJobs.push(job);
+			} else if (change.type === "append") {
+				job!.chunks[change.index] = change.words;
+				if (Object.keys(job!.chunks).length === 2) job!.status = "complete";
+			} else if (change.type === "pause") job!.status = "paused";
+			else if (change.type === "resume") job!.status = "running";
+			else if (change.type === "restore")
+				project.transcriptionJobs.push({
+					...structuredClone(change.snapshot),
+					chunks: {},
+					status: "running",
+				});
+		},
+	});
+	return { editor, project, saved };
+}
+function incrementalManager(
+	editor: EditorCore,
+	transcribeTimeline: NonNullable<
+		import("../transcription-manager").TranscriptionManagerDependencies["transcribeTimeline"]
+	>,
+) {
+	return new TranscriptionManager({
+		editor,
+		dependencies: {
+			transcribeTimeline,
+			extractAudio: async () => new Blob(),
+			transcribe: async () => {
+				throw new Error("legacy path");
+			},
+			insertCaptions: () => {
+				throw new Error("legacy insertion");
+			},
+			generateId: () => "durable-job",
+			transitionTask: transitionTaskForTest,
+		},
+	});
+}
+test("incremental manager persists each section and a new manager resumes only unfinished work", async () => {
+	const { editor, project, saved } = incrementalEditor();
+	const first = incrementalManager(editor, async ({ onChunk }) => {
+		await onChunk!({ index: 0, words: [{ text: "hello", start: 1, end: 2 }] });
+		expect(saved.at(-1)![0].chunks["0"][0].text).toBe("hello");
+		throw new Error("renderer interrupted");
+	});
+	expect((await first.start()).task.status).toBe("failed");
+	expect(project.transcriptionJobs[0].status).toBe("running");
+	const second = incrementalManager(
+		editor,
+		async ({ completedChunks, onChunk }) => {
+			expect(completedChunks!["0"][0].text).toBe("hello");
+			const savedBeforeReplay = saved.length;
+			await onChunk!({ index: 0, words: completedChunks!["0"] });
+			expect(saved.length).toBe(savedBeforeReplay);
+			// Undo removes a completed section while the same run is active.
+			delete project.transcriptionJobs[0].chunks["0"];
+			await onChunk!({ index: 0, words: completedChunks!["0"] });
+			expect(saved.length).toBe(savedBeforeReplay + 1);
+			expect(saved.at(-1)![0].chunks["0"][0].text).toBe("hello");
+			await onChunk!({
+				index: 1,
+				words: [{ text: "continued", start: 61, end: 62 }],
+			});
+			expect(saved.at(-1)![0].status).toBe("complete");
+			return {
+				text: "hello continued",
+				segments: [],
+				words: [],
+				language: "en",
+			};
+		},
+	);
+	await second.resumePending();
+	expect(second.getState().task.status).toBe("succeeded");
+	expect(project.transcriptionJobs).toHaveLength(1);
+});
+test("explicit cancellation pauses durably and does not auto-resume", async () => {
+	const { editor, project, saved } = incrementalEditor();
+	let manager: InstanceType<typeof TranscriptionManager>;
+	manager = incrementalManager(editor, async ({ onChunk, signal }) => {
+		await onChunk!({ index: 0, words: [{ text: "saved", start: 1, end: 2 }] });
+		manager.cancel();
+		signal!.throwIfAborted();
+		throw new Error("unreachable");
+	});
+	expect((await manager.start()).task.status).toBe("cancelled");
+	await new Promise((resolve) => setTimeout(resolve, 0));
+	expect(project.transcriptionJobs[0].status).toBe("paused");
+	expect(saved.at(-1)![0].chunks["0"]).toHaveLength(1);
+	let called = false;
+	const reopened = incrementalManager(editor, async () => {
+		called = true;
+		throw new Error("must stay paused");
+	});
+	await reopened.resumePending();
+	expect(called).toBe(false);
+});
+test("concurrent consumers share one inference and undo does not lose completed sections", async () => {
+	const { editor, project } = incrementalEditor();
+	let calls = 0;
+	const manager = incrementalManager(editor, async ({ onChunk }) => {
+		calls++;
+		await onChunk!({ index: 0, words: [{ text: "first", start: 1, end: 2 }] });
+		project.transcriptionJobs = [];
+		await onChunk!({
+			index: 1,
+			words: [{ text: "second", start: 61, end: 62 }],
+		});
+		return { text: "first second", segments: [], language: "en" };
+	});
+	const a = manager.start();
+	expect(manager.start()).toBe(a);
+	expect((await a).task.status).toBe("succeeded");
+	expect(calls).toBe(1);
+	expect(Object.keys(project.transcriptionJobs[0].chunks)).toEqual(["0", "1"]);
 });

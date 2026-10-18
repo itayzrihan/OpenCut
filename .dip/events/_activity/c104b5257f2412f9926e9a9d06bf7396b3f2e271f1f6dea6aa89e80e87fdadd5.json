@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c104b5257f2412f9926e9a9d06bf7396b3f2e271f1f6dea6aa89e80e87fdadd5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:40:36.224Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_00e40d141b55305ea4ade856870cc2a93cb92cc65e8e87e2974de6b2267dfba6",
+        "tool": "mcp__dip__task_adopt",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7962644a-ff12-401a-9e1c-0285d1c68540"
+      },
+      {
+        "at": "2026-10-13T11:40:36.430Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "mcp__dip__task_adopt",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7962644a-ff12-401a-9e1c-0285d1c68540"
+      },
+      {
+        "at": "2026-10-13T11:40:36.552Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate?.id || candidate.id<='2026-10-13T10-57-14-338Z-5350562c')throw Error('No newer candidate');\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};\nconst stop=await fetch(base+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('Stop failed');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));await writeJson(join(deploymentRoot,'current.json'),candidate);\nconst start=await fetch(base+'/start',{method:'POST',headers});console.log(JSON.stringify({candidate:candidate.id,startStatus:start.status}));\nconsole.log(await(await fetch(base+'/status',{headers})).text());\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4a0ae27f-56d9-41dc-91fa-be9c314f5712"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:40:36.804Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

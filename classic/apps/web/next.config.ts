@@ -43,6 +43,9 @@ const nextConfig: NextConfig = {
 		// concurrency so QA/browser sessions do not exhaust the paging file.
 		cpus: process.platform === "win32" ? 2 : undefined,
 		optimizePackageImports: [
+			// The barrel exports thousands of icons. Compile only the requested
+			// icons so next dev does not hit its heap threshold and reload editors.
+			"@hugeicons/core-free-icons",
 			"@hugeicons/react",
 			"@radix-ui/react-icons",
 			"motion",

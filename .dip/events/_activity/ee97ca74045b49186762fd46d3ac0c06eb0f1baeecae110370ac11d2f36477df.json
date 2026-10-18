@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee97ca74045b49186762fd46d3ac0c06eb0f1baeecae110370ac11d2f36477df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:50:18.145Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-full-auto-2026-10-14/sequence-source.json'));print([(t['id'],{k:v for k,v in t.get('captionSource',{}).items()if k!='words'and k!='settings'})for t in x['scene']['tracks']['overlay']]);print(x['scene']['tracks']['order'])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a74d7b5a-975a-426c-9c71-7f1a25fcf1ed"
+      },
+      {
+        "at": "2026-10-14T08:50:18.277Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-full-auto-2026-10-14/sequence-source.json'));print([(t['id'],{k:v for k,v in t.get('captionSource',{}).items()if k!='words'and k!='settings'})for t in x['scene']['tracks']['overlay']]);print(x['scene']['tracks']['order'])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a74d7b5a-975a-426c-9c71-7f1a25fcf1ed"
+      },
+      {
+        "at": "2026-10-14T08:50:18.278Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-full-auto-2026-10-14/duplicate.ts"
+        ],
+        "changeHash": "7e6a148c859da8d34794259431c31582af005f8047682f84c01e3898b0b7c8c3",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-9dbb1ec2-a30e-4253-b56f-99d81919ff57"
+      },
+      {
+        "at": "2026-10-14T08:50:18.326Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teaser-full-auto-2026-10-14/duplicate.ts"
+        ],
+        "changeHash": "7e6a148c859da8d34794259431c31582af005f8047682f84c01e3898b0b7c8c3",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-9dbb1ec2-a30e-4253-b56f-99d81919ff57"
+      },
+      {
+        "at": "2026-10-14T08:50:18.329Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/teaser-full-auto-2026-10-14/duplicate.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0f3b755f-0c7f-4652-b687-5efc0255b733"
+      },
+      {
+        "at": "2026-10-14T08:50:18.599Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/teaser-full-auto-2026-10-14/duplicate.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0f3b755f-0c7f-4652-b687-5efc0255b733"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:50:19.093Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

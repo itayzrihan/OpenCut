@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "21fd48fa44b9529c3f1e5691bf889532deaf12469eca9252f5b3617b3dc0a1de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:36:08.259Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/overlap-reader.ts <<'EOF'\n/** Reuse only the shared PCM context. Model context and word boundaries stay intact. */\nexport function reuseAudioContext({\n\tread,\n\tsampleRate = 16000,\n\tcontextSeconds = 10,\n}: {\n\tread: (range: { start: number; end: number }) => Promise<Float32Array>;\n\tsampleRate?: number;\n\tcontextSeconds?: number;\n}) {\n\tlet tail: Float32Array | undefined;\n\tlet tailStart = 0;\n\tlet tailEnd = 0;\n\treturn async ({ start, end }: { start: number; end: number }) => {\n\t\tconst overlapEnd = tail && start >= tailStart && start < tailEnd\n\t\t\t? Math.min(end, tailEnd) : start;\n\t\tconst offset = Math.round((overlapEnd - start) * sampleRate);\n\t\tconst output = new Float32Array(Math.ceil((end - start) * sampleRate));\n\t\tif (offset && tail) {\n\t\t\tconst from = Math.round((start - tailStart) * sampleRate);\n\t\t\toutput.set(tail.subarray(from, from + offset));\n\t\t}\n\t\tif (overlapEnd < end) {\n\t\t\tconst samples = await read({ start: overlapEnd, end });\n\t\t\toutput.set(samples.subarray(0, output.length - offset), offset);\n\t\t}\n\t\t// Copy at most 640 KB; never retain an episode or a transferred buffer.\n\t\ttail = output.slice(Math.max(0, output.length - contextSeconds * sampleRate));\n\t\ttailEnd = end;\n\t\ttailStart = end - tail.length / sampleRate;\n\t\treturn output;\n\t};\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/timeline-stream.ts');s=p.read_text().replace('import { transcribeAudioWindows }','import { reuseAudioContext } from \"./overlap-reader\";\\nimport { transcribeAudioWindows }');s=s.replace('let reader: Awaited<ReturnType<typeof openTimelineReader>> | undefined;', 'let reader: Awaited<ReturnType<typeof openTimelineReader>> | undefined;\\n\\tlet read: ReturnType<typeof reuseAudioContext> | undefined;');s=s.replace('return reader.read({ start, end });','read ??= reuseAudioContext({ read: reader.read });\\n\\t\\t\\t\\treturn read({ start, end });');p.write_text(s)\np=Path('classic/apps/web/src/services/transcription/servi",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-e9c15578-cfdf-48cb-99d3-a342539dceca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:36:08.854Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

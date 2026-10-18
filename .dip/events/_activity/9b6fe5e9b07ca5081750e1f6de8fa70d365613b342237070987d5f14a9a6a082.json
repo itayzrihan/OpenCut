@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b6fe5e9b07ca5081750e1f6de8fa70d365613b342237070987d5f14a9a6a082",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:50:56.637Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nbase=Path('analysis/teaser-reference-2026-10-14/skills/strategic-teaser-compression')\np=base/'SKILL.md';s=p.read_text();s=s.replace('Do not count visual changes as additional source excerpts.', 'Do not count visual changes as additional source excerpts, or inflate passage count by splitting one continuous monologue into adjacent tiny ranges. Review the checker\\'s effective-source-passage warning as well as its unit count.');p.write_text(s)\np=base/'scripts/check_edit_plan.py';s=p.read_text();s=s.replace('    durations = []\\n', '    durations = []\\n    effective_durations = []\\n    previous = None\\n');s=s.replace('        durations.append(duration)\\n', '''        durations.append(duration)\n        source_key = clip.get(\"sourceSceneId\", source)\n        adjacent = previous is not None and previous[0] == source_key and math.isclose(previous[1], start, abs_tol=0.05) and gap == 0\n        if adjacent:\n            effective_durations[-1] += duration\n        else:\n            effective_durations.append(duration)\n        previous = (source_key, end)\n''');s=s.replace('    if max(durations) > target*0.35:', '''    if len(effective_durations) < 2 and plan.get(\"mode\", \"montage\") == \"montage\":\n        warnings.append(\"Units collapse to one continuous source passage; review whether this satisfies the requested montage\")\n    if max(effective_durations) > target*0.35:''');s=s.replace('\"sourceUnits\": len(clips),', '\"sourceUnits\": len(clips), \"effectiveSourcePassages\": len(effective_durations),');p.write_text(s)\nfor name in ['strategic-teaser-compression','visual-teaser-editing']:\n shutil.copytree(base.parent/name,Path('/Users/itayzrihan/.codex/skills')/name,dirs_exist_ok=True)\nPY\nnode .dip/tools/verify-teaser-skills.mjs > .local/teaser-reference-2026-10-14/verification.log 2>&1\npython3 - <<'PY'\nfrom pathlib import Path\nimport json,runpy\nr=Path('analysis/teaser-reference-2026-10-14/skills/strategic-teaser-compression');d=json.loads",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fc727b8d-a356-4338-89c3-a1a22dd5ac3b"
+      },
+      {
+        "at": "2026-10-14T00:50:56.638Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "mcp__dip__task_document_link",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "analysis/teaser-reference-2026-10-14/skills/strategic-teaser-compression/references/content-compression-analysis.he.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f8c56c9d-dd0a-460f-b541-88db1c856e37"
+      },
+      {
+        "at": "2026-10-14T00:50:56.723Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "mcp__dip__task_document_link",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "analysis/teaser-reference-2026-10-14/skills/visual-teaser-editing/references/visual-editing-analysis.he.md",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-db042ee8-c4fb-442d-8207-3bec58b7cb5e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:50:57.101Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

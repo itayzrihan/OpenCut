@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc46961a76a5370f6c228673b8994704f08806a13bf3e1669241629886273a0d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:46:35.340Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,85p' /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md; sed -n '1,280p' classic/apps/web/src/ai/components/full-auto-edit-button.tsx; sed -n '1,120p' classic/apps/web/src/ai/full-auto-edit.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a02d7027-7dc4-425e-b270-706a7d9ad078"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:46:35.418Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

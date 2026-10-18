@@ -95,7 +95,7 @@ pub fn register_editor_render_capabilities(
                     if context.cancellation.is_cancelled() { return Err(CapabilityError::Failed("Render cancelled".into())); }
                     let state = rt.snapshot().map_err(|e| CapabilityError::Failed(e.to_string()))?;
                     let classic = state.project.as_ref().filter(|p| p.id == args.project_id).and_then(|p| p.classic.as_ref());
-                    if state.revision != args.expected_revision || classic.is_none_or(|c| c.document["currentSceneId"] != args.scene_id)
+                    if state.revision != args.expected_revision || classic.is_none() || state.classic_view_scene_id() != Some(args.scene_id.as_str())
                         || context.metadata.get("opencut/projectId").is_some_and(|p| p.as_str()!=Some(&args.project_id)) {
                         return Err(CapabilityError::Conflict("Render project, scene or revision changed".into()));
                     }

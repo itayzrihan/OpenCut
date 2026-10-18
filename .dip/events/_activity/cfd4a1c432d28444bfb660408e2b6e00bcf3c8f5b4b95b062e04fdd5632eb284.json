@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cfd4a1c432d28444bfb660408e2b6e00bcf3c8f5b4b95b062e04fdd5632eb284",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:49:31.643Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text();a=s.index('    async fn put(',s.index('mod body_limit_tests'));b=s.index('    #[tokio::test]',a);block=s[a:b]\nblock=block.replace('async fn put(server: &ClassicBridgeServer, token: [REDACTED], body: String) -> String {','async fn request(server: &ClassicBridgeServer, token: [REDACTED], body: String, method: &str, path: &str) -> String {').replace('PUT /bridge/state HTTP/1.1','{method} {path} HTTP/1.1')\nblock+='''    async fn put(server: &ClassicBridgeServer, token: [REDACTED], body: String) -> String {\n        request(server,token,body,\"PUT\",\"/bridge/state\").await\n    }\n'''\ns=s[:a]+block+s[b:]\npos=s.index('        drop(server);',s.index('mod body_limit_tests'))\ns=s[:pos]+'''        let heartbeat=json!({\"projectId\":\"large-project\",\"projectName\":\"Large transcript\",\"expectedRevision\":1,\"revision\":2,\"dirty\":true,\"playback\":{\"position\":17},\"selection\":[],\"ui\":{}}).to_string();\n        assert!(request(&server,&server.token,heartbeat.clone(),\"POST\",\"/bridge/heartbeat/large\").await.starts_with(\"HTTP/1.1 200\"));\n        assert!(request(&server,&server.token,heartbeat.clone(),\"POST\",\"/bridge/heartbeat/large\").await.starts_with(\"HTTP/1.1 409\"));\n        assert!(request(&server,\"wrong-token\",heartbeat,\"POST\",\"/bridge/heartbeat/large\").await.starts_with(\"HTTP/1.1 401\"));\n        assert!(request(&server,&server.token,json!({\"invalid\":\"x\".repeat(512*1024)}).to_string(),\"POST\",\"/bridge/heartbeat/large\").await.starts_with(\"HTTP/1.1 413\"));\n'''+s[pos:];p.write_text(s)\np=Path('.dip/tools/verify-compact-history.mjs');s=p.read_text().replace(\"'src/accounts/bridge-snapshot-cache.test.ts'\",\"'src/accounts/bridge-snapshot-cache.test.ts','src/mcp/__tests__/bridge-publication-payload.test.ts'\");p.write_text(s)\nPY\nrustfmt --edition 2024 crates/mcp/src/classic_bridge.rs\ncargo test -p opencut-mcp --lib > .local/smart-shorts-seven/bridge-heartbeat-all-tests.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-060eabb2-c44e-4642-8854-6263e601e2fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:49:31.722Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

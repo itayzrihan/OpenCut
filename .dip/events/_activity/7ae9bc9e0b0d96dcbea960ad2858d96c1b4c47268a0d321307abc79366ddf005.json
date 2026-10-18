@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ae9bc9e0b0d96dcbea960ad2858d96c1b4c47268a0d321307abc79366ddf005",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T13:46:28.391Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-shorts-seven/reproduced-crash-stackwalk.log",
+          ".local/smart-shorts-seven/reproduced-crash.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "f385bd6a-3a40-462b-9ac8-81ecd83ab438"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:46:28.641Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

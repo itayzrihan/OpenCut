@@ -498,8 +498,11 @@ export async function logoutAccount(request: Request) {
 export function sessionCookie(token: string) {
 	return `${COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${token ? SESSION_MS / 1000 : 0}${process.env.OPENCUT_PUBLIC_ORIGIN ? "; Secure" : ""}`;
 }
+// Existing route adapter keeps its handler-first API for all callers.
+// eslint-disable-next-line opencut/prefer-object-params
 export function withAccount<R extends Request, T extends unknown[]>(
 	handler: (request: R, ...args: T) => Promise<Response>,
+	options: { concurrent?: boolean; privateMediaCache?: boolean } = {},
 ) {
 	// Next route handlers receive Request and route context positionally.
 	// eslint-disable-next-line opencut/prefer-object-params
@@ -533,7 +536,24 @@ export function withAccount<R extends Request, T extends unknown[]>(
 						{ status: 423 },
 					);
 				const response = await handler(request, ...args);
-				response.headers.set("Cache-Control", "private, no-store");
+				const cacheControl = response.headers.get("Cache-Control") ?? "";
+				const cacheDirectives = cacheControl
+					.toLowerCase()
+					.split(",")
+					.map((value) => value.trim());
+				// Account/binding-scoped media URLs may reuse private byte ranges.
+				// Auth, account checks and locks still run for each cache miss; Cookie
+				// variation separates logins. Writes/errors and ordinary JSON stay no-store.
+				if (
+					!(
+						options.privateMediaCache &&
+						["GET", "HEAD"].includes(request.method) &&
+						[200, 206].includes(response.status) &&
+						cacheDirectives.includes("private") &&
+						!cacheDirectives.includes("public")
+					)
+				)
+					response.headers.set("Cache-Control", "private, no-store");
 				response.headers.set("Vary", "Cookie");
 				response.headers.set("X-Content-Type-Options", "nosniff");
 				// Uploaded SVG/HTML-like bytes must never execute with the account
@@ -542,7 +562,10 @@ export function withAccount<R extends Request, T extends unknown[]>(
 					response.headers.set("Content-Security-Policy", "sandbox");
 				return response;
 			});
-		if (["GET", "HEAD"].includes(request.method)) return run();
+		// Opt-in only for host IO that does not mutate account files. Authentication,
+		// origin checks, account binding and import locks still apply above.
+		if (options.concurrent || ["GET", "HEAD"].includes(request.method))
+			return run();
 		const pending = (accountWrites.get(account.id) ?? Promise.resolve())
 			.catch(() => {})
 			.then(run);

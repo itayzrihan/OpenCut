@@ -61,7 +61,7 @@ async function serve(request: Request, includeBody: boolean) {
 		// during normal editing. Let the browser reuse overlapping byte ranges
 		// across video, audio and waveform decoders instead of routing every read
 		// back through the Next server.
-		"Cache-Control": "private, max-age=3600",
+		"Cache-Control": "private, max-age=60, must-revalidate",
 		"Content-Length": String(Math.max(0, end - start + 1)),
 		"Content-Type": file.record.mimeType || "application/octet-stream",
 		ETag: entityTag,
@@ -139,8 +139,8 @@ async function POSTHandler(request: Request) {
 	}
 }
 
-export const GET = withAccount(GETHandler);
+export const GET = withAccount(GETHandler, { privateMediaCache: true });
 
-export const HEAD = withAccount(HEADHandler);
+export const HEAD = withAccount(HEADHandler, { privateMediaCache: true });
 
 export const POST = withAccount(POSTHandler);

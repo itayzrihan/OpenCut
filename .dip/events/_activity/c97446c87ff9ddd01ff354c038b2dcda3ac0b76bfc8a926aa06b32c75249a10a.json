@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c97446c87ff9ddd01ff354c038b2dcda3ac0b76bfc8a926aa06b32c75249a10a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:38:17.188Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx prettier --write src/transcription/windows.ts src/transcription/windows.test.ts src/transcription/overlap-reader.ts src/transcription/overlap-reader.test.ts src/transcription/request-limit.ts src/transcription/timeline-stream.ts src/services/transcription/service.ts src/services/transcription/service.test.ts src/app/api/transcription/external/route.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-d6889231-e2d6-47b3-9895-196e7c4a7c92"
+      },
+      {
+        "at": "2026-10-12T12:38:17.187Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/windows.test.ts');s=p.read_text().replace('let siblingAborted = false;', 'let siblingAborted = false;\\n\\tlet startedCalls = 0;').replace('if (!siblingAborted && loads <= 2) {','if (startedCalls++ === 0) {').replace('expect(loads).toBeLessThanOrEqual(4);','expect(loads).toBeLessThanOrEqual(4);\\n\\texpect(siblingAborted).toBe(true);');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs src/transcription/windows.test.ts src/transcription/overlap-reader.test.ts --jobs=1 --timeout=30000",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-92bf087d-6ec6-425a-ab8e-baf8aea9c713"
+      },
+      {
+        "at": "2026-10-12T12:38:17.193Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/transcription/windows.test.ts <<'EOF'\n\nconst deferred = () => {\n\tlet resolve!: () => void;\n\tconst promise = new Promise<void>(r => { resolve = r; });\n\treturn { promise, resolve };\n};\ntest(\"two provider windows overlap, decode stays serial, publication remains ordered\", async () => {\n\tconst gates = [deferred(), deferred()];\n\tconst started = deferred();\n\tlet active = 0, maximum = 0, decoding = 0, calls = 0;\n\tconst published: number[] = [];\n\tconst pending = transcribeAudioWindows({\n\t\tduration: 120, language: \"he\", signal: new AbortController().signal,\n\t\tload: async () => {\n\t\t\texpect(++decoding).toBe(1);\n\t\t\tawait Promise.resolve();\n\t\t\tdecoding--;\n\t\t\treturn new Float32Array(1);\n\t\t},\n\t\texternalTranscribe: async ({ load }) => {\n\t\t\tawait load();\n\t\t\tconst i = calls++;\n\t\t\tmaximum = Math.max(maximum, ++active);\n\t\t\tif (calls === 2) started.resolve();\n\t\t\tawait gates[i].promise;\n\t\t\tactive--;\n\t\t\treturn { text: \"\", words: [], segments: [], language: \"he\" };\n\t\t},\n\t\tonChunk: async ({ index }) => { published.push(index); },\n\t});\n\tawait started.promise;\n\tgates[1].resolve();\n\tawait Promise.resolve();\n\texpect(published).toEqual([]);\n\tgates[0].resolve();\n\tawait pending;\n\texpect(maximum).toBe(2);\n\texpect(published).toEqual([0, 1]);\n});\ntest(\"prefetch decodes ahead while inference waits; failure aborts siblings without publishing\", async () => {\n\tconst began = deferred(), decoded = deferred();\n\tlet loads = 0;\n\tlet siblingAborted = false;\n\tconst pending = transcribeAudioWindows({\n\t\tduration: 240, language: \"he\", signal: new AbortController().signal,\n\t\tload: async () => {\n\t\t\tif (++loads === 3) decoded.resolve();\n\t\t\treturn new Float32Array(1);\n\t\t},\n\t\texternalTranscribe: async ({ load, signal }) => {\n\t\t\tawait load();\n\t\t\tif (!siblingAborted && loads <= 2) {\n\t\t\t\tawait began.promise;\n\t\t\t\tthrow new Error(\"provider failed\");\n\t\t\t}\n\t\t\treturn new Promise((_, reject) => signal!.addEventListener(\"abort\", () => {\n\t\t\t\tsiblingAborted = true; reject(signal!.reason);\n\t\t\t}, { once: ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-29920906-bba6-4034-9edb-2b3fdcbc9a3c"
+      },
+      {
+        "at": "2026-10-12T12:38:17.944Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx prettier --write src/transcription/windows.ts src/transcription/windows.test.ts src/transcription/overlap-reader.ts src/transcription/overlap-reader.test.ts src/transcription/request-limit.ts src/transcription/timeline-stream.ts src/services/transcription/service.ts src/services/transcription/service.test.ts src/app/api/transcription/external/route.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-d6889231-e2d6-47b3-9895-196e7c4a7c92"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:38:18.186Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

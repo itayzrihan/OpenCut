@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a09f58940e45027fbf7c81e5aea49d7be76596bf03dd7d1a63fffb62db4607a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:33:28.123Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/app/api/transcription/external/route.ts; sed -n '1,170p' classic/apps/web/src/transcription/external-server.ts; rg -n 'append|history|undo|checkpoint' crates/editor-api/src/operations/classic_transcription.rs | head -45; sed -n '110,225p' classic/apps/web/src/services/transcription/service.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-07e99ba8-c3e6-40d7-a3a1-6e6bb722f84b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:33:28.156Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

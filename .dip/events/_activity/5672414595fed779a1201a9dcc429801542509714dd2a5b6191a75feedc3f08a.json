@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5672414595fed779a1201a9dcc429801542509714dd2a5b6191a75feedc3f08a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:59:45.920Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/subtitles/components/transcription-source.tsx",
+          "classic/apps/web/package.json",
+          "classic/package.json",
+          "classic/apps/web/next.config.ts",
+          "classic/apps/web/.next-transcription-debug/dev/lock",
+          "classic/apps/web/.next-transcription-debug/dev/trace",
+          "classic/apps/web/.content-collections/cache/content-collection-config.mjs",
+          "classic/apps/web/.content-collections/cache/mapping.json",
+          "classic/apps/web/.content-collections/generated/index.js",
+          "classic/apps/web/.content-collections/generated/allChangelogs.js",
+          "classic/apps/web/.content-collections/generated/index.d.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "dba87497-da2b-43f1-8985-e9641414fe34"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:59:45.921Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

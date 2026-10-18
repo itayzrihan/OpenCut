@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b743ebdffa54b52ff981c6f142579c1f38493a801bb47ba869a1405bcdfb63ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:01:23.701Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\ns=open('.local/smart-shorts-seven/disassemble-crash.py').read();s=s.replace(\"frames=json.load(open('.local/smart-shorts-seven/latest-crash.json'))['threads'][0]['frames'][:9]\",\"frames=[{'frame':0,'module_offset':'0x8560ebc'}]\").replace('start=addr-24','start=addr-48').replace('start-vm+64','start-vm+80');exec(s)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e8fc5b27-e7f1-4dfd-a0c5-1495114b7e85"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:01:24.404Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

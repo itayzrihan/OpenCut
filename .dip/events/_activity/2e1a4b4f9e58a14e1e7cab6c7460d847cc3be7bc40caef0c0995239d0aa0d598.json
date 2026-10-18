@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e1a4b4f9e58a14e1e7cab6c7460d847cc3be7bc40caef0c0995239d0aa0d598",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+    "records": [
+      {
+        "at": "2026-10-15T01:21:09.076Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+        "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > analysis/global-sfx-2026-10-15/extract.py <<'PY'\n\"\"\"Reproducible, source-frame aligned extraction; no gain or tail processing.\"\"\"\nimport hashlib,json,subprocess,datetime,shutil\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parent\nSOURCE=Path('/tmp/codex-remote-attachments/01a13d23-cc18-76f0-8e1a-cf3e55972277/2FDF740B-7745-4A23-8143-07691762B282/1-530c8b835d42449d9cb0742cd2a01ab3.mp4')\n# Limits enclose the complete -60 dBFS envelope, rounded OUTWARD to source frames.\n# Digital Text/Riser use the short -38 dBFS quiet valley, not silence within either effect.\nRANGES=[('8 Bit Talking',0,2.40),('Old Flash',2.48,3.60),('Cinematic Woosh',3.92,6.40),('Night Vision',6.60,8.28),('Nextel',8.44,8.84),('Digital Text',8.96,9.52),('Riser',9.52,13.64),('Counter',13.92,14.84),('Bicycle Chain',14.92,15.60),('Camera Click',16.16,16.88),('Shine',17.04,18.20),('Woosh',18.44,19.48)]\nframes=json.loads((ROOT/'frame-times.json').read_text())\nout=ROOT/'mp3';out.mkdir(exist_ok=True)\nnow=datetime.datetime.now(datetime.timezone.utc).isoformat()\nassets=[];ledger=[]\nfor i,(name,a,b) in enumerate(RANGES,1):\n slug=name.lower().replace(' ','-'); file=out/f'{slug}.mp3'\n assert min(abs(t-a) for t in frames)<.00001 and min(abs(t-b) for t in frames)<.00001\n subprocess.run(['ffmpeg','-v','error','-y','-i',str(SOURCE),'-vn','-af',f'atrim=start={a}:end={b},asetpts=PTS-STARTPTS','-c:a','libmp3lame','-b:a','320k','-ar','44100','-ac','2','-metadata',f'title={name}','-metadata','album=Mr.Biss Sounds You Need','-metadata','artist=Mr.Biss',str(file)],check=True)\n sha=hashlib.sha256(file.read_bytes()).hexdigest()\n assets.append(dict(id=f'mrbiss-530c8b83-{slug}',name=name,folder='sfx',pack='Mr.Biss · Sounds You Need',mimeType='audio/mpeg',size=file.stat().st_size,duration=round(b-a,6),fileName=file.name,sourceFile=str(file),sha256=sha,createdAt=now,updatedAt=now,license={'status':'needs-review','author':'Mr.Biss (@MR.BISS)','note':'Extracted from user-supplied video 530c8b835d42449d9cb0742cd2a01ab3.",
+        "recordId": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277:PostToolUse:exec-552d30e3-b992-4a79-9fdd-54499efcba5a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:21:09.697Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

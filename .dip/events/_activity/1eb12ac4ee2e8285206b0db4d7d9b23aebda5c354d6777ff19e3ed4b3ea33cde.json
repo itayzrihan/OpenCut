@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1eb12ac4ee2e8285206b0db4d7d9b23aebda5c354d6777ff19e3ed4b3ea33cde",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:47:14.951Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-classic-session.test.ts');s=p.read_text().replace('data: { value: unknown }','data: { value: typeof snapshot }');p.write_text(s)\np=Path('classic/apps/web/src/core/__tests__/canonical-transcription.test.ts');s=p.read_text().replace('.startTime).toBe(180000)', '.startTime).toBe(mediaTime(180000))');s='import { mediaTime } from \"@/wasm/media-time\";\\n'+s if 'import { mediaTime }' not in s else s;p.write_text(s)\np=Path('classic/apps/web/src/media/__tests__/noise-reduction.test.ts');s=p.read_text().replace('as AudioBuffer','as unknown as AudioBuffer');p.write_text(s)\np=Path('classic/apps/web/src/preview/__tests__/video-lookahead.test.ts');s=p.read_text().replace('scale: 1, rotate: 0','scaleX: 1, scaleY: 1, rotate: 0').replace('const requests: { mediaId: string; time: number }[]', 'const requests: { mediaId: string; time: number; url?: string; file?: File; maxSourceSize?: number }[]');p.write_text(s)\np=Path('classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts');s=p.read_text().replace('id: \"run\", text','id: \"run\", lineIndex: 0, text');p.write_text(s)\np=Path('classic/apps/web/src/fonts/__tests__/typekit-loading.test.ts');s=p.read_text();s='import { mockFetch } from \"@/test-support/mock-fetch\";\\n'+s;s=s.replace('mockImplementation(\\n\\t\\t(_input','mockImplementation(mockFetch(\\n\\t\\t(_input').replace('\\n\\t);\\n\\ttry {','\\n\\t));\\n\\ttry {');p.write_text(s)\nPY\nnode <<'JS'\nconst ts = require('./classic/node_modules/typescript');const fs=require('fs');\nfor(const file of ['classic/apps/web/src/transcription/external-client.test.ts','classic/apps/web/src/transcription/external-server.test.ts']){\n let s=fs.readFileSync(file,'utf8');const ast=ts.createSourceFile(file,s,ts.ScriptTarget.Latest,true);const edits=[];\n function visit(n){if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.EqualsToken&&n.left.getText(ast)==='globalThis.fetch'&&ts.isArrowFunction(n",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-a6b44cb9-c617-4870-ad48-046101645294"
+      },
+      {
+        "at": "2026-10-18T15:47:15.174Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-classic-session.test.ts');s=p.read_text().replace('data: { value: unknown }','data: { value: typeof snapshot }');p.write_text(s)\np=Path('classic/apps/web/src/core/__tests__/canonical-transcription.test.ts');s=p.read_text().replace('.startTime).toBe(180000)', '.startTime).toBe(mediaTime(180000))');s='import { mediaTime } from \"@/wasm/media-time\";\\n'+s if 'import { mediaTime }' not in s else s;p.write_text(s)\np=Path('classic/apps/web/src/media/__tests__/noise-reduction.test.ts');s=p.read_text().replace('as AudioBuffer','as unknown as AudioBuffer');p.write_text(s)\np=Path('classic/apps/web/src/preview/__tests__/video-lookahead.test.ts');s=p.read_text().replace('scale: 1, rotate: 0','scaleX: 1, scaleY: 1, rotate: 0').replace('const requests: { mediaId: string; time: number }[]', 'const requests: { mediaId: string; time: number; url?: string; file?: File; maxSourceSize?: number }[]');p.write_text(s)\np=Path('classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts');s=p.read_text().replace('id: \"run\", text','id: \"run\", lineIndex: 0, text');p.write_text(s)\np=Path('classic/apps/web/src/fonts/__tests__/typekit-loading.test.ts');s=p.read_text();s='import { mockFetch } from \"@/test-support/mock-fetch\";\\n'+s;s=s.replace('mockImplementation(\\n\\t\\t(_input','mockImplementation(mockFetch(\\n\\t\\t(_input').replace('\\n\\t);\\n\\ttry {','\\n\\t));\\n\\ttry {');p.write_text(s)\nPY\nnode <<'JS'\nconst ts = require('./classic/node_modules/typescript');const fs=require('fs');\nfor(const file of ['classic/apps/web/src/transcription/external-client.test.ts','classic/apps/web/src/transcription/external-server.test.ts']){\n let s=fs.readFileSync(file,'utf8');const ast=ts.createSourceFile(file,s,ts.ScriptTarget.Latest,true);const edits=[];\n function visit(n){if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.EqualsToken&&n.left.getText(ast)==='globalThis.fetch'&&ts.isArrowFunction(n",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-a6b44cb9-c617-4870-ad48-046101645294"
+      },
+      {
+        "at": "2026-10-18T15:47:15.175Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run build:wasm",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-c14df9d1-ff4c-4f57-96a8-8d13fbc02b5a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:47:15.933Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

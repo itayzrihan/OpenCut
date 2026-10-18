@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53d398c92d71cf11b194d857bfc266a51b30925693302a5920aef1319aea43f2",
+  "taskId": "task_ead30e093be4f35735cc7c611e916b2f61cd6f57c2d31762015b87cf880d4847",
+  "type": "task.create",
+  "payload": {
+    "title": "תוסיף בdip בהמשך לבדוק את שני אלו 1. Uhm — הכי קרוב למה שאתה מחפש\n\n[Vanilagy (@vanilagy) on X](https://images.openai.com/static-rsc-4/nXDT6aLsi4UqTEo8V0T6fKuHfg",
+    "description": "תוסיף בdip בהמשך לבדוק את שני אלו 1. Uhm — הכי קרוב למה שאתה מחפש\n\n[Vanilagy (@vanilagy) on X](https://images.openai.com/static-rsc-4/nXDT6aLsi4UqTEo8V0T6fKuHfgQpZrLJ37_Fsb_U47b6Z27rssTxc_o17dYr20uxNR4jH8h09_2OSD90W4Y8UKeNtf6T4TigF5_V5sEvBTgBrpuOcN0zkGlG56FIZKXUtiNM4yFLvczHJIuLbgWrO6tCHxJhq7RlSYO3jHUJpDI?purpose=inline)\n\n[Uhm – Hugging Face](https://huggingface.co/desert-ant-labs/uhm)\n\nמודל ייעודי לזיהוי \"Um\", \"Uh\", \"Hmm\" ישירות מהאודיו, בלי Whisper ובלי תמלול מלא.\n\n- תזמון ברזולוציה של 20 מילישניות.\n- תומך בהרצה מקומית באמצעות ONNX.\n- מאומן באנגלית, עם התאמה לשפות אירופיות נוספות.\n- רישיון Source Available ייעודי, לא רישיון פתוח סטנדרטי.&#x20;\n\n  [image](https://www.google.com/s2/favicons?domain=https://huggingface.co\\&sz=32)\n\n  Hugging Face\n\n  +1\n\n\n\nאפשר גם [לנסות את הדמו כאן](https://huggingface.co/spaces/desert-ant-labs/uhm-demo).\n\n## 2. CrisperWhisper — גרסה של Whisper שמזהה היסוסים\n\n[CrisperWhisper – GitHub](https://github.com/nyrahealth/CrisperWhisper)\n\nבניגוד ל-Whisper הרגיל, שלפעמים משמיט \"Um\" ו-\"Uh\", המודל הזה תוכנן לשמר היסוסים, חזרות והתחלות משפט שנקטעו, יחד עם חותמות זמן.\n\nהוא עדיין מבצע תמלול מלא, ולכן פחות ממוקד מ-Uhm.&#x20;\n\n[image](https://www.google.com/s2/favicons?domain=https://github.com\\&sz=32)\n\nGitHub\n\n+1\n\n\n\n## השוואה קצרה\n\n|   |\n| - |\n\nיכולת\n\n|   |\n| - |\n\nUhm\n\n|   |\n| - |\n\nCrisperWhisper\n\n|   |\n| - |\n\nזיהוי אממ / אהה\n\n|   |\n| - |\n\nכן\n\n|   |\n| - |\n\nכן\n\n|   |\n| - |\n\nללא תמלול\n\n|   |\n| - |\n\nכן\n\n|   |\n| - |\n\nלא\n\n|   |\n| - |\n\nזיהוי מיקום בזמן\n\n|   |\n| - |\n\nכן\n\n|   |\n| - |\n\nכן\n\n|   |\n| - |\n\nתמיכה מוכחת בעברית\n\n|   |\n| - |\n\nלא\n\n|   |\n| - |\n\nדורש בדיקה\n\n|   |\n| - |\n\nמתאים לזיהוי ממוקד\n\n|   |\n| - |\n\nמאוד\n\n|   |\n| - |\n\nבינוני\n\n## ומה לגבי עברית?\n\nכאן יש נקודה חשובה: Uhm לא מציין תמיכה רשמית בעברית. אף שהצלילים \"אממ\" ו\"אהה\" דומים בין שפות, צריך לבדוק את הדיוק בהקלטות בעברית.\n\nשאלה אחת: אתה רוצה לזהות \"אממ\" ו\"אהה\" בתוך דיבור בעברית, ולהחזיר רק את הזמנים שבהם הם נאמרו (למשל `12.3s–12.8s`), בלי לתמלל שום דבר אחר?\n\nאם כן, אפשר להתמקד במודל קטן וייעודי במקום להריץ Whisper שלם.\n",
+    "kind": "work",
+    "status": "backlog",
+    "source": "prompt"
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:30:39.651Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

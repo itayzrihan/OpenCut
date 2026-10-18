@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3be5f3ef32a45b6e8211a3412be72df64f5b05c950b6e70b2341f324bd9233e5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-16T10:44:30.879Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/podcast-task.test.ts",
+          "classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts",
+          "classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+          ".local/teaser-upgrade/transport-v2",
+          ".local/teaser-upgrade/transport-v2/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/teaser-upgrade/transport-v2/src__ai____tests____podcast-task.test.ts.log",
+          ".local/teaser-upgrade/transport-v2/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/teaser-upgrade/transport-v2/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/teaser-upgrade/transport-v2/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "1d016880-ed93-443b-997d-3740a3bb0155"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:44:30.882Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

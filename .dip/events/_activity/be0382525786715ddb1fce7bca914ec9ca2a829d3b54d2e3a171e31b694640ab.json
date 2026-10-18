@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be0382525786715ddb1fce7bca914ec9ca2a829d3b54d2e3a171e31b694640ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:34:10.530Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_c7cb93895a81c1463f17c0234ff8e9873108489a01dadb865cc9dddac3943e4f",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'node:|sqlite|createServer|listen|127.0.0.1|/api/' src/server.js public/index.html | head -60\ncurl -IL --max-time 20 https://vxu.me/products/dip\ndig +short NS vxu.me\ndig +short dip.vxu.me",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e986a542-b7c1-4bc6-9f50-12cc83036a31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:34:11.328Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

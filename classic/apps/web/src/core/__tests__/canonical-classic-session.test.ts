@@ -20,6 +20,42 @@ function fixture(): CanonicalClassicSnapshot {
 	) as CanonicalClassicSnapshot;
 }
 
+test("bulk snapshot equals app.state.read and preserves omitted, null and Unicode fields", async () => {
+	const runtime = await createCanonicalTestRuntime();
+	const original = fixture();
+	const classic = {
+		...original,
+		document: {
+			...original.document,
+			future: {
+				omitted: undefined,
+				cleared: null,
+				text: "שלום",
+				nested: [true, 1.25, { extra: "✓" }],
+			},
+		},
+	};
+	try {
+		runtime.invokeSync(
+			"project.classic.session.attach",
+			{ projectId: "classic-project", expectedRevision: 0, classic },
+			{},
+		);
+		const snapshot = runtime.snapshot() as {
+			project: { classic: CanonicalClassicSnapshot };
+		};
+		const receipt = runtime.invokeSync("app.state.read", {}, {}) as {
+			result: { data: { value: typeof snapshot } };
+		};
+		expect(snapshot).toEqual(receipt.result.data.value);
+		expect(snapshot.project.classic.document).toEqual(
+			JSON.parse(JSON.stringify(classic.document)),
+		);
+	} finally {
+		runtime.free();
+	}
+});
+
 test("real WASM session groups host edits, restores context and reopens compact history", async () => {
 	const session = new CanonicalClassicSession({
 		runtime: await createCanonicalTestRuntime(),

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "013a856c405dba062aefb7e4b5e05b0a0d4b0ead9dc4f87c74d4057846c8cc85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:24:03.567Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readdir,readFile} from 'node:fs/promises';import {join} from 'node:path';import {homedir,tmpdir} from 'node:os';\nconst configs=[];\nfor(const dir of [join(homedir(),'.opencut','mcp-classic-bridges'),join(tmpdir(),'opencut','mcp-classic-bridges')]){try{for(const file of await readdir(dir)){if(!file.endsWith('.json'))continue;try{const c=JSON.parse(await readFile(join(dir,file),'utf8'));process.kill(c.pid,0);if(c.version===2)configs.push(c);}catch{}}}catch{}}\nconst unique=[...new Map(configs.map(c=>[c.baseUrl,c])).values()].sort((a,b)=>b.createdAtMs-a.createdAtMs);\nfor(const c of unique.slice(0,2)){\n try{const headers={Authorization:[REDACTED] ${c.token}`,'Content-Type':'application/json'};\n const health=await fetch(c.baseUrl+'/bridge/status',{headers,signal:AbortSignal.timeout(3000)});if(!health.ok)continue;\n // Missing required session/project fields: cannot become a valid editor state.\n const probe=await fetch(c.baseUrl+'/bridge/state',{method:'PUT',headers,body:JSON.stringify({invalidDiagnosticPadding:'x'.repeat(2*1024*1024+100)}),signal:AbortSignal.timeout(5000)});\n console.log({bridgePid:c.pid,healthy:health.status,oversizedInvalidBody:probe.status});\n }catch(e){console.log({bridgePid:c.pid,error:e.name})}\n}\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-9b78217e-d36c-492f-b3a2-2a2d0f27294b"
+      },
+      {
+        "at": "2026-10-13T13:24:03.737Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'EOF'\nimport {readdir,readFile} from 'node:fs/promises';import {join} from 'node:path';import {homedir,tmpdir} from 'node:os';\nconst configs=[];\nfor(const dir of [join(homedir(),'.opencut','mcp-classic-bridges'),join(tmpdir(),'opencut','mcp-classic-bridges')]){try{for(const file of await readdir(dir)){if(!file.endsWith('.json'))continue;try{const c=JSON.parse(await readFile(join(dir,file),'utf8'));process.kill(c.pid,0);if(c.version===2)configs.push(c);}catch{}}}catch{}}\nconst unique=[...new Map(configs.map(c=>[c.baseUrl,c])).values()].sort((a,b)=>b.createdAtMs-a.createdAtMs);\nfor(const c of unique.slice(0,2)){\n try{const headers={Authorization:[REDACTED] ${c.token}`,'Content-Type':'application/json'};\n const health=await fetch(c.baseUrl+'/bridge/status',{headers,signal:AbortSignal.timeout(3000)});if(!health.ok)continue;\n // Missing required session/project fields: cannot become a valid editor state.\n const probe=await fetch(c.baseUrl+'/bridge/state',{method:'PUT',headers,body:JSON.stringify({invalidDiagnosticPadding:'x'.repeat(2*1024*1024+100)}),signal:AbortSignal.timeout(5000)});\n console.log({bridgePid:c.pid,healthy:health.status,oversizedInvalidBody:probe.status});\n }catch(e){console.log({bridgePid:c.pid,error:e.name})}\n}\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-9b78217e-d36c-492f-b3a2-2a2d0f27294b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:24:04.529Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

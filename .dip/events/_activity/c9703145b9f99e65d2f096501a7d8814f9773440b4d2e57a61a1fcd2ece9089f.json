@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9703145b9f99e65d2f096501a7d8814f9773440b4d2e57a61a1fcd2ece9089f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:49:02.100Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/budget-probe.mjs <<'JS'\nimport assert from 'node:assert/strict';\nimport {readFile} from 'node:fs/promises';\nimport * as glue from '../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js';\nconst bytes=await readFile(new URL('../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm',import.meta.url));\nconst {instance}=await WebAssembly.instantiate(bytes,{'./opencut_editor_runtime_wasm_bg.js':glue});glue.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\nconst project=JSON.parse(await readFile(new URL('./project-104-before-budget-fix.json',import.meta.url)));\nlet saved=JSON.parse(project.__opencutEditorSession).saved.bundle.archive;\nconst id=project.metadata.id;\nlet runtime=new glue.CanonicalEditorRuntime();\nconst call=(cap,input)=>runtime.invokeSync(cap,input,{}).result.data;\ncall('project.classic.session.restore',{projectId:id,expectedRevision:0,archive:saved});\nconsole.log('Restored saved104 transcript'); saved=null;\nconst original=runtime.snapshot().project.classic;\nfor(let i=0;i<12;i++){\n const changed=structuredClone(original);changed.document.metadata.name='Isolated budget regression '+i;\n call('project.classic.commit',{projectId:id,expectedRevision:runtime.snapshot().revision,classic:changed});\n}\nconst expected=runtime.snapshot().project.classic;\nassert.deepEqual(expected.document.scenes,original.document.scenes);\nconst archive=call('project.classic.session.archive',{projectId:id,persistableOnly:true,compact:true,chained:true});\nassert(archive.undoStack.length<100,'Expected byte budget to limit the durable100-entry history');\nconsole.log('Durable history bounded',archive.undoStack.length,'entries; current transcript unchanged');\nruntime.free();runtime=new glue.CanonicalEditorRuntime();\ncall('project.classic.session.restore',{projectId:id,expectedRevision:0,archive});\nassert.deepEqual(runtime.snapshot().project.classic,expected);\ncall('history.undo',{});call('history.r",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5fd93796-421b-45c7-bdb3-5fb1277d82ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:49:02.680Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

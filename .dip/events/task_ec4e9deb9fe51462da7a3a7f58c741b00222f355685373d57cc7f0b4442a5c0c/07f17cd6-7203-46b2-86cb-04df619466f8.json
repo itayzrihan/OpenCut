@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07f17cd6-7203-46b2-86cb-04df619466f8",
+  "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Duplicated90s teaser viaMCP, retained before-auto copy in original project, isolated FullAuto in96fa8232 to protect original4Kproject framing. Native run586fe528 completed10/10 with all4options true. Saved/reopened87.56s1080x1920 scene6125f350 with212-word captions,17zoom effects,22text transition cues,3word accents,swish/transition SFX andMidnightDiscipline music−31dB. Liveplayback advanced29.8s, no consoleerrors. Configuredcheckpassed: all10 original scenes/settings/STT exact and othercopiedscenes exact;30regressiontests. Fixed full108m smart-silence audio decoding toselected≤30s windows,missingcoverage/max-magnitude/cancelprotected, deployed2026-10-14T09-09-57-373Z-5350562c; newanalysis finishedwithinseconds.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Smart silence ran but retained audio because conservative analysis did not find safe background/speech separation. Verified native completion and saved operations, representative preview and29.8s playback; no exhaustive human listening/phoneme-level alignment or every rendered frame verification."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "No export requested. Native FullAuto generates fresh captions and clears copied endcard; edited duration87.56s. Original90s teaser with endcard stays exact. Isolated project chosen after optional destination question remained unanswered to avoid changing sourceprojectwidecanvas."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T09:38:22.922Z",
+  "parents": [
+    "5b7ebfd0-a70d-446b-bf03-5c31261d6ce6"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

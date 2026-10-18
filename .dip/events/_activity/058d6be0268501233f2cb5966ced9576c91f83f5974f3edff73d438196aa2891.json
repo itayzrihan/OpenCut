@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "058d6be0268501233f2cb5966ced9576c91f83f5974f3edff73d438196aa2891",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:25:40.098Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nimport{readdir,readFile,mkdir,rename}from'node:fs/promises';import{homedir,tmpdir}from'node:os';import{join}from'node:path';const stamp=Date.now();let moved=0;for(const d of[join(homedir(),'.opencut'),join(tmpdir(),'opencut')]){const paths=[join(d,'mcp-classic-bridge.json'),...(await readdir(join(d,'mcp-classic-bridges')).catch(()=>[])).filter(x=>x.endsWith('.json')).map(x=>join(d,'mcp-classic-bridges',x))];for(const p of paths){let c;try{c=JSON.parse(await readFile(p,'utf8'))}catch{continue}if(!Number.isInteger(c.pid)||c.pid<=0)continue;try{process.kill(c.pid,0);continue}catch(e){if(e.code!=='ESRCH')continue}const dest=join(d,'stale-bridge-backups',String(stamp));await mkdir(dest,{recursive:true});await rename(p,join(dest,(p===join(d,'mcp-classic-bridge.json')?'default-':'')+p.split('/').at(-1)));moved++;}}console.log({moved,backupStamp:stamp});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7187d9e0-6881-4aab-9ec2-4a6627efc2c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:25:40.983Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

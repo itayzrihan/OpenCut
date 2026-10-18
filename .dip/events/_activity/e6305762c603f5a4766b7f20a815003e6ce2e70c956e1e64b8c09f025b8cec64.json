@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e6305762c603f5a4766b7f20a815003e6ce2e70c956e1e64b8c09f025b8cec64",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:25:56.478Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '2873,2928p' classic/apps/web/src/core/managers/commands.ts; sed -n '3058,3079p' classic/apps/web/src/core/managers/commands.ts; ps -p 69138 -o %cpu,rss,etime",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7eed105f-e093-4c79-abd3-28e0e7c3d01e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:25:57.461Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

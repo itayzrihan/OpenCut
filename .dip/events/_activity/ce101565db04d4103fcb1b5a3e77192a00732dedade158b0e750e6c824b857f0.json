@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce101565db04d4103fcb1b5a3e77192a00732dedade158b0e750e6c824b857f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:46:16.866Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='crates/editor-api/tests/classic_transcription.rs';s=open(p).read().replace('call(r,\"app.state.read\",json!({})).await}','call(r,\"app.state.read\",json!({})).await[\"value\"].clone()}').replace('\"timeline.classic.move\"','\"timeline.classic.elements.move\"');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/transcription-manager.ts';s=open(p).read().replace('private abortController: AbortController | null = null;','private abortController: AbortController | null = null;\\n\\tprivate runningPromise: Promise<TranscriptionTaskState> | null = null;');s=s.replace('\\tasync start({','''\tstart(input: Parameters<TranscriptionManager[\"run\"]>[0] = {}): Promise<TranscriptionTaskState> {\n\t\tif (this.runningPromise) return this.runningPromise;\n\t\tconst promise = this.run(input).finally(() => { if (this.runningPromise === promise) this.runningPromise = null; });\n\t\tthis.runningPromise = promise;\n\t\treturn promise;\n\t}\n\n\tprivate async run({''',1);s=s.replace('\\t\\t\\tsceneId: scene.id,\\n\\t\\t\\tinsertedTrackIds:', '\\t\\t\\tsceneId: scene.id,\\n\\t\\t\\tjobId: undefined,\\n\\t\\t\\tinsertedTrackIds:');s=s.replace('this.editor.command.editTranscription({ projectId, jobId, change:', 'await this.editor.command.waitForTranscriptionPublication(abortController.signal);\\n\\t\\t\\t\\tthis.throwIfCancelled();\\n\\t\\t\\t\\tthis.editor.command.editTranscription({ projectId, jobId, change:',1);s=s.replace('const current = this.editor.project.getActive().transcriptionJobs?', 'await this.editor.command.waitForTranscriptionPublication(abortController.signal);\\n\\t\\t\\t\\t\\t\\tthis.throwIfCancelled();\\n\\t\\t\\t\\t\\t\\tconst current = this.editor.project.getActive().transcriptionJobs?');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();a=s.index('\\n\\t/** Background results target');s=s[:a]+'''\n\tasync waitForTranscriptionPublication(signal: AbortSignal): Promise<void> {\n\t\twhile (this.transactionDepth !== 0 || this.silenceCommit) {\n\t\t\tsignal.throwIfAborted();\n\t\t\tawait new Promis",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-de80662b-5154-4252-b21a-b70c8cf7f43f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:46:17.272Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

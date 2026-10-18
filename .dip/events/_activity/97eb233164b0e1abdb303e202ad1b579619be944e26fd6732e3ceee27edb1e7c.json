@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97eb233164b0e1abdb303e202ad1b579619be944e26fd6732e3ceee27edb1e7c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T11:03:09.443Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/api/transcription/timing-probe/route.ts",
+          ".local/codex-transcription-research/timing-verbose-started.json",
+          ".local/codex-transcription-research/timing-verbose-launch-failed.json",
+          "classic/apps/web/.next-transcription-debug/dev/types/routes.d.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/validator.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "c2851995-77ef-4fa9-8378-88751d12abc3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:03:09.444Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

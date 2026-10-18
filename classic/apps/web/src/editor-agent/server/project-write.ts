@@ -1,11 +1,14 @@
-import { mergeRenewal } from "./session-renewal";
+import {
+	readSessionMetadata,
+	projectFileIdentity,
+	writeRenewal,
+} from "./session-renewal";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { requireAccount } from "@/accounts/server";
 import {
 	EDITOR_SESSION_FIELD,
-	replaceProjectRecord,
 	withProjectStorageLock,
 } from "@/services/local-drive/project-transaction";
 import { SessionRejected } from "./session-store";
@@ -103,12 +106,14 @@ export async function withEditorProjectWrite<T>({
 					let record =
 						previous === undefined
 							? ""
-							: await mergeRenewal({ path, record: previous });
+							: await readSessionMetadata({ path, record: previous });
 					const assertWrite = () => {
 						scope?.signal.throwIfAborted();
 						assertBatchLock();
 						assertLock();
 						try {
+							// Asset fencing only needs ownership metadata. Passing the full
+							// immutable history through WASM stalls every media range request.
 							const next = z
 								.object({ record: z.string() })
 								.parse(
@@ -131,9 +136,10 @@ export async function withEditorProjectWrite<T>({
 					// Keep monotonic observed host time for adopted sessions. Merely writing
 					// legacy assets must not adopt an unsaved legacy project.
 					if (project && previous !== undefined && record !== previous)
-						await replaceProjectRecord({
+						await writeRenewal({
 							path,
-							value: { ...project, [EDITOR_SESSION_FIELD]: record },
+							identity: await projectFileIdentity(path),
+							record,
 							assertLock: assertWrite,
 						});
 					return write({ assertWrite });

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "76bd21858fe52383bde1852460044397fc9c64e9c0a5586fbe8def4db75e10ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:12:15.108Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -25 /Users/itayzrihan/Documents/dip/src/core.js\nnode --input-type=module <<'JS'\nimport {readFileSync,readdirSync} from 'node:fs';\nimport {projectEvents} from './lib/ledger.mjs';\nconst dir='/Users/itayzrihan/Documents/dip/.dip/events';\nconst events=[];\nfor(const folder of readdirSync(dir)){if(folder==='_activity')continue;for(const file of readdirSync(dir+'/'+folder)){if(file.endsWith('.json'))events.push(JSON.parse(readFileSync(dir+'/'+folder+'/'+file)));}}\nconst result=projectEvents(events);console.log(JSON.stringify({events:events.length,tasks:result.tasks.length,errors:result.errors.slice(0,10),statuses:result.tasks.reduce((s,t)=>(s[t.status]=(s[t.status]||0)+1,s),{})}));\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-d9d24bca-5e8d-4743-b1a7-8e2a2816e0c2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:12:15.668Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

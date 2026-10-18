@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f04d97e7478d7612dcc4e703510a90b97534ef1828a831b7fbfa1cd38711eb44",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:00:57.837Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/847030af-0e59-4e41-b702-5d35549f3cd5/project.json';x=json.load(open(p));old=json.load(open('.local/episode-teaser-90-2026-10-14/classic-source.json'))['document']\nfor s in old['scenes']:\n n=next(v for v in x['scenes']if v['id']==s['id']);print(s['id'],s==n,[k for k in set(s)|set(n) if s.get(k)!=n.get(k)])\nprint('STT exact',old['transcriptionJobs']==x['transcriptionJobs']);n=x['scenes'][-1];print('new',n['id'],len(n['tracks']['main']['elements']),max([0]+[e['startTime']+e['duration'] for t in [n['tracks']['main']]+n['tracks']['overlay']+n['tracks']['audio']for e in t['elements']])/120000)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-905a9e2c-2e36-4819-837f-06e31b35fb30"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:00:58.061Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8849764f2923c7ec97f8dbf55ce3375d17e659a8082e1647f0182e13ee3a77f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:25.008Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/apple-stt-benchmark/run-short.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-eb7202c1-2b3a-4b9f-936c-c3dfe2920f32"
+      },
+      {
+        "at": "2026-10-12T14:15:25.090Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/apple-stt-benchmark/run-short.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-eb7202c1-2b3a-4b9f-936c-c3dfe2920f32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:25.845Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

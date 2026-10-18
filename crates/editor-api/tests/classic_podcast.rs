@@ -34,6 +34,38 @@ fn video(parts: Value) -> Value {
 fn request(s: &Value, mode: &str, videos: Value) -> Value {
     json!({"projectId":"classic-project","sceneId":"main-scene","elementIds":["item-2"],"expectedRevision":s["revision"],"options":{"mode":mode,"minSeconds":20,"maxSeconds":90,"maxOutputs":8},"videos":videos})
 }
+
+#[tokio::test]
+async fn seven_extract_archives_keep_corrected_words_without_copying_every_caption_cue() {
+    let r = setup().await;
+    let mut classic = state(&r).await["project"]["classic"].clone();
+    classic["document"]["scenes"][0]["tracks"]["overlay"][0]["elements"] = json!((0..210).map(|i| {
+        json!({"id":format!("cue-{i}"),"type":"text","name":"Caption","startTime":i*3*120000,
+            "duration":180000,"trimStart":0,"trimEnd":0,"params":{"content":format!("word{i}"),"fontFamily":"My font"},
+            "wordRuns":[{"id":format!("run-{i}"),"text":format!("word{i}"),"startTime":24000,"endTime":156000}]})
+    }).collect::<Vec<_>>());
+    call(&r,"project.classic.commit",json!({"projectId":"classic-project","expectedRevision":state(&r).await["revision"],"classic":classic})).await;
+    let before = state(&r).await;
+    let prepared = call(&r,"timeline.classic.podcast.prepare",json!({"projectId":"classic-project","sceneId":"main-scene","elementIds":["item-2"],"expectedRevision":before["revision"]})).await;
+    let videos = json!((0..7).map(|i| video(json!([{"firstWord":i*20,"lastWord":i*20+7}]))).collect::<Vec<_>>());
+    call(&r,"timeline.classic.podcast.extract",request(&before,"highlights",videos)).await;
+    let after = state(&r).await;
+    let scenes = after["project"]["classic"]["document"]["scenes"].as_array().unwrap();
+    assert_eq!(scenes.len(), 9);
+    assert_eq!(scenes[0], before["project"]["classic"]["document"]["scenes"][0]);
+    for scene in &scenes[2..] {
+        let archive = &scene["takeAssembly"];
+        assert_eq!(archive["sourceTracks"]["overlay"][0]["elements"].as_array().unwrap().len(), 1);
+        assert_eq!(archive["sourceWords"], prepared["words"]);
+        assert_eq!(archive["sourceWords"][0]["start"], 24000);
+    }
+    let reopened = OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
+    call(&r,"history.undo",json!({})).await;
+    assert_eq!(state(&r).await["project"],before["project"]);
+    call(&r,"history.redo",json!({})).await;
+    assert_eq!(state(&r).await["project"],after["project"]);
+}
 #[tokio::test]
 async fn extracts_are_new_scenes_with_exact_transcripts_archives_and_undo() {
     let r = setup().await;
@@ -255,4 +287,45 @@ async fn switching_podcast_versions_never_restores_the_unselected_episode() {
         selected["project"]["classic"]["document"]["scenes"][0],
         before["project"]["classic"]["document"]["scenes"][0]
     );
+}
+
+#[tokio::test]
+async fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outputs() {
+    let r = setup().await;
+    // Keep a completed, source-bound job alongside the corrected caption source.
+    // Silence-only sections are valid and must not replace existing captions.
+    call(&r,"transcription.classic.edit",json!({"projectId":"classic-project","expectedRevision":state(&r).await["revision"],"jobId":"completed-job","change":{"type":"start","sceneId":"main-scene","language":"he","settings":{"wordsPerRow":3,"rows":1},"defaults":{"element":{"type":"text","trimStart":0,"trimEnd":0,"params":{"opacity":1}},"bottomFadeOutEndOpacity":0.25},"totalDuration":650*120000}})).await;
+    for index in 0..11 {
+        call(&r,"transcription.classic.edit",json!({"projectId":"classic-project","expectedRevision":state(&r).await["revision"],"jobId":"completed-job","change":{"type":"append","index":index,"words":[]}})).await;
+    }
+    let before = state(&r).await;
+    assert_eq!(before["project"]["classic"]["document"]["transcriptionJobs"][0]["status"],"complete");
+    let source = before["project"]["classic"]["document"]["scenes"].clone();
+    let mut previous = source.as_array().unwrap().clone();
+    // Each generation starts from Main, even when the previous output remains
+    // the viewer's active scene. Earlier extracts must stay editable and exact.
+    for mode in ["teaser", "highlights", "chronological", "teaser", "chronological", "highlights"] {
+        let current = state(&r).await;
+        let input = request(&current, mode, json!([video(json!([{"firstWord":10,"lastWord":20}]))]));
+        let result = call(&r, "timeline.classic.podcast.extract", input).await;
+        let after = state(&r).await;
+        let doc = &after["project"]["classic"]["document"];
+        let scenes = doc["scenes"].as_array().unwrap();
+        assert_eq!(&scenes[..previous.len()], previous.as_slice());
+        assert_eq!(scenes.len(), previous.len() + 1);
+        assert_eq!(scenes[0], source[0]);
+        assert_eq!(scenes.last().unwrap()["podcastExtract"]["options"]["mode"], mode);
+        assert_eq!(doc["transcriptionJobs"], before["project"]["classic"]["document"]["transcriptionJobs"]);
+        assert!(result["revision"].as_u64().unwrap() > current["revision"].as_u64().unwrap());
+        previous = scenes.clone();
+    }
+    let archive = call(&r, "project.classic.session.archive", json!({"projectId":"classic-project","compact":true,"chained":true})).await;
+    let reopened = OpenCutRuntime::default();
+    call(&reopened, "project.classic.session.restore", json!({"projectId":"classic-project","expectedRevision":0,"archive":archive})).await;
+    assert_eq!(state(&reopened).await["project"]["classic"], state(&r).await["project"]["classic"]);
+    // Undo and Redo never remove or change the Main transcript.
+    call(&r,"history.undo",json!({})).await;
+    assert_eq!(state(&r).await["project"]["classic"]["document"]["scenes"][0],source[0]);
+    call(&r,"history.redo",json!({})).await;
+    assert_eq!(state(&r).await["project"]["classic"]["document"]["scenes"],json!(previous));
 }

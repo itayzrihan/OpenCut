@@ -106,7 +106,7 @@ test("prepared package IO reads pinned pages and delivers an editable source to 
 			editor,
 			projectId: "classic-project",
 			id: candidate.id,
-			upstreamCommit: catalog.upstreamCommit,
+			upstreamCommit: (runtime.invokeSync("hyperframes.examples.search", { limit: 1 }, null) as { result: { data: { upstreamCommit: string } } }).result.data.upstreamCommit,
 			signal: new AbortController().signal,
 		});
 		expect(committed).toBe(1);
@@ -130,7 +130,7 @@ test("prepared package IO reads pinned pages and delivers an editable source to 
 				editor,
 				projectId: "classic-project",
 				id: candidate.id,
-				upstreamCommit: catalog.upstreamCommit,
+				upstreamCommit: (runtime.invokeSync("hyperframes.examples.search", { limit: 1 }, null) as { result: { data: { upstreamCommit: string } } }).result.data.upstreamCommit,
 				signal: controller.signal,
 			}),
 		).rejects.toBeDefined();

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "607be65404e2b5cea85a3a4a38e56cf7be7fd0fa47a88e0ac67844044896c720",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:47:11.793Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor p in (Path.home()/'Movies/OpenCut Accounts/data').glob('*/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json'):\n d=json.loads(p.read_text()); print([(j.get('status'),len(j.get('chunks',{}))) for j in d.get('transcriptionJobs',[])])\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-822f0d83-1732-448c-bb9a-658782848394"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:47:11.866Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

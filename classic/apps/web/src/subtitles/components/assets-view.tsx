@@ -1,3 +1,4 @@
+import { TranscriptionSource } from "./transcription-source";
 import { Button } from "@/components/ui/button";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import {
@@ -901,6 +902,12 @@ export function Captions() {
 	const handleImportFile = async ({ file }: { file: File }) => {
 		dispatch({ type: "start", step: "Reading subtitle file..." });
 		try {
+			if (file.name.toLowerCase().endsWith(".srt")) {
+				await editor.transcription.importSrt({ file, settings: captionSettings });
+				dispatch({ type: "succeed", warnings: [] });
+				toast.success("SRT imported as the active transcript");
+				return;
+			}
 			const input = await file.text();
 			const result = parseSubtitleFile({
 				fileName: file.name,
@@ -1029,6 +1036,10 @@ export function Captions() {
 				className="flex-1"
 			>
 				<SectionContent className="flex flex-col gap-4 h-full pt-1">
+					<TranscriptionSource
+						disabled={isProcessing || autoTextsStep !== null}
+						onImport={handleImportClick}
+					/>
 					<SectionFields>
 						<SectionField label="Language">
 							<Select
@@ -1483,7 +1494,9 @@ export function Captions() {
 									: "Generate transcript"}
 						</Button>
 						{isTranscriptionProcessing && <p role="status" className="text-xs text-muted-foreground break-words">{getTranscriptionStep({ phase: transcriptionState.task.phase })}</p>}
-						<p className="text-xs text-muted-foreground">ivrit-ai Large v3 Turbo runs in this browser. First use downloads approximately 1.6 GB, then reuses cached weights. <a className="underline" href="/transcription-check" target="_blank" rel="noreferrer">Test this device</a></p>
+						<p className="text-xs text-muted-foreground">
+							Completed sections are saved automatically with either transcription engine.
+						</p>
 						<Button
 							type="button"
 							variant="outline"

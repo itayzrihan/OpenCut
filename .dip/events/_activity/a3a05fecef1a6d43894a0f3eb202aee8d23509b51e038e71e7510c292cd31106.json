@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a3a05fecef1a6d43894a0f3eb202aee8d23509b51e038e71e7510c292cd31106",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:59:45.357Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('classic/apps/web/src/subtitles/components/transcription-source.tsx');s=p.read_text().replace('import { toast } from \"sonner\";','import { toast } from \"sonner\";\\nimport { useAiOAuthStatus } from \"@/ai/components/use-ai-oauth-status\";');s=s.replace('const editor = useEditor();','const editor = useEditor();\\n    const oauth = useAiOAuthStatus();',1).replace('transcriptionEngine ?? \"local\"','transcriptionEngine ?? \"external\"').replace('value === \"local\" || value === \"external\"','value === \"local\" || value === \"external\" || value === \"chatgpt\"');s=s.replace('<SelectItem value=\"local\">Local · this device</SelectItem>\\n\\t\\t\\t\\t\\t<SelectItem value=\"external\">External API</SelectItem>','<SelectItem value=\"external\">API · default</SelectItem>\\n                    <SelectItem value=\"chatgpt\">ChatGPT · subscription</SelectItem>\\n                    <SelectItem value=\"local\">Local · this device</SelectItem>');s=s.replace('charges may apply. ChatGPT sign-in does not supply an API key.','charges may apply. Uses your API key.');s=s.replace(') : (\\n\\t\\t\\t\\t<p className=\"text-xs text-muted-foreground\">', ''') : engine === \"chatgpt\" ? (\n                <>\n                    <p className=\"text-xs text-muted-foreground\">\n                        Uses your connected ChatGPT account without an API key. Account usage limits apply.\n                        Word times are estimated; use API or Local for precise word timing.\n                    </p>\n                    <p className=\"text-xs text-muted-foreground\">\n                        {oauth.isLoading ? \"Checking ChatGPT connection…\" : oauth.status.authenticated ? \"ChatGPT connected\" : \"Connect ChatGPT to transcribe\"}\n                    </p>\n                    {!oauth.status.authenticated && <Button variant=\"outline\" size=\"sm\" disabled={disabled || oauth.isLoading} onClick={oauth.login}>Connect ChatGPT</Button>}\n                    {oauth.status.error && <p role=\"alert\" classNa",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-35d91e9c-5abc-42bd-9952-1d6addd4ccc1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:59:45.921Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

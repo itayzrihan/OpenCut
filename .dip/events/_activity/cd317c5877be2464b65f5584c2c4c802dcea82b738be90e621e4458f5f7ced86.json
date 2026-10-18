@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd317c5877be2464b65f5584c2c4c802dcea82b738be90e621e4458f5f7ced86",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T17:51:19.454Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/apple-stt-benchmark/app.swift');s=p.read_text();start=s.index('SFSpeechRecognizer.requestAuthorization');end=s.index('DispatchQueue.main.asyncAfter',start)\nblock=s[start:end];s=s[:start]+'''class Delegate: NSObject, NSApplicationDelegate {\n func applicationDidFinishLaunching(_ notification: Notification) {\n'''+block+'''\n }\n}\nlet delegate = Delegate()\napp.delegate = delegate\n'''+s[end:];p.write_text(s)\nPY\nkill -TERM 12962\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5d3cff56-d0da-4c20-bb7d-2b2e093d5e5c"
+      },
+      {
+        "at": "2026-10-12T17:51:19.894Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2c2fbfe97a9096690a84161411c2ac6e2e6da4a3b53df6840fd466f37308802e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/apple-stt-benchmark/app.swift');s=p.read_text();start=s.index('SFSpeechRecognizer.requestAuthorization');end=s.index('DispatchQueue.main.asyncAfter',start)\nblock=s[start:end];s=s[:start]+'''class Delegate: NSObject, NSApplicationDelegate {\n func applicationDidFinishLaunching(_ notification: Notification) {\n'''+block+'''\n }\n}\nlet delegate = Delegate()\napp.delegate = delegate\n'''+s[end:];p.write_text(s)\nPY\nkill -TERM 12962\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5d3cff56-d0da-4c20-bb7d-2b2e093d5e5c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T17:51:20.440Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7921581f-51ac-4274-8b4c-a8a8774e69aa",
+  "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/core",
+      "crates/editor-api/src/model.rs",
+      "crates/editor-api/src/classic.rs",
+      "crates/editor-api/src/operations.rs",
+      "crates/editor-api/src/operations/classic_scenes.rs",
+      "crates/editor-api/src/operations/classic_session.rs",
+      "crates/editor-api/src/operations/hyperframes.rs",
+      "crates/editor-api/src/operations/silence.rs",
+      "crates/editor-api/src/editor_render.rs",
+      "crates/editor-agent/src/session_store.rs",
+      "crates/editor-api/tests/classic_scenes.rs",
+      "crates/editor-agent/tests/session_store.rs",
+      "classic/EXPORT-STREAMING.md",
+      ".dip/tools"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T19:53:56.140Z",
+  "parents": [
+    "792f1b21-440f-4d58-adf1-c72a9132b98c"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

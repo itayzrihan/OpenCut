@@ -501,6 +501,7 @@ fn registered_agent_capabilities() -> Vec<AgentCapabilityDescriptor> {
         ),
         registered_capability("export.get_status", "read", true, true, false, &[]),
         registered_capability("library.search", "read", true, true, false, &["media"]),
+        registered_capability("media.relink_source", "control", false, true, true, &["media", "app_control"]),
         registered_capability(
             "playback.control",
             "control",
@@ -1035,6 +1036,23 @@ mod tests {
         assert_eq!(allowed[0].execution_policy, "immediate");
         assert!(allowed[0].read_only);
         assert!(allowed[0].idempotent);
+    }
+
+    #[test]
+    fn source_relink_requires_media_and_control_and_declares_filesystem_access() {
+        for permissions in [vec![], vec!["media".to_owned()], vec!["app_control".to_owned()]] {
+            let denied = authorize_registered_agent_capabilities(AuthorizeRegisteredAgentCapabilitiesOptions {
+                names: vec!["media.relink_source".to_owned()], granted_permissions: permissions,
+            });
+            assert!(!denied[0].allowed);
+        }
+        let allowed = authorize_registered_agent_capabilities(AuthorizeRegisteredAgentCapabilitiesOptions {
+            names: vec!["media.relink_source".to_owned()], granted_permissions: vec!["media".to_owned(), "app_control".to_owned()],
+        });
+        assert!(allowed[0].allowed && allowed[0].idempotent && allowed[0].open_world);
+        assert!(!allowed[0].read_only);
+        assert_eq!(allowed[0].risk, "control");
+        assert_eq!(allowed[0].execution_policy, "immediate");
     }
 
     #[test]

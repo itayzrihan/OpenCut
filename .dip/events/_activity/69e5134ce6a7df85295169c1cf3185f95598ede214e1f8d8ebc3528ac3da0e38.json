@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "69e5134ce6a7df85295169c1cf3185f95598ede214e1f8d8ebc3528ac3da0e38",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:08:33.098Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -35 '/Users/itayzrihan/Library/Application Support/OpenCut Local/logs/production.log'; sed -n '1,150p' classic/apps/web/src/media/unified-angles.ts; rg -n 'file:' classic/apps/web/src/core/managers/media-manager.ts classic/apps/web/src/storage/service.ts; sed -n '1,180p' classic/apps/web/src/services/local-drive/file-stream.ts; cat .dip/config.json | head -50",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6b9ccb0e-4b0d-4076-ada6-1988014a98ed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:08:34.069Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

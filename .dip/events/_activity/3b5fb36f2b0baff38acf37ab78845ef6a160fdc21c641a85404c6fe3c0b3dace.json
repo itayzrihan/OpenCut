@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3b5fb36f2b0baff38acf37ab78845ef6a160fdc21c641a85404c6fe3c0b3dace",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:48:13.293Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/core/managers/__tests__/canonical-command-manager.test.ts src/core/__tests__/canonical-classic-session.test.ts --jobs=1 --timeout=180000 --test-timeout=60000 --report=.local/teaser-upgrade/wasm-adapters",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9a4562c8-877a-4e05-888c-8e27bfc42682"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:48:13.669Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

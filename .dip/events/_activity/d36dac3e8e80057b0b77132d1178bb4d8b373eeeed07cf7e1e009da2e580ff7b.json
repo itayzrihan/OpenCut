@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d36dac3e8e80057b0b77132d1178bb4d8b373eeeed07cf7e1e009da2e580ff7b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:01:01.467Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '20,145p' classic/apps/web/src/ai/components/ai-chat-view.tsx; rg -n 'Checking|api/' classic/apps/web/src/ai/store.ts classic/apps/web/src/ai/*auth*; lsof -n -iTCP:3211 | head -n 15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-fb81dcdc-e521-403e-ba92-bfe16be2e2dc"
+      },
+      {
+        "at": "2026-10-13T11:01:01.815Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '20,145p' classic/apps/web/src/ai/components/ai-chat-view.tsx; rg -n 'Checking|api/' classic/apps/web/src/ai/store.ts classic/apps/web/src/ai/*auth*; lsof -n -iTCP:3211 | head -n 15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fb81dcdc-e521-403e-ba92-bfe16be2e2dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:01:02.393Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

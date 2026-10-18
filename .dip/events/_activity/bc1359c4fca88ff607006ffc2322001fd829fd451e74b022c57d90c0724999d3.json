@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bc1359c4fca88ff607006ffc2322001fd829fd451e74b022c57d90c0724999d3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:51:19.205Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/transcription/windows.test.ts <<'EOF'\n\ntest(\"each checkpoint finishes before decoding the next window; durable words bypass inference\", async () => {\n calls = 0; failAt = Infinity;\n const completed: Record<string, import('./types').TranscriptionWord[]> = {'0': [{text:'persisted',start:1,end:2}], '1': []};\n const events: string[] = [];\n await transcribeAudioWindows({duration:185,language:'en',signal:new AbortController().signal,completedChunks:completed,\n  load:async r => {range=r; events.push(`load:${r.start}`);return new Float32Array(1);},\n  onChunk:async ({index,words}) => {events.push(`save:${index}`);await Promise.resolve();completed[index]=words;events.push(`saved:${index}`);}\n });\n expect(calls).toBe(2);\n expect(events).toEqual(['save:0','saved:0','save:1','saved:1','load:115','save:2','saved:2','load:175','save:3','saved:3']);\n expect(completed['0'][0].text).toBe('persisted');\n});\n\ntest(\"publication failure never advances decoding and retries from cached provider text\", async () => {\n calls=0;failAt=Infinity;\n const cache = new Map<number,TranscriptionResult>();\n let failing=true;\n const input={duration:125,language:'en' as const,signal:new AbortController().signal,\n load:async (r:{start:number;end:number})=>{range=r;return new Float32Array(1);},\n cache:{read:async(i:number)=>cache.get(i),write:async(i:number,result:TranscriptionResult)=>{cache.set(i,result);return true;}},\n onChunk:async({index}:{index:number})=>{if(index===0&&failing)throw new Error('disk unavailable');}};\n await expect(transcribeAudioWindows(input)).rejects.toThrow('disk unavailable');expect(calls).toBe(1);\n failing=false;await transcribeAudioWindows(input);expect(calls).toBe(3);\n});\nEOF\ncat >> crates/editor-api/tests/classic_transcription.rs <<'EOF'\n\n#[tokio::test]\nasync fn restore_after_undo_uses_original_source_and_republishes_completed_work() {\n let r=setup().await;edit(&r,section(0)).await;let snapshot=job(&state(&r).await).clone();\n call(&r,\"history.undo\",",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-edfd6a51-b66d-4fc1-918c-e1f6ecf2a377"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:51:19.209Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

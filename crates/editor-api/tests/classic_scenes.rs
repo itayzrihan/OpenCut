@@ -5,6 +5,43 @@ const SCENES: &str = "project.classic.scenes.edit";
 const DELETE: &str = "project.classic.scene.delete";
 const BOOKMARKS: &str = "timeline.classic.bookmarks.edit";
 
+#[tokio::test]
+async fn viewer_navigation_is_compact_fenced_and_leaves_content_revision_and_history_unchanged() {
+    let runtime = attached().await;
+    let before = read(&runtime).await;
+    let archive = call(&runtime, "project.classic.session.archive", json!({"projectId":"classic-project"})).await;
+    let input = json!({"projectId":"classic-project","sceneId":"other-scene","expectedRevision":before["revision"],"expectedNavigationRevision":0});
+    runtime.registry().invoke("project.classic.scene.open", InvocationContext { dry_run:true, ..Default::default() }, input.clone()).await.unwrap();
+    assert_eq!(read(&runtime).await, before);
+    let opened = call(&runtime, "project.classic.scene.open", input.clone()).await;
+    assert_eq!(opened["sceneId"], "other-scene");
+    let after = read(&runtime).await;
+    assert_eq!(after["revision"], before["revision"]);
+    assert_eq!(after["project"], before["project"]);
+    assert_eq!(after["workspace"]["classicScene"]["sceneId"], "other-scene");
+    call(&runtime, "project.classic.viewport.set", json!({"projectId":"classic-project","expectedRevision":before["revision"],"zoomLevel":0.03,"scrollLeft":10,"playheadTime":120000})).await;
+    let viewport = read(&runtime).await;
+    assert_eq!(viewport["project"], before["project"]);
+    assert_eq!(viewport["revision"], before["revision"]);
+    assert_eq!(viewport["workspace"]["classicViewport"]["zoomLevel"], 0.03);
+    assert!(runtime.registry().invoke("project.classic.viewport.set", InvocationContext::default(), json!({"projectId":"classic-project","expectedRevision":before["revision"],"zoomLevel":0,"scrollLeft":10,"playheadTime":120000})).await.is_err());
+    assert_eq!(call(&runtime, "project.classic.session.status", json!({"projectId":"classic-project"})).await["canUndo"], false);
+    assert!(runtime.registry().invoke("project.classic.scene.open", InvocationContext::default(), input).await.is_err());
+    let saved = call(&runtime, "project.classic.session.archive", json!({"projectId":"classic-project","compact":true,"chained":true})).await;
+    assert_eq!(saved["schemaVersion"], 4);
+    assert_eq!(saved["classic"], archive["classic"]);
+    for invalid in ["missing", ""] {
+        assert!(runtime.registry().invoke("project.classic.scene.open", InvocationContext::default(), json!({"projectId":"classic-project","sceneId":invalid,"expectedRevision":before["revision"]})).await.is_err());
+        assert_eq!(read(&runtime).await, viewport);
+    }
+    let reopened = OpenCutRuntime::default();
+    let mut corrupt = saved.clone(); corrupt["viewerSceneId"] = json!("missing");
+    assert!(reopened.registry().invoke("project.classic.session.restore", InvocationContext::default(), json!({"projectId":"classic-project","expectedRevision":0,"archive":corrupt})).await.is_err());
+    assert!(reopened.snapshot().unwrap().project.is_none());
+    call(&reopened,"project.classic.session.restore",json!({"projectId":"classic-project","expectedRevision":0,"archive":saved})).await;
+    assert_eq!(call(&reopened,"project.classic.scene.view",json!({"projectId":"classic-project"})).await["sceneId"],"other-scene");
+}
+
 async fn call(runtime: &OpenCutRuntime, id: &str, input: Value) -> Value {
     runtime
         .registry()

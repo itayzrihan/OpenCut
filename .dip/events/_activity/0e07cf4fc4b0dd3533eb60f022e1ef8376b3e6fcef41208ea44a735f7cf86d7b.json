@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e07cf4fc4b0dd3533eb60f022e1ef8376b3e6fcef41208ea44a735f7cf86d7b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:13:39.593Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6ff7b190cfef984f21ac4e8daa71f30018aa3cc3e65a2f4e5f1ad8e420d211c4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '130,195p' classic/apps/web/src/core/managers/media-manager.ts\nrg -n 'async loadAllMediaAssets|loadAllMediaAssets\\(' classic/apps/web/src/services/storage* -g '*.ts'\nps -p 87601,24721 -o pid,ppid,%cpu,%mem,etime,command\ncurl -sS -o /dev/null --max-time 10 -w '%{http_code} %{time_total}\\n' http://localhost:3211/editor/11e7e552-fd67-44e7-8795-cd2b8b5e2668",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1c764316-bd21-4a83-82e9-201380c009c0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:13:40.048Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

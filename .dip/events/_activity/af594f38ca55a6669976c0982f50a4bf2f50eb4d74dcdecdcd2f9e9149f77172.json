@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af594f38ca55a6669976c0982f50a4bf2f50eb4d74dcdecdcd2f9e9149f77172",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:03:08.295Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP:3211 -sTCP:LISTEN; rg -n 'process.chdir|cwd:' classic/scripts/dev-web-with-mcp.mjs; sed -n '1,50p' classic/apps/web/src/transcription/chatgpt-server.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-e3eef3b3-c968-43b0-9597-b67f68d3d66a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:03:08.510Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

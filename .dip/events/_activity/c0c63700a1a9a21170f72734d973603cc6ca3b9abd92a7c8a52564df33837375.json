@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c0c63700a1a9a21170f72734d973603cc6ca3b9abd92a7c8a52564df33837375",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:36:16.743Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short -- bun.lock package.json; sed -n '255,340p' classic/apps/web/src/core/managers/transcription-manager.ts; sed -n '960,1060p' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-0559ff82-c58a-45c6-8510-d6c672755c46"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:36:17.349Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45c3cc7d9f6bbb6f01a16150025db339dd9c0478f0dce649c513938c32e26d48",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:13:20.145Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile,writeFile}from'node:fs/promises';import{createHash}from'node:crypto';const before=JSON.parse(await readFile('.local/sequence-navigation/project-before.json','utf8'));const data=JSON.parse(await readFile(before.path,'utf8'));const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');if(hash(data.scenes)!==before.scenesHash||hash(data.transcriptionJobs)!==before.transcriptHash)throw Error('Saved scenes or transcript changed');const t=performance.now();const r=await fetch('http://localhost:3211/',{signal:AbortSignal.timeout(3000)});await r.body.cancel();console.log({projectContentPreserved:true,scenes:data.scenes.length,status:r.status,healthMs:performance.now()-t});await writeFile('.local/sequence-navigation/preservation.json',JSON.stringify({projectContentPreserved:true,scenes:data.scenes.length,status:r.status}));\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-da636963-60ff-4ad9-a180-77abfcf8440b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:13:20.836Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

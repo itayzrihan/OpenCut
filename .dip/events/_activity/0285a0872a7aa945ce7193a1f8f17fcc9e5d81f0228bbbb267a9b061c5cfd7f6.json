@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0285a0872a7aa945ce7193a1f8f17fcc9e5d81f0228bbbb267a9b061c5cfd7f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:14:28.670Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,etime,%cpu,rss,command | rg 'wasm-opt|wasm-pack|next-server' | head -12; rg -n 'canonical.*read|read.*canonical' classic/apps/web/src/core/managers/commands.ts | head -14; head -8 classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; rg -n 'new CommandManager|function create' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts | head -12",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-ab024437-6563-43fc-9f8e-81c1ee247124"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:14:29.279Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

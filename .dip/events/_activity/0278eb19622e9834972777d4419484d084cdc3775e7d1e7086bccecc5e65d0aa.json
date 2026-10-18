@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0278eb19622e9834972777d4419484d084cdc3775e7d1e7086bccecc5e65d0aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:52:08.320Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_c7cb93895a81c1463f17c0234ff8e9873108489a01dadb865cc9dddac3943e4f",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > dist/index.html <<'EOF'\n<!doctype html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>DIP — Your session ends. Your project remembers. | VXU Labs</title>\n<meta name=\"description\" content=\"Persistent project memory for coding agents. Keep requirements, plans, handoffs and verification evidence beside your code. Local-first and open source.\">\n<link rel=\"canonical\" href=\"https://dip.vxu.me/\"><meta property=\"og:title\" content=\"DIP — Your project remembers.\"><meta property=\"og:description\" content=\"Local-first project memory for coding agents. Open source by VXU Labs.\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:url\" content=\"https://dip.vxu.me/\"><meta property=\"og:image\" content=\"https://dip.vxu.me/assets/dashboard.png\"><meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"theme-color\" content=\"#101916\">\n<link rel=\"icon\" href=\"/assets/favicon.svg\" type=\"image/svg+xml\"><link rel=\"stylesheet\" href=\"/style.css\"><script src=\"/script.js\" defer></script>\n</head>\n<body>\n<a class=\"skip\" href=\"#main\">Skip to content</a>\n<header class=\"wrap\"><a class=\"brand\" href=\"/\" aria-label=\"DIP home\"><span class=\"mark\">d<span>i</span>p</span><span class=\"brand-by\">BY VXU LABS</span></a><nav aria-label=\"Main navigation\"><a href=\"#how\">How it works</a><a href=\"https://github.com/vxu-labs/dip#readme\">Docs ↗</a><a class=\"nav-cta\" href=\"#install\">Install DIP <span>↗</span></a></nav></header>\n<main id=\"main\">\n<section class=\"hero wrap\"><div class=\"eyebrow\"><span class=\"dot\"></span> DEVELOPMENT INTELLIGENCE PLATFORM</div><div class=\"hero-grid\"><div><h1>Your session ends.<br>Your project<br><em>remembers.</em></h1><p class=\"lede\">Give your coding agent a place to pick up. Keep requirements, plans and handoffs beside your code — across sessions and Git worktrees.</p><div class=\"actions\"><a class=\"button\" href=\"#install\">Get started with DIP <span>↗</span></a><a class=\"text-link\" ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-edb25461-7c19-4e90-b14d-e443f4c34f53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:52:09.176Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

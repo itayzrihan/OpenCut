@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a2907ba-43db-451d-b12d-676927254f81",
+  "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+  "type": "task.update",
+  "payload": {
+    "title": "Re-export corrected-audio teaser with and without captions and SRT; update Drive files",
+    "description": "Export currently saved FullAuto teaser project96fa/scene6125 through existing OpenCut native export with corrected source binding. Preserve scene state/captions, produce with/without captions and exact scene SRT, update3 existing GoogleDrive files in same folder.",
+    "acceptance": [
+      "Export current corrected source teaser with captions and without captions; validate same duration/audio and intact source scene.",
+      "Export matching scene SRT and verify timing within delivered video.",
+      "Replace existing3 corresponding Drive files and return links after upload completes."
+    ],
+    "scope": [
+      "analysis/teaser-reexport-audio-2026-10-15",
+      ".local/teaser-reexport-audio-2026-10-15",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T01:38:44.879Z",
+  "parents": [
+    "a5054873-3678-48da-b441-1c2253e31109"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

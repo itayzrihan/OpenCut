@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b7683cd0172dee5eb145f345a77fb19d1e646d3f5911abaa534793dbbb44bffb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:58:12.854Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-performance/wasm-probe.mjs <<'JS'\nimport assert from 'node:assert/strict';import{readFile,writeFile}from'node:fs/promises';import * as g from '../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js';\nconst bytes=await readFile(new URL('../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm',import.meta.url));const{instance}=await WebAssembly.instantiate(bytes,{'./opencut_editor_runtime_wasm_bg.js':g});g.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\nconst project=JSON.parse(await readFile('.local/smart-shorts-audio/project-before.json','utf8'));const archive=JSON.parse(project.__opencutEditorSession).saved.bundle.archive;const runtime=new g.CanonicalEditorRuntime();const start=performance.now();runtime.invokeSync('project.classic.session.restore',{projectId:project.metadata.id,expectedRevision:0,archive},{});const seconds=(performance.now()-start)/1000;const state=runtime.snapshot();assert.deepEqual(state.project.classic.document,archive.classic.document);console.log({seconds,memoryBytes:instance.exports.memory.buffer.byteLength,rss:process.memoryUsage().rss,scenes:state.project.classic.document.scenes.length,exact:true});await writeFile(`.local/smart-shorts-performance/wasm-${process.argv[2]??'before'}.json`,JSON.stringify({seconds,memoryBytes:instance.exports.memory.buffer.byteLength,rss:process.memoryUsage().rss,scenes:state.project.classic.document.scenes.length,exact:true}));runtime.free();\nJS\nnode .local/smart-shorts-performance/wasm-probe.mjs before > .local/smart-shorts-performance/wasm-before.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f0aa00ad-ac3a-4db4-8468-0356a74d3849"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:58:13.818Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

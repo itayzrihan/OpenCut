@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "649af178790f1c3bdb9526f5445db82ee4d2f8939cc5b0e4d56ef9db05b1cef5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:03:18.216Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c8af4dc4-809c-4aad-8fa7-7777c848f7f3"
+      },
+      {
+        "at": "2026-10-14T10:03:18.638Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c8af4dc4-809c-4aad-8fa7-7777c848f7f3"
+      },
+      {
+        "at": "2026-10-14T10:03:18.647Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'apply_timeline_source_v2|full-timeline|Timeline Source v2|baseRevision' .local/teaser-full-auto-2026-10-14 .local/episode-teaser-90-2026-10-14 --glob '*.ts' --glob '*.mjs' --glob '!node_modules/**' | head -35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a90a9d22-d74a-4bc8-b691-a3c9db805a72"
+      },
+      {
+        "at": "2026-10-14T10:03:18.763Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'apply_timeline_source_v2|full-timeline|Timeline Source v2|baseRevision' .local/teaser-full-auto-2026-10-14 .local/episode-teaser-90-2026-10-14 --glob '*.ts' --glob '*.mjs' --glob '!node_modules/**' | head -35",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a90a9d22-d74a-4bc8-b691-a3c9db805a72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:03:19.209Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

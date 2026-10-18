@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c32babe91e572aa478989b8c6736b3cdd8d8b6d605beb327db758cb8a5583484",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:33:37.788Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '225,283p' crates/editor-api/src/operations.rs; rg -n 'WorkspaceState' crates/editor-api/src/model.rs; sed -n '1845,1915p' crates/editor-api/src/model.rs; sed -n '2235,2285p' classic/apps/web/src/core/managers/commands.ts; sed -n '90,160p' crates/editor-api/src/model.rs; rg -n 'register.*non|transactional = false' crates/editor-api/src/operations -g '*.rs' | head -16; sed -n '635,676p' classic/apps/web/src/core/managers/project-manager.ts; rg -n 'source.*scene|scene.current|ActiveScene' classic/apps/web/src/core/managers/renderer-manager.ts | head -8",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a346d1e0-dd1b-4ed0-80bd-59b61d594728"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:33:38.029Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

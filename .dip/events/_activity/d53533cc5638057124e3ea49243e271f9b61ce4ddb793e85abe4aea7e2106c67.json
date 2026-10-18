@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d53533cc5638057124e3ea49243e271f9b61ce4ddb793e85abe4aea7e2106c67",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:49:10.021Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node <<'JS'\nconst ts=require('./classic/node_modules/typescript'),fs=require('fs');const file='classic/apps/web/src/transcription/external-server.test.ts';let s=fs.readFileSync(file,'utf8');const ast=ts.createSourceFile(file,s,99,true),edits=[];function visit(n){if(ts.isPropertyAssignment(n)&&n.name.getText(ast)==='fetcher'&&ts.isArrowFunction(n.initializer))edits.push([n.initializer.getStart(ast),n.initializer.end]);ts.forEachChild(n,visit);}visit(ast);for(const [a,b]of edits.sort((a,b)=>b[0]-a[0]))s=s.slice(0,a)+'mockFetch('+s.slice(a,b)+')'+s.slice(b);fs.writeFileSync(file,s);\nconst p='classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts';fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace('run: { id: `r${index}`, text:', 'run: { id: `r${index}`, lineIndex: 0, text:'));\nJS\nclassic/node_modules/.bin/tsc --noEmit --pretty false --project classic/apps/web/tsconfig.json > .local/brand-kit/premerge-types-final3.log 2>&1",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-7a12cc5b-a4d1-48c7-a3c0-53d563ec0fcd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:49:10.554Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

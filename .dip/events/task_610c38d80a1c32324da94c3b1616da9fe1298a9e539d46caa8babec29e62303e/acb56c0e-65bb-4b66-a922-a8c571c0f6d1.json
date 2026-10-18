@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "acb56c0e-65bb-4b66-a922-a8c571c0f6d1",
+  "taskId": "task_610c38d80a1c32324da94c3b1616da9fe1298a9e539d46caa8babec29e62303e",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Read-only native Swift probe on user's macOS 26.6.2: SFSpeechRecognizer he-IL available=true supportsOnDeviceRecognition=true. Apple API can require local processing and exposes segment timestamps/durations (segments may cover multiple words). Recommend native Apple offline Hebrew trial; no audio recognition, benchmark or integration performed. Vosk official catalog lacks Hebrew; browser dictation may be remote. Local-only constraint preserved.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-12T14:08:33.046Z",
+  "parents": [
+    "b8c135b5-368d-41cc-aed2-cbf99e472511"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

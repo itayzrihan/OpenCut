@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddc7e3cef8f840eb9f90f1f40e63d4c84ea41463b4d6e5ade010b80667135ae3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:04:16.652Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1142,1168p' crates/mcp/src/classic_bridge.rs; cat classic/apps/web/src/accounts/bridge-scope.ts | head -n 48; sed -n '105,145p' classic/apps/web/src/mcp/__tests__/bridge-publication.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-92bf98a3-cf3d-4a0b-934a-1896a0089f8e"
+      },
+      {
+        "at": "2026-10-13T14:04:16.759Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1142,1168p' crates/mcp/src/classic_bridge.rs; cat classic/apps/web/src/accounts/bridge-scope.ts | head -n 48; sed -n '105,145p' classic/apps/web/src/mcp/__tests__/bridge-publication.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-92bf98a3-cf3d-4a0b-934a-1896a0089f8e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:04:17.564Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

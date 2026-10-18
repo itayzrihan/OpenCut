@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b72e21922c57006481c7e00476ec1aad7dabcaec27b79a19e25438f1297033d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:55:24.827Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": ".local/crash-tools/bin/minidump-stackwalk --json '/Users/itayzrihan/Library/Application Support/Google/Chrome/Crashpad/completed/76f980c5-ab3d-4050-be42-2f57c7fcd17a.dmp' > .local/smart-shorts-seven/latest-crash.json 2> .local/smart-shorts-seven/latest-crash-stackwalk.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-34f0cfb1-4e51-4d16-8341-04f1db058eb8"
+      },
+      {
+        "at": "2026-10-13T12:55:24.975Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\nimport struct\np=Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed/76f980c5-ab3d-4050-be42-2f57c7fcd17a.dmp';b=p.read_bytes();n,rva=struct.unpack_from('<II',b,8)\nfor i in range(n):\n typ,size,off=struct.unpack_from('<III',b,rva+i*12)\n if typ==4:\n  for j in range(struct.unpack_from('<I',b,off)[0]):\n   loc=off+4+j*108;base,sz,cs,ts,name=struct.unpack_from('<QIIII',b,loc);length=struct.unpack_from('<I',b,name)[0];s=b[name+4:name+4+length].decode('utf16')\n   if 'Google Chrome Framework' in s:print({'module':s.split('/')[-1],'base':hex(base),'size':sz,'crashOffset':hex(0x12e7ecebc-base)})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-140966a8-3253-4854-b797-e5f3e3568595"
+      },
+      {
+        "at": "2026-10-13T12:55:25.171Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\nimport struct\np=Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed/76f980c5-ab3d-4050-be42-2f57c7fcd17a.dmp';b=p.read_bytes();n,rva=struct.unpack_from('<II',b,8)\nfor i in range(n):\n typ,size,off=struct.unpack_from('<III',b,rva+i*12)\n if typ==4:\n  for j in range(struct.unpack_from('<I',b,off)[0]):\n   loc=off+4+j*108;base,sz,cs,ts,name=struct.unpack_from('<QIIII',b,loc);length=struct.unpack_from('<I',b,name)[0];s=b[name+4:name+4+length].decode('utf16')\n   if 'Google Chrome Framework' in s:print({'module':s.split('/')[-1],'base':hex(base),'size':sz,'crashOffset':hex(0x12e7ecebc-base)})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-140966a8-3253-4854-b797-e5f3e3568595"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:55:25.580Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

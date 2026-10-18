@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad4a8249-c1c6-477b-a0e5-d7e633a2ae32",
+  "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/ai/podcast*",
+      "classic/apps/web/src/ai/__tests__/podcast*",
+      "classic/apps/web/src/ai/components/podcast-controls.tsx",
+      "crates/editor-api/src/operations/classic_takes/podcast.rs",
+      "crates/editor-api/tests/classic_podcast.rs",
+      "analysis/teaser-feature-upgrade-2026-10-16",
+      ".dip",
+      "crates/editor-api/src/operations/classic_takes/podcast/editorial.rs"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-16T10:40:47.262Z",
+  "parents": [
+    "a0b70cee-9e34-4b5c-b82a-9082e646b595"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e48b6a8c0c5a79c20a0d2980685cd3ba5ba9c867acecfba40d763e05d530e6b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:57:05.875Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');x=json.loads(p.read_text());r=next(r for r in x['runs']if r['id']=='4d42ea5e-fece-40af-882c-de7a69adc6d2');print({'id':r['id'],'options':r['options'],'jobs':[{k:j.get(k)for k in ['projectId','sceneId','status','stage','message','completedStages','totalStages','error','notes']}for j in r['jobs']]})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-041ba753-78ae-4ee9-b122-892e8d531d03"
+      },
+      {
+        "at": "2026-10-14T08:57:06.046Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');x=json.loads(p.read_text());r=next(r for r in x['runs']if r['id']=='4d42ea5e-fece-40af-882c-de7a69adc6d2');print({'id':r['id'],'options':r['options'],'jobs':[{k:j.get(k)for k in ['projectId','sceneId','status','stage','message','completedStages','totalStages','error','notes']}for j in r['jobs']]})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-041ba753-78ae-4ee9-b122-892e8d531d03"
+      },
+      {
+        "at": "2026-10-14T08:57:06.051Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6b19d352-9394-41fb-ab0a-025975446d7f"
+      },
+      {
+        "at": "2026-10-14T08:57:06.140Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6b19d352-9394-41fb-ab0a-025975446d7f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:57:06.860Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

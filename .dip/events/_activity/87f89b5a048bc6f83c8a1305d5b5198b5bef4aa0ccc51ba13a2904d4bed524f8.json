@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "eventId": "87f89b5a048bc6f83c8a1305d5b5198b5bef4aa0ccc51ba13a2904d4bed524f8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:03:49.556Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-strategic-teaser-feature.mjs"
+        ],
+        "changeHash": "c648e0573516b400ec29d472a71879112ead57a03c78a8b7644449d85853d9a5",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8e7eedeb-bee4-4cef-8a43-3395863caf9b"
+      },
+      {
+        "at": "2026-10-16T11:03:49.597Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-strategic-teaser-feature.mjs"
+        ],
+        "changeHash": "c648e0573516b400ec29d472a71879112ead57a03c78a8b7644449d85853d9a5",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8e7eedeb-bee4-4cef-8a43-3395863caf9b"
+      },
+      {
+        "at": "2026-10-16T11:03:49.601Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/production-build-final.log; head -12 .local/teaser-upgrade/wasm-adapters/summary.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-632e34cd-0353-4c35-b89e-c320abd1577f"
+      },
+      {
+        "at": "2026-10-16T11:03:49.678Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/production-build-final.log; head -12 .local/teaser-upgrade/wasm-adapters/summary.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-632e34cd-0353-4c35-b89e-c320abd1577f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:03:50.353Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

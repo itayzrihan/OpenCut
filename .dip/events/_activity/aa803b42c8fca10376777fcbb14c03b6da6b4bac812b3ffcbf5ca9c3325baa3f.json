@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa803b42c8fca10376777fcbb14c03b6da6b4bac812b3ffcbf5ca9c3325baa3f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:48.721Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport plistlib\np=Path('.local/apple-stt-benchmark')\ns=(p/'probe.swift').read_text().replace('CommandLine.arguments[2]', '\"'+str((p/'result-short.json').resolve())+'\"').replace('CommandLine.arguments[1]', '\"'+str(Path('.local/codex-transcription-research/probe-hebrew.wav').resolve())+'\"')\n(p/'app.swift').write_text(s)\na=p/'OpenCut Speech Test.app/Contents'\n(a/'MacOS').mkdir(parents=True,exist_ok=True)\nv=plistlib.loads((p/'Info.plist').read_bytes());v.update(CFBundleExecutable='probe',CFBundlePackageType='APPL',LSUIElement=True)\n(a/'Info.plist').write_bytes(plistlib.dumps(v))\nPY\nswiftc .local/apple-stt-benchmark/app.swift -o '.local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe'\ncodesign --force --sign - '.local/apple-stt-benchmark/OpenCut Speech Test.app'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b808c434-7060-47b7-8e45-3af0ad4eb8ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:48.881Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

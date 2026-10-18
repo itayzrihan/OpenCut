@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd3571b1d78211b9e45168cd0b46574c132e8a51a9a75dce3190b49d44fb3a11",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:47:41.902Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -n 7 .local/smart-shorts-seven/production-budget-build.log; ps -axo pid,ppid,%cpu,rss,etime,comm | sort -k3 -nr | head -n 9",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6e6c52e5-3fdd-40d8-8e92-2ace39474ba6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:47:42.103Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

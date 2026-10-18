@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a76d87ca9a76acb1f1b59b2b0757e64585dbaee9b2681c5d2fbfba60abc7489a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:47:51.203Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -65 classic/apps/web/src/timeline/restore-silence-captions.ts; head -65 classic/apps/web/src/media/unified-angles.ts; rg -n 'catalog.json' crates; rg -n 'Reference catalog generation changed' crates; rg -n 'resolveAnimationTarget' classic/apps/web/src/animation/target-registry.ts | head -10; sed -n '100,195p' classic/apps/web/src/animation/target-registry.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-43189f27-9b6e-478c-8976-b957520cf9d7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:47:51.349Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

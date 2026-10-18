@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "619f41e85b9732c494f662874181b45f5b82afbda48d3e535e4efb04de65bd2e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:25:01.738Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.dip/config.json')\ns=json.loads(p.read_text())\ns['verification']['transcription-sources']['timeoutMs']=480000\ns['verification']['transcription-checkpoints']['timeoutMs']=480000\np.write_text(json.dumps(s,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-055fadc1-a638-43c2-82e7-48f51782ebab"
+      },
+      {
+        "at": "2026-10-12T10:25:01.982Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.dip/config.json')\ns=json.loads(p.read_text())\ns['verification']['transcription-sources']['timeoutMs']=480000\ns['verification']['transcription-checkpoints']['timeoutMs']=480000\np.write_text(json.dumps(s,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-055fadc1-a638-43c2-82e7-48f51782ebab"
+      },
+      {
+        "at": "2026-10-12T10:25:01.988Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "mcp__dip__task_finish",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-49b17859-ee29-4bf5-b302-f2308d4809b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:25:03.180Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

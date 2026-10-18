@@ -8,6 +8,7 @@ use serde_json::{Map, Value};
 use std::{collections::BTreeMap, sync::Arc};
 
 pub(crate) type SourcePool = BTreeMap<String, Arc<HyperframesSource>>;
+pub(crate) const HISTORY_EXPANDED_BUDGET: usize = 512_000_000;
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -16,6 +17,14 @@ pub(crate) struct ArchivedClassicProject {
     /// ID in the archive source pool. References are resolved before validation.
     document: Map<String, Value>,
     media_assets: Vec<Map<String, Value>>,
+}
+
+impl ArchivedClassicProject {
+    pub(crate) fn encoded_len(&self) -> Result<usize, ModelError> {
+        let mut counter = ByteCounter(0);
+        serde_json::to_writer(&mut counter, self).map_err(|e| invalid(&e.to_string()))?;
+        Ok(counter.0)
+    }
 }
 
 /// Version 2 history uses lossless JSON deltas against the archive's current
@@ -102,9 +111,7 @@ impl ArchivedHistorySnapshot {
         };
         // Count exactly the same serialized bytes without allocating a temporary
         // multi-megabyte byte vector for every undo/redo boundary.
-        let mut counter = ByteCounter(0);
-        serde_json::to_writer(&mut counter, &classic).map_err(|e| invalid(&e.to_string()))?;
-        let bytes = counter.0;
+        let bytes = classic.encoded_len()?;
         *budget = budget
             .checked_sub(bytes)
             .ok_or_else(|| invalid("expanded history exceeds its storage budget"))?;

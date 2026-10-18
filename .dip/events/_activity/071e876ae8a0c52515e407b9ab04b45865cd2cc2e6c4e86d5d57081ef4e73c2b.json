@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "071e876ae8a0c52515e407b9ab04b45865cd2cc2e6c4e86d5d57081ef4e73c2b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:35:39.849Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'transcription|undoGroup|groupId' classic/apps/web/src/core/managers/transcription-manager.ts | tail -25; rg -n 'history|undo|clone|sync' classic/apps/web/src/core/managers/commands.ts | head -30; ps -axo pid,pcpu,rss,comm -r | head -12",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-9c930055-821f-4332-a967-a674b16f595f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:35:40.705Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

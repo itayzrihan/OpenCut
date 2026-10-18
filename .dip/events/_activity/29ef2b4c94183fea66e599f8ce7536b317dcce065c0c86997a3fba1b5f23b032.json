@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "29ef2b4c94183fea66e599f8ce7536b317dcce065c0c86997a3fba1b5f23b032",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:54:42.852Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'take_assembly|takeAssembly|archive|source' crates/editor-api/src/operations/classic_podcast.rs | tail -n 35; tail -n 5 .local/smart-shorts-seven/budget-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-543a7172-6c8c-4e82-bd68-c69e3e0c4d77"
+      },
+      {
+        "at": "2026-10-13T10:54:43.161Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'take_assembly|takeAssembly|archive|source' crates/editor-api/src/operations/classic_podcast.rs | tail -n 35; tail -n 5 .local/smart-shorts-seven/budget-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-543a7172-6c8c-4e82-bd68-c69e3e0c4d77"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:54:43.747Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

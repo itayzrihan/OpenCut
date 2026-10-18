@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f80d74f69938e8e8781a00bb923650c1ed4a9c8bce51076920d3e10eb3a249bb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:42:01.354Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-editorial.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-plan.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-plan-cache.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/components/podcast-controls.tsx"
+        ],
+        "changeHash": "c70a47d73c7a7690d7a63ac947dbb0ace6327876c5456232cca917c79e7bef50",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6a3e97e2-48f2-4f5b-bd28-9bd4b16b8ded"
+      },
+      {
+        "at": "2026-10-16T10:42:01.394Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-editorial.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-plan.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/podcast-plan-cache.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/ai/components/podcast-controls.tsx"
+        ],
+        "changeHash": "c70a47d73c7a7690d7a63ac947dbb0ace6327876c5456232cca917c79e7bef50",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-6a3e97e2-48f2-4f5b-bd28-9bd4b16b8ded"
+      },
+      {
+        "at": "2026-10-16T10:42:01.400Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cargo fmt --all --check 2>&1 | head -5; node classic/scripts/test-web.mjs src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts --jobs=1 --report=.local/teaser-upgrade/initial",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ea5f5be7-c386-4637-b714-10a440d963be"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:42:01.636Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

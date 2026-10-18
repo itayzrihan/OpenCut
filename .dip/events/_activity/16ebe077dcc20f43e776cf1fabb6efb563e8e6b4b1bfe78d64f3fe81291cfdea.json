@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16ebe077dcc20f43e776cf1fabb6efb563e8e6b4b1bfe78d64f3fe81291cfdea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:41:33.761Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'subscription-probe' .local/transcription-debug/dev.log | tail -8; rg -n 'Cross-Origin|Cross-Origin-Resource|headers\\(' classic/apps/web/next.config.ts; sed -n '115,160p' classic/apps/web/next.config.ts; rg -n 'authenticateAccount' classic/apps/web/src/accounts/server.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-41616f38-025d-4d6b-9bac-a526ad29a66c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:41:34.478Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

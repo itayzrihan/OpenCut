@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4205139dfd7d80c12de829f8ed15620190ff262f072fc8348f5ac959abc7b29f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:53:17.074Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='dist/index.html'\ns=open(p).read().replace('width=\"1440\" height=\"1000\"','width=\"1440\" height=\"1461\"')\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-1d42e91e-bc77-44f8-b8e8-ab97511272ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:53:18.989Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

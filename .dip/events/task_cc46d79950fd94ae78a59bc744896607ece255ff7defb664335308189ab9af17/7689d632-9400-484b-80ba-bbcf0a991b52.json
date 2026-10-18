@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7689d632-9400-484b-80ba-bbcf0a991b52",
+  "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Completed isolated local-only Apple SFSpeechRecognizer he-IL experiment after user permission. Known Hebrew fixture 4.948792s: initial recognition 32.585s, warm repeat 0.482936s (~10.25x real-time). Both output 10 timestamped segments, including grouped 'אורך וידאו' (misrecognition of עורך הווידאו) and normalized 42. Not reliable one-word-per-segment. Evidence .local/apple-stt-benchmark/result-cold.json and result-warm.json. No product changes, no long-recording or overall resource benchmark; requiresOnDeviceRecognition=true.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-12T18:24:35.773Z",
+  "parents": [
+    "ea7af605-926f-4763-a0aa-db70606f7baf"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

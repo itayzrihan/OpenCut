@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9fb8068e287c826db4333946e7acea0f71dd01a65a93d2d7ac6673901a27591",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:32:58.872Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -l -i 'temp-971314|temporary.*password|סיסמה זמנית|סיסמא זמנית' --hidden /Users/itayzrihan/.codex/memories /Users/itayzrihan/Documents/PoCut/.dip/events -g '!_activity' -g '!node_modules' 2>/dev/null | head -20\nsed -n '1,145p' classic/apps/web/src/accounts/browser-project-recovery.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-85a1ac1a-4de7-400f-91de-12c7ac540ae2"
+      },
+      {
+        "at": "2026-10-15T01:32:58.963Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -l -i 'temp-971314|temporary.*password|סיסמה זמנית|סיסמא זמנית' --hidden /Users/itayzrihan/.codex/memories /Users/itayzrihan/Documents/PoCut/.dip/events -g '!_activity' -g '!node_modules' 2>/dev/null | head -20\nsed -n '1,145p' classic/apps/web/src/accounts/browser-project-recovery.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-85a1ac1a-4de7-400f-91de-12c7ac540ae2"
+      },
+      {
+        "at": "2026-10-15T01:32:58.966Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "mcp__codex_app__list_threads",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-efa35989-5130-469e-9629-6e87fde01381"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:32:59.684Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ac861c8c80ca65ceeac5a620efc1cf04893279e1d091760028c44af6ad698e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:26:03.022Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts');s=p.read_text().replace('let closed = 0;','let closed = 0;\\nlet interrupt: (() => void) | undefined;').replace('\\t\\t\\tranges.push(r);','\\t\\t\\tranges.push(r);\\n            if(ranges.length===2)interrupt?.();',1)\ns+='''\n\ntest(\"completed audio windows survive interruption and a new cache instance without decoding them again\", async () => {\n    const {IDBFactory}=await import(\"fake-indexeddb\");\n    const {IndexedAudioCheckpoints}=await import(\"./audio-checkpoints\");\n    const factory=new IDBFactory();\n    const editor={scenes:{getActiveScene:()=>({tracks:{main:{elements:[{id:\"clip\",type:\"video\",mediaId:\"media\",startTime:3*120000,duration:61*120000}]}}})},media:{getAssets:()=>[{id:\"media\",url:\"http://local/source\",size:100,lastModified:1,bindingRevision:1}]}} as any;\n    ranges.length=0;closed=0;\n    const controller=new AbortController();interrupt=()=>controller.abort();\n    await expect(collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:controller.signal,boundedFrames:true,checkpoint:{key:\"exact-source\",store:new IndexedAudioCheckpoints({factory,databaseName:\"resume\"})}})).rejects.toThrow();\n    interrupt=undefined;\n    expect(ranges.map(r=>r.start)).toEqual([100,130]);\n    const result=await collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:new AbortController().signal,boundedFrames:true,checkpoint:{key:\"exact-source\",store:new IndexedAudioCheckpoints({factory,databaseName:\"resume\"})}});\n    expect(ranges.map(r=>r.start)).toEqual([100,130,130,160]);\n    expect(result[0].frames[0].start).toBeCloseTo(1.01,4);\n    expect(result[0].frames.at(-1)!.end).toBeCloseTo(62,4);\n    const resumed=result[0].frames;\n    ranges.length=0;\n    const fresh=await collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:new AbortController().signal,boundedFrames:true});\n    expect(resumed).toEqual(fresh[0].frames);\n});\n''';p.write_text(s)\nPY\nnode classic",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e845462a-dd7a-42ee-86cd-e739cc62d756"
+      },
+      {
+        "at": "2026-10-13T14:26:03.659Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts');s=p.read_text().replace('let closed = 0;','let closed = 0;\\nlet interrupt: (() => void) | undefined;').replace('\\t\\t\\tranges.push(r);','\\t\\t\\tranges.push(r);\\n            if(ranges.length===2)interrupt?.();',1)\ns+='''\n\ntest(\"completed audio windows survive interruption and a new cache instance without decoding them again\", async () => {\n    const {IDBFactory}=await import(\"fake-indexeddb\");\n    const {IndexedAudioCheckpoints}=await import(\"./audio-checkpoints\");\n    const factory=new IDBFactory();\n    const editor={scenes:{getActiveScene:()=>({tracks:{main:{elements:[{id:\"clip\",type:\"video\",mediaId:\"media\",startTime:3*120000,duration:61*120000}]}}})},media:{getAssets:()=>[{id:\"media\",url:\"http://local/source\",size:100,lastModified:1,bindingRevision:1}]}} as any;\n    ranges.length=0;closed=0;\n    const controller=new AbortController();interrupt=()=>controller.abort();\n    await expect(collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:controller.signal,boundedFrames:true,checkpoint:{key:\"exact-source\",store:new IndexedAudioCheckpoints({factory,databaseName:\"resume\"})}})).rejects.toThrow();\n    interrupt=undefined;\n    expect(ranges.map(r=>r.start)).toEqual([100,130]);\n    const result=await collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:new AbortController().signal,boundedFrames:true,checkpoint:{key:\"exact-source\",store:new IndexedAudioCheckpoints({factory,databaseName:\"resume\"})}});\n    expect(ranges.map(r=>r.start)).toEqual([100,130,130,160]);\n    expect(result[0].frames[0].start).toBeCloseTo(1.01,4);\n    expect(result[0].frames.at(-1)!.end).toBeCloseTo(62,4);\n    const resumed=result[0].frames;\n    ranges.length=0;\n    const fresh=await collectTakeAudioEvidence({editor,elementIds:[\"clip\"],signal:new AbortController().signal,boundedFrames:true});\n    expect(resumed).toEqual(fresh[0].frames);\n});\n''';p.write_text(s)\nPY\nnode classic",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e845462a-dd7a-42ee-86cd-e739cc62d756"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:26:03.762Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

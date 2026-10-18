@@ -56,6 +56,7 @@ import {
 	buildTextElementWordUpdates,
 } from "./caption-word-updates";
 import {
+	createCaptionWordIndex,
 	findWordIndexForRun,
 	getWordElementRefs,
 	isTimedWordRun,
@@ -827,7 +828,9 @@ export function CaptionWordTimingTrack({
 									Add word after
 								</ContextMenuItem>
 								<ContextMenuItem
-									onSelect={() => togglePunctuationExclusion({ wordIndex: index })}
+									onSelect={() =>
+										togglePunctuationExclusion({ wordIndex: index })
+									}
 								>
 									{word.excludeFromPunctuationHiding
 										? "Include in punctuation hiding"
@@ -926,6 +929,7 @@ function getWordCoverageIssues({
 	const issues: WordCoverageIssue[] = [];
 	const source = sourceTrack.captionSource;
 	if (!source) return issues;
+	const lookup = createCaptionWordIndex({ words });
 
 	for (const track of sourceTracks) {
 		for (const element of track.elements) {
@@ -937,7 +941,13 @@ function getWordCoverageIssues({
 				const runStart =
 					elementStart + mediaTimeToSeconds({ time: run.startTime });
 				const runEnd = elementStart + mediaTimeToSeconds({ time: run.endTime });
-				const wordIndex = findWordIndexForRun({ words, run, runStart, runEnd });
+				const wordIndex = findWordIndexForRun({
+					words,
+					run,
+					runStart,
+					runEnd,
+					lookup,
+				});
 				if (wordIndex < 0) continue;
 
 				if (runStart < elementStart - 0.001) {

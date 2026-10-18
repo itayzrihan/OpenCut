@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aaa30c0700aabf0e792f0983d2f5109d62199534e94656bae8431bd765ce8f9f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T16:18:32.644Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-shorts-audio/real-source-fixture.ts",
+          ".local/smart-shorts-audio/real-source-test.ts",
+          ".local/smart-shorts-audio/real-browser.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "ff80488d-aaf0-4cce-bb5d-4612b7348d9a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:18:32.647Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

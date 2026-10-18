@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "439c111fecd6dbd9edcd93a7f8fd877b618e089f6fb2cb87e16c6632c5801d04",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:49:35.905Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2e5bf76b-289a-41d6-a5fd-212e757d8acf"
+      },
+      {
+        "at": "2026-10-14T07:49:35.919Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '235,330p' classic/apps/web/src/ai/timeline-document-v2.ts; rg -n 'classic.*get|read' classic/apps/web/src/core/canonical-classic-session.ts | tail -15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b211a285-5a13-4e23-960c-d4c0e436f16b"
+      },
+      {
+        "at": "2026-10-14T07:49:36.019Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '235,330p' classic/apps/web/src/ai/timeline-document-v2.ts; rg -n 'classic.*get|read' classic/apps/web/src/core/canonical-classic-session.ts | tail -15",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b211a285-5a13-4e23-960c-d4c0e436f16b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:49:36.687Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

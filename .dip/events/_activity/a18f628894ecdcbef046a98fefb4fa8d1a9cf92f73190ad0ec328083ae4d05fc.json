@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a18f628894ecdcbef046a98fefb4fa8d1a9cf92f73190ad0ec328083ae4d05fc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:32:40.999Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nfor f in pathlib.Path('.dip/events/_activity').glob('*.json'):\n s=f.read_text()\n if 'temp-971314' not in s: continue\n d=json.loads(s)\n print(f.name, 'keys=',list(d),'time=',d.get('at',d.get('timestamp')))\n for k,v in d.items():\n  if k in ('kind','type','tool','toolName','summary'):print(k,str(v)[:200])\n print('mentions', {w:s.lower().count(w) for w in ['password','login','temporary','temp-971314']})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ae995f1d-5f1b-4a17-9427-ac1d56c0200c"
+      },
+      {
+        "at": "2026-10-15T01:32:41.238Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nfor f in pathlib.Path('.dip/events/_activity').glob('*.json'):\n s=f.read_text()\n if 'temp-971314' not in s: continue\n d=json.loads(s)\n print(f.name, 'keys=',list(d),'time=',d.get('at',d.get('timestamp')))\n for k,v in d.items():\n  if k in ('kind','type','tool','toolName','summary'):print(k,str(v)[:200])\n print('mentions', {w:s.lower().count(w) for w in ['password','login','temporary','temp-971314']})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ae995f1d-5f1b-4a17-9427-ac1d56c0200c"
+      },
+      {
+        "at": "2026-10-15T01:32:41.239Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temporary|temp-|randomBytes.*password|random.*password|registerAccount' classic crates apps -g '!*.test.*' -g '!*.lock' -g '!package-lock.json' | head -70",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5e8ea970-1950-4099-b783-032a7d5b4b9e"
+      },
+      {
+        "at": "2026-10-15T01:32:41.345Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temporary|temp-|randomBytes.*password|random.*password|registerAccount' classic crates apps -g '!*.test.*' -g '!*.lock' -g '!package-lock.json' | head -70",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5e8ea970-1950-4099-b783-032a7d5b4b9e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:32:41.810Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

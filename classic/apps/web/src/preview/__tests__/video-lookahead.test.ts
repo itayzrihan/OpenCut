@@ -1,7 +1,7 @@
 import { expect, mock, test } from "bun:test";
 import { wasm } from "../../../test-support/wasm";
 mock.module("opencut-wasm", () => wasm);
-const requests: Array<{ mediaId: string; time: number }> = [];
+const requests: Array<{ mediaId: string; time: number; url?: string; file?: File; maxSourceSize?: number }> = [];
 let pending: Promise<null> = Promise.resolve(null);
 mock.module("@/services/video-cache/service", () => ({
 	videoCache: {
@@ -37,7 +37,7 @@ function clip({
 		duration: duration * 120000,
 		trimStart: trim * 120000,
 		trimEnd: 0,
-		transform: { position: { x: 0, y: 0 }, scale: 1, rotate: 0 },
+		transform: { position: { x: 0, y: 0 }, scaleX: 1, scaleY: 1, perspectiveX: 0, perspectiveY: 0, rotate: 0 },
 		opacity: 1,
 		isPreview,
 		maxSourceSize: 1280,

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "94f1eb4c1dea4b0ad448abe99d58b1be08dd0fc7aead7173632089dc47d2cd65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:16:43.143Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,86p' crates/editor-api/src/runtime.rs; cat crates/editor-api/Cargo.toml | head -n 55; tail -n 8 .local/smart-shorts-seven/canonical-memory-probe.log; tail -n 8 .local/smart-shorts-seven/production-recovery-build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-76d9525d-6f6c-4459-855b-4024b7528512"
+      },
+      {
+        "at": "2026-10-13T13:16:43.281Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,86p' crates/editor-api/src/runtime.rs; cat crates/editor-api/Cargo.toml | head -n 55; tail -n 8 .local/smart-shorts-seven/canonical-memory-probe.log; tail -n 8 .local/smart-shorts-seven/production-recovery-build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-76d9525d-6f6c-4459-855b-4024b7528512"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:16:44.083Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

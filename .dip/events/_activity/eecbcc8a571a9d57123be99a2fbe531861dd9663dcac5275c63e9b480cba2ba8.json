@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eecbcc8a571a9d57123be99a2fbe531861dd9663dcac5275c63e9b480cba2ba8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:09:44.601Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> crates/editor-api/tests/classic_transcription.rs <<'EOF'\n\n#[tokio::test]\nasync fn srt_import_preserves_cues_supersedes_pending_inference_and_exposes_transcript() {\n let r=setup().await;edit(&r,section(0)).await;\n let before=state(&r).await;let defaults=job(&before)[\"defaults\"].clone();\n edit(&r,json!({\"type\":\"importSrt\",\"sceneId\":\"main-scene\",\"text\":\"\\u{feff}1\\r\\n00:00:02,250 --> 00:00:04,750\\r\\nשלום <i>עולם</i>\\r\\n\\r\\n2\\r\\n00:01:01.000 --> 00:01:04.000\\r\\nSecond line\\r\\ncontinued\",\"settings\":{\"wordsPerRow\":3,\"rows\":1},\"defaults\":defaults})).await;\n let s=state(&r).await;assert_eq!(job(&s)[\"status\"],\"superseded\");\n let imported=tracks(&s);assert_eq!(imported.len(),1);assert_eq!(imported[0][\"elements\"].as_array().unwrap().len(),2);\n assert_eq!(imported[0][\"elements\"][0][\"startTime\"],270000);assert_eq!(imported[0][\"elements\"][0][\"duration\"],300000);\n assert_eq!(imported[0][\"captionSource\"][\"origin\"],\"srt\");assert_eq!(imported[0][\"captionSource\"][\"words\"][0][\"text\"],\"שלום\");assert_eq!(imported[0][\"captionSource\"][\"words\"].as_array().unwrap().len(),5);\n call(&r,\"history.undo\",json!({})).await; // grouped transcription edits are undoable\n}\n#[tokio::test]\nasync fn malformed_srt_is_atomic_and_engine_selection_is_canonical() {\n let r=setup().await;edit(&r,json!({\"type\":\"setEngine\",\"engine\":\"external\"})).await;\n let before=state(&r).await;assert_eq!(before[\"project\"][\"classic\"][\"document\"][\"transcriptionEngine\"],\"external\");\n for text in [\"\", \"1\\n00:60:00,000 --> 00:61:00,000\\ninvalid\", \"1\\n00:00:01,000 --> 00:00:00,500\\nbackwards\", \"1\\n00:00:01,000 --> 00:00:02,000\\ngood\\n\\n2\\ninvalid\"] {\n let error=r.registry().invoke(CAP,InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":before[\"revision\"],\"jobId\":\"import-job\",\"change\":{\"type\":\"importSrt\",\"sceneId\":\"main-scene\",\"text\":text,\"settings\":{},\"defaults\":job(&before)[\"defaults\"]}})).await;\n assert!(error.is_err());assert_eq!(state(&r).await,before);\n }\n}\nEOF\npython3 - <<'PY'\np='classic/ap",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-aa9e91bd-ccf9-4b54-8b53-5520274817f8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:09:45.404Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

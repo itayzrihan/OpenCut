@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a1eabecebbe3322092ebc069c153cf4fd9c4eb11da78b4af44411bd452cba497",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:26:32.419Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -show_entries stream=codec_name,codec_type,sample_rate,channels,width,height,duration -show_entries format=duration,size -of json /Users/itayzrihan/Downloads/OpenCut-audio-fixed-04.mp4; ffmpeg -hide_banner -i /Users/itayzrihan/Downloads/OpenCut-audio-fixed-04.mp4 -map 0:a:0 -af astats=metadata=0:reset=0 -f null - 2>&1 | rg 'RMS level|Peak level|Number of samples|Duration'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-022cbbe8-be0b-40bf-95b8-b55b7c705162"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:26:32.786Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

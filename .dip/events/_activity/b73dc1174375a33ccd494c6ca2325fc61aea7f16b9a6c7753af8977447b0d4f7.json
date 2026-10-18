@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b73dc1174375a33ccd494c6ca2325fc61aea7f16b9a6c7753af8977447b0d4f7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:24:32.094Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 - <<'PY'\nfrom PIL import Image,ImageDraw,ImageFont\nfrom pathlib import Path\nr=Path('.local/teaser-reference-2026-10-14');font=ImageFont.truetype('/System/Library/Fonts/Menlo.ttc',14)\nfor prefix,base in [('morph',18),('morning',28),('ice',53.3)]:\n f=sorted(r.glob(prefix+'-*.jpg'))\n for page in range((len(f)+14)//15):\n  grid=Image.new('RGB',(1440,1626),'#151515');d=ImageDraw.Draw(grid)\n  for i,p in enumerate(f[page*15:(page+1)*15]):\n   x=i%5*288;y=i//5*542;grid.paste(Image.open(p),(x,y+30));d.text((x+5,y+6),f'{base+(int(p.stem.split(\"-\")[1])-1)/10:.2f}s',font=font,fill='white')\n  grid.save(r/f'{prefix}-sheet-{page+1}.jpg',quality=95)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-be3b4009-9aa3-4e07-95e3-46092ed445c1"
+      },
+      {
+        "at": "2026-10-14T00:24:32.376Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 - <<'PY'\nfrom PIL import Image,ImageDraw,ImageFont\nfrom pathlib import Path\nr=Path('.local/teaser-reference-2026-10-14');font=ImageFont.truetype('/System/Library/Fonts/Menlo.ttc',14)\nfor prefix,base in [('morph',18),('morning',28),('ice',53.3)]:\n f=sorted(r.glob(prefix+'-*.jpg'))\n for page in range((len(f)+14)//15):\n  grid=Image.new('RGB',(1440,1626),'#151515');d=ImageDraw.Draw(grid)\n  for i,p in enumerate(f[page*15:(page+1)*15]):\n   x=i%5*288;y=i//5*542;grid.paste(Image.open(p),(x,y+30));d.text((x+5,y+6),f'{base+(int(p.stem.split(\"-\")[1])-1)/10:.2f}s',font=font,fill='white')\n  grid.save(r/f'{prefix}-sheet-{page+1}.jpg',quality=95)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-be3b4009-9aa3-4e07-95e3-46092ed445c1"
+      },
+      {
+        "at": "2026-10-14T00:24:32.379Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/teaser-reference-2026-10-14/morph-sheet-1.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3ea307a4-bb0c-4637-8b2e-320fe5ae9937"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:24:32.421Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

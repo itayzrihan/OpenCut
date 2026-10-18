@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4dc33416d6ef2518f0176996fda2c4a4f1aa8221ec4d1e7fd1e531a1f2781c40",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:01:50.017Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];s=r['critique:0']['evidence'];print({'characters':len(s),'utf8Bytes':len(s.encode()),'keys':list(r)[-4:]})\nPY\nkill -TERM 8259",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4048d4c2-1578-4feb-88bf-21e2223466d7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:01:50.099Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

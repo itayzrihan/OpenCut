@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78b4c90ff9bef6f615c1938a77cac388e23da10a575d762821d459bd8cb2e525",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:27:17.670Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,subprocess\nbefore=json.loads(pathlib.Path('.local/smart-shorts-audio/project-before.json').read_text());after=json.loads(pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json').read_text());assert before['scenes']==after['scenes'];assert before['transcriptionJobs']==after['transcriptionJobs'];print('PASS all seven sequences, Main and complete transcript unchanged')\nf=pathlib.Path('/Users/itayzrihan/Downloads/OpenCut-audio-fixed-04.mp4');target=f.with_name('OpenCut-audio-fixed-01.mp4');assert not target.exists();f.rename(target)\ninfo=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,codec_type,sample_rate,channels,width,height,duration','-show_entries','format=duration,size','-of','json',str(target)]));assert any(s['codec_type']=='audio' and s['codec_name']=='aac' for s in info['streams']);pathlib.Path('.local/smart-shorts-audio/production-export-verification.json').write_text(json.dumps({'path':str(target),'sceneId':'podcast-40','unchangedSavedScenesAndTranscript':True,'ffprobe':info},indent=2));print('PASS production 4K MP4 complete with stereo AAC',str(target))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c38950e4-0d60-479d-976f-cb1bc64302a0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:27:17.827Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

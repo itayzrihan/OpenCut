@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c699151cfde26e3dd71d9b7ad66663cc6f68ce8a4f79573622285b0a5b2aae74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:55:40.976Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,100p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '820,850p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '1140,1232p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '1,145p' classic/apps/web/src/core/managers/__tests__/audio-preparation.test.ts; rg -n 'shouldUsePrepared' classic/apps/web/src/core/managers/audio-manager.ts; cat classic/apps/web/src/retime/rate.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7444c19d-3131-4e76-a061-64bffca6c56d"
+      },
+      {
+        "at": "2026-10-13T18:55:41.080Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,100p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '820,850p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '1140,1232p' classic/apps/web/src/core/managers/audio-manager.ts; sed -n '1,145p' classic/apps/web/src/core/managers/__tests__/audio-preparation.test.ts; rg -n 'shouldUsePrepared' classic/apps/web/src/core/managers/audio-manager.ts; cat classic/apps/web/src/retime/rate.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7444c19d-3131-4e76-a061-64bffca6c56d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:55:41.427Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

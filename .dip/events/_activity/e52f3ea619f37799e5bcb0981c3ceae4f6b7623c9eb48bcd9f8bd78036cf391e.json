@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e52f3ea619f37799e5bcb0981c3ceae4f6b7623c9eb48bcd9f8bd78036cf391e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:34:36.564Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "command -v codex; rg --files -g '*transcri*' -g '*audio*' -g '*codex*' -g '!node_modules' -g '!target' -g '!.git' . | head -45",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-f46fe6e3-1990-4d92-aaac-535afe1afe01"
+      },
+      {
+        "at": "2026-10-12T10:34:36.711Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "command -v codex; rg --files -g '*transcri*' -g '*audio*' -g '*codex*' -g '!node_modules' -g '!target' -g '!.git' . | head -45",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-f46fe6e3-1990-4d92-aaac-535afe1afe01"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:34:37.482Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

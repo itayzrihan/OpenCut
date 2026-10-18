@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "74fb39ee75de0f01625d3b68a33b12590af1889369d5d02e5f97b7f0dc25a547",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:16:08.952Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx eslint src/transcription/external-client.ts src/transcription/external-server.ts src/transcription/windows.ts src/transcription/timeline-stream.ts src/core/managers/transcription-manager.ts src/subtitles/components/transcription-source.tsx src/app/api/transcription/external/route.ts src/app/api/transcription/settings/route.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-93b6d408-d940-4b9f-a28c-7c507e0562a3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:16:09.444Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

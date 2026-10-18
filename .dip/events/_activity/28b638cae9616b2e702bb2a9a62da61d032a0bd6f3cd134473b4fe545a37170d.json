@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28b638cae9616b2e702bb2a9a62da61d032a0bd6f3cd134473b4fe545a37170d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:55:08.469Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src | rg 'audio.*(test|spec)|video.*(lookahead|cache).*test'; sed -n '200,255p' classic/apps/web/src/core/managers/audio-manager.ts; cat classic/apps/web/src/media/__tests__/audio-sink-cache.test.ts 2>/dev/null; sed -n '1,150p' .dip/tools/verify-compact-history.mjs; rg -n 'thumbnailRevision|updateThumbnailFromTimeline' classic/apps/web/src/core/managers/project-manager.ts; rg -n 'decodedBuffers.*size|preparedClipBuffers.*size|fullSourceBuffers' classic/apps/web/src/core/managers/audio-manager.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-62242eae-43da-46d6-8fd2-4750df2ba966"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:55:09.401Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ed4c8dc58dab167ed08d60407ab16dfd383b03cda0b7559a8e4b74bedfedfc6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:05:57.140Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "pgrep -f '^node .local/smart-shorts-seven/restore-probe.mjs$'\nrg -n 'entry\\.document|\\.document\\.revision' crates/editor-api/src/runtime.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/classic_session.rs | tail -22\nrg -n 'shared|Arc|source|restore' crates/editor-api/tests/classic_session.rs | tail -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-03bc36cc-49b7-403f-87af-0e594264f74f"
+      },
+      {
+        "at": "2026-10-13T09:05:57.275Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "pgrep -f '^node .local/smart-shorts-seven/restore-probe.mjs$'\nrg -n 'entry\\.document|\\.document\\.revision' crates/editor-api/src/runtime.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/classic_session.rs | tail -22\nrg -n 'shared|Arc|source|restore' crates/editor-api/tests/classic_session.rs | tail -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-03bc36cc-49b7-403f-87af-0e594264f74f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:05:57.636Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

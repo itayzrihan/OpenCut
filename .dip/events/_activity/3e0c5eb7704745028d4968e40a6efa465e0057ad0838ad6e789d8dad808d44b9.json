@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e0c5eb7704745028d4968e40a6efa465e0057ad0838ad6e789d8dad808d44b9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:50:59.113Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -lh analysis/teaser-exports-2026-10-14/project-before.json\npython3 - <<'PY'\nimport json,pathlib\nbefore=json.load(open('analysis/teaser-exports-2026-10-14/project-before.json'));after=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json'))\nprint({'changedTopKeys':[k for k in before if before[k]!=after.get(k)]})\nfor a,b in zip(before['scenes'],after['scenes']):\n if a!=b:print({'scene':a['id'],'changedKeys':[k for k in a if a[k]!=b.get(k)],'hidden':[(t['name'],t.get('hidden')) for t in b['tracks']['overlay']]})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-cb31c1c6-3e41-4d2d-bc94-ccff871e5d3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:50:59.160Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

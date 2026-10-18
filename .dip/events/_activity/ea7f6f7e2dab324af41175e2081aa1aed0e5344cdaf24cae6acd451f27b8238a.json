@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ea7f6f7e2dab324af41175e2081aa1aed0e5344cdaf24cae6acd451f27b8238a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T16:16:03.898Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/__tests__/audio-source-windows.test.ts",
+          "classic/apps/web/src/editor-agent/__tests__/session-policy.test.ts",
+          "classic/apps/web/src/core/managers/audio-manager.ts",
+          "apps/mcp/src/session_policy.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "9833402e-fd29-42a4-9d9b-e0564854c319"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:16:03.900Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

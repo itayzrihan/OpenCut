@@ -1,4 +1,5 @@
 import { startOperationTiming } from "@/diagnostics/operation";
+import { localDriveRequest } from "@/services/local-drive/client";
 import {
 	isBatchReadOnly,
 	isBatchProjectLocked,
@@ -166,6 +167,43 @@ export class ProjectManager {
 	private sessionOwnershipLost = false;
 	private sessionWakeCleanup: (() => void) | null = null;
 	private sessionAccountId: string | null = null;
+	private sceneViewTimer: ReturnType<typeof setTimeout> | null = null;
+
+	/** Checkpoint a canonical viewer result as tiny account-scoped host IO.
+	 * Restore always revalidates through the canonical scene.open capability. */
+	checkpointSceneView({
+		projectId,
+		sceneId,
+	}: {
+		projectId: string;
+		sceneId: string;
+	}): void {
+		const accountId = this.sessionAccountId;
+		if (!accountId || this.active?.metadata.id !== projectId) return;
+		if (this.sceneViewTimer) clearTimeout(this.sceneViewTimer);
+		this.sceneViewTimer = setTimeout(() => {
+			this.sceneViewTimer = null;
+			if (
+				this.sessionAccountId !== accountId ||
+				this.active?.metadata.id !== projectId
+			)
+				return;
+			void localDriveRequest({
+				operation: "preferences.put",
+				scope: { accountId },
+				payload: {
+					key: `classic-scene:${projectId}`,
+					value: JSON.stringify({
+						projectId,
+						sceneId,
+						viewState: this.editor.command.getClassicViewport(),
+					}),
+				},
+			}).catch((error) =>
+				console.warn("Could not checkpoint the viewer scene:", error),
+			);
+		}, 250);
+	}
 
 	constructor(private editor: EditorCore) {}
 
@@ -430,7 +468,21 @@ export class ProjectManager {
 		const promise = this.loadProjectOnce({ id, takeOver });
 		this.projectLoad = { id, takeOver, promise };
 		try {
-			return await promise;
+			const loaded = await promise;
+			if (
+				loaded &&
+				!this.sessionReadOnly &&
+				this.active?.transcriptionJobs?.some((job) => job.status === "running")
+			)
+				queueMicrotask(() => {
+					if (this.active?.metadata.id === id)
+						void this.editor.transcription
+							.resumePending()
+							.catch((error) =>
+								console.error("Could not resume saved transcription", error),
+							);
+				});
+			return loaded;
 		} finally {
 			if (this.projectLoad?.promise === promise) {
 				this.projectLoad = undefined;
@@ -673,6 +725,26 @@ export class ProjectManager {
 				await this.editor.command.flushHistory();
 			}
 			this.editor.save.discardPending();
+			try {
+				const preferences = await localDriveRequest<Record<string, string>>({
+					operation: "preferences.list",
+					scope: { accountId },
+				});
+				if (this.editorSession === session && this.active?.metadata.id === id) {
+					const navigation = JSON.parse(
+						preferences[`classic-scene:${id}`] ?? "null",
+					);
+					if (
+						navigation?.projectId === id &&
+						typeof navigation.sceneId === "string"
+					)
+						this.editor.command.openClassicScene(navigation.sceneId, false);
+					if (navigation?.viewState)
+						this.editor.command.setClassicViewport(navigation.viewState);
+				}
+			} catch {
+				/* Missing/deleted scenes fall back to the saved editing scene. */
+			}
 			// Upgrade storage encoding through the normal fenced save queue after
 			// opening. This preserves every boundary and does not create an edit.
 			if (canAcquire && atomicBundle && atomicBundle.archive.schemaVersion < 3)
@@ -755,7 +827,15 @@ export class ProjectManager {
 		}
 	}
 
-	async export({ options }: { options: ExportOptions }): Promise<ExportResult> {
+	async export({
+		options,
+		destination,
+	}: {
+		options: ExportOptions;
+		destination?: FileSystemFileHandle;
+	}): Promise<ExportResult> {
+		if (this.exportState.isExporting)
+			return { success: false, error: "An export is already running" };
 		this.exportCancelRequested = false;
 		this.exportState = {
 			isExporting: true,
@@ -769,8 +849,9 @@ export class ProjectManager {
 		try {
 			result = await this.editor.renderer.exportProject({
 				options,
-				onProgress: ({ progress }) => {
-					this.exportState = { ...this.exportState, progress };
+				destination,
+				onProgress: ({ progress, phase }) => {
+					this.exportState = { ...this.exportState, progress, phase };
 					this.notify();
 				},
 				onCancel: () => this.exportCancelRequested,
@@ -839,6 +920,7 @@ export class ProjectManager {
 	}
 
 	clearExportState(): void {
+		if (this.exportState.isExporting) return;
 		this.exportState = { isExporting: false, progress: 0, result: null };
 		this.notify();
 	}
@@ -1362,7 +1444,11 @@ export class ProjectManager {
 	}
 
 	getTimelineViewState(): TTimelineViewState {
-		return this.active?.timelineViewState ?? DEFAULTS.timeline.viewState;
+		return (
+			this.editor.command.getClassicViewport?.() ??
+			this.active?.timelineViewState ??
+			DEFAULTS.timeline.viewState
+		);
 	}
 
 	setTimelineViewState({ viewState }: { viewState: TTimelineViewState }): void {
@@ -1374,6 +1460,10 @@ export class ProjectManager {
 			current.playheadTime === viewState.playheadTime
 		)
 			return;
+		if (this.editor.command.setClassicViewport?.(viewState)) {
+			this.notify();
+			return;
+		}
 		this.active = {
 			...this.active,
 			timelineViewState: viewState ?? undefined,

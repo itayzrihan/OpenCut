@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45f8db7c34caac3b05924e698675d0940dd47f85f998ca6470476efa7d238244",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:21:32.449Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'externalConfiguration|setEngine|checkpointStore|try \\{' classic/apps/web/src/core/managers/transcription-manager.ts classic/apps/web/src/transcription/timeline-stream.ts; cat .dip/tools/verify-transcription-sources.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-b27056e8-d8f1-481c-8cc7-050feb292d0b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:21:33.356Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

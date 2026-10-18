@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0778c51b0a1b61b1d8b66748c480088c6c7d6aed3a3e1daf2e7447c41d3505a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:09:24.418Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > test/ledger.test.mjs <<'EOF'\nimport test from 'node:test';import assert from 'node:assert/strict';import {projectEvents} from '../lib/ledger.mjs';\nconst ev=(eventId,type,payload,parents=[],createdAt='2026-10-12T00:00:00Z')=>({schemaVersion:1,eventId,taskId:'task_a',type,payload,parents,createdAt,actor:'test'});\ntest('causality beats misleading timestamps and input order',()=>{const a=ev('a','task.create',{title:'Export',status:'backlog'});const b=ev('b','task.update',{status:'in_progress'},['a'],'2020-01-01');const r=projectEvents([b,a]);assert.equal(r.tasks[0].status,'in_progress');assert.equal(r.tasks[0].verification,'not_rechecked');});\ntest('conflicting parallel writes stay visible until causal resolution',()=>{const a=ev('a','task.create',{title:'Export'}),b=ev('b','task.update',{status:'implemented'},['a']),c=ev('c','task.update',{status:'blocked'},['a']);assert.equal(projectEvents([a,b,c]).tasks[0].status,'conflict');const d=ev('d','task.resolve',{status:'ready'},['b','c']);assert.equal(projectEvents([a,b,c,d]).tasks[0].status,'ready');});\ntest('missing parents and cycles are data errors, not completed tasks',()=>{assert.equal(projectEvents([ev('b','task.update',{status:'verified'},['missing'])]).tasks.length,0);assert.match(projectEvents([ev('a','task.create',{},['b']),ev('b','task.update',{},['a'])]).errors[0],/Cyclic/);});\ntest('activity records deduplicate by recordId',()=>{const a=ev('a','activity.batch',{records:[{recordId:'same',type:'write'}]}),b=ev('b','activity.batch',{records:[{recordId:'same',type:'write'}]});assert.equal(projectEvents([a,b]).activity.length,1);});\ntest('plans evidence and handoffs retain all original recorded payloads',()=>{const events=[ev('a','task.create',{title:'X'}),ev('b','task.plan',{steps:[{title:'Build',status:'pending'}]},['a']),ev('c','task.evidence',{result:'passed',snapshot:'old'},['b']),ev('d','task.checkpoint',{summary:'UI remains'},['c'])];const r=projectEvents(events).tasks[0];assert.equal(r.plan.steps[0].s",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-844f612c-6464-4545-983d-32e6f5d29d20"
+      },
+      {
+        "at": "2026-10-12T08:09:24.423Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "npm run db:generate\nnpx tsc --noEmit",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-10a32bb4-ec6a-4001-888c-82791fdf9da6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:09:24.718Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

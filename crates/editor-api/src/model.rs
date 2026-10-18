@@ -121,8 +121,18 @@ impl EditorDocument {
     pub fn timeline_duration(&self) -> f64 {
         self.project
             .as_ref()
-            .map(|project| project.classic.as_ref().map_or_else(|| project.timeline.duration(), |classic| classic.duration()))
+            .map(|project| project.classic.as_ref().map_or_else(|| project.timeline.duration(), |classic|
+                self.classic_view_scene_id().map_or_else(|| classic.duration(), |id| classic.scene_duration(id))))
             .unwrap_or(0.0)
+    }
+
+    pub fn classic_view_scene_id(&self) -> Option<&str> {
+        let project = self.project.as_ref()?;
+        let classic = project.classic.as_ref()?;
+        self.workspace.classic_scene.as_ref().filter(|navigation| navigation.project_id == project.id &&
+            classic.document["scenes"].as_array().is_some_and(|scenes| scenes.iter().any(|scene| scene["id"] == navigation.scene_id)))
+            .map(|navigation| navigation.scene_id.as_str())
+            .or_else(|| classic.document["currentSceneId"].as_str())
     }
 
     pub fn validate(&self) -> Result<(), ModelError> {
@@ -142,6 +152,9 @@ impl EditorDocument {
         self.playback.validate()?;
         self.workspace.validate()?;
         let Some(project) = &self.project else {
+            if self.workspace.classic_scene.is_some() {
+                return Err(ModelError::Invalid("Classic viewer requires an active project".into()));
+            }
             if !self.selection.is_empty() {
                 return Err(ModelError::Invalid(
                     "selection must be empty when no project is open".into(),
@@ -150,6 +163,12 @@ impl EditorDocument {
             return Ok(());
         };
         project.validate()?;
+        if let Some(navigation) = &self.workspace.classic_scene {
+            if navigation.project_id != project.id || !project.classic.as_ref().is_some_and(|classic|
+                classic.document["scenes"].as_array().is_some_and(|scenes| scenes.iter().any(|scene| scene["id"] == navigation.scene_id))) {
+                return Err(ModelError::Invalid("Classic viewer scene does not exist in the active project".into()));
+            }
+        }
         let asset_ids: HashSet<_> = project
             .assets
             .iter()
@@ -2115,6 +2134,29 @@ pub struct WorkspaceState {
     pub preview_quality: String,
     #[serde(default)]
     pub panel_state: Map<String, Value>,
+    /// Current Classic viewer, separate from the persisted editing fallback.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub classic_scene: Option<ClassicSceneNavigation>,
+    #[serde(default)]
+    pub classic_scene_revision: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub classic_viewport: Option<ClassicViewport>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ClassicViewport {
+    pub project_id: String,
+    pub zoom_level: f64,
+    pub scroll_left: f64,
+    pub playhead_time: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ClassicSceneNavigation {
+    pub project_id: String,
+    pub scene_id: String,
 }
 
 impl Default for WorkspaceState {
@@ -2125,6 +2167,9 @@ impl Default for WorkspaceState {
             ripple_edit_enabled: false,
             preview_quality: "auto".into(),
             panel_state: Map::new(),
+            classic_scene: None,
+            classic_scene_revision: 0,
+            classic_viewport: None,
         }
     }
 }
@@ -2135,6 +2180,15 @@ impl WorkspaceState {
             return Err(ModelError::Invalid(
                 "workspace activePanel and previewQuality must not be empty".into(),
             ));
+        }
+        if self.classic_scene_revision >= 9_007_199_254_740_991 || self.classic_scene.as_ref().is_some_and(|navigation|
+            [&navigation.project_id, &navigation.scene_id].iter().any(|id| id.is_empty() || id.len() > 256 || id.chars().any(char::is_control))) {
+            return Err(ModelError::Invalid("invalid Classic scene navigation".into()));
+        }
+        if self.classic_viewport.as_ref().is_some_and(|v| v.project_id.is_empty() || v.project_id.len() > 256 ||
+            !v.zoom_level.is_finite() || v.zoom_level <= 0.0 || !v.scroll_left.is_finite() || v.scroll_left < 0.0 ||
+            v.playhead_time < 0 || v.playhead_time > 9_007_199_254_740_991) {
+            return Err(ModelError::Invalid("invalid Classic viewport".into()));
         }
         Ok(())
     }

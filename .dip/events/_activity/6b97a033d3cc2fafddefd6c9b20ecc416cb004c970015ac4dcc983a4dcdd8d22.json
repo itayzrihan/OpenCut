@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6b97a033d3cc2fafddefd6c9b20ecc416cb004c970015ac4dcc983a4dcdd8d22",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:42:24.317Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,135p' classic/apps/web/src/transcription/windows.ts; rg -n 'transcribeTimelineAudio' classic/apps/web/src/services/transcription -g '*.ts' | head -10",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3e7e4277-1968-4e59-9413-5a81a9a2db6f"
+      },
+      {
+        "at": "2026-10-13T09:42:24.451Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,135p' classic/apps/web/src/transcription/windows.ts; rg -n 'transcribeTimelineAudio' classic/apps/web/src/services/transcription -g '*.ts' | head -10",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3e7e4277-1968-4e59-9413-5a81a9a2db6f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:42:25.290Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

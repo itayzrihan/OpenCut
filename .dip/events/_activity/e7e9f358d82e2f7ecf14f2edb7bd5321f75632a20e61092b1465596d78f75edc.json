@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e7e9f358d82e2f7ecf14f2edb7bd5321f75632a20e61092b1465596d78f75edc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:40:00.708Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'preferences\\.(list|put)' classic/apps/web/src/app/api/local-drive/route.ts; sed -n '506,522p' classic/apps/web/src/app/api/local-drive/route.ts; head -34 classic/apps/web/src/core/managers/project-manager.ts; sed -n '37,52p' classic/apps/web/src/core/managers/save-manager.ts; sed -n '128,139p' classic/apps/web/src/core/managers/selection-manager.ts; sed -n '168,177p' classic/apps/web/src/core/managers/playback-manager.ts; sed -n '45,74p' classic/apps/web/src/services/local-drive/types.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-9ce14c8a-499d-4edb-9823-96e6880f2493"
+      },
+      {
+        "at": "2026-10-13T19:40:00.802Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'preferences\\.(list|put)' classic/apps/web/src/app/api/local-drive/route.ts; sed -n '506,522p' classic/apps/web/src/app/api/local-drive/route.ts; head -34 classic/apps/web/src/core/managers/project-manager.ts; sed -n '37,52p' classic/apps/web/src/core/managers/save-manager.ts; sed -n '128,139p' classic/apps/web/src/core/managers/selection-manager.ts; sed -n '168,177p' classic/apps/web/src/core/managers/playback-manager.ts; sed -n '45,74p' classic/apps/web/src/services/local-drive/types.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-9ce14c8a-499d-4edb-9823-96e6880f2493"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:40:00.867Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

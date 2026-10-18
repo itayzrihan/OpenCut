@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "108dcce679ad8c8148aea9e508817bab6e39cf2c4f39d3452f9799d629ede339",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:42.589Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport {readFile,writeFile} from 'node:fs/promises';import{spawn}from'node:child_process';\nconst p=JSON.parse(await readFile('.local/smart-shorts-audio/project-before.json','utf8'));const record=p.__opencutEditorSession;const r=JSON.parse(record);const t=performance.now();const child=spawn('./target/release/opencut-session-policy',[],{stdio:['pipe','pipe','pipe']});let n=0;child.stdout.on('data',b=>n+=b.length);child.stderr.on('data',b=>console.error(b.toString()));child.stdin.end(JSON.stringify({record,accountId:r.accountId,projectId:r.projectId,request:{type:'commit',sessionId:r.lease.sessionId,generation:r.generation,expectedStorageRevision:r.storageRevision,requestId:'isolated-audio-save-probe',bundle:r.saved.bundle},nowMs:r.lastHostTimeMs}));child.on('close',async code=>{const result={code,seconds:(performance.now()-t)/1000,outputBytes:n};console.log(result);await writeFile('.local/smart-shorts-audio/native-policy-probe.json',JSON.stringify(result));});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-fe3972e6-0ca6-4fce-ad8b-be863efcd2ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:43.359Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

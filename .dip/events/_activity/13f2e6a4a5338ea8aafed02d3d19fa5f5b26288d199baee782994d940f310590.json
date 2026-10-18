@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "13f2e6a4a5338ea8aafed02d3d19fa5f5b26288d199baee782994d940f310590",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T18:58:11.803Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/media/playback-audio-cache.ts",
+          "classic/apps/web/src/media/__tests__/playback-audio-cache.test.ts",
+          ".local/smart-shorts-performance/probe.mjs",
+          ".local/smart-shorts-performance/probe-after.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "0e5364d9-c869-4db8-a5f7-bcc39aa60e71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:58:11.806Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "eventId": "db0dd2b832b0fd78d5e50d53ed47edc24398505b2d841d29ea49dbae1d5f7351",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:39:30.855Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__opencut__opencut_discover",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d6845621-e2c1-44e8-af91-15a673764b8e"
+      },
+      {
+        "at": "2026-10-15T01:39:30.855Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib,shutil\np=Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json';d=json.loads(p.read_text());s=next(s for s in d['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print('scenekeys',list(s));print('tracksummary',[(t.get('id'),t.get('name'),t.get('type'),t.get('hidden'),t.get('muted'),len(t.get('elements',[]))) for t in s.get('tracks',[])])\nout=Path('.local/teaser-reexport-audio-2026-10-15');out.mkdir(parents=True,exist_ok=True);shutil.copy2(p,out/'project-before.json');e=Path('analysis/teaser-reexport-audio-2026-10-15');e.mkdir(parents=True,exist_ok=True);(e/'baseline.json').write_text(json.dumps({'projectId':d.get('id'), 'scenesHash':hashlib.sha256(json.dumps(d['scenes'],sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()).hexdigest(),'settings':d['settings']},ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-122cdf16-17b8-4dd2-925e-9b679421085a"
+      },
+      {
+        "at": "2026-10-15T01:39:30.949Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "mcp__opencut__opencut_discover",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d6845621-e2c1-44e8-af91-15a673764b8e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:39:31.495Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d39c077cec156f7cbabd6ca485f4a71bea14ac4c36a448f5c39dba0be7be9001",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:55:23.984Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": ".local/crash-tools/bin/minidump-stackwalk --json '/Users/itayzrihan/Library/Application Support/Google/Chrome/Crashpad/completed/76f980c5-ab3d-4050-be42-2f57c7fcd17a.dmp' > .local/smart-shorts-seven/latest-crash.json 2> .local/smart-shorts-seven/latest-crash-stackwalk.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-34f0cfb1-4e51-4d16-8341-04f1db058eb8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:55:24.579Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -62,9 +62,9 @@ export default function TranscriptionCheck() {
 				Otherwise this uses the CPU locally, which is slower.
 			</p>
 			<p>
-				The first run downloads approximately 1.6 GB. Public model weights are
-				cached in this browser. Your audio and transcript are not uploaded or
-				saved by this check.
+				The reduced-memory GPU model downloads approximately 760 MB. Public
+				model weights are cached in this browser. Your audio and transcript are
+				not uploaded or saved by this check.
 			</p>
 			<div className="flex flex-wrap gap-3">
 				<Button disabled={busy} onClick={() => void run()}>

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3784a830f42559f317b32034ce68ab2ea345a16e3efe5d065395d18a3bed1bec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:49:18.341Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "mkdir -p .local/smart-shorts-performance\nsed -n '355,505p' crates/editor-api/src/operations/classic_session.rs; sed -n '1,220p' classic/apps/web/src/core/managers/save-manager.ts; sed -n '1,180p' classic/apps/web/src/editor-agent/session-client.ts; rg -n 'to_json|to_value|validate_classic|restore' crates/editor-api/src/operations/classic_session.rs | tail -35; rg -n 'get.*range|read.*snapshot' crates/editor-api/src/runtime.rs | head -25",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-193f6c41-b255-4363-8eca-2d6bfc66f6fd"
+      },
+      {
+        "at": "2026-10-13T18:49:18.439Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "mkdir -p .local/smart-shorts-performance\nsed -n '355,505p' crates/editor-api/src/operations/classic_session.rs; sed -n '1,220p' classic/apps/web/src/core/managers/save-manager.ts; sed -n '1,180p' classic/apps/web/src/editor-agent/session-client.ts; rg -n 'to_json|to_value|validate_classic|restore' crates/editor-api/src/operations/classic_session.rs | tail -35; rg -n 'get.*range|read.*snapshot' crates/editor-api/src/runtime.rs | head -25",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-193f6c41-b255-4363-8eca-2d6bfc66f6fd"
+      },
+      {
+        "at": "2026-10-13T18:49:18.442Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-performance/probe.mjs <<'JS'\nimport{readFile,writeFile}from'node:fs/promises';import{spawn}from'node:child_process';\nconst mode=process.argv[2]??'commit';const p=JSON.parse(await readFile('.local/smart-shorts-audio/project-before.json','utf8'));const record=p.__opencutEditorSession,r=JSON.parse(record);const request=mode==='commit'?{type:'commit',sessionId:r.lease.sessionId,generation:r.generation,expectedStorageRevision:r.storageRevision,requestId:'isolated-performance-probe',bundle:r.saved.bundle}:{type:'acquire',sessionId:'isolated-performance',expectedGeneration:r.generation,takeOver:true};\nconst start=performance.now();const child=spawn('./target/release/opencut-session-policy',[],{stdio:['pipe','ignore','pipe']});await writeFile('.local/smart-shorts-performance/probe-pid.json',JSON.stringify({pid:child.pid,mode}));child.stderr.on('data',b=>process.stderr.write(b));child.stdin.end(JSON.stringify({record,accountId:r.accountId,projectId:r.projectId,request,nowMs:r.lastHostTimeMs}));child.on('close',async code=>{const result={mode,code,seconds:(performance.now()-start)/1000};console.log(result);await writeFile(`.local/smart-shorts-performance/${mode}-before.json`,JSON.stringify(result));});\nJS\nnode .local/smart-shorts-performance/probe.mjs commit > .local/smart-shorts-performance/probe.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-05ef2449-d3e9-47f1-8836-de26e0e4652e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:49:19.321Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

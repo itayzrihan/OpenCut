@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f9ecd2bcff243451242f1758821bffc30d69d47e9cd08e66be4e3598a11ac2b1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:24:24.514Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/classic-web-tests/1791800545557/src__core__managers____tests____canonical-command-manager.test.ts.log | head -45; cat classic/rust/editor-runtime-wasm/Cargo.toml; rg -n 'INTEGRATION_TIMEOUT' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts | head -3; cat classic/scripts/test-editor-api-runtime.mjs | head -20",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-acd46e3f-76f9-4ea3-b20a-3c5cff84c24e"
+      },
+      {
+        "at": "2026-10-12T10:24:24.764Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/classic-web-tests/1791800545557/src__core__managers____tests____canonical-command-manager.test.ts.log | head -45; cat classic/rust/editor-runtime-wasm/Cargo.toml; rg -n 'INTEGRATION_TIMEOUT' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts | head -3; cat classic/scripts/test-editor-api-runtime.mjs | head -20",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-acd46e3f-76f9-4ea3-b20a-3c5cff84c24e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:24:25.314Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28116ed12f9a78d4a665b9ac7e96b88d5d6d47b22a4ec90188ee3dc5e90791f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:19:29.186Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_cc5260017aeefc07a5a06d8648f054b9daad13aa59873a9f059fc7a0b785606c",
+        "tool": "mcp__dip__project_search",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-e733b43c-29bf-4929-a3f2-2f2d80f6a892"
+      },
+      {
+        "at": "2026-10-12T08:19:29.193Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_cc5260017aeefc07a5a06d8648f054b9daad13aa59873a9f059fc7a0b785606c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('sites/dip-public')\nchanges={\n'Your session ends.<br>Your project<br><em>remembers.</em>':'The archaeology<br>of <em>AI development.</em>',\n'Give your coding agent a place to pick up. Keep requirements, plans and handoffs beside your code — across sessions and Git worktrees.':'AI writes code faster than we can follow its history. DIP preserves the layers of development — recorded changes, agent activity, decisions and intent — so you can trace how your project became what it is.',\n'The conversation moves on.<br>The work shouldn\\'t disappear.':'Development accelerates.<br>The history should stay legible.',\n'A plan in one chat. A half-finished migration in another. DIP keeps the current intent in a durable project record, so the next session has somewhere to start.':'A new agent. Another session. Hundreds of changes. DIP keeps a durable record beside your code, connecting requirements, decisions, handoffs and evidence so you can reconstruct the work and pick up where it left off.',\n'Your project\\'s memory,<br>in one place.':'Explore the layers<br>of your project.',\n'Your coding agent supplies the intent. DIP keeps the record.':'Keep building at the speed of AI. Leave a history you can come back to.',\n}\np=root/'lib/landing.ts';s=p.read_text();body=json.loads(s.split(' = ',1)[1].rstrip().removesuffix(';'))\nfor old,new in changes.items():\n assert old in body,old\n body=body.replace(old,new)\np.write_text('export const landing = '+json.dumps(body,ensure_ascii=False)+';\\n')\np=root/'content/landing-original.html';s=p.read_text()\nfor old,new in changes.items():s=s.replace(old,new)\ns=s.replace('DIP — Your session ends. Your project remembers. | VXU Labs','DIP — The archaeology of AI development | VXU Labs').replace('DIP — Your project remembers.','DIP — The archaeology of AI development')\ns=s.replace('Persistent project memory for coding agents. Keep requirements, plans, handoffs and verification evidence beside yo",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-9700e494-3a8a-4930-a378-e775a8bc2765"
+      },
+      {
+        "at": "2026-10-12T08:19:29.521Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_cc5260017aeefc07a5a06d8648f054b9daad13aa59873a9f059fc7a0b785606c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('sites/dip-public')\nchanges={\n'Your session ends.<br>Your project<br><em>remembers.</em>':'The archaeology<br>of <em>AI development.</em>',\n'Give your coding agent a place to pick up. Keep requirements, plans and handoffs beside your code — across sessions and Git worktrees.':'AI writes code faster than we can follow its history. DIP preserves the layers of development — recorded changes, agent activity, decisions and intent — so you can trace how your project became what it is.',\n'The conversation moves on.<br>The work shouldn\\'t disappear.':'Development accelerates.<br>The history should stay legible.',\n'A plan in one chat. A half-finished migration in another. DIP keeps the current intent in a durable project record, so the next session has somewhere to start.':'A new agent. Another session. Hundreds of changes. DIP keeps a durable record beside your code, connecting requirements, decisions, handoffs and evidence so you can reconstruct the work and pick up where it left off.',\n'Your project\\'s memory,<br>in one place.':'Explore the layers<br>of your project.',\n'Your coding agent supplies the intent. DIP keeps the record.':'Keep building at the speed of AI. Leave a history you can come back to.',\n}\np=root/'lib/landing.ts';s=p.read_text();body=json.loads(s.split(' = ',1)[1].rstrip().removesuffix(';'))\nfor old,new in changes.items():\n assert old in body,old\n body=body.replace(old,new)\np.write_text('export const landing = '+json.dumps(body,ensure_ascii=False)+';\\n')\np=root/'content/landing-original.html';s=p.read_text()\nfor old,new in changes.items():s=s.replace(old,new)\ns=s.replace('DIP — Your session ends. Your project remembers. | VXU Labs','DIP — The archaeology of AI development | VXU Labs').replace('DIP — Your project remembers.','DIP — The archaeology of AI development')\ns=s.replace('Persistent project memory for coding agents. Keep requirements, plans, handoffs and verification evidence beside yo",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-9700e494-3a8a-4930-a378-e775a8bc2765"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:19:29.761Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

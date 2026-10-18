@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e5d764989f499320fc587b39a37dc7d5d3aa2604831e087a63f74fc327d3c23b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:07:26.775Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/accounts/bridge-transport.ts"
+        ],
+        "changeHash": "18ecaf5b962a8297fa3d60a82b1c0ee2bb7be5e82f1c947f75505e611a0d567f",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3364f5e2-7cf6-4156-a9fe-0f36fcf6cab6"
+      },
+      {
+        "at": "2026-10-13T11:07:26.835Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/accounts/bridge-transport.ts"
+        ],
+        "changeHash": "18ecaf5b962a8297fa3d60a82b1c0ee2bb7be5e82f1c947f75505e611a0d567f",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3364f5e2-7cf6-4156-a9fe-0f36fcf6cab6"
+      },
+      {
+        "at": "2026-10-13T11:07:26.890Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'\nwith open(p,newline='') as f:s=f.read()\ns=s.replace('await settleBridgeRequests({\\r\\n\\t\\t\\tconfigs,','await settleBridgeRequests({\\r\\n\\t\\t\\tconfigs,\\r\\n\\t\\t\\t// Long polls carry no snapshot bytes and must remain parallel.\\r\\n\\t\\t\\tconcurrency: request.method === \"GET\" ? configs.length : 4,')\nwith open(p,'w',newline='') as f:f.write(s)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-069249e7-1d78-4f60-9179-1207e1fc4a9c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:07:26.898Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

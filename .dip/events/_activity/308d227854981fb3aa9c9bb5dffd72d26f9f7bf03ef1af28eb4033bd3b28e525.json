@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "eventId": "308d227854981fb3aa9c9bb5dffd72d26f9f7bf03ef1af28eb4033bd3b28e525",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14214-13a0-7531-a468-33be2153f593",
+    "records": [
+      {
+        "at": "2026-10-16T00:19:44.949Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14214-13a0-7531-a468-33be2153f593",
+        "taskId": "task_5b1cb9acda4a0720499c9640e92617ad1ba56315ddfc41b3796eadf3cddab322",
+        "tool": "mcp__codex_apps__github__list_repositories",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14214-13a0-7531-a468-33be2153f593:PreToolUse:exec-b77e816f-3509-4348-88f3-1f79bfeefdf5"
+      },
+      {
+        "at": "2026-10-16T00:19:44.956Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14214-13a0-7531-a468-33be2153f593",
+        "taskId": "task_5b1cb9acda4a0720499c9640e92617ad1ba56315ddfc41b3796eadf3cddab322",
+        "tool": "mcp__codex_apps__github__search_repositories",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14214-13a0-7531-a468-33be2153f593:PreToolUse:exec-a2fc0df0-9234-4f4c-ac14-09527fb19a1c"
+      },
+      {
+        "at": "2026-10-16T00:19:45.993Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14214-13a0-7531-a468-33be2153f593",
+        "taskId": "task_5b1cb9acda4a0720499c9640e92617ad1ba56315ddfc41b3796eadf3cddab322",
+        "tool": "mcp__codex_apps__github__search_repositories",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14214-13a0-7531-a468-33be2153f593:PostToolUse:exec-a2fc0df0-9234-4f4c-ac14-09527fb19a1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T00:19:46.746Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

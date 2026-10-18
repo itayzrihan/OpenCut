@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3bfd60b2b3c64c1a5c9807a8da620d6d791dc4887c202d464c61ec98f74e0375",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:57:28.926Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:call_8c72797d726845489149c2a076c7b7c3"
+      },
+      {
+        "at": "2026-10-12T07:57:30.913Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__cua_repl__js",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:call_8c72797d726845489149c2a076c7b7c3"
+      },
+      {
+        "at": "2026-10-12T07:57:37.751Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .dip/config.json\nls -la sites/dip-public/.openai",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-53d66aba-aaf2-4aa1-a55e-962533dcc2e2"
+      },
+      {
+        "at": "2026-10-12T07:57:38.065Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .dip/config.json\nls -la sites/dip-public/.openai",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-53d66aba-aaf2-4aa1-a55e-962533dcc2e2"
+      },
+      {
+        "at": "2026-10-12T07:57:38.069Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "mcp__codex_apps__sites__refresh_custom_domain_status",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-fadbc775-a785-4842-b0cc-9b3e8aa3be66"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:57:43.424Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

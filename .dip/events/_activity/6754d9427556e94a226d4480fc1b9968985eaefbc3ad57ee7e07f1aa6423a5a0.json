@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6754d9427556e94a226d4480fc1b9968985eaefbc3ad57ee7e07f1aa6423a5a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:08:45.382Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/analysis/episode-teaser-90-2026-10-14/mcp-receipts.json"
+        ],
+        "changeHash": "126ab88e69bacc673384eead8587817fecc61364ed643e27000a0286aed1d11f",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-68cc3b27-a91b-45a1-aa93-13bb0e5b05ff"
+      },
+      {
+        "at": "2026-10-14T08:08:45.442Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/analysis/episode-teaser-90-2026-10-14/mcp-receipts.json"
+        ],
+        "changeHash": "126ab88e69bacc673384eead8587817fecc61364ed643e27000a0286aed1d11f",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-68cc3b27-a91b-45a1-aa93-13bb0e5b05ff"
+      },
+      {
+        "at": "2026-10-14T08:08:45.449Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node .dip/tools/verify-episode-teaser90.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d2b40ad2-fbcb-440a-ba66-a2a464821081"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:08:45.727Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

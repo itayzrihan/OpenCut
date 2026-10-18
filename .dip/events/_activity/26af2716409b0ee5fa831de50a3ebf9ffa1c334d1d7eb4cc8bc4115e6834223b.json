@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "26af2716409b0ee5fa831de50a3ebf9ffa1c334d1d7eb4cc8bc4115e6834223b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:01:40.809Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,240p' classic/apps/web/src/media/decode-audio.ts; ps -axo pid,pcpu,rss,etime,comm | rg 'Google Chrome Helper|ffmpeg' | sort -k3 -nr | head -6",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-98571a25-eb70-4409-a7a6-1687ea9d4906"
+      },
+      {
+        "at": "2026-10-14T09:01:41.011Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,240p' classic/apps/web/src/media/decode-audio.ts; ps -axo pid,pcpu,rss,etime,comm | rg 'Google Chrome Helper|ffmpeg' | sort -k3 -nr | head -6",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-98571a25-eb70-4409-a7a6-1687ea9d4906"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:01:41.359Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

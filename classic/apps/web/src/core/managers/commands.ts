@@ -27,6 +27,7 @@ import type {
 	EditingAgentSnapshot,
 } from "@/core/agent-protocol";
 import { localMediaUrl } from "@/services/local-drive/client";
+import { mediaTime } from "@/wasm";
 import type { EditorSessionBundle } from "@/editor-agent/session-client";
 import {
 	CanonicalClassicSession,
@@ -74,6 +75,10 @@ export class CommandManager {
 	private transactionDepth = 0;
 	private stateRevision = 0;
 	private canonical: CanonicalClassicSession | null = null;
+	private viewportProjection: {
+		projectId: string;
+		value: import("@/project/types").TTimelineViewState;
+	} | null = null;
 	private canonicalArchive: CanonicalHistoryArchive | null = null;
 	private sessionPersistence:
 		| ((capture: () => EditorSessionBundle) => Promise<void>)
@@ -736,6 +741,48 @@ export class CommandManager {
 		});
 	}
 
+	syncUnifiedAngles(
+		updates: Array<{
+			mediaId: string;
+			sources: import("opencut-wasm").CameraSource[];
+		}>,
+	): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before synchronizing");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				for (const update of updates)
+					this.canonical!.invokeControl({
+						capabilityId: "media.classic.unified.sync",
+						input: update,
+					});
+				this.publishCanonical();
+			},
+		});
+	}
+
+	switchUnifiedAngles(input: {
+		sceneId: string;
+		mediaId: string;
+		elementIds: string[];
+		angleAssetId: string;
+		cycle?: boolean;
+	}): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before switching cameras");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.unified.switch",
+					input,
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	createMulticam(plan: {
 		settings: import("@/podcast-sync/engine").PodcastSyncSettings;
 		channels: Array<{
@@ -746,6 +793,7 @@ export class CommandManager {
 			videoBindingRevision: number;
 			audioBindingRevision: number;
 			videoOffset: number;
+			videoDelay?: number;
 			audioOffset: number;
 			audioDelay: number;
 		}>;
@@ -778,6 +826,59 @@ export class CommandManager {
 				this.publishCanonical();
 			},
 		});
+	}
+
+	openClassicScene(sceneId: string, checkpoint = true): void {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before browsing scenes");
+		const view = this.canonical.openScene(sceneId);
+		if (!view.changed) return;
+		// No editing transaction, snapshot, media reload, history or full save.
+		this.editor.playback.pause();
+		this.editor.selection.clearSelection();
+		this.editor.scenes.applyViewerScene({ sceneId: view.sceneId });
+		this.editor.playback.seek({ time: mediaTime({ ticks: 0 }) });
+		if (checkpoint)
+			this.editor.project.checkpointSceneView({
+				projectId: view.projectId,
+				sceneId: view.sceneId,
+			});
+	}
+
+	getClassicViewport(): import("@/project/types").TTimelineViewState | null {
+		const view = this.canonical?.currentSceneView().viewport;
+		if (!view) {
+			this.viewportProjection = null;
+			return null;
+		}
+		const prior = this.viewportProjection;
+		if (
+			prior?.projectId === view.projectId &&
+			prior.value.zoomLevel === view.zoomLevel &&
+			prior.value.scrollLeft === view.scrollLeft &&
+			prior.value.playheadTime === view.playheadTime
+		)
+			return prior.value;
+		const value = {
+			zoomLevel: view.zoomLevel,
+			scrollLeft: view.scrollLeft,
+			playheadTime: mediaTime({ ticks: view.playheadTime }),
+		};
+		this.viewportProjection = { projectId: view.projectId, value };
+		return value;
+	}
+
+	setClassicViewport(
+		viewState: import("@/project/types").TTimelineViewState,
+	): boolean {
+		if (!this.canonical) return false;
+		const view = this.canonical.setViewport(viewState);
+		if (view.changed)
+			this.editor.project.checkpointSceneView({
+				projectId: view.projectId,
+				sceneId: view.sceneId,
+			});
+		return true;
 	}
 
 	prepareSmartTakesForAutoEdit(): void {
@@ -814,6 +915,13 @@ export class CommandManager {
 		};
 		return {
 			...source,
+			editorial: (input: {
+				options: import("@/ai/podcast-types").PodcastOptions;
+				responses: Record<string, unknown>;
+			}) => {
+				assertCurrent();
+				return session.podcastEditorial({ ...input, sceneId, elementIds, expectedRevision: source.revision });
+			},
 			review: ({
 				options,
 				videos,
@@ -831,13 +939,23 @@ export class CommandManager {
 					review: true,
 				});
 			},
-			analyzeAudio: (signal: AbortSignal) => {
+			analyzeAudio: (
+				signal: AbortSignal,
+				onProgress?: (seconds: number, total: number) => void,
+				checkpoint?: {
+					key: string;
+					store: import("@/timeline/smart-takes/audio-checkpoints").AudioCheckpointStore;
+				},
+			) => {
 				assertCurrent();
 				return collectTakeAudioEvidence({
 					editor: this.editor,
 					elementIds,
 					signal,
 					boundedFrames: true,
+					onProgress,
+					checkpoint,
+					assertCurrent,
 				});
 			},
 			apply: (input: {
@@ -964,6 +1082,42 @@ export class CommandManager {
 				this.publishCanonical();
 			},
 		});
+	}
+
+	async waitForTranscriptionPublication(signal: AbortSignal): Promise<void> {
+		while (this.transactionDepth !== 0 || this.silenceCommit) {
+			signal.throwIfAborted();
+			await new Promise<void>((resolve) => setTimeout(resolve, 50));
+		}
+		signal.throwIfAborted();
+	}
+
+	/** Background results target their original project/scene and use the latest
+	 * canonical revision. Successive sections coalesce only across untouched history. */
+	editTranscription(input: {
+		projectId: string;
+		jobId: string;
+		change: import("@/transcription/job").TranscriptionChange;
+	}): void {
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== input.projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== input.projectId
+		)
+			throw new Error("The transcription project is no longer open");
+		assertBatchEditable(input.projectId);
+		if (this.transactionDepth !== 0)
+			throw new Error(
+				"Finish the editor transaction before publishing transcription",
+			);
+		this.synchronizeCanonicalViews();
+		this.canonical.invokeControl({
+			capabilityId: "transcription.classic.edit",
+			input: { jobId: input.jobId, change: input.change },
+		});
+		this.publishCanonical();
+		this.stateRevision += 1;
+		this.persistHistory();
 	}
 
 	/** Shared entry for declarative UI controls. Registry validation and the
@@ -2774,6 +2928,7 @@ export class CommandManager {
 			document: this.snapshotOfProject({
 				project,
 				scenes: this.editor.scenes.getScenes(),
+				viewerSceneId: this.editor.scenes.getActiveSceneOrNull()?.id,
 			}),
 			mediaAssets: this.captureMediaBindings(),
 		};
@@ -2797,7 +2952,10 @@ export class CommandManager {
 		const state = this.canonical.read();
 		this.isProjectingCanonical = true;
 		try {
-			this.restoreProjectSnapshot({ snapshot: state.document });
+			this.restoreProjectSnapshot({
+				snapshot: state.document,
+				viewerSceneId: this.canonical.currentSceneView().sceneId,
+			});
 			for (const asset of this.editor.media.getAssets())
 				this.canonicalMediaHandles.set(asset.id, asset);
 			const handles = this.canonicalMediaHandles;
@@ -2924,6 +3082,7 @@ export class CommandManager {
 			this.snapshotOfProject({
 				project,
 				scenes: this.editor.scenes.getScenes(),
+				viewerSceneId: this.editor.scenes.getActiveSceneOrNull()?.id,
 			}),
 		);
 	}
@@ -2931,9 +3090,11 @@ export class CommandManager {
 	private snapshotOfProject({
 		project,
 		scenes,
+		viewerSceneId,
 	}: {
 		project: TProject;
 		scenes: TProject["scenes"];
+		viewerSceneId?: string;
 	}): SerializedProjectHistorySnapshot {
 		const duration =
 			project.metadata.duration ?? getProjectDurationFromScenes({ scenes });
@@ -2942,6 +3103,7 @@ export class CommandManager {
 
 		return {
 			...project,
+			currentSceneId: viewerSceneId ?? project.currentSceneId,
 			metadata: {
 				...metadata,
 				duration,
@@ -3075,8 +3237,10 @@ export class CommandManager {
 
 	private restoreProjectSnapshot({
 		snapshot,
+		viewerSceneId,
 	}: {
 		snapshot: SerializedProjectHistorySnapshot;
+		viewerSceneId?: string;
 	}): void {
 		const currentProject = this.editor.project.getActiveOrNull();
 		const copy = this.cloneData(snapshot);
@@ -3104,7 +3268,7 @@ export class CommandManager {
 			this.editor.project.setActiveProject({ project });
 			this.editor.scenes.initializeScenes({
 				scenes: project.scenes,
-				currentSceneId: project.currentSceneId,
+				currentSceneId: viewerSceneId ?? project.currentSceneId,
 			});
 		} finally {
 			this.editor.save.resume();

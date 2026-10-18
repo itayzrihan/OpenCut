@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a7fc27b5ad3eed3df189b7d6da79103500dd478a8c434e940e1e6d7a47b76fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:48:33.511Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport subprocess, array, math, json\nsrc='/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4';out='/Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4'\ndef read(path,start):\n return array.array('f',subprocess.check_output(['ffmpeg','-v','error','-ss',str(start),'-t','1.5','-i',path,'-vn','-ac','1','-ar','16000','-f','f32le','-']))\na=read(src,1710.84);b=read(out,0)\n# source/output correlation tolerate codec/resampler delay, music bed\nbest=(-1,None)\nfor shift in range(-1000,1001,4):\n aa=a[max(0,shift):min(len(a),len(b)+shift)];bb=b[max(0,-shift):min(len(b),len(a)-shift)]\n dot=sum(x*y for x,y in zip(aa,bb)); power=math.sqrt(sum(x*x for x in aa)*sum(y*y for y in bb)); c=dot/power if power else 0\n if c>best[0]:best=(c,shift)\nprint({'sourceSpeechCorrelation':best[0],'lagSamples16k':best[1]})\nopen('analysis/teaser-exports-2026-10-14/audio-source-check.json','w').write(json.dumps({'sourceSpeechCorrelation':best[0],'lagSamples16k':best[1]}))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c3e9095d-1af6-4809-8b1a-6d1504daae52"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:48:34.286Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

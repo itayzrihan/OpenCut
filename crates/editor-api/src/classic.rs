@@ -30,14 +30,12 @@ pub struct ClassicProject {
 
 /// Keep the established JSON shape while sharing immutable source text across
 /// snapshots. Unknown Classic and composition properties remain lossless.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ClassicDocument {
     #[serde(flatten)]
     pub fields: Map<String, Value>,
     #[serde(
         rename = "hyperframesCompositions",
-        default,
-        deserialize_with = "deserialize_compositions",
         skip_serializing_if = "Option::is_none"
     )]
     pub compositions: Option<BTreeMap<String, ClassicComposition>>,
@@ -62,13 +60,36 @@ pub struct ClassicComposition {
     pub properties: Map<String, Value>,
 }
 
-fn deserialize_compositions<'de, D>(
-    deserializer: D,
-) -> Result<Option<BTreeMap<String, ClassicComposition>>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    BTreeMap::deserialize(deserializer).map(Some)
+// The derived flatten deserializer buffers every caption/word as generic
+// serde Content, then allocates the complete JSON tree a second time. Read
+// unknown fields straight into their final Value, keeping the same wire shape
+// and duplicate/null handling for the one typed composition field.
+impl<'de> Deserialize<'de> for ClassicDocument {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct DocumentVisitor;
+        impl<'de> serde::de::Visitor<'de> for DocumentVisitor {
+            type Value = ClassicDocument;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a Classic document object")
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut fields = Map::new();
+                let mut compositions = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    if key == "hyperframesCompositions" {
+                        if compositions.is_some() {
+                            return Err(serde::de::Error::duplicate_field("hyperframesCompositions"));
+                        }
+                        compositions = Some(map.next_value::<BTreeMap<String, ClassicComposition>>()?);
+                    } else {
+                        fields.insert(key, map.next_value::<Value>()?);
+                    }
+                }
+                Ok(ClassicDocument { fields, compositions })
+            }
+        }
+        deserializer.deserialize_map(DocumentVisitor)
+    }
 }
 
 impl ClassicComposition {
@@ -170,6 +191,8 @@ impl ClassicProject {
 
     pub fn validate(&self) -> Result<(), ModelError> {
         self.id()?;
+        crate::operations::classic_transcription::validate_engine(self.document.get("transcriptionEngine")).map_err(|e| invalid(&e))?;
+        crate::operations::classic_transcription::validate_jobs(self.document.get("transcriptionJobs")).map_err(|e| invalid(&e))?;
         self.name()?;
         self.settings()?;
         let scenes = self.scenes()?;
@@ -200,6 +223,7 @@ impl ClassicProject {
                 return Err(invalid("duplicate media id"));
             }
         }
+        crate::operations::classic_unified::validate_assets(&self.media_assets).map_err(|e| invalid(&e))?;
         let mut import_ids = HashSet::new();
         for (id, composition) in &compositions {
             if id.trim().is_empty() {
@@ -517,12 +541,16 @@ impl ClassicProject {
     }
 
     pub fn duration(&self) -> f64 {
+        self.scene_duration(self.document["currentSceneId"].as_str().unwrap_or_default())
+    }
+
+    pub fn scene_duration(&self, scene_id: &str) -> f64 {
         self.scenes()
             .ok()
             .and_then(|scenes| {
                 scenes
                     .iter()
-                    .find(|scene| scene["id"] == self.document["currentSceneId"])
+                    .find(|scene| scene["id"] == scene_id)
             })
             .and_then(|scene| tracks(scene).ok())
             .into_iter()
@@ -606,4 +634,34 @@ fn ticks(value: &Value, key: &str) -> Result<i64, ModelError> {
 
 fn invalid(message: &str) -> ModelError {
     ModelError::Invalid(format!("Classic project: {message}"))
+}
+
+#[cfg(test)]
+mod document_decode_tests {
+    use super::*;
+
+    #[test]
+    fn direct_document_decode_preserves_unknown_nested_fields_and_composition_shape() {
+        let mut expected: Value = serde_json::from_str(include_str!("../tests/fixtures/classic-project.json")).unwrap();
+        expected["document"]["future"] = serde_json::json!({"words":[{"text":"שלום","nested":{"a":null,"b":[true,1.25]}}]});
+        for compositions in [None, Some(serde_json::json!({})), Some(serde_json::json!({"one":{
+            "source":{"entryFile":"index.html","files":{"index.html":"<div>שלום</div>"},"resourceAssetIds":{}},
+            "future":{"b":1,"a":false}
+        }}))] {
+            if let Some(value) = compositions { expected["document"]["hyperframesCompositions"] = value; }
+            else { expected["document"].as_object_mut().unwrap().remove("hyperframesCompositions"); }
+            let decoded: ClassicProject = serde_json::from_str(&expected.to_string()).unwrap();
+            assert_eq!(serde_json::to_value(&decoded).unwrap(), expected);
+            let through_value: ClassicProject = serde_json::from_value(expected.clone()).unwrap();
+            assert_eq!(decoded, through_value);
+        }
+    }
+
+    #[test]
+    fn typed_composition_field_still_rejects_duplicate_null_and_wrong_shapes() {
+        for invalid in [r#"{"hyperframesCompositions":{},"hyperframesCompositions":{}}"#,
+            r#"{"hyperframesCompositions":null}"#, r#"{"hyperframesCompositions":[]}"#] {
+            assert!(serde_json::from_str::<ClassicDocument>(invalid).is_err());
+        }
+    }
 }

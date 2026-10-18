@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "980bf4f29b8c7d3dd99751a9d5415db29845d4145ed961292eb772fcd97362c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:52:19.765Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfor p in ['classic/apps/web/src/timeline/components/caption-word-element-refs.ts','classic/apps/web/src/timeline/components/caption-word-timing-track.tsx']:\n s=open(p).read().replace('createCaptionWordIndex(words: TranscriptionWord[])','createCaptionWordIndex({ words }: { words: TranscriptionWord[] })').replace('createCaptionWordIndex(words)','createCaptionWordIndex({ words })');open(p,'w').write(s)\nPY\ncat > classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport { expect, test } from \"bun:test\";\nimport { createCaptionWordIndex, findWordIndexForRun } from \"../components/caption-word-element-refs\";\nimport type { TranscriptionWord } from \"@/transcription/types\";\n\ntest(\"indexed matching retains punctuation, case, closest timing and first-index ties\", () => {\n const words = [\n  {text: \"שלום!\", start: 20, end: 21},\n  {text: \"שלום\", start: 2, end: 3},\n  {text: \"שלום\", start: 2, end: 3},\n  {text: \"HELLO,\", start: 5, end: 6},\n ];\n const lookup = createCaptionWordIndex({words});\n const find = (text: string, runStart: number, runEnd: number) => findWordIndexForRun({words,lookup,run:{id:\"run\",text},runStart,runEnd});\n expect(find(\"שלום.\", 2, 3)).toBe(1);\n expect(find(\"שלום\", 19, 20)).toBe(0);\n expect(find(\"hello\", 5, 6)).toBe(3);\n expect(find(\"missing\", 5, 6)).toBe(-1);\n expect(find(\"...\", 5, 6)).toBe(-1);\n words[1].text = \"changed\";\n expect(findWordIndexForRun({words,lookup:createCaptionWordIndex({words}),run:{id:\"run\",text:\"שלום\"},runStart:2,runEnd:3})).toBe(2);\n});\n\ntest(\"a long transcript is normalized once, not once per displayed word\", () => {\n let reads = 0;\n const words: TranscriptionWord[] = Array.from({length: 12000}, (_, index) => ({\n  get text() { reads++; return `word${index % 100}`; },\n  start: index, end: index + .5,\n }));\n const lookup = createCaptionWordIndex({words});\n for(let index=0; index<words.length; index++) {\n  expect(findWordIndexForRun({words,lookup,run:{id:`r${index}`,text:`",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-27dfcf62-7034-4c9c-b267-053218d846da"
+      },
+      {
+        "at": "2026-10-13T09:52:20.104Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfor p in ['classic/apps/web/src/timeline/components/caption-word-element-refs.ts','classic/apps/web/src/timeline/components/caption-word-timing-track.tsx']:\n s=open(p).read().replace('createCaptionWordIndex(words: TranscriptionWord[])','createCaptionWordIndex({ words }: { words: TranscriptionWord[] })').replace('createCaptionWordIndex(words)','createCaptionWordIndex({ words })');open(p,'w').write(s)\nPY\ncat > classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport { expect, test } from \"bun:test\";\nimport { createCaptionWordIndex, findWordIndexForRun } from \"../components/caption-word-element-refs\";\nimport type { TranscriptionWord } from \"@/transcription/types\";\n\ntest(\"indexed matching retains punctuation, case, closest timing and first-index ties\", () => {\n const words = [\n  {text: \"שלום!\", start: 20, end: 21},\n  {text: \"שלום\", start: 2, end: 3},\n  {text: \"שלום\", start: 2, end: 3},\n  {text: \"HELLO,\", start: 5, end: 6},\n ];\n const lookup = createCaptionWordIndex({words});\n const find = (text: string, runStart: number, runEnd: number) => findWordIndexForRun({words,lookup,run:{id:\"run\",text},runStart,runEnd});\n expect(find(\"שלום.\", 2, 3)).toBe(1);\n expect(find(\"שלום\", 19, 20)).toBe(0);\n expect(find(\"hello\", 5, 6)).toBe(3);\n expect(find(\"missing\", 5, 6)).toBe(-1);\n expect(find(\"...\", 5, 6)).toBe(-1);\n words[1].text = \"changed\";\n expect(findWordIndexForRun({words,lookup:createCaptionWordIndex({words}),run:{id:\"run\",text:\"שלום\"},runStart:2,runEnd:3})).toBe(2);\n});\n\ntest(\"a long transcript is normalized once, not once per displayed word\", () => {\n let reads = 0;\n const words: TranscriptionWord[] = Array.from({length: 12000}, (_, index) => ({\n  get text() { reads++; return `word${index % 100}`; },\n  start: index, end: index + .5,\n }));\n const lookup = createCaptionWordIndex({words});\n for(let index=0; index<words.length; index++) {\n  expect(findWordIndexForRun({words,lookup,run:{id:`r${index}`,text:`",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-27dfcf62-7034-4c9c-b267-053218d846da"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:52:20.336Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

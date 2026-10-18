@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75b0a4135304ec8c1f83233c888ec4f9491b6aab952a96727926d5d7961829f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:36:09.952Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'resume|reconcile|saveCurrentProject|completedChunks' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts | tail -35; sed -n '515,710p' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e45b0866-106b-4fc1-9b50-271e1d5bc9af"
+      },
+      {
+        "at": "2026-10-13T09:36:10.119Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'resume|reconcile|saveCurrentProject|completedChunks' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts | tail -35; sed -n '515,710p' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e45b0866-106b-4fc1-9b50-271e1d5bc9af"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:36:10.389Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

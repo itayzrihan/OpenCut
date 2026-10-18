@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3978cbe354d20d18957e0fd42db2804033c376de7f9adee6c9123238015229b1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:02:58.460Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -6 .local/teaser-upgrade/production-build-final.log; tail -8 .local/teaser-upgrade/real-provider.log; git diff --check -- crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-plan.ts classic/apps/web/src/ai/podcast-editorial.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-35654a39-f101-4eb6-83fe-e18635e270ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:02:59.461Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

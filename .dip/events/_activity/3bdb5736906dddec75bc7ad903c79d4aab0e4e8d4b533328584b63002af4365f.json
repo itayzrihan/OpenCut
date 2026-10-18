@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3bdb5736906dddec75bc7ad903c79d4aab0e4e8d4b533328584b63002af4365f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T14:46:36.100Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/mcp/bridge-publication.ts",
+          "classic/apps/web/src/mcp/__tests__/bridge-publication-payload.test.ts",
+          "classic/apps/web/src/mcp/classic-mcp-bridge.tsx",
+          ".local/classic-web-tests/1791902796024"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "da45f512-8486-44c8-8446-88744231d60a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:46:36.102Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

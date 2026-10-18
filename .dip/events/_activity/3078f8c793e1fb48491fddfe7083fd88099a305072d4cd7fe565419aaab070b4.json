@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3078f8c793e1fb48491fddfe7083fd88099a305072d4cd7fe565419aaab070b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:35:05.626Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nv=json.loads(pathlib.Path('.local/codex-transcription-research/tree.json').read_text())\nfor x in v['tree']:\n p=x['path']\n if x['type']=='blob' and any(t in p.lower() for t in ['transcrib','transcription','dictation','voice']) and '/snapshots/' not in p: print(p)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-7b83ea3d-8a33-4064-83ec-82b141dfea94"
+      },
+      {
+        "at": "2026-10-12T10:35:05.778Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_63dc1a6806d37679aef5f15bdcdb0120cf50de567e3052aeefafd47a84875d6e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nv=json.loads(pathlib.Path('.local/codex-transcription-research/tree.json').read_text())\nfor x in v['tree']:\n p=x['path']\n if x['type']=='blob' and any(t in p.lower() for t in ['transcrib','transcription','dictation','voice']) and '/snapshots/' not in p: print(p)\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-7b83ea3d-8a33-4064-83ec-82b141dfea94"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:35:06.515Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

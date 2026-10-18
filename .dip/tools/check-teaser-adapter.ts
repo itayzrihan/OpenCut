@@ -1,0 +1,18 @@
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';
+import {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';
+const runtime=await createCanonicalTestRuntime();
+const classic=JSON.parse(await readFile('.local/episode-teaser-90-2026-10-14/classic-source.json','utf8'));
+classic.mediaAssets=classic.mediaAssets.map(({file,url,thumbnailUrl,buffer,...m}:any)=>m);
+const session=new CanonicalClassicSession({runtime,projectId:classic.document.metadata.id});session.attach({classic});
+const sceneId=classic.document.scenes[0].id,elementIds=['classic-clip-1'];
+const prepared=session.preparePodcast({sceneId,elementIds});
+assert(prepared.sourceFingerprint);
+const saved=JSON.parse(await readFile('.local/teaser-upgrade/real-provider-checkpoints.json','utf8'));
+const responses=JSON.parse(Object.values(saved).find((v:any)=>JSON.parse(v).responses) as string).responses;
+const options={mode:'teaser' as const,minSeconds:40,maxSeconds:55,maxOutputs:1};
+const before=session.read();
+const step=session.podcastEditorial({sceneId,elementIds,expectedRevision:prepared.revision,options,responses});
+assert(step.complete);session.podcast({sceneId,elementIds,expectedRevision:prepared.revision,options,videos:step.videos,review:true});
+assert.deepEqual(session.read(),before);runtime.free();console.log('PASS real Classic browser adapter: canonical strategic teaser/review, source unchanged');

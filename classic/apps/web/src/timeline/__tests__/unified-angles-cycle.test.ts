@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import type { MediaAsset } from "@/media/types";
 import { createUnifiedAnglesAsset } from "@/media/unified-angles";

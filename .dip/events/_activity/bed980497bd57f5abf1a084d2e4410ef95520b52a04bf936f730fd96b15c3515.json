@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bed980497bd57f5abf1a084d2e4410ef95520b52a04bf936f730fd96b15c3515",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:43:45.971Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '537,580p' crates/editor-api/src/classic.rs; sed -n '86,105p' crates/editor-api/src/editor_render.rs; sed -n '478,502p' crates/editor-api/src/operations/hyperframes.rs; sed -n '95,119p' crates/editor-api/src/operations/silence.rs; sed -n '1380,1402p' crates/editor-api/src/operations/hyperframes.rs; sed -n '531,542p' crates/editor-api/src/operations/classic_takes/podcast.rs; sed -n '501,514p' crates/editor-api/src/operations/classic_multicam.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-91fb0431-f0a2-4f4f-b138-565ef864747b"
+      },
+      {
+        "at": "2026-10-13T19:43:46.064Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '537,580p' crates/editor-api/src/classic.rs; sed -n '86,105p' crates/editor-api/src/editor_render.rs; sed -n '478,502p' crates/editor-api/src/operations/hyperframes.rs; sed -n '95,119p' crates/editor-api/src/operations/silence.rs; sed -n '1380,1402p' crates/editor-api/src/operations/hyperframes.rs; sed -n '531,542p' crates/editor-api/src/operations/classic_takes/podcast.rs; sed -n '501,514p' crates/editor-api/src/operations/classic_multicam.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-91fb0431-f0a2-4f4f-b138-565ef864747b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:43:46.897Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

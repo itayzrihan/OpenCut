@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab954e374086da74a8dc8f9bec29a5c560b9ac17109d0ead236f906b05edfc99",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:46:08.122Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\nimport struct,datetime\nfor p in sorted((Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed').glob('*.dmp'),key=lambda p:p.stat().st_mtime,reverse=True)[:2]:\n b=p.read_bytes();ts=struct.unpack_from('<I',b,20)[0];print(p.name,datetime.datetime.fromtimestamp(ts).isoformat())\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4e53fd4e-a33d-4a4e-a59c-6ec606acb596"
+      },
+      {
+        "at": "2026-10-13T13:46:08.236Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\nimport struct,datetime\nfor p in sorted((Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed').glob('*.dmp'),key=lambda p:p.stat().st_mtime,reverse=True)[:2]:\n b=p.read_bytes();ts=struct.unpack_from('<I',b,20)[0];print(p.name,datetime.datetime.fromtimestamp(ts).isoformat())\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4e53fd4e-a33d-4a4e-a59c-6ec606acb596"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:46:08.364Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

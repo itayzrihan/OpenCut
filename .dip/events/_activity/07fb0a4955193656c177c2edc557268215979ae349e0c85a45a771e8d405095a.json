@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07fb0a4955193656c177c2edc557268215979ae349e0c85a45a771e8d405095a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:07:10.385Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/transcription/external-client.ts",
+          "crates/editor-api/src/classic.rs",
+          "classic/apps/web/src/transcription/job.ts",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/ai/podcast-task.ts",
+          "classic/apps/web/src/ai/smart-takes-task.ts",
+          "classic/apps/web/src/subtitles/auto-texts.ts",
+          "classic/apps/web/src/transcription/windows.ts",
+          "classic/apps/web/src/transcription/timeline-stream.ts",
+          "classic/apps/web/src/core/managers/transcription-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "9fafb867-2273-4054-939f-cfdb8cd3c05d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:07:10.386Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

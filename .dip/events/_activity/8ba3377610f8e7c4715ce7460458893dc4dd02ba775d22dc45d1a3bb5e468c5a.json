@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ba3377610f8e7c4715ce7460458893dc4dd02ba775d22dc45d1a3bb5e468c5a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:26:29.024Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src | rg 'AGENTS.md$'; cat .dip/tools/verify-compact-history.mjs | head -n 95; cat classic/apps/web/src/accounts/bridge-scope.test.ts | head -n 30",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f9f8276f-624b-47b9-807b-fe4be81fcc7c"
+      },
+      {
+        "at": "2026-10-13T10:26:29.251Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3212abdc-147b-4285-bdae-21aa2b5ad5c4"
+      },
+      {
+        "at": "2026-10-13T10:26:29.252Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files classic/apps/web/src | rg 'AGENTS.md$'; cat .dip/tools/verify-compact-history.mjs | head -n 95; cat classic/apps/web/src/accounts/bridge-scope.test.ts | head -n 30",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f9f8276f-624b-47b9-807b-fe4be81fcc7c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:26:30.018Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -64,6 +64,7 @@ pub(super) fn register_silence_operations(
                     label,
                     Some(input.expected_revision),
                     |document| {
+                        let active_scene = document.classic_view_scene_id().map(str::to_owned);
                         let project = project_mut(document)?;
                         if project.id != input.project_id {
                             return Err(CapabilityError::Conflict(
@@ -84,6 +85,7 @@ pub(super) fn register_silence_operations(
                             &input.classic,
                             &input.scene_id,
                             &input.operation,
+                            active_scene.as_deref(),
                         )?;
                         project.classic = Some(input.classic);
                         Ok(vec![input.project_id, input.scene_id])
@@ -104,13 +106,10 @@ fn validate_scene_scope(
     after: &ClassicProject,
     scene_id: &str,
     operation: &SilenceOperation,
+    active_scene: Option<&str>,
 ) -> Result<(), CapabilityError> {
     if scene_id.is_empty()
-        || before
-            .document
-            .get("currentSceneId")
-            .and_then(Value::as_str)
-            != Some(scene_id)
+        || active_scene != Some(scene_id)
     {
         return Err(CapabilityError::Conflict(
             "silence edit target scene is not active".into(),

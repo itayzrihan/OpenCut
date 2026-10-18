@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "308015c492f9cb14f2f2d2e699e1f00039534fe7937ea606f8a06ac63e4d0008",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:07:40.208Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,json,shutil\np=pathlib.Path('analysis/teaser-word-fix-2026-10-14');p.mkdir(parents=True,exist_ok=True)\nd=json.load(open('.local/teaser-word-fix-2026-10-14/after-document.json'));s=d['scene'];c=sorted([e for t in s['tracks'] if t.get('captionSource') for e in t['elements']],key=lambda e:e['startTime'])\ndef ts(t):\n m=round(t/120);return f'{m//3600000:02}:{m//60000%60:02}:{m//1000%60:02},{m%1000:03}'\nbase=pathlib.Path('/Users/itayzrihan/Downloads');backup=pathlib.Path('.local/teaser-word-fix-2026-10-14/previous-exports');backup.mkdir(exist_ok=True)\nfor f in base.glob('OpenCut-Teaser-FullAuto*2026-10-14.*'):shutil.copy2(f,backup/f.name)\n(base/'OpenCut-Teaser-FullAuto-2026-10-14.srt').write_text('\\n\\n'.join(f\"{i}\\n{ts(e['startTime'])} --> {ts(e['startTime']+e['duration'])}\\n{e['params']['content']}\" for i,e in enumerate(c,1))+'\\n',encoding='utf-8-sig')\nw=next(t['captionSource']['words'] for t in s['tracks'] if t.get('captionSource'));parts=[];buf=[]\nfor i,x in enumerate(w):\n if i and x['start']-w[i-1]['end']>.8 and buf:parts.append(' '.join(buf));buf=[]\n buf.append(x['text'])\nif buf:parts.append(' '.join(buf))\n(base/'OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt').write_text('טיזר למכור בלי לשכנע — Full Auto Edit\\nתמלול הסיקוונס הסופי · 88.56 שניות\\n\\n'+'\\n\\n'.join(parts)+'\\n',encoding='utf-8-sig')\n(p/'caption-cues.json').write_text(json.dumps(c,ensure_ascii=False,indent=2));print({'cues':len(c),'lastEnd':(c[-1]['startTime']+c[-1]['duration'])/120000})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5c291a57-719c-457f-a6aa-1a2c73109342"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:07:41.080Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

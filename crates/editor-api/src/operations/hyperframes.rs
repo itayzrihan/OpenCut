@@ -480,6 +480,7 @@ pub(super) fn register_hyperframes_operations(
                     "Add HyperFrames composition",
                     Some(input.expected_revision),
                     |document| {
+                        let active_scene_id = document.classic_view_scene_id().map(str::to_owned);
                         let project = project_mut(document)?;
                         if project.id != input.project_id {
                             return Err(CapabilityError::Conflict(
@@ -491,7 +492,7 @@ pub(super) fn register_hyperframes_operations(
                                 "Adding an imported composition requires a Classic project".into(),
                             )
                         })?;
-                        if classic.document["currentSceneId"] != input.scene_id {
+                        if active_scene_id.as_deref() != Some(input.scene_id.as_str()) {
                             return Err(CapabilityError::Conflict(
                                 "HyperFrames target scene is not active".into(),
                             ));
@@ -1379,8 +1380,8 @@ fn import_classic(
         .unwrap_or_else(|| allocate("hyperframes"));
     let item_id = allocate("item");
     let track_id = target_track_id.clone().unwrap_or_else(|| allocate("track"));
+    let active = document.classic_view_scene_id().map(str::to_owned).unwrap();
     let classic = document.project.as_mut().unwrap().classic.as_mut().unwrap();
-    let active = classic.document["currentSceneId"].clone();
     let scene = classic
         .document
         .get_mut("scenes")

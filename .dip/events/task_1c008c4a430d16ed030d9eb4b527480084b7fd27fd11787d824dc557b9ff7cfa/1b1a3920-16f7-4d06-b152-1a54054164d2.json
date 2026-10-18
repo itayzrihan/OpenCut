@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b1a3920-16f7-4d06-b152-1a54054164d2",
+  "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Implemented bounded two-window external scheduler, serialized bounded PCM prefetch, exact shared-context sample reuse (keeps model context unchanged), host external POST opt-in concurrency with per-account two-request limit, and worker recycling after eight completed windows. Configured transcription-sources verification passed (149+7 web tests plus Rust/WASM/tsc/lint); additional account server tests 2 passed and new-file lint passed with existing warnings. Live project persisted 27 completed sections (first 65 words, recent 145-157, so density plausibly contributes to latency). Browser initially 5.9GB and unresponsive; development server independently restarted during work. Reopened project and observed restored captions, but automatic resume reported editor storage commit timeout (unknown outcome). Attempted normal Generate transcript retry; browser became unresponsive again. No verified section 28 yet, no actual throughput improvement measured. Scope remains open, do not mark fully implemented.",
+    "next": "Resolve storage timeout/resume safely preserving canonical session and 27 saved sections; verify live section 28 and benchmark actual inference vs decode/publication. Inference overlap itself has NOT been reduced: only redundant PCM decode/resample is eliminated to preserve boundary accuracy. Consider further measured inference optimization after live recovery.",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T12:48:05.039Z",
+  "parents": [
+    "28f4bc88-6985-4248-ad02-47ff6f8c8aec"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

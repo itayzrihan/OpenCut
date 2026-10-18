@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27045824-2358-4aed-a89d-6c0a48d9eb78",
+  "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+  "type": "task.update",
+  "payload": {
+    "title": "Extract labelled sound effects into OpenCut global library",
+    "acceptance": [
+      "Frame-accurate source ranges and labels",
+      "Individual MP3 effects imported into shared global catalog",
+      "Verify catalog and audio files"
+    ],
+    "scope": [
+      "analysis/global-sfx-2026-10-15",
+      "classic/apps/web/src/sounds",
+      "classic/scripts/import-global-audio.py"
+    ]
+  },
+  "actor": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277",
+  "createdAt": "2026-10-15T01:19:11.183Z",
+  "parents": [
+    "6598db9f-4d9b-4f12-8e13-b452da68ca10"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

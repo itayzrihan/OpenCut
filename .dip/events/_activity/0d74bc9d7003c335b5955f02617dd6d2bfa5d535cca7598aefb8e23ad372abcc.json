@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d74bc9d7003c335b5955f02617dd6d2bfa5d535cca7598aefb8e23ad372abcc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:03:30.213Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'getOpenAIOAuthStatus|readOpenAIOAuth|refresh' classic/apps/web/src/ai/server/openai-codex-oauth.ts | tail -n 25; sed -n '1020,1120p' classic/apps/web/src/ai/server/openai-codex-oauth.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f3a3ab20-4354-4cac-86d7-b525e5803bd2"
+      },
+      {
+        "at": "2026-10-13T11:03:30.552Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'getOpenAIOAuthStatus|readOpenAIOAuth|refresh' classic/apps/web/src/ai/server/openai-codex-oauth.ts | tail -n 25; sed -n '1020,1120p' classic/apps/web/src/ai/server/openai-codex-oauth.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f3a3ab20-4354-4cac-86d7-b525e5803bd2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:03:30.827Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

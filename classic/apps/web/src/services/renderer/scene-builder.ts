@@ -6,7 +6,7 @@ import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
 import type { HyperframesRenderContext } from "@/hyperframes/types";
 import { TICKS_PER_SECOND } from "@/wasm";
-import { resolveUnifiedAnglesVideoAsset } from "@/media/unified-angles";
+import { resolveUnifiedAnglesVideoTiming } from "@/media/unified-angles";
 import type { ParamValues } from "@/params";
 import { RootNode } from "./nodes/root-node";
 import { VideoNode } from "./nodes/video-node";
@@ -450,14 +450,16 @@ function buildTrackNodes({
 						}
 					: readCameraLayerSettings({ params: element.params });
 				const referencedAsset = mediaMap.get(element.mediaId);
-				const mediaAsset =
+				const videoTiming =
 					element.type === "video" && referencedAsset
-						? resolveUnifiedAnglesVideoAsset({
+						? resolveUnifiedAnglesVideoTiming({
 								asset: referencedAsset,
-								angleAssetId: element.unifiedAngleId,
+								element,
 								mediaMap,
 							})
-						: referencedAsset;
+						: null;
+				const mediaAsset =
+					element.type === "video" ? videoTiming?.asset : referencedAsset;
 				if (!mediaAsset) continue;
 				if (mediaAsset.missing) {
 					if (isPreview)
@@ -484,8 +486,8 @@ function buildTrackNodes({
 							file: mediaAsset.file,
 							duration: element.duration,
 							timeOffset: element.startTime,
-							trimStart: element.trimStart,
-							trimEnd: element.trimEnd,
+							trimStart: videoTiming?.trimStart ?? element.trimStart,
+							trimEnd: videoTiming?.trimEnd ?? element.trimEnd,
 							retime: element.retime,
 							transform: buildTransformFromParams({ params: element.params }),
 							fitMode: element.fitMode ?? "contain",
@@ -775,14 +777,16 @@ function buildBlurBackgroundNodes({
 		}
 
 		const referencedAsset = mediaMap.get(element.mediaId);
-		const mediaAsset =
+		const videoTiming =
 			element.type === "video" && referencedAsset
-				? resolveUnifiedAnglesVideoAsset({
+				? resolveUnifiedAnglesVideoTiming({
 						asset: referencedAsset,
-						angleAssetId: element.unifiedAngleId,
+						element,
 						mediaMap,
 					})
-				: referencedAsset;
+				: null;
+		const mediaAsset =
+			element.type === "video" ? videoTiming?.asset : referencedAsset;
 		if (
 			!mediaAsset?.url ||
 			(mediaAsset.type !== "video" && mediaAsset.type !== "image")
@@ -798,8 +802,8 @@ function buildBlurBackgroundNodes({
 				mediaType: mediaAsset.type,
 				duration: element.duration,
 				timeOffset: element.startTime,
-				trimStart: element.trimStart,
-				trimEnd: element.trimEnd,
+				trimStart: videoTiming?.trimStart ?? element.trimStart,
+				trimEnd: videoTiming?.trimEnd ?? element.trimEnd,
 				retime: element.type === "video" ? element.retime : undefined,
 				blurIntensity,
 			}),

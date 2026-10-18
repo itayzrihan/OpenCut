@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30e9682d4f87e2a406a9ea6f30c8500d91902048269870be747501b99dcf95ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:21:39.302Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/apple-stt-benchmark/app.swift\ncat .local/apple-stt-benchmark/Info.plist\nls -lh .local/apple-stt-benchmark/result-*.json\nwhisper-cli --help 2>&1 | head -35\nrg --files /Users/itayzrihan/.cache /Users/itayzrihan/Library/Caches -g 'ggml*.bin' -g '*.pt' -g 'config.json' 2>/dev/null | head -30",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e6eaf214-444f-4472-a212-02f715f229ff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:21:40.116Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

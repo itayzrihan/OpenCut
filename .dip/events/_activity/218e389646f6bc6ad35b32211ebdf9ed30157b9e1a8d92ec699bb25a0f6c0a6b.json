@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "218e389646f6bc6ad35b32211ebdf9ed30157b9e1a8d92ec699bb25a0f6c0a6b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:44.531Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/audio-stream.ts classic/apps/web/src/export/audio-source-windows.ts classic/apps/web/src/editor-agent/server/session-policy.ts classic/apps/web/src/editor-agent/server/session-store.ts classic/apps/web/src/editor-agent/server/project-write.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-fd0845e9-56a1-467a-8e57-2054bb61ccc1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:45.358Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ee70c3a76220033298d0dffb556b3905d90f3cee508ab1ab2eb50607190673d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:54:16.776Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfbea9ce3f4018f3116bca154ce15dcbfc155dd984559ebef752aadc223e2ef4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .gitignore <<'EOF'\n.dip/\n.agents/\n.claude/\nAGENTS.md\nCLAUDE.md\nEOF\ngit rm -r --cached -- .dip .agents .claude AGENTS.md CLAUDE.md\nGIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null node /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/site-workflow.mjs --project-id appgprj_6acc90e36a008191bbd1f032c3f2b3d5",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-fa6a8e19-00e7-41ee-8a2d-be2563b52d25"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:54:17.094Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

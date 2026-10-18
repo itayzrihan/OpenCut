@@ -1,5 +1,16 @@
 import { withAccount, requireAccount } from "@/accounts/server";
-import { scopedBridgeSession, accountBridgeCommand } from "@/accounts/bridge-scope";
+import {
+	scopedBridgeSession,
+	accountBridgeCommand,
+} from "@/accounts/bridge-scope";
+import {
+	isBridgeProcessAlive,
+	settleBridgeRequests,
+} from "@/accounts/bridge-transport";
+import {
+	BridgeSnapshotCache,
+	type BridgeSnapshot,
+} from "@/accounts/bridge-snapshot-cache";
 import { readBoundedBody } from "@/accounts/request-body";
 import { readdir, readFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
@@ -15,6 +26,7 @@ const bridgeConfigSchema = z
 		// Version 2 binds command completions and disconnects to their session.
 		// Older bridges cannot provide the isolation required by local accounts.
 		version: z.literal(2),
+		supportsHeartbeat: z.boolean().optional(),
 		baseUrl: z.url(),
 		token: z.string().min(32),
 		pid: z.number().int().positive(),
@@ -33,6 +45,20 @@ const bridgeStatusSchema = z
 		connected: z.boolean().optional(),
 	})
 	.passthrough();
+
+const heartbeatSchema = z
+	.object({
+		projectId: z.string().min(1),
+		projectName: z.string().min(1),
+		expectedRevision: z.number().int().nonnegative(),
+		revision: z.number().int().nonnegative(),
+		dirty: z.boolean(),
+		playback: z.unknown(),
+		selection: z.unknown(),
+		ui: z.unknown(),
+	})
+	.strict();
+const legacySnapshots = new BridgeSnapshotCache();
 
 type RouteContext = {
 	params: Promise<{ path: string[] }>;
@@ -90,7 +116,7 @@ function validateBridgeConfig(raw: string): BridgeConfig | null {
 		) {
 			return null;
 		}
-		return config;
+		return isBridgeProcessAlive({ pid: config.pid }) ? config : null;
 	} catch {
 		return null;
 	}
@@ -167,7 +193,7 @@ async function fetchBridge({
 			Authorization: `Bearer ${config.token}`,
 			...(contentType ? { "Content-Type": contentType } : {}),
 		},
-		body: body?.slice(0),
+		body,
 		cache: "no-store",
 		signal: AbortSignal.timeout(50_000),
 	});
@@ -209,39 +235,115 @@ async function proxyBridgeRequest({
 	) {
 		return NextResponse.json({ error: "Invalid bridge path" }, { status: 400 });
 	}
-	const permitted = (request.method === "PUT" && path.length === 1 && path[0] === "state") || (request.method === "GET" && path.length === 1 && path[0] === "status") || (path.length === 2 && ((request.method === "GET" && path[0] === "commands") || (request.method === "POST" && path[0] === "results") || (request.method === "DELETE" && path[0] === "session")));
-	if (!permitted) return NextResponse.json({ error: "Unsupported bridge operation" }, { status: 400 });
+	const permitted =
+		(request.method === "PUT" && path.length === 1 && path[0] === "state") ||
+		(request.method === "GET" && path.length === 1 && path[0] === "status") ||
+		(path.length === 2 &&
+			((request.method === "GET" && path[0] === "commands") ||
+				(request.method === "POST" &&
+					["results", "heartbeat"].includes(path[0])) ||
+				(request.method === "DELETE" && path[0] === "session")));
+	if (!permitted)
+		return NextResponse.json(
+			{ error: "Unsupported bridge operation" },
+			{ status: 400 },
+		);
 	const accountId = requireAccount().id;
 	let body: ArrayBuffer | undefined;
+	let legacyHeartbeatBody: ArrayBuffer | undefined;
 	try {
-		body = request.method === "GET" ? undefined : await readBoundedBody({ request: request, maximumBytes: 32 * 1024 * 1024 });
+		body =
+			request.method === "GET"
+				? undefined
+				: await readBoundedBody({
+						request: request,
+						maximumBytes:
+							path[0] === "heartbeat" ? 512 * 1024 : 32 * 1024 * 1024,
+					});
 		if (path[0] === "state" && body) {
 			const snapshot = JSON.parse(new TextDecoder().decode(body));
-			snapshot.sessionId = scopedBridgeSession({ accountId: accountId, sessionId: snapshot.sessionId });
+			snapshot.sessionId = scopedBridgeSession({
+				accountId: accountId,
+				sessionId: snapshot.sessionId,
+			});
 			body = new TextEncoder().encode(JSON.stringify(snapshot)).buffer;
-		} else if (path.length === 2) path[1] = scopedBridgeSession({ accountId: accountId, sessionId: path[1] });
-	} catch { return NextResponse.json({ error: "Invalid account bridge request" }, { status: 400 }); }
+			legacySnapshots.remember({
+				snapshot: snapshot as BridgeSnapshot,
+				bytes: body.byteLength,
+			});
+		} else if (path.length === 2) {
+			path[1] = scopedBridgeSession({ accountId, sessionId: path[1] });
+			if (path[0] === "heartbeat" && body) {
+				const value = heartbeatSchema.parse(
+					JSON.parse(new TextDecoder().decode(body)),
+				);
+				const snapshot = legacySnapshots.heartbeat({
+					sessionId: path[1],
+					value,
+				});
+				if (snapshot) {
+					const encoded = new TextEncoder().encode(JSON.stringify(snapshot));
+					if (encoded.byteLength <= 2 * 1024 * 1024)
+						legacyHeartbeatBody = encoded.buffer;
+					else legacySnapshots.forget({ sessionId: path[1] });
+				}
+			}
+			if (request.method === "DELETE")
+				legacySnapshots.forget({ sessionId: path[1] });
+		}
+	} catch {
+		return NextResponse.json(
+			{ error: "Invalid account bridge request" },
+			{ status: 400 },
+		);
+	}
 	const contentType = request.headers.get("content-type");
 
 	const responses = (
-		await Promise.allSettled(
-			configs.map((config) =>
-				fetchBridge({
+		await settleBridgeRequests({
+			configs,
+			// Long polls carry no snapshot bytes and must remain parallel.
+			concurrency: request.method === "GET" ? configs.length : 4,
+			run: (config) => {
+				if (path[0] === "heartbeat" && !config.supportsHeartbeat) {
+					if (!legacyHeartbeatBody)
+						return Promise.resolve(new Response(null, { status: 204 }));
+					return fetchBridge({
+						config,
+						path: ["state"],
+						method: "PUT",
+						contentType,
+						body: legacyHeartbeatBody,
+					});
+				}
+				return fetchBridge({
 					config,
 					path,
 					method: request.method,
 					contentType,
 					body,
-				}),
-			),
-		)
+				});
+			},
+		})
 	)
 		.filter(
 			(result): result is PromiseFulfilledResult<Response> =>
 				result.status === "fulfilled",
 		)
 		.map((result) => result.value);
-	const successful = responses.filter((response) => response.ok);
+	const successful = responses.filter(
+		(response) => response.ok && response.status !== 204,
+	);
+	await Promise.allSettled(
+		responses
+			.filter((response) => !response.ok)
+			.map((response) => response.body?.cancel()),
+	);
+	const needsFullState =
+		path[0] === "heartbeat" &&
+		responses.some(
+			(response) => response.status === 404 || response.status === 409,
+		);
 	if (successful.length === 0) {
 		// A bridge process can restart between cache refreshes. Force the next
 		// request to discover its new loopback endpoint immediately.
@@ -252,10 +354,17 @@ async function proxyBridgeRequest({
 		);
 	}
 
-	if (request.method === "PUT" && path[0] === "state") {
+	if (
+		(request.method === "PUT" && path[0] === "state") ||
+		path[0] === "heartbeat"
+	) {
+		await Promise.allSettled(
+			successful.map((response) => response.body?.cancel()),
+		);
 		return NextResponse.json({
 			connected: true,
 			bridgeCount: successful.length,
+			needsFullState,
 		});
 	}
 
@@ -270,7 +379,11 @@ async function proxyBridgeRequest({
 			}),
 		);
 		return NextResponse.json({
-			commands: batches.flatMap((batch) => batch.commands ?? []).map((command) => accountBridgeCommand({ accountId: accountId, value: command })),
+			commands: batches
+				.flatMap((batch) => batch.commands ?? [])
+				.map((command) =>
+					accountBridgeCommand({ accountId: accountId, value: command }),
+				),
 		});
 	}
 

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bc8098c621d7fd76125b0c60edf948501b85b4ed9a2c2eac12c96b68ea5a7c36",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:08:51.674Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/analysis/teaser-word-fix-2026-10-14/mcp-apply.json"
+        ],
+        "changeHash": "314e9e147b3591d7a1bd136c5cb3a51ed2e112d18b3ecbb49021d9526f3e9dcd",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-07011a1c-b2c3-43eb-83f6-6955d0934e7c"
+      },
+      {
+        "at": "2026-10-14T10:08:51.832Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,json,hashlib\np=pathlib.Path('analysis/teaser-word-fix-2026-10-14');d=json.load(open('.local/teaser-word-fix-2026-10-14/project-before.json'));h=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();b={'sceneId':'6125f350-cad1-4f95-b7b6-8cc507c24af7','settingsHash':h(d['settings']),'jobsHash':h(d['transcriptionJobs']),'protectedScenes':{s['id']:h(s) for s in d['scenes'] if s['id']!='6125f350-cad1-4f95-b7b6-8cc507c24af7'}};(p/'baseline.json').write_text(json.dumps(b,indent=2));print({'protectedScenes':len(b['protectedScenes'])})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-456e6445-5d35-4618-979e-b36f5db6cf4d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:08:52.545Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6fc955be5bc1db77d0d62d21e5b9137041b1dea11fa8fe30826c886296ec3e87",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:11:45.853Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('lib/github.mjs');s=p.read_text().replace(\"headers:{Authorization:[REDACTED],body:JSON.stringify({query:options.query,variables:options.variables})}:{}),headers:{...(options.query?{'Content-Type':'application/json'}:{}),Authorization:[REDACTED] slice=files.slice(offset,offset+32);let bytes=0;const bounded=slice.filter((e:any)=>{bytes+=Math.min(e.size||0,1024*1024);return bytes<=4*1024*1024;});const selected=bounded.length?bounded:slice.slice(0,1);const events=await eventBatch(token,repo,selected);\"+s[end:];s=s.replace('offset+slice.length','offset+selected.length');p.write_text(s)\nPY\nnpx tsc --noEmit",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-dc52b5e8-7da6-445c-a0c4-ed2f2e6dd96a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:11:46.605Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

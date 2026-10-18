@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffa672b118527d59d8f025ed9db9e5a42c220d1d3db5ab99eda0efbf82355e85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:22:34.825Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'showSaveFilePicker|handleExport' classic/apps/web/src/components/editor -g '*export*'; rg -n 'showSaveFilePicker' classic/apps/web/src; sed -n '55,160p' classic/apps/web/src/components/editor/export-button.tsx",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-45f782e1-653a-4901-bcf7-fb2816193027"
+      },
+      {
+        "at": "2026-10-13T16:22:34.961Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'showSaveFilePicker|handleExport' classic/apps/web/src/components/editor -g '*export*'; rg -n 'showSaveFilePicker' classic/apps/web/src; sed -n '55,160p' classic/apps/web/src/components/editor/export-button.tsx",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-45f782e1-653a-4901-bcf7-fb2816193027"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:22:35.639Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

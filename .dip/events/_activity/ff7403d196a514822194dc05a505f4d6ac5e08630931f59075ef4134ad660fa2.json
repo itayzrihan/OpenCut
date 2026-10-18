@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff7403d196a514822194dc05a505f4d6ac5e08630931f59075ef4134ad660fa2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T10:34:41.624Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nrepo=Path('/Users/itayzrihan/Documents/teaser-editing-skills');repo.mkdir(exist_ok=False)\nfor name in ['strategic-teaser-compression','visual-teaser-editing']:\n shutil.copytree(Path.home()/'.codex/skills'/name,repo/'skills'/name,ignore=shutil.ignore_patterns('__pycache__','*.pyc','.DS_Store'))\n(repo/'.gitignore').write_text('.DS_Store\\n__pycache__/\\n*.py[cod]\\n')\n(repo/'README.md').write_text('''# Teaser Editing Skills\n\nTwo complementary Codex skills for turning long interviews and podcasts into compelling short teasers, including Hebrew and RTL footage.\n\n| Skill | Purpose |\n| --- | --- |\n| [strategic-teaser-compression](skills/strategic-teaser-compression/SKILL.md) — בחירת קטעים מעניינים ביותר ודחיסה אסטרטגית שלהם | Select strong moments across the full recording and assemble an honest question–answer chain, escalating stakes and a deliberate open payoff. |\n| [visual-teaser-editing](skills/visual-teaser-editing/SKILL.md) — עריכה ויזואלית | Align semantic B-roll, motion graphics, typography and changes of state to the selected dialogue. |\n\nUse the selection skill first, then the visual skill once the narrative and output timing are stable. Both preserve the original project, transcript and earlier sequences when working in OpenCut/POCUT.\n\n## Included\n\n- Both complete `SKILL.md` instructions and Codex UI metadata.\n- Detailed Hebrew reference analyses of content structure and visual editing.\n- Twelve reference frames linked from the visual analysis.\n- A synthetic source-to-output ledger and Python timing checker.\n\nThe analyses distinguish observed teaser evidence from assumptions about the unavailable long recording. The full source video is not included.\n\n## Install\n\nClone this repository using your authenticated GitHub account:\n\n```sh\ngh repo clone itayzrihan/teaser-editing-skills\ncd teaser-editing-skills\nmkdir -p \"${CODEX_HOME:-$HOME/.codex}/skills\"\ncp -R skills/strategic-teaser-compression \"${CODEX_HOME:-$HOM",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-993c4479-809e-4845-8542-0db95b28c983"
+      },
+      {
+        "at": "2026-10-15T10:34:41.881Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport subprocess,json\nr=subprocess.run(['gh','repo','view','itayzrihan/teaser-editing-skills','--json','nameWithOwner'],capture_output=True,text=True)\nprint({'repoNameAvailable':r.returncode!=0,'existingRepo':json.loads(r.stdout) if r.returncode==0 else None})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-98eafdee-87d2-4b92-8064-1896fe00e147"
+      },
+      {
+        "at": "2026-10-15T10:34:41.890Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nrepo=Path('/Users/itayzrihan/Documents/teaser-editing-skills');repo.mkdir(exist_ok=False)\nfor name in ['strategic-teaser-compression','visual-teaser-editing']:\n shutil.copytree(Path.home()/'.codex/skills'/name,repo/'skills'/name,ignore=shutil.ignore_patterns('__pycache__','*.pyc','.DS_Store'))\n(repo/'.gitignore').write_text('.DS_Store\\n__pycache__/\\n*.py[cod]\\n')\n(repo/'README.md').write_text('''# Teaser Editing Skills\n\nTwo complementary Codex skills for turning long interviews and podcasts into compelling short teasers, including Hebrew and RTL footage.\n\n| Skill | Purpose |\n| --- | --- |\n| [strategic-teaser-compression](skills/strategic-teaser-compression/SKILL.md) — בחירת קטעים מעניינים ביותר ודחיסה אסטרטגית שלהם | Select strong moments across the full recording and assemble an honest question–answer chain, escalating stakes and a deliberate open payoff. |\n| [visual-teaser-editing](skills/visual-teaser-editing/SKILL.md) — עריכה ויזואלית | Align semantic B-roll, motion graphics, typography and changes of state to the selected dialogue. |\n\nUse the selection skill first, then the visual skill once the narrative and output timing are stable. Both preserve the original project, transcript and earlier sequences when working in OpenCut/POCUT.\n\n## Included\n\n- Both complete `SKILL.md` instructions and Codex UI metadata.\n- Detailed Hebrew reference analyses of content structure and visual editing.\n- Twelve reference frames linked from the visual analysis.\n- A synthetic source-to-output ledger and Python timing checker.\n\nThe analyses distinguish observed teaser evidence from assumptions about the unavailable long recording. The full source video is not included.\n\n## Install\n\nClone this repository using your authenticated GitHub account:\n\n```sh\ngh repo clone itayzrihan/teaser-editing-skills\ncd teaser-editing-skills\nmkdir -p \"${CODEX_HOME:-$HOME/.codex}/skills\"\ncp -R skills/strategic-teaser-compression \"${CODEX_HOME:-$HOM",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-993c4479-809e-4845-8542-0db95b28c983"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T10:34:42.107Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

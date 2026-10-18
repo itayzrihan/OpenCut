@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b87626ceaff1f71a1b38e188758250e4e8fa78d72d8fde61bd6dd43176359279",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:33:21.624Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,re\np=pathlib.Path('/Users/itayzrihan/.codex/sessions/2026/10/07/rollout-2026-10-07T21-37-42-01a117a8-38a8-79f3-92d1-7d3c3e70fe28.jsonl')\nv=json.loads(p.read_text().splitlines()[172])['payload']\nfor c in v.get('content',[]):\n s=c.get('text','')\n for line in s.splitlines():\n  print('[password line withheld]' if re.search('password|סיסמ',line,re.I) else line)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3a5c6654-40cb-429f-b12a-32ec050913b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:33:21.698Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

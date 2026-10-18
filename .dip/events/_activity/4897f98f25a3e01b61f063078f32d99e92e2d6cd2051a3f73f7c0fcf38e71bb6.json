@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4897f98f25a3e01b61f063078f32d99e92e2d6cd2051a3f73f7c0fcf38e71bb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:14:15.263Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/transcription/external-client.ts",
+          "classic/apps/web/src/transcription/external-server.ts",
+          "classic/apps/web/src/transcription/external-server.test.ts",
+          "classic/apps/web/src/transcription/windows.test.ts",
+          "classic/apps/web/src/core/managers/transcription-manager.ts",
+          "classic/apps/web/src/subtitles/components/transcription-source.tsx",
+          "classic/apps/web/src/app/api/transcription/external/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/routes.d.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/validator.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "8bdc816c-88f6-43a6-bd04-7896976f954e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:14:15.359Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

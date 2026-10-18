@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f0c4166018713a0d2c47a473c2d11c5cf43094c48ea42ebb3098dbdb5c71b23",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:06:47.877Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nb=Path('.local/codex-transcription-research')\np=Path('classic/apps/web/src/app/api/transcription/timing-probe/route.ts')\n(b/'timing-probe-route-source.ts.txt').write_text(p.read_text())\np.write_text('export function GET() { return new Response(null, { status: 404 }); }\\nexport const POST = GET;\\n')\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-f597d2aa-4578-4599-80e3-c0e3e042c191"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:06:47.984Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

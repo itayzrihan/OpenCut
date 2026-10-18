@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff3f6332a39a049a0fa0a8f0a8bd5c532e5161fd0ad559e00341cdd83ecf371d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:24:06.763Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -65 classic/BROWSER-TRANSCRIPTION.md; git diff --stat -- classic/apps/web/src/subtitles/components/assets-view.tsx classic/apps/web/src/project/types.ts; ls -lh .local/transcription-debug/srt-import-proof.png",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-9c2fd0c0-7e57-4bd5-89b6-7e91424463d0"
+      },
+      {
+        "at": "2026-10-12T10:24:06.929Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -65 classic/BROWSER-TRANSCRIPTION.md; git diff --stat -- classic/apps/web/src/subtitles/components/assets-view.tsx classic/apps/web/src/project/types.ts; ls -lh .local/transcription-debug/srt-import-proof.png",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-9c2fd0c0-7e57-4bd5-89b6-7e91424463d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:24:07.287Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

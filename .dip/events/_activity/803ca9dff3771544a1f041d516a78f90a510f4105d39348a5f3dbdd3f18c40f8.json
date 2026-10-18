@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "803ca9dff3771544a1f041d516a78f90a510f4105d39348a5f3dbdd3f18c40f8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T18:57:16.485Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/audio-manager.ts",
+          "classic/apps/web/src/media/__tests__/audio-sink-cache.test.ts",
+          "classic/apps/web/src/core/managers/__tests__/audio-preparation.test.ts",
+          "classic/apps/web/src/media/__tests__/playback-audio-cache.test.ts",
+          "classic/apps/web/src/media/playback-audio-cache.ts",
+          "classic/apps/web/src/media/audio-sink-cache.ts",
+          ".local/smart-shorts-performance/web",
+          ".local/smart-shorts-performance/web/src__media____tests____playback-audio-cache.test.ts.log",
+          ".local/smart-shorts-performance/web/src__media____tests____audio-sink-cache.test.ts.log",
+          ".local/smart-shorts-performance/web/src__core__managers____tests____audio-sync.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "472af2a0-d5c2-4d82-9ccd-08a2f856f30e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:57:16.489Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

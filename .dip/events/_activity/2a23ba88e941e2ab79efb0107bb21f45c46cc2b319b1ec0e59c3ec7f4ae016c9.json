@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a23ba88e941e2ab79efb0107bb21f45c46cc2b319b1ec0e59c3ec7f4ae016c9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:30:43.371Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6b3b3cacfc35b5e956adba960a71a631d047d006e58dbeae9c2b14c9fd06b57e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temporary|credential|password|username|account|recovery' .local --glob '*account*' --glob '*credential*' --glob '*login*' --glob '!node_modules/**' --glob '!*.json' --glob '!*.log' --glob '!*.png' --glob '!*.mp4' -l | head -35\nrg -n 'recover|temporary|username|password' classic/apps/web/src/accounts/gate.tsx classic/apps/web/src/accounts/server.ts | head -55",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-df826571-3c45-4b64-a722-3fd8622c25c8"
+      },
+      {
+        "at": "2026-10-15T01:30:43.477Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6b3b3cacfc35b5e956adba960a71a631d047d006e58dbeae9c2b14c9fd06b57e",
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "485e2845-daa6-413d-8df1-3a409e0bb870"
+      },
+      {
+        "at": "2026-10-15T01:30:43.478Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6b3b3cacfc35b5e956adba960a71a631d047d006e58dbeae9c2b14c9fd06b57e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temporary|credential|password|username|account|recovery' .local --glob '*account*' --glob '*credential*' --glob '*login*' --glob '!node_modules/**' --glob '!*.json' --glob '!*.log' --glob '!*.png' --glob '!*.mp4' -l | head -35\nrg -n 'recover|temporary|username|password' classic/apps/web/src/accounts/gate.tsx classic/apps/web/src/accounts/server.ts | head -55",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-df826571-3c45-4b64-a722-3fd8622c25c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:30:43.480Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

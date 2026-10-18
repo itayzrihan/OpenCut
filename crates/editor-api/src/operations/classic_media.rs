@@ -23,11 +23,21 @@ fn tracks(value: &Value) -> impl Iterator<Item = &Value> {
 }
 fn references_media(value: &Value, ids: &HashSet<&str>) -> bool {
     match value {
-        Value::Object(fields) => fields.iter().any(|(key, value)| {
-            (matches!(key.as_str(), "mediaId" | "sourceMediaId")
-                && value.as_str().is_some_and(|id| ids.contains(id)))
-                || references_media(value, ids)
-        }),
+        Value::Object(fields) => {
+            fields
+                .get("angleAssetIds")
+                .and_then(Value::as_array)
+                .is_some_and(|items| {
+                    items
+                        .iter()
+                        .any(|v| v.as_str().is_some_and(|id| ids.contains(id)))
+                })
+                || fields.iter().any(|(key, value)| {
+                    (matches!(key.as_str(), "mediaId" | "sourceMediaId")
+                        && value.as_str().is_some_and(|id| ids.contains(id)))
+                        || references_media(value, ids)
+                })
+        }
         Value::Array(items) => items.iter().any(|item| references_media(item, ids)),
         _ => false,
     }
@@ -130,7 +140,9 @@ pub(super) fn register_classic_media(
                         let mut count = 0usize;
                         for scene in scenes.iter() {
                             if references_media(&scene["takeAssembly"], &ids) {
-                                return Err(invalid("Media is retained by smart-take alternatives; remove the assembly first"));
+                                return Err(invalid(
+                                    "Media is retained by smart-take alternatives; remove the assembly first",
+                                ));
                             }
                             let mut elements = Vec::new();
                             for track in tracks(&scene["tracks"]) {

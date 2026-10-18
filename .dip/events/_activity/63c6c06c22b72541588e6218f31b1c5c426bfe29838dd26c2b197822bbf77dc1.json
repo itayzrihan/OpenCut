@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "63c6c06c22b72541588e6218f31b1c5c426bfe29838dd26c2b197822bbf77dc1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:42:26.734Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_383f8aaf10231cbd314052ee024750db852166702012810eea7b79e60155febb",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/transcription/windows.ts; sed -n '1,235p' classic/apps/web/src/transcription/timeline-stream.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-a32c3f93-bbe7-4683-89ac-bc9658032d2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:42:26.859Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

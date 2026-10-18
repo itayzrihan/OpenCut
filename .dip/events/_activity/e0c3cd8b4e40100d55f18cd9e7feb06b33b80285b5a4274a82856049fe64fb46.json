@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e0c3cd8b4e40100d55f18cd9e7feb06b33b80285b5a4274a82856049fe64fb46",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:44.351Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/audio-stream.ts",
+          "classic/apps/web/src/export/audio-source-windows.ts",
+          "classic/apps/web/src/editor-agent/server/session-policy.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "e68ab420-f7ef-4b5c-a2aa-9ac4b0dd1231"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:44.355Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

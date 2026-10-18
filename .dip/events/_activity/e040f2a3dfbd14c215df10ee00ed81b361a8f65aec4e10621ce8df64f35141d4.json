@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e040f2a3dfbd14c215df10ee00ed81b361a8f65aec4e10621ce8df64f35141d4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:51:54.300Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ecb22917-55da-4238-b98f-426488677b1b"
+      },
+      {
+        "at": "2026-10-14T00:51:54.314Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-teaser-skills.mjs');s=p.read_text();needle='for(const mutate of [p=>p.outputSceneId';insert='''const adjacent=structuredClone(example);let position=0;for(const clip of adjacent.clips){const duration=clip.sourceOut-clip.sourceIn;clip.sourceIn=position;clip.sourceOut=position+duration;position+=duration;}\nconst disguised=check(adjacent);if(disguised.effectiveSourcePassages!==1||disguised.warnings.length<2)throw Error('Continuous passage disguised as many units was not flagged');\n''';assert needle in s;s=s.replace(needle,insert+needle);p.write_text(s)\nPY\nnode .dip/tools/verify-teaser-skills.mjs > .local/teaser-reference-2026-10-14/verification.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b7f79130-57d0-40fa-a919-47f30f7adcaf"
+      },
+      {
+        "at": "2026-10-14T00:51:54.924Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-teaser-skills.mjs');s=p.read_text();needle='for(const mutate of [p=>p.outputSceneId';insert='''const adjacent=structuredClone(example);let position=0;for(const clip of adjacent.clips){const duration=clip.sourceOut-clip.sourceIn;clip.sourceIn=position;clip.sourceOut=position+duration;position+=duration;}\nconst disguised=check(adjacent);if(disguised.effectiveSourcePassages!==1||disguised.warnings.length<2)throw Error('Continuous passage disguised as many units was not flagged');\n''';assert needle in s;s=s.replace(needle,insert+needle);p.write_text(s)\nPY\nnode .dip/tools/verify-teaser-skills.mjs > .local/teaser-reference-2026-10-14/verification.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b7f79130-57d0-40fa-a919-47f30f7adcaf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:51:55.039Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

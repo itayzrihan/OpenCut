@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25c422cbe667cb67febe5678e6f46fba54f33c1a2f9c3d2c1bca54149fb067e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:16:31.184Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/build-site.mjs",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-cbf5cf29-dbb0-45c1-98d2-0cb5d50eee33"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:16:31.965Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

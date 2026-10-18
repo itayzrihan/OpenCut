@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d11daaef1ced76b198dc817fa74edcb39bdd2225f4e61b7b02d79ec79b76b7e4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T10:28:55.758Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-transcription-debug/dev/logs/next-development.log",
+          "classic/apps/web/.next-transcription-debug/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-transcription-debug/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/mcp-bridge/[...path]/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/editor-session/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/local-drive/preview-proxy/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/api/transcription/settings/route.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/package.json",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/layout.ts",
+          "classic/apps/web/.next-transcription-debug/dev/types/app/editor/[project_id]/page.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "5b153a07-1c1c-4b65-98d4-615fc61bf41c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:28:55.760Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

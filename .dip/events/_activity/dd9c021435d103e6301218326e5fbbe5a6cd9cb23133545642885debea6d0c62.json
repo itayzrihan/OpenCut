@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dd9c021435d103e6301218326e5fbbe5a6cd9cb23133545642885debea6d0c62",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:38:35.696Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/windows.test.ts');s=p.read_text().replace('decoded = deferred();','decoded = deferred(), siblingsReady = deferred();').replace('return new Promise((_, reject) =>\\n\\t\\t\\t\\tsignal!', 'siblingsReady.resolve();\\n\\t\\t\\treturn new Promise((_, reject) =>\\n\\t\\t\\t\\tsignal!').replace('await decoded.promise;','await decoded.promise;\\n\\tawait siblingsReady.promise;');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs src/transcription/windows.test.ts src/transcription/overlap-reader.test.ts src/services/transcription/service.test.ts --jobs=1 --timeout=15000",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-e7eba48a-75db-44d4-9a28-4dbb6f00be14"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:38:36.267Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

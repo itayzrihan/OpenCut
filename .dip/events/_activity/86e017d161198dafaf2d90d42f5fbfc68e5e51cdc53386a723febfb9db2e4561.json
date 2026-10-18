@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "86e017d161198dafaf2d90d42f5fbfc68e5e51cdc53386a723febfb9db2e4561",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T16:12:26.504Z",
+        "kind": "files.changed",
+        "files": [
+          "apps/mcp/Cargo.toml",
+          "apps/mcp/src/session_policy.rs",
+          "classic/apps/web/src/editor-agent/server/session-policy.ts",
+          "classic/apps/web/src/editor-agent/server/session-store.ts",
+          "classic/scripts/local-production/build.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "24ee88f5-bdef-4d9b-8baa-8e8177776018"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:12:26.508Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

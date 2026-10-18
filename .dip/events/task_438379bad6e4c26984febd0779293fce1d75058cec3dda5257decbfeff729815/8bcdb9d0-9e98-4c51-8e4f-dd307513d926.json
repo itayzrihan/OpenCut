@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8bcdb9d0-9e98-4c51-8e4f-dd307513d926",
+  "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Locate updated source and verify media timing, inventory linked project references and back up state",
+          "status": "completed"
+        },
+        {
+          "step": "Relink exact source identities using OpenCut's canonical media operation, invalidate old decode bindings",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify all scene/caption/cut hashes and durations preserved, test current source playback/audio and report",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T01:16:45.277Z",
+  "parents": [
+    "8187c49c-7533-4b4e-97cd-2c8b6c4bbc34"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

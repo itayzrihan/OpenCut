@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c767974d-d5b8-4ec8-b180-3eb2a0d6e531",
+  "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Package both skills and dependencies in independent repository, validate references and examples",
+          "status": "in_progress"
+        },
+        {
+          "step": "Create private GitHub repository, push initial commit and verify remote contents",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T10:34:06.633Z",
+  "parents": [
+    "3ba58a3f-d2ea-430d-81b4-6d3e151057ae"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

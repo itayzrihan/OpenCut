@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7c213b7d-edf5-4c78-b148-f32bcdedb25f",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Verify saved transcription and non-destructive sequence extraction",
+          "status": "completed"
+        },
+        {
+          "step": "Fix and verify large history restore crash without losing Undo",
+          "status": "in_progress"
+        },
+        {
+          "step": "Deploy validated production and resume remaining transcript",
+          "status": "pending"
+        },
+        {
+          "step": "Run Smart Shorts for seven sequences and verify Assets/source preservation",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T09:10:53.646Z",
+  "parents": [
+    "9d21718c-c3e5-4b69-9ac9-009abe52511c"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

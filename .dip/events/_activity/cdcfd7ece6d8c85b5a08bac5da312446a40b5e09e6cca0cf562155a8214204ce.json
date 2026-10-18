@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cdcfd7ece6d8c85b5a08bac5da312446a40b5e09e6cca0cf562155a8214204ce",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:07:32.074Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls .local/sequence-navigation/web | head -6; tail -25 .local/sequence-navigation/web/src__core__managers____tests____canonical-command-manager.test.ts.log; tail -12 .local/sequence-navigation/browser-probe.log; rg -n 'fail|error|Expected|received|Not found' .local/sequence-navigation/web/src__core__managers____tests____canonical-command-manager.test.ts.log | tail -12",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b0b49f3a-e36f-4684-b777-c29b5ec718e8"
+      },
+      {
+        "at": "2026-10-13T20:07:32.170Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls .local/sequence-navigation/web | head -6; tail -25 .local/sequence-navigation/web/src__core__managers____tests____canonical-command-manager.test.ts.log; tail -12 .local/sequence-navigation/browser-probe.log; rg -n 'fail|error|Expected|received|Not found' .local/sequence-navigation/web/src__core__managers____tests____canonical-command-manager.test.ts.log | tail -12",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b0b49f3a-e36f-4684-b777-c29b5ec718e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:07:32.395Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

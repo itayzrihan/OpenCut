@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78603b8ce90831ee701d8c28978990510900b010934c6b351040cf698127953e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:55:56.538Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": ".local/crash-tools/bin/minidump-stackwalk --json --symbols-url=https://chromium-browser-symsrv.commondatastorage.googleapis.com/ --symbols-cache=.local/crash-tools/symbols '/Users/itayzrihan/Library/Application Support/Google/Chrome/Crashpad/completed/76f980c5-ab3d-4050-be42-2f57c7fcd17a.dmp' > .local/smart-shorts-seven/latest-crash-symbolized.json 2> .local/smart-shorts-seven/latest-crash-symbolized.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-60c2c272-30da-4417-a0e2-d260c71536c3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:55:56.621Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

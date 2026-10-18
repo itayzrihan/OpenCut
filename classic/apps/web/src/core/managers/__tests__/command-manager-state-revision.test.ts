@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- the test supplies the minimal EditorCore surface used by CommandManager */
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import { Command } from "@/commands/base-command";
@@ -120,6 +121,7 @@ test("history preserves complete scene metadata and future project fields", asyn
 		},
 		scenes: {
 			getScenes: () => project.scenes,
+			getActiveSceneOrNull: () => project.scenes.find((s) => s.id === project.currentSceneId) ?? project.scenes[0],
 			initializeScenes: ({ scenes }: { scenes: TProject["scenes"] }) => {
 				project.scenes = scenes;
 			},

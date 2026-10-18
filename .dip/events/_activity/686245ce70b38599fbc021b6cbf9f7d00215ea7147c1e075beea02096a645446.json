@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "eventId": "686245ce70b38599fbc021b6cbf9f7d00215ea7147c1e075beea02096a645446",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:59:18.692Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/empty-source.json"
+        ],
+        "changeHash": "7b512e1447534ae5aa9d89da40019f7110e04862ed3c626b2ae2e14065ab6567",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c3e8e0ea-1fb7-4366-96bd-988bb82f6640"
+      },
+      {
+        "at": "2026-10-14T07:59:18.746Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/empty-source.json"
+        ],
+        "changeHash": "7b512e1447534ae5aa9d89da40019f7110e04862ed3c626b2ae2e14065ab6567",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c3e8e0ea-1fb7-4366-96bd-988bb82f6640"
+      },
+      {
+        "at": "2026-10-14T07:59:18.749Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/build-document.ts"
+        ],
+        "changeHash": "8c1b9abc9d98351b14286b5c261023cefe77bf94b976f893fae9fa70e792cfb9",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-38455de4-a128-43ed-8e64-288fcc856b05"
+      },
+      {
+        "at": "2026-10-14T07:59:18.806Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/build-document.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e4a562c9-411a-4d69-a02d-90ebf7e0493a"
+      },
+      {
+        "at": "2026-10-14T07:59:18.805Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/build-document.ts"
+        ],
+        "changeHash": "8c1b9abc9d98351b14286b5c261023cefe77bf94b976f893fae9fa70e792cfb9",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-38455de4-a128-43ed-8e64-288fcc856b05"
+      },
+      {
+        "at": "2026-10-14T07:59:19.060Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/build-document.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e4a562c9-411a-4d69-a02d-90ebf7e0493a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:59:19.589Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

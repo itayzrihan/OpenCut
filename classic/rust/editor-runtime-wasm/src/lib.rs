@@ -241,7 +241,9 @@ impl CanonicalEditorRuntime {
 
     /// Read-only projection of the exact document returned by app.state.read.
     pub fn snapshot(&self) -> Result<JsValue, JsValue> {
-        to_js(&self.runtime.snapshot().map_err(js_error)?)
+        // Like bulk capability results, transfer large caption/transcript
+        // snapshots once instead of making millions of JS property calls.
+        to_json_js(&self.runtime.snapshot().map_err(js_error)?)
     }
 
     pub fn capabilities(&self) -> Result<JsValue, JsValue> {

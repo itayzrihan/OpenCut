@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e254b762-2918-4293-9a08-1b35d9e40734",
+  "taskId": "task_ceb65fb38df7d2cc81b46f4f19493c0829e0f75e687a2ad7e62f4f17dd9d76ad",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Published all site source as Sites version 2 commit afe1bb877a2e8988642d38d4e35a3cb9859064dc. Deployment succeeded. Purged stale dip.vxu.me cache; canonical root, dashboard and API now serve new build. GitHub configuration reports configured:false, so sign-in remains unavailable until app credentials are configured.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "follow_up",
+          "summary": "Complete GitHub App credentials and real OAuth/installation verification; published dashboard correctly shows configuration pending.",
+          "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4",
+  "createdAt": "2026-10-12T08:42:39.046Z",
+  "parents": [
+    "4642cc04-a1c5-4e8b-a9df-b8e52ca717d0"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

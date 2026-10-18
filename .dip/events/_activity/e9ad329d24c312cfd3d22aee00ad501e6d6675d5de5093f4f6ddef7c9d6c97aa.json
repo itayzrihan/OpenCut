@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e9ad329d24c312cfd3d22aee00ad501e6d6675d5de5093f4f6ddef7c9d6c97aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:14:37.146Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/timeline-tools.test.ts src/editor-agent/__tests__/project-media-ownership.test.ts --jobs=1 --timeout=120000",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-910670d1-0554-4b01-b262-c3ea4f06d5c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:14:37.373Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

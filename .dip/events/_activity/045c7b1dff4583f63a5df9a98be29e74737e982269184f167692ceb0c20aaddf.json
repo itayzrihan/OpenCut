@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "045c7b1dff4583f63a5df9a98be29e74737e982269184f167692ceb0c20aaddf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:12:10.488Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'hidden\\?:|hidden: boolean|type: \"[^\"]*track|set_track|update_track' classic/apps/web/src/ai/edit-plan.ts | head -45",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-726a31f9-885c-4714-a628-1c46fae0368b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:12:11.355Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

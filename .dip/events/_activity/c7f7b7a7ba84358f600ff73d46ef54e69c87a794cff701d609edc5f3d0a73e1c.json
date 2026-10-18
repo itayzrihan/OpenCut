@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7f7b7a7ba84358f600ff73d46ef54e69c87a794cff701d609edc5f3d0a73e1c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:41:55.644Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/app/api/transcription/subscription-probe/route.ts"
+        ],
+        "changeHash": "8dbc1125df19ebaf87d33a07f8dc34d00ba31f5f662889764aea72077b08133a",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-8d97bb9b-cd09-4e4c-8981-b2184e026eed"
+      },
+      {
+        "at": "2026-10-12T10:41:55.952Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/app/api/transcription/subscription-probe/route.ts"
+        ],
+        "changeHash": "8dbc1125df19ebaf87d33a07f8dc34d00ba31f5f662889764aea72077b08133a",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-8d97bb9b-cd09-4e4c-8981-b2184e026eed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:41:56.470Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8e5a2bf9-bb7c-4e1d-90c6-f52b367a331c",
+  "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "crates/editor-agent/src/session_store.rs",
+      "classic/apps/web/src/editor-agent/server",
+      "classic/apps/web/src/core/managers",
+      "classic/apps/web/src/export",
+      "classic/scripts/local-production",
+      "apps/mcp",
+      ".dip/tools",
+      "crates/editor-api/src/classic.rs",
+      "crates/editor-api/src/operations/classic_session.rs",
+      "classic/apps/web/src/editor-agent/server/session-store.ts",
+      "classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts",
+      "classic/apps/web/src/media/playback-audio-cache.ts",
+      "classic/apps/web/src/media/audio-sink-cache.ts"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T18:56:35.654Z",
+  "parents": [
+    "6e82b0f1-2d18-4087-ba37-5d032eab5228"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

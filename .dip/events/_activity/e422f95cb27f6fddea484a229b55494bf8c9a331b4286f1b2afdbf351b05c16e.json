@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e422f95cb27f6fddea484a229b55494bf8c9a331b4286f1b2afdbf351b05c16e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T20:19:01.980Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '2140,2200p' classic/apps/web/src/core/managers/commands.ts\nsed -n '2255,2288p' classic/apps/web/src/core/managers/commands.ts\nrg -n 'resume|checkpoint' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts | tail -12\nrg -n 'transcriptionJobs|sourceTracks' crates/editor-api/src/validation* crates/editor-api/src/classic.rs | head -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7b4f6af8-2cff-4f8b-87f5-d88167ea7cf3"
+      },
+      {
+        "at": "2026-10-12T20:19:02.075Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '2140,2200p' classic/apps/web/src/core/managers/commands.ts\nsed -n '2255,2288p' classic/apps/web/src/core/managers/commands.ts\nrg -n 'resume|checkpoint' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts | tail -12\nrg -n 'transcriptionJobs|sourceTracks' crates/editor-api/src/validation* crates/editor-api/src/classic.rs | head -20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-7b4f6af8-2cff-4f8b-87f5-d88167ea7cf3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T20:19:02.622Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "275e8d4cd3faf1e76eac733125eeeab6a6247dc95f3668429cc5380808978dd3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:06:15.824Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,shutil\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json')\nd=json.loads(p.read_text()); out=pathlib.Path('.local/smart-shorts-audio');out.mkdir(exist_ok=True);shutil.copy2(p,out/'project-before.json')\nprint('keys',list(d));print('media',str(d.get('mediaAssets',d.get('media',[])))[:4500]);\nfor s in d.get('scenes',[]):\n print('SCENE',s.get('id'),s.get('name'), 'tracksType',type(s.get('tracks')).__name__)\n t=s.get('tracks',{}); print(str(t)[:3200] if s.get('id')=='podcast-140' or s.get('isMain') else '')\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-851f595f-5bd4-4bb1-bdd1-3c6ae811c4b7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:06:15.939Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

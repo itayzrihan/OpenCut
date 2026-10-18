@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a741d822debabf7254ef963952cd087ea2ab0ee3ce3ebb3fb6e9a28db176f0db",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:09:20.241Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff -- classic/apps/web/src/ai/components/podcast-controls.tsx | head -95\nrg -n 'passed|failed' .local/source-preservation/check.log | tail -7",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ffe6e6f0-92dd-4ef6-a30c-71eb6ef6c47a"
+      },
+      {
+        "at": "2026-10-13T21:09:20.533Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff -- classic/apps/web/src/ai/components/podcast-controls.tsx | head -95\nrg -n 'passed|failed' .local/source-preservation/check.log | tail -7",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ffe6e6f0-92dd-4ef6-a30c-71eb6ef6c47a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:09:21.077Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

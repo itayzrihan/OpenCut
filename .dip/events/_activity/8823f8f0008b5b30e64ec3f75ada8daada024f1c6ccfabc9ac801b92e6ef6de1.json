@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8823f8f0008b5b30e64ec3f75ada8daada024f1c6ccfabc9ac801b92e6ef6de1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:42:35.969Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/.next-transcription-debug/dev/server/app/api/transcription/subscription-probe/route.js')\ns=p.read_text();i=s.find('async function GET');print(s[i:i+450] if i>=0 else 'no async GET')\nprint('cached authenticated GET', 'const GET = (0,' in s)\nPY\ncurl -sS -o /dev/null -w '%{http_code}\\n' http://localhost:3211/api/transcription/subscription-probe",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-68629415-8c2c-4ac5-882b-51c0e6b0222e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:42:36.317Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

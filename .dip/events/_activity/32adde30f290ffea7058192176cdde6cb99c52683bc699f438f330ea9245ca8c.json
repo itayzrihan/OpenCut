@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "32adde30f290ffea7058192176cdde6cb99c52683bc699f438f330ea9245ca8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:12:25.127Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '368,393p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2215,2265p' classic/apps/web/src/ai/edit-plan.ts\npython3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-word-fix-2026-10-14/after-document.json'));print([(t['id'],t['name']) for t in x['scene']['tracks'] if t.get('captionSource')])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6b426c2a-0ada-4c68-9cae-e2ef21648470"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:12:26.575Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

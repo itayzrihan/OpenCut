@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e36cbb1bf58cf455774235f9f91b0182c2be5755250a0c487f3d6a5ee7899f40",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:05.318Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "mkdir -p .local/apple-stt-benchmark\ncat > .local/apple-stt-benchmark/probe.swift <<'SWIFT'\nimport Foundation\nimport Speech\nlet started = ProcessInfo.processInfo.systemUptime\nlet output = CommandLine.arguments[2]\nvar task: SFSpeechRecognitionTask?\nvar recognizer: SFSpeechRecognizer?\nvar finished = false\nfunc finish(_ value: [String: Any], _ code: Int32) {\n    guard !finished else { return }; finished = true\n    var result = value\n    result[\"totalSeconds\"] = ProcessInfo.processInfo.systemUptime - started\n    let data = try! JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys])\n    try! data.write(to: URL(fileURLWithPath: output))\n    print(String(data: data, encoding: .utf8)!)\n    exit(code)\n}\nfunc run() {\n    recognizer = SFSpeechRecognizer(locale: Locale(identifier: \"he-IL\"))\n    guard let r = recognizer, r.supportsOnDeviceRecognition else { finish([\"error\":\"Offline Hebrew unavailable\"], 2); return }\n    let request = SFSpeechURLRecognitionRequest(url: URL(fileURLWithPath: CommandLine.arguments[1]))\n    request.requiresOnDeviceRecognition = true\n    request.shouldReportPartialResults = false\n    request.taskHint = .dictation\n    let begin = ProcessInfo.processInfo.systemUptime\n    task = r.recognitionTask(with: request) { result, error in\n        if let result = result, result.isFinal {\n            finish([\"localOnly\":true,\"recognitionSeconds\": ProcessInfo.processInfo.systemUptime - begin,\n                \"text\":result.bestTranscription.formattedString,\n                \"segments\":result.bestTranscription.segments.map { [\"text\":$0.substring,\"start\":$0.timestamp,\"duration\":$0.duration,\"confidence\":$0.confidence] as [String:Any] }], 0)\n        } else if let error = error { finish([\"error\":String(describing:error),\"recognitionSeconds\":ProcessInfo.processInfo.systemUptime - begin], 3) }\n    }\n}\nSFSpeechRecognizer.requestAuthorization { status in\n    DispatchQueue.main.async {\n        if status == .authorized { run() }\n        else { fini",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1b6fbdf8-00fd-479d-85b0-1e5d2dc94143"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:05.814Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

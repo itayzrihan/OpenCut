@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e38912acd09c572372a6d7168aa35542294bcfe899b713ddd6f1ff2bd88260c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:15:06.130Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "classic/node_modules/.bin/prettier --write classic/apps/web/src/ai/podcast-plan.ts classic/apps/web/src/ai/podcast-proposal.ts classic/apps/web/src/ai/podcast-plan-cache.ts classic/apps/web/src/ai/podcast-task.ts classic/apps/web/src/ai/__tests__/podcast-plan.test.ts classic/apps/web/src/ai/__tests__/podcast-task.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-25ae85d4-f464-4b47-8368-6e297518e4c5"
+      },
+      {
+        "at": "2026-10-13T13:15:06.215Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/local-production/build.mjs --stage > .local/smart-shorts-seven/production-recovery-build.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-61b96331-fbdc-4cf1-8494-90dc84bf4dfc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:15:06.954Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

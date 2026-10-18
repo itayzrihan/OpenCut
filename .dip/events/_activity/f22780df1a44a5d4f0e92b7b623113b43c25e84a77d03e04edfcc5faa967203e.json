@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f22780df1a44a5d4f0e92b7b623113b43c25e84a77d03e04edfcc5faa967203e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-9fe2-7b11-a98b-6a8ae5d92356",
+    "records": [
+      {
+        "at": "2026-10-18T15:43:33.709Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-9fe2-7b11-a98b-6a8ae5d92356",
+        "taskId": "task_cec89620aa41e367d7b68ba499c93d90a59e3dd0a1e6f9ac072e002d02a08fdc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short --branch && git log -8 --oneline --decorate && git branch -vv",
+        "recordId": "codex:01a14fae-9fe2-7b11-a98b-6a8ae5d92356:PreToolUse:exec-3c1bd699-4031-40ed-9426-bad6fb5ea99a"
+      },
+      {
+        "at": "2026-10-18T15:43:33.902Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-9fe2-7b11-a98b-6a8ae5d92356",
+        "taskId": "task_cec89620aa41e367d7b68ba499c93d90a59e3dd0a1e6f9ac072e002d02a08fdc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git status --short --branch && git log -8 --oneline --decorate && git branch -vv",
+        "recordId": "codex:01a14fae-9fe2-7b11-a98b-6a8ae5d92356:PostToolUse:exec-3c1bd699-4031-40ed-9426-bad6fb5ea99a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:43:34.064Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

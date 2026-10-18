@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83d596c2dd48c2465233b1ee2a250946359aa22e124ac68738f1eb0d783c62ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:56:06.923Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];print({'responses':len(r),'retries':[k for k in r if k.startswith('inventory:') and not k.endswith(':0')]})\nfor k,v in r.items():\n if not isinstance(v,dict) or set(v)!=set(['summary','candidates']):print('shape',k,list(v) if isinstance(v,dict) else type(v).__name__)\nPY\ntail -6 .local/teaser-upgrade/real-provider.log\nnode_modules/.bin/eslint apps/web/src/ai/podcast-editorial.ts apps/web/src/ai/podcast-plan.ts apps/web/src/ai/podcast-task.ts apps/web/src/ai/podcast-types.ts > /tmp/opencut-teaser-eslint-new.txt 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0b610e24-4537-4b42-856a-8c4e7d575ed0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:56:07.326Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

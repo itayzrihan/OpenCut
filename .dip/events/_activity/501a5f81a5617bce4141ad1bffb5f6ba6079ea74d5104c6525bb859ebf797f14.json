@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "501a5f81a5617bce4141ad1bffb5f6ba6079ea74d5104c6525bb859ebf797f14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:44:17.168Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,subprocess,re,collections\npaths=subprocess.check_output(['git','ls-files','--others','--exclude-standard','-z']).decode().split('\\0')\npatterns={'private_key':r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----','github_token':r'gh[pousr]_[A-Za-z0-9]{30,}','openai_key':r'sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{35,}','jwt':r'eyJ[A-Za-z0-9_-]{20,}\\.eyJ[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{15,}'}\nhits=collections.Counter(); files=[]\nfor p in paths:\n if not p: continue\n f=pathlib.Path(p)\n if not f.is_file() or f.is_symlink():continue\n try:s=f.read_text()\n except:continue\n keys=[k for k,v in patterns.items() if re.search(v,s)]\n if keys:files.append((p,keys));hits.update(keys)\nprint('Secret pattern counts:',dict(hits))\nfor p,k in files[:70]:print(p,','.join(k))\nPY",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-b9d0cd39-562f-43ff-9de8-5130fe585db7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:44:17.775Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

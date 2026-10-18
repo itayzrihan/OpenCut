@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dbb6577e4f217aac1a4f66c9b6a769323794bc16e8cb7514943ad18b1d9256ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:48:45.784Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/real-provider.log; rg -n 'sourceFingerprint|source_fingerprint' crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-types.ts; cat classic/apps/web/eslint.config.mjs | head -45; ls classic/node_modules/.bin/eslint",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1aa1058b-e2de-4dd8-9d11-2dfd26d47617"
+      },
+      {
+        "at": "2026-10-16T10:48:45.872Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/real-provider.log; rg -n 'sourceFingerprint|source_fingerprint' crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-types.ts; cat classic/apps/web/eslint.config.mjs | head -45; ls classic/node_modules/.bin/eslint",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1aa1058b-e2de-4dd8-9d11-2dfd26d47617"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:48:46.704Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

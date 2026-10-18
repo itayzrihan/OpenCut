@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84acffd539e76489dbc015cc11b17c1ba466cf646a83aac10ef79c17c5b7bb35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:12:15.777Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -25 /Users/itayzrihan/Documents/dip/src/core.js\nnode --input-type=module <<'JS'\nimport {readFileSync,readdirSync} from 'node:fs';\nimport {projectEvents} from './lib/ledger.mjs';\nconst dir='/Users/itayzrihan/Documents/dip/.dip/events';\nconst events=[];\nfor(const folder of readdirSync(dir)){if(folder==='_activity')continue;for(const file of readdirSync(dir+'/'+folder)){if(file.endsWith('.json'))events.push(JSON.parse(readFileSync(dir+'/'+folder+'/'+file)));}}\nconst result=projectEvents(events);console.log(JSON.stringify({events:events.length,tasks:result.tasks.length,errors:result.errors.slice(0,10),statuses:result.tasks.reduce((s,t)=>(s[t.status]=(s[t.status]||0)+1,s),{})}));\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-d9d24bca-5e8d-4743-b1a7-8e2a2816e0c2"
+      },
+      {
+        "at": "2026-10-12T08:12:15.782Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('lib/github.mjs');s=p.read_text().replace(\"headers:{Authorization:[REDACTED],body:JSON.stringify({query:options.query,variables:options.variables})}:{}),headers:{...(options.query?{'Content-Type':'application/json'}:{}),Authorization:[REDACTED] slice=files.slice(offset,offset+32);let bytes=0;const bounded=slice.filter((e:any)=>{bytes+=Math.min(e.size||0,1024*1024);return bytes<=4*1024*1024;});const selected=bounded.length?bounded:slice.slice(0,1);const events=await eventBatch(token,repo,selected);\"+s[end:];s=s.replace('offset+slice.length','offset+selected.length');p.write_text(s)\nPY\nnpx tsc --noEmit",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-dc52b5e8-7da6-445c-a0c4-ed2f2e6dd96a"
+      },
+      {
+        "at": "2026-10-12T08:12:15.788Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "b619b1be-e70e-4372-87e3-6b2278efb305"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:12:15.799Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

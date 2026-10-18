@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0582e00762055e812fbd0821bfb7ce75867a785496ca436c09742b7a394dba6d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T10:36:46.273Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4191dc9164d81460a1f8f2eda43aacb4e845eb8a18f1d4a25462b0a4b9a6dd6c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess,json,re\nrepo=Path('/Users/itayzrihan/Documents/teaser-editing-skills');meta=json.loads(subprocess.check_output(['gh','repo','view','itayzrihan/teaser-editing-skills','--json','url,isPrivate,nameWithOwner,defaultBranchRef'],text=True));head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip();remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/main'],cwd=repo,text=True).split()[0];paths=subprocess.check_output(['git','ls-files'],cwd=repo,text=True).splitlines();issues=[]\nfor name in paths:\n p=repo/name\n if p.suffix in ['.json','.md','.yaml','.py','.mjs']:\n  if re.search(r'gh[pousr]_[A-Za-z0-9]{20,}|sk-(?:proj-)?[A-Za-z0-9_-]{24,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\\r?\\n[A-Za-z0-9+/=]',p.read_text()):issues.append(name)\nassert not issues,issues\nassert meta['isPrivate'] and head==remote\nreceipt={**meta,'localPath':str(repo),'commit':head,'remoteCommit':remote,'trackedFileCount':len(paths),'secretScanPassed':True,'skillValidationPassed':True,'ledgerValidationPassed':True};ev=Path('analysis/teaser-skills-github-2026-10-15');(ev/'receipt.json').write_text(json.dumps(receipt,indent=2));print(json.dumps(receipt))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-21efc2c7-d656-4934-9c55-8368cf2f6b10"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T10:36:47.205Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

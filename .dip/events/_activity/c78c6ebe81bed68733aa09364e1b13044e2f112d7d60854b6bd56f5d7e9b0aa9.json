@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c78c6ebe81bed68733aa09364e1b13044e2f112d7d60854b6bd56f5d7e9b0aa9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:01:51.943Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffprobe -v error -select_streams v:0 -show_entries stream=width,height,pix_fmt,avg_frame_rate -of json '/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-22c9122d-6dbf-40bb-8bf1-3227dc045b00"
+      },
+      {
+        "at": "2026-10-13T13:01:51.946Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'VideoSampleSink|VideoFrame|cache|buffer|max.*Frame|dispose' classic/apps/web/src/core/managers/renderer-manager.ts classic/apps/web/src/services/renderer classic/apps/web/src/media -g '*.ts' | head -n 65",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-597680b4-7d70-44ec-bb4d-b00c8befd8ec"
+      },
+      {
+        "at": "2026-10-13T13:01:52.219Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'VideoSampleSink|VideoFrame|cache|buffer|max.*Frame|dispose' classic/apps/web/src/core/managers/renderer-manager.ts classic/apps/web/src/services/renderer classic/apps/web/src/media -g '*.ts' | head -n 65",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-597680b4-7d70-44ec-bb4d-b00c8befd8ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:01:52.304Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e91cac6816144cea8d677ce3ee9eb9c8f10fdc5688e26251355a1b4ca93902e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:51:00.890Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '540,665p' classic/apps/web/src/core/managers/commands.ts; sed -n '1,100p' crates/editor-api/src/runtime.rs; rg -n 'classic:|HistoryDocument' crates/editor-api/src/runtime.rs | head -30; cat classic/apps/web/src/editor-agent/server/session-renewal.ts | head -100; rg -n 'inspect|renew|sidecar|journal' classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e0221c45-11ef-42f2-ba93-96a47fa9d6ef"
+      },
+      {
+        "at": "2026-10-13T18:51:00.986Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '540,665p' classic/apps/web/src/core/managers/commands.ts; sed -n '1,100p' crates/editor-api/src/runtime.rs; rg -n 'classic:|HistoryDocument' crates/editor-api/src/runtime.rs | head -30; cat classic/apps/web/src/editor-agent/server/session-renewal.ts | head -100; rg -n 'inspect|renew|sidecar|journal' classic/apps/web/src/editor-agent/__tests__/session-store-host.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-e0221c45-11ef-42f2-ba93-96a47fa9d6ef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:51:01.403Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

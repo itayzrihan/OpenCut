@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "364523750e51b30004129457918aa429c145302eb53aa812f1f6d42efa62f043",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T18:53:33.829Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-agent/src/session_store.rs",
+          "classic/apps/web/src/editor-agent/server/session-store.ts",
+          ".local/smart-shorts-performance/rust-initial.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "b6aacbd3-b2a6-4419-b188-eb79c75389ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:53:33.832Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

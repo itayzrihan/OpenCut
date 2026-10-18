@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce627255c1512c105829f1fe004fe132c6c4ccb1235d3947e2098b73ffe9beec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:00:41.530Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,hashlib\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/847030af-0e59-4e41-b702-5d35549f3cd5/project.json'\nx=json.load(open(p));b=json.load(open('analysis/episode-teaser-90-2026-10-14/source-before.json'));print(b.keys());h=lambda v:hashlib.sha256(json.dumps(v,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest();print('scenes',len(x['scenes']));print([(s['id'],h(s)==b['sceneHashes'].get(s['id']))for s in x['scenes'] if s['id'] in b['sceneHashes']])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a13bb348-4540-4931-b8a9-f11794501601"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:00:42.039Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "38377605605054600acf92e814efa7e23c943f9e2c7fda0718afd4361ba243d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T18:59:37.105Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/smart-shorts-performance/probe-after.log; cat .local/smart-shorts-performance/wasm-before.log; cat .local/smart-shorts-performance/web/summary.json | head -14; sed -n '520,565p' classic/apps/web/src/accounts/server.ts; rg --files classic/apps/web/src/accounts | rg 'test.ts$' | head -15; rg -n 'HistoryDocument|archive' crates/editor-api/tests/classic_history.rs | head -8",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-262286ad-37cb-4337-ad52-14b114744050"
+      },
+      {
+        "at": "2026-10-13T18:59:37.190Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-26a1b722-c1d2-4da3-811a-3edcef2f94bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T18:59:41.816Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

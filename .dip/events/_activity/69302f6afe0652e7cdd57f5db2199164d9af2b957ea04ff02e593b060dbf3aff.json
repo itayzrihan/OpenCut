@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "69302f6afe0652e7cdd57f5db2199164d9af2b957ea04ff02e593b060dbf3aff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T11:39:26.156Z",
+        "kind": "files.changed",
+        "files": [
+          "sites/dip-public/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/metadata.sqlite-shm",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-shm",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-wal",
+          "sites/dip-public/.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "dcdfed1f-082e-4711-a943-f8a4d9f39496"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:39:26.946Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

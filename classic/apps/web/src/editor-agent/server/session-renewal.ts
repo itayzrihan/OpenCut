@@ -39,6 +39,39 @@ export function metadataOnly(record: string): string {
 	return JSON.stringify({ ...JSON.parse(record), saved: null });
 }
 
+/** Read ownership once without re-encoding the immutable saved archive. */
+export async function readSessionMetadata({
+	path,
+	record,
+}: {
+	path: string;
+	record: string;
+}): Promise<string> {
+	const metadata = metadataOnly(record);
+	const renewal = await readRenewal({
+		path,
+		identity: await projectFileIdentity(path),
+	});
+	if (!renewal) return metadata;
+	assertSameFence(JSON.parse(metadata), JSON.parse(renewal));
+	return renewal;
+}
+
+function assertSameFence(
+	original: Record<string, unknown>,
+	metadata: Record<string, unknown>,
+) {
+	for (const key of [
+		"schemaVersion",
+		"accountId",
+		"projectId",
+		"generation",
+		"storageRevision",
+	])
+		if (metadata[key] !== original[key])
+			throw new Error("Renewal journal does not match project");
+}
+
 export async function mergeRenewal({
 	path,
 	record,
@@ -55,15 +88,7 @@ export async function mergeRenewal({
 		metadata = JSON.parse(renewal);
 	// A journal never owns edits or changes a fence/revision. Rust checks scope,
 	// expiry, monotonic time and authority again for the actual operation.
-	for (const key of [
-		"schemaVersion",
-		"accountId",
-		"projectId",
-		"generation",
-		"storageRevision",
-	])
-		if (metadata[key] !== original[key])
-			throw new Error("Renewal journal does not match project");
+	assertSameFence(original, metadata);
 	return JSON.stringify({ ...metadata, saved: original.saved });
 }
 

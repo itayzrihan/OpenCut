@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5bbd9d25bc928505668a3c212941918b99bae60ab2cd7a6cd03a5e11eceacd17",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:12:34.261Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/smart-shorts-seven/restore-probe.mjs');s=p.read_text();s=s.replace(\"console.log('restored',(performance.now()-t)/1000,process.memoryUsage().rss,JSON.stringify(r).slice(0,400));\", \"\"\"console.log('restored',(performance.now()-t)/1000,process.memoryUsage().rss,JSON.stringify(r).slice(0,400));\nconst before=JSON.stringify(runtime.snapshot().project.classic);\nconst original=JSON.stringify(session.saved.bundle.archive.classic);\nif(before!==original) throw Error('Restored snapshot differs from archived current project');\nruntime.invokeSync('history.undo',{},{}); runtime.invokeSync('history.redo',{},{});\nif(JSON.stringify(runtime.snapshot().project.classic)!==before) throw Error('Undo/Redo did not preserve current snapshot');\nconsole.log('PASS exact current snapshot plus Undo/Redo');\"\"\");p.write_text(s)\nPY\nnode .local/smart-shorts-seven/restore-probe.mjs > .local/smart-shorts-seven/restore-real-validation.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-50c8b35e-525a-438f-af07-e8a2ada03769"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:12:35.202Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

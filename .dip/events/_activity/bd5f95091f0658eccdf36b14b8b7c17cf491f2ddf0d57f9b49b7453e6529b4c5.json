@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bd5f95091f0658eccdf36b14b8b7c17cf491f2ddf0d57f9b49b7453e6529b4c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:12:20.990Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/verify-delivery.mjs <<'EOF'\nimport {readFileSync,writeFileSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nconst before=JSON.parse(readFileSync(new URL('./project-before.json',import.meta.url)));\nconst after=JSON.parse(readFileSync('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json'));\nconst original=before.scenes.find(s=>s.isMain), main=after.scenes.find(s=>s.id===original.id);\nassert(main?.isMain,'Original main scene missing');\nassert.deepEqual(main.tracks.main,original.tracks.main,'Main source video changed');\nassert.deepEqual(main.tracks.audio,original.tracks.audio,'Main audio changed');\nfor(const track of original.tracks.overlay){\n const updated=main.tracks.overlay.find(t=>t.id===track.id);assert(updated,'Original caption track missing');\n const elements=new Map(updated.elements.map(e=>[e.id,e]));\n for(const element of track.elements)assert.deepEqual(elements.get(element.id),element,'Original caption changed or deleted');\n if(track.captionSource)assert.deepEqual(updated.captionSource.words.slice(0,track.captionSource.words.length),track.captionSource.words,'Original transcript words changed');\n}\nconst oldJob=before.transcriptionJobs[0], job=after.transcriptionJobs.find(j=>j.id===oldJob.id);\nassert.equal(job.status,'complete');assert.equal(Object.keys(job.chunks).length,108);\nfor(const [index,words]of Object.entries(oldJob.chunks))assert.deepEqual(job.chunks[index],words,'Saved transcription section changed');\nconst outputs=after.scenes.filter(s=>!before.scenes.some(o=>o.id===s.id));assert.equal(outputs.length,7);\nconst clips=outputs.map(s=>{assert(!s.isMain);assert(s.podcastExtract);assert(s.takeAssembly);assert(s.tracks.main.elements.length>0);return{id:s.id,name:s.name,title:s.podcastExtract.title,seconds:Math.max(...s.tracks.main.elements.map(e=>(e.startTime+e.duration)/120000))};});\nconst summary={verifiedAt:new Date().t",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4761d3e4-265f-4d89-a522-6ee4f0dfc93b"
+      },
+      {
+        "at": "2026-10-13T10:12:21.298Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/smart-shorts-seven/verify-delivery.mjs <<'EOF'\nimport {readFileSync,writeFileSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nconst before=JSON.parse(readFileSync(new URL('./project-before.json',import.meta.url)));\nconst after=JSON.parse(readFileSync('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json'));\nconst original=before.scenes.find(s=>s.isMain), main=after.scenes.find(s=>s.id===original.id);\nassert(main?.isMain,'Original main scene missing');\nassert.deepEqual(main.tracks.main,original.tracks.main,'Main source video changed');\nassert.deepEqual(main.tracks.audio,original.tracks.audio,'Main audio changed');\nfor(const track of original.tracks.overlay){\n const updated=main.tracks.overlay.find(t=>t.id===track.id);assert(updated,'Original caption track missing');\n const elements=new Map(updated.elements.map(e=>[e.id,e]));\n for(const element of track.elements)assert.deepEqual(elements.get(element.id),element,'Original caption changed or deleted');\n if(track.captionSource)assert.deepEqual(updated.captionSource.words.slice(0,track.captionSource.words.length),track.captionSource.words,'Original transcript words changed');\n}\nconst oldJob=before.transcriptionJobs[0], job=after.transcriptionJobs.find(j=>j.id===oldJob.id);\nassert.equal(job.status,'complete');assert.equal(Object.keys(job.chunks).length,108);\nfor(const [index,words]of Object.entries(oldJob.chunks))assert.deepEqual(job.chunks[index],words,'Saved transcription section changed');\nconst outputs=after.scenes.filter(s=>!before.scenes.some(o=>o.id===s.id));assert.equal(outputs.length,7);\nconst clips=outputs.map(s=>{assert(!s.isMain);assert(s.podcastExtract);assert(s.takeAssembly);assert(s.tracks.main.elements.length>0);return{id:s.id,name:s.name,title:s.podcastExtract.title,seconds:Math.max(...s.tracks.main.elements.map(e=>(e.startTime+e.duration)/120000))};});\nconst summary={verifiedAt:new Date().t",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4761d3e4-265f-4d89-a522-6ee4f0dfc93b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:12:21.338Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

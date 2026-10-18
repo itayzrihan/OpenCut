@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d2efaf8fa5c426aeece3b9d9bac0c05a40497ae6c5bdef22d16092bbbff51665",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:07:23.411Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '15,35p' crates/editor-api/tests/classic_update.rs\ntail -6 .local/source-preservation/captions.log\ntail -8 .local/source-preservation/build.log\ntail -8 .local/source-preservation/check.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-15963bca-230e-431c-8426-8483e19a7e18"
+      },
+      {
+        "at": "2026-10-13T21:07:23.506Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .dip/tools/check-extract-caption-isolation.ts <<'TS'\n// Isolated browser regression, never connects to the user's editor or account.\nimport {acquireBrowser,releaseBrowser} from '../../classic/apps/web/node_modules/@hyperframes/engine/dist/index.js';\nconst root=new URL('../../classic/rust/editor-runtime-wasm/pkg/',import.meta.url);\nconst server=Bun.serve({hostname:'127.0.0.1',port:0,fetch(req){\n const p=new URL(req.url).pathname;\n if(p==='/fixture')return new Response(Bun.file(new URL('../../crates/editor-api/tests/fixtures/classic-project.json',import.meta.url)));\n if(p.endsWith('.js'))return new Response(Bun.file(new URL('opencut_editor_runtime_wasm_bg.js',root)),{headers:{'Content-Type':'text/javascript'}});\n if(p.endsWith('.wasm'))return new Response(Bun.file(new URL('opencut_editor_runtime_wasm_bg.wasm',root)),{headers:{'Content-Type':'application/wasm'}});\n return new Response('<title>Isolated extraction caption regression</title>',{headers:{'Content-Type':'text/html'}});\n}});\nconst lease=await acquireBrowser([],{enableBrowserPool:false,forceScreenshot:true});\ntry{\n const page=await lease.browser.newPage();page.setDefaultTimeout(60000);await page.goto(`http://127.0.0.1:${server.port}`);\n const result=await page.evaluate(async()=>{\n  const g=await import('/runtime.js');const {instance}=await WebAssembly.instantiate(await(await fetch('/runtime.wasm')).arrayBuffer(),{'./opencut_editor_runtime_wasm_bg.js':g});g.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\n  const runtime=new g.CanonicalEditorRuntime();const call=(id,input)=>runtime.invokeSync(id,input,{}).result.data;\n  const classic=await(await fetch('/fixture')).json();const scene=classic.document.scenes[0];\n  scene.tracks.main.elements[0].duration=650*120000;scene.tracks.main.elements[0].retime={rate:1};\n  scene.tracks.overlay[0].captionSource.words=Array.from({length:210},(_,i)=>({text:`word${i}`,start:i*3+.1,end:i*3+1.5}));\n  scene.tracks.overlay[0].elements=Array.from({length:21",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6cc5241f-7282-46c7-b14c-c8013a0e732d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:07:24.271Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

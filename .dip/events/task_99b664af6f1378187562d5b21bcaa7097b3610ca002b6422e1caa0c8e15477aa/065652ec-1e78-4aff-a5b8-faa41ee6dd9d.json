@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "065652ec-1e78-4aff-a5b8-faa41ee6dd9d",
+  "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Native high-quality H264 exports saved in Downloads with and without captions, both1080x1920/25fps/2189frames87.56s. Audio identical in both and correlated with original speech. UTF8BOM SRT69 exact current scene cues/times, last87.42s. Restored both caption track visibility; all11 scene track/bookmark hashes plus settings and transcriptionJobs match baseline. Output probes/hashes, sample frames and restored editor screenshot saved.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "SRT faithfully exports existing edited caption text/timing; no new ASR or independent word-by-word human transcription. AAC container tail87.632s; video87.56s."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T09:53:08.351Z",
+  "parents": [
+    "fc416a60-50fb-45c2-9425-6bdf2183c77b"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

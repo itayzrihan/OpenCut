@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f43c1badfe4258ac4ba20a6b718db7792667056ad9919d48ff0de7237824c26",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T19:40:51.008Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/scenes-manager.ts",
+          "classic/apps/web/src/core/managers/save-manager.ts",
+          "classic/apps/web/src/core/managers/commands.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "7ca266cd-d0ce-4fe4-9142-71175ce9ec52"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:40:51.012Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

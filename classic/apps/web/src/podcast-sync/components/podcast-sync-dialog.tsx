@@ -42,6 +42,7 @@ import { useEditor, useEditorProject } from "@/editor/use-editor";
 import type { MediaAsset } from "@/media/types";
 import {
 	runPodcastAlignment,
+	resolvePodcastChannelSources,
 	runPodcastMulticam,
 	type PodcastSyncAlignment,
 	type PodcastSyncChannel,
@@ -145,10 +146,14 @@ export function PodcastSyncDialog({
 }) {
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActive());
-	const videoAssets = useMemo(
-		() => assets.filter((asset) => asset.type === "video"),
-		[assets],
-	);
+	const videoAssets = useMemo(() => {
+		const grouped = new Set(
+			assets.flatMap((asset) => asset.unifiedAngles?.angleAssetIds ?? []),
+		);
+		return assets.filter(
+			(asset) => asset.type === "video" && !grouped.has(asset.id),
+		);
+	}, [assets]);
 	const audioAssets = useMemo(
 		() =>
 			assets.filter(
@@ -182,9 +187,8 @@ export function PodcastSyncDialog({
 	const analysisProject = useRef<string | null>(null);
 	useEffect(() => () => analysisAbort.current?.abort(), []);
 
-	const assetById = useMemo(
-		() => new Map(assets.map((asset) => [asset.id, asset])),
-		[assets],
+	const assetById = new Map(
+		editor.media.getAssets().map((asset) => [asset.id, asset]),
 	);
 	const currentStepIndex = STEPS.findIndex((item) => item.id === step);
 
@@ -226,6 +230,9 @@ export function PodcastSyncDialog({
 			toast.error("No active project");
 			return null;
 		}
+		const assetById = new Map(
+			editor.media.getAssets().map((asset) => [asset.id, asset]),
+		);
 		const resolved: PodcastSyncChannel[] = [];
 		const usedVideoIds = new Set<string>();
 		const usedAudioIds = new Set<string>();
@@ -257,7 +264,17 @@ export function PodcastSyncDialog({
 				audio,
 			});
 		}
-		return resolved;
+		try {
+			return resolvePodcastChannelSources({
+				channels: resolved,
+				mediaAssets: editor.media.getAssets(),
+			});
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Missing camera source",
+			);
+			return null;
+		}
 	};
 
 	const normalizedSettings = (quick: boolean): PodcastSyncSettings =>
@@ -282,6 +299,19 @@ export function PodcastSyncDialog({
 			editor.project.getActiveOrNull()?.metadata.id !== analysisProject.current
 		)
 			throw new Error("The active project changed. Run synchronization again.");
+		for (const [id, revision] of Object.entries(resolvedResult.bindings)) {
+			if (
+				!editor.media
+					.getAssets()
+					.some(
+						(a) =>
+							a.id === id &&
+							!a.missing &&
+							(a.bindingRevision ?? 0) === revision,
+					)
+			)
+				throw new Error("Media changed. Run synchronization again.");
+		}
 		editor.command.createMulticam({
 			settings: resolvedSettings,
 			channels: resolvedChannels.map((channel) => ({
@@ -292,6 +322,7 @@ export function PodcastSyncDialog({
 				videoBindingRevision: channel.video.bindingRevision ?? 0,
 				audioBindingRevision: channel.audio.bindingRevision ?? 0,
 				videoOffset: resolvedResult.videoOffsets[channel.id] ?? 0,
+				videoDelay: resolvedResult.videoDelays[channel.id] ?? 0,
 				audioOffset: resolvedResult.audioOffsets[channel.id] ?? 0,
 				audioDelay: resolvedResult.audioDelays[channel.id] ?? 0,
 			})),
@@ -320,6 +351,19 @@ export function PodcastSyncDialog({
 				onProgress: ({ step: nextStep, progress: value }) =>
 					setProgress({ step: nextStep, value }),
 			});
+			analysisAbort.current.signal.throwIfAborted();
+			if (
+				editor.project.getActiveOrNull()?.metadata.id !==
+				analysisProject.current
+			)
+				throw new Error("The project changed during synchronization");
+			if (nextAlignment.unifiedSync.length)
+				editor.command.syncUnifiedAngles(nextAlignment.unifiedSync);
+			for (const update of nextAlignment.unifiedSync)
+				nextAlignment.bindings[update.mediaId] =
+					editor.media.getAssets().find((a) => a.id === update.mediaId)
+						?.bindingRevision ?? 0;
+			await editor.save.flush();
 			setAlignment(nextAlignment);
 			return { resolvedChannels, resolvedSettings, nextAlignment };
 		} catch (error) {
@@ -344,6 +388,21 @@ export function PodcastSyncDialog({
 		const resolvedChannels = resolveChannels();
 		const resolvedAlignment = alignmentOverride ?? alignment;
 		if (!resolvedChannels || !resolvedAlignment) return null;
+		for (const [id, revision] of Object.entries(resolvedAlignment.bindings)) {
+			if (
+				!editor.media
+					.getAssets()
+					.some(
+						(a) =>
+							a.id === id &&
+							!a.missing &&
+							(a.bindingRevision ?? 0) === revision,
+					)
+			) {
+				toast.error("Media changed. Run synchronization again.");
+				return null;
+			}
+		}
 		const resolvedSettings = normalizedSettings(quick);
 		setSettings(resolvedSettings);
 		setIsRunning(true);
@@ -920,7 +979,9 @@ function SyncStep({
 							>
 								<span>{channel.name}</span>
 								<span>
-									{(alignment.videoOffsets[channel.id] ?? 0).toFixed(2)}s
+									{(alignment.videoDelays[channel.id] ?? 0) > 0
+										? `Starts at ${alignment.videoDelays[channel.id].toFixed(2)}s`
+										: `Trim ${(alignment.videoOffsets[channel.id] ?? 0).toFixed(2)}s`}
 								</span>
 								<span>
 									{(alignment.audioOffsets[channel.id] ?? 0).toFixed(2)}s /{" "}

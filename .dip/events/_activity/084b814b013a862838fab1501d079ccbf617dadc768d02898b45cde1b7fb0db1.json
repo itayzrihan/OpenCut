@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "084b814b013a862838fab1501d079ccbf617dadc768d02898b45cde1b7fb0db1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:23:45.447Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/teaser-reference-2026-10-14/contact-04.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-61e19e73-3e1d-4868-85ad-1f8613d79ad3"
+      },
+      {
+        "at": "2026-10-14T00:23:45.446Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nx=json.loads(pathlib.Path('.local/teaser-reference-2026-10-14/transcript.json').read_text())\nfor a in x['transcription']:print(a['offsets']['from']/1000,a['offsets']['to']/1000,a['text'])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-368e866e-21d2-4cce-a5e8-2ec50ce3deaf"
+      },
+      {
+        "at": "2026-10-14T00:23:45.536Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "view_image",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/teaser-reference-2026-10-14/contact-04.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-61e19e73-3e1d-4868-85ad-1f8613d79ad3"
+      },
+      {
+        "at": "2026-10-14T00:23:45.553Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -y -hide_banner -loglevel error -ss 18.0 -t 3.0 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/morph-%03d.jpg\nffmpeg -y -hide_banner -loglevel error -ss 28.0 -t 3.5 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/morning-%03d.jpg\nffmpeg -y -hide_banner -loglevel error -ss 53.3 -t 4.5 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/ice-%03d.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-de419b48-9e6a-4407-8289-b49e025dea91"
+      },
+      {
+        "at": "2026-10-14T00:23:46.054Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -y -hide_banner -loglevel error -ss 18.0 -t 3.0 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/morph-%03d.jpg\nffmpeg -y -hide_banner -loglevel error -ss 28.0 -t 3.5 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/morning-%03d.jpg\nffmpeg -y -hide_banner -loglevel error -ss 53.3 -t 4.5 -i '/Users/itayzrihan/Downloads/WhatsApp Video 2026-10-14 at 03.14.18.mp4' -vf \"select='not(mod(n,3))',scale=288:512\" -fps_mode vfr .local/teaser-reference-2026-10-14/ice-%03d.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-de419b48-9e6a-4407-8289-b49e025dea91"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:23:46.392Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

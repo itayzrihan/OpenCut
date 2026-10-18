@@ -19,6 +19,7 @@ export { SPEAKER_FRAME_BREAKOUT_EFFECT_TYPE } from "./definitions/speaker-frame-
 
 export function getEffectDefinition(effectType: string): EffectDefinition {
 	registerDefaultEffects();
+	if (effectsRegistry.has(effectType)) return effectsRegistry.get(effectType);
 	const normalizedType = normalizeEffectType(effectType);
 	if (effectsRegistry.has(normalizedType)) {
 		return effectsRegistry.get(normalizedType);

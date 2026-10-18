@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d011e7d7d4580c5f4b4bc1b1ca0b9c946c0aa15c1b25e259a2def8db4368d6d9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:43:34.330Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "curl -sS -o /dev/null -w '%{http_code}\\n' http://localhost:3211/api/transcription/subscription-probe; git status --short -- classic/apps/web/src/app/api/transcription/subscription-probe; test ! -f classic/apps/web/src/app/api/transcription/subscription-probe/route.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-490e38fc-d124-48d8-b906-2c12e6dd9713"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:43:35.316Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "add8bb287a116b5838b6012b8ea13e34df499f2e2ada95f08627c06f7895bd0e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T20:02:33.987Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+          "classic/apps/web/src/core/managers/__tests__/save-manager.test.ts",
+          "classic/EXPORT-STREAMING.md"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "8d127fe7-9a46-4dbc-8115-0df65d13fe6e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:02:33.990Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

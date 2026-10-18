@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50c3d7b54ecfa9faafe3d98360411632d8a1e343e6bdfb3569e96968d5872c7f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:03:43.441Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '181,220p' classic/apps/web/src/mcp/classic-mcp-bridge.tsx; rg -n 'function buildTimelineDocumentV2|classicProject|project:' classic/apps/web/src/timeline -g '*document*' -g '*code*'; rg -n 'private call' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '2620,2675p' classic/apps/web/src/core/canonical-classic-session.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-8949ba37-44eb-4e5b-b3ec-323af6cf88b8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:03:44.414Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

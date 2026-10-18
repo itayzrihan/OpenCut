@@ -1,5 +1,26 @@
 //! Podcast extracts reuse canonical take rendering, transcript clocks and acoustic boundaries.
 use super::*;
+mod editorial;
+
+// Extracts never restore the unselected episode. Freeze the precise, corrected
+// transcript once in their source tracks and retain caption styling templates,
+// rather than copying thousands of generated cues into every short. Independent
+// authored overlays and the original episode remain untouched.
+fn compact_extract_source(tracks: &Value, element_ids: &[String]) -> Result<Value, CapabilityError> {
+    let evidence = quality::source_words(tracks, element_ids, true)?;
+    let mut compact = tracks.clone();
+    for track in compact["overlay"].as_array_mut().into_iter().flatten() {
+        if !track["captionSource"].is_object() { continue; }
+        track["captionSource"]["words"] = json!(evidence);
+        if let Some(elements) = track["elements"].as_array_mut() {
+            elements.truncate(1);
+            if let Some(template) = elements.first_mut().and_then(Value::as_object_mut) {
+                template.remove("wordRuns");
+            }
+        }
+    }
+    Ok(compact)
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -65,6 +86,7 @@ struct Window {
 #[serde(rename_all = "camelCase")]
 struct Source {
     revision: u64,
+    source_fingerprint: String,
     words: Vec<Word>,
     windows: Vec<Window>,
 }
@@ -284,6 +306,7 @@ pub(super) fn register_podcast(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    editorial::register_editorial(registry, state.clone())?;
     let source_state = state.clone();
     register::<Prepare, Source, _, _>(
         registry,
@@ -329,6 +352,7 @@ pub(super) fn register_podcast(
                 }
                 Ok(OperationSuccess::new(Source {
                     revision: store.document.revision,
+                    source_fingerprint: format!("{:x}", Sha256::digest(serde_json::to_vec(&scene["tracks"]).map_err(|e| invalid(e.to_string()))?)),
                     words,
                     windows,
                 }))
@@ -418,6 +442,11 @@ pub(super) fn register_podcast(
                         let (words, start, end) =
                             inventory(&original["tracks"], &input.element_ids, true)?;
                         let plans = validate_request(&input, &words)?;
+                        let extract_source = compact_extract_source(&original["tracks"], &input.element_ids)?;
+                        let (compact_words, _, _) = inventory(&extract_source, &input.element_ids, true)?;
+                        if serde_json::to_value(&compact_words).unwrap() != serde_json::to_value(&words).unwrap() {
+                            return Err(invalid("Compact extract source changed transcript evidence"));
+                        }
                         let gaps = quality::analyze_audio(
                             &original["tracks"],
                             &input.element_ids,
@@ -443,7 +472,7 @@ pub(super) fn register_podcast(
                                 run_metrics: None,
                                 id: fresh(),
                                 element_ids: input.element_ids.clone(),
-                                source_tracks: original["tracks"].clone(),
+                                source_tracks: extract_source.clone(),
                                 source_bookmarks: original["bookmarks"].clone(),
                                 plan,
                                 applied_digest: String::new(),

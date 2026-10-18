@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d112e69c-9fa1-45ba-830c-ad131c082d44",
+  "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Export current teaser with captions, without captions and precise scene SRT; restore caption visibility",
+          "status": "completed"
+        },
+        {
+          "step": "Validate files, current corrected-source audio and unchanged scene state",
+          "status": "completed"
+        },
+        {
+          "step": "Upload replacement versions of3 Drive files and verify completion",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-15T01:50:42.300Z",
+  "parents": [
+    "ac9a3f3c-87cc-4f64-b5d4-d5cbdec3a48a"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

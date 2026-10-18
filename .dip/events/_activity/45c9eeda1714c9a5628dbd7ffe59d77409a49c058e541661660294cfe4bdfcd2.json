@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45c9eeda1714c9a5628dbd7ffe59d77409a49c058e541661660294cfe4bdfcd2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T15:09:30.717Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 62659,62648 -o pid,%cpu,rss,etime; python3 - <<'PY'\nfrom pathlib import Path\nimport struct,datetime\np=max((Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed').glob('*.dmp'),key=lambda p:p.stat().st_mtime)\nb=p.read_bytes();print(p.name,datetime.datetime.fromtimestamp(struct.unpack_from('<I',b,20)[0]).isoformat())\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-63078979-f810-4c09-944f-37d49ff37f04"
+      },
+      {
+        "at": "2026-10-13T15:09:30.849Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 62659,62648 -o pid,%cpu,rss,etime; python3 - <<'PY'\nfrom pathlib import Path\nimport struct,datetime\np=max((Path.home()/'Library/Application Support/Google/Chrome/Crashpad/completed').glob('*.dmp'),key=lambda p:p.stat().st_mtime)\nb=p.read_bytes();print(p.name,datetime.datetime.fromtimestamp(struct.unpack_from('<I',b,20)[0]).isoformat())\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-63078979-f810-4c09-944f-37d49ff37f04"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T15:09:31.202Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

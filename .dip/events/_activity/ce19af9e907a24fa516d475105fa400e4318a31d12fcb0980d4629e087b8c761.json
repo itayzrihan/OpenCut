@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce19af9e907a24fa516d475105fa400e4318a31d12fcb0980d4629e087b8c761",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:49:57.568Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files --hidden -g 'Electron' -g 'electron' -g '!Library/**' -g '!Documents/**' -g '!Pictures/**' -g '!Movies/**' /Users/itayzrihan/.cache /Users/itayzrihan/.npm /Users/itayzrihan/Documents/PoCut/node_modules /Users/itayzrihan/Documents/PoCut/classic/node_modules 2>/dev/null | head -30",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-8cbb95f0-2576-4712-a20a-f87d9bc66032"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:49:59.643Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

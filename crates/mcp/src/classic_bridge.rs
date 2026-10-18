@@ -11,7 +11,7 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::{Path as AxumPath, Request, State},
+    extract::{DefaultBodyLimit, Path as AxumPath, Request, State},
     http::{StatusCode, header::AUTHORIZATION},
     middleware::{self, Next},
     response::{IntoResponse, Response},
@@ -26,6 +26,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use subtle::ConstantTimeEq;
 use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
+
+const BRIDGE_BODY_LIMIT: usize = 32 * 1024 * 1024;
 
 const SESSION_RESOURCE: &str = "opencut://classic/session";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
@@ -69,6 +71,20 @@ pub struct ClassicSessionSnapshot {
     pub tools: Vec<ClassicToolDescriptor>,
     #[serde(default)]
     pub updated_at_ms: u64,
+}
+
+/// Transport liveness/UI metadata only; never a second editor document.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ClassicHeartbeat {
+    project_id: String,
+    project_name: String,
+    expected_revision: u64,
+    revision: u64,
+    dirty: bool,
+    playback: Value,
+    selection: Value,
+    ui: Value,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -315,37 +331,12 @@ impl ClassicBridge {
             .write()
             .map_err(|_| "classic session lock was poisoned")?
             .insert(session_id.clone(), snapshot);
-        {
-            let current_id = self
-                .inner
-                .active_session_id
-                .read()
-                .map_err(|_| "classic active session lock was poisoned")?
-                .clone();
-            let should_activate = match current_id.as_deref() {
-                None => true,
-                Some(current_id) if current_id == session_id => false,
-                Some(current_id) => self
-                    .inner
-                    .sessions
-                    .read()
-                    .map_err(|_| "classic session lock was poisoned")?
-                    .get(current_id)
-                    .is_none_or(|current| {
-                        is_session_stale(current)
-                            || (candidate_is_visible
-                                && (!snapshot_is_visible(current) || candidate_is_focused))
-                            || candidate_last_active_at_ms > snapshot_last_active_at_ms(current)
-                    }),
-            };
-            if should_activate {
-                *self
-                    .inner
-                    .active_session_id
-                    .write()
-                    .map_err(|_| "classic active session lock was poisoned")? = Some(session_id);
-            }
-        }
+        self.update_active_session(
+            &session_id,
+            candidate_is_visible,
+            candidate_is_focused,
+            candidate_last_active_at_ms,
+        )?;
         let all_tools = self.all_session_tools();
         self.sync_dynamic_capabilities(&all_tools)?;
         self.inner
@@ -354,6 +345,88 @@ impl ClassicBridge {
             .notify_resources_changed(vec![SESSION_RESOURCE.into()])
             .map_err(|error| error.to_string())?;
         Ok(tools.len())
+    }
+
+    fn update_active_session(
+        &self,
+        session_id: &str,
+        candidate_is_visible: bool,
+        candidate_is_focused: bool,
+        candidate_last_active_at_ms: u64,
+    ) -> Result<(), String> {
+        let current_id = self
+            .inner
+            .active_session_id
+            .read()
+            .map_err(|_| "classic active session lock was poisoned")?
+            .clone();
+        let should_activate = match current_id.as_deref() {
+            None => true,
+            Some(current_id) if current_id == session_id => false,
+            Some(current_id) => self
+                .inner
+                .sessions
+                .read()
+                .map_err(|_| "classic session lock was poisoned")?
+                .get(current_id)
+                .is_none_or(|current| {
+                    is_session_stale(current)
+                        || (candidate_is_visible
+                            && (!snapshot_is_visible(current) || candidate_is_focused))
+                        || candidate_last_active_at_ms > snapshot_last_active_at_ms(current)
+                }),
+        };
+        if should_activate {
+            *self
+                .inner
+                .active_session_id
+                .write()
+                .map_err(|_| "classic active session lock was poisoned")? =
+                Some(session_id.to_owned());
+        }
+        Ok(())
+    }
+
+    fn update_heartbeat(
+        &self,
+        session_id: &str,
+        heartbeat: ClassicHeartbeat,
+    ) -> Result<(), String> {
+        let activity = {
+            let mut sessions = self
+                .inner
+                .sessions
+                .write()
+                .map_err(|_| "classic session lock was poisoned")?;
+            let snapshot = sessions
+                .get_mut(session_id)
+                .ok_or("Full snapshot required")?;
+            if snapshot.project_id != heartbeat.project_id
+                || snapshot.revision != heartbeat.expected_revision
+                || heartbeat.revision < heartbeat.expected_revision
+            {
+                return Err("Full snapshot required".into());
+            }
+            snapshot.project_name = heartbeat.project_name;
+            snapshot.revision = heartbeat.revision;
+            snapshot.dirty = heartbeat.dirty;
+            snapshot.playback = heartbeat.playback;
+            snapshot.selection = heartbeat.selection;
+            snapshot.ui = heartbeat.ui;
+            snapshot.updated_at_ms = now_ms();
+            (
+                snapshot_is_visible(snapshot),
+                snapshot_is_focused(snapshot),
+                snapshot_last_active_at_ms(snapshot),
+            )
+        };
+        self.update_active_session(session_id, activity.0, activity.1, activity.2)?;
+        self.inner
+            .runtime
+            .registry()
+            .notify_resources_changed(vec![SESSION_RESOURCE.into()])
+            .map_err(|error| error.to_string())?;
+        Ok(())
     }
 
     fn disconnect(&self, session_id: &str) {
@@ -381,9 +454,12 @@ impl ClassicBridge {
             commands
                 .queue
                 .retain(|command| command.session_id != session_id);
-            let waiter_ids: Vec<_> = commands.waiters.iter()
+            let waiter_ids: Vec<_> = commands
+                .waiters
+                .iter()
                 .filter(|(_, (owner, _))| owner == session_id)
-                .map(|(id, _)| id.clone()).collect();
+                .map(|(id, _)| id.clone())
+                .collect();
             for command_id in waiter_ids {
                 if let Some((_, waiter)) = commands.waiters.remove(&command_id) {
                     let _ = waiter.send(ClassicCommandCompletion {
@@ -688,7 +764,9 @@ impl ClassicBridge {
                 self.inner.command_state.lock().map_err(|_| {
                     CapabilityError::Failed("classic command lock was poisoned".into())
                 })?;
-            state.waiters.insert(command_id.clone(), (snapshot.session_id.clone(), sender));
+            state
+                .waiters
+                .insert(command_id.clone(), (snapshot.session_id.clone(), sender));
             state.queue.push_back(command);
         }
 
@@ -776,9 +854,15 @@ impl ClassicBridge {
             .lock()
             .ok()
             .and_then(|mut state| {
-                if state.waiters.get(&completion.command_id).is_some_and(|(owner, _)| owner == session_id) {
+                if state
+                    .waiters
+                    .get(&completion.command_id)
+                    .is_some_and(|(owner, _)| owner == session_id)
+                {
                     state.waiters.remove(&completion.command_id)
-                } else { None }
+                } else {
+                    None
+                }
             })
             .is_some_and(|(_, waiter)| waiter.send(completion).is_ok())
     }
@@ -865,6 +949,10 @@ pub async fn spawn_classic_bridge(
     let app = Router::new()
         .route("/bridge/status", get(bridge_status))
         .route("/bridge/state", put(update_bridge_state))
+        .route(
+            "/bridge/heartbeat/{session_id}",
+            post(update_bridge_heartbeat).layer(DefaultBodyLimit::max(512 * 1024)),
+        )
         .route("/bridge/commands/{session_id}", get(poll_bridge_commands))
         .route(
             "/bridge/results/{session_id}",
@@ -874,6 +962,9 @@ pub async fn spawn_classic_bridge(
             "/bridge/session/{session_id}",
             delete(disconnect_bridge_session),
         )
+        // Match the authenticated account proxy limit; long transcripts exceed
+        // Axum's default 2 MiB JSON body limit. Keep a finite transport bound.
+        .layer(DefaultBodyLimit::max(BRIDGE_BODY_LIMIT))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             require_bridge_token,
@@ -965,6 +1056,21 @@ async fn update_bridge_state(
         }))
         .into_response(),
         Err(error) => (StatusCode::BAD_REQUEST, Json(json!({"error": error}))).into_response(),
+    }
+}
+
+async fn update_bridge_heartbeat(
+    State(state): State<BridgeHttpState>,
+    AxumPath(session_id): AxumPath<String>,
+    Json(heartbeat): Json<ClassicHeartbeat>,
+) -> Response {
+    match state.bridge.update_heartbeat(&session_id, heartbeat) {
+        Ok(()) => Json(json!({"connected":true})).into_response(),
+        Err(error) => (
+            StatusCode::CONFLICT,
+            Json(json!({"error":error,"needsFullState":true})),
+        )
+            .into_response(),
     }
 }
 
@@ -1134,6 +1240,7 @@ fn write_bridge_config(path: &Path, address: SocketAddr, token: &str) -> std::io
     let temporary = path.with_extension(format!("{}.tmp", std::process::id()));
     let bytes = serde_json::to_vec_pretty(&json!({
         "version": 2,
+        "supportsHeartbeat": true,
         "baseUrl": format!("http://{address}"),
         "token": token,
         "pid": std::process::id(),
@@ -1316,5 +1423,177 @@ mod tests {
             receipt.result.data["output"]["skills"][0]["name"],
             "premium"
         );
+    }
+}
+
+#[cfg(test)]
+mod body_limit_tests {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    async fn request(
+        server: &ClassicBridgeServer,
+        token: &str,
+        body: String,
+        method: &str,
+        path: &str,
+    ) -> String {
+        let mut socket = tokio::net::TcpStream::connect(server.address())
+            .await
+            .unwrap();
+        let headers = format!(
+            "{method} {path} HTTP/1.1\r\nHost: localhost\r\nAuthorization: Bearer {token}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        );
+        socket.write_all(headers.as_bytes()).await.unwrap();
+        // A rejected oversized request may close before the remaining bytes are sent.
+        let _ = socket.write_all(body.as_bytes()).await;
+        let mut response = vec![];
+        socket.read_to_end(&mut response).await.unwrap();
+        String::from_utf8(response).unwrap()
+    }
+    async fn put(server: &ClassicBridgeServer, token: &str, body: String) -> String {
+        request(server, token, body, "PUT", "/bridge/state").await
+    }
+    #[tokio::test]
+    async fn large_transcript_snapshots_remain_authenticated_and_bounded() {
+        let runtime = OpenCutRuntime::default();
+        let dir = std::env::temp_dir().join(format!(
+            "opencut-bridge-body-{}-{}",
+            std::process::id(),
+            now_ms()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let server = spawn_classic_bridge(
+            &runtime,
+            "127.0.0.1:0".parse().unwrap(),
+            dir.join("config.json"),
+        )
+        .await
+        .unwrap();
+        let snapshot = json!({"sessionId":"large","projectId":"large-project","projectName":"Large transcript", "revision":1,"dirty":false,"playback":{},"timeline":{"text":"x".repeat(2*1024*1024+100)},"selection":{},"ui":{},"tools":[]});
+        let response = put(&server, &server.token, snapshot.to_string()).await;
+        assert!(
+            response.starts_with("HTTP/1.1 200"),
+            "{}",
+            response.lines().next().unwrap()
+        );
+        assert!(
+            put(&server, "wrong-token", "{}".into())
+                .await
+                .starts_with("HTTP/1.1 401")
+        );
+        let oversized =
+            json!({"invalidDiagnosticPadding":"x".repeat(BRIDGE_BODY_LIMIT)}).to_string();
+        assert!(
+            put(&server, &server.token, oversized)
+                .await
+                .starts_with("HTTP/1.1 413")
+        );
+        let heartbeat=json!({"projectId":"large-project","projectName":"Large transcript","expectedRevision":1,"revision":2,"dirty":true,"playback":{"position":17},"selection":[],"ui":{}}).to_string();
+        assert!(
+            request(
+                &server,
+                &server.token,
+                heartbeat.clone(),
+                "POST",
+                "/bridge/heartbeat/large"
+            )
+            .await
+            .starts_with("HTTP/1.1 200")
+        );
+        assert!(
+            request(
+                &server,
+                &server.token,
+                heartbeat.clone(),
+                "POST",
+                "/bridge/heartbeat/large"
+            )
+            .await
+            .starts_with("HTTP/1.1 409")
+        );
+        assert!(
+            request(
+                &server,
+                "wrong-token",
+                heartbeat,
+                "POST",
+                "/bridge/heartbeat/large"
+            )
+            .await
+            .starts_with("HTTP/1.1 401")
+        );
+        assert!(
+            request(
+                &server,
+                &server.token,
+                json!({"invalid":"x".repeat(512*1024)}).to_string(),
+                "POST",
+                "/bridge/heartbeat/large"
+            )
+            .await
+            .starts_with("HTTP/1.1 413")
+        );
+        drop(server);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+}
+
+#[cfg(test)]
+mod heartbeat_tests {
+    use super::*;
+    #[test]
+    fn metadata_heartbeat_keeps_document_and_tool_storage_and_requires_exact_session_revision() {
+        let runtime = OpenCutRuntime::default();
+        let bridge = ClassicBridge::register(&runtime).unwrap();
+        let snapshot:ClassicSessionSnapshot=serde_json::from_value(json!({"sessionId":"account_tab","projectId":"p","projectName":"P","revision":1,"dirty":false,"playback":{},"timeline":{"text":"x".repeat(3*1024*1024)},"selection":{},"ui":{},"tools":[]})).unwrap();
+        bridge.update_session(snapshot).unwrap();
+        let pointer = bridge.inner.sessions.read().unwrap()["account_tab"].timeline["text"]
+            .as_str()
+            .unwrap()
+            .as_ptr() as usize;
+        let heartbeat = |project: &str, expected: u64, revision: u64| {
+            serde_json::from_value::<ClassicHeartbeat>(json!({"projectId":project,"projectName":"P","expectedRevision":expected,"revision":revision,"dirty":true,"playback":{"position":17},"selection":["clip"],"ui":{"focused":true,"visibilityState":"visible"}})).unwrap()
+        };
+        assert!(
+            bridge
+                .update_heartbeat("other_tab", heartbeat("p", 1, 2))
+                .is_err()
+        );
+        assert!(
+            bridge
+                .update_heartbeat("account_tab", heartbeat("other", 1, 2))
+                .is_err()
+        );
+        assert!(
+            bridge
+                .update_heartbeat("account_tab", heartbeat("p", 0, 2))
+                .is_err()
+        );
+        bridge
+            .update_heartbeat("account_tab", heartbeat("p", 1, 2))
+            .unwrap();
+        {
+            let sessions = bridge.inner.sessions.read().unwrap();
+            let updated = &sessions["account_tab"];
+            assert_eq!(
+                updated.timeline["text"].as_str().unwrap().as_ptr() as usize,
+                pointer
+            );
+            assert_eq!(
+                updated.timeline["text"].as_str().unwrap().len(),
+                3 * 1024 * 1024
+            );
+            assert_eq!(updated.revision, 2);
+            assert_eq!(updated.playback["position"], 17);
+        }
+        assert!(
+            bridge
+                .update_heartbeat("account_tab", heartbeat("p", 1, 3))
+                .is_err()
+        );
+        bridge
+            .update_heartbeat("account_tab", heartbeat("p", 2, 2))
+            .unwrap();
     }
 }

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7dac8b5bcae5eec5a9e548e6632f7e0f22641fed3f34cd7e3cd835ade977abbc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:56:25.943Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json')\nprint('queue_exists',p.exists())\nif p.exists():\n x=json.loads(p.read_text());print([{'id':r['id'],'options':r['options'],'jobs':[{k:j.get(k) for k in ['projectId','sceneId','name','status','stage','message','completedStages','totalStages']}for j in r['jobs']]}for r in x['runs']if any(j['projectId']=='96fa8232-1976-427d-90eb-17cbf11c858c' for j in r['jobs'])])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-533037f1-05e9-4b1f-832c-2a3ad26b3777"
+      },
+      {
+        "at": "2026-10-14T08:56:26.061Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-92ae2245-0a0d-4a4a-82b0-29c45d1009de"
+      },
+      {
+        "at": "2026-10-14T08:56:26.063Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json')\nprint('queue_exists',p.exists())\nif p.exists():\n x=json.loads(p.read_text());print([{'id':r['id'],'options':r['options'],'jobs':[{k:j.get(k) for k in ['projectId','sceneId','name','status','stage','message','completedStages','totalStages']}for j in r['jobs']]}for r in x['runs']if any(j['projectId']=='96fa8232-1976-427d-90eb-17cbf11c858c' for j in r['jobs'])])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-533037f1-05e9-4b1f-832c-2a3ad26b3777"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:56:26.786Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

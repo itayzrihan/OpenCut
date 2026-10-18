@@ -4593,9 +4593,12 @@ dependencies = [
 name = "opencut-mcp-server"
 version = "0.1.0"
 dependencies = [
+ "opencut-editor-agent",
  "opencut-editor-api",
  "opencut-mcp",
  "rmcp",
+ "serde",
+ "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",

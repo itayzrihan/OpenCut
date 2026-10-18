@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be46fce654618a6f3b881434b3cd6cb8b7ba89a57b1db9201ff6eb8efddfa1e3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:44:27.914Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json')\nd=json.loads(p.read_text()); a=pathlib.Path('analysis/teaser-exports-2026-10-14');a.mkdir(exist_ok=True,parents=True)\nx={k:v for k,v in d.items() if k!='__opencutEditorSession'}\n(a/'project-before.json').write_text(json.dumps(x,ensure_ascii=False))\nprint(json.dumps({'keys':list(x),'scene':[(s.get('id'),s.get('name'),list(s)) for s in d['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7']},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-aa31e61f-233c-44ad-9196-0bef85a241ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:44:28.723Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

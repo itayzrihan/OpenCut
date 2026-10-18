@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "eventId": "35fe317f4ca8fc1dc89f60a05e956f8d3113426f9ebfdad3b68f9bad40568d49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T08:03:10.935Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,120p' .dip/tools/verify-teaser-skills.mjs; tail -22 .dip/config.json; rg -n 'dirty|getIsDirty|saveProject' classic/apps/web/src/core/managers/save-manager.ts | head -28",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-016736f0-5d3e-4b32-84ee-6b79d3042d9d"
+      },
+      {
+        "at": "2026-10-14T08:03:11.034Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,120p' .dip/tools/verify-teaser-skills.mjs; tail -22 .dip/config.json; rg -n 'dirty|getIsDirty|saveProject' classic/apps/web/src/core/managers/save-manager.ts | head -28",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-016736f0-5d3e-4b32-84ee-6b79d3042d9d"
+      },
+      {
+        "at": "2026-10-14T08:03:11.038Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-7c5c25eb-68ce-44b7-8c5a-1b09a702af11"
+      },
+      {
+        "at": "2026-10-14T08:03:11.098Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json, pathlib\np=pathlib.Path('.local/episode-teaser-90-2026-10-14');a=pathlib.Path('analysis/episode-teaser-90-2026-10-14');x=json.loads((p/'ledger.json').read_text());x['editorialSourceRegions']=9;x['quality']['note']='Canonical acoustic silence policy found no safe quiet handles at 24 selected word boundaries; fallback keeps neighboring-word bounded pre/post-roll. Signal was decoded and complete coverage validated; this does not prove phoneme alignment.';(a/'selection-ledger.json').write_text(json.dumps(x,ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-738a47cb-5273-4102-931a-7b55d5c84740"
+      },
+      {
+        "at": "2026-10-14T08:03:11.251Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json, pathlib\np=pathlib.Path('.local/episode-teaser-90-2026-10-14');a=pathlib.Path('analysis/episode-teaser-90-2026-10-14');x=json.loads((p/'ledger.json').read_text());x['editorialSourceRegions']=9;x['quality']['note']='Canonical acoustic silence policy found no safe quiet handles at 24 selected word boundaries; fallback keeps neighboring-word bounded pre/post-roll. Signal was decoded and complete coverage validated; this does not prove phoneme alignment.';(a/'selection-ledger.json').write_text(json.dumps(x,ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-738a47cb-5273-4102-931a-7b55d5c84740"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T08:03:11.615Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

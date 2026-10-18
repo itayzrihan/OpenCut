@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7439073c24bf655bc2a2a7f5bc1c8d12419a3e7da00cda04f4380359da6fed04",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:37:18.859Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '240,475p' classic/apps/web/src/ai/podcast-plan.ts; cat classic/apps/web/src/ai/podcast-types.ts; cat classic/apps/web/src/ai/podcast-plan-cache.ts; sed -n '1,150p' classic/apps/web/src/ai/podcast-proposal.ts; sed -n '1,225p' classic/apps/web/src/ai/__tests__/podcast-plan.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-fc25ea79-f1b7-4e49-bcd1-20e3165db69c"
+      },
+      {
+        "at": "2026-10-16T10:37:18.940Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '240,475p' classic/apps/web/src/ai/podcast-plan.ts; cat classic/apps/web/src/ai/podcast-types.ts; cat classic/apps/web/src/ai/podcast-plan-cache.ts; sed -n '1,150p' classic/apps/web/src/ai/podcast-proposal.ts; sed -n '1,225p' classic/apps/web/src/ai/__tests__/podcast-plan.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-fc25ea79-f1b7-4e49-bcd1-20e3165db69c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:37:19.175Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

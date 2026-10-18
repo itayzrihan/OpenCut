@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ae0933db677ec9c4320070f1dd342a0201d992e31fbfd7bb8b76ec423ea197a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:07:09.363Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/external-client.ts <<'EOF'\nimport type {TranscriptionLanguage,TranscriptionResult} from './types';\nexport interface ExternalSettingsView {id?:string;configured:boolean;endpoint:string;model:string;}\nexport async function getExternalSettings({signal}:{signal?:AbortSignal}={}):Promise<ExternalSettingsView>{\n const response=await fetch('/api/transcription/settings',{signal,headers:{'X-OpenCut-Account':window.__opencutAccountId??''}});\n if(!response.ok)throw new Error('Could not read transcription API settings');return response.json();\n}\n/** WAV encoding is a host IO adapter; every request holds at most 90s of PCM. */\nexport function encodeSpeechWav({samples}:{samples:Float32Array}):Blob{\n if(!samples.length||samples.length>90*16000)throw new Error('Audio window exceeds the bounded transcription limit');\n const bytes=new ArrayBuffer(44+samples.length*2);const view=new DataView(bytes);const ascii=(at:number,value:string)=>{for(let i=0;i<value.length;i++)view.setUint8(at+i,value.charCodeAt(i));};\n ascii(0,'RIFF');view.setUint32(4,36+samples.length*2,true);ascii(8,'WAVEfmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,16000,true);view.setUint32(28,32000,true);view.setUint16(32,2,true);view.setUint16(34,16,true);ascii(36,'data');view.setUint32(40,samples.length*2,true);\n for(let i=0;i<samples.length;i++)view.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,samples[i]))*32767),true);\n return new Blob([bytes],{type:'audio/wav'});\n}\nexport async function transcribeExternalWindow({samples,language,signal,configuration,account}:{samples:Float32Array;language:TranscriptionLanguage;signal:AbortSignal;configuration:string;account:string}):Promise<TranscriptionResult>{\n const audio=encodeSpeechWav({samples});\n for(let attempt=0;;attempt++){\n signal.throwIfAborted();if(window.__opencutAccountId!==account)throw new DOMException('Transcription account changed','AbortError');\n const form=new ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-dc910e0a-cbd4-44ca-ab08-f91bfdee943a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:07:09.384Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

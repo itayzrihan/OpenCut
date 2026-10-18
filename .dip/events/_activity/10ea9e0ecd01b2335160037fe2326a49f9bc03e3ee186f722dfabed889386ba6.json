@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "eventId": "10ea9e0ecd01b2335160037fe2326a49f9bc03e3ee186f722dfabed889386ba6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T10:53:21.538Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5c10ea75-a804-471f-904a-5a0746cb786c"
+      },
+      {
+        "at": "2026-10-16T10:53:21.539Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));v=next(iter(x.values()));p=json.loads(v)['responses'];print('completed',len(p));\nfor k in list(p)[:2]:\n b=p[k];print(k,b.get('summary'));print([(c.get('firstWord'),c.get('lastWord'),c.get('role')) for c in b.get('candidates',[])])\nPY\nnode classic/scripts/test-web.mjs src/ai/__tests__/podcast-plan.test.ts src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-editorial.test.ts src/ai/podcast-plan-cache.test.ts --jobs=1 --report=.local/teaser-upgrade/final-transport",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0fabe8f1-66cd-4b9d-8c31-c1f1d5fa7fea"
+      },
+      {
+        "at": "2026-10-16T10:53:21.582Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "mcp__dip__task_plan",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5c10ea75-a804-471f-904a-5a0746cb786c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:53:22.366Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

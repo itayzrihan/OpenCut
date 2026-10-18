@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a7fac05b317f55686a2e1ba54789f89863c6714311ef65ff5c0dc3bbde202201",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:14:01.427Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,shutil,json,hashlib,subprocess\nbase=pathlib.Path('/Users/itayzrihan/Downloads');stage=pathlib.Path('.local/teaser-word-fix-2026-10-14/drive-upload');stage.mkdir(parents=True,exist_ok=True)\nnames=['OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-2026-10-14.srt','OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt']\nfiles=[]\nfor n in names:\n p=base/n;shutil.copy2(p,stage/n);files.append({'path':str(p),'name':n,'size':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})\n if n.endswith('.mp4'):\n  probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,duration','-of','json',str(p)]));print(n,probe['streams'][0]['duration'])\npathlib.Path('analysis/teaser-drive-2026-10-14/manifest.json').write_text(json.dumps({'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':files},ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1e838b3e-8c4f-4b88-9072-5d56348c847b"
+      },
+      {
+        "at": "2026-10-14T10:14:01.437Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b2113729-b636-4ad8-9a6b-afc5089019b4"
+      },
+      {
+        "at": "2026-10-14T10:14:01.813Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib,shutil,json,hashlib,subprocess\nbase=pathlib.Path('/Users/itayzrihan/Downloads');stage=pathlib.Path('.local/teaser-word-fix-2026-10-14/drive-upload');stage.mkdir(parents=True,exist_ok=True)\nnames=['OpenCut-Teaser-FullAuto-with-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-without-captions-2026-10-14.mp4','OpenCut-Teaser-FullAuto-2026-10-14.srt','OpenCut-Teaser-FullAuto-transcript-2026-10-14.txt']\nfiles=[]\nfor n in names:\n p=base/n;shutil.copy2(p,stage/n);files.append({'path':str(p),'name':n,'size':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})\n if n.endswith('.mp4'):\n  probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,duration','-of','json',str(p)]));print(n,probe['streams'][0]['duration'])\npathlib.Path('analysis/teaser-drive-2026-10-14/manifest.json').write_text(json.dumps({'folderUrl':'https://drive.google.com/drive/folders/13LjSxFmw0yHwsWIXkyaTW2gBE54JcjGK','files':files},ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-1e838b3e-8c4f-4b88-9072-5d56348c847b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:14:02.238Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dd02910db403b5f61eec1bba8b5e98819c40c4d51eaf05aac18b6353762caf5a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:10:42.128Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP -sTCP:LISTEN",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b60cd68a-36a8-4048-a9d5-e6cc32daca7d"
+      },
+      {
+        "at": "2026-10-12T13:10:42.238Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP -sTCP:LISTEN",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b60cd68a-36a8-4048-a9d5-e6cc32daca7d"
+      },
+      {
+        "at": "2026-10-12T13:10:42.241Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files -g '*prod*' -g '*server*' -g '*log' .local classic/scripts | head -60",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-3bb69292-ff4b-465a-8b6c-329c6f52e2ea"
+      },
+      {
+        "at": "2026-10-12T13:10:42.321Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files -g '*prod*' -g '*server*' -g '*log' .local classic/scripts | head -60",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3bb69292-ff4b-465a-8b6c-329c6f52e2ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:10:42.433Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

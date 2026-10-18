@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c486bec93ed9f875f207cca823a9afd84e75306422aa56e27e1cb6c9eb628720",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T14:46:36.176Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/mcp/bridge-publication.ts <<'EOF'\nimport type {BridgeHeartbeat} from '@/accounts/bridge-snapshot-cache';\ntype Metadata=Omit<BridgeHeartbeat,'expectedRevision'>;\n/** Serialize document bytes only when the canonical projection changed. */\nexport function bridgePublication({sessionId,metadata,documentDirty,acknowledged,readDocument}:{sessionId:string;metadata:Metadata;documentDirty:boolean;acknowledged?:{projectId:string;revision:number};readDocument:()=>Record<string,unknown>}) {\n const heartbeat=acknowledged!==undefined && acknowledged.projectId===metadata.projectId && !documentDirty;\n return heartbeat ? {method:'POST',path:`/api/mcp-bridge/heartbeat/${encodeURIComponent(sessionId)}`,payload:{...metadata,expectedRevision:acknowledged.revision}} : {method:'PUT',path:'/api/mcp-bridge/state',payload:{...metadata,sessionId,...readDocument()}};\n}\nEOF\ncat > classic/apps/web/src/mcp/__tests__/bridge-publication-payload.test.ts <<'EOF'\nimport {expect,test} from 'bun:test';\nimport {bridgePublication} from '../bridge-publication';\nconst metadata={projectId:'p',projectName:'P',revision:1,dirty:false,playback:{position:17},selection:[],ui:{}};\ntest('hundreds of unchanged heartbeats never materialize or serialize a large document',()=>{\n let reads=0;const readDocument=()=>{reads++;return {timeline:{text:'x'.repeat(8*1024*1024)},tools:[]}};\n const full=bridgePublication({sessionId:'tab',metadata,documentDirty:true,readDocument});expect(JSON.stringify(full.payload).length).toBeGreaterThan(8*1024*1024);\n for(let i=0;i<500;i++){\n  const small=bridgePublication({sessionId:'tab',metadata:{...metadata,revision:i+1},documentDirty:false,acknowledged:{projectId:'p',revision:i+1},readDocument});\n  expect(small.method).toBe('POST');expect(JSON.stringify(small.payload).length).toBeLessThan(1024);expect('timeline'in small.payload).toBe(false);\n }\n expect(reads).toBe(1);\n});\ntest('edits, project switches and lost/restarted peers require a fresh full canonical projecti",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-15efabd7-6744-46e9-a5cb-1cc27c1c2ba8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:46:37.103Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

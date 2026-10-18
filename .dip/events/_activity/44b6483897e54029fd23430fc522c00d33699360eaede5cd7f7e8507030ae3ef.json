@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "44b6483897e54029fd23430fc522c00d33699360eaede5cd7f7e8507030ae3ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:50:18.564Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nfor a,b in [(12118,12157),(12390,12465),(15240,15330),(11420,11485),(1400,1429),(3283,3356),(12065,12089),(11660,11693),(4750,4808)]:\n print('\\n',a,b, w[a]['start']/120000,w[b]['end']/120000)\n print(' '.join(f\"{z['id']}:{z['text']}\" for z in w[a:b+1]))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6679929f-5caa-4395-a922-1cd1171d0f50"
+      },
+      {
+        "at": "2026-10-14T07:50:18.701Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nw=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words']\nfor a,b in [(12118,12157),(12390,12465),(15240,15330),(11420,11485),(1400,1429),(3283,3356),(12065,12089),(11660,11693),(4750,4808)]:\n print('\\n',a,b, w[a]['start']/120000,w[b]['end']/120000)\n print(' '.join(f\"{z['id']}:{z['text']}\" for z in w[a:b+1]))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6679929f-5caa-4395-a922-1cd1171d0f50"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:50:19.534Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

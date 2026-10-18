@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6006abb29bb0d4cf0d3717fdbd6e972f577245547d7a353f579b02b991344e94",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:41:56.612Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node <<'EOF'\nconst fs=require('fs'),assert=require('assert/strict');const dir='.local/smart-shorts-seven/';const full=JSON.parse(fs.readFileSync(dir+'project-transcribed-before-shorts.json'));const saved=JSON.parse(fs.readFileSync('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json'));assert.deepEqual(saved.scenes.find(s=>s.isMain),full.scenes.find(s=>s.isMain));console.log('Saved full Main unchanged; scenes:',saved.scenes.length);\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-63d3cdd3-983d-4727-a8a2-5192a69dcd05"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:41:56.773Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

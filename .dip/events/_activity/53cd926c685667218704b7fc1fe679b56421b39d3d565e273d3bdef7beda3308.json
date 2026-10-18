@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53cd926c685667218704b7fc1fe679b56421b39d3d565e273d3bdef7beda3308",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:34:06.778Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '220,277p' classic/node_modules/.bun/@huggingface+transformers*/node_modules/@huggingface/transformers/src/pipelines/automatic-speech-recognition.js; sed -n '75,125p' classic/apps/web/src/services/transcription/service.ts; rg -n 'version:|version,' classic/apps/web/src/transcription/timeline-stream.ts; sed -n '1,100p' .dip/tools/verify-transcription.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-7b5f2580-f43f-4639-94e5-1e09a7c6ebff"
+      },
+      {
+        "at": "2026-10-12T12:34:06.990Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '220,277p' classic/node_modules/.bun/@huggingface+transformers*/node_modules/@huggingface/transformers/src/pipelines/automatic-speech-recognition.js; sed -n '75,125p' classic/apps/web/src/services/transcription/service.ts; rg -n 'version:|version,' classic/apps/web/src/transcription/timeline-stream.ts; sed -n '1,100p' .dip/tools/verify-transcription.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-7b5f2580-f43f-4639-94e5-1e09a7c6ebff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:34:07.698Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

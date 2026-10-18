@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "511d4cc591618a1be0132484fb3809653ce00a2f56e61c94e85ceb6b2b4a0973",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:07:30.597Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-extract-preservation.mjs');s=p.read_text();s=s.replace(\" ['cargo'\", \" ['bun',['.dip/tools/check-extract-caption-isolation.ts']],\\n ['cargo'\",1);p.write_text(s)\nPY\ntail -8 .local/source-preservation/check.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-5e9a1e68-ce11-4882-99c6-d8e87cb9b1dc"
+      },
+      {
+        "at": "2026-10-13T21:07:30.869Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-extract-preservation.mjs');s=p.read_text();s=s.replace(\" ['cargo'\", \" ['bun',['.dip/tools/check-extract-caption-isolation.ts']],\\n ['cargo'\",1);p.write_text(s)\nPY\ntail -8 .local/source-preservation/check.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-5e9a1e68-ce11-4882-99c6-d8e87cb9b1dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:07:31.289Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

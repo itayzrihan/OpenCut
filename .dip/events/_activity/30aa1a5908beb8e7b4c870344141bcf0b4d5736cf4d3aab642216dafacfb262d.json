@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30aa1a5908beb8e7b4c870344141bcf0b4d5736cf4d3aab642216dafacfb262d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:13:27.346Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "classic/node_modules/.bin/prettier --write classic/apps/web/src/services/local-drive/server.ts classic/apps/web/src/ai/timeline-tools.ts classic/apps/web/src/ai/__tests__/timeline-tools.test.ts classic/apps/web/src/core/managers/media-manager.ts classic/apps/web/src/ai/tool-wire-names.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-cb180c89-a1d2-409b-bd07-c903bd416485"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:13:28.286Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

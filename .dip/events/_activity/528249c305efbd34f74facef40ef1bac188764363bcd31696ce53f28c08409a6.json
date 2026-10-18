@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "528249c305efbd34f74facef40ef1bac188764363bcd31696ce53f28c08409a6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:30:28.875Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-df5f4c38-7d79-458e-a133-f21d11d305e0"
+      },
+      {
+        "at": "2026-10-13T12:30:28.992Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node <<'EOF'\nconst fs=require('fs'),assert=require('assert/strict');const p=JSON.parse(fs.readFileSync('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json'));const b=JSON.parse(fs.readFileSync('.local/smart-shorts-seven/project-transcribed-before-shorts.json'));assert.deepEqual(p.scenes.find(s=>s.isMain),b.scenes.find(s=>s.isMain));console.log({mainPreserved:true,scenes:p.scenes.length,completedChunks:Object.keys(p.transcriptionJobs[0].chunks).length,status:p.transcriptionJobs[0].status});\nEOF",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e08ce12c-bc87-4421-b951-55ffb4e4091e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:30:29.635Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

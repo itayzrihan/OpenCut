@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c2fd8305fc5ae58d54c44359a9a67489dafa461dc9fd284bee8a3811298c86c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:45:19.702Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('analysis/teaser-exports-2026-10-14/project-before.json'));s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7')\nfor t in s['tracks']:\n print(t['name'], list(t),len(t['elements']))\n if t.get('captionSource'):print('source',list(t['captionSource']), 'first words',t['captionSource']['words'][:3])\n if t['name'].startswith('Captions'):print('first',json.dumps(t['elements'][:2],ensure_ascii=False)[:3500])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-eafa1bc8-6b6f-4180-9426-e6954e244b30"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:45:19.736Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -40,6 +40,28 @@ async function waitFor({
 }
 
 describe("SaveManager", () => {
+	test("viewer notifications do not schedule archive saves; content notifications still do", () => {
+		let content!: () => void;
+		const broadSubscribe = mock(() => () => {});
+		const editor = {
+			scenes: {
+				subscribe: broadSubscribe,
+				subscribeContent: (listener: () => void) => {
+					content = listener;
+					return () => {};
+				},
+			},
+			timeline: { subscribe: () => () => {} },
+			project: { getActiveOrNull: () => ({ metadata: { id: "p" } }) },
+		} as unknown as EditorCore;
+		const manager = new SaveManager({ editor });
+		manager.start();
+		expect(broadSubscribe).not.toHaveBeenCalled();
+		expect(manager.getIsDirty()).toBe(false);
+		content();
+		expect(manager.getIsDirty()).toBe(true);
+		manager.stop();
+	});
 	test("propagates a failed flush and keeps the project dirty", async () => {
 		const failure = new Error("IndexedDB write failed");
 		const manager = createSaveManager({

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6aafa1f7c7feb3b6718cab25b42386a58e2634ff11f44d0d0c20ed60fe4c32c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:10:40.491Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/external-server.test.ts <<'EOF'\nimport {afterEach,beforeEach,expect,test} from 'bun:test';\nimport {mkdtemp,rm,stat} from 'node:fs/promises';\nimport {tmpdir} from 'node:os';\nimport {join} from 'node:path';\nimport {accountScope} from '@/accounts/server';\nimport {readExternalSettings,saveExternalSettings,publicExternalSettings,requestExternalTranscript,boundedBytes} from './external-server';\nlet root:string;let previous:string|undefined;\nbeforeEach(async()=>{root=await mkdtemp(join(tmpdir(),'opencut-transcription-'));previous=process.env.OPENCUT_ACCOUNTS_DIR;process.env.OPENCUT_ACCOUNTS_DIR=root;});\nafterEach(async()=>{if(previous===undefined)delete process.env.OPENCUT_ACCOUNTS_DIR;else process.env.OPENCUT_ACCOUNTS_DIR=previous;await rm(root,{recursive:true,force:true});});\nconst account=(id:string,run:()=>Promise<unknown>)=>accountScope.run({id,login:id,displayName:id},run);\nconst input={endpoint:'https://api.example.com/v1/audio/transcriptions',model:'whisper-1',apiKey:[REDACTED];\ntest('credentials are account-scoped, private and never included in public settings',async()=>{\n await account('alice',async()=>{const view=await saveExternalSettings(input);expect(view.configured).toBe(true);expect(JSON.stringify(view)).not.toContain('test-secret');expect((await stat(join(root,'transcription-credentials','alice.json'))).mode&0o777).toBe(0o600);\n const before=await readExternalSettings();const updated=await saveExternalSettings({...input,apiKey:[REDACTED];expect(updated.id).toBe(before!.id);\n await expect(saveExternalSettings({...input,endpoint:'https://different.example.com/transcriptions',apiKey:[REDACTED] an API key');\n expect(publicExternalSettings(await readExternalSettings()).endpoint).toBe(input.endpoint);\n });\n await account('bob',async()=>{expect(await readExternalSettings()).toBeNull();});\n});\ntest('invalid endpoints fail before saving credentials',async()=>{\n await account('alice',async()=>{for",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-8acf5098-e01f-48af-9793-7007b45205a2"
+      },
+      {
+        "at": "2026-10-12T10:10:40.920Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> crates/editor-api/tests/classic_transcription.rs <<'EOF'\n\n#[tokio::test]\nasync fn srt_import_preserves_cues_supersedes_pending_inference_and_exposes_transcript() {\n let r=setup().await;edit(&r,section(0)).await;\n let before=state(&r).await;let defaults=job(&before)[\"defaults\"].clone();\n edit(&r,json!({\"type\":\"importSrt\",\"sceneId\":\"main-scene\",\"text\":\"\\u{feff}1\\r\\n00:00:02,250 --> 00:00:04,750\\r\\nשלום <i>עולם</i>\\r\\n\\r\\n2\\r\\n00:01:01.000 --> 00:01:04.000\\r\\nSecond line\\r\\ncontinued\",\"settings\":{\"wordsPerRow\":3,\"rows\":1},\"defaults\":defaults})).await;\n let s=state(&r).await;assert_eq!(job(&s)[\"status\"],\"superseded\");\n let imported=tracks(&s);assert_eq!(imported.len(),1);assert_eq!(imported[0][\"elements\"].as_array().unwrap().len(),2);\n assert_eq!(imported[0][\"elements\"][0][\"startTime\"],270000);assert_eq!(imported[0][\"elements\"][0][\"duration\"],300000);\n assert_eq!(imported[0][\"captionSource\"][\"origin\"],\"srt\");assert_eq!(imported[0][\"captionSource\"][\"words\"][0][\"text\"],\"שלום\");assert_eq!(imported[0][\"captionSource\"][\"words\"].as_array().unwrap().len(),5);\n call(&r,\"history.undo\",json!({})).await; // grouped transcription edits are undoable\n}\n#[tokio::test]\nasync fn malformed_srt_is_atomic_and_engine_selection_is_canonical() {\n let r=setup().await;edit(&r,json!({\"type\":\"setEngine\",\"engine\":\"external\"})).await;\n let before=state(&r).await;assert_eq!(before[\"project\"][\"classic\"][\"document\"][\"transcriptionEngine\"],\"external\");\n for text in [\"\", \"1\\n00:60:00,000 --> 00:61:00,000\\ninvalid\", \"1\\n00:00:01,000 --> 00:00:00,500\\nbackwards\", \"1\\n00:00:01,000 --> 00:00:02,000\\ngood\\n\\n2\\ninvalid\"] {\n let error=r.registry().invoke(CAP,InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":before[\"revision\"],\"jobId\":\"import-job\",\"change\":{\"type\":\"importSrt\",\"sceneId\":\"main-scene\",\"text\":text,\"settings\":{},\"defaults\":job(&before)[\"defaults\"]}})).await;\n assert!(error.is_err());assert_eq!(state(&r).await,before);\n }\n}\nEOF\npython3 - <<'PY'\np='classic/ap",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-aa9e91bd-ccf9-4b54-8b53-5520274817f8"
+      },
+      {
+        "at": "2026-10-12T10:10:40.921Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/transcription/external-server.test.ts <<'EOF'\nimport {afterEach,beforeEach,expect,test} from 'bun:test';\nimport {mkdtemp,rm,stat} from 'node:fs/promises';\nimport {tmpdir} from 'node:os';\nimport {join} from 'node:path';\nimport {accountScope} from '@/accounts/server';\nimport {readExternalSettings,saveExternalSettings,publicExternalSettings,requestExternalTranscript,boundedBytes} from './external-server';\nlet root:string;let previous:string|undefined;\nbeforeEach(async()=>{root=await mkdtemp(join(tmpdir(),'opencut-transcription-'));previous=process.env.OPENCUT_ACCOUNTS_DIR;process.env.OPENCUT_ACCOUNTS_DIR=root;});\nafterEach(async()=>{if(previous===undefined)delete process.env.OPENCUT_ACCOUNTS_DIR;else process.env.OPENCUT_ACCOUNTS_DIR=previous;await rm(root,{recursive:true,force:true});});\nconst account=(id:string,run:()=>Promise<unknown>)=>accountScope.run({id,login:id,displayName:id},run);\nconst input={endpoint:'https://api.example.com/v1/audio/transcriptions',model:'whisper-1',apiKey:[REDACTED];\ntest('credentials are account-scoped, private and never included in public settings',async()=>{\n await account('alice',async()=>{const view=await saveExternalSettings(input);expect(view.configured).toBe(true);expect(JSON.stringify(view)).not.toContain('test-secret');expect((await stat(join(root,'transcription-credentials','alice.json'))).mode&0o777).toBe(0o600);\n const before=await readExternalSettings();const updated=await saveExternalSettings({...input,apiKey:[REDACTED];expect(updated.id).toBe(before!.id);\n await expect(saveExternalSettings({...input,endpoint:'https://different.example.com/transcriptions',apiKey:[REDACTED] an API key');\n expect(publicExternalSettings(await readExternalSettings()).endpoint).toBe(input.endpoint);\n });\n await account('bob',async()=>{expect(await readExternalSettings()).toBeNull();});\n});\ntest('invalid endpoints fail before saving credentials',async()=>{\n await account('alice',async()=>{for",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-8acf5098-e01f-48af-9793-7007b45205a2"
+      },
+      {
+        "at": "2026-10-12T10:10:40.928Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx eslint src/transcription/external-client.ts src/transcription/external-server.ts src/transcription/windows.ts src/transcription/timeline-stream.ts src/core/managers/transcription-manager.ts src/subtitles/components/transcription-source.tsx src/app/api/transcription/external/route.ts src/app/api/transcription/settings/route.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-290dbaa2-5fbf-4577-839a-bdccb754d0c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:10:41.293Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

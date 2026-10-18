@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2ae5b4e7-18ee-455c-bf12-8303499e9ee9",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.update",
+  "payload": {
+    "description": "User requests overload/crash diagnosis. Traced overload to provider SSE/error forwarded unchanged; SmartShorts bypassed existing canonical Rust retry policy and discarded all reviewed windows. Integrated requestAgentResponse with canonical retry plan, source revision guard, per-request abort deadline and exactsource-scoped reviewed window checkpoints. 19targetedtests pass. Crashpad4OpenCutorigin Renderer crashes sameARM64trap+malloc failure path; binarymatchesOOM wrappers, allocation24MiB; observed11.4GBtab. NoofficialDSYMavailable, exact retained-memory owner pending. Investigate memory before claiming allcrashesfixed; preserveMain108anddeliver7whenstable.",
+    "scope": [
+      "crates/editor-api/src/runtime.rs",
+      "crates/editor-api/src/operations.rs",
+      "crates/editor-api/src/operations/classic_session.rs",
+      "crates/editor-api/src/classic_archive.rs",
+      "crates/editor-api/src/operations/classic_takes/podcast.rs",
+      "crates/editor-api/tests/classic_podcast.rs",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "classic/apps/web/src/ai/podcast-plan-cache.ts",
+      "classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+      "classic/apps/web/src/timeline/smart-takes/audio-evidence.ts",
+      "classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+      "classic/apps/web/src/media/audio-window.ts",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+      "classic/apps/web/src/timeline/components/caption-word-element-refs.ts",
+      "classic/apps/web/src/timeline/components/caption-word-timing-track.tsx",
+      "classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts",
+      "classic/apps/web/src/accounts/bridge-transport.ts",
+      "classic/apps/web/src/accounts/bridge-transport.test.ts",
+      "classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts",
+      ".dip/tools/verify-compact-history.mjs",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "classic/apps/web/src/ai",
+      "classic/apps/web/src/editor-agent/__tests__/transport.test.ts"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T13:14:14.244Z",
+  "parents": [
+    "28514998-afe1-4527-b225-fddd22eaa634"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

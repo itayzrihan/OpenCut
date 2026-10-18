@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d3e8d1b802be42d9432b396eaa2f5b07d7abea4a1dd045e8c8bee1d7d4fd209",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:23:12.337Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sample 74537 2 -file /tmp/opencut-server-sample.txt >/dev/null 2>&1; tail -n 40 /tmp/opencut-server-sample.txt",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-88979932-a652-4d55-bb32-b2debf744587"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:23:13.178Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

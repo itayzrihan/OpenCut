@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6f561d2b8ca6c916d4a3a86745720abd2ff81b5d89863c9ad49ec6e53c0059c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:49.881Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe",
+          ".local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/_CodeSignature",
+          ".local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/_CodeSignature/CodeResources",
+          ".local/apple-stt-benchmark/OpenCut Speech Test.app/Contents/MacOS/probe.cstemp"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "2ac093cf-7698-413a-a83e-0d7ca798914a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:49.900Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

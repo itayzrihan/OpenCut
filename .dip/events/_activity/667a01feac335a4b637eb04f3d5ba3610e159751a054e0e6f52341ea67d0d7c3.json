@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "667a01feac335a4b637eb04f3d5ba3610e159751a054e0e6f52341ea67d0d7c3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:15:56.518Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\nfrom pathlib import Path\ns=Path('.local/smart-shorts-seven/extract-size-probe.mjs').read_text()\ns=s.replace(\"const project=JSON.parse\", \"const memory=[];const measure=(phase)=>{global.gc?.();const m=process.memoryUsage();const row={phase,rss:m.rss,heap:m.heapUsed,external:m.external,wasm:instance.exports.memory.buffer.byteLength};memory.push(row);console.log(JSON.stringify(row));};measure('before-project');\\nconst project=JSON.parse\",1)\ns=s.replace(\"call('project.classic.session.restore'\", \"measure('before-restore');call('project.classic.session.restore'\",1)\ns=s.replace('const before=runtime.snapshot()',\"measure('restored');const before=runtime.snapshot()\",1)\ns=s.replace('const words=prepared.words;',\"measure('prepared');const words=prepared.words;\",1)\na=s.index(\"call('timeline.classic.podcast.extract'\");s=s[:a]+'''for(let i=0;i<22;i++){\n call('timeline.classic.podcast.review',{...base,options:{mode:'highlights',minSeconds:20,maxSeconds:90,maxOutputs:7},videos});\n if(i===0||i===10||i===21)measure('review-'+(i+1));\n}\nassert.deepEqual(runtime.snapshot().project.classic,before);\nconsole.log('PASS read-only review leaves complete episode unchanged');\nawait (await import('node:fs/promises')).writeFile(new URL('./canonical-memory-probe.json',import.meta.url),JSON.stringify(memory,null,2));\nruntime.free();\n'''\nPath('.local/smart-shorts-seven/canonical-memory-probe.mjs').write_text(s)\nPY\nnode --expose-gc .local/smart-shorts-seven/canonical-memory-probe.mjs > .local/smart-shorts-seven/canonical-memory-probe.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0f3784fb-2db2-447d-a79d-e9628b7fb8bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:15:57.064Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

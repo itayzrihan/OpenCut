@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "beedec02df43b1dc08fd71472b241e9d76aefdd6562f77176c2569ce38988f27",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:07:57.827Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport {Input,FilePathSource,ALL_FORMATS} from './classic/apps/web/node_modules/mediabunny/dist/modules/mediabunny.js';\nlet start=performance.now();let n=0;const source=new FilePathSource('/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4');source.onread=(a,b)=>{n+=b-a};const input=new Input({source,formats:ALL_FORMATS});let t=await input.getPrimaryAudioTrack();console.log({ms:performance.now()-start,bytes:n,codec:t?.codec,sampleRate:t?.sampleRate});input.dispose();\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-418dbe73-4534-4e24-907b-5c75df51aa12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:07:58.041Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

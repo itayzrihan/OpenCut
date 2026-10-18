@@ -14,6 +14,8 @@ struct Channel {
     video_binding_revision: u64,
     audio_binding_revision: u64,
     video_offset: f64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    video_delay: f64,
     audio_offset: f64,
     audio_delay: f64,
 }
@@ -38,6 +40,9 @@ struct Input {
 }
 fn invalid(message: &str) -> CapabilityError {
     CapabilityError::InvalidInput(message.into())
+}
+fn is_zero(v: &f64) -> bool {
+    *v == 0.0
 }
 fn nonnegative(v: f64) -> bool {
     v.is_finite() && (0.0..=86400.0).contains(&v)
@@ -64,10 +69,12 @@ impl Plan {
                 || !ids.insert(&c.id)
                 || !videos.insert(&c.video_id)
                 || !audio.insert(&c.audio_id)
+                || !nonnegative(c.video_delay)
+                || c.video_delay >= self.duration
+                || (c.video_offset > 0.0 && c.video_delay > 0.0)
                 || !nonnegative(c.video_offset)
                 || !nonnegative(c.audio_offset)
                 || !nonnegative(c.audio_delay)
-                || c.audio_delay >= self.duration
                 || (c.audio_offset > 0.0 && c.audio_delay > 0.0)
             {
                 return Err("Invalid or duplicate multicam channel/alignment".into());
@@ -289,7 +296,41 @@ pub(super) fn register_multicam(
                         let rate = &classic.document["settings"]["fps"];
                         let fps = rate["numerator"].as_f64().unwrap_or(0.0)
                             / rate["denominator"].as_f64().unwrap_or(1.0);
-                        let snapped = snap_plan(input.plan.clone(), fps)?;
+                        let mut snapped = snap_plan(input.plan.clone(), fps)?;
+                        let mut windows = Vec::new();
+                        for c in &input.plan.channels {
+                            let duration = assets
+                                .iter()
+                                .find(|a| a["id"] == c.video_id)
+                                .and_then(|a| a.get("duration"))
+                                .and_then(Value::as_f64)
+                                .ok_or_else(|| invalid("Camera duration missing"))?;
+                            let end = c.video_delay + duration - c.video_offset;
+                            for cut in input.plan.cuts.iter().filter(|cut| cut.channel_id == c.id) {
+                                if cut.timestamp + 1e-6 < c.video_delay
+                                    || cut.timestamp + cut.duration > end + 1e-6
+                                {
+                                    return Err(invalid(
+                                        "Multicam cut is outside the camera recording",
+                                    ));
+                                }
+                            }
+                            let start = (c.video_delay * fps - 1e-7).ceil() / fps;
+                            let end = (end.min(snapped.duration) * fps + 1e-7).floor() / fps;
+                            if end > start {
+                                windows.push(classic_podcast::PodcastCameraWindow {
+                                    channel_id: c.id.clone(),
+                                    start,
+                                    end,
+                                });
+                            }
+                        }
+                        snapped.cuts = classic_podcast::constrain_camera_cuts(
+                            snapped.cuts,
+                            &windows,
+                            snapped.duration,
+                        );
+                        snapped.validate().map_err(|s| invalid(&s))?;
                         let mut occupied = HashSet::new();
                         collect_ids(&serde_json::to_value(&*document).unwrap(), &mut occupied);
                         let mut fresh = |prefix| {
@@ -338,26 +379,98 @@ pub(super) fn register_multicam(
                             }
                             let vd = video["duration"].as_f64().unwrap();
                             let ad = mic["duration"].as_f64().unwrap();
-                            if c.video_offset + plan.duration > vd + 1e-6 || c.audio_offset >= ad {
+                            if c.video_offset >= vd {
                                 return Err(invalid("Multicam alignment exceeds source media"));
                             }
+                            if let Some(u) =
+                                super::classic_unified::metadata(video.as_object().unwrap())
+                                    .map_err(|s| invalid(&s))?
+                            {
+                                if !super::classic_unified::sync_current(&u, &assets) {
+                                    return Err(invalid(
+                                        "Unified Angles needs current audio synchronization",
+                                    ));
+                                }
+                            }
+                            let coverage_start = (c.video_delay * fps - 1e-7).ceil() / fps;
+                            let coverage_end =
+                                ((c.video_delay + vd - c.video_offset).min(plan.duration) * fps
+                                    + 1e-7)
+                                    .floor()
+                                    / fps;
                             let mut routed = Vec::new();
+                            let mut camera_cuts = Vec::new();
                             for cut in &plan.cuts {
+                                let mut points = vec![cut.timestamp, cut.timestamp + cut.duration];
+                                if let Some(u) =
+                                    super::classic_unified::metadata(video.as_object().unwrap())
+                                        .map_err(|s| invalid(&s))?
+                                    && let Some(sync) = u.sync
+                                {
+                                    for source in sync.sources {
+                                        for point in [
+                                            ((source.start + c.video_delay - c.video_offset) * fps
+                                                - 1e-7)
+                                                .ceil()
+                                                / fps,
+                                            ((source.start + source.duration + c.video_delay
+                                                - c.video_offset)
+                                                * fps
+                                                + 1e-7)
+                                                .floor()
+                                                / fps,
+                                        ] {
+                                            if point > cut.timestamp + 1e-6
+                                                && point < cut.timestamp + cut.duration - 1e-6
+                                            {
+                                                points.push(point);
+                                            }
+                                        }
+                                    }
+                                }
+                                points.sort_by(f64::total_cmp);
+                                points.dedup();
+                                for pair in points.windows(2) {
+                                    camera_cuts.push(PodcastMulticamCut {
+                                        timestamp: pair[0],
+                                        duration: pair[1] - pair[0],
+                                        channel_id: cut.channel_id.clone(),
+                                    });
+                                }
+                            }
+                            for cut in &camera_cuts {
                                 if context.cancellation.is_cancelled() {
                                     return Err(CapabilityError::Failed(
                                         "operation was cancelled".into(),
                                     ));
                                 }
                                 let active = cut.channel_id == c.id;
+                                let start = cut.timestamp.max(coverage_start);
+                                let end = (cut.timestamp + cut.duration).min(coverage_end);
+                                if active
+                                    && (start > cut.timestamp + 1e-6
+                                        || end < cut.timestamp + cut.duration - 1e-6)
+                                {
+                                    return Err(invalid(
+                                        "Multicam cut selects a camera outside its synchronized coverage",
+                                    ));
+                                }
+                                if end <= start {
+                                    continue;
+                                }
+                                let source_start = c.video_offset + start - c.video_delay;
                                 let e = json!({"id":fresh("multicam-clip"),"type":"video","mediaId":c.video_id,"name":video["name"],
-                            "startTime":ticks(cut.timestamp),"duration":ticks(cut.timestamp+cut.duration)-ticks(cut.timestamp),
-                            "trimStart":ticks(c.video_offset+cut.timestamp),"trimEnd":ticks((vd-c.video_offset-cut.timestamp-cut.duration).max(0.0)),
+                            "startTime":ticks(start),"duration":ticks(end)-ticks(start),
+                            "trimStart":ticks(source_start),"trimEnd":ticks((vd-source_start-(end-start)).max(0.0)),
                             "sourceDuration":ticks(vd),"isSourceAudioEnabled":plan.settings.keep_camera_mics,"enabled":active,
                             "params":{"transform.scaleX":1,"transform.scaleY":1,"opacity":1,"volume":1}});
                                 routed.push(e);
                             }
                             overlay.push(json!({"id":fresh("multicam-track"),"type":"video","name":format!("Routed {} - {}",index+1,c.name),"hidden":false,"muted":!plan.settings.keep_camera_mics,"elements":routed}));
                             let duration = (plan.duration - c.audio_delay).min(ad - c.audio_offset);
+                            if duration <= 0.0 {
+                                continue;
+                            }
                             audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":format!("Podcast audio {} - {}",index+1,c.name),"muted":false,"elements":[{
                         "id":fresh("multicam-audio"),"type":"audio","sourceType":"upload","mediaId":c.audio_id,"name":mic["name"],
                         "startTime":ticks(c.audio_delay),"duration":ticks(c.audio_delay+duration)-ticks(c.audio_delay),"trimStart":ticks(c.audio_offset),"trimEnd":ticks((ad-c.audio_offset-duration).max(0.0)),"sourceDuration":ticks(ad),"params":{"volume":1}}]}));

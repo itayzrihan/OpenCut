@@ -215,6 +215,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			return scenes;
 		},
 		project: {
+			checkpointSceneView: () => {},
 			getActiveOrNull: () => project,
 			getActive: () => project,
 			setActiveProject: ({ project: next }: { project: TProject }) => {
@@ -232,6 +233,12 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			},
 		},
 		selection: {
+			clearSelection: () => {
+				selection.selectedElements = [];
+				selection.selectedTextWords = [];
+				selection.selectedKeyframes = [];
+				selection.selectedMaskPoints = null;
+			},
 			getSnapshot: () => structuredClone(selection),
 			restoreSnapshot: ({
 				snapshot,
@@ -250,6 +257,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			resume: () => undefined,
 			markDirty: () => undefined,
 		},
+		playback: { pause: () => {}, seek: () => {} },
 	} as unknown as EditorCore;
 	const manager = new CommandManager(editor);
 	const scenes = new ScenesManager(editor);
@@ -5176,13 +5184,64 @@ function assertCoherent({
 	const state = runtime.snapshot() as {
 		project: { classic: CanonicalClassicSnapshot };
 	};
-	expect(state.project.classic.document).toEqual(
-		host.manager.captureProjectSnapshot()!,
-	);
+	const view = runtime.invokeSync(
+		"project.classic.scene.view",
+		{ projectId: "classic-project" },
+		{},
+	) as { result: { data: { sceneId: string } } };
+	expect({
+		...state.project.classic.document,
+		currentSceneId: view.result.data.sceneId,
+	}).toEqual(host.manager.captureProjectSnapshot()!);
 	expect(state.project.classic.mediaAssets).toEqual(
 		canonicalMediaBindings(host.media()),
 	);
 }
+
+test(
+	"opening a sequence projects only the viewer and never starts a content transaction, snapshot or archive save",
+	async () => {
+		const host = createHost();
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		await host.manager.flushHistory();
+		const scenes = host.editor.scenes.getScenes();
+		const target = scenes.find((scene) => scene.id === "other-scene")!;
+		const content = (
+			runtime.snapshot() as { project: { classic: CanonicalClassicSnapshot } }
+		).project.classic;
+		let contentNotifications = 0;
+		const unsubscribe = host.editor.scenes.subscribeContent(
+			() => contentNotifications++,
+		);
+		const snapshots = spyOn(runtime, "snapshot");
+		const transactions = spyOn(runtime, "beginTransaction");
+		const assets = spyOn(host.editor.media, "setAssets");
+		const project = spyOn(host.editor.project, "setActiveProject");
+		const dirty = spyOn(host.editor.save, "markDirty");
+		try {
+			await host.editor.scenes.switchToScene({ sceneId: target.id });
+			expect(host.editor.scenes.getActiveScene()).toBe(target);
+			expect(host.editor.scenes.getScenes()).toBe(scenes);
+			expect(contentNotifications).toBe(0);
+			for (const spy of [snapshots, transactions, assets, project, dirty])
+				expect(spy).not.toHaveBeenCalled();
+		} finally {
+			unsubscribe();
+			snapshots.mockRestore();
+			transactions.mockRestore();
+			assets.mockRestore();
+			project.mockRestore();
+			dirty.mockRestore();
+		}
+		expect(
+			(runtime.snapshot() as { project: { classic: CanonicalClassicSnapshot } })
+				.project.classic,
+		).toEqual(content);
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
 
 test(
 	"real canonical edits and undo/redo reuse HyperFrames browsers and decoded frames",

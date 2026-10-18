@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "80073d567bbef828d4760db3468e96f79741cdbca5f2f458f1b8833e9617c672",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T07:33:37.464Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_c7cb93895a81c1463f17c0234ff8e9873108489a01dadb865cc9dddac3943e4f",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files -g '*hosting*' -g '*site*' -g 'package.json' -g '*.html' /Users/itayzrihan/Documents/dip | head -40",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f349d050-8b2e-44b5-9c92-52b2714de63b"
+      },
+      {
+        "at": "2026-10-12T07:33:37.598Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_c7cb93895a81c1463f17c0234ff8e9873108489a01dadb865cc9dddac3943e4f",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg --files -g '*hosting*' -g '*site*' -g 'package.json' -g '*.html' /Users/itayzrihan/Documents/dip | head -40",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-f349d050-8b2e-44b5-9c92-52b2714de63b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T07:33:38.261Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

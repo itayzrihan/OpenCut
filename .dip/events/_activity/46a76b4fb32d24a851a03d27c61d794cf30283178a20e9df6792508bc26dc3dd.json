@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46a76b4fb32d24a851a03d27c61d794cf30283178a20e9df6792508bc26dc3dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:46:01.851Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "command -v ffprobe\nrg -n 'hidden|visible' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/renderer --glob '*.ts*'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-3cde8034-3fad-4dbb-8b1b-2566a018e730"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:46:02.854Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "867d92d6282bd0a502487bfdefb7cfd6ddd599705e7d53902f46cd072a6f096c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:07:42.481Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -14 .local/teaser-full-auto-2026-10-14/production-build.log; git diff --stat -- classic/apps/web/src/timeline/smart-silence.ts classic/apps/web/src/timeline/__tests__/smart-silence.test.ts classic/apps/web/src/media/__tests__/audio-window.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f57f7efd-43c1-407c-98f4-cc46b73c76b2"
+      },
+      {
+        "at": "2026-10-14T09:07:42.704Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -14 .local/teaser-full-auto-2026-10-14/production-build.log; git diff --stat -- classic/apps/web/src/timeline/smart-silence.ts classic/apps/web/src/timeline/__tests__/smart-silence.test.ts classic/apps/web/src/media/__tests__/audio-window.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f57f7efd-43c1-407c-98f4-cc46b73c76b2"
+      },
+      {
+        "at": "2026-10-14T09:07:42.707Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-9f016290-1d24-4e89-a085-61c723290750"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:07:43.029Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

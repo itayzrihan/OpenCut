@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "329ac42c11675ac418f2e5b30e6e2c9cf8461537af4b37cc4607b6b0676c653e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:36:44.484Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\np='classic/apps/web/src/core/managers/transcription-manager.ts'\ns=open(p).read();s=s.replace('\\t\\t\\t\\t\\t\\tif (!current)\\n\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({','\\t\\t\\t\\t\\t\\tlet published = false;\\n\\t\\t\\t\\t\\t\\tif (!current) {\\n\\t\\t\\t\\t\\t\\t\\tpublished = true;\\n\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({',1);s=s.replace('change: { type: \"restore\", snapshot: job! },\\n\\t\\t\\t\\t\\t\\t\\t});','change: { type: \"restore\", snapshot: job! },\\n\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t}',1);s=s.replace('if (!current?.chunks[section])\\n\\t\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({','if (!current?.chunks[section]) {\\n\\t\\t\\t\\t\\t\\t\\t\\tpublished = true;\\n\\t\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({',1);s=s.replace('\\t\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\tthis.state', '\\t\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\t// Saved windows still reconcile Undo, but must not serialize the\\n\\t\\t\\t\\t\\t\\t// entire history again when the durable section is already present.\\n\\t\\t\\t\\t\\t\\tif (!published) return;\\n\\t\\t\\t\\t\\t\\tthis.state',1);open(p,'w').write(s)\np='classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts';s=open(p).read();needle='\\t\\t\\texpect(completedChunks![\"0\"][0].text).toBe(\"hello\");';s=s.replace(needle,needle+'\\n\\t\\t\\tconst savedBeforeReplay = saved.length;\\n\\t\\t\\tawait onChunk!({ index: 0, words: completedChunks![\"0\"] });\\n\\t\\t\\texpect(saved.length).toBe(savedBeforeReplay);\\n\\t\\t\\t// Undo removes a completed section while the same run is active.\\n\\t\\t\\tdelete project.transcriptionJobs[0].chunks[\"0\"];\\n\\t\\t\\tawait onChunk!({ index: 0, words: completedChunks![\"0\"] });\\n\\t\\t\\texpect(saved.length).toBe(savedBeforeReplay + 1);\\n\\t\\t\\texpect(saved.at(-1)![0].chunks[\"0\"][0].text).toBe(\"hello\");',1);open(p,'w').write(s)\nPY\ncat .dip/tools/verify-compact-history.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2b7de74f-b34d-4bd9-b5d4-2de3fad1bb05"
+      },
+      {
+        "at": "2026-10-13T09:36:44.645Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\np='classic/apps/web/src/core/managers/transcription-manager.ts'\ns=open(p).read();s=s.replace('\\t\\t\\t\\t\\t\\tif (!current)\\n\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({','\\t\\t\\t\\t\\t\\tlet published = false;\\n\\t\\t\\t\\t\\t\\tif (!current) {\\n\\t\\t\\t\\t\\t\\t\\tpublished = true;\\n\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({',1);s=s.replace('change: { type: \"restore\", snapshot: job! },\\n\\t\\t\\t\\t\\t\\t\\t});','change: { type: \"restore\", snapshot: job! },\\n\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t}',1);s=s.replace('if (!current?.chunks[section])\\n\\t\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({','if (!current?.chunks[section]) {\\n\\t\\t\\t\\t\\t\\t\\t\\tpublished = true;\\n\\t\\t\\t\\t\\t\\t\\t\\tthis.editor.command.editTranscription({',1);s=s.replace('\\t\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\tthis.state', '\\t\\t\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t\\t// Saved windows still reconcile Undo, but must not serialize the\\n\\t\\t\\t\\t\\t\\t// entire history again when the durable section is already present.\\n\\t\\t\\t\\t\\t\\tif (!published) return;\\n\\t\\t\\t\\t\\t\\tthis.state',1);open(p,'w').write(s)\np='classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts';s=open(p).read();needle='\\t\\t\\texpect(completedChunks![\"0\"][0].text).toBe(\"hello\");';s=s.replace(needle,needle+'\\n\\t\\t\\tconst savedBeforeReplay = saved.length;\\n\\t\\t\\tawait onChunk!({ index: 0, words: completedChunks![\"0\"] });\\n\\t\\t\\texpect(saved.length).toBe(savedBeforeReplay);\\n\\t\\t\\t// Undo removes a completed section while the same run is active.\\n\\t\\t\\tdelete project.transcriptionJobs[0].chunks[\"0\"];\\n\\t\\t\\tawait onChunk!({ index: 0, words: completedChunks![\"0\"] });\\n\\t\\t\\texpect(saved.length).toBe(savedBeforeReplay + 1);\\n\\t\\t\\texpect(saved.at(-1)![0].chunks[\"0\"][0].text).toBe(\"hello\");',1);open(p,'w').write(s)\nPY\ncat .dip/tools/verify-compact-history.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-2b7de74f-b34d-4bd9-b5d4-2de3fad1bb05"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:36:45.417Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

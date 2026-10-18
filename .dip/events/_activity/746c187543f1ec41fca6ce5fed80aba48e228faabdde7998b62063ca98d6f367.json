@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "746c187543f1ec41fca6ce5fed80aba48e228faabdde7998b62063ca98d6f367",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-15T01:10:59.151Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/account-core/src/media.rs",
+          "classic/rust/crates/storage/src/storage.rs",
+          "classic/apps/web/src/services/local-drive/server.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "02f626cb-a443-4cfa-a354-0d865d5c4174"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:10:59.153Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

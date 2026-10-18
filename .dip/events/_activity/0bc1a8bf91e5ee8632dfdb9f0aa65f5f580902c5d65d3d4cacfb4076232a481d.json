@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bc1a8bf91e5ee8632dfdb9f0aa65f5f580902c5d65d3d4cacfb4076232a481d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:12:03.534Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/subtitles/components/transcription-source.tsx';s=open(p).read().replace('import { useEffect, useState }','import { useState }');a=s.index('\\tuseEffect(() => {');b=s.index('\\n\\tconst save =',a);s=s[:a]+''' const openSettings = async () => {\n setBusy(true);setError(\"\");setKey(\"\");\n try{setConfig(await getExternalSettings());setOpen(true);}catch(e){toast.error(e instanceof Error?e.message:\"Could not read API settings\");}finally{setBusy(false);}\n };\n'''+s[b:];s=s.replace('disabled={disabled}\\n\\t\\t\\t\\t\\tonClick={() => setOpen(true)}','disabled={disabled || busy}\\n\\t\\t\\t\\t\\tonClick={() => void openSettings()}');\n# match formatter actual later\ns=s.replace('onClick={() => setOpen(true)}','onClick={() => void openSettings()}')\ns=s.replace('<label className=\"text-sm\">\\n\\t\\t\\t\\t\\t\\tTranscriptions endpoint','<label className=\"text-sm\" htmlFor=\"transcription-api-endpoint\">\\n\\t\\t\\t\\t\\t\\tTranscriptions endpoint').replace('aria-label=\"Transcriptions endpoint\"','id=\"transcription-api-endpoint\" aria-label=\"Transcriptions endpoint\"');\ns=s.replace('<label className=\"text-sm\">\\n\\t\\t\\t\\t\\t\\tModel','<label className=\"text-sm\" htmlFor=\"transcription-api-model\">\\n\\t\\t\\t\\t\\t\\tModel').replace('aria-label=\"Transcription model\"','id=\"transcription-api-model\" aria-label=\"Transcription model\"');\ns=s.replace('<label className=\"text-sm\">\\n\\t\\t\\t\\t\\t\\tAPI key','<label className=\"text-sm\" htmlFor=\"transcription-api-key\">\\n\\t\\t\\t\\t\\t\\tAPI key').replace('aria-label=\"Transcription API key\"','id=\"transcription-api-key\" aria-label=\"Transcription API key\"');open(p,'w').write(s)\np='classic/apps/web/src/transcription/external-client.ts';s=open(p).read().replace('const ascii = (at: number, value: string)', 'const ascii = ({at, value}: {at:number;value:string})');import re;s=re.sub(r'ascii\\((\\d+), \"([^\"]+)\"\\)',r'ascii({at:\\1,value:\"\\2\"})',s);open(p,'w').write(s)\np='classic/apps/web/src/transcription/windows.ts';s=open(p).read().replace('\\tconst run:', '\\t// The service ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-2bc3fbeb-98f2-4146-985f-46c8451ebdd4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:12:04.098Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

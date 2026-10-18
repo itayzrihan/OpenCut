@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2030cdb364b324aabe60093354bb1d415da6d72489ae10e0c405a35a989b2f7d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:44:06.807Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ls -la sites/dip-public/.git; git -C sites/dip-public rev-parse --show-toplevel; git ls-files --others --exclude-standard sites/dip-public/; cat .dip/integration.json; git config --get core.whitespace; git config --get core.autocrlf; git log -2 --format='%h %s' origin/main",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-334953f9-a0a1-4312-ac80-4bd78618e0e4"
+      },
+      {
+        "at": "2026-10-18T15:44:06.810Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs --jobs=4 --report=.local/brand-kit/premerge-web",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-2416722a-5186-4d47-a8ea-ab4c2dd5d972"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:44:07.756Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

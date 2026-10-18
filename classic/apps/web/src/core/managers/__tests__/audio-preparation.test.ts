@@ -115,6 +115,7 @@ function manager() {
 			clip: AudioClipSource;
 			time: number;
 		}): AudioClipSource;
+		shouldUsePreparedClipBuffer(input: { clip: AudioClipSource }): boolean;
 		schedulePreparedWindow(input: {
 			clip: AudioClipSource;
 			automationClip: AudioClipSource;
@@ -123,6 +124,20 @@ function manager() {
 		}): Promise<boolean>;
 	};
 }
+test("normal-speed pitch setting streams a long episode instead of preparing its entire soundtrack", () => {
+	const m = manager();
+	const long = {
+		...clip,
+		duration: 6480,
+		retime: { rate: 1, maintainPitch: true },
+	};
+	expect(m.shouldUsePreparedClipBuffer({ clip: long })).toBe(false);
+	expect(
+		m.shouldUsePreparedClipBuffer({
+			clip: { ...long, retime: { rate: 1.5, maintainPitch: true } },
+		}),
+	).toBe(true);
+});
 test("Play decodes only the current bounded window, reuses it, and skips distant clips", async () => {
 	ranges.length = 0;
 	const m = manager();

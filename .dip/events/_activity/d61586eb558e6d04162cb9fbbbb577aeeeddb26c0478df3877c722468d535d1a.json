@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d61586eb558e6d04162cb9fbbbb577aeeeddb26c0478df3877c722468d535d1a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:43:19.496Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,command | rg 'archive-probe|Chrome Helper \\(Renderer\\)' | sort -k2 -nr | head -2; tail -3 .local/smart-shorts-seven/archive-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-38206cea-1bc3-4b93-8c36-315b6fc225d3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:43:20.474Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

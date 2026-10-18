@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08362aa865db86118a0e89bfed2ccac1c262b7ad54ab943c97c6d07e28a8a732",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:43:21.833Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'savedFileName|nativeExport|outputPath|exported file|native-export' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/export -g '*.ts' | head -65\nrg --files classic/apps/web/src | rg 'native.*export|export.*native' ",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-11b2ef0b-a528-4366-bd3e-9ab9a33b191e"
+      },
+      {
+        "at": "2026-10-15T01:43:21.981Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'savedFileName|nativeExport|outputPath|exported file|native-export' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/export -g '*.ts' | head -65\nrg --files classic/apps/web/src | rg 'native.*export|export.*native' ",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-11b2ef0b-a528-4366-bd3e-9ab9a33b191e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:43:22.007Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

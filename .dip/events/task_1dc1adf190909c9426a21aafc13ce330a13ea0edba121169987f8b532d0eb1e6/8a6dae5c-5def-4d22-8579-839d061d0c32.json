@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a6dae5c-5def-4d22-8579-839d061d0c32",
+  "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Diagnose source clips and stalled host; preserve project backup",
+          "status": "completed"
+        },
+        {
+          "step": "Isolate canonical save validation and bound export source intervals; regression tests",
+          "status": "completed"
+        },
+        {
+          "step": "Deploy and verify existing seven audio sequences and actual export; preserve Main",
+          "status": "in_progress"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T16:16:28.001Z",
+  "parents": [
+    "ad214bc8-6d17-4e27-b8a1-3123573429cc"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

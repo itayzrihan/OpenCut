@@ -55,10 +55,12 @@ export function SmartTakesControl() {
 				),
 		)
 		.map((ref) => ref.elementId);
-	const disabled =
-		!ids.length ||
-		!!scene?.takeAssembly ||
-		!scene?.tracks.overlay.some((t) => t.type === "text" && t.captionSource);
+	const disabledReason = scene?.takeAssembly
+		? "Right-click an assembled clip to choose a take"
+		: !ids.length
+			? "Select a video clip on the main track to use Smart takes"
+			: null;
+	const disabled = !!disabledReason;
 	const run = () => {
 		try {
 			task.start({ elementIds: ids, requestId: crypto.randomUUID(), mode });
@@ -74,26 +76,30 @@ export function SmartTakesControl() {
 		<div className="flex items-center gap-1">
 			<Tooltip>
 				<TooltipTrigger asChild>
-					<Button
-						variant="outline"
-						className="rounded-r-none"
-						size="sm"
-						disabled={disabled || !!stage}
-						onClick={() => void run()}
-						aria-label={`Smart takes — ${mode === "experimental" ? "fast" : "classic"}`}
-					>
-						{stage ? (
-							<Spinner className="size-3.5" />
-						) : (
-							<Sparkles className="size-3.5" />
-						)}{" "}
-						Smart takes · {mode === "experimental" ? "מהיר" : "קלאסי"}
-					</Button>
+					<span className="inline-flex">
+						<Button
+							variant="outline"
+							className="rounded-r-none"
+							size="sm"
+							disabled={disabled || !!stage}
+							onClick={() => void run()}
+							aria-label={
+								disabledReason ??
+								`Smart takes — ${mode === "experimental" ? "fast" : "classic"}`
+							}
+						>
+							{stage ? (
+								<Spinner className="size-3.5" />
+							) : (
+								<Sparkles className="size-3.5" />
+							)}{" "}
+							Smart takes · {mode === "experimental" ? "מהיר" : "קלאסי"}
+						</Button>
+					</span>
 				</TooltipTrigger>
 				<TooltipContent>
-					{scene?.takeAssembly
-						? "Right-click an assembled clip to choose a take"
-						: "Select transcribed main-track videos. Infer story order, remove filming notes and keep alternative takes."}
+					{disabledReason ??
+						"Infer story order, remove filming notes and keep alternative takes. If needed, generate a transcript and Codex-correct it first."}
 				</TooltipContent>
 			</Tooltip>
 			<DropdownMenu>

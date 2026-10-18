@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ea7bae4649bdbe74887f1747cd96975ff3f2d4f271da04ed79eced8498dfa33",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:24:58.377Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4f215512b6925620f42660a2d5eb888c10f45c88fed6555741ebd9e17e06a1c3",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'JS'\nconst targets=await(await fetch('http://127.0.0.1:9229/json/list')).json();\nconst ws=new WebSocket(targets[0].webSocketDebuggerUrl); await new Promise(r=>ws.addEventListener('open',r));\nlet id=0;const calls=new Map();ws.onmessage=e=>{const x=JSON.parse(e.data);calls.get(x.id)?.(x);calls.delete(x.id)};\nconst call=(method,params={})=>new Promise(r=>{const n=++id;calls.set(n,r);ws.send(JSON.stringify({id:n,method,params}))});\nawait call('Profiler.enable');await call('Profiler.start');await new Promise(r=>setTimeout(r,2500));const out=await call('Profiler.stop');\nconst p=out.result.profile;const counts=new Map();for(const s of p.samples??[])counts.set(s,(counts.get(s)||0)+1);\nconsole.log(p.nodes.filter(n=>counts.has(n.id)).sort((a,b)=>counts.get(b.id)-counts.get(a.id)).slice(0,16).map(n=>({samples:counts.get(n.id),...n.callFrame})));\nawait call('Profiler.disable'); ws.close();\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-52bf7749-3b2c-41c4-ab12-595cfe56c46b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:24:58.594Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

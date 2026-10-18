@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6f58d6f235dac9627f1d007a1b41a71d3b8492c40629516d4c80fe9a64526379",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:05:44.727Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '168,180p' crates/editor-api/src/classic.rs; mkdir -p classic/apps/web/src/app/api/transcription/external classic/apps/web/src/app/api/transcription/settings\ncat > classic/apps/web/src/transcription/external-server.ts <<'EOF'\n/** Account-scoped host IO. Secrets never enter the editor document or browser storage. */\nimport { accountsRoot, requireAccount } from '@/accounts/server';\nimport { mkdir, readFile, writeFile, rename } from 'node:fs/promises';\nimport { join } from 'node:path';\nimport { randomUUID } from 'node:crypto';\nimport { z } from 'zod';\nimport type { TranscriptionResult } from './types';\nconst settingsSchema=z.object({endpoint:z.string().url().max(2048),model:z.string().trim().min(1).max(160),apiKey:[REDACTED];\nexport interface ExternalSettings {id:string;endpoint:string;model:string;apiKey:[REDACTED];}\nconst defaults={endpoint:'https://api.openai.com/v1/audio/transcriptions',model:'whisper-1'};\nfunction settingsPath(){return join(accountsRoot(),'transcription-credentials',`${requireAccount().id}.json`);}\nexport async function readExternalSettings():Promise<ExternalSettings|null>{\n try{return JSON.parse(await readFile(settingsPath(),'utf8'));}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}\n}\nexport function publicExternalSettings(config:ExternalSettings|null){return {endpoint:config?.endpoint??defaults.endpoint,model:config?.model??defaults.model,id:config?.id,configured:!!config?.apiKey};}\nexport async function saveExternalSettings(input:unknown){\n const next=settingsSchema.parse(input);const url=new URL(next.endpoint);\n if(url.protocol!=='https:'||url.username||url.password||url.hash||url.search)throw new Error('Use an HTTPS transcription endpoint without credentials, query parameters or fragments');\n const old=await readExternalSettings();\n // Never forward a retained credential to a newly selected destination.\n const apiKey=[REDACTED];\n if(!apiKey)throw new Error('Enter an API key for this endpoint');\n const conf",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-dc1aaee1-cf86-4e3d-90cd-d70e0509411d"
+      },
+      {
+        "at": "2026-10-12T10:05:44.843Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '168,180p' crates/editor-api/src/classic.rs; mkdir -p classic/apps/web/src/app/api/transcription/external classic/apps/web/src/app/api/transcription/settings\ncat > classic/apps/web/src/transcription/external-server.ts <<'EOF'\n/** Account-scoped host IO. Secrets never enter the editor document or browser storage. */\nimport { accountsRoot, requireAccount } from '@/accounts/server';\nimport { mkdir, readFile, writeFile, rename } from 'node:fs/promises';\nimport { join } from 'node:path';\nimport { randomUUID } from 'node:crypto';\nimport { z } from 'zod';\nimport type { TranscriptionResult } from './types';\nconst settingsSchema=z.object({endpoint:z.string().url().max(2048),model:z.string().trim().min(1).max(160),apiKey:[REDACTED];\nexport interface ExternalSettings {id:string;endpoint:string;model:string;apiKey:[REDACTED];}\nconst defaults={endpoint:'https://api.openai.com/v1/audio/transcriptions',model:'whisper-1'};\nfunction settingsPath(){return join(accountsRoot(),'transcription-credentials',`${requireAccount().id}.json`);}\nexport async function readExternalSettings():Promise<ExternalSettings|null>{\n try{return JSON.parse(await readFile(settingsPath(),'utf8'));}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}\n}\nexport function publicExternalSettings(config:ExternalSettings|null){return {endpoint:config?.endpoint??defaults.endpoint,model:config?.model??defaults.model,id:config?.id,configured:!!config?.apiKey};}\nexport async function saveExternalSettings(input:unknown){\n const next=settingsSchema.parse(input);const url=new URL(next.endpoint);\n if(url.protocol!=='https:'||url.username||url.password||url.hash||url.search)throw new Error('Use an HTTPS transcription endpoint without credentials, query parameters or fragments');\n const old=await readExternalSettings();\n // Never forward a retained credential to a newly selected destination.\n const apiKey=[REDACTED];\n if(!apiKey)throw new Error('Enter an API key for this endpoint');\n const conf",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-dc1aaee1-cf86-4e3d-90cd-d70e0509411d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:05:45.303Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -4,6 +4,22 @@ import type { TextElement, TextTrack } from "@/timeline/types";
 import type { TranscriptionWord } from "@/transcription/types";
 import { mediaTimeToSeconds } from "@/wasm/media-time";
 
+/** An index for one immutable UI projection; rebuild when its words change. */
+export function createCaptionWordIndex({
+	words,
+}: {
+	words: TranscriptionWord[];
+}): Map<string, number[]> {
+	const index = new Map<string, number[]>();
+	for (const [wordIndex, word] of words.entries()) {
+		const text = normalizeWord(word.text);
+		const matches = index.get(text);
+		if (matches) matches.push(wordIndex);
+		else index.set(text, [wordIndex]);
+	}
+	return index;
+}
+
 export function getWordElementRefs({
 	words,
 	sourceTracks,
@@ -14,6 +30,7 @@ export function getWordElementRefs({
 	includePresentationOnly?: boolean;
 }): Map<number, SelectedTextWordRef[]> {
 	const refsByWordIndex = new Map<number, SelectedTextWordRef[]>();
+	const lookup = createCaptionWordIndex({ words });
 	for (const [wordIndex, word] of words.entries()) {
 		if (word.source?.type !== "text-layer") continue;
 		refsByWordIndex.set(wordIndex, [
@@ -34,6 +51,7 @@ export function getWordElementRefs({
 			) {
 				for (const { wordIndex, run } of getPresentationOnlyWordRunRefs({
 					words,
+					lookup,
 					element,
 				})) {
 					refsByWordIndex.set(wordIndex, [
@@ -54,7 +72,13 @@ export function getWordElementRefs({
 				const runStart =
 					elementStart + mediaTimeToSeconds({ time: run.startTime });
 				const runEnd = elementStart + mediaTimeToSeconds({ time: run.endTime });
-				const wordIndex = findWordIndexForRun({ words, run, runStart, runEnd });
+				const wordIndex = findWordIndexForRun({
+					words,
+					run,
+					runStart,
+					runEnd,
+					lookup,
+				});
 				if (wordIndex < 0) continue;
 
 				refsByWordIndex.set(wordIndex, [
@@ -74,9 +98,11 @@ export function getWordElementRefs({
 
 function getPresentationOnlyWordRunRefs({
 	words,
+	lookup,
 	element,
 }: {
 	words: TranscriptionWord[];
+	lookup: Map<string, number[]>;
 	element: TextElement;
 }): Array<{
 	wordIndex: number;
@@ -94,6 +120,7 @@ function getPresentationOnlyWordRunRefs({
 
 		let wordIndex = findPresentationWordIndex({
 			words,
+			lookup,
 			normalizedText,
 			usedWordIndexes,
 			searchStart,
@@ -103,6 +130,7 @@ function getPresentationOnlyWordRunRefs({
 		if (wordIndex < 0) {
 			wordIndex = findPresentationWordIndex({
 				words,
+				lookup,
 				normalizedText,
 				usedWordIndexes,
 				searchStart: 0,
@@ -120,6 +148,7 @@ function getPresentationOnlyWordRunRefs({
 
 function findPresentationWordIndex({
 	words,
+	lookup,
 	normalizedText,
 	usedWordIndexes,
 	searchStart,
@@ -127,6 +156,7 @@ function findPresentationWordIndex({
 	elementEnd,
 }: {
 	words: TranscriptionWord[];
+	lookup: Map<string, number[]>;
 	normalizedText: string;
 	usedWordIndexes: Set<number>;
 	searchStart: number;
@@ -134,11 +164,12 @@ function findPresentationWordIndex({
 	elementEnd: number;
 }) {
 	let fallbackIndex = -1;
-	for (let index = searchStart; index < words.length; index++) {
+	for (const index of lookup.get(normalizedText) ?? []) {
+		if (index < searchStart) continue;
 		const word = words[index];
 		if (!word || usedWordIndexes.has(index)) continue;
 		if (word.source?.type === "text-layer") continue;
-		if (normalizeWord(word.text) !== normalizedText) continue;
+
 		fallbackIndex = fallbackIndex < 0 ? index : fallbackIndex;
 		const midpoint = (word.start + word.end) / 2;
 		if (midpoint >= elementStart - 0.001 && midpoint <= elementEnd + 0.001) {
@@ -150,11 +181,13 @@ function findPresentationWordIndex({
 
 export function findWordIndexForRun({
 	words,
+	lookup = createCaptionWordIndex({ words }),
 	run,
 	runStart,
 	runEnd,
 }: {
 	words: TranscriptionWord[];
+	lookup?: Map<string, number[]>;
 	run: NonNullable<TextElement["wordRuns"]>[number];
 	runStart: number;
 	runEnd: number;
@@ -163,9 +196,9 @@ export function findWordIndexForRun({
 	if (!normalizedText) return -1;
 	let bestIndex = -1;
 	let bestScore = Number.POSITIVE_INFINITY;
-	for (let index = 0; index < words.length; index++) {
+	for (const index of lookup.get(normalizedText) ?? []) {
 		const word = words[index];
-		if (normalizeWord(word.text) !== normalizedText) continue;
+
 		const score = Math.abs(word.start - runStart) + Math.abs(word.end - runEnd);
 		if (score < bestScore) {
 			bestIndex = index;

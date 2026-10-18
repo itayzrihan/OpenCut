@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b25765b12e4126fe58a9eba4ff8d8748ecab4ff99d4e3e38a39d9ab6c14cbd5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:08:41.118Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/analysis/teaser-word-fix-2026-10-14/mcp-apply.json"
+        ],
+        "changeHash": "314e9e147b3591d7a1bd136c5cb3a51ed2e112d18b3ecbb49021d9526f3e9dcd",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-07011a1c-b2c3-43eb-83f6-6955d0934e7c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:08:41.766Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "43184b91174f7c081d5c7f3acc6741e98c2fd1bd6c7d58dd3c246edcac8cc824",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:03:11.755Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '233,250p' classic/apps/web/src/core/canonical-classic-session.ts\ncat > .local/smart-shorts-seven/restore-probe.mjs <<'JS'\nimport {readFile} from 'node:fs/promises';\nimport * as glue from '../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js';\nconst bytes=await readFile(new URL('../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm',import.meta.url));\nconst {instance}=await WebAssembly.instantiate(bytes,{'./opencut_editor_runtime_wasm_bg.js':glue});glue.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\nconst d=JSON.parse(await readFile('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json','utf8'));\nconst session=typeof d.__opencutEditorSession==='string'?JSON.parse(d.__opencutEditorSession):d.__opencutEditorSession;\nconst runtime=new glue.CanonicalEditorRuntime();\nconsole.log('starting',process.memoryUsage().rss);\nconst t=performance.now();\ntry {const r=runtime.invokeSync('project.classic.session.restore',{projectId:d.metadata.id,expectedRevision:0,archive:session.saved.bundle.archive},{});console.log('restored',(performance.now()-t)/1000,process.memoryUsage().rss,JSON.stringify(r).slice(0,400));}catch(e){console.error(String(e))}\nJS\nnode .local/smart-shorts-seven/restore-probe.mjs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-e9e4c40a-1f6e-4110-af42-7939a6e9a3c4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:03:12.468Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

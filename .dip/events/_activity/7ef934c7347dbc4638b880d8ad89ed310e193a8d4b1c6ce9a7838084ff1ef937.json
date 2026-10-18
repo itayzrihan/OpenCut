@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ef934c7347dbc4638b880d8ad89ed310e193a8d4b1c6ce9a7838084ff1ef937",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:20:14.787Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node .local/teaser-full-auto-2026-10-14/restart.mjs\npython3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Library/Application Support/OpenCut Local');current=json.loads((p/'current.json').read_text());print({'current':current});candidate=json.loads((p/'candidate.json').read_text()) if (p/'candidate.json').exists() else None\npathlib.Path('analysis/source-audio-relink-2026-10-15/deployment.json').write_text(json.dumps({'current':current,'candidate':candidate},indent=2))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6ca8d997-13b8-47fa-a931-8a481fc388fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:20:14.793Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

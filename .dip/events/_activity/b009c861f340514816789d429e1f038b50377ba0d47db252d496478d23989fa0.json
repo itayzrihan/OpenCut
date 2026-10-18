@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b009c861f340514816789d429e1f038b50377ba0d47db252d496478d23989fa0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:51:12.627Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_8af249d23fb6068c9d1714047bed40d74f589e8824b0b697bd84b9abd22558b5",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nb=Path('.local/codex-transcription-research')\np=b/'chromium-probe.cjs'\np.write_text('''const { app, net } = require('electron');\nconst fs = require('node:fs/promises');\napp.setPath('userData', __dirname + '/probe-electron-profile');\napp.disableHardwareAcceleration();\napp.setName('OpenCut Transcription Probe');\nconst input = new Promise((resolve,reject) => {\n let text = ''; process.stdin.setEncoding('utf8');\n process.stdin.on('data', chunk => { text += chunk; if(text.length > 50000) reject(new Error('InputLimit')); });\n process.stdin.on('end', () => { try { resolve(JSON.parse(text)); } catch { reject(new Error('InvalidInput')); } });\n});\n(async () => {\n await app.whenReady();\n const { access, accountId } = await input;\n const started = Date.now();\n const wav = await fs.readFile(__dirname + '/probe-hebrew.wav');\n if(wav.length > 1000000) throw new Error('FixtureLimit');\n const form = new FormData();\n form.append('file',new Blob([wav],{type:'audio/wav'}),'audio.wav');\n const response = await net.fetch('https://chatgpt.com/backend-api/transcribe',{\n method:'POST',headers:{Authorization:[REDACTED] ${access}`,\n ...(accountId ? {'ChatGPT-Account-Id':accountId} : {}),\n 'User-Agent':'OpenCut-Transcription-Probe/1.0'},body:form,\n credentials:'omit',redirect:'error',signal:AbortSignal.timeout(90000)});\n const reader=response.body?.getReader(); let chunks=[],size=0;\n if(reader) while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>1000000){await reader.cancel();throw new Error('ResponseLimit');}chunks.push(Buffer.from(value));}\n let json={};try{json=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{}\n const result={httpStatus:response.status,elapsedMs:Date.now()-started,\n transport:'Electron net.fetch / Chromium',electron:process.versions.electron,chrome:process.versions.chrome,\n contentType:response.headers.get('content-type'),challenge:response.headers.get('cf-mitigated'),\n requestId:respo",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-9793bf96-6609-404e-984e-b6636057dd2a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:51:13.297Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

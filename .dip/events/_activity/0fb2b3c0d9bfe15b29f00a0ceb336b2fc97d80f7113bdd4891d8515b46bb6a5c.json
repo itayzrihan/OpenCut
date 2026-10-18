@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fb2b3c0d9bfe15b29f00a0ceb336b2fc97d80f7113bdd4891d8515b46bb6a5c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:52:19.343Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '95,235p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; sed -n '365,408p' classic/apps/web/src/mcp/classic-mcp-bridge.tsx; sed -n '100,165p' crates/mcp/src/classic_bridge.rs; rg -n 'update_session|update.*snapshot' crates/mcp/src/classic_bridge.rs | head -n 7",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-95ae342f-ace6-4ef7-8a23-3504400a0fc3"
+      },
+      {
+        "at": "2026-10-13T13:52:19.434Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_51c00a0fd05c5c953d5151d51ce4413f09d2cb3ea6a7dd69516ff7fbae3d432b",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '95,235p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; sed -n '365,408p' classic/apps/web/src/mcp/classic-mcp-bridge.tsx; sed -n '100,165p' crates/mcp/src/classic_bridge.rs; rg -n 'update_session|update.*snapshot' crates/mcp/src/classic_bridge.rs | head -n 7",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-95ae342f-ace6-4ef7-8a23-3504400a0fc3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:52:20.266Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

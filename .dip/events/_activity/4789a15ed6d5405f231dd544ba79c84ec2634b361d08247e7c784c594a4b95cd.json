@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4789a15ed6d5405f231dd544ba79c84ec2634b361d08247e7c784c594a4b95cd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:00:50.641Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];d=r.get('draft:0',{});print({k:d.get(k) for k in ['premise','audiencePromise','contextRequests'] if k in d})\np=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words'];v=d.get('videos',[{}])[0];print(v.get('title'))\nfor a in v.get('alternatives',[]):\n for part in a['parts']:\n  w=p[part['firstWord']:part['lastWord']+1];print(round((w[-1]['end']-w[0]['start'])/120000,2),' '.join(t['text'] for t in w))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ed6e3099-f6b5-4c1e-86c1-5f46d2fa67fe"
+      },
+      {
+        "at": "2026-10-16T11:00:50.816Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];d=r.get('draft:0',{});print({k:d.get(k) for k in ['premise','audiencePromise','contextRequests'] if k in d})\np=json.load(open('.local/episode-teaser-90-2026-10-14/prepared.json'))['words'];v=d.get('videos',[{}])[0];print(v.get('title'))\nfor a in v.get('alternatives',[]):\n for part in a['parts']:\n  w=p[part['firstWord']:part['lastWord']+1];print(round((w[-1]['end']-w[0]['start'])/120000,2),' '.join(t['text'] for t in w))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ed6e3099-f6b5-4c1e-86c1-5f46d2fa67fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:00:50.952Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

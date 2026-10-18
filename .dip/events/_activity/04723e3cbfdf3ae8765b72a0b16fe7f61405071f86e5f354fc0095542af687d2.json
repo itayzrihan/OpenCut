@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "eventId": "04723e3cbfdf3ae8765b72a0b16fe7f61405071f86e5f354fc0095542af687d2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:18:08.721Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-2c61dd9f-f96a-4d77-8f9b-9224520695c5"
+      },
+      {
+        "at": "2026-10-12T08:18:09.010Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-2c61dd9f-f96a-4d77-8f9b-9224520695c5"
+      },
+      {
+        "at": "2026-10-12T08:18:09.008Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > README.md <<'EOF'\n# DIP public site and GitHub workspace\n\nPublic landing page and private, read-only GitHub dashboard for dip.vxu.me. Built with React/Vinext on Sites, with D1 holding OAuth state and encrypted, expiring sessions.\n\n## Setup\n\nCreate a public GitHub App with Contents: read and Metadata: read. Disable webhooks. Callback: `https://dip.vxu.me/api/github/callback`; setup URL: `https://dip.vxu.me/dashboard`. Keep expiring user tokens enabled. Each user installs the app on their selected repositories and authorizes their own identity.\n\nSet `GITHUB_CLIENT_ID`, `GITHUB_APP_SLUG`, and secret values `GITHUB_CLIENT_SECRET`, `DIP_SESSION_KEY` through Sites environment configuration. The session key must be a cryptographically random 32-byte base64url value. Never commit secret values. Production D1 migrations are in `drizzle/`.\n\n## Behavior and boundaries\n\nDiscovery scans authorized installation repositories on their default branch for `.dip/events`. A selected project can read another branch. Reads are pinned to a commit and DIP tree until refreshed. Task projection respects causal ancestry and exposes conflicts and missing history. Activity loads in pages; commits link to GitHub diffs. Local, uncommitted data and live lease ownership are not available to the website. Recorded evidence is historical and is never presented as a fresh verification.\n\nOAuth uses PKCE and one-time state tied to a Secure HttpOnly cookie. Session IDs are opaque and hashed in D1; provider tokens are AES-GCM encrypted at rest. Tokens stay server-side. Sessions expire after at most eight hours, with no persisted refresh token. API data is private/no-store, and POST requests require same origin. Repository reads use the requesting user's token; no shared organization token is deployed.\n\nGitHub tree truncation, malformed events, API failures and rate limits are visible. Individual event reads are bounded to 1 MiB, batches to 32 files and approximately 4 MiB, provider responses to 16 Mi",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a12f1230-4db6-4c2e-a600-9c5929c7f191"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:18:09.370Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

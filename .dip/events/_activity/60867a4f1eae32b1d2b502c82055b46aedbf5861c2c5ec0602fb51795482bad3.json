@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "60867a4f1eae32b1d2b502c82055b46aedbf5861c2c5ec0602fb51795482bad3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:48:21.069Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '145,200p' classic/apps/web/src/timeline/animation-targets.ts; sed -n '35,100p' classic/apps/web/src/timeline/animation-targets.ts; rg -n 'disabled|enabled|keyfram' classic/apps/web/src/params/channel* classic/apps/web/src/timeline/animation-targets.ts; sed -n '1,35p' classic/apps/web/src/timeline/animation-targets.ts; head -10 classic/apps/web/src/preview/__tests__/video-lookahead.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-d96939de-2bb9-422b-b83b-d859c8efa461"
+      },
+      {
+        "at": "2026-10-18T15:48:21.214Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '145,200p' classic/apps/web/src/timeline/animation-targets.ts; sed -n '35,100p' classic/apps/web/src/timeline/animation-targets.ts; rg -n 'disabled|enabled|keyfram' classic/apps/web/src/params/channel* classic/apps/web/src/timeline/animation-targets.ts; sed -n '1,35p' classic/apps/web/src/timeline/animation-targets.ts; head -10 classic/apps/web/src/preview/__tests__/video-lookahead.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-d96939de-2bb9-422b-b83b-d859c8efa461"
+      },
+      {
+        "at": "2026-10-18T15:48:21.218Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/__tests__/restore-silence-captions.test.ts');s=p.read_text();s=s.replace('mock.module(\"@/media/audio\",', 'mock.module(\"@/media/unified-angles\", () => ({ resolveUnifiedAnglesAudioAsset: ({ asset }: { asset: MediaAsset }) => asset }));\\nmock.module(\"@/media/audio\",');p.write_text(s)\np=Path('classic/apps/web/src/hyperframes/__tests__/import-example.test.ts');s=p.read_text().replace('upstreamCommit: catalog.upstreamCommit','upstreamCommit: (runtime.invokeSync(\"hyperframes.examples.search\", { limit: 1 }, null) as { result: { data: { upstreamCommit: string } } }).result.data.upstreamCommit');p.write_text(s)\np=Path('classic/apps/web/src/animation/__tests__/product-catalog.test.ts');s=p.read_text().replace('${JSON.stringify(element.params)}','${JSON.stringify(element.effects)}:${JSON.stringify(element.params)}');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs --report=.local/brand-kit/catalog-debug2 src/animation/__tests__/product-catalog.test.ts",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-850206c2-ebf0-4a62-b811-cea3bcde039c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:48:21.509Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

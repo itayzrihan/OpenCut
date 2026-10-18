@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "874f5ae4622da03c0c218ad6ff0ea76225d1c0911aff1f71b785f5f6c0d9ebb0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T14:10:50.912Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts",
+          "classic/apps/web/src/mcp/classic-mcp-bridge.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "d6a4e4ec-61b2-4d7b-abd5-c148be4ec30d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:10:50.915Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

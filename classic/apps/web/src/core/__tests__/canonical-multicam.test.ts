@@ -102,3 +102,68 @@ test("multicam uses shared Rust analysis and canonical scene/history in the brow
 	session.dispose();
 	restored.dispose();
 });
+
+test("Unified sound synchronization survives the browser canonical archive and undo", async () => {
+	const runtime = await createCanonicalTestRuntime();
+	const session = new CanonicalClassicSession({
+		runtime,
+		projectId: "classic-project",
+	});
+	const original = JSON.parse(
+		readFileSync(
+			new URL(
+				"../../../../../../crates/editor-api/tests/fixtures/classic-project.json",
+				import.meta.url,
+			),
+			"utf8",
+		),
+	) as CanonicalClassicSnapshot;
+	original.mediaAssets[0].duration = 3600;
+	original.mediaAssets.push({
+		...original.mediaAssets[0],
+		id: "short",
+		duration: 1800,
+	});
+	original.mediaAssets.push({
+		id: "unified",
+		name: "Speaker",
+		type: "video",
+		duration: 1800,
+		unifiedAngles: {
+			version: 1,
+			angleAssetIds: ["short", "video-asset"],
+			defaultAngleAssetId: "short",
+			audioAssetId: "short",
+		},
+	});
+	session.attach({ classic: original });
+	session.begin();
+	session.invokeControl({
+		capabilityId: "media.classic.unified.sync",
+		input: {
+			mediaId: "unified",
+			sources: [
+				{ id: "short", duration: 1800, start: 50, bindingRevision: 3 },
+				{ id: "video-asset", duration: 3600, start: 20, bindingRevision: 3 },
+			],
+		},
+	});
+	session.commit({ label: "Synchronize Unified Angles", hostContext: {} });
+	const synced = session.read();
+	expect(synced.mediaAssets.at(-1)?.duration).toBe(3600);
+	expect(synced.mediaAssets.at(-1)?.unifiedAngles?.sync?.sources[0].start).toBe(
+		30,
+	);
+	const restored = new CanonicalClassicSession({
+		runtime: await createCanonicalTestRuntime(),
+		projectId: "classic-project",
+	});
+	restored.restore(session.archive());
+	expect(restored.read()).toEqual(synced);
+	restored.undo();
+	expect(restored.read()).toEqual(original);
+	restored.redo();
+	expect(restored.read()).toEqual(synced);
+	restored.dispose();
+	session.dispose();
+});

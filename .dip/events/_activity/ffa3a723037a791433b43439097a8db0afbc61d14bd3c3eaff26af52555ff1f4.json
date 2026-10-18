@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffa3a723037a791433b43439097a8db0afbc61d14bd3c3eaff26af52555ff1f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:46:17.338Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'Editor storage timed out|Retry the pending save' classic/apps/web/src; sed -n '170,240p' classic/apps/web/src/core/managers/transcription-manager.ts; sed -n '1460,1505p' classic/apps/web/src/subtitles/components/assets-view.tsx",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-2c349098-c48f-4a10-8005-f1bcb35203b9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:46:17.627Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

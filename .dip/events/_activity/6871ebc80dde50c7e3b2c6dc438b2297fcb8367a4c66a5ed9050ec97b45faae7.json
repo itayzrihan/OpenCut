@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6871ebc80dde50c7e3b2c6dc438b2297fcb8367a4c66a5ed9050ec97b45faae7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T19:21:18.761Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d5e5acbc783b11bedd6292a1b268c3cd8b285259da05a02bf30b3644f9904166",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{readJson,writeJson,deploymentRoot}from'./classic/scripts/local-production/common.mjs';import{join}from'node:path';import{readFile,writeFile}from'node:fs/promises';\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};const candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate?.id?.startsWith('2026-10-13T19-14-14'))throw Error('Unexpected candidate');const prior=await readJson(join(deploymentRoot,'current.json'));await fetch(base+'/stop',{method:'POST',headers});await writeJson(join(deploymentRoot,'previous.json'),prior);await writeJson(join(deploymentRoot,'current.json'),candidate);const start=await fetch(base+'/start',{method:'POST',headers});const status=await(await fetch(base+'/status',{headers})).json();if(!status.running||status.error||status.release?.id!==candidate.id)throw Error(JSON.stringify({running:status.running,error:status.error,release:status.release?.id}));await writeFile('.local/smart-shorts-performance/deployment.json',JSON.stringify({release:candidate.id,previous:prior?.id,running:status.running,error:status.error},null,2));console.log({release:candidate.id,running:status.running,error:status.error});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-c1ed677e-8939-46e0-897a-f90a5bbc252d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T19:21:19.502Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ec8d867e-e541-4720-9dea-a831ae29aa9b",
+  "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+  "type": "task.update",
+  "payload": {
+    "title": "Run bounded live ChatGPT subscription transcription experiment",
+    "description": "User explicitly authorizes a live transcription experiment using their existing OpenCut OpenAI connection. Use a short synthetic speech fixture, fixed official /backend-api/transcribe destination, account-scoped existing OAuth, bounded response and duration. Never expose or copy credentials to browser/output. Record HTTP status, transcript accuracy and returned timing fields; clean up temporary diagnostic route. This tests service access, not monthly billing guarantees or production integration.",
+    "acceptance": [
+      "Perform one bounded live transcription request using the existing authenticated OpenCut session and synthetic speech.",
+      "Report observed HTTP result, returned transcript and timing fields without secrets; do not infer billing accounting from HTTP success.",
+      "Remove temporary diagnostic route after test and retain sanitized evidence."
+    ],
+    "scope": [
+      "classic/apps/web/src/app/api/transcription/subscription-probe",
+      ".local/codex-transcription-research"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:39:21.893Z",
+  "parents": [
+    "12ba6bbb-abcc-4f24-9410-a0c45e19f2c4"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

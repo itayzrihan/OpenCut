@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "90718fef-197f-4db6-80ff-62712501d7d6",
+  "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Implemented GitHub App OAuth (PKCE, one-time state, encrypted D1 sessions), authorized-repository discovery, causal DIP task dashboard, paginated activity and pinned Git commit history in sites/dip-public. Twelve tests pass, TypeScript passes, build passes; actual GitHub GraphQL batch read verified 32/32 ledger events. App form prepared in GitHub organization with Contents read-only and Metadata read-only. Awaiting explicit browser action-time approval to create app and store its client secret in Sites; no credentials created, no updated production deployment yet.",
+    "next": "After approval create configured GitHub App, securely set Sites environment secrets, publish with Sites source helper, complete real OAuth/installation and dashboard verification. Current live public landing remains v1.",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4",
+  "createdAt": "2026-10-12T08:18:08.788Z",
+  "parents": [
+    "b25fb840-ff91-47c0-93a3-a60c4d616134"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

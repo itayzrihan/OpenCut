@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e91913626b16f60467d750fcf67749e53d39871006539853c549f9678c96fd0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:37:14.320Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> classic/apps/web/src/transcription/windows.test.ts <<'EOF'\n\nconst deferred = () => {\n\tlet resolve!: () => void;\n\tconst promise = new Promise<void>(r => { resolve = r; });\n\treturn { promise, resolve };\n};\ntest(\"two provider windows overlap, decode stays serial, publication remains ordered\", async () => {\n\tconst gates = [deferred(), deferred()];\n\tconst started = deferred();\n\tlet active = 0, maximum = 0, decoding = 0, calls = 0;\n\tconst published: number[] = [];\n\tconst pending = transcribeAudioWindows({\n\t\tduration: 120, language: \"he\", signal: new AbortController().signal,\n\t\tload: async () => {\n\t\t\texpect(++decoding).toBe(1);\n\t\t\tawait Promise.resolve();\n\t\t\tdecoding--;\n\t\t\treturn new Float32Array(1);\n\t\t},\n\t\texternalTranscribe: async ({ load }) => {\n\t\t\tawait load();\n\t\t\tconst i = calls++;\n\t\t\tmaximum = Math.max(maximum, ++active);\n\t\t\tif (calls === 2) started.resolve();\n\t\t\tawait gates[i].promise;\n\t\t\tactive--;\n\t\t\treturn { text: \"\", words: [], segments: [], language: \"he\" };\n\t\t},\n\t\tonChunk: async ({ index }) => { published.push(index); },\n\t});\n\tawait started.promise;\n\tgates[1].resolve();\n\tawait Promise.resolve();\n\texpect(published).toEqual([]);\n\tgates[0].resolve();\n\tawait pending;\n\texpect(maximum).toBe(2);\n\texpect(published).toEqual([0, 1]);\n});\ntest(\"prefetch decodes ahead while inference waits; failure aborts siblings without publishing\", async () => {\n\tconst began = deferred(), decoded = deferred();\n\tlet loads = 0;\n\tlet siblingAborted = false;\n\tconst pending = transcribeAudioWindows({\n\t\tduration: 240, language: \"he\", signal: new AbortController().signal,\n\t\tload: async () => {\n\t\t\tif (++loads === 3) decoded.resolve();\n\t\t\treturn new Float32Array(1);\n\t\t},\n\t\texternalTranscribe: async ({ load, signal }) => {\n\t\t\tawait load();\n\t\t\tif (!siblingAborted && loads <= 2) {\n\t\t\t\tawait began.promise;\n\t\t\t\tthrow new Error(\"provider failed\");\n\t\t\t}\n\t\t\treturn new Promise((_, reject) => signal!.addEventListener(\"abort\", () => {\n\t\t\t\tsiblingAborted = true; reject(signal!.reason);\n\t\t\t}, { once: ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-29920906-bba6-4034-9edb-2b3fdcbc9a3c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:37:14.969Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "92a5fcc7cb1f7982a8b3339f2c6cccfdc09aba28717a2ef46d25cf033f06ea90",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:10:48.778Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/scripts/local-production/server.mjs | head -100\ncat classic/package.json | head -75\nps -p 93446,87601 -o pid,etime,command",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a3e352c5-8e4f-4db1-9d27-a23f03d54174"
+      },
+      {
+        "at": "2026-10-12T13:10:48.861Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/scripts/local-production/server.mjs | head -100\ncat classic/package.json | head -75\nps -p 93446,87601 -o pid,etime,command",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a3e352c5-8e4f-4db1-9d27-a23f03d54174"
+      },
+      {
+        "at": "2026-10-12T13:10:48.863Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_5e7d9738a5514f1a38ddbcd98d77b878ca67c160f5f352262cbb4e3d38826997",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "curl -sS -o /dev/null --max-time 10 -w '%{http_code} %{time_total}\\n' http://127.0.0.1:3210\ncurl -sS -o /dev/null --max-time 10 -w '%{http_code} %{time_total}\\n' http://127.0.0.1:3211",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ddd23897-cf3c-459e-8430-a4a3a5725888"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:10:49.427Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2f324441745c18eb456429b1c25dd8da154b9652db97e46f7b1e8dd3794e90a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T15:02:25.397Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,comm | rg 'Google Chrome Helper \\(Renderer\\)' | awk '$3>524288 {print $1,$2,$3,$4}'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-efae0094-3e06-489b-ac5e-f16ae499eebc"
+      },
+      {
+        "at": "2026-10-13T15:02:25.522Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -axo pid,%cpu,rss,etime,comm | rg 'Google Chrome Helper \\(Renderer\\)' | awk '$3>524288 {print $1,$2,$3,$4}'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-efae0094-3e06-489b-ac5e-f16ae499eebc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T15:02:25.637Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

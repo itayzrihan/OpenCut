@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e8314c3813fee1ca8e6d57f600517062cad1ec7abc175441e14315204eb42ef1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:10:53.877Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/smart-shorts-seven/restore-after.log\nps -axo pid,%cpu,rss,etime,command | rg '^ *[0-9]+ .*node .local/smart-shorts-seven/restore-probe'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-ff941a1a-82ca-4a0e-a0a5-285722cd65d5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:10:55.029Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

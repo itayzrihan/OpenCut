@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b61881a362f41d59f391752072aac56b347a43805821b4806bd87eeb80b58a3a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:58:30.149Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '45,180p' classic/rust/crates/timeline/src/smart_silence.rs; rg -n 'captionSource|speaker' .local/episode-teaser-90-2026-10-14/draft-scene.json | head -1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-03394437-d63f-4b64-b419-453ebc2e76cb"
+      },
+      {
+        "at": "2026-10-14T07:58:30.320Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '45,180p' classic/rust/crates/timeline/src/smart_silence.rs; rg -n 'captionSource|speaker' .local/episode-teaser-90-2026-10-14/draft-scene.json | head -1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-03394437-d63f-4b64-b419-453ebc2e76cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:58:30.544Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

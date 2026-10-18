@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "045e577556d8909eee13ad8cd1821916e0c4b9cabf479f2e832590e69e9ed593",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:03:00.048Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat classic/apps/web/src/ai/podcast-types.ts\nrg -n 'SessionArchive|OperationSuccess::new' crates/editor-api/src/operations/classic_session.rs | head -25\nrg -n 'words.edit|transcript.*edit|caption.*words' crates/editor-api/src/operations -g '*.rs' | head -20\nsed -n '1,95p' crates/editor-api/tests/classic_transcription.rs\ncat classic/scripts/local-production/common.mjs | head -55",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b2ff13a8-d622-4991-80d8-1c4f1b03fe13"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:03:00.108Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "006c53f4c0f5fbc1666154825f9ed80ee66839286764531a8e023c776732f570",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:08:04.673Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_610c38d80a1c32324da94c3b1616da9fe1298a9e539d46caa8babec29e62303e",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sw_vers\nxcrun --find swift",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a9dc0764-fd4a-421e-acdb-4c0c82eabd30"
+      },
+      {
+        "at": "2026-10-12T14:08:04.677Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_610c38d80a1c32324da94c3b1616da9fe1298a9e539d46caa8babec29e62303e",
+        "tool": "webrun",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-c5fe4afb-b465-48c2-8e20-e289615f94c3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:08:04.700Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

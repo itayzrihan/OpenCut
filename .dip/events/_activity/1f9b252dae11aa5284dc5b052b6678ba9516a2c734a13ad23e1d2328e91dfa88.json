@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1f9b252dae11aa5284dc5b052b6678ba9516a2c734a13ad23e1d2328e91dfa88",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:08:04.280Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -10 .local/smart-shorts-seven/rust-tests.log\ntail -10 .local/smart-shorts-seven/compact-test.log\ntail -8 .local/smart-shorts-seven/wasm-build.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ef023a2a-d201-40e4-bc44-f177a727705b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:08:04.497Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd01ceb1782a203a6565d6df31b05f08e97b1fa9249fb0da9c332183dc36e54d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:40:10.605Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP:3211 -sTCP:LISTEN; cat classic/apps/web/package.json | head -35; cat .dip/tools/verify-transcription-sources.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-249970d5-3069-47c3-8f0a-80bca8e03ce8"
+      },
+      {
+        "at": "2026-10-12T12:40:10.763Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "lsof -nP -iTCP:3211 -sTCP:LISTEN; cat classic/apps/web/package.json | head -35; cat .dip/tools/verify-transcription-sources.mjs",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-249970d5-3069-47c3-8f0a-80bca8e03ce8"
+      },
+      {
+        "at": "2026-10-12T12:40:10.766Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx prettier --write src/transcription/windows.test.ts src/accounts/server.ts\nbunx tsc --noEmit -p tsconfig.build.json",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-6fb512a8-16f9-4d79-b3b9-913d8b8aba75"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:40:11.367Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "80761118ee742f123f6914450329ce3fb175c8ee5ffc15620edf32c2a8e19fd8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T10:12:12.770Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'hidden\\?:|hidden: boolean|type: \"[^\"]*track|set_track|update_track' classic/apps/web/src/ai/edit-plan.ts | head -45",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-726a31f9-885c-4714-a628-1c46fae0368b"
+      },
+      {
+        "at": "2026-10-14T10:12:20.405Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_c133ef3f57016ca50724cde4549a18474f83ea32cf50de51712268fe4300ba68",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '368,393p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2215,2265p' classic/apps/web/src/ai/edit-plan.ts\npython3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-word-fix-2026-10-14/after-document.json'));print([(t['id'],t['name']) for t in x['scene']['tracks'] if t.get('captionSource')])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6b426c2a-0ada-4c68-9cae-e2ef21648470"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T10:12:22.637Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

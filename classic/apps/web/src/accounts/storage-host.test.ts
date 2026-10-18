@@ -201,9 +201,10 @@ test("encrypted incremental snapshots restore exact bytes and reject damaged obj
 					"utf8",
 				),
 			).toBe(original);
+			const configuredFolder = (await readStorageProfile()).folder;
 			await rename(join(root, "external"), join(root, "unplugged"));
 			expect((await readStorageConnection(policy)).status).toBe("unavailable");
-			expect((await readStorageProfile()).folder).toBe(join(root, "external"));
+			expect((await readStorageProfile()).folder).toBe(configuredFolder);
 			await configureStorageFolder({ folder: null, policy: policy, automaticSnapshots: false, options: { mode: "localOnly" } });
 			expect((await readStorageConnection(policy)).status).toBe("local");
 		});

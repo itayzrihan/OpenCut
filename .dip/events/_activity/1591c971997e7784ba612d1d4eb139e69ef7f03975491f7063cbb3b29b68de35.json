@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1591c971997e7784ba612d1d4eb139e69ef7f03975491f7063cbb3b29b68de35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+    "records": [
+      {
+        "at": "2026-10-15T01:19:25.005Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a13d23-cc18-76f0-8e1a-cf3e55972277",
+        "taskId": "task_1d6bb950b9482b65ccf870a54b85d98443a75120b0200c91e849b2954aa207cd",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -hide_banner -loglevel error -ss 5 -i /tmp/codex-remote-attachments/01a13d23-cc18-76f0-8e1a-cf3e55972277/2FDF740B-7745-4A23-8143-07691762B282/1-530c8b835d42449d9cb0742cd2a01ab3.mp4 -frames:v 1 analysis/global-sfx-2026-10-15/frame5.png; ffmpeg -hide_banner -loglevel error -i /tmp/codex-remote-attachments/01a13d23-cc18-76f0-8e1a-cf3e55972277/2FDF740B-7745-4A23-8143-07691762B282/1-530c8b835d42449d9cb0742cd2a01ab3.mp4 -vf 'fps=2,crop=720:250:0:240,scale=720:250,tile=4x12' -frames:v 1 analysis/global-sfx-2026-10-15/labels.jpg; cat classic/apps/web/src/sounds/sounds-store.ts | head -180; cat classic/apps/web/src/app/api/global-assets/'[...path]'/route.ts; rg -n 'license|needs-review' classic/apps/web/src/sounds/components/assets-view.tsx; ls .local | head",
+        "recordId": "codex:01a13d23-cc18-76f0-8e1a-cf3e55972277:PreToolUse:exec-e9cb7f23-1624-4b5e-8b3d-6fb4aba67e8e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:19:25.249Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

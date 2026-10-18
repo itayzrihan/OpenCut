@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84338b31fcf715b2111495a8f111a205eb085742d76e925e818ec35336cb619d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:19:10.078Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='.local/smart-shorts-audio/real-source-test.ts';s=open(p).read().replace('const script=await built.outputs[0].text();','const script=(await built.outputs[0].text()).replaceAll(\\'\"opencut-wasm\"\\',\\'\"/opencut_wasm_bg.js\"\\');');open(p,'w').write(s)\nPY\nbun .local/smart-shorts-audio/real-source-test.ts > .local/smart-shorts-audio/real-browser.log 2>&1",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1de8998a-9a6e-4dd6-ba6e-1f41ed603832"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:19:10.486Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

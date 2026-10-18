@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2fc44d19b77f50270036633d33b8f84374eb94246f5fd2e4def2332962d2da51",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:05:56.933Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .dip/tools/check-teaser-adapter.ts; tail -6 .local/teaser-upgrade/production-build-final.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-2002c283-5966-45f5-9404-6533f3ec5d0c"
+      },
+      {
+        "at": "2026-10-16T11:05:56.935Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/production-build-final.log; wc -l crates/editor-api/src/operations/classic_takes/podcast/editorial.rs; python3 - <<'PY'\nimport json\nx=json.load(open('analysis/teaser-feature-upgrade-2026-10-16/comparison.json'));print({'parts':x['newParts'],'seconds':x['newSeconds'],'oldRejected':x['oldRejectedProblems'],'windows':x['windows']})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2efea77e-14ce-4dcd-991e-eb63dfdbf03d"
+      },
+      {
+        "at": "2026-10-16T11:05:57.033Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "tail -8 .local/teaser-upgrade/production-build-final.log; wc -l crates/editor-api/src/operations/classic_takes/podcast/editorial.rs; python3 - <<'PY'\nimport json\nx=json.load(open('analysis/teaser-feature-upgrade-2026-10-16/comparison.json'));print({'parts':x['newParts'],'seconds':x['newSeconds'],'oldRejected':x['oldRejectedProblems'],'windows':x['windows']})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-2efea77e-14ce-4dcd-991e-eb63dfdbf03d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:05:57.449Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

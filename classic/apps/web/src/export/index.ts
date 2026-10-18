@@ -23,6 +23,11 @@ export interface ExportOptions {
 export interface ExportResult {
 	success: boolean;
 	buffer?: ArrayBuffer;
+	/** File-backed output: never materialize it with arrayBuffer for download. */
+	file?: File;
+	savedFileName?: string;
+	/** Host-only temporary file cleanup, not serialized editor state. */
+	dispose?: () => Promise<void>;
 	error?: string;
 	cancelled?: boolean;
 }
@@ -30,6 +35,7 @@ export interface ExportResult {
 export interface ExportState {
 	isExporting: boolean;
 	progress: number;
+	phase?: string;
 	result: ExportResult | null;
 	options?: ExportOptions;
 }
@@ -68,4 +74,13 @@ export function downloadBuffer({
 	downloadLink.click();
 	document.body.removeChild(downloadLink);
 	URL.revokeObjectURL(url);
+}
+
+export function hasExportOutput(
+	result: ExportResult | null | undefined,
+): boolean {
+	return !!(
+		result?.success &&
+		(result.file || result.buffer || result.savedFileName)
+	);
 }

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "215a2f5e43a1504ef88dff4d0c014c23eb15b6415151808ee26e3fae09c52e15",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:40:57.074Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';const b='http://127.0.0.1:3210';const token=[REDACTED] fetch(b)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};const stop=await fetch(b+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('stop failed');const c=await readJson(deploymentRoot+'/candidate.json');await writeJson(deploymentRoot+'/previous.json',await readJson(deploymentRoot+'/current.json'));await writeJson(deploymentRoot+'/current.json',c);const start=await fetch(b+'/start',{method:'POST',headers});const s=await(await fetch(b+'/status',{headers})).json();console.log({start:start.status,running:s.running,error:s.error,release:s.release.id});\nNODE",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-0147fbdd-d6e6-4efb-b5d6-f226e477a542"
+      },
+      {
+        "at": "2026-10-13T09:40:57.644Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';const b='http://127.0.0.1:3210';const token=[REDACTED] fetch(b)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};const stop=await fetch(b+'/stop',{method:'POST',headers});if(!stop.ok)throw Error('stop failed');const c=await readJson(deploymentRoot+'/candidate.json');await writeJson(deploymentRoot+'/previous.json',await readJson(deploymentRoot+'/current.json'));await writeJson(deploymentRoot+'/current.json',c);const start=await fetch(b+'/start',{method:'POST',headers});const s=await(await fetch(b+'/status',{headers})).json();console.log({start:start.status,running:s.running,error:s.error,release:s.release.id});\nNODE",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-0147fbdd-d6e6-4efb-b5d6-f226e477a542"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:40:58.050Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { MediaAsset } from "@/media/types";

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d94308887ea14df8f186ae705234df79d837ae1baaaccf095c61f27dc985fcdf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:07:30.128Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 90147 -o command=; rg -n 'class AudioBufferSink|async \\*buffers|bufferPool|cache' classic/apps/web/node_modules/mediabunny/src/media-sink.ts | tail -n 20; cat classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-a24cc5f4-60b6-4903-b809-fede06fbb764"
+      },
+      {
+        "at": "2026-10-13T12:07:30.258Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 90147 -o command=; rg -n 'class AudioBufferSink|async \\*buffers|bufferPool|cache' classic/apps/web/node_modules/mediabunny/src/media-sink.ts | tail -n 20; cat classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-a24cc5f4-60b6-4903-b809-fede06fbb764"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:07:30.397Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

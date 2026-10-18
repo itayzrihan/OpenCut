@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "693e62e88063117ce92802c43ce6c4a20a8111e0656260cf3fe0fafe90074bda",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T21:02:53.796Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/source-preservation/copy-verification.json",
+          "crates/editor-api/tests/classic_podcast.rs",
+          ".local/source-preservation/native.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "b3e6ce91-6346-4127-9598-f2cb5ac2450d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:02:53.799Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

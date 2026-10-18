@@ -18,8 +18,26 @@ export interface PodcastVideo {
 }
 export interface PodcastSource {
 	revision: number;
+	sourceFingerprint?: string;
 	words: SmartTakeWord[];
 	windows: { index: number; words: SmartTakeWord[] }[];
+	/** Canonical policy owns selection/review; the browser only transports jobs. */
+	editorial?: (input: {
+		options: PodcastOptions;
+		responses: Record<string, unknown>;
+	}) => PodcastEditorialStep;
+}
+export interface PodcastEditorialStep {
+	policyVersion: string;
+	complete: boolean;
+	requests: {
+		key: string;
+		stage: string;
+		instructions: string;
+		prompt: unknown;
+	}[];
+	videos: PodcastVideo[];
+	report: Record<string, unknown>;
 }
 export interface PodcastExtract {
 	version: 1;

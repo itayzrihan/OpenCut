@@ -27,11 +27,15 @@ export class MediaManager {
 		id,
 		source,
 		undo = false,
+		requestId,
+		expectedRevision,
 	}: {
 		projectId: string;
 		id: string;
 		source: string;
 		undo?: boolean;
+		requestId?: string;
+		expectedRevision?: number;
 	}) {
 		const asset = this.assets.find((item) => item.id === id);
 		if (!asset || this.editor.project.getActive()?.metadata.id !== projectId)
@@ -42,8 +46,8 @@ export class MediaManager {
 				projectId,
 				id,
 				source,
-				expectedRevision: asset.bindingRevision ?? 0,
-				requestId: generateUUID(),
+				expectedRevision: expectedRevision ?? asset.bindingRevision ?? 0,
+				requestId: requestId ?? generateUUID(),
 			},
 		});
 		videoCache.clearVideo({ mediaId: id });

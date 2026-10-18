@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "476bbbf1452b1ba2409712a19b34a839896d2288d09d0336f66a360ee8fed9ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:43:22.260Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '44,105p' classic/apps/web/src/ai/podcast-task.ts; rg -n 'captionSource|transcription.start|has.*Transcript' classic/apps/web/src/subtitles/auto-texts* classic/apps/web/src/ai/smart-takes-task.ts; sed -n '1,155p' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts; sed -n '532,570p' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-4163e81c-a696-4c8a-9c5c-35441299ef9c"
+      },
+      {
+        "at": "2026-10-12T09:43:22.409Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '44,105p' classic/apps/web/src/ai/podcast-task.ts; rg -n 'captionSource|transcription.start|has.*Transcript' classic/apps/web/src/subtitles/auto-texts* classic/apps/web/src/ai/smart-takes-task.ts; sed -n '1,155p' classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts; sed -n '532,570p' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-4163e81c-a696-4c8a-9c5c-35441299ef9c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:43:23.116Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

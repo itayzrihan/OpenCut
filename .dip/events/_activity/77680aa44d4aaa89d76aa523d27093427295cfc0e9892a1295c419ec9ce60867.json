@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "77680aa44d4aaa89d76aa523d27093427295cfc0e9892a1295c419ec9ce60867",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:10:10.546Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'candidate' classic/scripts/local-production/build.mjs\nls -la '/Users/itayzrihan/Library/Application Support/OpenCut Local' | head -16",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8cf3b8b4-33e6-4ac2-bcc4-6b82857f861d"
+      },
+      {
+        "at": "2026-10-13T21:10:10.651Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'candidate' classic/scripts/local-production/build.mjs\nls -la '/Users/itayzrihan/Library/Application Support/OpenCut Local' | head -16",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-8cf3b8b4-33e6-4ac2-bcc4-6b82857f861d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:10:11.432Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

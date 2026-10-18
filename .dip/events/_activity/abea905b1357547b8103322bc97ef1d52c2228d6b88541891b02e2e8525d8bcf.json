@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abea905b1357547b8103322bc97ef1d52c2228d6b88541891b02e2e8525d8bcf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:27:30.727Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --stat -- 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'; sed -n '248,275p' 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-79aa2b12-bbce-4f56-af42-77f86c4dd8d1"
+      },
+      {
+        "at": "2026-10-13T10:27:30.958Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "git diff --stat -- 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'; sed -n '248,275p' 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-79aa2b12-bbce-4f56-af42-77f86c4dd8d1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:27:31.398Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6dc914863db2f93c3a8a00fb5de99a21e7aa0a7beffcb2459085b42f6d10a791",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:46:31.019Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '20,33p' .local/episode-teaser-90-2026-10-14/transcript.txt; sed -n '56,80p' .local/episode-teaser-90-2026-10-14/transcript.txt",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d6ff75e7-2bab-4c1d-8ac1-92d65448b0c1"
+      },
+      {
+        "at": "2026-10-14T07:46:31.141Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '20,33p' .local/episode-teaser-90-2026-10-14/transcript.txt; sed -n '56,80p' .local/episode-teaser-90-2026-10-14/transcript.txt",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d6ff75e7-2bab-4c1d-8ac1-92d65448b0c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:46:31.507Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

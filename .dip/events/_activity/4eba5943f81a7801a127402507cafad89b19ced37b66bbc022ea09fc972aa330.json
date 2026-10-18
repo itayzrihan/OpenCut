@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4eba5943f81a7801a127402507cafad89b19ced37b66bbc022ea09fc972aa330",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:28:44.983Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/subtitles/components/assets-view.tsx')\nb=p.read_bytes()\ns=b.decode().replace('\\r\\n','\\n')\ns=s.replace(' await editor.transcription.importSrt({file,settings:captionSettings});\\n dispatch({type:\"succeed\",warnings:[]});toast.success(\"SRT imported as the active transcript\");return;\\n }\\n const input = await file.text();','\\t\\t\\t\\tawait editor.transcription.importSrt({ file, settings: captionSettings });\\n\\t\\t\\t\\tdispatch({ type: \"succeed\", warnings: [] });\\n\\t\\t\\t\\ttoast.success(\"SRT imported as the active transcript\");\\n\\t\\t\\t\\treturn;\\n\\t\\t\\t}\\n\\t\\t\\tconst input = await file.text();')\ns=s.replace('<TranscriptionSource disabled={isProcessing || autoTextsStep !== null} onImport={handleImportClick} />','<TranscriptionSource\\n\\t\\t\\t\\t\\t\\tdisabled={isProcessing || autoTextsStep !== null}\\n\\t\\t\\t\\t\\t\\tonImport={handleImportClick}\\n\\t\\t\\t\\t\\t/>')\ns=s.replace('<p className=\"text-xs text-muted-foreground\">Completed sections are saved automatically with either transcription engine.</p>', '<p className=\"text-xs text-muted-foreground\">\\n\\t\\t\\t\\t\\t\\t\\tCompleted sections are saved automatically with either transcription engine.\\n\\t\\t\\t\\t\\t\\t</p>')\np.write_bytes(s.replace('\\n','\\r\\n').encode())\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-d86dceb0-9846-4fe4-ba13-ea589e14e13e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:28:45.782Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

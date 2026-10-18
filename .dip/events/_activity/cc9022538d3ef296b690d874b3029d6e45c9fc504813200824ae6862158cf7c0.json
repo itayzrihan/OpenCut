@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cc9022538d3ef296b690d874b3029d6e45c9fc504813200824ae6862158cf7c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T12:09:38.192Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > classic/apps/web/src/ai/podcast-plan-cache.ts <<'EOF'\n/** Host IO cache for an unapplied proposal, never a second editor document. */\nimport { parsePodcastProposal } from './podcast-plan';\nimport type { PodcastOptions, PodcastSource, PodcastVideo } from './podcast-types';\nexport async function podcastPlanCacheKey(input: {\n account: string; projectId: string; sceneId: string; options: PodcastOptions;\n words: PodcastSource['words'];\n}) {\n const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(input)));\n return 'opencut-podcast-proposal-v1:' + Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2,'0')).join('');\n}\nexport function readPodcastPlan(storage: Pick<Storage,'getItem'>, key: string): PodcastVideo[] | null {\n try { const raw=storage.getItem(key); return raw && raw.length<=300000 ? parsePodcastProposal(raw) : null; } catch { return null; }\n}\nexport function savePodcastPlan(storage: Pick<Storage,'setItem'>, key: string, videos: PodcastVideo[]) {\n const raw=JSON.stringify({videos});\n if(raw.length>300000) throw new Error('Podcast proposal exceeds the resume cache limit');\n storage.setItem(key,raw);\n}\nEOF\npython3 <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/podcast-task.ts');s=p.read_text().replace('import { requestPodcastPlan } from \"./podcast-plan\";','import { requestPodcastPlan } from \"./podcast-plan\";\\nimport { podcastPlanCacheKey, readPodcastPlan, savePodcastPlan } from \"./podcast-plan-cache\";');s=s.replace('const videos = await requestPodcastPlan({','''const cacheKey = await podcastPlanCacheKey({ account, projectId, sceneId, options, words: source.words });\n            check();\n            let videos = readPodcastPlan(localStorage, cacheKey);\n            if (videos) {\n                source.review({ options, videos });\n                this.update({ stage: \"Resuming saved clip selection…\" });\n            } else {\n            videos = await requestPodcastPlan({''');s=s.replace('review: s",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8c58a73a-0f9b-4533-8f42-d4da9fec194b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T12:09:38.567Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fe87ef76387d7d8b3fabb5bda4859949cde1c537cbc06c625a55505434742781",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:46:27.422Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": ".local/crash-tools/bin/minidump-stackwalk --json '/Users/itayzrihan/Library/Application Support/Google/Chrome/Crashpad/completed/52ec44e7-5c03-461e-8a96-5ea6859d89fd.dmp' > .local/smart-shorts-seven/reproduced-crash.json 2> .local/smart-shorts-seven/reproduced-crash-stackwalk.log\npython3 <<'PY'\nimport json\np=json.load(open('.local/smart-shorts-seven/reproduced-crash.json'));print({k:p.get(k) for k in ['crash_info','pid','process_uptime']});c=p['crashing_thread'];r=c['frames'][0].get('registers',{});print({k:r.get(k) for k in ['x0','x19','x20','x24','x25','x26','sp']});print([(f['frame'],f['module'],f.get('module_offset'))for f in c['frames'][:15]])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f9b7a0ca-7284-44b0-bb89-950bfc3580fe"
+      },
+      {
+        "at": "2026-10-13T13:46:27.564Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": ".local/crash-tools/bin/minidump-stackwalk --json '/Users/itayzrihan/Library/Application Support/Google/Chrome/Crashpad/completed/52ec44e7-5c03-461e-8a96-5ea6859d89fd.dmp' > .local/smart-shorts-seven/reproduced-crash.json 2> .local/smart-shorts-seven/reproduced-crash-stackwalk.log\npython3 <<'PY'\nimport json\np=json.load(open('.local/smart-shorts-seven/reproduced-crash.json'));print({k:p.get(k) for k in ['crash_info','pid','process_uptime']});c=p['crashing_thread'];r=c['frames'][0].get('registers',{});print({k:r.get(k) for k in ['x0','x19','x20','x24','x25','x26','sp']});print([(f['frame'],f['module'],f.get('module_offset'))for f in c['frames'][:15]])\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f9b7a0ca-7284-44b0-bb89-950bfc3580fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:46:28.392Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

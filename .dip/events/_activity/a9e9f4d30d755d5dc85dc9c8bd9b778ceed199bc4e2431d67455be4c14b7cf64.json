@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9e9f4d30d755d5dc85dc9c8bd9b778ceed199bc4e2431d67455be4c14b7cf64",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T21:02:53.183Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'caption.classic' crates/editor-api/src/operations/classic* | head -25\nrg -n 'podcastExtract' classic/apps/web/src/timeline/types* classic/apps/web/src/ai/podcast-types.ts\npython3 - <<'PY'\nimport json,pathlib,hashlib\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\na=json.loads((root/'11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json').read_text());b=json.loads((root/'847030af-0e59-4e41-b702-5d35549f3cd5/project.json').read_text())\nfor k in ['scenes','transcriptionJobs','transcriptionEngine','settings','customFonts','aiEditHistory']:\n assert a.get(k)==b.get(k),k\nbefore=json.loads(pathlib.Path('.local/source-preservation/original-before.json').read_text())\nassert before['scenesHash']==hashlib.sha256(json.dumps(a['scenes'],sort_keys=True).encode()).hexdigest()\nassert before['transcriptionHash']==hashlib.sha256(json.dumps(a['transcriptionJobs'],sort_keys=True).encode()).hexdigest()\nreport={'copyId':b['metadata']['id'],'name':b['metadata']['name'],'scenes':len(b['scenes']),'sourceAndCaptionsEqual':True,'transcriptionEqual':True,'originalScenesUnchanged':True,'originalTranscriptionUnchanged':True}\npathlib.Path('.local/source-preservation/copy-verification.json').write_text(json.dumps(report));print(report)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-45c2b409-34f0-42f3-b693-59c79cf502d2"
+      },
+      {
+        "at": "2026-10-13T21:02:53.186Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat >> crates/editor-api/tests/classic_podcast.rs <<'RS'\n\n#[tokio::test]\nasync fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outputs() {\n    let r = setup().await;\n    let before = state(&r).await;\n    let source = before[\"project\"][\"classic\"][\"document\"][\"scenes\"].clone();\n    let mut previous = source.as_array().unwrap().clone();\n    // Each generation starts from Main, even when the previous output remains\n    // the viewer's active scene. Earlier extracts must stay editable and exact.\n    for mode in [\"teaser\", \"highlights\", \"chronological\", \"teaser\", \"chronological\", \"highlights\"] {\n        let current = state(&r).await;\n        let input = request(&current, mode, json!([video(json!([{\"firstWord\":10,\"lastWord\":20}]))]));\n        let result = call(&r, \"timeline.classic.podcast.extract\", input).await;\n        let after = state(&r).await;\n        let doc = &after[\"project\"][\"classic\"][\"document\"];\n        let scenes = doc[\"scenes\"].as_array().unwrap();\n        assert_eq!(&scenes[..previous.len()], previous.as_slice());\n        assert_eq!(scenes.len(), previous.len() + 1);\n        assert_eq!(scenes[0], source[0]);\n        assert_eq!(scenes.last().unwrap()[\"podcastExtract\"][\"options\"][\"mode\"], mode);\n        assert_eq!(doc[\"transcriptionJobs\"], before[\"project\"][\"classic\"][\"document\"][\"transcriptionJobs\"]);\n        assert!(result[\"revision\"].as_u64().unwrap() > current[\"revision\"].as_u64().unwrap());\n        previous = scenes.clone();\n    }\n    let archive = call(&r, \"project.classic.session.archive\", json!({\"projectId\":\"classic-project\",\"compact\":true,\"chained\":true})).await;\n    let reopened = OpenCutRuntime::default();\n    call(&reopened, \"project.classic.session.restore\", json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"archive\":archive})).await;\n    assert_eq!(state(&reopened).await[\"project\"][\"classic\"], state(&r).await[\"project\"][\"classic\"]);\n    // Changing a result's alternative also cannot mutate the Main transcript.\n    c",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-2472d077-3081-428d-a906-14a9f5ebcf8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T21:02:53.797Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

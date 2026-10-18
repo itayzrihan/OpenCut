@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "172b2ec358319c8d8513ebc276ddce4a32739c29a359c8b6a28c7f82d405b3ae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T10:21:57.759Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/96fa8232-1976-427d-90eb-17cbf11c858c/project.json';d=json.loads(p.read_text());s=next(s for s in d['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');t=s['tracks'];r={'captions':[{k:x.get(k) for k in ['id','hidden']} for x in t['overlay'] if x.get('captionSource')],'audio':[{k:x.get(k) for k in ['id','muted','name']} for x in t['audio']],'mainMuted':t['main'].get('muted')};pathlib.Path('analysis/teaser-no-music-2026-10-15/export-track-state.json').write_text(json.dumps(r,indent=2));print(r)\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-760b156e-1a91-4012-8686-381cec5bbfa7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T10:21:58.039Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

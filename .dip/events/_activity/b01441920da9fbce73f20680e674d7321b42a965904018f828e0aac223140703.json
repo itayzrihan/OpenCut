@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b01441920da9fbce73f20680e674d7321b42a965904018f828e0aac223140703",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:51:50.265Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-exports.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "eab3842ce22569e999299a11cd3d0d295303d76209395882676ee29134099393",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-81856228-81b5-408d-8ac6-6d9f62c3cbf8"
+      },
+      {
+        "at": "2026-10-14T09:51:50.505Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.dip/tools/verify-teaser-exports.py",
+          "/Users/itayzrihan/Documents/PoCut/.dip/config.json"
+        ],
+        "changeHash": "eab3842ce22569e999299a11cd3d0d295303d76209395882676ee29134099393",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-81856228-81b5-408d-8ac6-6d9f62c3cbf8"
+      },
+      {
+        "at": "2026-10-14T09:51:50.510Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_99b664af6f1378187562d5b21bcaa7097b3610ca002b6422e1caa0c8e15477aa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 .dip/tools/verify-teaser-exports.py > analysis/teaser-exports-2026-10-14/verification.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-ab085fd8-a65e-4c4a-a7e3-58a6e96827f1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:51:51.220Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

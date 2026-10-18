@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07e755eb07ecf4ec3545f09d3f1d1b49024ae86933d971ae977bff0333932771",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:14:35.143Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "kill -TERM 24721",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1022fff9-56e0-45d7-886c-be7044d7cfbb"
+      },
+      {
+        "at": "2026-10-12T13:14:35.232Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "mcp__dip__task_update",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-be2d3b26-b620-4313-94ce-b385d2061817"
+      },
+      {
+        "at": "2026-10-12T13:14:35.231Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "kill -TERM 24721",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-1022fff9-56e0-45d7-886c-be7044d7cfbb"
+      },
+      {
+        "at": "2026-10-12T13:14:35.289Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_4a949d16f4a453ef49f584b497ee7d99c5d899904961a26add7a52323db80436",
+        "tool": "mcp__dip__task_update",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-be2d3b26-b620-4313-94ce-b385d2061817"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:14:35.543Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

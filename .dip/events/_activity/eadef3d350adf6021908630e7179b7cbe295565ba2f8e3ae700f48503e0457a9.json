@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eadef3d350adf6021908630e7179b7cbe295565ba2f8e3ae700f48503e0457a9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T13:25:52.999Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '810,850p' crates/mcp/src/classic_bridge.rs; sed -n '890,928p' crates/mcp/src/classic_bridge.rs; sed -n '1,88p' crates/mcp/src/classic_bridge.rs; cat crates/mcp/Cargo.toml | head -n 50; rg -n 'http|start.*bridge|bearer_auth' crates/mcp/src/classic_bridge.rs | tail -n 20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-329fd190-4bec-4175-bc60-c61865ed6aab"
+      },
+      {
+        "at": "2026-10-13T13:25:53.104Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '810,850p' crates/mcp/src/classic_bridge.rs; sed -n '890,928p' crates/mcp/src/classic_bridge.rs; sed -n '1,88p' crates/mcp/src/classic_bridge.rs; cat crates/mcp/Cargo.toml | head -n 50; rg -n 'http|start.*bridge|bearer_auth' crates/mcp/src/classic_bridge.rs | tail -n 20",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-329fd190-4bec-4175-bc60-c61865ed6aab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T13:25:53.703Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

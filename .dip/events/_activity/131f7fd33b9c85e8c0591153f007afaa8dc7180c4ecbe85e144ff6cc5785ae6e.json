@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "131f7fd33b9c85e8c0591153f007afaa8dc7180c4ecbe85e144ff6cc5785ae6e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:18:58.153Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -24 .local/smart-shorts-audio/real-browser.log; tail -5 .local/smart-shorts-audio/build.log; sed -n '100,130p' classic/apps/web/src/services/local-drive/project-transaction.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6a252652-509b-40b5-aa73-3336adc03c2c"
+      },
+      {
+        "at": "2026-10-13T16:18:58.275Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "head -24 .local/smart-shorts-audio/real-browser.log; tail -5 .local/smart-shorts-audio/build.log; sed -n '100,130p' classic/apps/web/src/services/local-drive/project-transaction.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6a252652-509b-40b5-aa73-3336adc03c2c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:18:58.664Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa389dd512f3f4a10829cfc05298479cf53d1528f9ec4498c73b323bf6c111bc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T11:07:28.959Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,shutil\nb=Path('.local/codex-transcription-research')\nrows=[]\nfor mode in ['verbose','whisper','srt']:\n r=json.loads((b/f'timing-{mode}-result.json').read_text());rows.append({k:r.get(k) for k in ['mode','httpStatus','elapsedMs','fields','hasWords','hasSegments','assetFormat','apiKeyUsed']})\n(b/'timing-probe-summary.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))\np=Path('classic/apps/web/src/app/api/transcription/timing-probe/route.ts');p.unlink();p.parent.rmdir()\nif (b/'probe-electron-profile').exists():shutil.rmtree(b/'probe-electron-profile')\nprint(json.dumps(rows,ensure_ascii=False))\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-95837a22-3569-44c3-b5d0-9cbc190635ac"
+      },
+      {
+        "at": "2026-10-12T11:07:29.168Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,shutil\nb=Path('.local/codex-transcription-research')\nrows=[]\nfor mode in ['verbose','whisper','srt']:\n r=json.loads((b/f'timing-{mode}-result.json').read_text());rows.append({k:r.get(k) for k in ['mode','httpStatus','elapsedMs','fields','hasWords','hasSegments','assetFormat','apiKeyUsed']})\n(b/'timing-probe-summary.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))\np=Path('classic/apps/web/src/app/api/transcription/timing-probe/route.ts');p.unlink();p.parent.rmdir()\nif (b/'probe-electron-profile').exists():shutil.rmtree(b/'probe-electron-profile')\nprint(json.dumps(rows,ensure_ascii=False))\nPY",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-95837a22-3569-44c3-b5d0-9cbc190635ac"
+      },
+      {
+        "at": "2026-10-12T11:07:29.169Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-97155590-c336-434e-8046-799078f848a0"
+      },
+      {
+        "at": "2026-10-12T11:07:29.171Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cargo test -p opencut-editor-api --test classic_transcription",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-3fc69209-10ba-4916-8d03-f1c3fe3ec443"
+      },
+      {
+        "at": "2026-10-12T11:07:29.173Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bunx tsc --noEmit -p tsconfig.build.json",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-7edfa0c2-6bd4-4e1a-9ffa-33a4afa5403f"
+      },
+      {
+        "at": "2026-10-12T11:07:29.409Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_9974b1e0333fe6e926e0d808957a574ee4b7ca1b84da362815cad9c76d95a82c",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-97155590-c336-434e-8046-799078f848a0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T11:07:29.711Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

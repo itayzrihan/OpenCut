@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e66809e3cf9ba855316cc1f6e0b80ce3911fa5bc6bb15c654d5d0a1d1e175ee9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:46:10.983Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '25,49p' classic/rust/editor-runtime-wasm/src/agent.rs; ps -axo pid,%cpu,rss,etime,comm | rg 'node|Chrome Helper' | sort -k2 -nr | head -3; tail -2 .local/smart-shorts-seven/artifact-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b75d5739-03f4-4b62-82de-7a4d05e9ec81"
+      },
+      {
+        "at": "2026-10-13T09:46:11.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '25,49p' classic/rust/editor-runtime-wasm/src/agent.rs; ps -axo pid,%cpu,rss,etime,comm | rg 'node|Chrome Helper' | sort -k2 -nr | head -3; tail -2 .local/smart-shorts-seven/artifact-probe.log",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b75d5739-03f4-4b62-82de-7a4d05e9ec81"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:46:11.624Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

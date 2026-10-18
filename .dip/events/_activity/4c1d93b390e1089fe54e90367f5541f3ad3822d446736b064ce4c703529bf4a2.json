@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c1d93b390e1089fe54e90367f5541f3ad3822d446736b064ce4c703529bf4a2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:14:28.933Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '96,130p' classic/apps/web/src/export/audio-stream.ts; sed -n '160,220p' classic/apps/web/src/export/audio-stream.ts; tail -10 .local/smart-shorts-audio/native-build.log; cat classic/apps/web/src/core/managers/__tests__/audio-manager.test.ts | head -45; cat classic/apps/web/src/media/__tests__/audio-window.test.ts | head -50",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-86f91849-925f-46dd-9307-a1d2fc96a956"
+      },
+      {
+        "at": "2026-10-13T16:14:29.151Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '96,130p' classic/apps/web/src/export/audio-stream.ts; sed -n '160,220p' classic/apps/web/src/export/audio-stream.ts; tail -10 .local/smart-shorts-audio/native-build.log; cat classic/apps/web/src/core/managers/__tests__/audio-manager.test.ts | head -45; cat classic/apps/web/src/media/__tests__/audio-window.test.ts | head -50",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-86f91849-925f-46dd-9307-a1d2fc96a956"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:14:29.335Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

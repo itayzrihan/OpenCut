@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "36308421c509b4b042d4a5b743a706580340f01b52086a0ab032fadc8a7c4bfa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:06:56.007Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport pathlib\ns=pathlib.Path('.local/smart-shorts-performance/browser-runtime-probe.ts').read_text()\ns=s.replace(\"new URL('../../classic/rust/editor-runtime-wasm/pkg/',import.meta.url)\",\"new URL('../../classic/rust/editor-runtime-wasm/pkg/',import.meta.url)\")\ns=s.replace(\"const result={restoreMs,snapshotMs,memoryBytes:instance.exports.memory.buffer.byteLength,scenes:state.project.classic.document.scenes.length,exact:JSON.stringify(state.project.classic.document)===JSON.stringify(a.classic.document)};runtime.free();return result;\", \"\"\"const baseline=JSON.stringify(state.project.classic);const memoryBefore=instance.exports.memory.buffer.byteLength;const status=runtime.invokeSync('project.classic.session.status',{projectId:p.metadata.id},{}).result.data;\n const sceneIds=p.scenes.map(s=>s.id);const timings=[];\n for(let i=0;i<100;i++){const t=performance.now();runtime.invokeSync('project.classic.scene.open',{projectId:p.metadata.id,sceneId:sceneIds[i%sceneIds.length],expectedRevision:state.revision},{});timings.push(performance.now()-t);}\n const after=runtime.snapshot();const afterStatus=runtime.invokeSync('project.classic.session.status',{projectId:p.metadata.id},{}).result.data;\n const result={restoreMs,snapshotMs,memoryBytes:instance.exports.memory.buffer.byteLength,memoryBefore,scenes:after.project.classic.document.scenes.length,exact:baseline===JSON.stringify(after.project.classic),revisionUnchanged:after.revision===state.revision,historyUnchanged:JSON.stringify(status)===JSON.stringify(afterStatus),maxSwitchMs:Math.max(...timings),meanSwitchMs:timings.reduce((a,b)=>a+b,0)/timings.length,switches:timings.length};runtime.free();return result;\"\"\")\ns=s.replace(\"if(!result.exact||result.scenes!==8)\",\"if(!result.exact||result.scenes!==8||!result.revisionUnchanged||!result.historyUnchanged||result.maxSwitchMs>100||result.memoryBytes!==result.memoryBefore)\")\ns=s.replace(\"'./browser-runtime-after.json'\",\"'./browser-navigation.json'\")\npathlib.Path('.local/s",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6cada800-0fc8-4453-b962-c4f601933cd4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:06:56.423Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

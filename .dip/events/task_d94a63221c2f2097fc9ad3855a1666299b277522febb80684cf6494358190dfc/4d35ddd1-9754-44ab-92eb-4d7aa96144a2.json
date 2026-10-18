@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4d35ddd1-9754-44ab-92eb-4d7aa96144a2",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.update",
+  "payload": {
+    "title": "Run seven Smart Shorts preserving main scene and resuming saved transcription",
+    "acceptance": [
+      "Production available and latest project identified",
+      "Transcription resumes durable checkpoints rather than restarting",
+      "Smart Shorts creates seven output sequences without modifying main scene or deleting its transcript",
+      "Output sequences appear in Assets and can be opened independently"
+    ],
+    "scope": [
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "classic/apps/web/src/core/managers/transcription-manager.ts"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-12T20:16:19.731Z",
+  "parents": [
+    "072653de-f245-442e-a82e-40680cfd24bf"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

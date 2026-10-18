@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a6d6e9047ffe3ef222648d0613479031238e509abed8a0461e5db9f31bbe1eaa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:38:04.494Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,160p' classic/apps/web/src/ai/podcast-plan.ts; git diff --stat -- classic/apps/web/src/core/managers/transcription-manager.ts classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6e03eaaa-7a3a-4ff8-bb97-14d652ca923d"
+      },
+      {
+        "at": "2026-10-13T09:38:04.643Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,160p' classic/apps/web/src/ai/podcast-plan.ts; git diff --stat -- classic/apps/web/src/core/managers/transcription-manager.ts classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6e03eaaa-7a3a-4ff8-bb97-14d652ca923d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:38:05.495Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

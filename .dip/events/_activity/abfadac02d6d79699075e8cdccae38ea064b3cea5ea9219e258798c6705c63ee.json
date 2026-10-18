@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abfadac02d6d79699075e8cdccae38ea064b3cea5ea9219e258798c6705c63ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T20:38:39.804Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile,writeFile}from'node:fs/promises';import{createHash}from'node:crypto';const before=JSON.parse(await readFile('.local/sequence-navigation/project-before.json','utf8'));const data=JSON.parse(await readFile(before.path,'utf8'));const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');if(hash(data.scenes)!==before.scenesHash||hash(data.transcriptionJobs)!==before.transcriptHash)throw Error('Project content changed');const r=await fetch('http://localhost:3211/',{signal:AbortSignal.timeout(3000)});await r.body.cancel();await writeFile('.local/sequence-navigation/preservation-final.json',JSON.stringify({sceneCount:data.scenes.length,scenesUnchanged:true,transcriptUnchanged:true,httpStatus:r.status}));console.log({sceneCount:data.scenes.length,scenesUnchanged:true,transcriptUnchanged:true,httpStatus:r.status});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-73f2805c-8b0b-4047-8ecb-dc3d033d837b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T20:38:40.338Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c98e0019165c157573b765247f865836fb4f3b0de89d8316d83f47e7d7483696",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T18:23:50.827Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp .local/apple-stt-benchmark/result-short.json .local/apple-stt-benchmark/result-cold.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-b45cdb69-9faf-49ca-9e1e-4122d8175c9d"
+      },
+      {
+        "at": "2026-10-12T18:23:51.281Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1aae790dea042dc1ee5aba8adc6e7777e11364f02a25a1b310c1b225e7a1812a",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cp .local/apple-stt-benchmark/result-short.json .local/apple-stt-benchmark/result-cold.json",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-b45cdb69-9faf-49ca-9e1e-4122d8175c9d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T18:23:51.717Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

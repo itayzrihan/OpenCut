@@ -18,49 +18,94 @@ import {
 import { applyAndArrangeAllTextTransitions } from "@/transitions";
 import type { TranscriptionLanguage } from "@/transcription/types";
 
-export async function runAutoTexts({
+type CaptionRecipeOptions = {
+	editor: EditorCore;
+	signal: AbortSignal;
+	onProgress: (s: string) => void;
+	settings: CaptionLayoutSettings;
+	language: TranscriptionLanguage;
+	/** Reuse a saved transcript when resuming preparation. */
+	resumeTranscript?: boolean;
+};
+
+export async function runAutoTexts(options: CaptionRecipeOptions) {
+	return runCaptionRecipe({ ...options, transcriptOnly: false });
+}
+
+/** Shared Generate Transcript → Codex Correct adapter, without row or transition edits. */
+export async function generateCorrectedTranscript(
+	options: CaptionRecipeOptions,
+) {
+	return runCaptionRecipe({ ...options, transcriptOnly: true });
+}
+
+async function runCaptionRecipe({
 	editor,
 	signal,
 	onProgress,
 	settings,
 	language,
 	resumeTranscript = false,
-}: {
-	editor: EditorCore;
-	signal: AbortSignal;
-	onProgress: (s: string) => void;
-	settings: CaptionLayoutSettings;
-	language: TranscriptionLanguage;
-	/** Only for resuming the same failed Full Auto caption stage. */
-	resumeTranscript?: boolean;
-}) {
+	transcriptOnly,
+}: CaptionRecipeOptions & { transcriptOnly: boolean }) {
 	signal.throwIfAborted();
+	const projectId = editor.project.getActive().metadata.id;
+	const sceneId = editor.scenes.getActiveScene().id;
+	const account =
+		typeof window === "undefined" ? undefined : window.__opencutAccountId;
+	const assertScope = () => {
+		signal.throwIfAborted();
+		if (
+			editor.project.getActive().metadata.id !== projectId ||
+			editor.scenes.getActiveScene().id !== sceneId ||
+			(typeof window !== "undefined" && window.__opencutAccountId !== account)
+		)
+			throw new Error(
+				"The project or account changed during transcript preparation",
+			);
+	};
 	const cancel = () => editor.transcription.cancel();
-	signal.addEventListener("abort", cancel, { once: true });
 	try {
 		const savedSource = resumeTranscript
 			? findCaptionSourceTrack({
 					tracks: editor.scenes.getActiveScene().tracks,
 				})?.captionSource
 			: undefined;
-		if (savedSource?.words.length) {
-			onProgress("Continuing Auto Texts from the saved transcript…");
+		if (
+			!editor.project
+				.getActive()
+				.transcriptionJobs?.some(
+					(j) =>
+						j.sceneId === sceneId &&
+						(j.status === "running" || j.status === "paused"),
+				) &&
+			savedSource?.words.some((word) => word.source?.type !== "text-layer")
+		) {
+			onProgress("Continuing from the saved transcript…");
 		} else {
 			onProgress("Transcribing speech…");
+			assertScope();
 			const unsubscribe = editor.transcription.subscribe(() => {
 				const { task } = editor.transcription.getState();
 				if (task.status === "running" && task.phase) onProgress(task.phase);
 			});
+			signal.addEventListener("abort", cancel, { once: true });
 			const state = await editor.transcription
 				.start({ language, settings })
-				.finally(unsubscribe);
+				.finally(() => {
+					unsubscribe();
+					signal.removeEventListener("abort", cancel);
+				});
 			signal.throwIfAborted();
 			if (state.task.status !== "succeeded")
 				throw new Error(state.task.error || "Transcription did not complete");
 		}
 
-		for (const operation of ["correct", "rearrange"] as const) {
-			signal.throwIfAborted();
+		const operations = transcriptOnly
+			? (["correct"] as const)
+			: (["correct", "rearrange"] as const);
+		for (const operation of operations) {
+			assertScope();
 			const scene = editor.scenes.getActiveScene();
 			const projectId = editor.project.getActive().metadata.id;
 			const source = findCaptionSourceTrack({
@@ -100,7 +145,7 @@ export async function runAutoTexts({
 					}),
 				};
 			}
-			signal.throwIfAborted();
+			assertScope();
 			const current = editor.scenes.getActiveScene();
 			if (
 				editor.project.getActive().metadata.id !== projectId ||
@@ -123,7 +168,8 @@ export async function runAutoTexts({
 				command: new TracksSnapshotCommand({ before, after }),
 			});
 		}
-		signal.throwIfAborted();
+		assertScope();
+		if (transcriptOnly) return;
 		onProgress("Apply & Arrange All Text with transitions…");
 		applyAndArrangeAllTextTransitions({ editor });
 	} finally {

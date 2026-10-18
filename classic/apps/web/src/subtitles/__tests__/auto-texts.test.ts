@@ -46,8 +46,10 @@ mock.module("@/transitions", () => ({
 	applyAndArrangeAllTextTransitions: () => calls.push("arrange"),
 }));
 let runAutoTexts: typeof import("../auto-texts").runAutoTexts;
+let generateCorrectedTranscript: typeof import("../auto-texts").generateCorrectedTranscript;
 beforeAll(async () => {
-	({ runAutoTexts } = await import("../auto-texts"));
+	({ runAutoTexts, generateCorrectedTranscript } =
+		await import("../auto-texts"));
 });
 function editor({ status = "succeeded" }: { status?: string } = {}) {
 	const scene = { id: "s", tracks: {} };
@@ -133,4 +135,36 @@ test("caption-stage resume transcribes when the interrupted run saved no transcr
 	} finally {
 		hasTranscript = true;
 	}
+});
+
+test("Smart takes preparation generates and corrects without arranging rows or transitions", async () => {
+	calls.length = 0;
+	failCorrection = false;
+	await generateCorrectedTranscript({
+		editor: editor(),
+		signal: new AbortController().signal,
+		onProgress: () => {},
+		language: "auto",
+		settings: { rows: 1, wordsPerRow: 4 } as Parameters<
+			typeof runAutoTexts
+		>[0]["settings"],
+	});
+	expect(calls).toEqual(["transcribe", "correct"]);
+});
+
+test("Smart takes preparation stops after a failed generation", async () => {
+	calls.length = 0;
+	failCorrection = false;
+	await expect(
+		generateCorrectedTranscript({
+			editor: editor({ status: "failed" }),
+			signal: new AbortController().signal,
+			onProgress: () => {},
+			language: "auto",
+			settings: { rows: 1, wordsPerRow: 4 } as Parameters<
+				typeof runAutoTexts
+			>[0]["settings"],
+		}),
+	).rejects.toThrow("Model failed");
+	expect(calls).toEqual(["transcribe"]);
 });

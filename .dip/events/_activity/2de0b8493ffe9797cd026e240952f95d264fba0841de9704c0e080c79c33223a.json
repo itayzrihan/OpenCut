@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2de0b8493ffe9797cd026e240952f95d264fba0841de9704c0e080c79c33223a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:00:53.146Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_5a145360c5a855de224e70017f80324a1fd4144cc2febdead15ec68b900d9463",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil,json\nroot=Path('/Users/itayzrihan/Documents/PoCut/sites/dip-public');starter=Path('/tmp/dip-vinext-starter')\n(root/'public').mkdir(exist_ok=True)\nfor p in (root/'dist').iterdir():\n if p.is_dir(): shutil.copytree(p,root/'public'/p.name,dirs_exist_ok=True)\n else: shutil.copy2(p,root/'public'/p.name)\nfor p in starter.iterdir():\n if p.name in ['.openai','.git','.sites-runtime']: continue\n dest=root/p.name\n if p.is_dir():shutil.copytree(p,dest,dirs_exist_ok=True)\n else:shutil.copy2(p,dest)\np=root/'.openai/hosting.json';d=json.loads(p.read_text());d.pop('static',None);d['d1']={'binding':'DB'};p.write_text(json.dumps(d,indent=2)+'\\n')\np=root/'.gitignore';p.write_text(p.read_text()+'\\n.dip/\\n.agents/\\n.claude/\\nAGENTS.md\\nCLAUDE.md\\n')\nPY\ncat .openai/hosting.json\ncat /tmp/dip-vinext-starter/.openai/hosting.json\nnode /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/configure-execution-profile.mjs\nnode /Users/itayzrihan/.codex/plugins/cache/openai-curated-remote/sites/1.0.0/scripts/install-dependencies.mjs",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c394751c-6d96-41ba-b1b7-a778f907f861"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:00:54.120Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

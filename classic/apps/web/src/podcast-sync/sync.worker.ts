@@ -8,6 +8,7 @@ type Request =
 			type: "route";
 			envelopes: Float32Array[];
 			channelIds: string[];
+			cameraWindows: import("opencut-wasm").PodcastCameraWindow[];
 			duration: number;
 			settings: PodcastSyncSettings;
 	  };

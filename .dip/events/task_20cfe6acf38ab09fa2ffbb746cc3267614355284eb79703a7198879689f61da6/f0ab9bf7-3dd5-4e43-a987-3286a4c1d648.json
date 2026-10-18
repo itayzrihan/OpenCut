@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0ab9bf7-3dd5-4e43-a987-3286a4c1d648",
+  "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Trace sequence opening and remove full content transaction/history/projection",
+          "status": "completed"
+        },
+        {
+          "step": "Add canonical lightweight navigation, viewer persistence, rendering/undo compatibility and regressions",
+          "status": "completed"
+        },
+        {
+          "step": "Verify measured responsiveness and complete configured checks",
+          "status": "in_progress"
+        },
+        {
+          "step": "Deploy and confirm actual UI switching plus unchanged scenes/transcript",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T20:09:57.714Z",
+  "parents": [
+    "f2e98be9-ffcc-4a3e-b3f0-9295c726a4d3"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

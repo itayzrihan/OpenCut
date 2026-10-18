@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "18b162077978fe7795a9a3cf305c22cad67083975ce577c7df26536ddd8583e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:40:29.457Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '780,865p' classic/apps/web/src/ai/edit-plan.ts\nrg -n 'interface AiEditPlan|AiEditPlanSchema|title:|summary:' classic/apps/web/src/ai/types.ts classic/apps/web/src/ai/edit-plan.ts | head -22\ncat analysis/teaser-exports-2026-10-14/clean-export-state.json\nrg -n 'caption.*cue|srt|subtitle' .dip/tools/verify-teaser* 2>/dev/null | head -30",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-906fa51c-6965-4aab-8980-752c182b41f8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:40:29.547Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

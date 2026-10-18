@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "36fd7f21250d3fbd782d2506d920ffa8588909f94580fc11b6524f08d6e70666",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:57:13.524Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node classic/scripts/test-web.mjs src/core/managers/__tests__/project-session-lifecycle.test.ts src/core/managers/__tests__/canonical-command-manager.test.ts src/core/managers/__tests__/command-manager-state-revision.test.ts --jobs=1",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-55a053b2-2a69-456f-a629-6b4a31a6e754"
+      },
+      {
+        "at": "2026-10-12T09:57:13.525Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > .local/transcription-debug/checkpoint-fixture.ts <<'EOF'\nimport * as glue from '../../classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nconst out=document.querySelector('pre')!;\ntry {\n const {instance}=await WebAssembly.instantiate(await (await fetch('/runtime.wasm')).arrayBuffer(),{'./opencut_editor_runtime_wasm_bg.js':glue});\n glue.__wbg_set_wasm(instance.exports);(instance.exports.__wbindgen_start as Function)();\n const session=new CanonicalClassicSession({runtime:new glue.CanonicalEditorRuntime(),projectId:'classic-project'});\n const key='checkpoint-browser-qa-20261012';const saved=localStorage.getItem(key);\n if(saved)session.restore(JSON.parse(saved));else{\n const classic=await(await fetch('/fixture.json')).json();const clip=classic.document.scenes[0].tracks.main.elements[0];\n Object.assign(clip,{duration:180*120000,trimStart:0,trimEnd:0,retime:{rate:1},params:{...clip.params,audioSyncOffset:0}});classic.mediaAssets[0].duration=180;\n session.attach({classic});}\n const read=()=>session.read();\n const report=()=>{const doc=read().document;const job=doc.transcriptionJobs?.[0];const captions=doc.scenes[0].tracks.overlay.filter((t:any)=>t.captionSource?.sourceId==='browser-job');\n out.textContent=JSON.stringify({status:job?.status??'ready',completedSections:Object.keys(job?.chunks??{}),cues:captions.flatMap((t:any)=>t.elements).length,words:captions[0]?.captionSource?.words.map((w:any)=>({text:w.text,start:w.start})),restoredFromDisk:!!saved},null,2);};\n const edit=(change:unknown)=>{session.invokeControl({capabilityId:'transcription.classic.edit',input:{jobId:'browser-job',change}});localStorage.setItem(key,JSON.stringify(session.archive()));report();};\n document.querySelector('#start')!.addEventListener('click',()=>{try{edit({type:'start',sceneId:'main-scene',language:'en',totalDuration:180*120000,settings:{wordsPerRow:3,rows:1},defaults:",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-eb358e21-1417-454a-a0ca-b38c7b97ab65"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:57:14.318Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f9717902e89a189889d27d7df2d0c55df25af220c53151ccb2ed0b377ee16cfc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-16T10:42:01.634Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/podcast-editorial.ts",
+          "classic/apps/web/src/ai/podcast-plan.ts",
+          "classic/apps/web/src/ai/podcast-plan-cache.ts",
+          "classic/apps/web/src/ai/components/podcast-controls.tsx",
+          ".local/teaser-upgrade",
+          ".local/teaser-upgrade/initial"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "128b6c79-0123-49bd-886b-7abe6d834695"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T10:42:01.638Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

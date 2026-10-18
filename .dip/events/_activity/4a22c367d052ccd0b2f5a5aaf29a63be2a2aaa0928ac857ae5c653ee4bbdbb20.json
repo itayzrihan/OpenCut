@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a22c367d052ccd0b2f5a5aaf29a63be2a2aaa0928ac857ae5c653ee4bbdbb20",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:01:22.853Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];print(json.dumps(r.get('critique:0'),ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b4a851fa-98e8-413d-95eb-995fde2576f6"
+      },
+      {
+        "at": "2026-10-16T11:01:22.952Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('.local/teaser-upgrade/real-provider-checkpoints.json'));r=json.loads(next(iter(x.values())))['responses'];print(json.dumps(r.get('critique:0'),ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b4a851fa-98e8-413d-95eb-995fde2576f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:01:23.010Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

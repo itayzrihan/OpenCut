@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e04ee3b6ff90fc881cb089b4b79815cfa52cdbe06321d332b80ebe7c589d36d4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-12T08:18:30.386Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_cc5260017aeefc07a5a06d8648f054b9daad13aa59873a9f059fc7a0b785606c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .agents/skills/dip/SKILL.md",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c50b1341-ca19-4427-9c13-3104f70d9f0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T08:18:30.440Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

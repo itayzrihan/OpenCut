@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b8ada2f886f6a7ce07809124a1d86ac9e6e0357d8ec146cb81ec83bbd910a210",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:32:31.638Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'temp-|משתמש זמני|temporary account|Temporary account' classic/apps/web/src --glob '!*.test.*' | head -70\nrg --files /tmp /var/folders/w8/90yrvgt514zf71nmv664tx6m0000gn/T -g '*opencut*' -g '*account*' -g '*credential*' -g '*recovery*' 2>/dev/null | head -50",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6a1df071-8b82-4dd8-bff8-6c041dfab6e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:32:31.797Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

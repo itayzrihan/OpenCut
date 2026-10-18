@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a1ecae5fb3cfb26406c79b86f3b46fd04e457e1e3820984e3e19545125f01429",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T10:42:28.389Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,114p' classic/apps/web/next.config.ts; ps -p 40508 -o pid,ppid,etime,command; rg -n 'subscription-probe|נדרשת התחברות OpenAI' classic/apps/web/.next-transcription-debug/dev/server/app/api/transcription/subscription-probe/route.js | head -1",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-901a7062-4d3a-4e49-855c-67b456fbf661"
+      },
+      {
+        "at": "2026-10-12T10:42:28.664Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,114p' classic/apps/web/next.config.ts; ps -p 40508 -o pid,ppid,etime,command; rg -n 'subscription-probe|נדרשת התחברות OpenAI' classic/apps/web/.next-transcription-debug/dev/server/app/api/transcription/subscription-probe/route.js | head -1",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-901a7062-4d3a-4e49-855c-67b456fbf661"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T10:42:29.224Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

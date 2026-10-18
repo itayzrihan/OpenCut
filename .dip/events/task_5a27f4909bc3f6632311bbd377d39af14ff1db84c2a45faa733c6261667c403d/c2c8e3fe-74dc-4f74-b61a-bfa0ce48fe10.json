@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c2c8e3fe-74dc-4f74-b61a-bfa0ce48fe10",
+  "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/transcription",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/core/managers/project-manager.ts",
+      "classic/apps/web/src/subtitles",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "classic/apps/web/src/ai/smart-takes-task.ts",
+      "classic/apps/web/src/project/types.ts",
+      "crates/editor-api/src/operations/classic_transcription.rs",
+      "crates/editor-api/src/operations.rs",
+      "crates/editor-api/src/classic.rs",
+      "crates/editor-api/tests/classic_transcription.rs"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T09:46:34.699Z",
+  "parents": [
+    "a078f5ac-0fa6-4a20-ab4e-2a88b798bbd9"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

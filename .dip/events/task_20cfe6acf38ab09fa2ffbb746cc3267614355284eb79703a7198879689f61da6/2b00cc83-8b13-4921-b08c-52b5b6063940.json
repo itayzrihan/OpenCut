@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2b00cc83-8b13-4921-b08c-52b5b6063940",
+  "taskId": "task_20cfe6acf38ab09fa2ffbb746cc3267614355284eb79703a7198879689f61da6",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src/core",
+      "crates/editor-api/src/model.rs",
+      "crates/editor-api/src/classic.rs",
+      "crates/editor-api/src/operations.rs",
+      "crates/editor-api/src/operations/classic_scenes.rs",
+      "crates/editor-api/src/operations/classic_session.rs",
+      "crates/editor-api/src/operations/hyperframes.rs",
+      "crates/editor-api/src/operations/silence.rs",
+      "crates/editor-api/src/editor_render.rs",
+      "crates/editor-agent/src/session_store.rs",
+      "crates/editor-api/tests/classic_scenes.rs",
+      "crates/editor-agent/tests/session_store.rs",
+      "classic/EXPORT-STREAMING.md",
+      ".dip/tools",
+      "classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+      "classic/apps/web/src/core/managers/__tests__/save-manager.test.ts"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T20:02:33.893Z",
+  "parents": [
+    "a0c00d24-7ad4-4227-aa64-71af3e77024b"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "143d449131304c50c001b45cf154b41e8a9dbc138c85aed0eb907690ac5a7033",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T13:12:52.570Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6ff7b190cfef984f21ac4e8daa71f30018aa3cc3e65a2f4e5f1ad8e420d211c4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'WorkspaceLoading' classic/apps/web/src\nrg -n 'async|await|loadProject|Promise.all' classic/apps/web/src/core/managers/project-manager.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-20d4785d-27e4-4335-ae89-5109ffa30356"
+      },
+      {
+        "at": "2026-10-12T13:12:52.685Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_6ff7b190cfef984f21ac4e8daa71f30018aa3cc3e65a2f4e5f1ad8e420d211c4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'WorkspaceLoading' classic/apps/web/src\nrg -n 'async|await|loadProject|Promise.all' classic/apps/web/src/core/managers/project-manager.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-20d4785d-27e4-4335-ae89-5109ffa30356"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T13:12:53.002Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89c611718183ff6f7130ade2fd0ce6ebd9b6ed08b67a25bd76678131a74debca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:48:41.729Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "sed -n '1,240p' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '420,525p' crates/editor-api/src/operations/classic_takes/podcast.rs",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-79fddd60-c060-4cec-8b3c-ae1bb92f6b1d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:48:41.740Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dd178790c374f5b58e90d49fc947927e58caa5e9c1a35951bdf43501b79ff08d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-13T14:13:13.092Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/accounts/bridge-snapshot-cache.test.ts",
+          "crates/mcp/src/classic_bridge.rs",
+          ".local/classic-web-tests/1791900792472",
+          ".local/classic-web-tests/1791900792472/src__accounts__bridge-snapshot-cache.test.ts.log",
+          ".local/classic-web-tests/1791900792472/summary.json",
+          ".local/smart-shorts-seven/bridge-heartbeat-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "e5409c5f-6c11-48f9-9b25-a90295a4cb71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T14:13:13.110Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

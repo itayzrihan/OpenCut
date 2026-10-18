@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6174b4ce-b6b0-4659-a36a-c945a4e51877",
+  "taskId": "task_08d4307aa45b5de53f582faee2c38aa67bd041266e67a479a08d42244e313699",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Researched current firsthand community reports and official sources (2026-10-12). GitHub openai/codex #50430 documents POST chatgpt.com/backend-api/transcribe, Node fetch 403 cf-mitigated challenge versus Electron/Chromium 200 under the same authentication/network; #49351 and OpenAI Community topic 1404658 contain October 9 real microphone-to-text success reports on Windows and Ubuntu using VS Code's built-in http.electronFetch setting. This is a plausible transport explanation for our earlier Node-based 403, not proof of OpenCut success or quota entitlement. Current official codex-rs source includes RealtimeSessionMode::Transcription with gpt-4o-mini-transcribe; distinguish that from extension batch dictation. Third-party B4PT0R/codex-backend-sdk documents OAuth multipart /backend-api/transcribe support without a developer key, but is not an official API contract and explicitly rejects timestamps/SRT/streaming. Official Sign in with ChatGPT preview limitations explicitly exclude audio/video inputs and transcription API from the supported third-party Responses flow (https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations). No further authenticated audio requests, product changes, settings mutations, or claims of long-file reliability/monthly-credit accounting. Concrete follow-up direction: isolate transport with bounded synthetic audio using native Chromium/Electron networking, and separately verify timing and account limits before product integration.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:47:27.905Z",
+  "parents": [
+    "686a1111-898f-4288-abc8-135db11f9fe5"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -11,6 +11,23 @@ import {
 	type SmartTakeCheckpoint,
 } from "./smart-takes-plan";
 
+type TranscriptPreparation = (input: {
+	editor: EditorCore;
+	signal: AbortSignal;
+	onProgress: (stage: string) => void;
+	resumeTranscript: boolean;
+}) => Promise<void>;
+const defaultPrepareTranscript: TranscriptPreparation = async (input) => {
+	const { generateCorrectedTranscript } =
+		await import("@/subtitles/auto-texts");
+	const { DEFAULT_CAPTION_LAYOUT } = await import("@/subtitles/caption-layout");
+	await generateCorrectedTranscript({
+		...input,
+		language: "auto",
+		settings: DEFAULT_CAPTION_LAYOUT,
+	});
+};
+
 // Transport orchestration only. The canonical Rust session owns every edit,
 // source validation, revision check, transcript rebuild and history boundary.
 const tasks = new WeakMap<EditorCore, SmartTakesTask>();
@@ -50,7 +67,7 @@ type Status = {
 export function getSmartTakesTask(editor: EditorCore): SmartTakesTask {
 	let task = tasks.get(editor);
 	if (!task) {
-		task = new SmartTakesTask(editor);
+		task = new SmartTakesTask({ editor: editor });
 		tasks.set(editor, task);
 	}
 	return task;
@@ -65,7 +82,19 @@ export class SmartTakesTask {
 		EditorCore["command"]["prepareSmartTakes"]
 	>["words"] = [];
 	private elementIds: string[] = [];
-	constructor(private editor: EditorCore) {}
+	private pendingPreparation: string | null = null;
+	private editor: EditorCore;
+	private prepareTranscript: TranscriptPreparation;
+	constructor({
+		editor,
+		prepareTranscript = defaultPrepareTranscript,
+	}: {
+		editor: EditorCore;
+		prepareTranscript?: TranscriptPreparation;
+	}) {
+		this.editor = editor;
+		this.prepareTranscript = prepareTranscript;
+	}
 	subscribe = (listener: () => void) => {
 		this.listeners.add(listener);
 		return () => {
@@ -126,23 +155,41 @@ export class SmartTakesTask {
 			return this.state;
 		}
 		if (this.controller) throw new Error("Smart takes is already running");
-		const prepared = this.editor.command.prepareSmartTakes(elementIds);
-		const source = sourceKey({ scene, elementIds, words: prepared.words });
-		const key = `opencut:smart-takes:v2:${mode === "experimental" ? "experimental:" : ""}${account}:${projectId}:${scene.id}`;
-		let checkpoint: SmartTakeCheckpoint = {};
-		try {
-			const saved = checkpointSchema.safeParse(
-				JSON.parse(sessionStorage.getItem(key) ?? "null"),
+		if (scene.takeAssembly)
+			throw new Error("This scene already has assembled takes");
+		if (
+			!elementIds.length ||
+			elementIds.some(
+				(id) =>
+					!scene.tracks.main.elements.some(
+						(e) => e.id === id && e.type === "video",
+					),
+			)
+		)
+			throw new Error(
+				"Select video clips on the main track to use Smart takes",
 			);
-			if (saved.success && sourceKey(JSON.parse(saved.data.source)) === source)
-				checkpoint = saved.data.checkpoint;
-		} catch {
-			/* Storage is optional; analysis remains usable without it. */
-		}
+		const preparationKey = `${account}:${projectId}:${scene.id}`;
+		const needsTranscript =
+			this.editor.project
+				.getActive()
+				.transcriptionJobs?.some(
+					(j) =>
+						j.sceneId === scene.id &&
+						(j.status === "running" || j.status === "paused"),
+				) ||
+			!scene.tracks.overlay.some(
+				(t) =>
+					t.type === "text" &&
+					t.captionSource?.words.some((w) => w.source?.type !== "text-layer"),
+			);
+		const needsPreparation =
+			needsTranscript || this.pendingPreparation === preparationKey;
+		if (needsPreparation) this.pendingPreparation = preparationKey;
 		this.account = account;
 		this.elementIds = [...elementIds];
-		this.checkpoint = checkpoint;
-		this.words = prepared.words;
+		this.checkpoint = {};
+		this.words = [];
 		this.state = {
 			status: "running",
 			mode,
@@ -151,45 +198,27 @@ export class SmartTakesTask {
 			requestId,
 			projectId,
 			sceneId: scene.id,
-			stage: "Preparing transcript",
-			wordCount: prepared.words.length,
-			hasCheckpoint: !!checkpoint.analysis || !!checkpoint.plan,
+			stage: needsPreparation
+				? "Generate transcript → Codex Correct"
+				: "Preparing transcript",
+			hasCheckpoint: false,
 		};
 		const controller = new AbortController();
 		this.controller = controller;
 		this.update({});
-		void this.run({
-			mode,
-			prepared,
-			controller,
-			checkpoint,
-			save: (next) => {
-				this.checkpoint = next;
-				try {
-					sessionStorage.setItem(
-						key,
-						JSON.stringify({ source, checkpoint: next }),
-					);
-				} catch {
-					/* Quota/privacy modes must not fail the edit. */
-				}
-				this.update({ hasCheckpoint: true });
-			},
-		});
+		void this.run({ mode, controller, needsPreparation, preparationKey });
 		return this.state;
 	}
 	private async run({
 		mode,
-		prepared,
 		controller,
-		checkpoint,
-		save,
+		needsPreparation,
+		preparationKey,
 	}: {
 		mode: SmartTakeMode;
-		prepared: ReturnType<EditorCore["command"]["prepareSmartTakes"]>;
 		controller: AbortController;
-		checkpoint: SmartTakeCheckpoint;
-		save: (value: SmartTakeCheckpoint) => void;
+		needsPreparation: boolean;
+		preparationKey: string;
 	}) {
 		const started = performance.now();
 		let phaseStarted = started;
@@ -212,7 +241,70 @@ export class SmartTakesTask {
 				stageTimings: [...stageTimings],
 			});
 		};
+		const assertScope = () => {
+			controller.signal.throwIfAborted();
+			if (
+				window.__opencutAccountId !== this.account ||
+				this.editor.project.getActiveOrNull()?.metadata.id !==
+					this.state.projectId ||
+				this.editor.scenes.getActiveSceneOrNull()?.id !== this.state.sceneId
+			)
+				throw new Error("The project or account changed during Smart takes");
+		};
+		const abort = () => controller.abort();
+		window.addEventListener("pagehide", abort, { once: true });
 		try {
+			assertScope();
+			if (needsPreparation) {
+				await this.prepareTranscript({
+					editor: this.editor,
+					signal: controller.signal,
+					onProgress: onStage,
+					resumeTranscript: true,
+				});
+				assertScope();
+				this.pendingPreparation = null;
+			}
+			// Capture the canonical revision only AFTER transcript insertion and correction.
+			const prepared = this.editor.command.prepareSmartTakes(this.elementIds);
+			const scene = this.editor.scenes.getActiveScene();
+			const source = sourceKey({
+				scene,
+				elementIds: this.elementIds,
+				words: prepared.words,
+			});
+			const key = `opencut:smart-takes:v2:${mode === "experimental" ? "experimental:" : ""}${preparationKey}`;
+			let checkpoint: SmartTakeCheckpoint = {};
+			try {
+				const saved = checkpointSchema.safeParse(
+					JSON.parse(sessionStorage.getItem(key) ?? "null"),
+				);
+				if (
+					saved.success &&
+					sourceKey(JSON.parse(saved.data.source)) === source
+				)
+					checkpoint = saved.data.checkpoint;
+			} catch {
+				/* Checkpoint storage is optional. */
+			}
+			this.checkpoint = checkpoint;
+			this.words = prepared.words;
+			this.update({
+				wordCount: prepared.words.length,
+				hasCheckpoint: !!checkpoint.analysis || !!checkpoint.plan,
+			});
+			const save = (next: SmartTakeCheckpoint) => {
+				this.checkpoint = next;
+				try {
+					sessionStorage.setItem(
+						key,
+						JSON.stringify({ source, checkpoint: next }),
+					);
+				} catch {
+					/* Quota/privacy modes must not fail the edit. */
+				}
+				this.update({ hasCheckpoint: true });
+			};
 			const plan = await requestSmartTakePlan({
 				mode,
 				review: prepared.review,
@@ -278,6 +370,7 @@ export class SmartTakesTask {
 				});
 			}
 		} finally {
+			window.removeEventListener("pagehide", abort);
 			recordStage();
 			this.update({
 				elapsedMs: Math.round(performance.now() - started),

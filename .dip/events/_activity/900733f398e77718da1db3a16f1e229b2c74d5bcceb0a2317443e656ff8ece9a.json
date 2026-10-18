@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "900733f398e77718da1db3a16f1e229b2c74d5bcceb0a2317443e656ff8ece9a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:47:33.383Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_aeeef3acf2ba50d558f26963ec4f6a004ec37839796f910944fbecf4e1ae8e9c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=json.loads(pathlib.Path('.local/teaser-reexport-audio-2026-10-15/project-before.json').read_text());s=next(s for s in p['scenes'] if s['id']=='6125f350-cad1-4f95-b7b6-8cc507c24af7');print(json.dumps(s['tracks']['main']['elements'][0],ensure_ascii=False)[:2400])\nPY\nffmpeg -v error -ss 1 -i /Users/itayzrihan/Downloads/OpenCut-Teaser-FullAuto-with-captions-2026-10-15.mp4 -frames:v 1 -y analysis/teaser-reexport-audio-2026-10-15/with-captions.jpg",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-831e8793-2601-4ac4-9b85-05842bb8eb18"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:47:33.416Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

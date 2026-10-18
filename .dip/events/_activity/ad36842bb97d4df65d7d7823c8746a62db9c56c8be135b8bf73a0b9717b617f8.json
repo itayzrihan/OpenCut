@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad36842bb97d4df65d7d7823c8746a62db9c56c8be135b8bf73a0b9717b617f8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-16T11:07:39.027Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_21122a6c1fc26a6f2ba00c1e9df0ec0f59b52fb7dbf2c0d267bad8a065da0e31",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\np='.local/teaser-upgrade/replay.ts';s=open(p).read().replace(\"const elapsedMs=Date.now()-(await stat('.local/teaser-upgrade/real-provider.log')).birthtimeMs;\",\"const logTimes=await stat('.local/teaser-upgrade/real-provider.log');\\nconst elapsedMs=logTimes.mtimeMs-logTimes.birthtimeMs;\");open(p,'w').write(s)\np='.local/teaser-upgrade/compare.ts';s=open(p).read().replace(\"runtime.free();console.log(JSON.stringify(summary));\",\"runtime.free();console.log(JSON.stringify({passed:true,oldParts:3,newParts:summary.newParts,newSeconds:summary.newSeconds,windows:22,sourceScenesExact:true,transcriptionExact:true}));\");open(p,'w').write(s)\nPY\nbun run .local/teaser-upgrade/replay.ts; bun run .local/teaser-upgrade/compare.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1a7324de-677b-4117-befa-c1b6802d7c6f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:07:39.628Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

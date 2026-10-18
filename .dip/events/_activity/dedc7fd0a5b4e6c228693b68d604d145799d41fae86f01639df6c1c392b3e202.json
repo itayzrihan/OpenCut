@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dedc7fd0a5b4e6c228693b68d604d145799d41fae86f01639df6c1c392b3e202",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:39:25.421Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/transcription/windows.test.ts');s=p.read_text().replace('if (++loads === 3)', 'console.log(\"decode\", loads+1); if (++loads === 3)').replace('if (startedCalls++ === 0)', 'console.log(\"provider\", startedCalls); if (startedCalls++ === 0)').replace('began.resolve();','console.log(\"release\"); began.resolve();').replace('siblingAborted = true;', 'console.log(\"abort sibling\"); siblingAborted = true;');p.write_text(s)\nPY\nbun test src/transcription/windows.test.ts --test-name-pattern 'prefetch decodes'",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-90c79a4e-3518-4537-8ef2-6e8914f22a62"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:39:26.270Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

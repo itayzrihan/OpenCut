@@ -4,16 +4,30 @@
 use super::*;
 use crate::ClassicProject;
 use crate::classic_archive::{
-    ArchivedClassicProject, ArchivedHistorySnapshot, SourcePool, validate_sources,
+    ArchivedClassicProject, ArchivedHistorySnapshot, SourcePool, validate_sources, HISTORY_EXPANDED_BUDGET,
 };
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ClassicHistoryBoundary {
     label: String,
-    classic: ClassicProject,
+    #[schemars(with = "ClassicProject")]
+    classic: CompactClassic,
     #[serde(default)]
     host_context: Map<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    viewer_scene_id: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(try_from = "ClassicProject", into = "ClassicProject")]
+struct CompactClassic(Arc<str>);
+impl Clone for CompactClassic { fn clone(&self) -> Self { Self(self.0.clone()) } }
+impl From<ClassicProject> for CompactClassic {
+    fn from(value: ClassicProject) -> Self { Self(serde_json::to_string(&value).expect("Classic serializes").into()) }
+}
+impl From<CompactClassic> for ClassicProject {
+    fn from(value: CompactClassic) -> Self { serde_json::from_str(&value.0).expect("internally serialized Classic") }
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -74,6 +88,8 @@ struct ArchivedBoundary {
     classic: ArchivedHistorySnapshot,
     #[serde(default)]
     host_context: Map<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    viewer_scene_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
@@ -86,6 +102,8 @@ struct SessionArchive {
     undo_stack: Vec<ArchivedBoundary>,
     redo_stack: Vec<ArchivedBoundary>,
     sources: SourcePool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    viewer_scene_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -155,7 +173,7 @@ pub(super) fn register_classic_session_operations(
         move |context, input| {
             let state = attach_state.clone();
             let events = events.clone();
-            async move { attach_session(&state, &events, context, input, None) }
+            async move { attach_session(&state, &events, context, input, None, None) }
         },
     )?;
     register::<ReadInput, SessionOutput, _, _>(
@@ -227,6 +245,7 @@ fn import_stack(
     template: &EditorDocument,
     project_id: &str,
     entries: Vec<ClassicHistoryBoundary>,
+    sources: &mut SourcePool,
 ) -> Result<Vec<HistoryEntry>, CapabilityError> {
     entries
         .into_iter()
@@ -236,9 +255,15 @@ fn import_stack(
                     "Classic history label must not be empty".into(),
                 ));
             }
+            let mut classic: ClassicProject = entry.classic.into();
+            classic.intern_sources(sources);
+            let mut document = with_classic(template, project_id, classic)?;
+            if let Some(scene_id) = entry.viewer_scene_id {
+                restore_viewer(&mut document, project_id, scene_id)?;
+            }
             Ok(HistoryEntry {
                 label: entry.label,
-                document: with_classic(template, project_id, entry.classic)?,
+                document: document.into(),
                 host_context: entry.host_context,
             })
         })
@@ -259,13 +284,33 @@ fn export_stack(entries: &[HistoryEntry]) -> Result<Vec<ClassicHistoryBoundary>,
     entries
         .iter()
         .map(|entry| {
+            let document = entry.document.materialize();
             Ok(ClassicHistoryBoundary {
                 label: entry.label.clone(),
-                classic: read_classic(&entry.document)?,
+                classic: read_classic(&document)?.into(),
                 host_context: entry.host_context.clone(),
+                viewer_scene_id: viewer_hint(&document),
             })
         })
         .collect()
+}
+
+fn viewer_hint(document: &EditorDocument) -> Option<String> {
+    let classic = document.project.as_ref()?.classic.as_ref()?;
+    let view = document.classic_view_scene_id()?;
+    (classic.document["currentSceneId"].as_str() != Some(view)).then(|| view.to_owned())
+}
+
+fn restore_viewer(document: &mut EditorDocument, project_id: &str, scene_id: String) -> Result<(), CapabilityError> {
+    if [project_id, scene_id.as_str()].iter().any(|id| id.is_empty() || id.len() > 256 || id.chars().any(char::is_control)) {
+        return Err(CapabilityError::InvalidInput("invalid archived viewer identity".into()));
+    }
+    let classic = document.project.as_ref().and_then(|p| p.classic.as_ref()).unwrap();
+    if !classic.document["scenes"].as_array().unwrap().iter().any(|s| s["id"] == scene_id) {
+        return Err(CapabilityError::InvalidInput("archived viewer scene not found".into()));
+    }
+    document.workspace.classic_scene = Some(crate::ClassicSceneNavigation { project_id: project_id.into(), scene_id });
+    Ok(())
 }
 
 fn attach_session(
@@ -274,6 +319,7 @@ fn attach_session(
     context: InvocationContext,
     input: AttachInput,
     restored_revision: Option<u64>,
+    viewer_scene_id: Option<String>,
 ) -> Result<OperationSuccess<MutationOutput>, CapabilityError> {
     if context.cancellation.is_cancelled() {
         return Err(CapabilityError::Failed("operation was cancelled".into()));
@@ -302,14 +348,11 @@ fn attach_session(
     let mut current = input.classic;
     current.intern_sources(&mut sources);
     let mut document = with_classic(template, &input.project_id, current)?;
-    let mut share = |mut entries: Vec<ClassicHistoryBoundary>| {
-        for entry in &mut entries {
-            entry.classic.intern_sources(&mut sources);
-        }
-        import_stack(template, &input.project_id, entries)
-    };
-    let undo = share(input.undo_stack)?;
-    let redo = share(input.redo_stack)?;
+    if let Some(scene_id) = viewer_scene_id { restore_viewer(&mut document, &input.project_id, scene_id)?; }
+    // Materialize each compact boundary once, validate it and store it once.
+    // Interning must not serialize/reparse the entire episode in an extra loop.
+    let undo = import_stack(template, &input.project_id, input.undo_stack, &mut sources)?;
+    let redo = import_stack(template, &input.project_id, input.redo_stack, &mut sources)?;
     let previous_revision = template.revision;
     document.revision = restored_revision.unwrap_or(previous_revision + 1);
     if document.revision <= previous_revision || document.revision >= 9_007_199_254_740_991 {
@@ -350,7 +393,7 @@ fn register_archive_operations(
         crate::CapabilityExecution::Immediate,
         "project.classic.session.archive",
         "Archive Classic session",
-        "Serializes Classic history with each immutable HyperFrames source stored once. compact:true emits version 2 lossless history deltas against the current snapshot; chained:true with compact emits version 3 deltas against the preceding boundary in each stack; version 1 remains readable and is the default. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps the last 100 entries after the last host action marked persistable:false in each stack, matching Classic's existing durable history boundary for media side effects. Restore validates sources and every boundary before changing state.",
+        "Serializes Classic history with each immutable HyperFrames source stored once. compact:true emits version 2 lossless history deltas against the current snapshot; chained:true with compact emits version 3 deltas against the preceding boundary in each stack; version 1 remains readable and is the default. Composition source strings refer to SHA-256 keys in sources. persistableOnly keeps up to the last 100 entries after the last host action marked persistable:false in each stack, within the shared expanded-history storage budget. The live history remains intact; recent undo and redo boundaries are retained first. Restore validates sources and every boundary before changing state.",
         "project",
         AccessLevel::Read,
         true,
@@ -379,7 +422,9 @@ fn register_archive_operations(
                     entries
                         .iter()
                         .map(|entry| {
-                            let archived = classic_ref(&entry.document)?.to_archive(&mut sources);
+                            let document = entry.document.materialize();
+                            let viewer_scene_id = viewer_hint(&document);
+                            let archived = classic_ref(&document)?.to_archive(&mut sources);
                             let next_base = if input.compact && input.chained {
                                 Some(serde_json::to_value(&archived)
                                     .map_err(|e| CapabilityError::Failed(e.to_string()))?)
@@ -395,22 +440,22 @@ fn register_archive_operations(
                                 label: entry.label.clone(),
                                 host_context: entry.host_context.clone(),
                                 classic: snapshot,
+                                viewer_scene_id,
                             })
                         })
                         .collect::<Result<Vec<_>, CapabilityError>>()
                 };
-                let undo_stack = archive_stack(if input.persistable_only {
-                    persistable_entries(&store.undo)
+                let (undo, redo) = if input.persistable_only {
+                    bounded_persistable_entries(&store.undo, &store.redo, HISTORY_EXPANDED_BUDGET)
                 } else {
-                    &store.undo
-                })?;
-                let redo_stack = archive_stack(if input.persistable_only {
-                    persistable_entries(&store.redo)
-                } else {
-                    &store.redo
-                })?;
+                    (store.undo.as_slice(), store.redo.as_slice())
+                };
+                let undo_stack = archive_stack(undo)?;
+                let redo_stack = archive_stack(redo)?;
+                let viewer_scene_id = viewer_hint(&store.document);
+                let has_viewer = viewer_scene_id.is_some() || undo_stack.iter().chain(&redo_stack).any(|entry| entry.viewer_scene_id.is_some());
                 Ok(OperationSuccess::new(SessionArchive {
-                    schema_version: if input.compact && input.chained {
+                    schema_version: if has_viewer && input.compact && !input.chained { 5 } else if has_viewer { 4 } else if input.compact && input.chained {
                         3
                     } else if input.compact {
                         2
@@ -423,6 +468,7 @@ fn register_archive_operations(
                     undo_stack,
                     redo_stack,
                     sources,
+                    viewer_scene_id,
                 }))
             }
         },
@@ -444,7 +490,7 @@ fn register_archive_operations(
             let events = events.clone();
             async move {
                 let archive = input.archive;
-                if !matches!(archive.schema_version, 1 | 2 | 3) {
+                if !matches!(archive.schema_version, 1 | 2 | 3 | 4 | 5) {
                     return Err(CapabilityError::InvalidInput(
                         "Unsupported Classic archive schema".into(),
                     ));
@@ -460,19 +506,20 @@ fn register_archive_operations(
                     .then(|| serde_json::to_value(&archive.classic))
                     .transpose()
                     .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-                let mut expanded_budget = 512_000_000usize;
+                let mut expanded_budget = HISTORY_EXPANDED_BUDGET;
                 let mut restore = |entries: Vec<ArchivedBoundary>| {
                     let mut previous = base.clone();
                     entries
                         .into_iter()
                         .map(|entry| {
                             let classic = entry.classic
-                                .restore(&mut previous, archive.schema_version == 3, &archive.sources, &mut expanded_budget)
+                                .restore(&mut previous, matches!(archive.schema_version, 3 | 4), &archive.sources, &mut expanded_budget)
                                 .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
                             Ok(ClassicHistoryBoundary {
                                 label: entry.label,
                                 host_context: entry.host_context,
-                                classic,
+                                classic: classic.into(),
+                                viewer_scene_id: entry.viewer_scene_id,
                             })
                         })
                         .collect::<Result<Vec<_>, CapabilityError>>()
@@ -487,7 +534,7 @@ fn register_archive_operations(
                     undo_stack: restore(archive.undo_stack)?,
                     redo_stack: restore(archive.redo_stack)?,
                 };
-                attach_session(&state, &events, context, restored, Some(archive.revision))
+                attach_session(&state, &events, context, restored, Some(archive.revision), archive.viewer_scene_id)
             }
         },
     )
@@ -509,4 +556,53 @@ fn persistable_entries(entries: &[HistoryEntry]) -> &[HistoryEntry] {
         .rposition(|entry| entry.host_context.get("persistable") == Some(&Value::Bool(false)))
         .map_or(0, |index| index + 1);
     &entries[start.max(entries.len().saturating_sub(100))..]
+}
+
+// Share the restore budget between both stacks, retaining contiguous recent
+// suffixes. Never truncate the live history or the current project/transcript.
+fn bounded_persistable_entries<'a>(
+    undo: &'a [HistoryEntry], redo: &'a [HistoryEntry], mut budget: usize,
+) -> (&'a [HistoryEntry], &'a [HistoryEntry]) {
+    let undo = persistable_entries(undo);
+    let redo = persistable_entries(redo);
+    let (mut u, mut r) = (undo.len(), redo.len());
+    loop {
+        let before = (u, r);
+        if u > 0 {
+            let bytes = undo[u - 1].document.classic_archive_bytes();
+            if bytes <= budget { budget -= bytes; u -= 1; }
+        }
+        if r > 0 {
+            let bytes = redo[r - 1].document.classic_archive_bytes();
+            if bytes <= budget { budget -= bytes; r -= 1; }
+        }
+        if before == (u, r) { break; }
+    }
+    (&undo[u..], &redo[r..])
+}
+
+#[cfg(test)]
+mod archive_budget_tests {
+    use super::*;
+    use crate::runtime::HistoryDocument;
+
+    #[test]
+    fn durable_history_fits_restore_budget_without_truncating_live_stacks() {
+        let entry = |label: &str, bytes| HistoryEntry {
+            label: label.into(),
+            document: HistoryDocument::Classic {
+                json: "{}".into(), revision: 1, archive_bytes: bytes,
+            },
+            host_context: Map::new(),
+        };
+        let undo = vec![entry("old", 6), entry("middle", 6), entry("latest", 6)];
+        let redo = vec![entry("far", 6), entry("next", 6)];
+        let (u, r) = bounded_persistable_entries(&undo, &redo, 19);
+        assert_eq!(u.iter().map(|e| e.label.as_str()).collect::<Vec<_>>(), ["middle", "latest"]);
+        assert_eq!(r.iter().map(|e| e.label.as_str()).collect::<Vec<_>>(), ["next"]);
+        assert_eq!(undo.len(), 3);
+        assert_eq!(redo.len(), 2);
+        let (u, r) = bounded_persistable_entries(&undo, &redo, 5);
+        assert!(u.is_empty() && r.is_empty());
+    }
 }

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1f33ae19-5839-4f71-844c-66c15c3e30ff",
+  "taskId": "task_a3c14d773ca27f48f444f6ba549c05db10c3d46e3879cb5b3bd31d30c8869c24",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Duplicate current project and verify saved content isolation",
+          "status": "completed"
+        },
+        {
+          "step": "Audit and fix teaser/shorts source-preservation and repeated generation",
+          "status": "completed"
+        },
+        {
+          "step": "Run regression checks and deploy local production",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify original and copy in production; record delivery",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T21:04:55.149Z",
+  "parents": [
+    "62011cb4-8cd3-41b0-84cd-eaec64a96d77"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a033f759-2847-4c44-9a41-a8fcfd716453",
+  "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "crates/editor-api/src/runtime.rs",
+      "crates/editor-api/src/operations.rs",
+      "crates/editor-api/src/operations/classic_session.rs",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/__tests__/transcription-manager.test.ts",
+      "classic/apps/web/src/timeline/components/caption-word-element-refs.ts",
+      "classic/apps/web/src/timeline/components/caption-word-timing-track.tsx",
+      "classic/apps/web/src/timeline/__tests__/caption-word-element-refs.test.ts",
+      "classic/apps/web/src/accounts/bridge-transport.ts",
+      "classic/apps/web/src/accounts/bridge-transport.test.ts",
+      "classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts",
+      ".dip/tools/verify-compact-history.mjs",
+      "crates/editor-api/src/classic_archive.rs"
+    ]
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-13T10:44:08.234Z",
+  "parents": [
+    "81116ebf-650d-4693-99e7-deeb7527a4b4"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

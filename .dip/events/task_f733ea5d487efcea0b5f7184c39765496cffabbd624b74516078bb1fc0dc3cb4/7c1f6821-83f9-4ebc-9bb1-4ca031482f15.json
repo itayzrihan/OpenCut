@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7c1f6821-83f9-4ebc-9bb1-4ca031482f15",
+  "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Applied requested strategic compression skill to the full 108-minute episode transcript. Created separate teaser90 scene through live MCP create/activate/validated full-source operations, 12 speech clips from 9 editorial regions, 87.56s dialogue +2.44s closing, synchronized 213-word captions, new-scene audio enabled. Played through90s, reloaded saved scene, displayed Assets sequence/full timeline. Configuredcheck confirms all9 old scenes/captions and STT/settings exact. Source/output ledger, delivery screenshot and receipts saved.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Canonical conservative acoustic policy did not find safe silence at24 selected word boundaries; kept neighboring-word-bounded handles. Complete decoded signal coverage validated; phoneme-level alignment and human listening not claimed. Original transcript ASR errors reused without changing original."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "No export or visual motion/B-roll finishing requested; delivered editable90-second scene."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-14T08:09:03.885Z",
+  "parents": [
+    "9dc83051-ca09-42e6-80ab-f5e79780f73c"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

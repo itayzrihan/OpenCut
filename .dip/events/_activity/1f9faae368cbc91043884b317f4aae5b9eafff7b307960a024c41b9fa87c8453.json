@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1f9faae368cbc91043884b317f4aae5b9eafff7b307960a024c41b9fa87c8453",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T09:51:48.683Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\np='classic/apps/web/src/timeline/components/caption-word-element-refs.ts';s=open(p).read();pos=s.index('export function getWordElementRefs');s=s[:pos]+'''/** An index for one immutable UI projection; rebuild when its words change. */\nexport function createCaptionWordIndex(words: TranscriptionWord[]): Map<string, number[]> {\n\tconst index = new Map<string, number[]>();\n\tfor (const [wordIndex, word] of words.entries()) {\n\t\tconst text = normalizeWord(word.text);\n\t\tconst matches = index.get(text);\n\t\tif (matches) matches.push(wordIndex);\n\t\telse index.set(text, [wordIndex]);\n\t}\n\treturn index;\n}\n\n'''+s[pos:];s=s.replace('const refsByWordIndex = new Map<number, SelectedTextWordRef[]>();','const refsByWordIndex = new Map<number, SelectedTextWordRef[]>();\\n\\tconst wordIndex = createCaptionWordIndex(words);',1);s=s.replace('\\tconst wordIndex = createCaptionWordIndex(words);','\\tconst lookup = createCaptionWordIndex(words);',1);s=s.replace('\\t\\t\\t\\t\\twords,\\n\\t\\t\\t\\t\\telement,','\\t\\t\\t\\t\\twords,\\n\\t\\t\\t\\t\\tlookup,\\n\\t\\t\\t\\t\\telement,',1);s=s.replace('findWordIndexForRun({ words, run, runStart, runEnd })','findWordIndexForRun({ words, run, runStart, runEnd, lookup })',1)\ns=s.replace('function getPresentationOnlyWordRunRefs({\\n\\twords,','function getPresentationOnlyWordRunRefs({\\n\\twords,\\n\\tlookup,',1);s=s.replace('words: TranscriptionWord[];\\n\\telement: TextElement;','words: TranscriptionWord[];\\n\\tlookup: Map<string, number[]>;\\n\\telement: TextElement;',1);s=s.replace('\\t\\t\\twords,\\n\\t\\t\\tnormalizedText,','\\t\\t\\twords,\\n\\t\\t\\tlookup,\\n\\t\\t\\tnormalizedText,',1);s=s.replace('\\t\\t\\t\\twords,\\n\\t\\t\\t\\tnormalizedText,','\\t\\t\\t\\twords,\\n\\t\\t\\t\\tlookup,\\n\\t\\t\\t\\tnormalizedText,',1);s=s.replace('function findPresentationWordIndex({\\n\\twords,','function findPresentationWordIndex({\\n\\twords,\\n\\tlookup,',1);s=s.replace('words: TranscriptionWord[];\\n\\tnormalizedText: string;','words: TranscriptionWord[];\\n\\tlookup: Map<string, number[]>;\\n\\tnormalizedText: string;',1);s=s.rep",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-1e319dd5-1cb6-47eb-b311-c6a8b9ed9e95"
+      },
+      {
+        "at": "2026-10-13T09:51:48.808Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 <<'PY'\np='classic/apps/web/src/timeline/components/caption-word-element-refs.ts';s=open(p).read();pos=s.index('export function getWordElementRefs');s=s[:pos]+'''/** An index for one immutable UI projection; rebuild when its words change. */\nexport function createCaptionWordIndex(words: TranscriptionWord[]): Map<string, number[]> {\n\tconst index = new Map<string, number[]>();\n\tfor (const [wordIndex, word] of words.entries()) {\n\t\tconst text = normalizeWord(word.text);\n\t\tconst matches = index.get(text);\n\t\tif (matches) matches.push(wordIndex);\n\t\telse index.set(text, [wordIndex]);\n\t}\n\treturn index;\n}\n\n'''+s[pos:];s=s.replace('const refsByWordIndex = new Map<number, SelectedTextWordRef[]>();','const refsByWordIndex = new Map<number, SelectedTextWordRef[]>();\\n\\tconst wordIndex = createCaptionWordIndex(words);',1);s=s.replace('\\tconst wordIndex = createCaptionWordIndex(words);','\\tconst lookup = createCaptionWordIndex(words);',1);s=s.replace('\\t\\t\\t\\t\\twords,\\n\\t\\t\\t\\t\\telement,','\\t\\t\\t\\t\\twords,\\n\\t\\t\\t\\t\\tlookup,\\n\\t\\t\\t\\t\\telement,',1);s=s.replace('findWordIndexForRun({ words, run, runStart, runEnd })','findWordIndexForRun({ words, run, runStart, runEnd, lookup })',1)\ns=s.replace('function getPresentationOnlyWordRunRefs({\\n\\twords,','function getPresentationOnlyWordRunRefs({\\n\\twords,\\n\\tlookup,',1);s=s.replace('words: TranscriptionWord[];\\n\\telement: TextElement;','words: TranscriptionWord[];\\n\\tlookup: Map<string, number[]>;\\n\\telement: TextElement;',1);s=s.replace('\\t\\t\\twords,\\n\\t\\t\\tnormalizedText,','\\t\\t\\twords,\\n\\t\\t\\tlookup,\\n\\t\\t\\tnormalizedText,',1);s=s.replace('\\t\\t\\t\\twords,\\n\\t\\t\\t\\tnormalizedText,','\\t\\t\\t\\twords,\\n\\t\\t\\t\\tlookup,\\n\\t\\t\\t\\tnormalizedText,',1);s=s.replace('function findPresentationWordIndex({\\n\\twords,','function findPresentationWordIndex({\\n\\twords,\\n\\tlookup,',1);s=s.replace('words: TranscriptionWord[];\\n\\tnormalizedText: string;','words: TranscriptionWord[];\\n\\tlookup: Map<string, number[]>;\\n\\tnormalizedText: string;',1);s=s.rep",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-1e319dd5-1cb6-47eb-b311-c6a8b9ed9e95"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T09:51:49.306Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

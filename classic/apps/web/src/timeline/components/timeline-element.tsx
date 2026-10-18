@@ -126,6 +126,7 @@ import { getTransitionPreset } from "@/transitions";
 import type { MediaAsset } from "@/media/types";
 import {
 	isUnifiedAnglesAsset,
+	getUnifiedAngleRange,
 	resolveUnifiedAnglesAudioAsset,
 } from "@/media/unified-angles";
 import { UI_ELEMENT_GRAPHIC_ID } from "@/graphics/definitions/ui-element";
@@ -137,10 +138,6 @@ import { InsertSelectionIntoCanvasCommand } from "@/commands/parallax/insert-sel
 import type { InsertSelectionMode } from "@/parallax-story-teller/insert-selection";
 import { toast } from "sonner";
 import { getDisplayTrackIds } from "@/timeline/track-order";
-import {
-	buildUnifiedAngleCycleUpdates,
-	buildUnifiedAngleSetUpdates,
-} from "@/timeline/unified-angles-cycle";
 import {
 	getAnimationsWithoutAppliedLoop,
 	getAppliedLoopKeyframes,
@@ -785,53 +782,65 @@ function TimelineElementMenuContent({
 		};
 	}, [activeScene, clipMediaAssets, editor, selectedElements]);
 	const handleCycleUnifiedAngles = (startingAngleAssetId: string) => {
-		if (!unifiedAngleCycleTarget) return;
+		if (!unifiedAngleCycleTarget || !activeScene) return;
 		try {
-			editor.timeline.updateElements({
-				updates: buildUnifiedAngleCycleUpdates({
-					asset: unifiedAngleCycleTarget.asset,
-					targets: unifiedAngleCycleTarget.targets,
-					startingAngleAssetId,
-				}),
+			editor.command.switchUnifiedAngles({
+				sceneId: activeScene.id,
+				mediaId: unifiedAngleCycleTarget.asset.id,
+				elementIds: unifiedAngleCycleTarget.targets.map((t) => t.elementId),
+				angleAssetId: startingAngleAssetId,
+				cycle: true,
 			});
-			toast.success("Camera angles alternated", {
-				description: `${unifiedAngleCycleTarget.targets.length} cuts updated in timeline order.`,
-			});
+			toast.success("Available camera angles alternated");
 		} catch (error) {
-			toast.error("Could not alternate camera angles", {
-				description: error instanceof Error ? error.message : undefined,
-			});
+			toast.error(
+				error instanceof Error ? error.message : "Could not switch angles",
+			);
 		}
 	};
 	const handleSetUnifiedAngle = (angleAssetId: string) => {
-		const cycleTarget = unifiedAngleCycleTarget;
-		const selectedTargets =
+		if (!activeScene || !mediaAsset) return;
+		const targets =
 			isCurrentElementSelected &&
-			cycleTarget &&
-			cycleTarget.asset.id === mediaAsset?.id
-				? cycleTarget.targets
-				: null;
-		editor.timeline.updateElements({
-			updates:
-				selectedTargets && cycleTarget
-					? buildUnifiedAngleSetUpdates({
-							asset: cycleTarget.asset,
-							targets: selectedTargets,
-							angleAssetId,
-						})
-					: [
-							{
-								trackId,
-								elementId: element.id,
-								patch: { unifiedAngleId: angleAssetId },
-							},
-						],
-		});
-		if (selectedTargets) {
-			toast.success("Camera angle changed", {
-				description: `${selectedTargets.length} selected cuts updated.`,
+			unifiedAngleCycleTarget?.asset.id === mediaAsset.id
+				? unifiedAngleCycleTarget.targets.map((t) => t.elementId)
+				: [element.id];
+		try {
+			editor.command.switchUnifiedAngles({
+				sceneId: activeScene.id,
+				mediaId: mediaAsset.id,
+				elementIds: targets,
+				angleAssetId,
 			});
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Could not switch angle",
+			);
 		}
+	};
+	const angleAvailable = (id: string) => {
+		if (element.type !== "video" || !mediaAsset) return false;
+		const selected =
+			isCurrentElementSelected &&
+			unifiedAngleCycleTarget?.asset.id === mediaAsset.id
+				? editor.timeline
+						.getElementsWithTracks({ elements: selectedElements })
+						.map((entry) => entry.element)
+				: [element];
+		return selected.every(
+			(clip) =>
+				clip.type === "video" &&
+				getUnifiedAngleRange({
+					asset: mediaAsset,
+					angleAssetId: id,
+					mediaMap: new Map(clipMediaAssets.map((a) => [a.id, a])),
+					trimStart: clip.trimStart / 120000,
+					duration:
+						(clip.sourceDuration
+							? clip.sourceDuration - clip.trimStart - clip.trimEnd
+							: clip.duration) / 120000,
+				}).available,
+		);
 	};
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
 	const canToggleCurrentSourceAudio =
@@ -998,6 +1007,12 @@ function TimelineElementMenuContent({
 							return (
 								<ContextMenuItem
 									key={angle.id}
+									disabled={!angleAvailable(angle.id)}
+									title={
+										!angleAvailable(angle.id)
+											? "Not available for this clip, or audio synchronization required"
+											: undefined
+									}
 									onClick={() => handleSetUnifiedAngle(angle.id)}
 								>
 									<span className="w-4">

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0abeb3170636ec93631c11a5ddaaaae6e9f6cc54ac091793bd707c8beef0e4f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T09:13:28.978Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');x=json.loads(p.read_text());r=sorted([r for r in x['runs']if any(j['projectId']=='96fa8232-1976-427d-90eb-17cbf11c858c' for j in r['jobs'])],key=lambda r:r['createdAt'],reverse=True)[0];print({'id':r['id'],'age':round(time.time()-r['createdAt']/1000),'options':r['options'],'job':{k:r['jobs'][0].get(k)for k in ['status','completedStages','message']}})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-4f2007fc-bbee-4c36-a0c7-1dd3c54be5ae"
+      },
+      {
+        "at": "2026-10-14T09:13:29.211Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_ec4e9deb9fe51462da7a3a7f58c741b00222f355685373d57cc7f0b4442a5c0c",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');x=json.loads(p.read_text());r=sorted([r for r in x['runs']if any(j['projectId']=='96fa8232-1976-427d-90eb-17cbf11c858c' for j in r['jobs'])],key=lambda r:r['createdAt'],reverse=True)[0];print({'id':r['id'],'age':round(time.time()-r['createdAt']/1000),'options':r['options'],'job':{k:r['jobs'][0].get(k)for k in ['status','completedStages','message']}})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-4f2007fc-bbee-4c36-a0c7-1dd3c54be5ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T09:13:29.584Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

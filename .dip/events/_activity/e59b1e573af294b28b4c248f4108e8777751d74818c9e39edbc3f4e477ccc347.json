@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e59b1e573af294b28b4c248f4108e8777751d74818c9e39edbc3f4e477ccc347",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:55:46.763Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'snapshot|revision|resume|cache|caption|fail' classic/BROWSER-TRANSCRIPTION.md | tail -30; sed -n '2860,2910p' classic/apps/web/src/core/managers/commands.ts; rg --files classic/apps/web/src/core/managers/__tests__ | rg 'project|command'",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-b59d64f9-ef13-4b5a-8597-bf4c3e14f62f"
+      },
+      {
+        "at": "2026-10-12T09:55:46.856Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'snapshot|revision|resume|cache|caption|fail' classic/BROWSER-TRANSCRIPTION.md | tail -30; sed -n '2860,2910p' classic/apps/web/src/core/managers/commands.ts; rg --files classic/apps/web/src/core/managers/__tests__ | rg 'project|command'",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-b59d64f9-ef13-4b5a-8597-bf4c3e14f62f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:55:47.160Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

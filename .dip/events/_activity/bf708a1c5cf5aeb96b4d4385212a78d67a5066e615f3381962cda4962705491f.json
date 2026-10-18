@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bf708a1c5cf5aeb96b4d4385212a78d67a5066e615f3381962cda4962705491f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T10:24:40.464Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_dd8a90f22259c9131c7efee13d2b044ed722fc84935739ff821b437f430e6999",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport subprocess,array,math,json,pathlib,hashlib\nr=pathlib.Path('analysis/teaser-no-music-2026-10-15');p=pathlib.Path.home()/'Downloads/OpenCut-Teaser-FullAuto-no-music-no-captions-2026-10-15.mp4';old=pathlib.Path.home()/'Downloads/OpenCut-Teaser-FullAuto-without-captions-2026-10-15.mp4'\ndef audio(path,start,duration):return array.array('f',subprocess.check_output(['ffmpeg','-v','error','-ss',str(start),'-t',str(duration),'-i',str(path),'-vn','-ac','1','-ar','16000','-f','f32le','-']))\na=audio('/Volumes/Portable Sandisk SSD/יומנו של יזם/Shadi/Yomano4.mp4',1711.14,1.5);b=audio(p,.5,1.5)\ndef corr(shift):\n aa=a[max(0,shift):min(len(a),len(b)+shift)];bb=b[max(0,-shift):min(len(b),len(a)-shift)];power=math.sqrt(sum(x*x for x in aa)*sum(y*y for y in bb));return sum(x*y for x,y in zip(aa,bb))/power if power else 0\nbest=max((corr(i),i) for i in range(-1600,1601,16));best=max((corr(i),i) for i in range(best[1]-16,best[1]+17));x=audio(p,1,10);y=audio(old,1,10);check={'sourceSpeechCorrelation':best[0],'lagSamples16k':best[1],'differsFromMusicMix':x.tobytes()!=y.tobytes(),'removedMixRms':math.sqrt(sum((i-j)**2 for i,j in zip(x,y))/min(len(x),len(y)))};(r/'audio-check.json').write_text(json.dumps(check));print(json.dumps(check));print({'localFile':str(p),'bytes':p.stat().st_size})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-8ce106a8-9bc5-4b80-9d7a-da546c74cb2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T10:24:41.168Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

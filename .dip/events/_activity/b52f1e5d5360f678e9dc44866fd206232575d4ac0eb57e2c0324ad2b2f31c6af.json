@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b52f1e5d5360f678e9dc44866fd206232575d4ac0eb57e2c0324ad2b2f31c6af",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T07:52:22.387Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/prepare.ts"
+        ],
+        "changeHash": "500172e3d60a10e1e0bb118fdf16b320a0fd073eac466c0adc732c666c40e84c",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-6abcd8bc-f677-4e2a-a565-6eb1a1fe1df7"
+      },
+      {
+        "at": "2026-10-14T07:52:22.456Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun run .local/episode-teaser-90-2026-10-14/prepare.ts",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-492f07f6-cd96-430e-a15f-fb35d356e64a"
+      },
+      {
+        "at": "2026-10-14T07:52:22.455Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_f733ea5d487efcea0b5f7184c39765496cffabbd624b74516078bb1fc0dc3cb4",
+        "tool": "apply_patch",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/episode-teaser-90-2026-10-14/prepare.ts"
+        ],
+        "changeHash": "500172e3d60a10e1e0bb118fdf16b320a0fd073eac466c0adc732c666c40e84c",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-6abcd8bc-f677-4e2a-a565-6eb1a1fe1df7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T07:52:22.647Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

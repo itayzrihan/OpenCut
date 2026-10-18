@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e18365bef1fc78a407e6b3b402da00d10101b5b954e9f7f96d3731d508a7a691",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T10:26:01.591Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ps -p 74537 -o pid,%cpu,rss,etime; node --input-type=module <<'JS'\nimport{readFile}from'node:fs/promises';const p=JSON.parse(await readFile('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/11e7e552-fd67-44e7-8795-cd2b8b5e2668/project.json','utf8'));console.log(p.transcriptionJobs.map(x=>({status:x.status,chunks:Object.keys(x.completedChunks??{}).length})))\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-74c2ec6b-005c-48fa-bb16-2e25cc673f19"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T10:26:02.026Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

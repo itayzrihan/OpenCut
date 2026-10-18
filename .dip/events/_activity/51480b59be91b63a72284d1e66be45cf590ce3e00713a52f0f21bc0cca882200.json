@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "51480b59be91b63a72284d1e66be45cf590ce3e00713a52f0f21bc0cca882200",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-16T11:00:42.873Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teaser-upgrade/final-transport/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/teaser-upgrade/final-transport/src__ai____tests____podcast-task.test.ts.log",
+          ".local/teaser-upgrade/final-transport/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/teaser-upgrade/final-transport/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/teaser-upgrade/final-transport/summary.json",
+          ".local/teaser-upgrade/production-build-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "adcaf297-ea8c-45fb-9ea8-18f2af6abe96"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-16T11:00:42.877Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

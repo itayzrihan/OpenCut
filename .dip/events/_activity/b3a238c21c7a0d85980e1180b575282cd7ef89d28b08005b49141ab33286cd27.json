@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b3a238c21c7a0d85980e1180b575282cd7ef89d28b08005b49141ab33286cd27",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-14T00:25:00.750Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_2175e95e4f2a720e13a28d8658ecfd4bb4b491f3c85bb5675ef871a213c30f45",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "ffmpeg -y -hide_banner -loglevel error -i .local/teaser-reference-2026-10-14/audio.wav -ar 24000 -codec:a libmp3lame -b:a 64k .local/teaser-reference-2026-10-14/reference-audio.mp3\npython3 - <<'PY'\nimport base64,pathlib\nprint(base64.b64encode(pathlib.Path('.local/teaser-reference-2026-10-14/reference-audio.mp3').read_bytes()).decode())\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-318f7192-f4b6-4382-870b-e04c5908efd4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-14T00:25:01.449Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

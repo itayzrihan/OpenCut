@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89f7975d6d1409a54e52a5b73ba5ecd10def38298ece1580ca18295fe74a7e1d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-12T14:15:38.042Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'privacy|usage|TCC|responsible|terminated|Speech' \"$HOME/Library/Logs/DiagnosticReports/probe-2026-10-12-171521.ips\"",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-d7524f6a-0b20-4e71-a5a0-79fcb6e3702f"
+      },
+      {
+        "at": "2026-10-12T14:15:38.177Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'privacy|usage|TCC|responsible|terminated|Speech' \"$HOME/Library/Logs/DiagnosticReports/probe-2026-10-12-171521.ips\"",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-d7524f6a-0b20-4e71-a5a0-79fcb6e3702f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T14:15:38.870Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c6c26eae276255602bda59a6b2740c44af146b315cd6572bef1ae7cb5bd528ac",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T09:41:02.731Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_5a27f4909bc3f6632311bbd377d39af14ff1db84c2a45faa733c6261667c403d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat > crates/editor-api/src/operations/classic_transcription.rs <<'EOF'\n//! Classic transcription checkpoints and incremental publication. Inference and\n//! disk IO belong to the host; source-clock mapping and document edits live here.\nuse super::classic_scenes::classic_target;\nuse super::*;\nuse classic_timeline::{ClipAudioTimingOptions, resolve_clip_audio_timing};\nuse serde_json::json;\nuse std::collections::BTreeMap;\nconst TPS: f64 = 120000.0;\nconst SECTION: f64 = 60.0;\nfn invalid(s: impl Into<String>) -> CapabilityError { CapabilityError::InvalidInput(s.into()) }\nfn arr(v: &Value) -> &[Value] { v.as_array().map(Vec::as_slice).unwrap_or(&[]) }\nfn n(v: &Value, fallback: f64) -> f64 { v.as_f64().unwrap_or(fallback) }\nfn all(tracks: &Value) -> impl Iterator<Item=&Value> {\n    std::iter::once(&tracks[\"main\"]).chain(arr(&tracks[\"audio\"])).chain(arr(&tracks[\"overlay\"]))\n}\n#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq)]\n#[serde(rename_all=\"camelCase\", deny_unknown_fields)]\nstruct Word { text: String, start: f64, end: f64 }\n#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\", deny_unknown_fields)]\nstruct Job {\n    id: String, scene_id: String, language: String, settings: Value, defaults: Value,\n    source_tracks: Value, source_media: Vec<Map<String, Value>>, total_duration: i64,\n    status: Status, chunks: BTreeMap<usize, Vec<Word>>,\n}\n#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema, PartialEq)]\n#[serde(rename_all=\"camelCase\")]\nenum Status { Running, Paused, Complete }\n#[derive(Deserialize, JsonSchema)]\n#[serde(tag=\"type\", rename_all=\"camelCase\", deny_unknown_fields)]\nenum Change {\n    Start { #[serde(rename=\"sceneId\")] scene_id: String, language: String, settings: Value, defaults: Value,\n        #[serde(rename=\"totalDuration\")] total_duration: i64 },\n    Append { index: usize, #[schemars(length(max=10000))] words: Vec<Word> },\n    Pause,\n    Resume,\n}\n#[derive(Deserialize, JsonSchema)]\n#[serde(r",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-e27f6af3-a6e4-4a24-91cf-838311a7d746"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T09:41:02.923Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

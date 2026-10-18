@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e2e9c695-c7ec-44cb-9bd1-060620d194b2",
+  "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+  "type": "task.update",
+  "payload": {
+    "title": "Merge recent local work to main, then add account Brand Kits and Full Auto selection",
+    "description": "First audit, commit, push and merge all recent intended local updates to canonical origin/main. Then add multiple account-scoped Brand Kits accessible from projects and outside projects, with logos, palette, style, phrases, fonts and sounds; optional selection and application only for Full Auto Edit.",
+    "acceptance": [
+      "Recent intended local changes committed and merged to origin/main without generated artifacts or secrets.",
+      "Multiple account-scoped Brand Kits editable from projects and a standalone destination.",
+      "Brand Kit includes logo, primary/secondary/background colors, style, phrases, fonts and sounds.",
+      "Optional Brand Kit applied by Full Auto Edit only, through canonical runtime capabilities with registry/read-back coverage."
+    ],
+    "scope": [
+      "classic",
+      "crates/editor-api",
+      "apps/mcp",
+      "crates/mcp",
+      "crates/editor-agent",
+      "crates/account-core",
+      ".dip",
+      "AGENTS.md",
+      "Cargo.lock",
+      "analysis",
+      "sites",
+      "scripts"
+    ]
+  },
+  "actor": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946",
+  "createdAt": "2026-10-18T15:43:46.708Z",
+  "parents": [
+    "dbc8d494-7bd7-4805-b472-17f4a73a0bdb"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

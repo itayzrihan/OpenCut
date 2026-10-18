@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20eea7f5277f1af1212d53a8861da05d3766cc3868bd939b9be594d90b740a5a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:34:28.964Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-adec4787-b379-4849-8c64-c99b313b6937"
+      },
+      {
+        "at": "2026-10-15T01:34:28.970Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nb=json.loads(pathlib.Path('analysis/source-audio-relink-2026-10-15/baseline.json').read_text());o=next(x for x in b['projects'] if x['id'].startswith('8470'));p=json.loads((pathlib.Path.home()/'Movies/OpenCut Accounts/data'/b['account']/'projects'/o['id']/'project.json').read_text());h=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();print({'all11SceneHashesUnchanged':all(h(s)==s0['hash'] for s,s0 in zip(p['scenes'],o['scenes']))})\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-f80aead0-eaf2-4e79-91ce-68a54aadd7ca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:34:29.764Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

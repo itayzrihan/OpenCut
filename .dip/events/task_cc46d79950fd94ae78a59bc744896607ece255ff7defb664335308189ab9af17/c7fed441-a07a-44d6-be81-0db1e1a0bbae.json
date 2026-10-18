@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7fed441-a07a-44d6-be81-0db1e1a0bbae",
+  "taskId": "task_cc46d79950fd94ae78a59bc744896607ece255ff7defb664335308189ab9af17",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Prepared isolated native Apple STT benchmark app under .local/apple-stt-benchmark, requiring local-only he-IL. Input known Hebrew fixture is 4.948792 seconds. Direct CLI request aborted by macOS TCC because responsible host ChatGPT lacks speech usage description; packaged proper standalone app with NSSpeechRecognitionUsageDescription. CUA app launch blocked because Mac is locked. No audio transcription completed; no speed result yet.",
+    "next": "User unlocks Mac, launch standalone test through CUA, let user approve speech permission if needed, collect result-short.json and then benchmark longer real speech if successful.",
+    "head": "5350562cf2d172a070921c9baa31110be4bc8107"
+  },
+  "actor": "codex:01a1303c-3620-7481-b055-4e74c515b317",
+  "createdAt": "2026-10-12T14:16:11.124Z",
+  "parents": [
+    "5bf281a2-248f-4f13-a4d0-621e9104296d"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

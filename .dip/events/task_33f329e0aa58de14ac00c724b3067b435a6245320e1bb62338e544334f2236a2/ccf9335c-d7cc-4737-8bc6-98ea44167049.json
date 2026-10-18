@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccf9335c-d7cc-4737-8bc6-98ea44167049",
+  "taskId": "task_33f329e0aa58de14ac00c724b3067b435a6245320e1bb62338e544334f2236a2",
+  "type": "task.update",
+  "payload": {
+    "kind": "discussion",
+    "description": "Informational live experiment authorized by user, completed with no retained product changes. Tested existing OpenCut OAuth against the official-source /backend-api/transcribe using a 4.95s synthetic Hebrew fixture. Captured sanitized response and removed temporary diagnostic route, verified HTTP404 after removal. Criteria were to execute bounded request, report actual response without secrets/billing inference, and clean up. Result: HTTP403 cf-mitigated:challenge, no transcript. Evidence: .local/codex-transcription-research/live-probe-result.json and .png.",
+    "scope": [],
+    "acceptance": []
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:44:15.589Z",
+  "parents": [
+    "ddd7e2b3-da13-4d86-9188-fe5ca60b0fa2"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

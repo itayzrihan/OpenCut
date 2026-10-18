@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1afe25a627720251b04b78e0820706751c70c3279dcac2dfcbc32edd46e0e056",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:10:13.429Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'opencut-editor-runtime-wasm|restoreArchive|restore_archive|validate.*archive|validateClassic|session.*Validate' classic/apps/web/src | head -70; sed -n '1,200p' classic/apps/web/src/editor-agent/server/project-write.ts; rg -n 'archive|wasm|restore' classic/apps/web/src/services/storage/editor-session* classic/apps/web/src/editor-agent/server/project-storage*",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-dfb1895e-3dd0-42ec-986f-a938ae849e9f"
+      },
+      {
+        "at": "2026-10-13T16:10:13.630Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "rg -n 'opencut-editor-runtime-wasm|restoreArchive|restore_archive|validate.*archive|validateClassic|session.*Validate' classic/apps/web/src | head -70; sed -n '1,200p' classic/apps/web/src/editor-agent/server/project-write.ts; rg -n 'archive|wasm|restore' classic/apps/web/src/services/storage/editor-session* classic/apps/web/src/editor-agent/server/project-storage*",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-dfb1895e-3dd0-42ec-986f-a938ae849e9f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:10:14.357Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

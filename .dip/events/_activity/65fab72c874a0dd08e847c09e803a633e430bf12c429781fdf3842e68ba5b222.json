@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "65fab72c874a0dd08e847c09e803a633e430bf12c429781fdf3842e68ba5b222",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T16:19:48.248Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_1dc1adf190909c9426a21aafc13ce330a13ea0edba121169987f8b532d0eb1e6",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "node --input-type=module - <<'JS'\nimport {readJson,writeJson,deploymentRoot}from'./classic/scripts/local-production/common.mjs';import{join}from'node:path';\nconst base='http://127.0.0.1:3210';const token=[REDACTED] fetch(base)).text()).match(/nonce=\"([^\"]+)\"/)[1];const headers={'x-opencut-launcher':token};await fetch(base+'/stop',{method:'POST',headers});const candidate=await readJson(join(deploymentRoot,'candidate.json'));if(!candidate)throw Error('No candidate');const previous=await readJson(join(deploymentRoot,'current.json'));await writeJson(join(deploymentRoot,'previous.json'),previous);await writeJson(join(deploymentRoot,'current.json'),candidate);const response=await fetch(base+'/start',{method:'POST',headers});console.log({release:candidate.id,start:await response.json()});\nJS",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PreToolUse:exec-67557c01-728e-4d30-8d97-81bebf6ad0ee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T16:19:48.517Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

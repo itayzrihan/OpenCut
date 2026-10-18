@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54321e8e0283f63fafdef2a85c6bdddde275c795400b950f6f90a7cae3c84926",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+    "records": [
+      {
+        "at": "2026-10-12T12:35:16.863Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/windows.ts')\ns=p.read_text().replace('\\texternalTranscribe,\\n','\\texternalTranscribe,\\n\\tprefetch = true,\\n\\texternalConcurrency = 2,\\n').replace('}): Promise<TranscriptionResult> {','\\tprefetch?: boolean;\\n\\texternalConcurrency?: 1 | 2;\\n}): Promise<TranscriptionResult> {',1).replace('\\t\\tload: () => Promise<Float32Array>;','\\t\\tsignal?: AbortSignal;\\n\\t\\tload: () => Promise<Float32Array>;',1)\na=s.index('\\t\\tconst words: TranscriptionWord[] = [];');b=s.index('\\n\\t\\treturn {',a)\ns=s[:a]+'''\\t\\tconst controller = new AbortController();\n\t\tconst activeSignal = AbortSignal.any([sessionSignal, controller.signal]);\n\t\tconst words: TranscriptionWord[] = [];\n\t\tconst width = externalTranscribe ? externalConcurrency : 1;\n\t\tlet decodeTail: Promise<unknown> = Promise.resolve();\n\t\tconst prepared = new Map<number, Promise<TranscriptionResult | Float32Array>>();\n\t\tconst jobs = new Map<number, Promise<{ words: TranscriptionWord[]; saved: boolean }>>();\n\t\tconst range = (index: number) => ({\n\t\t\tstart: Math.max(0, index * TRANSCRIPTION_WINDOW_SECONDS - CONTEXT_SECONDS),\n\t\t\tend: Math.min(duration, (index + 1) * TRANSCRIPTION_WINDOW_SECONDS + CONTEXT_SECONDS),\n\t\t\tsignal: activeSignal,\n\t\t});\n\t\tconst decode = (index: number) => {\n\t\t\tconst next = decodeTail.then(() => {\n\t\t\t\tactiveSignal.throwIfAborted();\n\t\t\t\treturn load(range(index));\n\t\t\t});\n\t\t\tdecodeTail = next.catch(() => {});\n\t\t\treturn next;\n\t\t};\n\t\tconst prepare = (index: number) => {\n\t\t\tif (index >= count || completedChunks?.[index] || prepared.has(index)) return;\n\t\t\tconst pending = (async () => {\n\t\t\t\tactiveSignal.throwIfAborted();\n\t\t\t\treturn (await cache?.read(index)) ?? await decode(index);\n\t\t\t})();\n\t\t\t// A speculative decode may fail before its consumer reaches it.\n\t\t\tvoid pending.catch(() => {});\n\t\t\tprepared.set(index, pending);\n\t\t};\n\t\tconst launch = (index: number) => {\n\t\t\tif (index >= count || jobs.has(index)) return;\n\t\t\tconst pending = (async () ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PreToolUse:exec-7381249d-802f-4bb8-a778-1e1df75d6185"
+      },
+      {
+        "at": "2026-10-12T12:35:17.049Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+        "taskId": "task_1c008c4a430d16ed030d9eb4b527480084b7fd27fd11787d824dc557b9ff7cfa",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/transcription/windows.ts')\ns=p.read_text().replace('\\texternalTranscribe,\\n','\\texternalTranscribe,\\n\\tprefetch = true,\\n\\texternalConcurrency = 2,\\n').replace('}): Promise<TranscriptionResult> {','\\tprefetch?: boolean;\\n\\texternalConcurrency?: 1 | 2;\\n}): Promise<TranscriptionResult> {',1).replace('\\t\\tload: () => Promise<Float32Array>;','\\t\\tsignal?: AbortSignal;\\n\\t\\tload: () => Promise<Float32Array>;',1)\na=s.index('\\t\\tconst words: TranscriptionWord[] = [];');b=s.index('\\n\\t\\treturn {',a)\ns=s[:a]+'''\\t\\tconst controller = new AbortController();\n\t\tconst activeSignal = AbortSignal.any([sessionSignal, controller.signal]);\n\t\tconst words: TranscriptionWord[] = [];\n\t\tconst width = externalTranscribe ? externalConcurrency : 1;\n\t\tlet decodeTail: Promise<unknown> = Promise.resolve();\n\t\tconst prepared = new Map<number, Promise<TranscriptionResult | Float32Array>>();\n\t\tconst jobs = new Map<number, Promise<{ words: TranscriptionWord[]; saved: boolean }>>();\n\t\tconst range = (index: number) => ({\n\t\t\tstart: Math.max(0, index * TRANSCRIPTION_WINDOW_SECONDS - CONTEXT_SECONDS),\n\t\t\tend: Math.min(duration, (index + 1) * TRANSCRIPTION_WINDOW_SECONDS + CONTEXT_SECONDS),\n\t\t\tsignal: activeSignal,\n\t\t});\n\t\tconst decode = (index: number) => {\n\t\t\tconst next = decodeTail.then(() => {\n\t\t\t\tactiveSignal.throwIfAborted();\n\t\t\t\treturn load(range(index));\n\t\t\t});\n\t\t\tdecodeTail = next.catch(() => {});\n\t\t\treturn next;\n\t\t};\n\t\tconst prepare = (index: number) => {\n\t\t\tif (index >= count || completedChunks?.[index] || prepared.has(index)) return;\n\t\t\tconst pending = (async () => {\n\t\t\t\tactiveSignal.throwIfAborted();\n\t\t\t\treturn (await cache?.read(index)) ?? await decode(index);\n\t\t\t})();\n\t\t\t// A speculative decode may fail before its consumer reaches it.\n\t\t\tvoid pending.catch(() => {});\n\t\t\tprepared.set(index, pending);\n\t\t};\n\t\tconst launch = (index: number) => {\n\t\t\tif (index >= count || jobs.has(index)) return;\n\t\t\tconst pending = (async () ",
+        "recordId": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f:PostToolUse:exec-7381249d-802f-4bb8-a778-1e1df75d6185"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-12T12:35:18.257Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

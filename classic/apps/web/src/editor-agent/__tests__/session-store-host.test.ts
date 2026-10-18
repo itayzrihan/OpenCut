@@ -527,6 +527,10 @@ test("renewal journal preserves the project bytes and fences stale owners after 
 		now += 80_000;
 		await operate(owner, renew);
 		expect(await readFile(path, "utf8")).toBe(original);
+		const inspected = await operate(owner, { type: "inspect" });
+		expect(inspected.generation).toBe(acquired.generation);
+		expect(inspected.lease).toMatchObject({ sessionId: "renewing" });
+		expect(await readFile(path, "utf8")).toBe(original);
 		const journal = JSON.parse(await readFile(`${path}.renewal.json`, "utf8"));
 		expect(JSON.parse(journal.record).saved).toBeNull();
 		now += 80_000; // Original project lease expired; journal renewal is authoritative.
@@ -564,6 +568,7 @@ test("renewal journal preserves the project bytes and fences stale owners after 
 					}),
 			}),
 		);
+		expect(await readFile(path, "utf8")).toBe(original);
 		const stolen = await operate(owner, {
 			type: "acquire",
 			sessionId: "rival",

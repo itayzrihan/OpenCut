@@ -19,6 +19,7 @@ export class ScenesManager {
 	private active: TScene | null = null;
 	private list: TScene[] = [];
 	private listeners = new Set<() => void>();
+	private contentListeners = new Set<() => void>();
 
 	constructor(private editor: EditorCore) {}
 
@@ -63,7 +64,16 @@ export class ScenesManager {
 	}
 
 	async switchToScene({ sceneId }: { sceneId: string }): Promise<void> {
-		this.editor.command.editClassicScene({ type: "select", sceneId });
+		this.editor.command.openClassicScene(sceneId);
+	}
+
+	/** Projection of a validated canonical workspace navigation result. */
+	applyViewerScene({ sceneId }: { sceneId: string }): void {
+		const scene = this.list.find((candidate) => candidate.id === sceneId);
+		if (!scene) throw new Error("The canonical viewer scene is not loaded");
+		if (scene === this.active) return;
+		this.active = scene;
+		this.notify({ navigationOnly: true });
 	}
 
 	async toggleBookmark({ time }: { time: MediaTime }): Promise<void> {
@@ -268,10 +278,19 @@ export class ScenesManager {
 		return () => this.listeners.delete(listener);
 	}
 
-	private notify(): void {
+	subscribeContent(listener: () => void): () => void {
+		this.contentListeners.add(listener);
+		return () => this.contentListeners.delete(listener);
+	}
+
+	private notify({
+		navigationOnly = false,
+	}: { navigationOnly?: boolean } = {}): void {
 		this.listeners.forEach((fn) => {
 			fn();
 		});
+		if (!navigationOnly)
+			this.contentListeners.forEach((listener) => listener());
 	}
 
 	updateSceneTracks({ tracks }: { tracks: SceneTracks }): void {

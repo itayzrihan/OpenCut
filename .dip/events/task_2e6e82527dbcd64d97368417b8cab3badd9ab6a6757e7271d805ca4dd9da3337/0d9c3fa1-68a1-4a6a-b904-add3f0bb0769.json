@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d9c3fa1-68a1-4a6a-b904-add3f0bb0769",
+  "taskId": "task_2e6e82527dbcd64d97368417b8cab3badd9ab6a6757e7271d805ca4dd9da3337",
+  "type": "task.update",
+  "payload": {
+    "title": "Import SRT as transcript and choose local or external transcription",
+    "acceptance": [
+      "SRT import is available in transcript workflow and creates canonical captions/transcript usable by Smart Takes, podcast excerpts and Auto Texts without internal inference.",
+      "User can choose local browser transcription or configurable external API; choice is persisted canonically without credentials in document.",
+      "External transcription retains bounded audio windows, incremental durable checkpoints, cancellation and resume; secrets remain server-side/account scoped.",
+      "Tests cover import validation, canonical readback, provider selection/API error handling and checkpoint compatibility."
+    ],
+    "scope": [
+      "classic/apps/web/src/transcription",
+      "classic/apps/web/src/subtitles",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/app/api/transcription",
+      "classic/apps/web/src/project/types.ts",
+      "crates/editor-api/src/operations/classic_transcription.rs",
+      "crates/editor-api/tests/classic_transcription.rs",
+      "classic/BROWSER-TRANSCRIPTION.md"
+    ]
+  },
+  "actor": "codex:01a12d0f-c938-73a0-a6d4-4e3351f2618f",
+  "createdAt": "2026-10-12T10:02:01.510Z",
+  "parents": [
+    "3e8719a0-e188-4173-ba39-e1d2d5d8044d",
+    "d373d262-77bf-427a-a7da-02cf7b18c936"
+  ],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

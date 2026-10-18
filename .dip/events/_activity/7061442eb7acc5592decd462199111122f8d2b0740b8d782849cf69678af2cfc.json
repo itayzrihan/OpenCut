@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7061442eb7acc5592decd462199111122f8d2b0740b8d782849cf69678af2cfc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-15T01:36:23.218Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_438379bad6e4c26984febd0779293fce1d75058cec3dda5257decbfeff729815",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nb=json.loads(pathlib.Path('analysis/source-audio-relink-2026-10-15/baseline.json').read_text());h=lambda x:hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();r=[]\nfor o in b['projects']:\n folder=pathlib.Path.home()/'Movies/OpenCut Accounts/data'/b['account']/'projects'/o['id'];p=json.loads((folder/'project.json').read_text());a=next(a for a in json.loads((folder/'media/index.json').read_text()) if a['id'].startswith('f1115'))\n r.append({'project':o['name'],'scenes':len(p['scenes']),'allScenesUnchanged':all(h(s)==s0['hash'] for s,s0 in zip(p['scenes'],o['scenes'])),'settingsUnchanged':h(p['settings'])==o['settingsHash'],'transcriptionUnchanged':h(p.get('transcriptionJobs'))==o['transcriptionJobsHash'],'sourceBindingRevision':a['bindingRevision'],'sourceSize':a['size']})\nprint(json.dumps(r,ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-990d61f9-3060-46e1-ba1e-549b3d03abcf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-15T01:36:23.797Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

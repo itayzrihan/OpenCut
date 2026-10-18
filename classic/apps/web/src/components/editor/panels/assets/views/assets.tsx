@@ -81,6 +81,7 @@ import { MASKABLE_ELEMENT_TYPES } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import {
 	createUnifiedAnglesAsset,
+	unifiedAnglesSyncStatus,
 	isUnifiedAnglesAsset,
 } from "@/media/unified-angles";
 import type { TScene } from "@/timeline";
@@ -240,10 +241,11 @@ function MediaViewContent() {
 							setProgress(progress.progress),
 					});
 					for (const asset of processedAssets) {
-						await editor.media.addMediaAsset({
+						const added = await editor.media.addMediaAsset({
 							projectId: activeProject.metadata.id,
 							asset,
 						});
+						if (!added) throw new Error(`Could not add ${asset.name} to Assets`);
 					}
 					return {
 						uploadedCount: processedAssets.length,
@@ -277,10 +279,11 @@ function MediaViewContent() {
 						onProgress: ({ progress }) => setProgress(progress),
 					});
 					for (const asset of processedAssets) {
-						await editor.media.addMediaAsset({
+						const added = await editor.media.addMediaAsset({
 							projectId: activeProject.metadata.id,
 							asset,
 						});
+						if (!added) throw new Error(`Could not add ${asset.name} to Assets`);
 					}
 					return {
 						uploadedCount: processedAssets.length,
@@ -299,11 +302,12 @@ function MediaViewContent() {
 		}
 	};
 
-	const { isDragOver, dragProps, fileInputProps, openFilePicker } = useFileUpload({
-		accept: "image/*,video/*,audio/*",
-		multiple: true,
-		onFilesSelected: (files) => processFiles({ files }),
-	});
+	const { isDragOver, dragProps, fileInputProps, openFilePicker } =
+		useFileUpload({
+			accept: "image/*,video/*,audio/*",
+			multiple: true,
+			onFilesSelected: (files) => processFiles({ files }),
+		});
 
 	const handleRemove = useCallback(
 		({ event, ids }: { event: React.MouseEvent; ids: string[] }) => {
@@ -564,7 +568,15 @@ function MediaViewContent() {
 				{...dragProps}
 			>
 				<div className="shrink-0 space-y-2 pb-2">
-					<Button variant="outline" size="sm" onClick={() => useAssetsPanelStore.getState().setActiveTab("catalog")}>Catalog · examples + prompts</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							useAssetsPanelStore.getState().setActiveTab("catalog")
+						}
+					>
+						Catalog · examples + prompts
+					</Button>
 					<div className="flex h-8 items-center gap-2 rounded border px-2">
 						<Search className="size-3.5 shrink-0 text-muted-foreground" />
 						<input
@@ -746,6 +758,11 @@ function MediaAssetDraggable({
 	return (
 		<DraggableItem
 			name={item.name}
+			labelExtra={
+				isUnifiedAnglesAsset(item) ? (
+					<UnifiedAnglesSyncBadge item={item} />
+				) : undefined
+			}
 			preview={preview}
 			dragData={{
 				id: item.id,
@@ -1209,6 +1226,35 @@ function MediaTypePlaceholder({
 			<span className="text-xs">{label}</span>
 			<MediaDurationLabel duration={duration} />
 		</div>
+	);
+}
+
+function UnifiedAnglesSyncBadge({ item }: { item: MediaAsset }) {
+	const media = useEditorMedia((e) => e.media.getAssets());
+	const status = unifiedAnglesSyncStatus({
+		asset: item,
+		mediaMap: new Map(media.map((a) => [a.id, a])),
+	});
+	const label =
+		status === "synced"
+			? "Audio synced"
+			: status === "stale"
+				? "Sync outdated"
+				: "Not audio synced";
+	return (
+		<span
+			className={cn(
+				"block text-[11px] font-medium",
+				status === "synced" ? "text-emerald-500" : "text-amber-500",
+			)}
+			title={
+				status === "synced"
+					? "Camera angles are synchronized by audio"
+					: "Run synchronization in Podcast multicam to align these camera angles"
+			}
+		>
+			{label}
+		</span>
 	);
 }
 

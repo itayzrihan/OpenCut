@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c29fd7cc32bc0cc1be4edc9ba64105bf612d79cadca6ec28da7e139f0c1467a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1303c-3620-7481-b055-4e74c515b317",
+    "records": [
+      {
+        "at": "2026-10-13T11:07:27.984Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1303c-3620-7481-b055-4e74c515b317",
+        "taskId": "task_d94a63221c2f2097fc9ad3855a1666299b277522febb80684cf6494358190dfc",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "classic/node_modules/.bin/prettier --write classic/apps/web/src/accounts/bridge-transport.ts classic/apps/web/src/accounts/bridge-transport.test.ts\nnode classic/scripts/test-web.mjs src/accounts/bridge-transport.test.ts --jobs=1 --timeout=120000",
+        "recordId": "codex:01a1303c-3620-7481-b055-4e74c515b317:PostToolUse:exec-f76ee38d-081a-46ce-a0df-ded44a9f3048"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-13T11:07:28.903Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}
