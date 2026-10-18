@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53f1679c2c81f4416b72db3841d82aefcb228175f275ce0abaa32e0cb08703dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:07:17.347Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/brand-kit-full-auto.jpg"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "56bafe61-a916-4073-a69e-13e50addfc0f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:07:17.409Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

@@ -236,6 +236,9 @@ function ProjectsHeader() {
 
 				<div className="flex items-center gap-3 md:gap-4">
 					<SearchBar className="hidden md:block" />
+					<Button asChild variant="outline">
+						<Link href="/brand-kits">Brand Kits</Link>
+					</Button>
 					<BatchEditButton />
 					<ImportProjectButton />
 					<NewProjectButton />

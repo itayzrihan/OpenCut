@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "62bde0612223a165e669e6d00bc59551e698d033350f27bbfd625ec5a054fe85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:51:55.807Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/brand_kits.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "28dff7c0-74f1-4af9-a85d-2f3f82de5c22"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:51:55.920Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

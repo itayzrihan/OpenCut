@@ -1,7 +1,16 @@
+import { newBrandKit, type BrandKit } from "@/brand-kits/types";
 import { afterAll, describe, expect, mock, test } from "bun:test";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+let brandLibrary: BrandKit[] = [];
+mock.module("@/brand-kits/server", () => ({
+	brandKitTransaction: async () => ({
+		accountId: "alice",
+		revision: 1,
+		kits: structuredClone(brandLibrary),
+	}),
+}));
 const projects = new Map<
 	string,
 	{ metadata: { name: string; updatedAt: string }; currentSceneId?: string }
@@ -584,4 +593,39 @@ test("caption checkpoints belong to their scene and cannot skip preparation in a
 		sceneId: "smart-takes-a",
 		completedStages: 0,
 	});
+});
+
+test("Full Auto queues freeze the account kit, reject missing kits and discard caller supplied snapshots", async () => {
+	const kit = { ...newBrandKit(), name: "Client brand" };
+	brandLibrary = [kit];
+	const queued = await createBatch({
+		id: "brand-batch",
+		files: [{ projectId: "brand-project", fileName: "brand.mp4" }],
+		options: {
+			...options,
+			brandKitId: kit.id,
+			brandKit: { ...kit, name: "forged" },
+			brandKitAccountId: "bob",
+		},
+	});
+	expect(queued.run.options.brandKit).toEqual(kit);
+	expect(queued.run.options.brandKitAccountId).toBe("alice");
+	brandLibrary = [{ ...kit, name: "New kit version" }];
+	expect(
+		(await getBatchState()).runs.find((run) => run.id === queued.run.id)
+			?.options.brandKit?.name,
+	).toBe("Client brand");
+	await expect(
+		createBatch({
+			id: "brand-missing",
+			files: [{ projectId: "brand-missing-project", fileName: "new.mp4" }],
+			options: { ...options, brandKitId: "missing" },
+		}),
+	).rejects.toThrow("no longer exists");
+	const plain = await createBatch({
+		id: "brand-none",
+		files: [{ projectId: "brand-none-project", fileName: "new.mp4" }],
+		options: { ...options, brandKit: kit, brandKitAccountId: "bob" },
+	});
+	expect(plain.run.options.brandKit).toBeUndefined();
 });

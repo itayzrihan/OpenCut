@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d3ed563ee84483700e132468bc2728027e4e1ce4475c5a3c5e62fe89ae111f95",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:00:31.004Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "tail -8 .local/brand-kit/dev.log; cat .local/brand-kit/feature-types-final.log; rg -n 'BrandKit.*apply|sfx' crates/editor-api/src/operations/brand_kits.rs | tail -15",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-c2fdb9a4-aa8f-4e3b-8211-df36d0009c81"
+      },
+      {
+        "at": "2026-10-18T16:00:31.128Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "tail -8 .local/brand-kit/dev.log; cat .local/brand-kit/feature-types-final.log; rg -n 'BrandKit.*apply|sfx' crates/editor-api/src/operations/brand_kits.rs | tail -15",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-c2fdb9a4-aa8f-4e3b-8211-df36d0009c81"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:00:31.895Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1766b8fc4b2d6727afb57831eb432e85215893b375c9dac6ad7b9da094805cb8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:56:05.965Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm",
+          "classic/rust/wasm/pkg/opencut_wasm.js",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.js",
+          "classic/rust/wasm/pkg/opencut_wasm.d.ts",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm.d.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "834d3d96-6071-4367-a05c-a156e33226b0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:56:06.052Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

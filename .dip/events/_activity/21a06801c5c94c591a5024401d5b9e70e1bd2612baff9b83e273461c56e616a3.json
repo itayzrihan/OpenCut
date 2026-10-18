@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "21a06801c5c94c591a5024401d5b9e70e1bd2612baff9b83e273461c56e616a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:55:17.967Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/brand-kits/server.ts');s=p.read_text().replace(\"{ path: '/account' }\",\"{ pointer: '/account' }\");p.write_text(s)\nPY\ncat > crates/editor-api/tests/brand_kits.rs <<'EOF'\nuse opencut_editor_api::{AccessLevel, InvocationContext, OpenCutRuntime};\nuse serde_json::{json, Value};\nfn kit() -> Value { json!({\"id\":\"client-one\",\"name\":\"לקוח ראשון\",\"primaryColor\":\"#ffffff\",\"secondaryColor\":\"#99ff00\",\"backgroundColor\":\"#121512\",\"style\":\"Warm and minimal\",\"phrases\":[\"המותג שלך\"],\"headingFont\":\"Arial\",\"bodyFont\":\"Verdana\",\"logo\":{\"assetId\":\"logo-one\",\"width\":400,\"height\":200},\"musicIds\":[\"music-one\"],\"sfxIds\":[\"sfx-one\"]}) }\nasync fn call(rt: &OpenCutRuntime, id: &str, value: Value) -> Value { rt.registry().invoke(id, InvocationContext::default(), value).await.unwrap().result.data }\nasync fn read(rt: &OpenCutRuntime) -> Value { call(rt, \"app.state.read\", json!({})).await[\"value\"].clone() }\nasync fn account() -> OpenCutRuntime { let rt = OpenCutRuntime::full_access().unwrap(); call(&rt,\"app.state.patch\",json!({\"patch\":[{\"op\":\"add\",\"path\":\"/account\",\"value\":{\"id\":\"alice\",\"displayName\":\"Alice\",\"storage\":{\"mode\":\"localOnly\",\"destinationId\":null,\"devices\":[]}}}]})).await; rt }\n#[tokio::test]\nasync fn kits_are_account_owned_validated_multiple_and_undoable_with_dry_run_and_retry() {\n let rt = account().await;\n let descriptor = rt.registry().descriptor(\"account.brand_kits.edit\").unwrap().unwrap();\n assert_eq!(descriptor.access,AccessLevel::Write); assert!(descriptor.supports_dry_run && descriptor.transactional && !descriptor.open_world);\n let before = read(&rt).await;\n let input = json!({\"accountId\":\"alice\",\"expectedRevision\":before[\"revision\"],\"change\":{\"type\":\"upsert\",\"kit\":kit()}});\n rt.registry().invoke(\"account.brand_kits.edit\",InvocationContext {dry_run:true,..Default::default()},input.clone()).await.unwrap(); assert_eq!(before,read(&rt).await);\n let mut context = InvocationContext::default(); context.metadata.ins",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-21338524-9e32-4dbc-8826-1eb391421069"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:55:18.317Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

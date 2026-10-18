@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ea9eec48c86dd989bc9d61500d0e9c2cc28db07d6ba147c78c43d51e1a84ea25",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:49:37.154Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "cat .local/brand-kit/premerge-types-final3.log; git log -2 --oneline; git push origin HEAD; git push origin HEAD:main",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-0f1e0a41-b2f7-406f-b6eb-91c8599a20eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:49:37.672Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

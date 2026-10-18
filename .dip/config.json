@@ -150,6 +150,13 @@
         ".dip/tools/verify-strategic-teaser-feature.mjs"
       ],
       "timeoutMs": 360000
+    },
+    "brand-kits": {
+      "command": [
+        "node",
+        ".dip/tools/verify-brand-kits.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

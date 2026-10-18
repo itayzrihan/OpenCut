@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "80f8b4e6522d38ee9949109042952557353a8ba2dbec5a9e6265b3135f0aca1d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:53:41.092Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > classic/apps/web/src/brand-kits/client.ts <<'EOF'\nimport type { BrandKitLibrary } from './types';\nexport async function brandKitRequest({ edit, signal }: { edit?: { expectedRevision: number; requestId: string; change: unknown }; signal?: AbortSignal } = {}): Promise<BrandKitLibrary> {\n const accountId = window.__opencutAccountId;\n if (!accountId) throw new Error('Sign in before opening Brand Kits');\n const response = await fetch('/api/brand-kits', { cache: 'no-store', signal, ...(edit ? { method: 'POST', body: JSON.stringify(edit) } : {}), headers: { 'Content-Type': 'application/json', 'X-OpenCut-Account': accountId } });\n const data = await response.json();\n if (window.__opencutAccountId !== accountId) throw new Error('Brand Kit account changed');\n if (!response.ok) throw new Error(data.error ?? 'Could not load Brand Kits');\n return data;\n}\nEOF\ncat > classic/apps/web/src/brand-kits/picker.tsx <<'EOF'\n'use client';\nimport Link from 'next/link';\nimport { useEffect, useState } from 'react';\nimport { brandKitRequest } from './client';\nimport type { BrandKit } from './types';\nexport function BrandKitPicker({ value, onChange, disabled }: { value?: string; onChange: (id: string | undefined) => void; disabled?: boolean }) {\n const [kits, setKits] = useState<BrandKit[]>([]), [error, setError] = useState(''), [loading, setLoading] = useState(true);\n useEffect(() => { const controller = new AbortController(); void brandKitRequest({ signal: controller.signal }).then((data) => { setKits(data.kits); setLoading(false); }).catch((error) => { if (!controller.signal.aborted) { setError(error.message); setLoading(false); } }); return () => controller.abort(); }, []);\n return <div className=\"space-y-2 rounded-lg border p-3\"><label className=\"block text-sm font-medium\" htmlFor=\"full-auto-brand-kit\">Brand Kit <span className=\"font-normal text-muted-foreground\">· optional</span></label><select id=\"full-auto-brand-kit\" className=\"h-10 w-full rounded-md border bg-background px-3 text",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-c538b8e9-002b-4f5f-8ee4-b1cb290cb8d1"
+      },
+      {
+        "at": "2026-10-18T15:53:41.182Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > classic/apps/web/src/brand-kits/client.ts <<'EOF'\nimport type { BrandKitLibrary } from './types';\nexport async function brandKitRequest({ edit, signal }: { edit?: { expectedRevision: number; requestId: string; change: unknown }; signal?: AbortSignal } = {}): Promise<BrandKitLibrary> {\n const accountId = window.__opencutAccountId;\n if (!accountId) throw new Error('Sign in before opening Brand Kits');\n const response = await fetch('/api/brand-kits', { cache: 'no-store', signal, ...(edit ? { method: 'POST', body: JSON.stringify(edit) } : {}), headers: { 'Content-Type': 'application/json', 'X-OpenCut-Account': accountId } });\n const data = await response.json();\n if (window.__opencutAccountId !== accountId) throw new Error('Brand Kit account changed');\n if (!response.ok) throw new Error(data.error ?? 'Could not load Brand Kits');\n return data;\n}\nEOF\ncat > classic/apps/web/src/brand-kits/picker.tsx <<'EOF'\n'use client';\nimport Link from 'next/link';\nimport { useEffect, useState } from 'react';\nimport { brandKitRequest } from './client';\nimport type { BrandKit } from './types';\nexport function BrandKitPicker({ value, onChange, disabled }: { value?: string; onChange: (id: string | undefined) => void; disabled?: boolean }) {\n const [kits, setKits] = useState<BrandKit[]>([]), [error, setError] = useState(''), [loading, setLoading] = useState(true);\n useEffect(() => { const controller = new AbortController(); void brandKitRequest({ signal: controller.signal }).then((data) => { setKits(data.kits); setLoading(false); }).catch((error) => { if (!controller.signal.aborted) { setError(error.message); setLoading(false); } }); return () => controller.abort(); }, []);\n return <div className=\"space-y-2 rounded-lg border p-3\"><label className=\"block text-sm font-medium\" htmlFor=\"full-auto-brand-kit\">Brand Kit <span className=\"font-normal text-muted-foreground\">· optional</span></label><select id=\"full-auto-brand-kit\" className=\"h-10 w-full rounded-md border bg-background px-3 text",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-c538b8e9-002b-4f5f-8ee4-b1cb290cb8d1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:53:41.947Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

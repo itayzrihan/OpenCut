@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "79309513a584e26b26c8f3fc15fe5eb4e90a3437646df46ee032e892c197aa7d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:56:42.363Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.content-collections/cache/content-collection-config.mjs",
+          "classic/apps/web/.content-collections/cache/mapping.json",
+          "classic/apps/web/.content-collections/generated/index.d.ts",
+          "classic/apps/web/.content-collections/generated/allChangelogs.js",
+          "classic/apps/web/.content-collections/generated/index.js"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "39e2c64f-08a3-4743-ae02-928b59381eae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:56:42.364Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

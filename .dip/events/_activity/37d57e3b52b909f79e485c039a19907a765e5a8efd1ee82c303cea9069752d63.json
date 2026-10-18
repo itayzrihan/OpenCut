@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "37d57e3b52b909f79e485c039a19907a765e5a8efd1ee82c303cea9069752d63",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:04:10.887Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/app/brand-kits/page.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/app/batch-worker/page.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/webpack.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/_app-pages-browser_src_media_noise-reduction_worker_ts.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/_app-pages-browser_src_services_background-removal_worker_ts.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/_app-pages-browser_src_services_waveform-cache_worker_ts-_2ecc0.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/_app-pages-browser_src_services_waveform-cache_worker_ts-_2ecc1.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/wasm/c7eb9c633e6622d1.wasm",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/chunks/_app-pages-browser_src_services_transcription_worker_ts-_f8bc1.js"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "197b6f5d-1941-47e4-bd12-efa017b28eb3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:04:10.889Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

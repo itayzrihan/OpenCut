@@ -1,4 +1,5 @@
 "use client";
+import { BrandKitPicker } from "@/brand-kits/picker";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 import {
 	createContext,
@@ -199,7 +200,13 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				id: crypto.randomUUID(),
 				projectId,
 				expectedUpdatedAt: project.metadata.updatedAt.toISOString(),
-				options,
+				options: {
+					zoom: options.zoom,
+					transitions: options.transitions,
+					wordAnimation: options.wordAnimation,
+					music: options.music,
+					...(options.brandKitId ? { brandKitId: options.brandKitId } : {}),
+				},
 			});
 			await launch({ ...result, files: [] });
 			toast.success("Full Auto Edit queued. You can work in another project.");
@@ -229,7 +236,13 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 					projectId: crypto.randomUUID(),
 					fileName: f.name,
 				})),
-				options,
+				options: {
+					zoom: options.zoom,
+					transitions: options.transitions,
+					wordAnimation: options.wordAnimation,
+					music: options.music,
+					...(options.brandKitId ? { brandKitId: options.brandKitId } : {}),
+				},
 			});
 			await launch({ ...result, files });
 			setOpen(false);
@@ -375,6 +388,13 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 								))}
 							</ul>
 						)}
+						<BrandKitPicker
+							value={options.brandKitId}
+							disabled={starting}
+							onChange={(brandKitId) =>
+								setOptions((previous) => ({ ...previous, brandKitId }))
+							}
+						/>
 						<div className="grid gap-3 sm:grid-cols-2">
 							{(
 								[
@@ -399,8 +419,10 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 						<p className="text-xs text-muted-foreground">
 							Always included: vertical cover, local face/body centering,
 							silence removal at 0.3s, Hebrew ivrit-ai Large v3 Turbo in your
-							browser, 1-row Auto Texts, Assistant bold, centered captions,
-							hidden punctuation, fade 60% / 25% and black edge feather.
+							browser, 1-row Auto Texts,{" "}
+							{options.brandKitId ? "Brand Kit fonts" : "Assistant bold"},
+							centered captions, hidden punctuation, fade 60% / 25% and black
+							edge feather.
 						</p>
 						<p className="text-xs text-muted-foreground">
 							You can keep using the app. Automatic edits show live progress and
@@ -438,7 +460,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 									</div>
 									<p className="text-xs text-muted-foreground">
 										{Object.entries(run.options)
-											.filter(([, v]) => v)
+											.filter(([, v]) => v === true)
 											.map(
 												([k]) =>
 													({
@@ -449,6 +471,9 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 													})[k],
 											)
 											.join(" · ") || "Basic Full Auto Edit"}
+										{run.options.brandKit
+											? ` · Brand Kit: ${run.options.brandKit.name}`
+											: ""}
 									</p>
 									{run.jobs.map((job) => (
 										<div

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b9f4449d1a9e4f941c968913c2b4672c411bd68768ab753fa552cd9bee932f1f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:56:47.373Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/swc",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/swc/plugins",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/swc/plugins/macos_aarch64_24.0.0"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "4d298971-c2af-4bae-8a0a-b0df025a83eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:56:47.479Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

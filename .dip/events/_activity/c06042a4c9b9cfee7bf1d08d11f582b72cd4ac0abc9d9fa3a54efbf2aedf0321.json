@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c06042a4c9b9cfee7bf1d08d11f582b72cd4ac0abc9d9fa3a54efbf2aedf0321",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:02:17.670Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/subscription-image-tests/run-HVlkBJ/alice",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/e65ea16ec7f228d89cb388b9ba8a6cd089022c567b2389f73a7189cb24ae42f7.json",
+          ".local/subscription-image-tests/run-HVlkBJ/alice-project-imagegen-e65ea16ec7f228d89cb388b9ba8a6cd089022c567b2389f73a7189cb24ae42f7.png",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/e65ea16ec7f228d89cb388b9ba8a6cd089022c567b2389f73a7189cb24ae42f7.json.a70b8498-4d7f-4850-bded-f978726f2070.pending",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/687e070aa43d55474436a2c92bb8dacb6915992f98668a77ea413c8ad2e657e6.json",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/cc24ddb205644cbfe2e62acf60278392d4194d4b0058039e00f37a461ecc83f2.json",
+          ".local/subscription-image-tests/run-HVlkBJ/alice-project-imagegen-cc24ddb205644cbfe2e62acf60278392d4194d4b0058039e00f37a461ecc83f2.png",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/cc24ddb205644cbfe2e62acf60278392d4194d4b0058039e00f37a461ecc83f2.json.ddc19adf-b4ac-4f5a-914f-c413ad6ac672.pending",
+          ".local/subscription-image-tests/run-HVlkBJ/alice-project-imagegen-f72043e53b2f8ceee6b9a288a227315fed2451f1241c2540a7b95fa7fe634c17.png",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/f72043e53b2f8ceee6b9a288a227315fed2451f1241c2540a7b95fa7fe634c17.json.5cd9f8ac-5196-4ef4-8bc3-7c04acb294d7.pending",
+          ".local/subscription-image-tests/run-HVlkBJ/alice/image-jobs/f72043e53b2f8ceee6b9a288a227315fed2451f1241c2540a7b95fa7fe634c17.json",
+          ".local/brand-kit/full-web-final/src__core__managers____tests____project-session-lifecycle.test.ts.log",
+          ".local/brand-kit/full-web-final/src__editor-agent____tests____subscription-image.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "381b2a27-bfff-4a38-8af3-97c40b6c541a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:02:17.682Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

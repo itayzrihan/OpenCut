@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f4a6d101b7cc17be35ad13cfb452c93cf455b900d507e3bb0c25e110b405da6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:59:02.583Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/lint.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "f19c9c49-5044-48d3-944c-9906a8743692"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:59:02.743Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

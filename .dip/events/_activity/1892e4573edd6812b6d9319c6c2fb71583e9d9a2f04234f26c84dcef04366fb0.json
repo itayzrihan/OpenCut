@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1892e4573edd6812b6d9319c6c2fb71583e9d9a2f04234f26c84dcef04366fb0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:49:41.232Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "מיזוג-עם-העורך-של-Hyper-frames",
+        "command": "bun x tsc --noEmit --pretty false > ../../../.local/brand-kit/premerge-types-clean.log 2>&1",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-1865fd88-ea39-48e9-b220-5fa5621cca1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:49:41.672Z",
+  "parents": [],
+  "branch": "מיזוג-עם-העורך-של-Hyper-frames"
+}

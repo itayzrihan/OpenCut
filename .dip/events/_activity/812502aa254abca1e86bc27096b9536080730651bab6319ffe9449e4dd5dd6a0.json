@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "812502aa254abca1e86bc27096b9536080730651bab6319ffe9449e4dd5dd6a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:05:35.051Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/brand-kit-desktop.jpg"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "853d1c91-c72f-4269-b596-14e6dc049db9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:05:35.228Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b57e3921338476438f0ca2eb49112bae31da214d86ed94ac4e82f5bbeb7d1b39",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:54:38.045Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > classic/apps/web/src/brand-kits/apply.ts <<'EOF'\n/** Host asset preflight. Rust owns every timeline/style transformation. */\nimport type { EditorCore } from '@/core';\nimport type { BrandKit } from './types';\nimport { sharedLibraryService } from '@/shared-library/service';\nimport { storageService } from '@/services/storage/service';\nimport { loadProjectFont, isProjectFontLoaded } from '@/fonts/custom-fonts';\nimport { SYSTEM_FONTS } from '@/fonts/system-fonts';\n\nexport async function prepareBrandKit({ editor, kit, signal, assertContext }: { editor: EditorCore; kit: BrandKit; signal: AbortSignal; assertContext: () => void }): Promise<Record<string, number>> {\n assertContext();\n const projectId = editor.project.getActive().metadata.id;\n if (kit.logo && !(await sharedLibraryService.getStickerAssetFile({ id: kit.logo.assetId }))) throw new Error('Brand logo is unavailable; update this Brand Kit before editing');\n const sounds = await sharedLibraryService.listAudioAssets();\n const sfxDurationTicks: Record<string, number> = {};\n for (const id of [...kit.musicIds, ...kit.sfxIds]) {\n  signal.throwIfAborted(); assertContext();\n  const sound = sounds.find((asset) => asset.id === id);\n  if (!sound || sound.folder !== (kit.musicIds.includes(id) ? 'music' : 'sfx') || !(await sharedLibraryService.getAudioAssetFile({ id }))) throw new Error('A Brand Kit sound is unavailable; update this kit before editing');\n  if (kit.sfxIds.includes(id)) {\n   if (!sound.duration || !Number.isFinite(sound.duration) || sound.duration <= 0) throw new Error('Brand SFX needs a known duration. Import the sound again.');\n   sfxDurationTicks[id] = Math.round(sound.duration * 120000);\n  }\n }\n const fonts = await storageService.loadAllSharedFonts();\n const preparedFonts = [];\n for (const family of new Set([kit.headingFont, kit.bodyFont])) {\n  if (SYSTEM_FONTS.has(family)) continue;\n  const font = fonts.find((font) => font.family === family);\n  if (!font) throw new Error(`Brand font “${family}” is unava",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-205e6cda-0d24-4c8d-9b8e-500acbb62ec3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:54:38.985Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

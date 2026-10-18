@@ -1,7 +1,18 @@
+import { newBrandKit } from "@/brand-kits/types";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Host adapters are injected test doubles. */
 import { expect, mock, test } from "bun:test";
 import type { EditorCore } from "@/core";
 const calls: string[] = [];
+mock.module("@/brand-kits/apply", () => ({
+	prepareBrandKit: async ({ assertContext }: { assertContext: () => void }) => {
+		assertContext();
+		calls.push("brand-preflight");
+		return {};
+	},
+	applyBrandKit: () => {
+		calls.push("brand-apply");
+	},
+}));
 let silenceFailure: Error | undefined;
 let duringSilence: () => void = () => {};
 const silenceCalls: Array<
@@ -329,3 +340,47 @@ for (const failure of ["decode", "cancel", "scene-change"]) {
 		expect(restoredSelections).toBe(1);
 	});
 }
+
+test("Full Auto applies its frozen Brand Kit after finishing and rejects account changes", async () => {
+	const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: { __opencutAccountId: "alice" },
+	});
+	try {
+		const kit = { ...newBrandKit(), name: "Client branding" };
+		const branded = {
+			...options,
+			brandKitId: kit.id,
+			brandKit: kit,
+			brandKitAccountId: "alice",
+		};
+		const { editor } = setup();
+		await runFullAutoEdit({
+			editor,
+			signal: new AbortController().signal,
+			onProgress: () => {},
+			options: branded,
+		});
+		expect(calls[0]).toBe("brand-preflight");
+		expect(calls.indexOf("brand-apply")).toBeGreaterThan(
+			calls.indexOf("finish"),
+		);
+		expect(calls.filter((call) => call === "brand-apply")).toHaveLength(1);
+		expect(calls.at(-1)).toBe("save");
+		window.__opencutAccountId = "bob";
+		const next = setup();
+		await expect(
+			runFullAutoEdit({
+				editor: next.editor,
+				signal: new AbortController().signal,
+				onProgress: () => {},
+				options: branded,
+			}),
+		).rejects.toThrow("account changed");
+		expect(calls).toEqual([]);
+	} finally {
+		if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+		else Reflect.deleteProperty(globalThis, "window");
+	}
+});

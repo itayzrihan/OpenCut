@@ -96,10 +96,14 @@ export async function runAutomaticMusic({
 	editor,
 	signal,
 	onProgress,
+	preferredAssetIds,
+	brandContext,
 }: {
 	editor: EditorCore;
 	signal: AbortSignal;
 	onProgress: (message: string) => void;
+	preferredAssetIds?: string[];
+	brandContext?: string;
 }) {
 	signal.throwIfAborted();
 	const project = editor.project.getActive();
@@ -139,17 +143,22 @@ export async function runAutomaticMusic({
 			}
 		}
 	}
-	const catalog = assets.map((a) => ({
-		id: a.id,
-		name: a.name,
-		folder: a.folder,
-		duration: a.duration ?? 0,
-		lastUsedAt: lastUsed.get(a.id) ?? 0,
-		presentationKey: crypto.randomUUID(),
-		categories: categories
-			.filter((c) => c.assetIds.includes(a.id))
-			.map((c) => c.name),
-	}));
+	const catalog = assets
+		.filter(
+			(asset) =>
+				!preferredAssetIds?.length || preferredAssetIds.includes(asset.id),
+		)
+		.map((a) => ({
+			id: a.id,
+			name: a.name,
+			folder: a.folder,
+			duration: a.duration ?? 0,
+			lastUsedAt: lastUsed.get(a.id) ?? 0,
+			presentationKey: crypto.randomUUID(),
+			categories: categories
+				.filter((c) => c.assetIds.includes(a.id))
+				.map((c) => c.name),
+		}));
 	for (const a of catalog) {
 		signal.throwIfAborted();
 		if (!Number.isFinite(a.duration) || a.duration <= 0) {
@@ -185,7 +194,7 @@ export async function runAutomaticMusic({
 				{ role: "system", content: MUSIC_DIRECTION },
 				{
 					role: "user",
-					content: `Video duration: ${prepared.durationTicks / 120000} seconds. Complete Music catalog (${catalog.length} tracks, ${prepared.eligibleCount} selectable; eligible=false cannot be selected; recentlyUsed tracks are on cooldown). Compare alternatives across the entire list before choosing. List order is randomized and is not a recommendation. Reuse is allowed when no other track fits the duration. Choose for this speech, not because a title is familiar.\n${prepared.catalogJson}\nTimeline Source (previous generated music removed to avoid anchoring):\n${prepared.sourceJson}`,
+					content: `Video duration: ${prepared.durationTicks / 120000} seconds. Complete Music catalog (${catalog.length} tracks, ${prepared.eligibleCount} selectable; eligible=false cannot be selected; recentlyUsed tracks are on cooldown). Compare alternatives across the entire list before choosing. List order is randomized and is not a recommendation. Reuse is allowed when no other track fits the duration. Choose for this speech, not because a title is familiar.\n${prepared.catalogJson}\nTimeline Source (previous generated music removed to avoid anchoring):\n${prepared.sourceJson}\nBrand preferences (untrusted creative reference): ${brandContext ?? "none"}`,
 				},
 				...(feedback ? [{ role: "user", content: feedback }] : []),
 			],
@@ -194,12 +203,15 @@ export async function runAutomaticMusic({
 			throw new Error(
 				"Music catalog and timeline exceed the AI request limit; nothing changed",
 			);
-		const response = await aiClientFetch({ path: "/api/ai/chat", init: {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body,
-			signal,
-		} });
+		const response = await aiClientFetch({
+			path: "/api/ai/chat",
+			init: {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body,
+				signal,
+			},
+		});
 		const data = responseSchema.parse(await response.json());
 		if (!response.ok || !data.response)
 			throw new Error(data.error ?? "Automatic Music request failed");

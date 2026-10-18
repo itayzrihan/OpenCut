@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b8a951878239ad714d78261f53d970d9576a2b3981787182eee1e60b9e7a97d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:01:09.051Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/build-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/react-loadable-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_ssgManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-react-loadable-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-build-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_buildManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/accounts/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/brand-kits/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/local-drive/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/batch-worker/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/brand-kits/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/shared-library/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/batch-edit/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/accounts/storage/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/ai/oauth/status/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/logs/next-development.log",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "7ca1922d-1c85-4bcd-91cb-adb68fe4d956"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:01:09.052Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

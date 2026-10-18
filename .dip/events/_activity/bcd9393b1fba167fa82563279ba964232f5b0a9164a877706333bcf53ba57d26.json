@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bcd9393b1fba167fa82563279ba964232f5b0a9164a877706333bcf53ba57d26",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:55:54.927Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/wasm-feature.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "29938f66-afe2-49f5-bc09-f3dbb246f7ce"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:55:54.930Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

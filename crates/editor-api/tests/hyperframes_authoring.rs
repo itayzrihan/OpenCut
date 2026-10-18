@@ -61,7 +61,7 @@ fn manifest(source: &HyperframesSource) -> Value {
 #[tokio::test]
 async fn reference_import_remix_readback_and_undo_use_one_document() {
     let (rt, host) = setup().await;
-    let input = json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":"4c4b8574406cc566d28778a13f22c072d727a871","name":"Reference","startSeconds":0});
+    let input = json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":generation(),"name":"Reference","startSeconds":0});
     let mut context = InvocationContext::default();
     context
         .metadata
@@ -142,7 +142,7 @@ async fn reference_import_remix_readback_and_undo_use_one_document() {
 async fn rejected_preflight_or_changed_revision_never_imports() {
     for mode in 0..3 {
         let (rt, host) = setup().await;
-        let mut call=std::pin::pin!(rt.registry().invoke("hyperframes.examples.import",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":"4c4b8574406cc566d28778a13f22c072d727a871","name":"Reference"})));
+        let mut call=std::pin::pin!(rt.registry().invoke("hyperframes.examples.import",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":generation(),"name":"Reference"})));
         assert!(
             call.as_mut()
                 .poll(&mut Context::from_waker(Waker::noop()))
@@ -207,3 +207,5 @@ async fn export_artifact_is_scope_bound_and_does_not_change_timeline() {
         );
     }
 }
+
+fn generation() -> Value { serde_json::from_str::<Value>(include_str!("../../../resources/hyperframes/catalog-supplement.json")).unwrap()["upstreamCommit"].clone() }

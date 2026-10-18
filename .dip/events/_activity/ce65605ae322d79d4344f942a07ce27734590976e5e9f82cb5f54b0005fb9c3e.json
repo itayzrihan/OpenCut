@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce65605ae322d79d4344f942a07ce27734590976e5e9f82cb5f54b0005fb9c3e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:58:25.009Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/logs/next-development.log",
+          ".local/brand-kit/qa-accounts/data",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/brand-kits",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/brand-kits.lock",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/projects",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/settings",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/shared-library",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "7bbda959-1b58-4eb3-907c-8070b6d3264c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:58:25.014Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

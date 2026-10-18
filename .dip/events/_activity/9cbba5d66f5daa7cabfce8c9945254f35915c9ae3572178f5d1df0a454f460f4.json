@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9cbba5d66f5daa7cabfce8c9945254f35915c9ae3572178f5d1df0a454f460f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:04:38.943Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/brand-kits/apply.ts');s=p.read_text();needle='const sounds = await sharedLibraryService.listAudioAssets();';s=s.replace(needle,'''if (kit.logo && !(await sharedLibraryService.getStickerAssetDataUrl({ id: kit.logo.assetId }))) throw new Error(\"Brand logo has no renderable resource; import it again before editing\");\n    '''+needle);p.write_text(s)\n# Preserve pre-existing line endings in the catalog regression file.\np=Path('crates/editor-api/tests/hyperframes_authoring.rs');s=p.read_text();p.write_bytes(s.replace('\\r\\n','\\n').replace('\\n','\\r\\n').encode())\nPY\nnode classic/scripts/test-web.mjs --jobs=2 --timeout=240000 --report=.local/brand-kit/final-host src/brand-kits/server.test.ts src/editor-agent/__tests__/session-route.test.ts > .local/brand-kit/final-host.log 2>&1",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-bbf52d75-233f-4121-b237-b908f2911162"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:04:39.335Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

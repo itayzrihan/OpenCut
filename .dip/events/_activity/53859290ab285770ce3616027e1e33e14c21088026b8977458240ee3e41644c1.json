@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53859290ab285770ce3616027e1e33e14c21088026b8977458240ee3e41644c1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:00:04.771Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/host-persistence/src__brand-kits__server.test.ts.log",
+          ".local/brand-kit/host-persistence/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "4a7268fe-a8f2-43a9-9034-c91db93a2c09"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:00:04.830Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

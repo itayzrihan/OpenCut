@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0487dc9ff6aef65a0c77d97047822f3ca3bc36e7d1ff4ca83c2bf0b56f6c0cc6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:59:01.798Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_buildManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-react-loadable-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_ssgManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-build-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/accounts/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/local-drive/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/brand-kits/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/brand-kits/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/batch-worker/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/shared-library/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/batch-edit/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/ai/oauth/status/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/logs/next-development.log",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "6177f971-c559-494b-8750-4b171d4afea7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:59:01.880Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

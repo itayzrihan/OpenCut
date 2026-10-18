@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19edc831d6604e4add75e7540a8ae42996bfc954b1cba84f346d2c3cefc7b04d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:01:14.060Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/brand-kits.lock",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock",
+          ".local/brand-kit/full-web-final.log",
+          ".local/brand-kit/full-web-final"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "44703b23-aa43-4bf9-895e-941fc4cd566c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:01:14.081Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

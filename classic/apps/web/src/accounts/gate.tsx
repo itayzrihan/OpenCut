@@ -111,13 +111,24 @@ export function AccountGate({ children }: { children: ReactNode }) {
 				<BackgroundSnapshots />
 				<ClientAiSetup />
 				{children}
-				<a
-					href="/account"
-					className="fixed bottom-3 left-3 z-50 rounded border bg-background px-3 py-1 text-xs shadow"
-					aria-label="Account and storage settings"
+				<nav
+					aria-label="Workspace"
+					className="fixed bottom-3 left-3 z-50 flex max-w-[calc(100vw-1.5rem)] items-center gap-2"
 				>
-					{account.displayName}
-				</a>
+					<a
+						href="/account"
+						className="max-w-48 truncate rounded border bg-background px-3 py-1 text-xs shadow"
+						aria-label="Account and storage settings"
+					>
+						{account.displayName}
+					</a>
+					<a
+						href="/brand-kits"
+						className="shrink-0 rounded border bg-background px-3 py-1 text-xs shadow"
+					>
+						Brand Kits
+					</a>
+				</nav>
 			</>
 		);
 	return (

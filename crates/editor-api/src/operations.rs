@@ -59,6 +59,7 @@ mod classic_track_layout;
 mod classic_remove;
 mod classic_media;
 pub(crate) mod classic_unified;
+mod brand_kits;
 mod classic_media_register;
 mod classic_image_inspection;
 mod classic_captions;
@@ -119,6 +120,7 @@ pub(crate) fn register_all(
     register_state_patch(registry, state.clone(), events.clone())?;
     studio::register_studio(registry, state.clone(), events.clone())?;
     register_account_storage(registry, state.clone(), events.clone())?;
+    brand_kits::register_brand_kits(registry, state.clone(), events.clone())?;
     register_account_snapshot_validation(registry, state.clone())?;
     register_application_operations(registry, state.clone(), events.clone())?;
     register_observation_operations(registry, state.clone())?;
@@ -266,7 +268,7 @@ where
             "This capability requires a native OpenCut host; it is unavailable in the browser runtime".into(),
         );
     }
-    descriptor.transactional = (access <= AccessLevel::Write || id == "account.storage.configure")
+    descriptor.transactional = (access <= AccessLevel::Write || matches!(id, "account.storage.configure" | "account.brand_kits.remove"))
         && (!open_world || id == "media.relink")
         && !id.starts_with("history.")
         && !id.starts_with("job.")

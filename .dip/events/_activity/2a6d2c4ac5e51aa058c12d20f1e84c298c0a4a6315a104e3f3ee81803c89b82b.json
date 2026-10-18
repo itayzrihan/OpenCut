@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a6d2c4ac5e51aa058c12d20f1e84c298c0a4a6315a104e3f3ee81803c89b82b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:59:36.470Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "rustfmt --edition 2024 crates/account-core/src/brand_kit.rs crates/editor-api/src/operations/brand_kits.rs crates/editor-api/tests/brand_kits.rs",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-c0807893-1802-4df2-9ec1-87525e5e6fca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:59:36.569Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

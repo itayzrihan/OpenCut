@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f34a1d881482c53851204ee9cc77f857922bf30b293dcc6947cf4b57e88e9fd6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:06:22.576Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/app/brand-kits/page.tsx');s=p.read_text().replace('async function upload(kind: \"logo\" | \"music\" | \"sfx\" | \"font\", file: File)', 'async function upload({ kind, file }: { kind: \"logo\" | \"music\" | \"sfx\" | \"font\"; file: File })').replace('const field = (label: string, key: \"name\" | \"style\")', 'const field = ({ label, key }: { label: string; key: \"name\" | \"style\" })').replace('''const uploadButton = (\n\t\tkind: \"logo\" | \"music\" | \"sfx\" | \"font\",\n\t\tlabel: string,\n\t)''','''const uploadButton = ({ kind, label }: { kind: \"logo\" | \"music\" | \"sfx\" | \"font\"; label: string })''');p.write_text(s)\np=Path('classic/apps/web/src/brand-kits/server.test.ts');s=p.read_text().replace('const request = (token: [REDACTED], edit?: unknown)', 'const request = ({ token, edit }: { token: [REDACTED]; edit?: unknown })');p.write_text(s)\nPY\nnode <<'JS'\nconst ts=require('./classic/node_modules/typescript'),fs=require('fs');\nfor(const [file,names]of [['classic/apps/web/src/app/brand-kits/page.tsx',{field:['label','key'],upload:['kind','file'],uploadButton:['kind','label']}],['classic/apps/web/src/brand-kits/server.test.ts',{request:['token','edit']}]] ){\n let source=fs.readFileSync(file,'utf8');const tree=ts.createSourceFile(file,source,99,true,file.endsWith('tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS),edits=[];\n function visit(n){ if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&names[n.expression.text]){const keys=names[n.expression.text];edits.push([n.expression.end,n.end,'({ '+n.arguments.map((arg,i)=>keys[i]+': '+arg.getText(tree)).join(', ')+' })']);}ts.forEachChild(n,visit);}visit(tree);for(const [a,b,value]of edits.sort((a,b)=>b[0]-a[0]))source=source.slice(0,a)+value+source.slice(b);fs.writeFileSync(file,source);\n}\nJS",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-1ad5fb61-ea0f-446a-ba97-821999cdda9c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:06:22.599Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

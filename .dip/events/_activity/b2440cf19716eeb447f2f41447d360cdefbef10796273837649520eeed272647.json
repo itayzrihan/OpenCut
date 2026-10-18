@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2440cf19716eeb447f2f41447d360cdefbef10796273837649520eeed272647",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:55:47.162Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/brand-kits/apply.ts');s=p.read_text().replace(\"import type { BrandKit }\", \"import type { ProjectFont } from '@/fonts/types';\\nimport type { BrandKit }\").replace('const preparedFonts = [];','const preparedFonts: ProjectFont[] = [];');p.write_text(s)\np=Path('crates/editor-api/src/operations/brand_kits.rs');s=p.read_text().replace('use super::*;','use super::*;\\nuse std::collections::BTreeMap;');s=s.replace('enum Change { Upsert { kit: BrandKit }, Remove { kit_id: String } }','enum Change { Upsert { kit: BrandKit } }\\n#[derive(Deserialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\\nstruct RemoveInput { account_id: String, expected_revision: u64, kit_id: String }');s=s.replace('Create/update or remove one named Brand Kit','Create/update one named Brand Kit');s=s.replace('                    Change::Remove { kit_id } => { let index = account.brand_kits.iter().position(|k| k.id == kit_id).ok_or_else(|| CapabilityError::InvalidInput(\"Brand Kit not found\".into()))?; account.brand_kits.remove(index); kit_id },\\n','');needle='    register::<ApplyInput, MutationOutput, _, _>'\ninsert='''    let remove_state = state.clone(); let remove_events = events.clone();\n    register::<RemoveInput, MutationOutput, _, _>(registry, DocumentSupport::Both, crate::CapabilityExecution::Immediate,\n        \"account.brand_kits.remove\", \"Remove account Brand Kit\",\n        \"Delete one saved Brand Kit from the explicit authenticated account. Existing timeline snapshots and queued recipes are preserved. Destructive, revision fenced, atomic and undoable; supports dry run and idempotency. No file IO or asset deletion.\",\n        \"account\", AccessLevel::Destructive, false, false, &[\"brand-kit\", \"account\", \"delete\"],\n        move |context, input| { let state=remove_state.clone(); let events=remove_events.clone(); async move {\n            let output=mutate(&state,&events,&context,\"Remove Brand Kit\",Some(input.e",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-6d15afe0-29cb-4002-9387-3b223fb0dd9e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:55:47.924Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

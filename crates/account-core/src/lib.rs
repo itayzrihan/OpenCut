@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 pub mod snapshot;
 pub mod media;
+pub mod brand_kit;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
@@ -44,6 +45,8 @@ pub struct AccountState {
     pub display_name: String,
     #[serde(default)]
     pub storage: StorageConfiguration,
+    #[serde(default)]
+    pub brand_kits: Vec<brand_kit::BrandKit>,
 }
 
 pub fn validate_id(value: &str) -> Result<(), String> {
@@ -94,6 +97,8 @@ impl AccountState {
     pub fn validate(&self) -> Result<(), String> {
         validate_id(&self.id)?;
         validate_name(&self.display_name)?;
+        let mut ids = BTreeSet::new();
+        for kit in &self.brand_kits { kit.validate()?; if !ids.insert(&kit.id) { return Err("Duplicate brand kit identity".into()); } }
         self.storage.validate()
     }
 
@@ -111,7 +116,7 @@ impl AccountState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn account() -> AccountState { AccountState { id: "alice".into(), display_name: "Alice".into(), storage: Default::default() } }
+    fn account() -> AccountState { AccountState { id: "alice".into(), display_name: "Alice".into(), storage: Default::default(), brand_kits: Vec::new() } }
     #[test]
     fn rejects_cross_account_change_without_mutation() {
         let mut state = account(); let before = state.clone();

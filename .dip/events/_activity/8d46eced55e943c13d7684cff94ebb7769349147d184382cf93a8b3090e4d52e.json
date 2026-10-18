@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8d46eced55e943c13d7684cff94ebb7769349147d184382cf93a8b3090e4d52e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:56:45.380Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack/client-development",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack/client-development/0.pack.gz_",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack/client-development/0.pack.gz",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack/client-development/index.pack.gz_",
+          "classic/apps/web/.next-brand-kit-qa/dev/cache/webpack/client-development/index.pack.gz"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "a206dbd2-394d-40ad-ba59-3921fd591644"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:56:45.448Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

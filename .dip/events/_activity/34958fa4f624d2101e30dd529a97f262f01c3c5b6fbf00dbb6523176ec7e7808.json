@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34958fa4f624d2101e30dd529a97f262f01c3c5b6fbf00dbb6523176ec7e7808",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:08:43.225Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock",
+          "classic/apps/web/src/app/brand-kits/page.tsx",
+          "classic/apps/web/src/accounts/gate.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "ded9c214-c45f-4e33-8590-921a258e94dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:08:43.233Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

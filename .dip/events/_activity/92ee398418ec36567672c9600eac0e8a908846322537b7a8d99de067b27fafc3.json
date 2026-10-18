@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "92ee398418ec36567672c9600eac0e8a908846322537b7a8d99de067b27fafc3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:58:29.837Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/batch/server.test.ts');s=p.read_text();s='import { newBrandKit, type BrandKit } from \"@/brand-kits/types\";\\n'+s;s=s.replace('const projects = new Map<','let brandLibrary: BrandKit[] = [];\\nmock.module(\"@/brand-kits/server\", () => ({ brandKitTransaction: async () => ({ accountId: \"alice\", revision: 1, kits: structuredClone(brandLibrary) }) }));\\nconst projects = new Map<',1);s+='''\n\ntest(\"Full Auto queues freeze the account kit, reject missing kits and discard caller supplied snapshots\", async () => {\n const kit = { ...newBrandKit(), name: \"Client brand\" };\n brandLibrary = [kit];\n const queued = await createBatch({ id: \"brand-batch\", files: [{ projectId: \"brand-project\", fileName: \"brand.mp4\" }], options: { ...options, brandKitId: kit.id, brandKit: { ...kit, name: \"forged\" }, brandKitAccountId: \"bob\" } });\n expect(queued.run.options.brandKit).toEqual(kit);\n expect(queued.run.options.brandKitAccountId).toBe(\"alice\");\n brandLibrary = [{ ...kit, name: \"New kit version\" }];\n expect((await getBatchState()).runs.find((run) => run.id === queued.run.id)?.options.brandKit?.name).toBe(\"Client brand\");\n await expect(createBatch({ id: \"brand-missing\", files: [{ projectId: \"brand-missing-project\", fileName: \"new.mp4\" }], options: { ...options, brandKitId: \"missing\" } })).rejects.toThrow(\"no longer exists\");\n const plain = await createBatch({ id: \"brand-none\", files: [{ projectId: \"brand-none-project\", fileName: \"new.mp4\" }], options: { ...options, brandKit: kit, brandKitAccountId: \"bob\" } });\n expect(plain.run.options.brandKit).toBeUndefined();\n});\n''';p.write_text(s)\np=Path('classic/apps/web/src/ai/__tests__/full-auto-edit-takes.test.ts');s=p.read_text();s='import { newBrandKit } from \"@/brand-kits/types\";\\n'+s;s=s.replace('const calls: string[] = [];','const calls: string[] = [];\\nmock.module(\"@/brand-kits/apply\", () => ({ prepareBrandKit: async ({ assertContext }: { assertContext: () => void }) => { assertC",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-695927bd-599b-48bd-8653-ce834179e00d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:58:30.619Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

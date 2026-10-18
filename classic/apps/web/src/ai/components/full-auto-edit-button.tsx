@@ -1,4 +1,5 @@
 "use client";
+import { BrandKitPicker } from "@/brand-kits/picker";
 import { useState } from "react";
 import { Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,13 @@ export function FullAutoEditButton({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3">
+						<BrandKitPicker
+							value={options.brandKitId}
+							disabled={running}
+							onChange={(brandKitId) =>
+								setOptions((previous) => ({ ...previous, brandKitId }))
+							}
+						/>
 						{(
 							[
 								["zoom", "Automatic Zoom"],
@@ -133,10 +141,11 @@ export function FullAutoEditButton({
 						))}
 						<p className="text-xs text-muted-foreground">
 							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · Smart
-							audio cut · protect speech · Assistant bold · fade 60% / 25%.
-							Local face/body framing uses five source samples per source; no
-							cloud AI is used for centering. Uncertain subjects use centered
-							vertical cover automatically; editing continues.
+							audio cut · protect speech ·{" "}
+							{options.brandKitId ? "Brand Kit fonts" : "Assistant bold"} · fade
+							60% / 25%. Local face/body framing uses five source samples per
+							source; no cloud AI is used for centering. Uncertain subjects use
+							centered vertical cover automatically; editing continues.
 						</p>
 						{status && (
 							<p role="status" className="text-sm whitespace-pre-wrap">

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7b6955f01926fcd79316bb135e6d078b6fdfe8ae3e08d790d8602f0a695682c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:02:16.824Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/build-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/react-loadable-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-react-loadable-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/middleware-build-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_ssgManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/static/development/_buildManifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/accounts/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/local-drive/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/next-font-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/brand-kits/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/batch-worker/page_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/brand-kits/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/shared-library/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/batch-edit/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/accounts/storage/route_client-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/ai/oauth/status/route_client-reference-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "3f4c7b25-f165-4369-97cc-d3c0657afa48"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:02:16.836Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

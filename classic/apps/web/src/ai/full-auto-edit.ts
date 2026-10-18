@@ -1,3 +1,4 @@
+import type { BrandKit } from "@/brand-kits/types";
 /** Single-project host orchestration. Rust owns the recipe and document transforms. */
 import { compileFullAutoEdit, fullAutoEditStages } from "opencut-wasm";
 import type { EditorCore } from "@/core";
@@ -18,6 +19,10 @@ import { loadBundledAssistantBold } from "@/fonts/bundled-fonts";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
+	brandKitId?: string;
+	/** Host-resolved immutable recipe; never accepted from a queue request. */
+	brandKit?: BrandKit;
+	brandKitAccountId?: string;
 	zoom: boolean;
 	transitions: boolean;
 	wordAnimation: boolean;
@@ -47,6 +52,20 @@ export async function runFullAutoEdit({
 	resumeFromStage?: number;
 }) {
 	const projectId = editor.project.getActive().metadata.id;
+	const kit = options.brandKit;
+	const brandTools = kit ? await import("@/brand-kits/apply") : null;
+	if (options.brandKitId && (!kit || kit.id !== options.brandKitId))
+		throw new Error(
+			"The selected Brand Kit was not resolved by the account host",
+		);
+	let sfxDurationTicks: Record<string, number> = {};
+	const brandContext = kit
+		? JSON.stringify({
+				style: kit.style,
+				phrases: kit.phrases,
+				palette: [kit.primaryColor, kit.secondaryColor, kit.backgroundColor],
+			})
+		: undefined;
 	const sceneId = editor.scenes.getActiveScene().id;
 	let fontFamily = "";
 	const notes: string[] = [];
@@ -61,11 +80,24 @@ export async function runFullAutoEdit({
 	const assertContext = () => {
 		signal.throwIfAborted();
 		if (
+			kit &&
+			(typeof window === "undefined" ||
+				window.__opencutAccountId !== options.brandKitAccountId)
+		)
+			throw new Error("Brand Kit account changed; automatic editing stopped");
+		if (
 			editor.project.getActive().metadata.id !== projectId ||
 			editor.scenes.getActiveScene().id !== sceneId
 		)
 			throw new Error("Project or scene changed; Full Auto Edit stopped");
 	};
+	if (kit && brandTools)
+		sfxDurationTicks = await brandTools.prepareBrandKit({
+			editor,
+			kit,
+			signal,
+			assertContext,
+		});
 	const loadCaptionFont = async () => {
 		const font =
 			editor.project
@@ -229,6 +261,7 @@ export async function runFullAutoEdit({
 							wordsPerRow: 4,
 							hidePunctuation: true,
 							bottomFadeOutPercent: 60,
+							...(kit ? { accentColor: kit.secondaryColor } : {}),
 						},
 					});
 					break;
@@ -243,6 +276,7 @@ export async function runFullAutoEdit({
 					break;
 				case "transitions":
 					await runAutomaticTextTransitions({
+						brandContext,
 						editor,
 						signal,
 						onProgress: progress,
@@ -250,6 +284,7 @@ export async function runFullAutoEdit({
 					break;
 				case "word-animation":
 					await runAutomaticWordAnimation({
+						brandContext,
 						editor,
 						signal,
 						onProgress: progress,
@@ -257,6 +292,8 @@ export async function runFullAutoEdit({
 					break;
 				case "music": {
 					const result = await runAutomaticMusic({
+						preferredAssetIds: kit?.musicIds,
+						brandContext,
 						editor,
 						signal,
 						onProgress: progress,
@@ -265,6 +302,11 @@ export async function runFullAutoEdit({
 					break;
 				}
 				case "save":
+					if (kit) {
+						progress(`Applying Brand Kit · ${kit.name}…`);
+						assertContext();
+						brandTools!.applyBrandKit({ editor, kit, sfxDurationTicks });
+					}
 					progress("Saving for your review…");
 					await editor.save.flush();
 					break;

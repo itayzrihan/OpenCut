@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99e70536ae655277eaf0819b8b52bd2c18f32ba185e3be12de79ef1319e3822d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:02:15.568Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/accounts/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/local-drive/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/brand-kits/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/shared-library/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/accounts/storage/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/ai/oauth/status/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/brand-kits/page.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/layout.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/package.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app-paths-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "91c74725-a3ee-41f0-a5b6-52b996d9dba4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:02:15.569Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

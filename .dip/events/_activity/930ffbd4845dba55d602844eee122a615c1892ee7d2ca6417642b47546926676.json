@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "930ffbd4845dba55d602844eee122a615c1892ee7d2ca6417642b47546926676",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:54:38.983Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/brand-kits/apply.ts",
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          "classic/apps/web/src/ai/automatic-text-transitions.ts",
+          "classic/apps/web/src/ai/automatic-word-animation.ts",
+          "classic/apps/web/src/ai/automatic-music.ts",
+          "classic/apps/web/src/app/api/batch-edit/route.ts",
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/batch/server.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "6ea3f66a-69a1-4589-bbe9-c9de44e2fe8f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:54:38.987Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

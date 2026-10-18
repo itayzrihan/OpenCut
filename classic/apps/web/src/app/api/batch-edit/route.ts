@@ -21,6 +21,12 @@ const options = z
 		transitions: z.boolean(),
 		wordAnimation: z.boolean(),
 		music: z.boolean(),
+		brandKitId: z
+			.string()
+			.min(1)
+			.max(128)
+			.regex(/^[A-Za-z0-9_-]+$/)
+			.optional(),
 	})
 	.strict();
 const schema = z.discriminatedUnion("action", [

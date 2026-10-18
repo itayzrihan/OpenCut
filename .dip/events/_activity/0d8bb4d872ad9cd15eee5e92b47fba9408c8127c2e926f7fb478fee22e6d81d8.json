@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d8bb4d872ad9cd15eee5e92b47fba9408c8127c2e926f7fb478fee22e6d81d8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:04:48.892Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/logs/next-development.log",
+          ".local/brand-kit/qa-accounts/data/d558c459-0708-4abc-b137-50081127e549/batch.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "37762f1c-7d38-447e-a12a-395289c71bbe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:04:48.904Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

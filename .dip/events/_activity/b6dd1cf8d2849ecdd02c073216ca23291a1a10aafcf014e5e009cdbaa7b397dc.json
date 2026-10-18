@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6dd1cf8d2849ecdd02c073216ca23291a1a10aafcf014e5e009cdbaa7b397dc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:51:55.658Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > crates/editor-api/src/operations/brand_kits.rs <<'EOF'\n//! Brand kit CRUD and Full Auto finishing share the canonical document/history.\nuse super::*;\nuse opencut_account_core::brand_kit::BrandKit;\nuse serde_json::json;\n\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct EditInput {\n    account_id: String,\n    expected_revision: u64,\n    change: Change,\n}\n#[derive(Deserialize, JsonSchema)]\n#[serde(tag = \"type\", rename_all = \"camelCase\", rename_all_fields = \"camelCase\", deny_unknown_fields)]\nenum Change { Upsert { kit: BrandKit }, Remove { kit_id: String } }\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct ApplyInput {\n    project_id: String,\n    scene_id: String,\n    expected_revision: u64,\n    /// Frozen kit from the authenticated account; later library edits never restyle old jobs.\n    kit: BrandKit,\n}\n\npub(super) fn register_brand_kits(registry: &CapabilityRegistry, state: Arc<RwLock<EditorStore>>, events: broadcast::Sender<u64>) -> Result<(), RegistryError> {\n    let edit_state = state.clone();\n    let edit_events = events.clone();\n    register::<EditInput, MutationOutput, _, _>(registry, DocumentSupport::Both, crate::CapabilityExecution::Immediate,\n        \"account.brand_kits.edit\", \"Edit account Brand Kits\",\n        \"Create/update or remove one named Brand Kit in the authenticated account. Multiple kits have stable IDs; validate logo library references, hex palette, fonts, style, phrases and sound IDs. The host authenticates and loads the account. Explicit account ID and optimistic revision are mandatory. Atomic, undoable, dry-run and idempotency supported. No file or network IO. Read kits through app.state.read at /account/brandKits.\",\n        \"account\", AccessLevel::Write, false, false, &[\"brand-kit\", \"account\", \"branding\", \"palette\", \"fonts\"],\n        move |context, input| { let state = edit_state.clone(); let events = edit_events.clone(); async move {\n     ",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-8564e380-dfdd-406d-9c88-0ef8c0e9a772"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:51:55.919Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

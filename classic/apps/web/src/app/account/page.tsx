@@ -88,6 +88,15 @@ export default function AccountPage() {
 					private workspace. New assets are saved outside Git.
 				</p>
 			</section>
+			<section className="space-y-3 rounded-xl border p-6">
+				<h2 className="text-lg font-medium">Brand Kits</h2>
+				<p className="text-sm text-muted-foreground">
+					Manage logos, palettes, typography and sounds for every client.
+				</p>
+				<Link className="underline" href="/brand-kits">
+					Manage Brand Kits
+				</Link>
+			</section>
 			<StorageSettings />
 			<PasswordSettings />
 			{state?.allowed && (

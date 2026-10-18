@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "477a6cbac77d7ed393403c328cc4d6023a4020aad2c7a16ac55ea7de982baa9f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:57:18.512Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > classic/apps/web/src/brand-kits/server.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport { expect, test } from 'bun:test';\nimport { mkdtemp, rm } from 'node:fs/promises';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport { registerAccount, sessionCookie, withAccount } from '@/accounts/server';\nimport { createCanonicalTestRuntime } from '@/core/__tests__/canonical-runtime-fixture';\nimport { brandKitTransaction } from './server';\nimport { newBrandKit, type BrandKitLibrary } from './types';\n\ntest('canonical Brand Kits persist, retry after reopen, reject stale writes, and isolate authenticated accounts', async () => {\n const root = await mkdtemp(join(tmpdir(),'opencut-brand-kits-'));\n const previous = process.env.OPENCUT_ACCOUNTS_DIR;\n process.env.OPENCUT_ACCOUNTS_DIR = root;\n try {\n  const alice = await registerAccount({ login:'brand-alice',displayName:'Alice',password:[REDACTED] });\n  const bob = await registerAccount({ login:'brand-bob',displayName:'Bob',password:[REDACTED] });\n  const handler = withAccount(async (request:Request) => { try { const body = request.method === 'POST' ? await request.json():undefined; return Response.json(await brandKitTransaction({ factory:createCanonicalTestRuntime,...(body?{edit:body}:{}) })); } catch (error) {return Response.json({error:String(error)},{status:409});} });\n  const request = (token:[REDACTED],edit?:unknown) => handler(new Request('http://localhost:3211/api/brand-kits',{ method:edit?'POST':'GET',headers:{origin:'http://localhost:3211',cookie:sessionCookie(token),'Content-Type':'application/json'},...(edit?{body:JSON.stringify(edit)}:{}) }));\n  const original = await (await request(alice.token)).json() as BrandKitLibrary;\n  expect(original.kits).toEqual([]);\n  const kit={...newBrandKit(),name:'Alice Brand'};\n  const edit={expectedRevision:original.revision,requestId:'first-write',change:{type:'upsert',kit}};\n  const savedResponse=await request(alice.token,edit); expect(savedResponse.status).",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-7f6566e9-6473-44cd-904f-9da95aca2839"
+      },
+      {
+        "at": "2026-10-18T15:57:18.777Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > classic/apps/web/src/brand-kits/server.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport { expect, test } from 'bun:test';\nimport { mkdtemp, rm } from 'node:fs/promises';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport { registerAccount, sessionCookie, withAccount } from '@/accounts/server';\nimport { createCanonicalTestRuntime } from '@/core/__tests__/canonical-runtime-fixture';\nimport { brandKitTransaction } from './server';\nimport { newBrandKit, type BrandKitLibrary } from './types';\n\ntest('canonical Brand Kits persist, retry after reopen, reject stale writes, and isolate authenticated accounts', async () => {\n const root = await mkdtemp(join(tmpdir(),'opencut-brand-kits-'));\n const previous = process.env.OPENCUT_ACCOUNTS_DIR;\n process.env.OPENCUT_ACCOUNTS_DIR = root;\n try {\n  const alice = await registerAccount({ login:'brand-alice',displayName:'Alice',password:[REDACTED] });\n  const bob = await registerAccount({ login:'brand-bob',displayName:'Bob',password:[REDACTED] });\n  const handler = withAccount(async (request:Request) => { try { const body = request.method === 'POST' ? await request.json():undefined; return Response.json(await brandKitTransaction({ factory:createCanonicalTestRuntime,...(body?{edit:body}:{}) })); } catch (error) {return Response.json({error:String(error)},{status:409});} });\n  const request = (token:[REDACTED],edit?:unknown) => handler(new Request('http://localhost:3211/api/brand-kits',{ method:edit?'POST':'GET',headers:{origin:'http://localhost:3211',cookie:sessionCookie(token),'Content-Type':'application/json'},...(edit?{body:JSON.stringify(edit)}:{}) }));\n  const original = await (await request(alice.token)).json() as BrandKitLibrary;\n  expect(original.kits).toEqual([]);\n  const kit={...newBrandKit(),name:'Alice Brand'};\n  const edit={expectedRevision:original.revision,requestId:'first-write',change:{type:'upsert',kit}};\n  const savedResponse=await request(alice.token,edit); expect(savedResponse.status).",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-7f6566e9-6473-44cd-904f-9da95aca2839"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:57:20.738Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

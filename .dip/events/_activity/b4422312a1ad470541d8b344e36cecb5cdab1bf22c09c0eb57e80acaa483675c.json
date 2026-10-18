@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b4422312a1ad470541d8b344e36cecb5cdab1bf22c09c0eb57e80acaa483675c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:08:54.094Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "git diff HEAD 'stash@{0}^3' -- .dip/integration.json; git stash drop 'stash@{0}'; rg -n 'test result:|running [0-9]+ tests' .local/brand-kit/mcp-account-final.log | tail -12; tail -5 .local/brand-kit/types-ui-final.log; git -c core.whitespace=cr-at-eol diff --check | head -8",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-10693333-cf8c-4084-93c3-7aa76b2e187a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:08:54.861Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

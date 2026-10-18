@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9054b6f6b4bcc22e0b5ed3771bf635a73a1b2599e7022b937a4f1fcd8e80380b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:09:47.689Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "kill -TERM 64223\npython3 - <<'PY'\nimport subprocess,pathlib\nchanged=subprocess.check_output(['git','diff','--cached','--name-only','--diff-filter=M']).decode().splitlines()\nfor name in changed:\n original=subprocess.check_output(['git','show','HEAD:'+name])\n if original.count(b'\\r\\n') and original.count(b'\\n')==original.count(b'\\r\\n'):\n  p=pathlib.Path(name);text=p.read_bytes().replace(b'\\r\\n',b'\\n');p.write_bytes(text.replace(b'\\n',b'\\r\\n'))\n  print('Preserved existing CRLF:',name)\nPY\ngit add -u\n git diff --cached --stat | tail -3\ntail -4 .local/brand-kit/wasm-final.log",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-2643f3c4-647f-4c10-9d2a-e82fea15bd2e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:09:48.778Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

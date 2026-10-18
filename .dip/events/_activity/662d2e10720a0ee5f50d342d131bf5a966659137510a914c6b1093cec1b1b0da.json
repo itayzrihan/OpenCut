@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "662d2e10720a0ee5f50d342d131bf5a966659137510a914c6b1093cec1b1b0da",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:06:44.958Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "git diff --name-only; ls -l .local/brand-kit/brand-kit-desktop.jpg; tail -5 .local/brand-kit/wasm-final.log",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-4ce5d715-d3fc-4f26-a1fa-ad0829f2ee16"
+      },
+      {
+        "at": "2026-10-18T16:06:45.351Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "git diff --name-only; ls -l .local/brand-kit/brand-kit-desktop.jpg; tail -5 .local/brand-kit/wasm-final.log",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-4ce5d715-d3fc-4f26-a1fa-ad0829f2ee16"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:06:45.528Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

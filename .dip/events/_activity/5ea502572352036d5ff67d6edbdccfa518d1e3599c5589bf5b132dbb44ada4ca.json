@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ea502572352036d5ff67d6edbdccfa518d1e3599c5589bf5b132dbb44ada4ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:56:40.361Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/rust-brand.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "32362da0-472a-4c9f-bec3-b68109795a11"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:56:40.366Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

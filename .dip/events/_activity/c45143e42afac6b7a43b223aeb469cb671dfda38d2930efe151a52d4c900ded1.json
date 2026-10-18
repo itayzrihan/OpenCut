@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c45143e42afac6b7a43b223aeb469cb671dfda38d2930efe151a52d4c900ded1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:04:40.447Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/brand-kits/apply.ts",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          ".local/brand-kit/final-host.log",
+          ".local/brand-kit/final-host"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "2b1ca428-c575-47c3-9292-2d24d792fea1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:04:40.453Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

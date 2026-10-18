@@ -108,6 +108,22 @@ const publicState = (s: Store): BatchState => ({
 		?.id,
 	runs: s.runs.map(({ token: _token, heartbeat: _heartbeat, ...run }) => run),
 });
+async function resolveBrandOptions(
+	options: FullAutoOptions,
+): Promise<FullAutoOptions> {
+	const {
+		brandKit: _untrustedKit,
+		brandKitAccountId: _untrustedAccount,
+		...recipe
+	} = options;
+	if (!recipe.brandKitId) return recipe;
+	const { brandKitTransaction } = await import("@/brand-kits/server");
+	const library = await brandKitTransaction();
+	const kit = library.kits.find((kit) => kit.id === recipe.brandKitId);
+	if (!kit)
+		throw new Error("The selected Brand Kit no longer exists in this account");
+	return { ...recipe, brandKit: kit, brandKitAccountId: library.accountId };
+}
 function retainRuns(runs: StoredRun[]) {
 	let completed = 0;
 	return runs.filter(
@@ -177,8 +193,12 @@ export async function createProjectEdit({
 			] as const)
 				if (options[key] !== previous.options[key])
 					throw new Error("Resume must preserve the original recipe");
+			if (options.brandKitId !== previous.options.brandKitId)
+				throw new Error("Resume must preserve the original Brand Kit");
+			options = previous.options;
 			resumeFromStage = job.completedStages;
 		}
+		if (!resumeRunId) options = await resolveBrandOptions(options);
 		const run: StoredRun = {
 			id,
 			kind: "single",
@@ -232,6 +252,7 @@ export async function createBatch({
 				throw new Error("Batch requires new project ids");
 			reserved.add(f.projectId);
 		}
+		options = await resolveBrandOptions(options);
 		const run: StoredRun = {
 			id,
 			kind: "batch",

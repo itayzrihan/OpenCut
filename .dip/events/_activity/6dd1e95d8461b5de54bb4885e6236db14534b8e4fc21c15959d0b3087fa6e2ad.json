@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6dd1e95d8461b5de54bb4885e6236db14534b8e4fc21c15959d0b3087fa6e2ad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:02:56.430Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/rust-accent.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "dc0fd736-1b8e-469f-9b56-b3ff72483bb5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:02:56.548Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

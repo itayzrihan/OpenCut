@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c444fc37f4acb0771f6dd54d313a51699a852f2ce728a0f7ef21bffef329997",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:02:52.426Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/full-web-final/src__masks____tests____registry.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____audio-chunk-layout.test.ts.log",
+          ".local/brand-kit/full-web-final/src__mcp____tests____bridge-publication.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____audio-sink-cache.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____audio-window.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____cached-asset-resolver.test.ts.log",
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          "classic/apps/web/src/batch/server.ts",
+          "crates/editor-api/src/operations/brand_kits.rs",
+          "crates/editor-api/tests/brand_kits.rs",
+          ".local/brand-kit/full-web-final/src__media____tests____decode-audio.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____audio-mastering-browser.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____derived-audio.test.ts.log",
+          ".local/brand-kit/wiring-final",
+          ".local/brand-kit/full-web-final/src__media____tests____library-playback-loading.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____playback-audio-cache.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____noise-reduction.test.ts.log",
+          ".local/brand-kit/wiring-final/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/brand-kit/wiring-final/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/brand-kit/full-web-final/src__media____tests____unified-angles.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "38585a10-e065-4423-af79-8e0846d45099"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:02:52.430Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

@@ -8,9 +8,9 @@ use std::{
     task::{Context, Waker},
 };
 
-const COMMIT: &str = "4c4b8574406cc566d28778a13f22c072d727a871";
+fn generation() -> Value { serde_json::from_str::<Value>(include_str!("../../../resources/hyperframes/catalog-supplement.json")).unwrap()["upstreamCommit"].clone() }
 fn request() -> Value {
-    json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":COMMIT,"filePath":"registry-item.json","offset":0,"limit":21})
+    json!({"projectId":"classic-project","expectedRevision":1,"id":"lt-clean-bar","upstreamCommit":generation(),"filePath":"registry-item.json","offset":0,"limit":21})
 }
 fn source(request: &Value) -> String {
     let plan = hyperframes_reference_source(request.clone(), None).unwrap();

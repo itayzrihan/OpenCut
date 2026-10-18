@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2bc29ef1dcdcd2055935ad4889b0c739318cb3c9d386680b83fe20e9ed598660",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T15:51:04.789Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "cat > crates/account-core/src/brand_kit.rs <<'EOF'\n//! Account-owned, portable branding. Binary files remain in the host asset library.\nuse schemars::JsonSchema;\nuse serde::{Deserialize, Serialize};\n\n#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\npub struct BrandLogo {\n    pub asset_id: String,\n    pub width: u32,\n    pub height: u32,\n}\n\n#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\npub struct BrandKit {\n    pub id: String,\n    pub name: String,\n    pub primary_color: String,\n    pub secondary_color: String,\n    pub background_color: String,\n    #[serde(default)]\n    pub style: String,\n    #[serde(default)]\n    pub phrases: Vec<String>,\n    pub heading_font: String,\n    pub body_font: String,\n    pub logo: Option<BrandLogo>,\n    #[serde(default)]\n    pub music_ids: Vec<String>,\n    #[serde(default)]\n    pub sfx_ids: Vec<String>,\n}\nimpl BrandKit {\n    pub fn validate(&self) -> Result<(), String> {\n        super::validate_id(&self.id)?;\n        super::validate_name(&self.name)?;\n        super::validate_name(&self.heading_font)?;\n        super::validate_name(&self.body_font)?;\n        for color in [&self.primary_color, &self.secondary_color, &self.background_color] {\n            if color.len() != 7 || !color.starts_with('#') || !color[1..].bytes().all(|b| b.is_ascii_hexdigit()) {\n                return Err(\"Brand colors must be six-digit hexadecimal colors\".into());\n            }\n        }\n        if self.style.len() > 8000 || self.phrases.len() > 32 || self.phrases.iter().any(|s| s.trim().is_empty() || s.len() > 1000) {\n            return Err(\"Brand style is limited to 8000 bytes and 32 phrases of 1000 bytes each\".into());\n        }\n        for ids in [&self.music_ids, &self.sfx_ids] {\n            if ids.len() > 128 { return Err(\"Choose at most 128 sounds per kind\".into()); }\n            let mut unique",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PostToolUse:exec-c65c8a89-0f28-42e2-96b3-e8711e447e70"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:51:05.664Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

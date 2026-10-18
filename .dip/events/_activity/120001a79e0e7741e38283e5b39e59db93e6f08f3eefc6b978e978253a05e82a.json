@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "120001a79e0e7741e38283e5b39e59db93e6f08f3eefc6b978e978253a05e82a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:08:20.185Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-brand-kit-qa/dev/server/webpack-runtime.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f170.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f171.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/projects/page.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/app/api/batch-edit/route.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/projects/page.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/accounts/storage/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/brand-kits/page.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/app/layout.ts",
+          "classic/apps/web/.next-brand-kit-qa/dev/types/package.json",
+          "classic/apps/web/.next-brand-kit-qa/dev/server/server-reference-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "ded88704-a8ba-44ff-bc8b-50f90fba65ba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:08:20.188Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

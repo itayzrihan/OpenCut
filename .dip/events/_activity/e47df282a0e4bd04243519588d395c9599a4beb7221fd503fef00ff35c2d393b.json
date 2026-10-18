@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e47df282a0e4bd04243519588d395c9599a4beb7221fd503fef00ff35c2d393b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T15:54:44.008Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/feature-types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/brand-kits",
+        "recordId": "1288eec4-26da-454b-99ad-51548e5c1608"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T15:54:44.009Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}

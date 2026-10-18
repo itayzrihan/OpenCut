@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5031870580071bdf2b7d56b29087fb279db590bc65d88cec94e1d1055fd0c856",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+    "records": [
+      {
+        "at": "2026-10-18T16:09:58.637Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14fae-a0bc-7422-bd33-3aa439de1946",
+        "taskId": "task_59c1d532ba593060d665f82b392c4d5609f03cfa21e26bab715334b12d40c97d",
+        "tool": "Bash",
+        "branch": "codex/brand-kits",
+        "command": "git add .dip\npython3 - <<'PY'\nimport subprocess,pathlib,re\nfiles=subprocess.check_output(['git','diff','--cached','--name-only','-z']).decode().split('\\0');hits=[]\npatterns=[r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',r'gh[pousr]_[A-Za-z0-9]{30,}',r'sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{35,}']\nfor name in files:\n if not name:continue\n p=pathlib.Path(name)\n try: text=p.read_text()\n except (OSError,UnicodeError):continue\n if any(re.search(pattern,text)for pattern in patterns):hits.append(name)\nprint('Credential pattern matches:',hits)\nPY\ngit -c core.whitespace=cr-at-eol diff --cached --check\ngit commit --quiet -m \"Add account Brand Kits and optional Full Auto branding\"",
+        "recordId": "codex:01a14fae-a0bc-7422-bd33-3aa439de1946:PreToolUse:exec-287ba97f-b533-418a-b227-0ac020b47791"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:09:58.661Z",
+  "parents": [],
+  "branch": "codex/brand-kits"
+}
