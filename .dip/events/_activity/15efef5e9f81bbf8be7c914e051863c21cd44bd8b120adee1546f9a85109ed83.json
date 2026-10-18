@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "15efef5e9f81bbf8be7c914e051863c21cd44bd8b120adee1546f9a85109ed83",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:11:14.972Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/brand-kit/configured-check/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/brand-kit/configured-check/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/brand-kit/configured-check/src__batch__worker.test.ts.log",
+          ".local/brand-kit/configured-check/src__batch__scene-checkpoint.test.ts.log",
+          ".local/brand-kit/configured-check/src__batch__server.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0c6cc870-af0f-47a6-ae07-d0bbecbcfa28"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:11:14.973Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a41e6527f9380eb0d506f442492419decaffa19b2359186f1aa52fdeb68034b3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-18T16:11:26.674Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.tsbuildinfo"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "89195e2a-015c-47c8-82e9-e734ce1caeaa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-18T16:11:26.675Z",
+  "parents": [],
+  "branch": "main"
+}
