@@ -307,6 +307,7 @@ fn validate_video(
     }
     let plan = Plan {
         groups: vec![Group {
+            review_only: false,
             label: video.title.clone(),
             confidence: video.confidence,
             selected: 0,
@@ -596,6 +597,7 @@ pub(super) fn register_podcast(
                         .map(|p| {
                             p.groups
                                 .iter()
+                                .filter(|g| !g.review_only)
                                 .flat_map(|g| &g.alternatives[g.selected].parts)
                                 .map(|p| {
                                     (words[p.last_word].end - words[p.first_word].start) as f64

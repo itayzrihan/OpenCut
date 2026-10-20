@@ -20,6 +20,8 @@ export type Status = {
 	error?: string;
 	outputCount?: number;
 	mode?: PodcastOptions["mode"];
+	/** Bounded canonical validation/review diagnostics, without transcript text. */
+	analysisReport?: Record<string, unknown>;
 };
 export function getPodcastTask(editor: EditorCore) {
 	let task = tasks.get(editor);
@@ -211,6 +213,7 @@ class PodcastTask {
 				options,
 				signal: controller.signal,
 				onResume: () => this.update({ resumedAnalysis: true }),
+				onReport: (analysisReport) => this.update({ analysisReport }),
 				onProviderRequest: () =>
 					this.update({
 						analysisRequests: (this.state.analysisRequests ?? 0) + 1,

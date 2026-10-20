@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "06f6467a783abaea0692096c3cbf2d380d23ef21e510ee57eb0a902f02be4acd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:22:47.116Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/teleprompter-review-fix-2026-10-20/build.log\nnode classic/scripts/test-web.mjs src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts src/core/__tests__/canonical-podcast.test.ts --jobs=1 --report=.local/teleprompter-review-fix-2026-10-20/host-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-eddcc8cd-1666-4feb-87e2-2fb2d89d1ef1"
+      },
+      {
+        "at": "2026-10-20T17:22:47.119Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/teleprompter-review-fix-2026-10-20/build.log\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-61295530-0533-467c-87b6-37ed0eb71894"
+      },
+      {
+        "at": "2026-10-20T17:22:47.238Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/teleprompter-review-fix-2026-10-20/build.log\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-61295530-0533-467c-87b6-37ed0eb71894"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:22:47.527Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "db500d747e15eb14cad2f59f374d9ae4a7929ab4c237eeec5ad953d2753c46aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:33:07.777Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/tests/classic_teleprompter.rs';s=open(p).read();start=s.index('async fn repairs_reuse_approved_unchanged_scripts');s=s[:start]+'''async fn repairs_reuse_approved_unchanged_scripts_but_moved_source_invalidates_reviews() {\n    let (r, before) = setup().await;\n    let mut base = input(&before); base.as_object_mut().unwrap().remove(\"videos\");\n    let scripts=json!([videos()[0],script(vec![group(vec![alt(101,150)])]),script(vec![group(vec![alt(151,209)])])]);\n    let all=scripts.as_array().unwrap().iter().flat_map(|v|v[\"groups\"].as_array().unwrap().clone()).collect::<Vec<_>>();\n    let good=good_critique();let mut bad=good.clone();bad[\"cleanCuts\"]=json!(false);bad[\"issues\"]=json!([\"Repair the third script boundary\"]);\n    base[\"responses\"]=json!({\"inventory:0:0\":{\"summary\":\"שלושה תסריטים\",\"groups\":all,\"discarded\":[],\"scriptStarts\":[]},\"draft:0\":{\"videos\":scripts},\"critique:0:0\":good,\"critique:0:1\":good,\"critique:0:2\":bad,\"draft:1\":{\"videos\":scripts}});\n    let next=call(&r,\"timeline.classic.podcast.editorial\",base.clone()).await;\n    assert_eq!(next[\"requests\"].as_array().unwrap().len(),1);\n    assert_eq!(next[\"requests\"][0][\"key\"],\"critique:1:2\");\n    assert_eq!(next[\"report\"][\"reusedReviews\"],2);\n    // Script 0 itself stays exact. Moving source between scripts 1 and 2 still\n    // invalidates its global collection context, so it must be reviewed again.\n    base[\"responses\"][\"draft:1\"][\"videos\"][1][\"groups\"][0][\"alternatives\"][0][\"parts\"][0][\"lastWord\"]=json!(151);\n    base[\"responses\"][\"draft:1\"][\"videos\"][2][\"groups\"][0][\"alternatives\"][0][\"parts\"][0][\"firstWord\"]=json!(152);\n    let changed=call(&r,\"timeline.classic.podcast.editorial\",base).await;\n    assert_eq!(changed[\"requests\"][0][\"key\"],\"critique:1:0\");\n    assert_eq!(changed[\"report\"][\"reusedReviews\"],0);\n    assert_eq!(state(&r).await,before);\n}\n'''\n# this test is the last item in the file\nopen(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/e",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7b3be0e0-2ad4-4d6e-b2f4-8f8cfe41354c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:33:08.036Z",
+  "parents": [],
+  "branch": "main"
+}

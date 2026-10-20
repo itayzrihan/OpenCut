@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c3c09fc5-a2a1-447a-acf7-87a926233b0f",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.update",
+  "payload": {
+    "description": "Live reproduction isolated a missing canonical state: uncertain partial sentence1170..1174 must remain reviewable without being selected. V2 reproduced critic/compose oscillation through three drafts, with exact reasons saved. Add canonical reviewOnly groups excluded from playback/captions until explicit editor selection, preserve passing reviews with exact script+collection source ownership checks, and migrate exhausted v2 checkpoints to bounded v3 targeted repair without redoing STT/maps.",
+    "acceptance": [
+      "Identify actual failed stage and reproduce exact review/compose disagreement using saved source",
+      "Canonical review-only fragment state preserves uncertain source without playing it; explicit take selection includes it with undo/reopen and no original-scene edits",
+      "Validated sentence references and exact repair diagnostics; passing reviews reused only for unchanged scripts and global source ownership",
+      "Resume existing exhausted checkpoint through MCP without repeating transcription/maps; create separate reviewed scenes with external audio preserved",
+      "Native, host, UI and real WASM regressions pass; deploy production and verify actual recovered outputs"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:39:27.744Z",
+  "parents": [
+    "b3a0f741-3faa-4388-8b0f-b600332214cc"
+  ],
+  "branch": "main"
+}

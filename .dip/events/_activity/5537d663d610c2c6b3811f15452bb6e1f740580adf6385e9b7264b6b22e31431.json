@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5537d663d610c2c6b3811f15452bb6e1f740580adf6385e9b7264b6b22e31431",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:25:36.612Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/functions-config-manifest.json",
+          "classic/apps/web/.next-local-production/routes-manifest.json",
+          "classic/apps/web/.next-local-production/BUILD_ID",
+          "classic/apps/web/.next-local-production/diagnostics/build-diagnostics.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6aab2fe0-6ff2-40c2-8f3a-05ff3c30f876"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:25:36.613Z",
+  "parents": [],
+  "branch": "main"
+}

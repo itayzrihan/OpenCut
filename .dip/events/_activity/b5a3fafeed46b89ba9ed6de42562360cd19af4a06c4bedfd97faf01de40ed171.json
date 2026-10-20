@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5a3fafeed46b89ba9ed6de42562360cd19af4a06c4bedfd97faf01de40ed171",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:23:26.232Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff -- crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs | tail -125\nsed -n '1013,1050p' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ba2b84ee-2bbf-4953-ba97-42d1c64b3648"
+      },
+      {
+        "at": "2026-10-20T17:23:26.372Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff -- crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs | tail -125\nsed -n '1013,1050p' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ba2b84ee-2bbf-4953-ba97-42d1c64b3648"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:23:26.897Z",
+  "parents": [],
+  "branch": "main"
+}

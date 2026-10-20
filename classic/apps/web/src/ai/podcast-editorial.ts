@@ -12,6 +12,7 @@ export async function runPodcastEditorial({
 	onStage,
 	cache,
 	onResume,
+	onReport,
 }: {
 	source: PodcastSource;
 	options: PodcastOptions;
@@ -19,6 +20,7 @@ export async function runPodcastEditorial({
 	assertCurrent: () => void;
 	onStage: (stage: string) => void;
 	onResume?: (savedResponses: number) => void;
+	onReport?: (report: Record<string, unknown>) => void;
 	cache?: {
 		key: string;
 		storage: Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -42,6 +44,33 @@ export async function runPodcastEditorial({
 					!Array.isArray(saved.responses)
 				)
 					responses = saved.responses;
+				// One-time migration from the old exhausted journal. The v4
+				// canonical policy can continue its targeted repair rounds.
+				try {
+					if (options.mode === "teleprompter") {
+						const failedRaw = cache.storage.getItem(`${key}:failure`);
+						if (failedRaw && failedRaw.length <= 2_100_000) {
+							const failed = JSON.parse(failedRaw);
+							if (
+								failed.version === 1 &&
+								(!failed.policyVersion ||
+									failed.policyVersion === "teleprompter-v3") &&
+								failed.responses &&
+								typeof failed.responses === "object" &&
+								!Array.isArray(failed.responses)
+							) {
+								responses = { ...failed.responses, ...responses };
+								cache.storage.setItem(
+									key,
+									JSON.stringify({ version: 1, responses }),
+								);
+								cache.storage.removeItem(`${key}:failure`);
+							}
+						}
+					}
+				} catch {
+					/* Keep the valid live checkpoint if legacy forensic IO is unavailable. */
+				}
 			}
 		} catch {
 			cache.storage.removeItem(key);
@@ -55,7 +84,7 @@ export async function runPodcastEditorial({
 		if (
 			step.policyVersion !==
 			(options.mode === "teleprompter"
-				? "teleprompter-v1"
+				? "teleprompter-v4"
 				: options.mode === "teaser"
 					? "strategic-teaser-v1"
 					: "podcast-shorts-v2")
@@ -63,12 +92,31 @@ export async function runPodcastEditorial({
 			throw new Error(
 				"Podcast runtime version changed; reload before retrying.",
 			);
+		onReport?.(step.report);
 		if (step.complete) {
 			if (cache && key)
 				cache.storage.setItem(`${key}:report`, JSON.stringify(step.report));
 			return step.videos;
 		}
 		if (typeof step.report.error === "string") {
+			// Keep one bounded forensic checkpoint BEFORE clearing repair keys.
+			// Retry still reuses valid maps; the failed drafts no longer disappear.
+			if (cache && key) {
+				try {
+					cache.storage.setItem(
+						`${key}:failure`,
+						JSON.stringify({
+							version: 1,
+							policyVersion: step.policyVersion,
+							report: step.report,
+							responses,
+						}),
+					);
+					cache.storage.setItem(`${key}:report`, JSON.stringify(step.report));
+				} catch {
+					// Optional forensic storage must not replace the canonical error.
+				}
+			}
 			if (Array.isArray(step.report.resetKeys)) {
 				for (const failedKey of step.report.resetKeys)
 					if (typeof failedKey === "string") delete responses[failedKey];

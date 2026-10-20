@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a50af29a6af15e5c56af6b74f22a6d6548ec15a9c53ab083539e0ee1c5341c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:25:15.250Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b7412191-d753-42ac-af8a-9bcdabe4d5d1"
+      },
+      {
+        "at": "2026-10-20T17:25:15.352Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b7412191-d753-42ac-af8a-9bcdabe4d5d1"
+      },
+      {
+        "at": "2026-10-20T17:25:15.354Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --numstat\ncat .local/teleprompter-review-fix-2026-10-20/real-wasm/summary.json | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-dc09017b-812e-4f07-a693-1f6935876cca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:25:15.377Z",
+  "parents": [],
+  "branch": "main"
+}

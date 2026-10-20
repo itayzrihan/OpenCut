@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "581d765de0d05f6fd7867c73472d44a3e7df34deb69df99ea88f58bccbf85e8d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:36:53.820Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '32,85p' classic/apps/web/src/ai/podcast-editorial.ts\npython3 - <<'PY'\np='classic/apps/web/src/ai/components/podcast-controls.tsx';s=open(p).read().replace('(g) => g.alternatives.length > 1,','(g) => g.alternatives.length > 1 || g.reviewOnly,').replace('group.alternatives.length > 1 && (','(group.alternatives.length > 1 || group.reviewOnly) && (').replace('<span>{group.label}</span>','<span>{group.label}{group.reviewOnly ? \" · שמור לבדיקה, מחוץ לעריכה\" : \"\"}</span>').replace('value={group.selected}','value={group.reviewOnly ? \"review\" : group.selected}').replace('{group.alternatives.map((alternative, index) => (','{group.reviewOnly && <option value=\"review\" disabled>שמור לבדיקה — לא נכלל בסרטון</option>}\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t{group.alternatives.map((alternative, index) => (');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_takes.rs crates/editor-api/src/operations/classic_takes/quality.rs crates/editor-api/src/operations/classic_takes/review.rs crates/editor-api/src/operations/classic_takes/podcast.rs crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs crates/editor-api/tests/classic_teleprompter.rs\ncargo test -p opencut-editor-api --test classic_teleprompter --test classic_takes --quiet",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-597b41ae-df9a-4d5b-9e86-798a813e7593"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:36:54.595Z",
+  "parents": [],
+  "branch": "main"
+}

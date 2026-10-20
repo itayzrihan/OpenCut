@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24da087e43397c07ac628d78f83e616e8670c831aa6af7d0b527b36a811a3f55",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:33:08.035Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_teleprompter.rs",
+          ".local/teleprompter-review-fix-2026-10-20/build-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a025c93e-02bc-432b-adc0-2dbcdb090bdb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:33:08.037Z",
+  "parents": [],
+  "branch": "main"
+}

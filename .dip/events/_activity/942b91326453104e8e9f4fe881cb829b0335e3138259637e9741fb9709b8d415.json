@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "942b91326453104e8e9f4fe881cb829b0335e3138259637e9741fb9709b8d415",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:22:30.823Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/teleprompter-review-fix-2026-10-20/build.log\nnode classic/scripts/test-web.mjs src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts src/core/__tests__/canonical-podcast.test.ts --jobs=1 --report=.local/teleprompter-review-fix-2026-10-20/host-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-eddcc8cd-1666-4feb-87e2-2fb2d89d1ef1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:22:31.441Z",
+  "parents": [],
+  "branch": "main"
+}

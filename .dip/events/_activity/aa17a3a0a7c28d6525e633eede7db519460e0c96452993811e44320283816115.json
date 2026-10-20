@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa17a3a0a7c28d6525e633eede7db519460e0c96452993811e44320283816115",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:46:46.495Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs';s=open(p).read().replace('const VERSION: &str = \"teleprompter-v3\";','const VERSION: &str = \"teleprompter-v4\";');open(p,'w').write(s)\np='classic/apps/web/src/ai/podcast-editorial.ts';s=open(p).read().replace('The v3','The v4').replace('!failed.policyVersion &&','(!failed.policyVersion || failed.policyVersion === \"teleprompter-v3\") &&').replace('? \"teleprompter-v3\"','? \"teleprompter-v4\"');open(p,'w').write(s)\nfor p in ['crates/editor-api/tests/classic_teleprompter.rs','classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts']:\n s=open(p).read().replace('teleprompter-v3','teleprompter-v4').replace('v3 resumes old exhausted','v4 resumes old exhausted');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs crates/editor-api/tests/classic_teleprompter.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ff6725a5-77dd-42fc-985e-6e0623131e36"
+      },
+      {
+        "at": "2026-10-20T17:46:46.640Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs';s=open(p).read().replace('const VERSION: &str = \"teleprompter-v3\";','const VERSION: &str = \"teleprompter-v4\";');open(p,'w').write(s)\np='classic/apps/web/src/ai/podcast-editorial.ts';s=open(p).read().replace('The v3','The v4').replace('!failed.policyVersion &&','(!failed.policyVersion || failed.policyVersion === \"teleprompter-v3\") &&').replace('? \"teleprompter-v3\"','? \"teleprompter-v4\"');open(p,'w').write(s)\nfor p in ['crates/editor-api/tests/classic_teleprompter.rs','classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts']:\n s=open(p).read().replace('teleprompter-v3','teleprompter-v4').replace('v3 resumes old exhausted','v4 resumes old exhausted');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs crates/editor-api/tests/classic_teleprompter.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ff6725a5-77dd-42fc-985e-6e0623131e36"
+      },
+      {
+        "at": "2026-10-20T17:46:46.643Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/prettier --write src/ai/podcast-editorial.ts src/ai/__tests__/podcast-editorial.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8acd7c0c-7868-4226-b730-fe954cd0aed0"
+      },
+      {
+        "at": "2026-10-20T17:46:46.847Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_takes.rs crates/editor-api/tests/classic_teleprompter.rs\ncargo test -p opencut-editor-api --test classic_teleprompter --quiet",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c30701cd-cf23-4d42-82ed-e2f92955ae90"
+      },
+      {
+        "at": "2026-10-20T17:46:46.851Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/prettier --write src/ai/podcast-editorial.ts src/ai/__tests__/podcast-editorial.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8acd7c0c-7868-4226-b730-fe954cd0aed0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:46:47.319Z",
+  "parents": [],
+  "branch": "main"
+}

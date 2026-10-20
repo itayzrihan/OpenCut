@@ -45,6 +45,8 @@ export interface TakeGroup {
 	confidence: number;
 	selected: number;
 	alternatives: TakeAlternative[];
+	/** Preserved source fragment excluded until the editor explicitly adds it. */
+	reviewOnly?: boolean;
 }
 export interface SmartTakePlan {
 	groups: TakeGroup[];

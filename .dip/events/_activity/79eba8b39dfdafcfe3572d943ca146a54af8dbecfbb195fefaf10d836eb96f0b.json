@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "79eba8b39dfdafcfe3572d943ca146a54af8dbecfbb195fefaf10d836eb96f0b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:38:36.107Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'policyVersion|failure' classic/apps/web/src/ai/podcast-editorial.ts | head -18\nnode classic/scripts/local-production/build.mjs --stage > .local/teleprompter-review-fix-2026-10-20/build-v3.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1001b431-5859-4957-a7e5-ce28e91ca00b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:38:36.854Z",
+  "parents": [],
+  "branch": "main"
+}

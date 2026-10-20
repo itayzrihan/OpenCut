@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b75617d6-2f19-4d71-a32d-57481bb6193b",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src",
+      ".dip",
+      "analysis/teleprompter-review-fix-2026-10-20",
+      "crates/editor-api/src/operations/classic_takes.rs",
+      "crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs",
+      "classic/apps/web/src/ai/podcast-editorial.ts",
+      "classic/apps/web/src/ai/podcast-plan.ts",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "crates/editor-api/tests/classic_teleprompter.rs"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:21:13.756Z",
+  "parents": [
+    "af5cb1fc-361e-4d20-bb29-0900dbeb551e"
+  ],
+  "branch": "main"
+}

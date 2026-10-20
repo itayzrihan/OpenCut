@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5535b4d2-600d-48da-a486-ccf16afb761c",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.update",
+  "payload": {
+    "title": "Fix teleprompter review exhaustion for unified angles with external audio",
+    "acceptance": [
+      "Identify persisted three-draft rejection cause from actual run and combined asset input",
+      "Canonical teleprompter planning handles source timing, model repairs and review safely; no unsafe bypass of source validation",
+      "Retry reuses transcript/maps and preserves all original scenes/captions; successful outputs create new scenes",
+      "Meaningful regression tests pass; deploy and verify real failed run can recover"
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src",
+      ".dip",
+      "analysis/teleprompter-review-fix-2026-10-20"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:16:16.483Z",
+  "parents": [
+    "ac8c931b-b539-43ba-8571-2125c89a4b91"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6bdc19288fc6e8bc2193e06b410d07628a8ee1e1899da7633c57ff51a69d839",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:50:55.826Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,rss,command | rg 'build.mjs --stage|rustc --crate-name opencut_editor_api|next build' | cut -c 1-260",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7d5bd641-b4cf-4d1b-8476-56a7a9a853c3"
+      },
+      {
+        "at": "2026-10-20T17:50:56.116Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,rss,command | rg 'build.mjs --stage|rustc --crate-name opencut_editor_api|next build' | cut -c 1-260",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7d5bd641-b4cf-4d1b-8476-56a7a9a853c3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:50:56.367Z",
+  "parents": [],
+  "branch": "main"
+}

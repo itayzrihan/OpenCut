@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "76beab139be06bee9d04b1e713cb954526bb2dba8ff34f46ac7c2a60e12e9d35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:25:15.504Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --numstat\ncat .local/teleprompter-review-fix-2026-10-20/real-wasm/summary.json | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-dc09017b-812e-4f07-a693-1f6935876cca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:25:16.373Z",
+  "parents": [],
+  "branch": "main"
+}

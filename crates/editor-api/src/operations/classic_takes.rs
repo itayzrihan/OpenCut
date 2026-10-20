@@ -48,6 +48,10 @@ pub(crate) struct Group {
     pub confidence: f64,
     #[schemars(range(max = 19))]
     pub selected: usize,
+    /// Uncertain source material retained for editor review, never assembled
+    /// until the editor explicitly chooses a reading through the capability.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub review_only: bool,
     #[schemars(length(min = 1, max = 20))]
     pub alternatives: Vec<Alternative>,
 }
@@ -359,7 +363,9 @@ fn clip_bounds(tracks: &Value, id: &str) -> Result<(i64, i64), CapabilityError> 
 }
 
 fn label(s: &str) -> bool {
-    !s.trim().is_empty() && s.len() <= 2000
+    // The model/client limit is textual. UTF-8 byte length incorrectly rejects
+    // valid Hebrew reviews while accepting equally long English evidence.
+    !s.trim().is_empty() && s.chars().count() <= 2000
 }
 fn range(part: &Part, words: &[Word]) -> Result<std::ops::RangeInclusive<usize>, CapabilityError> {
     if part.first_word > part.last_word
@@ -375,6 +381,11 @@ fn range(part: &Part, words: &[Word]) -> Result<std::ops::RangeInclusive<usize>,
 fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
     if plan.groups.is_empty() || plan.groups.len() > 1000 || plan.discarded.len() > 15000 {
         return Err(invalid("Take plan must contain 1..1000 story groups"));
+    }
+    if plan.groups.iter().all(|g| g.review_only) {
+        return Err(invalid(
+            "Keep at least one complete scripted sentence in the recommended assembly",
+        ));
     }
     if plan
         .groups
@@ -413,9 +424,10 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
             for p in &a.parts {
                 for i in range(p, words)? {
                     if !used.insert(i) || owners[i].is_some_and(|owner| owner != gi) {
-                        return Err(invalid(
-                            "A source word cannot repeat within a take or belong to different story groups",
-                        ));
+                        return Err(invalid(format!(
+                            "Word {i} repeats within a take or belongs to different story groups (current group {gi}, previous owner {:?})",
+                            owners[i]
+                        )));
                     }
                     owners[i] = Some(gi);
                 }
@@ -449,17 +461,22 @@ fn validate_plan(plan: &Plan, words: &[Word]) -> Result<(), CapabilityError> {
             words,
         )? {
             if owners[i].is_some() {
-                return Err(invalid(
-                    "Discarded speech overlaps a take or another discard",
-                ));
+                return Err(invalid(format!(
+                    "Discarded speech overlaps a take or another discard at word {i} (owner {:?})",
+                    owners[i]
+                )));
             }
             owners[i] = Some(usize::MAX);
         }
     }
-    if owners.iter().any(Option::is_none) {
-        return Err(invalid(
-            "Every source word must be assigned to a take or an explicit discard",
-        ));
+    if let Some(first) = owners.iter().position(Option::is_none) {
+        let last = (first..owners.len())
+            .take_while(|i| owners[*i].is_none())
+            .last()
+            .unwrap();
+        return Err(invalid(format!(
+            "Every source word must be assigned to a take or an explicit discard; missing words {first}..{last}"
+        )));
     }
     Ok(())
 }
@@ -708,6 +725,7 @@ pub(super) fn register_classic_takes(
                                     return Err(invalid("Take alternative not found"));
                                 }
                                 g.selected = alternative_index;
+                                g.review_only = false;
                                 a
                             }
                         };
@@ -844,6 +862,9 @@ fn render(
     }
     let mut cursor = if a.selection_only { 0 } else { start };
     for (gi, g) in a.plan.groups.iter().enumerate() {
+        if g.review_only {
+            continue;
+        }
         let parts = if a.version >= 2 {
             quality::merged(&g.alternatives[g.selected].parts, words)
         } else {

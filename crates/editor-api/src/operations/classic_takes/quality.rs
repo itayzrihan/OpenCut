@@ -327,6 +327,9 @@ pub(super) fn prefer_coherent(
     gaps: &[AudioGaps],
 ) -> Result<(), CapabilityError> {
     for group in &mut plan.groups {
+        if group.review_only {
+            continue;
+        }
         let original = group.selected;
         group.selected = group
             .alternatives
@@ -373,6 +376,9 @@ pub(super) fn report(
         ..QualityReport::default()
     };
     for g in &plan.groups {
+        if g.review_only {
+            continue;
+        }
         let a = Alternative {
             parts: merged(&g.alternatives[g.selected].parts, words),
             ..g.alternatives[g.selected].clone()

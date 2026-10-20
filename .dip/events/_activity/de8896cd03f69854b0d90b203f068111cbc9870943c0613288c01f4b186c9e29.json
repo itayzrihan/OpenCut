@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "de8896cd03f69854b0d90b203f068111cbc9870943c0613288c01f4b186c9e29",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:18:29.099Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,125p' crates/editor-api/src/operations/classic_takes/podcast.rs\ncat classic/apps/web/src/ai/__tests__/podcast-task.test.ts | head -120\ncat .local/unified-with-audio-2026-10-20/activate.mjs\ncat classic/scripts/local-production/build.mjs | head -70",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-82aa55cf-c165-40ad-89c7-d853840f9443"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:18:29.131Z",
+  "parents": [],
+  "branch": "main"
+}

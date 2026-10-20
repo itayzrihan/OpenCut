@@ -22,6 +22,7 @@ export const podcastVideoSchema = z
 						label,
 						confidence: z.number().min(0).max(1),
 						selected: z.number().int().nonnegative().max(19),
+						reviewOnly: z.boolean().optional(),
 						alternatives: z.array(alternative).min(1).max(20),
 					})
 					.strict(),

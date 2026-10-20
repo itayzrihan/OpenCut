@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08dbb1d6-385e-4adc-84d9-6ced70dcfa61",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Reproduce failed review and identify missing review-only source-fragment state",
+          "status": "completed"
+        },
+        {
+          "step": "Implement canonical review-only groups, validated references, review reuse and exhausted-checkpoint migration",
+          "status": "completed"
+        },
+        {
+          "step": "Verify source preservation, explicit inclusion, undo/reopen and Hebrew character limits",
+          "status": "completed"
+        },
+        {
+          "step": "Deploy v4 and verify saved scenes, playback and external audio through MCP/UI",
+          "status": "completed"
+        },
+        {
+          "step": "Record delivery evidence and configure final verification",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:55:37.794Z",
+  "parents": [
+    "d036126b-024b-4050-a4f8-dd769b8c9faa"
+  ],
+  "branch": "main"
+}

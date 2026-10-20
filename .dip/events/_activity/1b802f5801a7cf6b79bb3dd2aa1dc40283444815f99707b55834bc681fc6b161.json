@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b802f5801a7cf6b79bb3dd2aa1dc40283444815f99707b55834bc681fc6b161",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:37:53.223Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/prettier --write src/ai/podcast-editorial.ts src/ai/podcast-proposal.ts src/ai/components/podcast-controls.tsx src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/teleprompter-controls.test.tsx src/timeline/smart-takes/types.ts\n../../node_modules/.bin/eslint src/ai/podcast-editorial.ts src/ai/podcast-proposal.ts src/ai/podcast-plan.ts src/ai/podcast-task.ts src/ai/components/podcast-controls.tsx src/timeline/smart-takes/types.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b64d75c8-d99f-4650-87f5-105cb5b59993"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:37:53.795Z",
+  "parents": [],
+  "branch": "main"
+}

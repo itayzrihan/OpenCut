@@ -213,12 +213,14 @@ pub(super) fn register_review(
                         return Err(invalid("Review alternative out of bounds"));
                     }
                     g.selected = s.alternative_index;
+                    g.review_only = false;
                 }
                 validate_plan(&plan, &words)?;
                 let story = plan
                     .groups
                     .iter()
                     .enumerate()
+                    .filter(|(_, g)| !g.review_only)
                     .map(|(i, g)| StoryBeat {
                         group_index: i,
                         label: g.label.clone(),

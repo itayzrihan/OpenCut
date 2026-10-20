@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f51e5255b3c3c7cbc192aae02574d3e53abc0a15e2fe42e9ae1867d50bfdd3ad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:40:21.064Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-85eb3daf-0e48-4b7b-95b8-92cea7abeb4a"
+      },
+      {
+        "at": "2026-10-20T17:40:21.118Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-85eb3daf-0e48-4b7b-95b8-92cea7abeb4a"
+      },
+      {
+        "at": "2026-10-20T17:40:21.121Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-teleprompter-review-fix.mjs';s=open(p).read().replace(\"'src/ai/__tests__/podcast-task.test.ts'\",\"'src/ai/__tests__/teleprompter-controls.test.tsx','src/ai/__tests__/podcast-task.test.ts'\");s=s.replace('live.externalAudioPreserved);','live.externalAudioPreserved&&live.reviewOnlyCount>0&&live.reviewOnlyExcluded);');open(p,'w').write(s)\nPY\ntail -6 .local/teleprompter-review-fix-2026-10-20/build-v3.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5f29aa08-b0fc-4a28-ace0-a9a44b07d1fb"
+      },
+      {
+        "at": "2026-10-20T17:40:21.234Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-teleprompter-review-fix.mjs';s=open(p).read().replace(\"'src/ai/__tests__/podcast-task.test.ts'\",\"'src/ai/__tests__/teleprompter-controls.test.tsx','src/ai/__tests__/podcast-task.test.ts'\");s=s.replace('live.externalAudioPreserved);','live.externalAudioPreserved&&live.reviewOnlyCount>0&&live.reviewOnlyExcluded);');open(p,'w').write(s)\nPY\ntail -6 .local/teleprompter-review-fix-2026-10-20/build-v3.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5f29aa08-b0fc-4a28-ace0-a9a44b07d1fb"
+      },
+      {
+        "at": "2026-10-20T17:40:21.235Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/teleprompter-controls.test.tsx src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts --jobs=1 --report=.local/teleprompter-review-fix-2026-10-20/host-v3\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f6855d56-92e6-4874-814b-ce12f8fa8e5a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:40:22.008Z",
+  "parents": [],
+  "branch": "main"
+}

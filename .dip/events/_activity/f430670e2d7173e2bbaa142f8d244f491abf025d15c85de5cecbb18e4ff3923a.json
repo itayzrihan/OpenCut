@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f430670e2d7173e2bbaa142f8d244f491abf025d15c85de5cecbb18e4ff3923a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:21:47.360Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "27414a95-6704-47b7-9d22-15d4842effa7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:21:47.372Z",
+  "parents": [],
+  "branch": "main"
+}

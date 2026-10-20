@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "767496afe7a68158025e67e543b9c118b5b940829407da3d8645b2f5444fc1a8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:31:43.938Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '140,165p' crates/editor-api/src/operations/classic_takes/podcast.rs\nsed -n '430,475p' crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1bed6cf8-57e5-435c-813f-49fa30655972"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:31:43.947Z",
+  "parents": [],
+  "branch": "main"
+}

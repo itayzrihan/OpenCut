@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e032bfee74b30a07e891e03d8563ac0347e86399bb458622e9a430631e6a017",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:42:59.324Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teleprompter-review-fix-2026-10-20/build-v3.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e8f80975-7aac-478b-bbe8-b19acfe30b60"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:42:59.325Z",
+  "parents": [],
+  "branch": "main"
+}

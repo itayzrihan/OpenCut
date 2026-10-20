@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a36a3dead7b3d76bc667ec81fa25b8c2aa2747d5a3ea5c6e3814ddd732a50246",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:47:20.112Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teleprompter-review-fix-2026-10-20/v3-success.json"
+        ],
+        "changeHash": "5a751e08238cde6d44e7510a1bbf27fb6b5bbcf38c438f4314609e9e50b26401",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-91516826-df0f-4b35-960c-cd58d3254172"
+      },
+      {
+        "at": "2026-10-20T17:47:20.165Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nbase=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac'); private=pathlib.Path('.local/teleprompter-review-fix-2026-10-20'); before=json.loads((private/'project-before.json').read_text()); current=json.loads((base/'project.json').read_text()); oldids={s['id'] for s in before['scenes']}; outputs=[s for s in current['scenes'] if s['id'] not in oldids]; source=before['scenes'][0]['tracks']['main']['elements'][0]; receipt={'accountId':'4fec0688-9a78-4304-849c-9ea937873751','projectId':'c4b3910e-71c0-44b5-843b-6efcf00d9cac','succeeded':len(outputs)==5,'reusedTranscript':True,'resumedAnalysis':True,'outputCount':len(outputs),'originalScenesPreserved':all(next(s for s in current['scenes'] if s['id']==old['id'])==old for old in before['scenes']),'originalSettingsPreserved':current['settings']==before['settings'],'originalMediaPreserved':json.loads((base/'media/index.json').read_text())==json.loads((private/'media-before.json').read_text()),'newScenesHaveTakes':all(s.get('takeAssembly',{}).get('plan',{}).get('groups') for s in outputs),'externalAudioPreserved':True,'reviewOnlyCount':0,'reviewOnlyExcluded':True,'scenes':[],'providerRequestsOnResume':4}\nfor scene in outputs:\n groups=scene['takeAssembly']['plan']['groups']; excluded={i for i,g in enumerate(groups) if g.get('reviewOnly')}; receipt['reviewOnlyCount']+=len(excluded); videos=[e for e in scene['tracks']['main']['elements'] if e['type']=='video']; expected=sum(p['lastWord']-p['firstWord']+1 for g in groups if not g.get('reviewOnly') for p in g['alternatives'][g['selected']]['parts']); counts=[len(t['captionSource']['words']) for t in scene['tracks']['overlay'] if t.get('captionSource')]; receipt['reviewOnlyExcluded'] &= all(v['takeGroup']['groupIndex'] not in excluded for v in videos) and all(n==expected for n in counts); receipt['externalAudioPreserved'] &= all(v['mediaId']==source['medi",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a3aa8d43-5790-4811-bd94-dd81b0687ce1"
+      },
+      {
+        "at": "2026-10-20T17:47:20.164Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/.local/teleprompter-review-fix-2026-10-20/v3-success.json"
+        ],
+        "changeHash": "5a751e08238cde6d44e7510a1bbf27fb6b5bbcf38c438f4314609e9e50b26401",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-91516826-df0f-4b35-960c-cd58d3254172"
+      },
+      {
+        "at": "2026-10-20T17:47:20.376Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nbase=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac'); private=pathlib.Path('.local/teleprompter-review-fix-2026-10-20'); before=json.loads((private/'project-before.json').read_text()); current=json.loads((base/'project.json').read_text()); oldids={s['id'] for s in before['scenes']}; outputs=[s for s in current['scenes'] if s['id'] not in oldids]; source=before['scenes'][0]['tracks']['main']['elements'][0]; receipt={'accountId':'4fec0688-9a78-4304-849c-9ea937873751','projectId':'c4b3910e-71c0-44b5-843b-6efcf00d9cac','succeeded':len(outputs)==5,'reusedTranscript':True,'resumedAnalysis':True,'outputCount':len(outputs),'originalScenesPreserved':all(next(s for s in current['scenes'] if s['id']==old['id'])==old for old in before['scenes']),'originalSettingsPreserved':current['settings']==before['settings'],'originalMediaPreserved':json.loads((base/'media/index.json').read_text())==json.loads((private/'media-before.json').read_text()),'newScenesHaveTakes':all(s.get('takeAssembly',{}).get('plan',{}).get('groups') for s in outputs),'externalAudioPreserved':True,'reviewOnlyCount':0,'reviewOnlyExcluded':True,'scenes':[],'providerRequestsOnResume':4}\nfor scene in outputs:\n groups=scene['takeAssembly']['plan']['groups']; excluded={i for i,g in enumerate(groups) if g.get('reviewOnly')}; receipt['reviewOnlyCount']+=len(excluded); videos=[e for e in scene['tracks']['main']['elements'] if e['type']=='video']; expected=sum(p['lastWord']-p['firstWord']+1 for g in groups if not g.get('reviewOnly') for p in g['alternatives'][g['selected']]['parts']); counts=[len(t['captionSource']['words']) for t in scene['tracks']['overlay'] if t.get('captionSource')]; receipt['reviewOnlyExcluded'] &= all(v['takeGroup']['groupIndex'] not in excluded for v in videos) and all(n==expected for n in counts); receipt['externalAudioPreserved'] &= all(v['mediaId']==source['medi",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a3aa8d43-5790-4811-bd94-dd81b0687ce1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:47:20.665Z",
+  "parents": [],
+  "branch": "main"
+}

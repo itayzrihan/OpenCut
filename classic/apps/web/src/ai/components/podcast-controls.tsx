@@ -156,7 +156,7 @@ export function PodcastControls({
 									טייקים חלופיים לפי משפט (
 									{
 										scene.takeAssembly.plan.groups.filter(
-											(g) => g.alternatives.length > 1,
+											(g) => g.alternatives.length > 1 || g.reviewOnly,
 										).length
 									}
 									)
@@ -164,14 +164,19 @@ export function PodcastControls({
 								{showTakes &&
 									scene.takeAssembly.plan.groups.map(
 										(group, groupIndex) =>
-											group.alternatives.length > 1 && (
+											(group.alternatives.length > 1 || group.reviewOnly) && (
 												<label key={groupIndex} className="block space-y-1">
-													<span>{group.label}</span>
+													<span>
+														{group.label}
+														{group.reviewOnly
+															? " · שמור לבדיקה, מחוץ לעריכה"
+															: ""}
+													</span>
 													<select
 														className="w-full rounded border bg-background p-2"
 														aria-label={`טייק: ${group.label}`}
 														disabled={running}
-														value={group.selected}
+														value={group.reviewOnly ? "review" : group.selected}
 														onChange={(event) => {
 															try {
 																editor.command.selectSmartTake({
@@ -187,6 +192,11 @@ export function PodcastControls({
 															}
 														}}
 													>
+														{group.reviewOnly && (
+															<option value="review" disabled>
+																שמור לבדיקה — לא נכלל בסרטון
+															</option>
+														)}
 														{group.alternatives.map((alternative, index) => (
 															<option key={index} value={index}>
 																{index + 1}. {alternative.label} —{" "}

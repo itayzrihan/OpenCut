@@ -209,6 +209,50 @@ test("terminal rejection resets only canonical failed artifacts and retains revi
 	).responses;
 	expect(responses["inventory:0:0"]).toBeDefined();
 	expect(responses["draft:0"]).toBeUndefined();
+	const failure = JSON.parse(
+		saved.data.get(`${saved.key}:editorial-v1:failure`)!,
+	);
+	expect(failure.responses["draft:0"]).toEqual({ bad: true });
+	expect(failure.report.error).toBe("Narrative rejected");
+});
+test("canonical failure details reach task status even if optional forensic storage is full", async () => {
+	const reports: Record<string, unknown>[] = [];
+	const saved = cache();
+	const report = {
+		error: "Missing words 800..815",
+		failures: [
+			{ round: 2, stage: "validation", reason: "Missing words 800..815" },
+		],
+	};
+	await expect(
+		runPodcastEditorial({
+			source: {
+				revision: 1,
+				words: [],
+				windows: [],
+				editorial: () => ({ ...step([]), report }),
+			},
+			options,
+			cache: {
+				...saved,
+				storage: {
+					...saved.storage,
+					setItem: () => {
+						throw Error("quota");
+					},
+				},
+			},
+			ask: async () => {
+				throw Error("must not infer");
+			},
+			assertCurrent: () => {},
+			onStage: () => {},
+			onReport: (r) => {
+				reports.push(r);
+			},
+		}),
+	).rejects.toThrow("Missing words 800..815");
+	expect(reports).toEqual([report]);
 });
 test("a saved output consumes its narrative so the next run can compose anew without rescanning", () => {
 	const saved = cache();
@@ -266,7 +310,7 @@ test("teleprompter checkpoints resume per-line alternatives without flattening o
 		words: [],
 		windows: [],
 		editorial: ({ responses }) => ({
-			policyVersion: "teleprompter-v1",
+			policyVersion: "teleprompter-v4",
 			complete: !!responses["draft:0"],
 			requests: responses["draft:0"]
 				? []
@@ -296,4 +340,52 @@ test("teleprompter checkpoints resume per-line alternatives without flattening o
 	expect(await runPodcastEditorial(input)).toEqual([teleVideo]);
 	expect(asked.filter((k) => k === "inventory:0:0")).toHaveLength(1);
 	expect(asked.filter((k) => k === "draft:0")).toHaveLength(2);
+});
+test("v4 resumes old exhausted drafts and reviews once instead of repeating finished provider work", async () => {
+	const saved = cache();
+	saved.data.set(
+		`${saved.key}:editorial-v1`,
+		JSON.stringify({
+			version: 1,
+			responses: { "inventory:0:0": { valid: true } },
+		}),
+	);
+	saved.data.set(
+		`${saved.key}:editorial-v1:failure`,
+		JSON.stringify({
+			version: 1,
+			responses: {
+				"inventory:0:0": { valid: true },
+				"draft:2": { repair: true },
+				"critique:2:0": { cleanCuts: false },
+			},
+		}),
+	);
+	let observed: Record<string, unknown> = {};
+	await runPodcastEditorial({
+		source: {
+			revision: 1,
+			words: [],
+			windows: [],
+			editorial: ({ responses }) => {
+				observed = responses;
+				return { ...step([], true), policyVersion: "teleprompter-v4" };
+			},
+		},
+		options: {
+			mode: "teleprompter",
+			minSeconds: 0,
+			maxSeconds: 0,
+			maxOutputs: 32,
+		},
+		cache: saved,
+		ask: async () => {
+			throw Error("must not redo provider work");
+		},
+		assertCurrent: () => {},
+		onStage: () => {},
+	});
+	expect(observed["draft:2"]).toEqual({ repair: true });
+	expect(observed["critique:2:0"]).toEqual({ cleanCuts: false });
+	expect(saved.data.has(`${saved.key}:editorial-v1:failure`)).toBe(false);
 });

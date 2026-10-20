@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eebdeb07b87c60ad3492c8000f85eadd586ff292192142859c333cbd7939c14a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:24:26.357Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/ai/podcast-editorial.ts src/ai/podcast-plan.ts src/ai/podcast-task.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-6c38009e-86fd-456a-897a-818e318e8ad6"
+      },
+      {
+        "at": "2026-10-20T17:24:26.499Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/teleprompter-review-fix-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-cb911a9c-4970-4ef4-880a-59b7354355bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:24:27.522Z",
+  "parents": [],
+  "branch": "main"
+}

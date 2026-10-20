@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89085dca-56bd-48ff-bb4d-4dbe02ef2ac1",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Reproduced review/compose oscillation on actual Unified2-camera+external-recorder source: incomplete words1170..1174 could not be retained without playing; also approved Hebrew evidence1223chars/2080UTF8bytes was rejected by byte-count label limit. Added canonical reviewOnly groups excluded from spans/audio/captions until explicit take selection; Unicode character limits; validated sentence references, exact diagnostics, safe passing-review reuse and bounded continuation of migrated failed checkpoints. Live MCP resumed STT/maps, reused4reviews, created5 separate scenes with1review-only fragment; source scenes/captions/settings/media exact, all external audio processing/clock preserved. Deployed17-52-32 v4, reopened exact6scenes and previewadvanced11.36s. Regression coverage includes undo/reopen and failed-checkpoint migration.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Original pre-diagnostic failed drafts were deleted by the old host; exact individual historical rejections cannot be recovered. Actual source was reproduced with saved detailed diagnostics. Representative playback/state/timing checked, not exhaustive human audition or every acoustic boundary; unverified boundaries remain indicated in editor."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Delivered5 editable scenes; no export or alteration of original caption tracks requested."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:55:37.855Z",
+  "parents": [
+    "08dbb1d6-385e-4adc-84d9-6ced70dcfa61"
+  ],
+  "branch": "main"
+}

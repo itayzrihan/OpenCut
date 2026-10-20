@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b3a0f741-3faa-4388-8b0f-b600332214cc",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src",
+      ".dip",
+      "analysis/teleprompter-review-fix-2026-10-20",
+      "crates/editor-api/src/operations/classic_takes.rs",
+      "crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs",
+      "classic/apps/web/src/ai/podcast-editorial.ts",
+      "classic/apps/web/src/ai/podcast-plan.ts",
+      "classic/apps/web/src/ai/podcast-task.ts",
+      "crates/editor-api/tests/classic_teleprompter.rs",
+      "classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts",
+      "crates/editor-api/src/operations/classic_takes/quality.rs",
+      "crates/editor-api/src/operations/classic_takes/review.rs",
+      "crates/editor-api/src/operations/classic_takes/podcast.rs",
+      "classic/apps/web/src/timeline/smart-takes/types.ts",
+      "classic/apps/web/src/ai/podcast-proposal.ts",
+      "classic/apps/web/src/ai/__tests__/teleprompter-controls.test.tsx",
+      ".local/teleprompter-review-fix-2026-10-20/v2-reproduction.json"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:39:21.080Z",
+  "parents": [
+    "38461f3b-e62b-46a9-80d2-e0d38e06f65c"
+  ],
+  "branch": "main"
+}

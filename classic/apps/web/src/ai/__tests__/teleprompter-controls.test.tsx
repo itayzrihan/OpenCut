@@ -13,6 +13,7 @@ type Fixture = {
 			groups: {
 				label: string;
 				selected: number;
+				reviewOnly?: boolean;
 				alternatives: { label: string; reason: string }[];
 			}[];
 		};
@@ -88,4 +89,32 @@ test("generated teleprompter scene exposes lazy per-sentence take choices and so
 	expect(html).toContain("טייקים חלופיים לפי משפט (1)");
 	expect(html).not.toContain("<select");
 	expect(html).toContain("פתח את סצנת המקור");
+});
+test("single-reading review fragments remain discoverable outside the film", () => {
+	scene = {
+		podcastExtract: {
+			title: "תסריט",
+			sourceSceneId: "source",
+			openingHook: "שלום",
+			endingHook: "תודה",
+			options: { mode: "teleprompter" },
+		},
+		takeAssembly: {
+			plan: {
+				groups: [
+					{
+						label: "שבר משפט לבדיקה",
+						selected: 0,
+						reviewOnly: true,
+						alternatives: [
+							{ label: "מקור", reason: "שמור מחוץ לעריכה עד לבחירת העורך" },
+						],
+					},
+				],
+			},
+		},
+	};
+	expect(renderToStaticMarkup(<PodcastControls />)).toContain(
+		"טייקים חלופיים לפי משפט (1)",
+	);
 });

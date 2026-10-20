@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2dd0fec09741901d8c291ea13dda64f34f4735a4ed5b834e555c2f81dd6878f3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:46:14.226Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs",
+          "crates/editor-api/tests/classic_teleprompter.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cb75ff60-4e8b-4b9a-81c1-6a6c4dd0c6e5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:46:14.229Z",
+  "parents": [],
+  "branch": "main"
+}

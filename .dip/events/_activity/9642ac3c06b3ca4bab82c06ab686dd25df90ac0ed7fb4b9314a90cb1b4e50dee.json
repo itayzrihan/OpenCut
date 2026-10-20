@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9642ac3c06b3ca4bab82c06ab686dd25df90ac0ed7fb4b9314a90cb1b4e50dee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T17:38:05.128Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'selected: z|selected:.*number|group.selected|g.selected' classic/apps/web/src/timeline/smart-takes classic/apps/web/src/core/canonical-classic-session.ts -g '*.ts*'\nsed -n '38,90p' classic/apps/web/src/ai/podcast-editorial.ts\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7dbe6edc-f718-4ee8-80b0-622ce3f7e8bf"
+      },
+      {
+        "at": "2026-10-20T17:38:05.302Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'selected: z|selected:.*number|group.selected|g.selected' classic/apps/web/src/timeline/smart-takes classic/apps/web/src/core/canonical-classic-session.ts -g '*.ts*'\nsed -n '38,90p' classic/apps/web/src/ai/podcast-editorial.ts\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7dbe6edc-f718-4ee8-80b0-622ce3f7e8bf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:38:05.655Z",
+  "parents": [],
+  "branch": "main"
+}

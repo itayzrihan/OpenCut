@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "289d61555c639d80aed72a302b3ec3239618dabbdb160ac27a830df59cfa4d56",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:22:10.361Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs",
+          ".local/teleprompter-review-fix-2026-10-20/build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e1024f3b-f879-417b-8fc1-052bbf7a2165"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:22:10.362Z",
+  "parents": [],
+  "branch": "main"
+}

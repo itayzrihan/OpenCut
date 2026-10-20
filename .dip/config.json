@@ -248,6 +248,13 @@
         ".dip/tools/verify-unified-with-audio.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "teleprompter-review-fix": {
+      "command": [
+        "node",
+        ".dip/tools/verify-teleprompter-review-fix.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

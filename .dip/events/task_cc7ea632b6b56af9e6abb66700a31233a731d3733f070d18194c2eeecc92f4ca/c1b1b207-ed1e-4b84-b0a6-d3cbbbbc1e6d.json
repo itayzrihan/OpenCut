@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c1b1b207-ed1e-4b84-b0a6-d3cbbbbc1e6d",
+  "taskId": "task_cc7ea632b6b56af9e6abb66700a31233a731d3733f070d18194c2eeecc92f4ca",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Diagnose actual failed stage and preserve transcript/project baseline",
+          "status": "completed"
+        },
+        {
+          "step": "Fix canonical composition, precise repair feedback and failure checkpoint diagnostics",
+          "status": "completed"
+        },
+        {
+          "step": "Add regression coverage and deploy production",
+          "status": "in_progress"
+        },
+        {
+          "step": "Resume real run through MCP and verify separate scenes/source preservation",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T17:25:15.271Z",
+  "parents": [
+    "b0fd8c77-cefa-4214-9cd3-6d0dff01ee09"
+  ],
+  "branch": "main"
+}

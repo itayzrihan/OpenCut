@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "38bd7ee3e87a2a19a0f9453148ce92b8fc5adba60e8c5da340aed3a6512d7637",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:42:38.293Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/batch-worker",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/_full.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/batch-worker.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.html",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/_index.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/_head.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.meta",
+          "classic/apps/web/.next-local-production/server/app/batch-worker.segments/batch-worker/__PAGE__.segment.rsc"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "09ea1f9a-1a8f-4328-9fe7-046c46f8443d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:42:38.295Z",
+  "parents": [],
+  "branch": "main"
+}

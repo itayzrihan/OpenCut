@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fe27a98dbc0110f6b37226246a7ec091f52742987b8296c7f38b74a1a0138cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T17:41:41.975Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teleprompter-review-fix-2026-10-20/real-wasm-v3"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e794e47a-0b9e-412d-9ffd-dc591029b7a6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T17:41:42.100Z",
+  "parents": [],
+  "branch": "main"
+}

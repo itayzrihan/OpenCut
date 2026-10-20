@@ -23,6 +23,7 @@ export async function requestPodcastPlan({
 	cache,
 	onProviderRequest,
 	onResume,
+	onReport,
 }: {
 	source: PodcastSource;
 	options: PodcastOptions;
@@ -31,6 +32,7 @@ export async function requestPodcastPlan({
 	review: (input: { options: PodcastOptions; videos: PodcastVideo[] }) => void;
 	onProviderRequest?: () => void;
 	onResume?: (savedResponses: number) => void;
+	onReport?: (report: Record<string, unknown>) => void;
 	planRetry?: (failure: ProviderFailureInput) => ProviderRetryPlan;
 	assertScope?: () => void;
 	cache?: {
@@ -156,6 +158,7 @@ export async function requestPodcastPlan({
 			assertCurrent,
 			onStage,
 			onResume,
+			onReport,
 			cache,
 		});
 		assertCurrent();
