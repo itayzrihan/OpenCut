@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5c0655d5-e0d9-4f41-a911-1dea00df7c03",
+  "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Created and persisted seven distinct live Yarden smart scenes via authenticated official MCP: six resumed whole-timeline extracts with zero fresh model calls plus one unused selected-range extract reusing transcript. Preserved both original scenes, AV, settings and full transcript exactly; canonical saved reopen, both microphone signals and live playback on all seven verified, UI reload restored nine scenes. Fixed archive ordinal compaction, bounded PCM padding/zero-duration joining and dB semantics; deployed official production release 2026-10-20T01-00-51-034Z-d19882d9. Pushed all local implementation and audit to canonical main, inspected fresh empty PR list, all four local branches already merged, classified historical remote branches.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Representative live playback and decoded signals passed; no exhaustive human listening, every-frame review or new exports. Conservative word handles retained at 22 acoustically unverified boundaries."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Three pre-existing unchanged architecture migration gate violations in brand-kits/apply.ts and subtitles/auto-texts.ts remain documented. Historical remote experiments require feature-specific migration review; no blanket legacy merges or branch deletion."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T01:13:25.608Z",
+  "parents": [
+    "d979fd69-c9c4-4963-8047-6c37eccfaab0"
+  ],
+  "branch": "main"
+}

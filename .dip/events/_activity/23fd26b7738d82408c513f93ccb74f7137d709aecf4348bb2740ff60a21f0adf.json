@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "23fd26b7738d82408c513f93ccb74f7137d709aecf4348bb2740ff60a21f0adf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:14:44.260Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "kill -TERM 48605 11024\nnode --input-type=module - <<'JS'\nimport{execFileSync}from'node:child_process';import{readFile}from'node:fs/promises';const files=execFileSync('git',['ls-files','--modified','--others','--exclude-standard','-z']).toString().split('\\0').filter(Boolean);const pattern=/(?:sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|Bearer\\s+[A-Za-z0-9_.-]{24,})/g;let issues=0;for(const path of files){const b=await readFile(path);if(b.includes(0))continue;if(pattern.test(b.toString()))issues++;pattern.lastIndex=0;}if(issues)throw Error('Credential-shaped content in final receipts');console.log({finalReceiptFiles:files.length,credentialFindings:issues,productionHealthy:(await fetch('http://localhost:3211')).ok});\nJS\ngit add -A\ngit commit -q -m 'Record verified seven-scene delivery receipts'\ngit push origin main > .local/seven-smart-2026-10-20/push-receipts.log 2>&1\ngit diff --quiet\ngit diff --cached --quiet\ngit log -3 --format='%h %s'\ngit ls-remote origin refs/heads/main\ncat .local/seven-smart-2026-10-20/push-receipts.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b2208f72-7b3e-4218-a9fa-5b66d863d056"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:14:44.620Z",
+  "parents": [],
+  "branch": "main"
+}
