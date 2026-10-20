@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d41ff45095431c51f1609470318cce66577a4a1a6e131e7e6f9eb10426136b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T15:18:43.806Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__core____tests____canonical-unified-audio.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__media____tests____unified-sync-task.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__media____tests____unified-angles-audio.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__media____tests____unified-angles.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__podcast-sync____tests____unified-engine.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__timeline____tests____unified-angles-cycle.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/src__export____tests____audio-source-windows.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ec29cd5d-0115-4926-88a5-646cb359d00a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:18:43.807Z",
+  "parents": [],
+  "branch": "main"
+}

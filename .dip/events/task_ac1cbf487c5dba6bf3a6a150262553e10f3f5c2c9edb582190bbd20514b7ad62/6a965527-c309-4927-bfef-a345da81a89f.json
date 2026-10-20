@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a965527-c309-4927-bfef-a345da81a89f",
+  "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented and pushed48b16c95 canonical Unified with Audio selection/create capabilities, one/multiple camera+external-recorder metadata, local progress/retry sync with all source bindings, shared podcast microphone preset, independent physical audio clock across playback/export/transcription/extraction, and full-media camera availability validation. Deployed local production2026-10-20T15-09-12-538Z-8cb9df5f. Live Assets action created unified-audio-1 from C7452/C7455+WAV, synchronized3 sources, reopened, inserted1 processed clip, played5s and switched camera2 with identical audio parameters. Temporary test scene/actions undone; original scenes/settings/media exact; only1 new synced asset retained.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Live file-export was not run: macOS Save picker required unlock before encoding began; pending picker cancelled by reload. Playback and processed export routing/window clocks passed tests; no claim of human lip-sync/full-episode audition. Source relinks after cuts require a fresh compound asset to preserve old edit clocks."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T15:18:36.311Z",
+  "parents": [
+    "741d7e4a-3398-4991-83a6-4335c46154b2"
+  ],
+  "branch": "main"
+}
