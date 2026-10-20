@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0a21a7cd81fcaec5c70d39c9a4b2eec760b9294e90e71e23b0bd5f902737c2e4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:54:23.387Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/teleprompter-controls.test.tsx src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts src/ai/__tests__/timeline-tools.test.ts --jobs=1 --report=.local/teleprompter-cuts-2026-10-20/host-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9387380f-d7c9-4b4b-9887-fc3e84ad65de"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:54:24.243Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a089bffa653bf23cdf8948b180b226a851acb8afcddf38664a704eda4a5c116",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:53:40.311Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/classic_teleprompter.rs');s=p.read_text().replace('timeline.classic.takes.apply','timeline.classic.takes.edit').replace('assert_eq!(done[\"videos\"], videos());','assert_eq!(done[\"videos\"][0][\"groups\"], videos()[0][\"groups\"]);\\n    assert_eq!(done[\"videos\"][1][\"groups\"], videos()[1][\"groups\"]);');p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_takes/podcast/editorial/teleprompter.rs');s=p.read_text().replace('No invented dialogue or reordering of recommended words.', 'No invented dialogue. Order logical sentence groups by their earliest recorded attempt; each recommended reading is internally chronological, but may come from an earlier/later complete retake.');p.write_text(s)\np=Path('classic/apps/web/src/ai/components/podcast-controls.tsx');s=p.read_text().replace('פתח את פרק המקור להפקה נוספת','פתח את סצנת המקור להפקה נוספת');p.write_text(s)\nPY\ncat >> classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts <<'TS'\n\ntest(\"teleprompter checkpoints resume per-line alternatives without flattening or using short-form policy\", async () => {\n const saved = cache();\n const teleOptions = {mode:\"teleprompter\" as const,minSeconds:0,maxSeconds:0,maxOutputs:32};\n const teleVideo = {...video, alternatives:[], groups:[{label:\"שלום לכולם\",confidence:0.9,selected:1,alternatives:[...video.alternatives,{label:\"קריאה שנייה\",reason:\"משפט שלם\",parts:[{firstWord:11,lastWord:23}]}]}],discarded:[]};\n let stop = true;\n const source: PodcastSource = {revision:1,words:[],windows:[],editorial:({responses}) => ({policyVersion:\"teleprompter-v1\",complete:!!responses[\"draft:0\"],requests:responses[\"draft:0\"]?[]:[job(\"inventory:0:0\"),job(\"draft:0\")].filter(j=>!responses[j.key]),videos:responses[\"draft:0\"]?[teleVideo]:[],report:{}})};\n const asked:string[]=[];\n const input={source,options:teleOptions,cache:saved,assertCurrent:()=>{},onStage:()=>{},ask:async({prompt}:{prompt:string})=>{const {key}=JSON.parse(pr",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b7412cfd-69d8-4ece-88aa-adf6d64508cd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:53:41.213Z",
+  "parents": [],
+  "branch": "main"
+}

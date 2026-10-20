@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "29556823-4a78-48d4-b13c-93fa83263199",
+  "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect source scope, editorial stages and per-line take assembly contracts",
+          "status": "completed"
+        },
+        {
+          "step": "Implement canonical teleprompter planning/extraction and UI/MCP orchestration",
+          "status": "completed"
+        },
+        {
+          "step": "Verify repeat cleanup, alternatives, source preservation and resume",
+          "status": "in_progress"
+        },
+        {
+          "step": "Build, deploy, inspect UI and record verified delivery",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T13:55:59.762Z",
+  "parents": [
+    "8d6e2037-9088-4b04-8b8f-6df7b9b1c286"
+  ],
+  "branch": "main"
+}

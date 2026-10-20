@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d03f47debce2c66c69537f5e8662aa7bf23abd2c9c4887111b9ac92fa217b25",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:55:58.616Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-podcast.test.ts');s=p.read_text().replace('test(\"the web bridge creates, reloads and undoes canonical podcast sequences\", async () => {','for (const mode of [\"teaser\", \"teleprompter\"] as const) {\\ntest(`the web bridge creates, reloads and undoes canonical ${mode} sequences`, async () => {');s=s.replace('mode: \"teaser\",\\n\\t\\tminSeconds: 20,\\n\\t\\tmaxSeconds: 90,\\n\\t\\tmaxOutputs: 1,','mode,\\n\\t\\tminSeconds: mode === \"teleprompter\" ? 0 : 20,\\n\\t\\tmaxSeconds: mode === \"teleprompter\" ? 0 : 90,\\n\\t\\tmaxOutputs: mode === \"teleprompter\" ? 32 : 1,');s=s.replace('\\tconst input = {','''    if (mode === \"teleprompter\") {\n        videos[0].alternatives = [];\n        videos[0].groups = [{label:\"Opening line\",confidence:0.9,selected:1,alternatives:[{label:\"First\",reason:\"Complete\",parts:[{firstWord:0,lastWord:3}]},{label:\"Second\",reason:\"Complete retake\",parts:[{firstWord:4,lastWord:8}]}]},{label:\"Rest of full script\",confidence:0.9,selected:0,alternatives:[{label:\"Continuous\",reason:\"All unique content\",parts:[{firstWord:9,lastWord:49}]}]}];\n        videos[0].discarded = [];\n    }\n\\tconst input = {''',1).replace('expect(result.podcastExtract?.options.mode).toBe(\"teaser\");','expect(result.podcastExtract?.options.mode).toBe(mode);\\n    if (mode === \"teleprompter\") {\\n        expect(result.takeAssembly?.plan.groups).toHaveLength(2);\\n        expect(result.takeAssembly?.plan.groups[0].selected).toBe(1);\\n        expect(result.takeAssembly?.recommendations).toEqual([1,0]);\\n    }');s+='\\n}\\n';p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/__tests__/canonical-podcast.test.ts\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-podcast.test.ts --jobs=1 --report=.local/teleprompter-cuts-2026-10-20/bridge-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0a8cdba0-8fa5-4ae3-a691-457e9ead5f4b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:55:59.361Z",
+  "parents": [],
+  "branch": "main"
+}

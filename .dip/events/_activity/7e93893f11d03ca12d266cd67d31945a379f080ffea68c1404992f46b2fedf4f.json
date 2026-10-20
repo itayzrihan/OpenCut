@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e93893f11d03ca12d266cd67d31945a379f080ffea68c1404992f46b2fedf4f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:03:23.016Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re\nfrom pathlib import Path\nfiles=[x for x in subprocess.check_output(['git','diff','--cached','--name-only','-z']).decode().split('\\0') if x]\npatterns=[rb'\\bsk-[A-Za-z0-9_-]{25,}',rb'\\bgh[pousr]_[A-Za-z0-9]{30,}',rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----']\nflagged=[]\nfor name in files:\n p=Path(name)\n if p.is_file() and p.suffix not in ['.png','.jpg','.wasm']:\n  if any(re.search(pattern,p.read_bytes()) for pattern in patterns):flagged.append(name)\nprint({'stagedFiles':len(files),'credentialPatternFiles':flagged})\nif flagged:raise SystemExit(1)\nPY\ngit rev-list --left-right --count HEAD...origin/main\ngit diff --cached --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-50963cda-e222-4d20-bcdb-09995888e457"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:03:23.084Z",
+  "parents": [],
+  "branch": "main"
+}

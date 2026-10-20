@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "40abe0e929ae81cbeec2c67b182b0c74370d7bc2a4c53f1ed7fcd280ae2085b6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:51:28.077Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/podcast-types.ts",
+          "classic/apps/web/src/ai/podcast-editorial.ts",
+          "classic/apps/web/src/ai/components/podcast-controls.tsx",
+          "classic/apps/web/src/ai/timeline-tools.ts",
+          "classic/apps/web/src/ai/podcast-proposal.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7e6d60b1-18dc-4c02-9195-39182155517c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:51:28.079Z",
+  "parents": [],
+  "branch": "main"
+}

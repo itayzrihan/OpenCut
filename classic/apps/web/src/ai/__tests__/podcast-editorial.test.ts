@@ -231,3 +231,69 @@ test("a saved output consumes its narrative so the next run can compose anew wit
 		),
 	).toEqual(["inventory:0:0"]);
 });
+
+test("teleprompter checkpoints resume per-line alternatives without flattening or using short-form policy", async () => {
+	const saved = cache();
+	const teleOptions = {
+		mode: "teleprompter" as const,
+		minSeconds: 0,
+		maxSeconds: 0,
+		maxOutputs: 32,
+	};
+	const teleVideo = {
+		...video,
+		alternatives: [],
+		groups: [
+			{
+				label: "שלום לכולם",
+				confidence: 0.9,
+				selected: 1,
+				alternatives: [
+					...video.alternatives,
+					{
+						label: "קריאה שנייה",
+						reason: "משפט שלם",
+						parts: [{ firstWord: 11, lastWord: 23 }],
+					},
+				],
+			},
+		],
+		discarded: [],
+	};
+	let stop = true;
+	const source: PodcastSource = {
+		revision: 1,
+		words: [],
+		windows: [],
+		editorial: ({ responses }) => ({
+			policyVersion: "teleprompter-v1",
+			complete: !!responses["draft:0"],
+			requests: responses["draft:0"]
+				? []
+				: [job("inventory:0:0"), job("draft:0")].filter(
+						(j) => !responses[j.key],
+					),
+			videos: responses["draft:0"] ? [teleVideo] : [],
+			report: {},
+		}),
+	};
+	const asked: string[] = [];
+	const input = {
+		source,
+		options: teleOptions,
+		cache: saved,
+		assertCurrent: () => {},
+		onStage: () => {},
+		ask: async ({ prompt }: { prompt: string }) => {
+			const { key } = JSON.parse(prompt);
+			asked.push(key);
+			if (key === "draft:0" && stop) throw Error("interrupted");
+			return JSON.stringify({ saved: true });
+		},
+	};
+	await expect(runPodcastEditorial(input)).rejects.toThrow("interrupted");
+	stop = false;
+	expect(await runPodcastEditorial(input)).toEqual([teleVideo]);
+	expect(asked.filter((k) => k === "inventory:0:0")).toHaveLength(1);
+	expect(asked.filter((k) => k === "draft:0")).toHaveLength(2);
+});

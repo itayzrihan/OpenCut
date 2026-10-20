@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab295e783aee3186aca21363ff25a09d65cc8b7ad494da43777e2011151df867",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:59:17.740Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sourceFingerprint|fingerprint|sourceEntries' classic/scripts/local-production/common.mjs classic/scripts/local-production/build.mjs\nsed -n '50,85p' classic/scripts/local-production/build.mjs\nrg -n 'git' classic/scripts/local-production/common.mjs | head -12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cb15c75b-d685-4aaf-aed5-a66732fcaaf0"
+      },
+      {
+        "at": "2026-10-20T13:59:17.846Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sourceFingerprint|fingerprint|sourceEntries' classic/scripts/local-production/common.mjs classic/scripts/local-production/build.mjs\nsed -n '50,85p' classic/scripts/local-production/build.mjs\nrg -n 'git' classic/scripts/local-production/common.mjs | head -12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-cb15c75b-d685-4aaf-aed5-a66732fcaaf0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:59:18.228Z",
+  "parents": [],
+  "branch": "main"
+}

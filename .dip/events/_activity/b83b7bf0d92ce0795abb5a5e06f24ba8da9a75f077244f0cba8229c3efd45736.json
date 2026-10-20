@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b83b7bf0d92ce0795abb5a5e06f24ba8da9a75f077244f0cba8229c3efd45736",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:02:10.565Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('.local/teleprompter-cuts-2026-10-20')\nbefore=json.loads((root/'source-before.json').read_text());eq=[hashlib.sha256(Path(p).read_bytes()).hexdigest()==digest for p,digest in before.items()]\nui=json.loads((root/'ui-proof.json').read_text());deploy=json.loads((root/'deployment.json').read_text());mcp=json.loads(Path('analysis/teleprompter-cuts-2026-10-20/mcp-contract.json').read_text())\nreceipt={**ui,'productionRelease':deploy['release'],'currentProjectExact':eq[0],'currentMediaExact':eq[1],'mcpExposesTeleprompter':'teleprompter' in mcp['modeSchema']['enum'],'nativeTests':45,'hostTests':60,'actualFootageGeneration':False,'verificationLimit':'Controlled transcript/model fixtures; empty current timeline preserved; no real teleprompter generation or export.'}\nPath('analysis/teleprompter-cuts-2026-10-20/live-verification.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\\n')\nprint(json.dumps(receipt,ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a3dcbfcf-c125-4bca-8921-a96f6a7b5e25"
+      },
+      {
+        "at": "2026-10-20T14:02:10.684Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('.local/teleprompter-cuts-2026-10-20')\nbefore=json.loads((root/'source-before.json').read_text());eq=[hashlib.sha256(Path(p).read_bytes()).hexdigest()==digest for p,digest in before.items()]\nui=json.loads((root/'ui-proof.json').read_text());deploy=json.loads((root/'deployment.json').read_text());mcp=json.loads(Path('analysis/teleprompter-cuts-2026-10-20/mcp-contract.json').read_text())\nreceipt={**ui,'productionRelease':deploy['release'],'currentProjectExact':eq[0],'currentMediaExact':eq[1],'mcpExposesTeleprompter':'teleprompter' in mcp['modeSchema']['enum'],'nativeTests':45,'hostTests':60,'actualFootageGeneration':False,'verificationLimit':'Controlled transcript/model fixtures; empty current timeline preserved; no real teleprompter generation or export.'}\nPath('analysis/teleprompter-cuts-2026-10-20/live-verification.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\\n')\nprint(json.dumps(receipt,ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a3dcbfcf-c125-4bca-8921-a96f6a7b5e25"
+      },
+      {
+        "at": "2026-10-20T14:02:10.688Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8d215671-1e4f-43da-9916-e2a2122ab432"
+      },
+      {
+        "at": "2026-10-20T14:02:10.737Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8d215671-1e4f-43da-9916-e2a2122ab432"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:02:10.960Z",
+  "parents": [],
+  "branch": "main"
+}

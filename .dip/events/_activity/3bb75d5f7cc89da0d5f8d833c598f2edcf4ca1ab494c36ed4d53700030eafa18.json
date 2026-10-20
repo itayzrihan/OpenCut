@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3bb75d5f7cc89da0d5f8d833c598f2edcf4ca1ab494c36ed4d53700030eafa18",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:57:14.698Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/teleprompter-cuts-2026-10-20 .local/teleprompter-cuts-2026-10-20\npython3 - <<'PY'\nfrom pathlib import Path\nimport hashlib,json\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac')\npaths=[root/'project.json',root/'media/index.json']\nPath('.local/teleprompter-cuts-2026-10-20/source-before.json').write_text(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}))\np=Path('.dip/config.json');c=json.loads(p.read_text());c['verification']['teleprompter-cuts']={'command':['node','.dip/tools/verify-teleprompter-cuts.mjs'],'timeoutMs':600000};p.write_text(json.dumps(c,indent=2)+'\\n')\np=Path('.local/unified-angles-auto-sync-2026-10-20/activate.mjs');s=p.read_text().replace('.local/unified-angles-auto-sync-2026-10-20/deployment.json','.local/teleprompter-cuts-2026-10-20/deployment.json');Path('.local/teleprompter-cuts-2026-10-20/activate.mjs').write_text(s)\nPY\ncat > .dip/tools/verify-teleprompter-cuts.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nimport {readFile} from 'node:fs/promises';\nimport assert from 'node:assert/strict';\nimport {join} from 'node:path';\nimport {homedir} from 'node:os';\nfunction run(command,args){const result=spawnSync(command,args,{encoding:'utf8',maxBuffer:6*1024*1024});if(result.status!==0)throw Error(`${command}: ${result.stdout}\\n${result.stderr}`);console.log(result.stdout.trim());}\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_teleprompter','--test','classic_podcast','--test','classic_podcast_reference','--test','classic_podcast_editorial','--test','classic_teaser_editorial','--test','classic_takes','--quiet']);\nrun('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-editorial.test.ts','src/ai/__tests__/teleprompter-controls.test.tsx','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/ai/podcast-plan-cache.test.ts','src/ai/__tests__/timeline-too",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d7f658de-2b48-4cb7-ad1e-328c409822d4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:57:14.959Z",
+  "parents": [],
+  "branch": "main"
+}

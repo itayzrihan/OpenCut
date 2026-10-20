@@ -1,0 +1,28 @@
+{
+  "projectId": "c4b3910e-71c0-44b5-843b-6efcf00d9cac",
+  "sceneId": "a9697a8d-383e-4930-8cdd-ec8077593357",
+  "modeSchema": {
+    "enum": [
+      "teaser",
+      "highlights",
+      "chronological",
+      "teleprompter"
+    ],
+    "type": "string"
+  },
+  "minSeconds": {
+    "maximum": 90,
+    "minimum": 0,
+    "type": "number"
+  },
+  "maxSeconds": {
+    "maximum": 90,
+    "minimum": 0,
+    "type": "number"
+  },
+  "maxOutputs": {
+    "maximum": 32,
+    "minimum": 1,
+    "type": "integer"
+  }
+}

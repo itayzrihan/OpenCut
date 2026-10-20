@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "de4084f6cbd22b71a8760c80639c9402dac0ca4a40c14257883709f0081d6456",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:02:41.322Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('.local/teleprompter-cuts-2026-10-20');before=json.loads((root/'source-before-0.json').read_text());path=next(iter(json.loads((root/'source-before.json').read_text())));after=json.loads(Path(path).read_text())\nchanges=[k for k in before.keys()|after.keys() if before.get(k)!=after.get(k)]\nfor x in [before,after]:x.pop('__opencutEditorSession',None)\nassert before==after\np=Path('analysis/teleprompter-cuts-2026-10-20/live-verification.json');r=json.loads(p.read_text());r.update(currentProjectExact=True,currentProjectBytesExact=False,changedTopLevelFields=changes,sourceCanonicalDigest=hashlib.sha256(json.dumps(before,sort_keys=True,separators=(',',':')).encode()).hexdigest(),reloadedCanonicalDigest=hashlib.sha256(json.dumps(after,sort_keys=True,separators=(',',':')).encode()).hexdigest());p.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\\n');print(json.dumps({'currentProjectExact':r['currentProjectExact'],'currentMediaExact':r['currentMediaExact'],'changedTopLevelFields':changes}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f681787b-57d0-478c-8353-dc1d9c623f6d"
+      },
+      {
+        "at": "2026-10-20T14:02:41.423Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "mcp__dip__task_finish",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f0b1d1ca-7823-4f83-aaf9-0c37460dfe2c"
+      },
+      {
+        "at": "2026-10-20T14:02:41.425Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('.local/teleprompter-cuts-2026-10-20');before=json.loads((root/'source-before-0.json').read_text());path=next(iter(json.loads((root/'source-before.json').read_text())));after=json.loads(Path(path).read_text())\nchanges=[k for k in before.keys()|after.keys() if before.get(k)!=after.get(k)]\nfor x in [before,after]:x.pop('__opencutEditorSession',None)\nassert before==after\np=Path('analysis/teleprompter-cuts-2026-10-20/live-verification.json');r=json.loads(p.read_text());r.update(currentProjectExact=True,currentProjectBytesExact=False,changedTopLevelFields=changes,sourceCanonicalDigest=hashlib.sha256(json.dumps(before,sort_keys=True,separators=(',',':')).encode()).hexdigest(),reloadedCanonicalDigest=hashlib.sha256(json.dumps(after,sort_keys=True,separators=(',',':')).encode()).hexdigest());p.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\\n');print(json.dumps({'currentProjectExact':r['currentProjectExact'],'currentMediaExact':r['currentMediaExact'],'changedTopLevelFields':changes}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f681787b-57d0-478c-8353-dc1d9c623f6d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:02:42.001Z",
+  "parents": [],
+  "branch": "main"
+}

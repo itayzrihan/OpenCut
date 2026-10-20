@@ -659,15 +659,24 @@ export async function createTimelineToolRuntime({
 				const input = z
 					.object({
 						sceneId: z.string().min(1),
-						mode: z.enum(["teaser", "highlights", "chronological"]),
-						minSeconds: z.number().min(20).max(90),
-						maxSeconds: z.number().min(20).max(90),
-						maxOutputs: z.number().int().min(1).max(24),
+						mode: z.enum([
+							"teaser",
+							"highlights",
+							"chronological",
+							"teleprompter",
+						]),
+						minSeconds: z.number().int().min(0).max(90),
+						maxSeconds: z.number().int().min(0).max(90),
+						maxOutputs: z.number().int().min(1).max(32),
 						elementIds: z.array(z.string().min(1)).max(100000),
 						requestId: z.string().min(1).max(200),
 					})
 					.strict()
-					.refine((x) => x.minSeconds <= x.maxSeconds)
+					.refine((x) =>
+						x.mode === "teleprompter"
+							? x.minSeconds === 0 && x.maxSeconds === 0 && x.maxOutputs === 32
+							: x.minSeconds >= 20 && x.minSeconds <= x.maxSeconds,
+					)
 					.parse(toolCall.arguments);
 				return getPodcastTask(editor).startRemote(input);
 			}
@@ -1446,17 +1455,17 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			category: "podcast task",
 			keywords: ["teaser", "highlights", "chronological", "multicam", "shorts"],
 			description:
-				"Start the same reviewed podcast workflow as the editor buttons. Creates additional scenes without modifying source edits/captions. Explicit elementIds=[] references the entire active timeline; otherwise only their time ranges, with synchronized camera/audio routes. Reuses or resumes transcript and analysis. Sends allowed transcript to the connected provider. Returns immediately; poll podcast.get_status. Reuse requestId for an exact retry.",
+				"Start the same reviewed podcast/teleprompter workflow as the editor buttons. For teleprompter use minSeconds=0,maxSeconds=0,maxOutputs=32 (natural full scripts, per-line alternative takes); other modes require 20..90 seconds. Creates additional scenes without modifying source edits/captions. Explicit elementIds=[] references the entire active timeline; otherwise only their time ranges, with synchronized camera/audio routes. Reuses or resumes transcript and analysis. Sends allowed transcript to the connected provider. Returns immediately; poll podcast.get_status. Reuse requestId for an exact retry.",
 			parameters: objectSchema({
 				properties: {
 					sceneId: { type: "string" },
 					mode: {
 						type: "string",
-						enum: ["teaser", "highlights", "chronological"],
+						enum: ["teaser", "highlights", "chronological", "teleprompter"],
 					},
-					minSeconds: { type: "number", minimum: 20, maximum: 90 },
-					maxSeconds: { type: "number", minimum: 20, maximum: 90 },
-					maxOutputs: { type: "integer", minimum: 1, maximum: 24 },
+					minSeconds: { type: "number", minimum: 0, maximum: 90 },
+					maxSeconds: { type: "number", minimum: 0, maximum: 90 },
+					maxOutputs: { type: "integer", minimum: 1, maximum: 32 },
 					elementIds: {
 						type: "array",
 						maxItems: 100000,

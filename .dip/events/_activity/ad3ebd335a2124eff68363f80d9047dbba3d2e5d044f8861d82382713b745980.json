@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad3ebd335a2124eff68363f80d9047dbba3d2e5d044f8861d82382713b745980",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:03:26.584Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit -q -m \"Add teleprompter script cleanup with per-sentence alternate takes\"",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4a1264a0-f71f-4b7c-8c11-d1d16919c57c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:03:26.724Z",
+  "parents": [],
+  "branch": "main"
+}

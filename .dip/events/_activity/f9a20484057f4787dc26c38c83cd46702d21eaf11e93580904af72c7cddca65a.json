@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f9a20484057f4787dc26c38c83cd46702d21eaf11e93580904af72c7cddca65a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:59:28.183Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff -- crates/editor-api/src/operations/classic_takes/podcast.rs classic/apps/web/src/ai/podcast-types.ts classic/apps/web/src/ai/timeline-tools.ts\nsed -n '25,48p' classic/scripts/local-production/build.mjs\nsed -n '1,100p' classic/apps/web/src/ai/__tests__/teleprompter-controls.test.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2eeaa852-f03a-4d11-97e4-dd158a4e1b91"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:59:28.234Z",
+  "parents": [],
+  "branch": "main"
+}

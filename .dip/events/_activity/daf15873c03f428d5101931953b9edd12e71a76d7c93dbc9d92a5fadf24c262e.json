@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "daf15873c03f428d5101931953b9edd12e71a76d7c93dbc9d92a5fadf24c262e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:57:55.779Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/ai/components/podcast-controls.tsx src/ai/podcast-types.ts src/ai/podcast-editorial.ts src/ai/podcast-proposal.ts src/ai/__tests__/teleprompter-controls.test.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f9fc70f2-9faf-4501-9c55-353c9e62e6e3"
+      },
+      {
+        "at": "2026-10-20T13:57:55.781Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --numstat\nrg -n 'showTakes|plan.groups.map|details' classic/apps/web/src/ai/components/podcast-controls.tsx\ngit status --short -uno",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-275d29a9-0714-44fc-9191-74121b4d155a"
+      },
+      {
+        "at": "2026-10-20T13:57:55.926Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --numstat\nrg -n 'showTakes|plan.groups.map|details' classic/apps/web/src/ai/components/podcast-controls.tsx\ngit status --short -uno",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-275d29a9-0714-44fc-9191-74121b4d155a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:57:56.299Z",
+  "parents": [],
+  "branch": "main"
+}

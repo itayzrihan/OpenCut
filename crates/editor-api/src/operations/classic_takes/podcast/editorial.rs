@@ -2,6 +2,7 @@
 //! response checkpoints; this canonical read capability owns the adaptive loop.
 use super::*;
 mod shorts;
+pub(super) mod teleprompter;
 use std::collections::BTreeMap;
 
 const SKILL: &str = include_str!("strategic-teaser-compression.md");
@@ -233,6 +234,9 @@ fn draft_problems(draft: &Draft, options: &Options, words: &[Word]) -> Vec<Strin
 }
 fn plan(input: &Input, words: &[Word]) -> Result<Output, CapabilityError> {
     input.options.validate()?;
+    if input.options.mode == Mode::Teleprompter {
+        return teleprompter::plan(input, words);
+    }
     if input.options.mode != Mode::Teaser {
         return shorts::plan(input, words);
     }
@@ -428,7 +432,7 @@ pub(super) fn register_editorial(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.podcast.editorial",
         "Plan and review podcast edits",
-        "Canonical bounded adaptive teaser and shorts workflow: full-episode short-moment inventory, contextual source reads, narrative assembly, skeptical critique and up to three repairs. Returns provider requests or a reviewed plan/ledger; no inference, IO or project mutation. Response checkpoints are unapplied artifacts. Explicit project/scene/revision and cancellation.",
+        "Teleprompter mode maps every source word, preserves ordered complete scripts, retains per-sentence alternative takes and independently critiques omissions/repeats before up to three repairs. Other modes use the canonical bounded adaptive teaser and shorts workflow: full-episode short-moment inventory, contextual source reads, narrative assembly, skeptical critique and up to three repairs. Returns provider requests or a reviewed plan/ledger; no inference, IO or project mutation. Response checkpoints are unapplied artifacts. Explicit project/scene/revision and cancellation.",
         "timeline",
         AccessLevel::Read,
         true,
@@ -439,6 +443,7 @@ pub(super) fn register_editorial(
             "teaser",
             "highlights",
             "chronological",
+            "teleprompter",
             "planning",
             "review",
         ],

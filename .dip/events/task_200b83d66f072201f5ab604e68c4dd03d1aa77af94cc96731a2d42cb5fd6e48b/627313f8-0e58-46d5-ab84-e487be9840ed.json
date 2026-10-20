@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "627313f8-0e58-46d5-ab84-e487be9840ed",
+  "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+  "type": "task.update",
+  "payload": {
+    "title": "Add canonical teleprompter cuts with ordered script scenes and selectable repeated-line takes",
+    "acceptance": [
+      "AI button חיתוכי טלפרומפטר appears below chronological clips",
+      "Canonical workflow cleans ordered one/multiple recording scripts into new scenes without mutating source tracks or captions",
+      "Repeated-line alternatives remain selectable per group; no forced social-short duration or hook rewriting",
+      "Scope respects full timeline or explicitly selected clips including multicam; cancellation and resume reuse transcript",
+      "Meaningful native and host checks pass; production deployment and visible UI verified"
+    ],
+    "scope": [
+      "classic/apps/web/src/ai",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/timeline/smart-takes",
+      "crates/editor-api",
+      "classic/rust/crates/agent",
+      ".dip",
+      "analysis/teleprompter-cuts-2026-10-20"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T13:47:50.789Z",
+  "parents": [
+    "8c8208f1-8901-4cab-bf12-3c5465ea6511"
+  ],
+  "branch": "main"
+}

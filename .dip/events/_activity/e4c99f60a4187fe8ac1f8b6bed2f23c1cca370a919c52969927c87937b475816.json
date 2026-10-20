@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e4c99f60a4187fe8ac1f8b6bed2f23c1cca370a919c52969927c87937b475816",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:00:12.962Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nbefore=json.loads(Path('.local/teleprompter-cuts-2026-10-20/source-before.json').read_text())\nfor i,path in enumerate(before):\n Path(f'.local/teleprompter-cuts-2026-10-20/source-before-{i}.json').write_bytes(Path(path).read_bytes())\nPY\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1d3c3e0a-22cd-4548-8697-903ea1a61a95"
+      },
+      {
+        "at": "2026-10-20T14:00:13.133Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nbefore=json.loads(Path('.local/teleprompter-cuts-2026-10-20/source-before.json').read_text())\nfor i,path in enumerate(before):\n Path(f'.local/teleprompter-cuts-2026-10-20/source-before-{i}.json').write_bytes(Path(path).read_bytes())\nPY\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1d3c3e0a-22cd-4548-8697-903ea1a61a95"
+      },
+      {
+        "at": "2026-10-20T14:00:13.134Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/components/podcast-controls.tsx');s=p.read_text().replace('const reference = useMemo(() => {\\n\\t\\ttry {','const reference = useMemo(() => {\\n\\t\\tif (!scene) return null;\\n\\t\\ttry {');p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_takes/podcast/editorial.rs');s=p.read_text().replace('\"Canonical bounded adaptive teaser and shorts workflow:', '\"Teleprompter mode maps every source word, preserves ordered complete scripts, retains per-sentence alternative takes and independently critiques omissions/repeats before up to three repairs. Other modes use the canonical bounded adaptive teaser and shorts workflow:').replace('            \"chronological\",\\n','            \"chronological\",\\n            \"teleprompter\",\\n');p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_takes/podcast.rs');s=p.read_text().replace('&[\"classic\", \"podcast\", \"teaser\", \"shorts\"],','&[\"classic\", \"podcast\", \"teaser\", \"shorts\", \"teleprompter\"],');p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/ai/components/podcast-controls.tsx\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_takes/podcast.rs crates/editor-api/src/operations/classic_takes/podcast/editorial.rs\nnode classic/scripts/local-production/build.mjs --stage",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-99dbadb2-46f5-4722-a5f6-c2e0767af3fd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:00:13.465Z",
+  "parents": [],
+  "branch": "main"
+}

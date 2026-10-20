@@ -18,9 +18,11 @@ export async function podcastPlanCacheKey(input: {
 		new TextEncoder().encode(JSON.stringify(input)),
 	);
 	return (
-		(input.options.mode === "teaser"
-			? "opencut-strategic-teaser-v1:"
-			: "opencut-podcast-shorts-v2:") +
+		(input.options.mode === "teleprompter"
+			? "opencut-teleprompter-v1:"
+			: input.options.mode === "teaser"
+				? "opencut-strategic-teaser-v1:"
+				: "opencut-podcast-shorts-v2:") +
 		Array.from(new Uint8Array(digest), (b) =>
 			b.toString(16).padStart(2, "0"),
 		).join("")

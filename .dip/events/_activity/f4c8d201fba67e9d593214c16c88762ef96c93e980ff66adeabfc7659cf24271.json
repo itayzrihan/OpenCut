@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f4c8d201fba67e9d593214c16c88762ef96c93e980ff66adeabfc7659cf24271",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:54:25.255Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai____tests____timeline-tools.test.ts.log",
+          ".local/teleprompter-cuts-2026-10-20/host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b4734355-17bb-4061-b206-d657a19ea4fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:54:25.256Z",
+  "parents": [],
+  "branch": "main"
+}

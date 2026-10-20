@@ -50,6 +50,7 @@ pub enum Mode {
     Teaser,
     Highlights,
     Chronological,
+    Teleprompter,
 }
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -59,22 +60,35 @@ struct Video {
     ending_hook: String,
     #[schemars(range(min = 0, max = 1))]
     confidence: f64,
-    #[schemars(length(min = 1, max = 5))]
+    #[serde(default)]
+    #[schemars(length(max = 5))]
     alternatives: Vec<Alternative>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    groups: Vec<Group>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    discarded: Vec<Discard>,
 }
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Options {
     mode: Mode,
-    #[schemars(range(min = 20, max = 90))]
+    #[schemars(range(min = 0, max = 90))]
     min_seconds: u32,
-    #[schemars(range(min = 20, max = 90))]
+    #[schemars(range(min = 0, max = 90))]
     max_seconds: u32,
     #[schemars(range(min = 1, max = 32))]
     max_outputs: usize,
 }
 impl Options {
     fn validate(&self) -> Result<(), CapabilityError> {
+        if self.mode == Mode::Teleprompter {
+            if self.min_seconds != 0 || self.max_seconds != 0 || self.max_outputs != 32 {
+                return Err(invalid(
+                    "Teleprompter uses automatic full-script length and up to 32 scripts (0, 0, 32)",
+                ));
+            }
+            return Ok(());
+        }
         if self.min_seconds < 20
             || self.max_seconds > 90
             || self.min_seconds > self.max_seconds
@@ -152,7 +166,10 @@ pub(super) fn validate_metadata(scene: &Value) -> Result<(), String> {
         m.options.validate().map_err(|e| e.to_string())?;
         if let Some(value) = scene.get("takeAssembly") {
             let a: Assembly = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
-            if !a.selection_only || a.plan.groups.len() != 1 {
+            if !a.selection_only
+                || a.plan.groups.is_empty()
+                || (m.options.mode != Mode::Teleprompter && a.plan.groups.len() != 1)
+            {
                 return Err("Invalid podcast take archive".into());
             }
             validate_video(
@@ -161,7 +178,21 @@ pub(super) fn validate_metadata(scene: &Value) -> Result<(), String> {
                     opening_hook: m.opening_hook,
                     ending_hook: m.ending_hook,
                     confidence: a.plan.groups[0].confidence,
-                    alternatives: a.plan.groups[0].alternatives.clone(),
+                    alternatives: if m.options.mode == Mode::Teleprompter {
+                        vec![]
+                    } else {
+                        a.plan.groups[0].alternatives.clone()
+                    },
+                    groups: if m.options.mode == Mode::Teleprompter {
+                        a.plan.groups.clone()
+                    } else {
+                        vec![]
+                    },
+                    discarded: if m.options.mode == Mode::Teleprompter {
+                        a.plan.discarded.clone()
+                    } else {
+                        vec![]
+                    },
                 },
                 &m.options,
                 &a.source_words,
@@ -179,6 +210,14 @@ fn validate_video(
     options: &Options,
     words: &[Word],
 ) -> Result<Plan, CapabilityError> {
+    if options.mode == Mode::Teleprompter {
+        return editorial::teleprompter::video_plan(video, words);
+    }
+    if !video.groups.is_empty() || !video.discarded.is_empty() {
+        return Err(invalid(
+            "Per-line take groups are only supported for teleprompter",
+        ));
+    }
     if !label(&video.title)
         || !label(&video.opening_hook)
         || !label(&video.ending_hook)
@@ -285,6 +324,14 @@ fn validate_request(input: &Request, words: &[Word]) -> Result<Vec<Plan>, Capabi
         || (input.options.mode == Mode::Teaser && input.videos.len() != 1)
     {
         return Err(invalid("Invalid number of podcast outputs"));
+    }
+    if input.options.mode == Mode::Teleprompter {
+        editorial::teleprompter::validate_collection(&input.videos, words)?;
+        return input
+            .videos
+            .iter()
+            .map(|v| validate_video(v, &input.options, words))
+            .collect();
     }
     let mut seen = HashSet::new();
     let mut plans = vec![];
@@ -542,15 +589,14 @@ pub(super) fn register_podcast(
                 )?;
                 let regions = reference::regions(&scene["tracks"], &input.element_ids)?;
                 let (words, _, _) = reference::inventory(&scene["tracks"], &regions)?;
-                validate_request(&input, &words)?;
+                let plans = validate_request(&input, &words)?;
                 Ok(OperationSuccess::new(Reviewed {
-                    durations: input
-                        .videos
+                    durations: plans
                         .iter()
-                        .map(|v| {
-                            v.alternatives[0]
-                                .parts
+                        .map(|p| {
+                            p.groups
                                 .iter()
+                                .flat_map(|g| &g.alternatives[g.selected].parts)
                                 .map(|p| {
                                     (words[p.last_word].end - words[p.first_word].start) as f64
                                         / TPS
@@ -567,13 +613,13 @@ pub(super) fn register_podcast(
         DocumentSupport::Classic,
         crate::CapabilityExecution::Immediate,
         "timeline.classic.podcast.extract",
-        "Create teaser or podcast short sequences",
-        "Atomically create separate editable Classic scenes from edited or multicam timelines for teaser, remixed highlights or chronological shorts. Empty selection references all timeline media; explicit selection strictly bounds dialogue, handles and synchronized media. Preserves existing camera edits and mix in new scenes, without flattening. Preserves the original episode; reuses take alternatives, synchronized audio/overlays, acoustic handles and exact caption rebuilding. Enforces 20..90 second source dialogue duration, max 32 outputs, no reused selected words across outputs, up to12 passages per short, local source span <=five minutes for chronological shorts and strict chronological order in chronological mode. Teaser is one output and may reorder passages. Optional audio evidence protects cut boundaries; missing safe silence is reported in takeAssembly.quality. Word-complete cliffhangers only. Persisted scene.podcastExtract and takeAssembly are canonical document fields. Explicit project/scene/revision, dry run, cancellation, undo/redo, atomic transactions and registry idempotency. No inference, file encoding or network IO.",
+        "Create teaser, podcast or teleprompter sequences",
+        "Teleprompter mode uses options (minSeconds=0,maxSeconds=0,maxOutputs=32), ordered complete scripts with per-line groups/selected alternatives and explicit discarded ranges; no shorts duration cap. Every scoped word must be accounted across the collection; rejects missing content and overlapping script words. Other modes: atomically create separate editable Classic scenes from edited or multicam timelines for teaser, remixed highlights or chronological shorts. Empty selection references all timeline media; explicit selection strictly bounds dialogue, handles and synchronized media. Preserves existing camera edits and mix in new scenes, without flattening. Preserves the original episode; reuses take alternatives, synchronized audio/overlays, acoustic handles and exact caption rebuilding. Enforces 20..90 second source dialogue duration, max 32 outputs, no reused selected words across outputs, up to12 passages per short, local source span <=five minutes for chronological shorts and strict chronological order in chronological mode. Teaser is one output and may reorder passages. Optional audio evidence protects cut boundaries; missing safe silence is reported in takeAssembly.quality. Word-complete cliffhangers only. Persisted scene.podcastExtract and takeAssembly are canonical document fields. Explicit project/scene/revision, dry run, cancellation, undo/redo, atomic transactions and registry idempotency. No inference, file encoding or network IO.",
         "timeline",
         AccessLevel::Write,
         false,
         false,
-        &["classic", "podcast", "teaser", "shorts"],
+        &["classic", "podcast", "teaser", "shorts", "teleprompter"],
         move |context, input| {
             let state = state.clone();
             let events = events.clone();
@@ -663,14 +709,14 @@ pub(super) fn register_podcast(
                                 element_ids: archive_ids.clone(),
                                 source_tracks: extract_source.clone(),
                                 source_bookmarks: original["bookmarks"].clone(),
+                                recommendations: plan.groups.iter().map(|g| g.selected).collect(),
                                 plan,
                                 applied_digest: String::new(),
                                 source_words: words.clone(),
-                                recommendations: vec![0],
                                 audio_gaps: gaps.clone(),
                                 quality: QualityReport::default(),
                             };
-                            for alternative in &a.plan.groups[0].alternatives {
+                            for alternative in a.plan.groups.iter().flat_map(|g| &g.alternatives) {
                                 let duration = quality::merged(&alternative.parts, &words)
                                     .iter()
                                     .try_fold(0i64, |sum, part| {
@@ -682,7 +728,9 @@ pub(super) fn register_podcast(
                                     )?;
                                     Ok::<_, CapabilityError>(sum + to - from)
                                 })?;
-                                if duration > i64::from(input.options.max_seconds) * 120000 {
+                                if input.options.mode != Mode::Teleprompter
+                                    && duration > i64::from(input.options.max_seconds) * 120000
+                                {
                                     return Err(invalid(
                                         "Speech-safe handles exceed the maximum duration; choose a shorter complete passage",
                                     ));

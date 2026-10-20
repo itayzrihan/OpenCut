@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { Film, ListVideo, Scissors, X } from "lucide-react";
+import { Film, ListVideo, Scissors, TextSelect, X } from "lucide-react";
 import { toast } from "sonner";
 import {
 	useEditor,
@@ -42,6 +42,13 @@ const modes = [
 		description:
 			"בחירת תשובות וסיפורים שלמים, קיצור חזרות וביקורת על החיתוכים, תוך שמירת סדר המקור. כל קטע נשמר בסצנה חדשה.",
 	},
+	{
+		mode: "teleprompter",
+		label: "חיתוכי טלפרומפטר",
+		icon: TextSelect,
+		description:
+			"ניקוי חזרות והתחלות מחדש, שמירת כל משפט ייחודי וסדר התסריטים. כל סרטון בסצנה חדשה, עם טייקים חלופיים לבחירה לכל משפט.",
+	},
 ] as const;
 export function PodcastControls({
 	disabled = false,
@@ -63,11 +70,13 @@ export function PodcastControls({
 	const [mode, setMode] = useState<PodcastMode | null>(null);
 	const [seconds, setSeconds] = useState(60);
 	const [count, setCount] = useState(24);
+	const [showTakes, setShowTakes] = useState(false);
 	const selected = modes.find((m) => m.mode === mode);
 	const selectedElements = useEditorSelection((e) =>
 		e.selection.getSelectedElements(),
 	);
 	const reference = useMemo(() => {
+		if (!scene) return null;
 		try {
 			return editor.command.podcastScope(
 				selectedElements.map((e) => e.elementId),
@@ -84,9 +93,16 @@ export function PodcastControls({
 		try {
 			await task.start({
 				mode,
-				minSeconds: mode === "teaser" ? Math.max(20, seconds - 15) : 20,
-				maxSeconds: mode === "teaser" ? seconds : 90,
-				maxOutputs: mode === "teaser" ? 1 : count,
+				minSeconds:
+					mode === "teleprompter"
+						? 0
+						: mode === "teaser"
+							? Math.max(20, seconds - 15)
+							: 20,
+				maxSeconds:
+					mode === "teleprompter" ? 0 : mode === "teaser" ? seconds : 90,
+				maxOutputs:
+					mode === "teleprompter" ? 32 : mode === "teaser" ? 1 : count,
 			});
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : String(error));
@@ -126,10 +142,63 @@ export function PodcastControls({
 							})
 						}
 					>
-						פתח את פרק המקור להפקה נוספת
+						פתח את סצנת המקור להפקה נוספת
 					</Button>
 					<p>פתיחה: {scene.podcastExtract.openingHook}</p>
 					<p>סיום: {scene.podcastExtract.endingHook}</p>
+					{scene.podcastExtract.options.mode === "teleprompter" &&
+						scene.takeAssembly && (
+							<details
+								className="space-y-2"
+								onToggle={(event) => setShowTakes(event.currentTarget.open)}
+							>
+								<summary className="cursor-pointer">
+									טייקים חלופיים לפי משפט (
+									{
+										scene.takeAssembly.plan.groups.filter(
+											(g) => g.alternatives.length > 1,
+										).length
+									}
+									)
+								</summary>
+								{showTakes &&
+									scene.takeAssembly.plan.groups.map(
+										(group, groupIndex) =>
+											group.alternatives.length > 1 && (
+												<label key={groupIndex} className="block space-y-1">
+													<span>{group.label}</span>
+													<select
+														className="w-full rounded border bg-background p-2"
+														aria-label={`טייק: ${group.label}`}
+														disabled={running}
+														value={group.selected}
+														onChange={(event) => {
+															try {
+																editor.command.selectSmartTake({
+																	groupIndex,
+																	alternativeIndex: Number(event.target.value),
+																});
+															} catch (error) {
+																toast.error(
+																	error instanceof Error
+																		? error.message
+																		: String(error),
+																);
+															}
+														}}
+													>
+														{group.alternatives.map((alternative, index) => (
+															<option key={index} value={index}>
+																{index + 1}. {alternative.label} —{" "}
+																{alternative.reason}
+															</option>
+														))}
+													</select>
+												</label>
+											),
+									)}
+							</details>
+						)}
 					{!!scene.takeAssembly?.quality?.unverifiedBoundaries && (
 						<p role="status" className="text-amber-600">
 							יש לבדוק בהאזנה {scene.takeAssembly.quality.unverifiedBoundaries}{" "}
@@ -195,7 +264,14 @@ export function PodcastControls({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6">
-						{mode === "teaser" ? (
+						{mode === "teleprompter" ? (
+							<p className="text-sm">
+								אפשר להשתמש בהקלטה אחת או בכמה קבצים. זיהוי הסרטונים ואורכם
+								אוטומטי, ללא מגבלת 90 שניות; עד 32 תסריטים בכל הפקה. החלופות
+								יופיעו כאן ובקליק ימני על הקליפים. ההמלצה מבוססת על התמלול; אפשר
+								להאזין ולבחור טייק אחר.
+							</p>
+						) : mode === "teaser" ? (
 							<label
 								htmlFor="podcast-teaser-duration"
 								className="block space-y-2 text-sm"
@@ -239,9 +315,11 @@ export function PodcastControls({
 						</Button>
 						<Button
 							disabled={
-								mode === "teaser"
-									? !Number.isInteger(seconds) || seconds < 20 || seconds > 90
-									: !Number.isInteger(count) || count < 1 || count > 32
+								mode === "teleprompter"
+									? false
+									: mode === "teaser"
+										? !Number.isInteger(seconds) || seconds < 20 || seconds > 90
+										: !Number.isInteger(count) || count < 1 || count > 32
 							}
 							onClick={() => void run()}
 						>

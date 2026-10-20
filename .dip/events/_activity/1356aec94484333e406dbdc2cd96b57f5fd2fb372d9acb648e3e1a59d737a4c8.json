@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1356aec94484333e406dbdc2cd96b57f5fd2fb372d9acb648e3e1a59d737a4c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:55:32.577Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/teleprompter-controls.test.tsx src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/podcast-plan-cache.test.ts src/ai/__tests__/timeline-tools.test.ts --jobs=1 --report=.local/teleprompter-cuts-2026-10-20/host-tests\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3060d839-1755-479b-a784-d29bde15ffca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:55:33.333Z",
+  "parents": [],
+  "branch": "main"
+}

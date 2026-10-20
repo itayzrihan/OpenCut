@@ -1,8 +1,14 @@
 import type {
 	TakeAlternative,
+	TakeGroup,
+	SmartTakePlan,
 	SmartTakeWord,
 } from "@/timeline/smart-takes/types";
-export type PodcastMode = "teaser" | "highlights" | "chronological";
+export type PodcastMode =
+	| "teaser"
+	| "highlights"
+	| "chronological"
+	| "teleprompter";
 export interface PodcastOptions {
 	mode: PodcastMode;
 	minSeconds: number;
@@ -15,6 +21,8 @@ export interface PodcastVideo {
 	endingHook: string;
 	confidence: number;
 	alternatives: TakeAlternative[];
+	groups?: TakeGroup[];
+	discarded?: SmartTakePlan["discarded"];
 }
 export interface PodcastReferenceRegion {
 	id: string;

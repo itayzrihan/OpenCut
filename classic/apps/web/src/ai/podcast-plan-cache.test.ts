@@ -69,3 +69,56 @@ test("resume proposals are scoped to account, project, source words and options;
 	data.set(key, "invalid");
 	expect(readPodcastPlan(storage, key)).toBeNull();
 });
+test("teleprompter policy cache preserves independent per-sentence choices and explicit omissions", async () => {
+	const key = await podcastPlanCacheKey({
+		account: "a",
+		projectId: "p",
+		sceneId: "s",
+		options: {
+			mode: "teleprompter",
+			minSeconds: 0,
+			maxSeconds: 0,
+			maxOutputs: 32,
+		},
+		words: [],
+	});
+	expect(key).toStartWith("opencut-teleprompter-v1:");
+	const data = new Map<string, string>();
+	const storage = {
+		getItem: (key: string) => data.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			data.set(key, value);
+		},
+	};
+	const videos = [
+		{
+			title: "תסריט מלא",
+			openingHook: "פתיחה",
+			endingHook: "סיום",
+			confidence: 0.9,
+			alternatives: [],
+			groups: [
+				{
+					label: "משפט",
+					confidence: 0.9,
+					selected: 1,
+					alternatives: [
+						{
+							label: "ראשון",
+							reason: "מלא",
+							parts: [{ firstWord: 0, lastWord: 3 }],
+						},
+						{
+							label: "שני",
+							reason: "מדויק",
+							parts: [{ firstWord: 4, lastWord: 8 }],
+						},
+					],
+				},
+			],
+			discarded: [{ firstWord: 9, lastWord: 9, reason: "הוראת צילום" }],
+		},
+	];
+	savePodcastPlan(storage, key, videos);
+	expect(readPodcastPlan(storage, key)).toEqual(videos);
+});

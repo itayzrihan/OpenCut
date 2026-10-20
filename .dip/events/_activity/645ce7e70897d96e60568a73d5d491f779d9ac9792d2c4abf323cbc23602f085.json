@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "645ce7e70897d96e60568a73d5d491f779d9ac9792d2c4abf323cbc23602f085",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:55:16.493Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/__tests__/teleprompter-controls.test.tsx');s=p.read_text().replace('let scene: any = null;', '''type Fixture = {podcastExtract:{title:string;sourceSceneId:string;openingHook:string;endingHook:string;options:{mode:\"teleprompter\"}};takeAssembly:{plan:{groups:{label:string;selected:number;alternatives:{label:string;reason:string}[]}[]}}};\nlet scene: Fixture | null = null;''').replace('let selection: any[] = [];','let selection: {elementId:string}[] = [];').replace('const editor: any =','const editor =').replace('useEditorSelection: (f: any)', 'useEditorSelection: (f: (value:{selection:{getSelectedElements:()=>typeof selection}})=>unknown)').replace('useEditorTimelineScenes: (f: any)', 'useEditorTimelineScenes: (f: (value:{scenes:{getActiveSceneOrNull:()=>typeof scene}})=>unknown)');p.write_text(s)\np=Path('classic/apps/web/src/ai/components/podcast-controls.tsx');s=p.read_text().replace('const [count, setCount] = useState(24);','const [count, setCount] = useState(24);\\n\\tconst [showTakes, setShowTakes] = useState(false);').replace('<details className=\"space-y-2\">','<details className=\"space-y-2\" onToggle={(event) => setShowTakes(event.currentTarget.open)}>');s=s.replace('{scene.takeAssembly.plan.groups.map(', '{showTakes && scene.takeAssembly.plan.groups.map(');p.write_text(s)\n# SSR test only sees summary before opening, which is the intended lazy behavior.\np=Path('classic/apps/web/src/ai/__tests__/teleprompter-controls.test.tsx');s=p.read_text().replace('generated teleprompter scene exposes per-sentence take choices with the current recommendation','generated teleprompter scene exposes lazy per-sentence take choices and source navigation');a=s.index('\\texpect(html).toContain(\"טייק:');b=s.index('\\texpect(html).toContain(\"פתח',a);s=s[:a]+'\\texpect(html).not.toContain(\"<select\");\\n'+s[b:];p.write_text(s)\nPY\ncat >> classic/apps/web/src/ai/podcast-plan-cache.test.ts <<'TS'\ntest(\"teleprompter policy ca",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-426769ef-969e-4912-a6f5-ef880b5efa04"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:55:17.309Z",
+  "parents": [],
+  "branch": "main"
+}

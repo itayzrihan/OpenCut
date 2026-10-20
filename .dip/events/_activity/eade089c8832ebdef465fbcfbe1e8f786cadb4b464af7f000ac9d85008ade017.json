@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eade089c8832ebdef465fbcfbe1e8f786cadb4b464af7f000ac9d85008ade017",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:47:40.084Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'struct (TakePlan|TakeGroup|TakeAlternative)|fn (prepare|apply|select)|enum Mode|Teleprompter|teleprompter' crates/editor-api/src/operations/classic_takes* classic/apps/web/src/ai classic/apps/web/src/timeline/smart-takes classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3b7d42eb-9486-482a-9805-89692ae1b340"
+      },
+      {
+        "at": "2026-10-20T13:47:40.173Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'struct (TakePlan|TakeGroup|TakeAlternative)|fn (prepare|apply|select)|enum Mode|Teleprompter|teleprompter' crates/editor-api/src/operations/classic_takes* classic/apps/web/src/ai classic/apps/web/src/timeline/smart-takes classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3b7d42eb-9486-482a-9805-89692ae1b340"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:47:40.540Z",
+  "parents": [],
+  "branch": "main"
+}

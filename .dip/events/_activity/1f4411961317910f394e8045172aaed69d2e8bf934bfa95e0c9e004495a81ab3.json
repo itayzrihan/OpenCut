@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1f4411961317910f394e8045172aaed69d2e8bf934bfa95e0c9e004495a81ab3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:01:45.912Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/teleprompter-cuts-2026-10-20/mcp-contract.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bf09a182-b3b0-469b-a797-c422ec9000aa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:01:45.913Z",
+  "parents": [],
+  "branch": "main"
+}

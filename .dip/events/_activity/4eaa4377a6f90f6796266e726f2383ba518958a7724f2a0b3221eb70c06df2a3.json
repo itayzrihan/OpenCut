@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4eaa4377a6f90f6796266e726f2383ba518958a7724f2a0b3221eb70c06df2a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:52:52.298Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/tests/classic_teleprompter.rs <<'RS'\nuse opencut_editor_api::{InvocationContext,OpenCutRuntime};\nuse serde_json::{Value,json};\nasync fn call(r:&OpenCutRuntime,id:&str,input:Value)->Value {r.registry().invoke(id,InvocationContext::default(),input).await.unwrap().result.data}\nasync fn state(r:&OpenCutRuntime)->Value {call(r,\"app.state.read\",json!({})).await[\"value\"].clone()}\nasync fn setup()->(OpenCutRuntime,Value){\n let r=OpenCutRuntime::default();\n let mut c:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n let s=&mut c[\"document\"][\"scenes\"][0];s[\"tracks\"][\"main\"][\"elements\"][0][\"duration\"]=json!(650*120000);s[\"tracks\"][\"main\"][\"elements\"][0][\"retime\"]=json!({\"rate\":1});s[\"tracks\"][\"overlay\"][0][\"elements\"]=json!([]);\n s[\"tracks\"][\"overlay\"][0][\"captionSource\"][\"words\"]=json!((0..210).map(|i|json!({\"text\":match i {0|4=>\"שלום\".into(),1|5=>\"לכולם\".into(),2|6=>\"היום\".into(),3|7=>\"נלמד\".into(),8=>\"יחד\".into(),_=>format!(\"unique-{i}\")},\"start\":i as f64*3.0+0.1,\"end\":i as f64*3.0+1.5})).collect::<Vec<_>>());\n call(&r,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":c})).await;\n let before=state(&r).await;(r,before)\n}\nfn alt(a:usize,b:usize)->Value {json!({\"label\":\"קריאה מלאה\",\"reason\":\"כל המשפט הושלם ללא התחלה קטועה\",\"parts\":[{\"firstWord\":a,\"lastWord\":b}]})}\nfn group(alts:Vec<Value>)->Value {json!({\"label\":\"משפט בתסריט\",\"confidence\":0.8,\"selected\":0,\"alternatives\":alts})}\nfn script(groups:Vec<Value>)->Value {json!({\"title\":\"סרטון טלפרומפטר\",\"openingHook\":\"משפט פתיחה מקורי\",\"endingHook\":\"משפט סיום שלם\",\"confidence\":0.8,\"alternatives\":[],\"groups\":groups,\"discarded\":[]})}\nfn videos()->Value {json!([script(vec![group(vec![alt(0,3),alt(4,8)]),group(vec![alt(9,100)])]),script(vec![group(vec![alt(101,209)])])])}\nfn input(before:&Value)->Value {json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"expectedRevision\":before[\"revision\"],\"elementIds\":[\"item-2\"],\"optio",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-217bda20-6947-4059-9c2b-a409ddf3a6c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:52:53.175Z",
+  "parents": [],
+  "branch": "main"
+}

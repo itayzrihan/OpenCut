@@ -234,6 +234,13 @@
         ".dip/tools/verify-unified-auto-sync.mjs"
       ],
       "timeoutMs": 240000
+    },
+    "teleprompter-cuts": {
+      "command": [
+        "node",
+        ".dip/tools/verify-teleprompter-cuts.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

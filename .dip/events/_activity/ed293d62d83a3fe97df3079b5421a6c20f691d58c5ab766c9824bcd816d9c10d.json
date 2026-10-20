@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed293d62d83a3fe97df3079b5421a6c20f691d58c5ab766c9824bcd816d9c10d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:55:33.331Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai____tests____teleprompter-controls.test.tsx.log",
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai____tests____podcast-task.test.ts.log",
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/teleprompter-cuts-2026-10-20/host-tests/src__ai__podcast-plan-cache.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "486b680f-e0bb-470e-9076-ca2c3bed520e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:55:33.334Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c5f8575d3e9d74b9870d084b9af746bb38a469acb62991ca479c2a62a978ead6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:02:54.082Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/teleprompter-cuts-2026-10-20/configured-host-tests/src__core____tests____canonical-podcast.test.ts.log",
+          ".local/teleprompter-cuts-2026-10-20/configured-host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d269474b-5450-4e4d-a63e-8447e42f8f5f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:02:54.083Z",
+  "parents": [],
+  "branch": "main"
+}

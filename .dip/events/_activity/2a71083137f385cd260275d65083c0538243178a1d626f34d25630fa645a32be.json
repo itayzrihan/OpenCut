@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a71083137f385cd260275d65083c0538243178a1d626f34d25630fa645a32be",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:51:27.286Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/opencut-tele-host.py <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/podcast-types.ts');s=p.read_text().replace('TakeAlternative,','TakeAlternative,\\n\\tTakeGroup,\\n\\tSmartTakePlan,').replace('\"chronological\";', '\"chronological\" | \"teleprompter\";').replace('alternatives: TakeAlternative[];','alternatives: TakeAlternative[];\\n\\tgroups?: TakeGroup[];\\n\\tdiscarded?: SmartTakePlan[\"discarded\"];');p.write_text(s)\np=Path('classic/apps/web/src/ai/podcast-editorial.ts');s=p.read_text().replace('(options.mode === \"teaser\" ? \"strategic-teaser-v1\" : \"podcast-shorts-v2\")','(options.mode === \"teleprompter\" ? \"teleprompter-v1\" : options.mode === \"teaser\" ? \"strategic-teaser-v1\" : \"podcast-shorts-v2\")').replace('inventory: \"מיפוי רגעים קצרים מכל הפרק\",','inventory: options.mode === \"teleprompter\" ? \"מיפוי תסריטים, משפטים וטייקים חוזרים\" : \"מיפוי רגעים קצרים מכל הפרק\",').replace('compose: \"בניית רצף וסדר עריכתי\",','compose: options.mode === \"teleprompter\" ? \"ניקוי תסריטים ושמירת טייקים חלופיים\" : \"בניית רצף וסדר עריכתי\",');p.write_text(s)\np=Path('classic/apps/web/src/ai/components/podcast-controls.tsx');s=p.read_text().replace('Film, ListVideo, Scissors, X','Film, ListVideo, Scissors, TextSelect, X').replace('] as const;', '\\t{\\n\\t\\tmode: \"teleprompter\",\\n\\t\\tlabel: \"חיתוכי טלפרומפטר\",\\n\\t\\ticon: TextSelect,\\n\\t\\tdescription: \"ניקוי חזרות והתחלות מחדש, שמירת כל משפט ייחודי וסדר התסריטים. כל סרטון בסצנה חדשה, עם טייקים חלופיים לבחירה לכל משפט.\",\\n\\t},\\n] as const;',1)\ns=s.replace('minSeconds: mode === \"teaser\" ? Math.max(20, seconds - 15) : 20,','minSeconds: mode === \"teleprompter\" ? 0 : mode === \"teaser\" ? Math.max(20, seconds - 15) : 20,').replace('maxSeconds: mode === \"teaser\" ? seconds : 90,','maxSeconds: mode === \"teleprompter\" ? 0 : mode === \"teaser\" ? seconds : 90,').replace('maxOutputs: mode === \"teaser\" ? 1 : count,','maxOutputs: mode === \"teleprompter\" ? 32 : mode === \"teaser\" ? 1 : count,')\ns=s.replace('{mode === \"teaser\" ? (','{mode === \"telepro",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6398e658-c08e-48cf-b8b4-d03101bd508a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:51:28.078Z",
+  "parents": [],
+  "branch": "main"
+}

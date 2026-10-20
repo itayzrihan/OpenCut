@@ -544,3 +544,69 @@ async fn compaction_rebinds_archive_indices_without_changing_model_ids_or_word_c
         call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
     }
 }
+
+#[tokio::test]
+async fn teleprompter_accepts_edited_multicam_and_strict_selected_reference_without_leaking_words()
+{
+    for ids in [json!([]), json!(["camera-0-0", "camera-1-3"])] {
+        let r = setup(10).await;
+        let before = state(&r).await;
+        let src = call(
+            &r,
+            "timeline.classic.podcast.prepare",
+            binding(&before, ids.clone()),
+        )
+        .await;
+        let words = src["words"].as_array().unwrap();
+        assert_eq!(
+            words.len(),
+            if ids.as_array().unwrap().is_empty() {
+                20
+            } else {
+                4
+            }
+        );
+        let groups=words.iter().map(|w|json!({"label":w["text"],"confidence":0.8,"selected":0,"alternatives":[{"label":"המשפט המקורי","reason":"תוכן ייחודי","parts":[{"firstWord":w["id"],"lastWord":w["id"]}]}]})).collect::<Vec<_>>();
+        let mut input = binding(&before, ids);
+        input["options"] =
+            json!({"mode":"teleprompter","minSeconds":0,"maxSeconds":0,"maxOutputs":32});
+        input["videos"] = json!([{"title":"תסריט מולטיקאם","openingHook":"פתיחה","endingHook":"סיום","confidence":0.8,"alternatives":[],"groups":groups,"discarded":[]}]);
+        call(&r, "timeline.classic.podcast.extract", input).await;
+        let after = state(&r).await;
+        let d = &after["project"]["classic"]["document"];
+        assert_eq!(
+            d["scenes"][0],
+            before["project"]["classic"]["document"]["scenes"][0]
+        );
+        let out = &d["scenes"][2];
+        let captions = out["tracks"]["overlay"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["captionSource"].is_object())
+            .unwrap();
+        assert_eq!(
+            captions["captionSource"]["words"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|w| w["text"].clone())
+                .collect::<Vec<_>>(),
+            words.iter().map(|w| w["text"].clone()).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            out["takeAssembly"]["referenceRegions"],
+            src["referenceRegions"]
+        );
+        assert!(
+            !out["tracks"]["audio"][0]["elements"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            out["tracks"]["audio"][0]["elements"][0]["params"]["volume"],
+            0.8
+        );
+    }
+}

@@ -54,7 +54,11 @@ export async function runPodcastEditorial({
 		const step = source.editorial({ options, responses });
 		if (
 			step.policyVersion !==
-			(options.mode === "teaser" ? "strategic-teaser-v1" : "podcast-shorts-v2")
+			(options.mode === "teleprompter"
+				? "teleprompter-v1"
+				: options.mode === "teaser"
+					? "strategic-teaser-v1"
+					: "podcast-shorts-v2")
 		)
 			throw new Error(
 				"Podcast runtime version changed; reload before retrying.",
@@ -76,8 +80,14 @@ export async function runPodcastEditorial({
 		if (!step.requests.length || step.requests.length > 2)
 			throw new Error("Invalid bounded podcast request batch");
 		const labels: Record<string, string> = {
-			inventory: "מיפוי רגעים קצרים מכל הפרק",
-			compose: "בניית רצף וסדר עריכתי",
+			inventory:
+				options.mode === "teleprompter"
+					? "מיפוי תסריטים, משפטים וטייקים חוזרים"
+					: "מיפוי רגעים קצרים מכל הפרק",
+			compose:
+				options.mode === "teleprompter"
+					? "ניקוי תסריטים ושמירת טייקים חלופיים"
+					: "בניית רצף וסדר עריכתי",
 			critique: "ביקורת תוכן והקשר",
 		};
 		onStage(

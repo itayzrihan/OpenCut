@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "df5ced7def596c823761d27dfa6debcc4fb6cdee55c5db40acc6d83719ade432",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:02:18.635Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('.local/teleprompter-cuts-2026-10-20');before=json.loads((root/'source-before-0.json').read_text());path=next(iter(json.loads((root/'source-before.json').read_text())));after=json.loads(Path(path).read_text())\ndef diff(a,b,p=''):\n if type(a)!=type(b):print(p,'type changed');return\n if isinstance(a,dict):\n  for k in a.keys()|b.keys():\n   if k not in a or k not in b:print(p+'/'+k,'added/removed')\n   else:diff(a[k],b[k],p+'/'+k)\n elif isinstance(a,list):\n  if len(a)!=len(b):print(p,'length changed')\n  else:\n   for i,(x,y) in enumerate(zip(a,b)):diff(x,y,p+'/'+str(i))\n elif a!=b:print(p,repr(a) if isinstance(a,(int,bool)) or 'updatedAt' in p else '',repr(b) if isinstance(b,(int,bool)) or 'updatedAt' in p else '')\ndiff(before,after)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f257b29a-cd29-4a2e-9935-065326dd41eb"
+      },
+      {
+        "at": "2026-10-20T14:02:18.737Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_200b83d66f072201f5ab604e68c4dd03d1aa77af94cc96731a2d42cb5fd6e48b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('.local/teleprompter-cuts-2026-10-20');before=json.loads((root/'source-before-0.json').read_text());path=next(iter(json.loads((root/'source-before.json').read_text())));after=json.loads(Path(path).read_text())\ndef diff(a,b,p=''):\n if type(a)!=type(b):print(p,'type changed');return\n if isinstance(a,dict):\n  for k in a.keys()|b.keys():\n   if k not in a or k not in b:print(p+'/'+k,'added/removed')\n   else:diff(a[k],b[k],p+'/'+k)\n elif isinstance(a,list):\n  if len(a)!=len(b):print(p,'length changed')\n  else:\n   for i,(x,y) in enumerate(zip(a,b)):diff(x,y,p+'/'+str(i))\n elif a!=b:print(p,repr(a) if isinstance(a,(int,bool)) or 'updatedAt' in p else '',repr(b) if isinstance(b,(int,bool)) or 'updatedAt' in p else '')\ndiff(before,after)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f257b29a-cd29-4a2e-9935-065326dd41eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:02:18.975Z",
+  "parents": [],
+  "branch": "main"
+}
