@@ -1,5 +1,5 @@
 import {readFile} from 'node:fs/promises';
-import {spawnSync} from 'node:child_process';
+import {spawnSync,execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
@@ -16,5 +16,7 @@ const playback=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/playba
 const deployment=JSON.parse(await readFile('.local/seven-smart-2026-10-20/deployment.json','utf8'));
 const active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));
 assert.equal(active.id,deployment.release);assert(deployment.running);assert((await fetch('http://localhost:3211')).ok);
+const reopened=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/reopened.json','utf8'));assert(reopened.passed&&reopened.sceneCount===9&&reopened.dirty===false);
+const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();const remote=execFileSync('git',['ls-remote','origin','refs/heads/main'],{encoding:'utf8',timeout:30000}).trim().split(/\s+/)[0];assert.equal(remote,head,'Local main must be pushed to canonical origin');
 run('git',['diff','--check']);
 console.log(JSON.stringify({passed:true,outputs:7,productionRelease:active.id,sourcePreserved:true,firstBatchResumed:true,firstBatchNewModelCalls:0,seventhBatchNewModelCalls:status.batches[1].analysisRequests,limits:['Representative source audio signal checks, not export or exhaustive human listening.','Existing architecture migration gate has three unchanged violations; see audit.he.md.']}));

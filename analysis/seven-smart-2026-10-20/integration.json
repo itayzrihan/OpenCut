@@ -1,0 +1,28 @@
+{
+  "repository": "itayzrihan/OpenCut",
+  "branch": "main",
+  "implementationCommit": "2c4fcb6cdc7fb3b150e2326f5facb3b2fd3883c7",
+  "pushConfirmed": true,
+  "openPullRequests": [],
+  "localBranchesAlreadyMerged": 4,
+  "historicalRemoteBranchesUnmerged": 20,
+  "historicalPatchEquivalentBranches": 5,
+  "historicalUnrelatedBranches": 1,
+  "productionRelease": "2026-10-20T01-00-51-034Z-d19882d9",
+  "productionHealthy": true,
+  "coreTests": {
+    "passed": 299,
+    "ignoredOptionalBenchmark": 1
+  },
+  "focusedWorkflowHostTests": 71,
+  "sourceExportHostTests": 9,
+  "architectureGate": {
+    "passed": false,
+    "unchangedViolations": 3
+  },
+  "notes": [
+    "Production was built from the working tree before the implementation commit, so its release name retains base d19882d9.",
+    "A formatter-only batch affecting 30 previously clean Rust files was removed after the build; exact formatter equivalence was checked. No functional product changes followed deployment.",
+    "No GitHub Actions runs were returned after push; local checks are the verification evidence."
+  ]
+}
