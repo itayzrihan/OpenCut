@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "98bf8497b7ff5fc55e7f593446689c6c24c179668dcc3dabbb3a6f8d2bd9c29e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:59:32.914Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/components/editor/panels/assets/views/settings/index.tsx';s=open(p).read().replace('e.project.getActive()', 'e.project.getActiveForScene()');open(p,'w').write(s)\np='classic/apps/web/src/ai/timeline-document-v2.ts';s=open(p).read().replace('projectSettings: project.settings,','projectSettings: scene.settings ?? project.settings,',1);open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/components/editor/panels/assets/views/settings/index.tsx classic/apps/web/src/ai/timeline-document-v2.ts > .local/scene-ai-queue-2026-10-20/format-settings.log 2>&1\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1c7143e0-db83-4349-8daa-d22858636747"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:59:33.011Z",
+  "parents": [],
+  "branch": "main"
+}

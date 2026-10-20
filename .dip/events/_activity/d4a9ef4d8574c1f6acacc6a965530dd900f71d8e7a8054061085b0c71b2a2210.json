@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d4a9ef4d8574c1f6acacc6a965530dd900f71d8e7a8054061085b0c71b2a2210",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:46:48.019Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '3210,3254p' classic/apps/web/src/core/managers/commands.ts; sed -n '3364,3408p' classic/apps/web/src/core/managers/commands.ts; rg -n -A25 'automationControl' classic/apps/web/src/batch/scene-jobs.ts | head -34",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-14fb083e-c498-4f25-8a84-89cce5494e27"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:46:48.023Z",
+  "parents": [],
+  "branch": "main"
+}

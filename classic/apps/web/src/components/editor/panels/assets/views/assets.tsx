@@ -1,4 +1,6 @@
 "use client";
+import { FullAutoEditButton } from "@/ai/components/full-auto-edit-button";
+import { sceneActions, type SceneAction } from "@/batch/scene-jobs";
 
 import Image from "next/image";
 import {
@@ -389,11 +391,7 @@ function MediaViewContent() {
 		showAllFiles,
 		resourceIds,
 	]);
-	const orderedMediaIds = useMemo(() => {
-		return filteredMediaItems
-			.filter((item) => item.type !== "file")
-			.map((item) => item.id);
-	}, [filteredMediaItems]);
+
 	const sequenceScenes = useMemo(
 		() =>
 			folder || showAllFiles
@@ -405,6 +403,15 @@ function MediaViewContent() {
 							scene.name.toLocaleLowerCase().includes(query),
 					),
 		[scenes, folder, showAllFiles, query],
+	);
+	const orderedMediaIds = useMemo(
+		() => [
+			...filteredMediaItems
+				.filter((item) => item.type !== "file")
+				.map((item) => item.id),
+			...sequenceScenes.map((scene) => `scene:${scene.id}`),
+		],
+		[filteredMediaItems, sequenceScenes],
 	);
 
 	const handleCreatePodcastSync = useCallback(
@@ -1163,6 +1170,14 @@ function SequenceItem({
 	onUnnestSequence: ({ scene }: { scene: TScene }) => void;
 	onPremiereExport: ({ scene }: { scene: TScene }) => void;
 }) {
+	const { selectedIds, isSelected } = useSelection();
+	const [editAction, setEditAction] = useState<SceneAction | null>(null);
+	const [editSceneIds, setEditSceneIds] = useState<string[]>([scene.id]);
+	const ids = isSelected(`scene:${scene.id}`)
+		? selectedIds
+				.filter((id) => id.startsWith("scene:"))
+				.map((id) => id.slice(6))
+		: [scene.id];
 	const isGrid = variant === "grid";
 	const content = (
 		<button
@@ -1171,7 +1186,7 @@ function SequenceItem({
 				"group flex min-w-0 items-center overflow-hidden rounded border bg-background text-left hover:bg-accent/40",
 				isGrid ? "h-28 w-28 flex-col" : "h-12 w-full gap-2 px-2",
 			)}
-			onClick={() => onOpenSequence({ sceneId: scene.id })}
+			onDoubleClick={() => onOpenSequence({ sceneId: scene.id })}
 		>
 			<div
 				className={cn(
@@ -1191,22 +1206,48 @@ function SequenceItem({
 	);
 
 	return (
-		<ContextMenu>
-			<ContextMenuTrigger asChild>{content}</ContextMenuTrigger>
-			<ContextMenuContent>
-				<ContextMenuItem onClick={() => onOpenSequence({ sceneId: scene.id })}>
-					Open sequence
-				</ContextMenuItem>
-				<ContextMenuItem onClick={() => onUnnestSequence({ scene })}>
-					<SplitSquareHorizontal className="size-4" />
-					Unnest into timeline
-				</ContextMenuItem>
-				<ContextMenuItem onClick={() => onPremiereExport({ scene })}>
-					<FileOutput className="size-4" />
-					Export Premiere Pro XML
-				</ContextMenuItem>
-			</ContextMenuContent>
-		</ContextMenu>
+		<SelectableItem
+			id={`scene:${scene.id}`}
+			className={cn(!isGrid && "w-full")}
+		>
+			<ContextMenu
+				onOpenChange={(open) => {
+					if (open) setEditSceneIds(ids);
+				}}
+			>
+				<ContextMenuTrigger asChild>{content}</ContextMenuTrigger>
+				<ContextMenuContent>
+					{sceneActions.map(([action, label]) => (
+						<ContextMenuItem key={action} onClick={() => setEditAction(action)}>
+							{label} · {ids.length} סצנות
+						</ContextMenuItem>
+					))}
+					<ContextMenuItem
+						onClick={() => onOpenSequence({ sceneId: scene.id })}
+					>
+						Open sequence
+					</ContextMenuItem>
+					<ContextMenuItem onClick={() => onUnnestSequence({ scene })}>
+						<SplitSquareHorizontal className="size-4" />
+						Unnest into timeline
+					</ContextMenuItem>
+					<ContextMenuItem onClick={() => onPremiereExport({ scene })}>
+						<FileOutput className="size-4" />
+						Export Premiere Pro XML
+					</ContextMenuItem>
+				</ContextMenuContent>
+			</ContextMenu>
+			{editAction && (
+				<FullAutoEditButton
+					disabled={false}
+					hideTrigger
+					initialOpen
+					sceneIds={editSceneIds}
+					action={editAction}
+					onClose={() => setEditAction(null)}
+				/>
+			)}
+		</SelectableItem>
 	);
 }
 

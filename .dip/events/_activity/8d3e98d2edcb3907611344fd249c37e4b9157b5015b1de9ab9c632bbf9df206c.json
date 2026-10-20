@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8d3e98d2edcb3907611344fd249c37e4b9157b5015b1de9ab9c632bbf9df206c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:41:59.057Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat -- . ':!.dip'; sed -n '430,650p' classic/apps/web/src/batch/server.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-aff24e7e-11c3-45ba-a62f-4f8c592f13fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:41:59.059Z",
+  "parents": [],
+  "branch": "main"
+}

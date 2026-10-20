@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d74dfa48012ef273c1b828f4f5321fe0bc384f497161360e00db17d39766fd8a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:21.794Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '70,120p' classic/apps/web/src/ai/automatic-zoom.ts; rg -n -A75 'capturePreviewFrameAt' classic/apps/web/src/core/managers/renderer-manager.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b9d74795-1d41-4ba1-b075-1baa1ebe34e3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:21.796Z",
+  "parents": [],
+  "branch": "main"
+}

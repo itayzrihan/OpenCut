@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54b68d138633d2726806e01aaed618fbbb31ac6036bb73e839e7903f28324879",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:41:27.783Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '166,210p' classic/apps/web/src/media/unified-angles.ts\nsed -n '386,409p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nsed -n '50,65p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nrg --files classic/apps/web/src | rg 'selection.*(surface|item)|selectable'\nrg -n 'snapshot.settings|project.settings|canvasSize' classic/apps/web/src/ai/timeline-document-v2.ts | head -10\nsed -n '55,81p' classic/apps/web/src/subtitles/auto-texts.ts\nrg -n 'prepareSmartTakes' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a1cee162-affa-42f1-9ff5-49009ffb6d5a"
+      },
+      {
+        "at": "2026-10-20T18:41:27.903Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/ai/subject-framing.ts';s=open(p).read().replace('import type { EditorCore }','import {resolveUnifiedAnglesVideoAsset,getUnifiedAngleRange,isUnifiedAnglesAsset} from \"@/media/unified-angles\";\\nimport type { EditorCore }',1);s=s.replace('const group = groups.get(clip.mediaId) ?? [];\\n\\t\\tgroup.push(clip);\\n\\t\\tgroups.set(clip.mediaId, group);','''const wrapper=assets.find(a=>a.id===clip.mediaId);\n\t\tif(!wrapper)throw new Error(\"Original source media unavailable\");\n\t\tconst mediaMap=new Map(assets.map(a=>[a.id,a]));\n\t\tconst asset=resolveUnifiedAnglesVideoAsset({asset:wrapper,angleAssetId:clip.unifiedAngleAssetId,mediaMap});\n\t\tif(!asset)throw new Error(\"Camera source unavailable\");\n\t\tlet sampled=clip;\n\t\tif(isUnifiedAnglesAsset(wrapper)){\n\t\t\tconst range=getUnifiedAngleRange({asset:wrapper,angleAssetId:asset.id,mediaMap,trimStart:clip.trimStart/120000,duration:clip.duration/120000});\n\t\t\tif(!range.available)throw new Error(\"Selected camera does not cover this cut\");\n\t\t\tsampled={...clip,trimStart:Math.round(range.sourceStart*120000) as typeof clip.trimStart};\n\t\t}\n\t\tconst group=groups.get(asset.id)??[];group.push(sampled);groups.set(asset.id,group);''');s=s.replace('video.preload = \"auto\";','video.preload = \"metadata\";');open(p,'w').write(s)\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-725ac669-11df-4fc7-a3e2-a740da6a77e1"
+      },
+      {
+        "at": "2026-10-20T18:41:27.902Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '166,210p' classic/apps/web/src/media/unified-angles.ts\nsed -n '386,409p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nsed -n '50,65p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nrg --files classic/apps/web/src | rg 'selection.*(surface|item)|selectable'\nrg -n 'snapshot.settings|project.settings|canvasSize' classic/apps/web/src/ai/timeline-document-v2.ts | head -10\nsed -n '55,81p' classic/apps/web/src/subtitles/auto-texts.ts\nrg -n 'prepareSmartTakes' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a1cee162-affa-42f1-9ff5-49009ffb6d5a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:41:27.962Z",
+  "parents": [],
+  "branch": "main"
+}

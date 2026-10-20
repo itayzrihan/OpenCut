@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "041a91e8addef430cd4b0eabee93166cdcb5b5cb8a327dccd5239aee4122f8b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:40:08.852Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/scene-jobs.ts",
+          "classic/apps/web/src/batch/types.ts",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/timeline/types.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a3148f72-9904-42d9-8193-dc5df230c2c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:40:08.854Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c1714452fa3cd7ad67e580f818e4aea203e0e5e73331f9f77170e7df34c087a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:52:01.682Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/host-tests.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__ai____tests____subject-framing-source.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__progress-view.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__scene-checkpoint.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "75d6802b-db7c-443d-98c2-c111b8863cac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:52:01.728Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b9f22bccc8768b3bbe5f203bdf8018413fe7542d6ba3f2e16b2cb093c0823bcb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:45:15.004Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '300,365p' classic/apps/web/src/batch/server.ts; sed -n '320,342p' classic/apps/web/src/ai/full-auto-edit.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8c3556e5-f60c-4eff-baf2-1aa3731b9fde"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:45:15.008Z",
+  "parents": [],
+  "branch": "main"
+}

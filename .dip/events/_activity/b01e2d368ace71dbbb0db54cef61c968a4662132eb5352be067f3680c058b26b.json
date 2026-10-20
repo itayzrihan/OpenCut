@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b01e2d368ace71dbbb0db54cef61c968a4662132eb5352be067f3680c058b26b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:09:57.338Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,time\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json';s=json.load(open(p));print([{'id':r['id'],'heartbeatAge':round(time.time()-r['heartbeat']/1000),'jobs':[{k:j.get(k) for k in ['projectId','sourceProjectId','sceneId','status','completedStages','message']} for j in r['jobs']]} for r in s['runs'] if any(j['status'] in ['running','ready','queued','importing'] for j in r['jobs'])])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-12a0b1b0-1535-4393-81ba-c8bd7ac9744f"
+      },
+      {
+        "at": "2026-10-20T19:09:57.440Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,time\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json';s=json.load(open(p));print([{'id':r['id'],'heartbeatAge':round(time.time()-r['heartbeat']/1000),'jobs':[{k:j.get(k) for k in ['projectId','sourceProjectId','sceneId','status','completedStages','message']} for j in r['jobs']]} for r in s['runs'] if any(j['status'] in ['running','ready','queued','importing'] for j in r['jobs'])])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-12a0b1b0-1535-4393-81ba-c8bd7ac9744f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:09:58.329Z",
+  "parents": [],
+  "branch": "main"
+}

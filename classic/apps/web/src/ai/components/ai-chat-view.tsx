@@ -219,7 +219,7 @@ export function AiChatView() {
 					mediaAssets: editor.media.getAssets(),
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});
@@ -236,7 +236,7 @@ export function AiChatView() {
 					mediaAssets: editor.media.getAssets(),
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});
@@ -283,7 +283,7 @@ export function AiChatView() {
 			mediaAssets: editor.media.getAssets(),
 			scenes: editor.scenes.getScenes(),
 			activeSceneId: scene.id,
-			projectSettings: editor.project.getActive().settings,
+			projectSettings: editor.project.getActiveForScene().settings,
 			exportState: editor.project.getExportState(),
 			transcriptionState: editor.transcription.getState(),
 		});
@@ -360,7 +360,10 @@ export function AiChatView() {
 			)}
 
 			<div className="flex-1 overflow-y-auto p-3">
-                <LocalSubjectFramingButton disabled={isRunning || isApplying || automaticRunning} onRunningChange={setAutomaticRunning} />
+				<LocalSubjectFramingButton
+					disabled={isRunning || isApplying || automaticRunning}
+					onRunningChange={setAutomaticRunning}
+				/>
 				<AutomaticZoomButton
 					disabled={
 						isRunning || isApplying || automaticRunning || !status.authenticated
@@ -386,7 +389,9 @@ export function AiChatView() {
 					onRunningChange={setAutomaticRunning}
 				/>
 				<PodcastControls
-					disabled={isRunning || isApplying || automaticRunning || !status.authenticated}
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
 					onRunningChange={setAutomaticRunning}
 				/>
 				<FullAutoEditButton

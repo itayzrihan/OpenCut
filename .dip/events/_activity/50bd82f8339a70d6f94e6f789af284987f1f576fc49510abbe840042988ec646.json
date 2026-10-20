@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50bd82f8339a70d6f94e6f789af284987f1f576fc49510abbe840042988ec646",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:46:19.151Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '155,285p' classic/apps/web/src/batch/scene-jobs.ts; rg -n 'requestSubjectDetections' classic/apps/web/src/ai/subject-framing.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-adf66333-a6f9-4ed8-ab5c-3abceb7f2a77"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:46:19.156Z",
+  "parents": [],
+  "branch": "main"
+}

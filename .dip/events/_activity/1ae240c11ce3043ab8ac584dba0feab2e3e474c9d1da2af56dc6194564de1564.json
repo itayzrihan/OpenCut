@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ae240c11ce3043ab8ac584dba0feab2e3e474c9d1da2af56dc6194564de1564",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:09.239Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f2a6b48f-aec2-4e45-8be8-c3db6cce8aeb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:09.241Z",
+  "parents": [],
+  "branch": "main"
+}

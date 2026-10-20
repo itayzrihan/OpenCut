@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "63023938ee5c2298461374f94713f68df92bfb7cf9700db38bace93821afb564",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:24:33.540Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nq=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'));print(json.dumps([{'id':r['id'],'status':r['jobs'][0]['status'],'message':r['jobs'][0]['message'],'tokenHash':hashlib.sha256(r['token'].encode()).hexdigest()} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])]))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-176bdf30-46c2-46a0-bca8-084dde53ae6b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:24:33.543Z",
+  "parents": [],
+  "branch": "main"
+}

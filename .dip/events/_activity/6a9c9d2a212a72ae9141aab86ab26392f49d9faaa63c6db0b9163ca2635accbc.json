@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a9c9d2a212a72ae9141aab86ab26392f49d9faaa63c6db0b9163ca2635accbc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:25.713Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_automation.rs",
+          "classic/apps/web/src/ai/components/ai-chat-view.tsx",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          "classic/apps/web/src/ai/subject-framing.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "01d10833-ae04-4bdc-ba45-70dec04cd0a6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:25.715Z",
+  "parents": [],
+  "branch": "main"
+}

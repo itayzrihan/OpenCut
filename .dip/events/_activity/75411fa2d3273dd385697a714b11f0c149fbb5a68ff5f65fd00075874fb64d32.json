@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75411fa2d3273dd385697a714b11f0c149fbb5a68ff5f65fd00075874fb64d32",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:19:31.849Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,time,hashlib\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751';q=json.load(open(p+'/batch/queue.json'))\nprint([{'id':r['id'],'status':r['jobs'][0]['status'],'message':r['jobs'][0]['message'],'age':round(time.time()-r['updatedAt']/1000),'stages':r['jobs'][0]['completedStages']} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])])\nPY\ncat .local/scene-ai-queue-2026-10-20/retry-tests.log | tail -4",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9c9ba87d-4ee4-491a-b941-75644748c825"
+      },
+      {
+        "at": "2026-10-20T19:19:31.949Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,time,hashlib\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751';q=json.load(open(p+'/batch/queue.json'))\nprint([{'id':r['id'],'status':r['jobs'][0]['status'],'message':r['jobs'][0]['message'],'age':round(time.time()-r['updatedAt']/1000),'stages':r['jobs'][0]['completedStages']} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])])\nPY\ncat .local/scene-ai-queue-2026-10-20/retry-tests.log | tail -4",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9c9ba87d-4ee4-491a-b941-75644748c825"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:19:32.578Z",
+  "parents": [],
+  "branch": "main"
+}

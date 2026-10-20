@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5cc621318d190a99d35007435850c63b0e7543f81a7f19e16126a676b2865f3e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:29:13.416Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/app/api/local-subject-framing/route.ts | head -100; tail -5 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d0fe1127-57ee-4ae7-a9b6-9f5dabe5ab3a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:29:13.419Z",
+  "parents": [],
+  "branch": "main"
+}

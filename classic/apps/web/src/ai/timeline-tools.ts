@@ -388,7 +388,7 @@ export async function createTimelineToolRuntime({
 					mediaAssets,
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});
@@ -463,7 +463,7 @@ export async function createTimelineToolRuntime({
 					mediaAssets,
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});
@@ -536,7 +536,7 @@ export async function createTimelineToolRuntime({
 					mediaAssets,
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});
@@ -936,7 +936,7 @@ export async function createTimelineToolRuntime({
 					mediaAssets,
 					scenes: editor.scenes.getScenes(),
 					activeSceneId: scene.id,
-					projectSettings: editor.project.getActive().settings,
+					projectSettings: editor.project.getActiveForScene().settings,
 					exportState: editor.project.getExportState(),
 					transcriptionState: editor.transcription.getState(),
 				});

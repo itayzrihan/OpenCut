@@ -77,3 +77,41 @@ test("invalid write ranges fail before disk IO and aborted writers cannot be reu
 	expect(f.aborted()).toBe(true);
 	await expect(pcm.write(audio(1, 4, 44100), 0)).rejects.toThrow("not open");
 });
+
+test("refreshes one invalidated OPFS snapshot without changing samples or retrying changed audio", async () => {
+	const f = file();
+	const getFile = f.handle.getFile.bind(f.handle);
+	let snapshots = 0;
+	let wrongSize = false;
+	f.handle.getFile = async () => {
+		snapshots++;
+		if (snapshots === 1)
+			return {
+				slice: () => ({
+					arrayBuffer: async () => {
+						throw new DOMException(
+							"Cached file state changed",
+							"NotReadableError",
+						);
+					},
+				}),
+			} as unknown as File;
+		return wrongSize ? new File([], "changed.pcm") : getFile();
+	};
+	const pcm = new PcmFile(f.handle, 16000, 1);
+	await pcm.open();
+	const input = audio(1, 4, 16000);
+	input.getChannelData(0).set([0.2, -0.3, 0.4, 0.5]);
+	await pcm.write(input, 0);
+	await pcm.seal();
+	expect(Array.from((await pcm.read(context, 0, 4)).getChannelData(0))).toEqual(
+		Array.from(input.getChannelData(0)),
+	);
+	expect(snapshots).toBe(2);
+	snapshots = 0;
+	await pcm.open();
+	await pcm.write(input, 0);
+	await pcm.seal();
+	wrongSize = true;
+	await expect(pcm.read(context, 0, 4)).rejects.toThrow("changed size");
+});

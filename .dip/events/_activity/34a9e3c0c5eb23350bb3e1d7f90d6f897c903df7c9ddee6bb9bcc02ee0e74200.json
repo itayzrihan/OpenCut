@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34a9e3c0c5eb23350bb3e1d7f90d6f897c903df7c9ddee6bb9bcc02ee0e74200",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:51:53.626Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat -- classic crates .dip/config.json .dip/tools/verify-scene-ai-queue.mjs analysis/scene-ai-queue-2026-10-20\ngit diff --cached --stat -- classic crates | tail -8\ntail -55 analysis/scene-ai-queue-2026-10-20/architecture.md\ngit remote -v",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-19cfc33b-b6dc-4f3f-bbe5-058428b73dfc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:51:53.629Z",
+  "parents": [],
+  "branch": "main"
+}

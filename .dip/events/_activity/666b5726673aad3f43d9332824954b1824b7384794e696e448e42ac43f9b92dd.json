@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "666b5726673aad3f43d9332824954b1824b7384794e696e448e42ac43f9b92dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:46:03.674Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/events/_activity')\nmatched=[]\nfor f in p.glob('*.json'):\n try:\n  s=f.read_text()\n  if 'KASHCAST / SCENARIO LAB' in s or 'תקציב שכר כללי לעובדים' in s or 'LIVE BUDGET / SIX MONTHS' in s:matched.append(str(f))\n except OSError:pass\nprint('\\n'.join(matched))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9f5de94a-01e4-44d2-ba2e-cafb0ba5455b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:46:03.679Z",
+  "parents": [],
+  "branch": "main"
+}

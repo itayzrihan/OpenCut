@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac079d59-5d56-49e2-a9c0-472ca4842523",
+  "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Diagnose reload and current queue/state ownership",
+          "status": "completed"
+        },
+        {
+          "step": "Implement durable isolated scene queue and batch Assets AI actions",
+          "status": "completed"
+        },
+        {
+          "step": "Run regression checks, deploy, verify current project",
+          "status": "in_progress"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T18:55:44.641Z",
+  "parents": [
+    "9c4c403e-60e7-41e4-8359-e2cd5cde4967"
+  ],
+  "branch": "main"
+}

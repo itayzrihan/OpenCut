@@ -82,7 +82,7 @@ export function insertCaptionChunksAsTextTrack({
 		return [];
 	}
 
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveForScene().settings.canvasSize;
 	const activeScene = editor.scenes.getActiveScene();
 	const before = activeScene.tracks;
 	const captionTracks = buildCaptionTextTracks({

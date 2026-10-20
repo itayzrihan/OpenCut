@@ -35,6 +35,7 @@ export interface Bookmark {
 }
 
 export interface TScene {
+	settings?: import("@/project/types").TProjectSettings;
 	podcastExtract?: import("@/ai/podcast-types").PodcastExtract;
 	takeAssembly?: import("./smart-takes/types").TakeAssembly;
 	id: string;

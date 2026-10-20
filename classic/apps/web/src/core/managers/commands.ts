@@ -684,6 +684,9 @@ export class CommandManager {
 		try {
 			if (nested) this.synchronizeCanonicalViews();
 			this.canonical.updateSettings({
+				...(this.editor.scenes.getActiveSceneOrNull()?.settings
+					? { sceneId: this.editor.scenes.getActiveScene().id }
+					: {}),
 				settings,
 				...(group && { historyGroup: group }),
 			});

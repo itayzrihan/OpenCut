@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f29e9c561895e8c71b0bdac4cd67f998408aa50f11d4ec2620edda7141f53e78",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:35:24.521Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/types.log\ncat .local/scene-ai-queue-2026-10-20/window-tests.log | tail -9\nrg -n 'executor|workerId|workerHeartbeatAt|openSceneWorker' classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/provider.tsx | tail -24\nsed -n '15,24p' classic/apps/web/src/batch/server.ts\nsed -n '106,118p' classic/apps/web/src/batch/server.ts\nps -axo pid,command | rg 'node classic/scripts/local-production/build.mjs --stage' | head -2",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f84dc331-9efe-4b35-861d-e9f2043371ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:35:25.491Z",
+  "parents": [],
+  "branch": "main"
+}

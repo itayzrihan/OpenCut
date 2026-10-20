@@ -121,7 +121,9 @@ function SafeAreaToggleButton({
 function TimecodeDisplay() {
 	const editor = useEditor();
 	const totalDuration = useEditorTimeline((e) => e.timeline.getTotalDuration());
-	const fps = useEditorProject((e) => e.project.getActive().settings.fps);
+	const fps = useEditorProject(
+		(e) => e.project.getActiveForScene().settings.fps,
+	);
 	const [currentTime, setCurrentTime] = useState<MediaTime>(() =>
 		editor.playback.getCurrentTime(),
 	);

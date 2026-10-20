@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d60b32f9ebfe97746b7a468161f9f6a5e968f049677af9a89cb2c469cf5cd0f3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:26:50.175Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/__tests__/audio-scratch.test.ts <<'EOF'\n/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Native AudioBuffer test double. */\nimport {test,expect} from 'bun:test';\nimport {MemoryAudioScratch,createAudioScratch} from '../audio-scratch';\nimport {PcmFile} from '../pcm-file';\nconst context={createBuffer:(channels:number,length:number,sampleRate:number)=>{\n const data=Array.from({length:channels},()=>new Float32Array(length));\n return {numberOfChannels:channels,length,sampleRate,getChannelData:(i:number)=>data[i]};\n}} as BaseAudioContext;\ntest('bounded fallback preserves PCM, isolates jobs, reclaims temporary files and enforces the shared budget',async()=>{\n const scratch=new MemoryAudioScratch(64),other=new MemoryAudioScratch(64);\n const pcm=new PcmFile(await scratch.file('voice.pcm'),16000,2);\n await pcm.open();const audio=context.createBuffer(2,4,16000);\n audio.getChannelData(0).set([0.1,-0.2,0.3,-0.4]);audio.getChannelData(1).set([-0.1,0.2,-0.3,0.4]);\n await pcm.write(audio,2);await pcm.seal();\n const result=await pcm.read(context,0,6);\n expect(Array.from(result.getChannelData(0).subarray(2))).toEqual(Array.from(audio.getChannelData(0)));\n expect(result.getChannelData(1)[0]).toBe(0);\n const extra=new PcmFile(await scratch.file('mix.pcm'),16000,2);await extra.open();\n await expect(extra.write(audio,0).then(()=>extra.seal())).rejects.toThrow('bounded memory');\n await scratch.remove('voice.pcm');\n await extra.abort();await extra.open();await extra.write(audio,0);await extra.seal();\n const external=await other.file('mix.pcm');const writer=await external.createWritable();await writer.close();\n expect((await external.getFile()).size).toBe(0);\n await scratch.dispose();await expect(extra.handle.getFile()).rejects.toThrow('disposed');\n await other.dispose();\n});\ntest('OPFS open failure chooses a finite fallback without deleting browser or project data',async()=>{\n const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navi",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c7ed8c6a-0950-4040-8cda-2787b57c97b1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:26:50.178Z",
+  "parents": [],
+  "branch": "main"
+}

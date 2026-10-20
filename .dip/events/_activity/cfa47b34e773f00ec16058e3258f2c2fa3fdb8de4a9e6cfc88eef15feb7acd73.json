@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cfa47b34e773f00ec16058e3258f2c2fa3fdb8de4a9e6cfc88eef15feb7acd73",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:58:01.550Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__ai____tests____subject-framing-source.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__batch__progress-view.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__batch__scene-checkpoint.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__ai____tests____full-auto-edit-takes.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b8efda8f-f4b8-4d52-88bd-d7d2d0ae4a98"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:58:01.551Z",
+  "parents": [],
+  "branch": "main"
+}

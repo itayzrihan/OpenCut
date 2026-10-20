@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9686bfb5be808e4284f493df690ae4023ed6ee3d8595a8bda6d0569dcac4312",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:41:03.321Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n -A25 -B8 'onToggleFullscreen|isFullscreen|fullscreen' classic/apps/web/src/preview/components/index.tsx | head -95",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-34c751ce-1b63-473d-b32e-2bf34ab7381d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:41:03.323Z",
+  "parents": [],
+  "branch": "main"
+}

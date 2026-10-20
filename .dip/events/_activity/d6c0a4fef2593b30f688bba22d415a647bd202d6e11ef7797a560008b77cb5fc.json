@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6c0a4fef2593b30f688bba22d415a647bd202d6e11ef7797a560008b77cb5fc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:53:45.808Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/core/managers/transcription-manager.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/batch/standalone-worker.tsx"
+        ],
+        "changeHash": "4739637fd12c94893ea3905bb6f3e554d56eb82f0552764092e2241b6691a1fb",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b959170d-069f-411c-bad9-072aaa5371fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:53:45.809Z",
+  "parents": [],
+  "branch": "main"
+}

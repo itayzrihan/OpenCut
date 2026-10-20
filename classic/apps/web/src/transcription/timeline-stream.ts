@@ -72,13 +72,25 @@ async function openTimelineReader(input: TimelineInput) {
 	}
 	// Edited mixes retain the shared canonical gain, timing, pitch and DSP path.
 	// It spills PCM to disk and processes two-second buffers, never an episode-sized ArrayBuffer.
-	const [{ prepareExportAudio }, { ExportScratch }, { PcmFile }] =
+	const [{ prepareExportAudio }, { createAudioScratch }, { PcmFile }] =
 		await Promise.all([
 			import("@/export/audio-stream"),
-			import("@/export/scratch"),
+			import("@/export/audio-scratch"),
 			import("@/export/pcm-file"),
 		]);
-	const scratch = await ExportScratch.create();
+	const scratch = await createAudioScratch().catch((error) => {
+		throw new Error(`Opening temporary audio storage: ${String(error)}`, {
+			cause: error,
+		});
+	});
+	if (scratch.capacityBytes !== undefined)
+		onProgress?.({
+			status: "transcribing",
+			progress: 0,
+			message:
+				"Preparing short audio in bounded memory · browser temporary storage is unavailable",
+		});
+	let preparationStep = "processing the scene mix";
 	try {
 		const stream = await prepareExportAudio({
 			tracks,
@@ -95,6 +107,7 @@ async function openTimelineReader(input: TimelineInput) {
 				}),
 		});
 		if (!stream) throw new Error("There is no audible audio to transcribe");
+		preparationStep = "staging the transcription audio";
 		const pcm = new PcmFile(
 			await scratch.file("speech.pcm"),
 			SPEECH_SAMPLE_RATE,
@@ -128,18 +141,29 @@ async function openTimelineReader(input: TimelineInput) {
 			close: () => scratch.dispose(),
 			read: async ({ start, end }: { start: number; end: number }) => {
 				signal.throwIfAborted();
-				return (
-					await pcm.read(
-						context,
-						Math.round(start * SPEECH_SAMPLE_RATE),
-						Math.ceil((end - start) * SPEECH_SAMPLE_RATE),
-					)
-				).getChannelData(0);
+				try {
+					return (
+						await pcm.read(
+							context,
+							Math.round(start * SPEECH_SAMPLE_RATE),
+							Math.ceil((end - start) * SPEECH_SAMPLE_RATE),
+						)
+					).getChannelData(0);
+				} catch (error) {
+					throw new Error(
+						`Reading staged transcription audio: ${String(error)}`,
+						{ cause: error },
+					);
+				}
 			},
 		};
 	} catch (error) {
 		await scratch.dispose();
-		throw error;
+		if (signal.aborted) throw error;
+		throw new Error(
+			`Preparing audio (${preparationStep}): ${error instanceof Error ? error.message : String(error)}`,
+			{ cause: error },
+		);
 	}
 }
 
@@ -279,9 +303,17 @@ export async function transcribeTimelineStream(
 						}
 					: undefined,
 			load: async ({ start, end, signal }) => {
-				reader ??= await openTimelineReader({ ...input, signal });
-				read ??= reuseAudioContext({ read: reader.read });
-				return read({ start, end });
+				try {
+					reader ??= await openTimelineReader({ ...input, signal });
+					read ??= reuseAudioContext({ read: reader.read });
+					return await read({ start, end });
+				} catch (error) {
+					if (signal.aborted) throw error;
+					throw new Error(
+						`Reading transcription audio: ${error instanceof Error ? error.message : String(error)}`,
+						{ cause: error },
+					);
+				}
 			},
 		});
 	} finally {

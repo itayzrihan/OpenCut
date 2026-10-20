@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50931689659bfe7f8763ca5cf98dcb3d61bda84c314d8c5f444c79e4e344c1f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+    "records": [
+      {
+        "at": "2026-10-20T18:30:52.948Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+        "taskId": "task_7ee200621cb3a3faa2de8781b92815fe234e5a2db2a938da49843bf39a8954a9",
+        "tool": "mcp__codex_apps__github__get_users_recent_prs_in_repo",
+        "branch": "main",
+        "recordId": "codex:01a15a94-37c3-7a52-ad2f-56a31ff04b70:PostToolUse:exec-a1ef7ed5-4914-40aa-bd9d-1bc7ab4d4920"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:30:53.024Z",
+  "parents": [],
+  "branch": "main"
+}

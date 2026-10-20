@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8542254e849aa6c76eda27bf1238a52f7cee0639901fef710791a4d37f52cee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:02:31.865Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/build.log",
+          "classic/apps/web/.next-local-production/lock",
+          ".local/scene-ai-queue-2026-10-20/preflight.log",
+          "classic/apps/web/.next-local-production/trace"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b9344096-9883-478e-8b0a-c52e04c055f1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:02:31.867Z",
+  "parents": [],
+  "branch": "main"
+}

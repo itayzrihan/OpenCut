@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc7d6adc5fb50936a7729489947698e9e6af06bcac7c83f32e96cbec42efebf6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:14:17.364Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/4.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/17.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/index.pack"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a28d5ef9-b66e-4d0a-a8a7-5abf3a508e6f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:14:17.366Z",
+  "parents": [],
+  "branch": "main"
+}

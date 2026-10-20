@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2758cebba200a0e620a94eb3601d630b514988e446029a32acd0bfd5c148e22e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:52:23.429Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add .dip\ngit commit -m \"fix: isolate scene AI edits and persist the background queue\" -m \"Capture scene recipes and checkpoints in the canonical runtime, publish edits as new scenes, and batch eight AI actions from Assets. Execute serially in an independent worker with durable ownership and resume. Add bounded short-audio storage fallback, source-safe rendering settings, release retention and live regression evidence.\"",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4cf70026-68d3-4eb3-8cf0-5b097ad07e43"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:52:23.431Z",
+  "parents": [],
+  "branch": "main"
+}

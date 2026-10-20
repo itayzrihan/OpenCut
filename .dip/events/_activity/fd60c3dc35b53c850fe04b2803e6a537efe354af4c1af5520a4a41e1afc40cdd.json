@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fd60c3dc35b53c850fe04b2803e6a537efe354af4c1af5520a4a41e1afc40cdd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:12:39.766Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/worker-host.tsx';s=open(p).read().replace('src=\"/batch-worker\"','src=\"/batch-worker\"\\n\\t\\t\\t\\tloading=\"eager\"').replace('left: -10000,','right: 0,\\n\\t\\t\\t\\t\\tbottom: 0,\\n\\t\\t\\t\\t\\topacity: 0,\\n\\t\\t\\t\\t\\tzIndex: -1,');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/worker-host.tsx > .local/scene-ai-queue-2026-10-20/format-worker-host.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b637476e-f96f-4d14-b4d1-67b6dc79aadf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:12:40.200Z",
+  "parents": [],
+  "branch": "main"
+}

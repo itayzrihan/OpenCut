@@ -39,7 +39,8 @@ export function useTimelineSeek({
 		getTrackLabelsEl: () => trackLabelsRef.current,
 		getRulerScrollEl: () => rulerScrollRef.current,
 		getTracksScrollEl: () => tracksScrollRef.current,
-		getActiveProjectFps: () => editor.project.getActive()?.settings.fps ?? null,
+		getActiveProjectFps: () =>
+			editor.project.getActiveForScene()?.settings.fps ?? null,
 		clearSelectedElements,
 		seek,
 		setTimelineViewState: ({ zoomLevel, scrollLeft, playheadTime }) =>

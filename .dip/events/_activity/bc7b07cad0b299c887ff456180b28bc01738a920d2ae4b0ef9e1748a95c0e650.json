@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bc7b07cad0b299c887ff456180b28bc01738a920d2ae4b0ef9e1748a95c0e650",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:57:19.280Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/worker.ts';s=open(p).read().replace('\\t\\tawait send.flush();\\n\\t\\teditor.save.stop();','\\t\\t// The canonical working copy is already durable; an expired host lease\\n\\t\\t// must not prevent the frame from releasing the queue dispatcher.\\n\\t\\tawait send.flush().catch(error=>console.warn(\"Final batch update was fenced\",error));\\n\\t\\teditor.save.stop();');open(p,'w').write(s)\np='crates/editor-api/src/operations/classic_automation.rs';s=open(p).read().replace('''    for job in jobs {\n        let id''','''    for job in jobs {\n        let mut stored=job.clone();stored.as_object_mut().ok_or(\"Invalid automation job\")?.remove(\"status\");\n        serde_json::from_value::<Job>(stored).map_err(|e|format!(\"Invalid scene edit recipe: {e}\"))?;\n        let id''');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/{provider,worker}.tsx classic/apps/web/src/batch/worker.ts > .local/scene-ai-queue-2026-10-20/format-last.log 2>&1\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_automation.rs\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-632f9919-c9d5-4fa1-8b5b-f93bd585bd4d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:57:20.084Z",
+  "parents": [],
+  "branch": "main"
+}

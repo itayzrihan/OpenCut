@@ -124,7 +124,7 @@ export function useEditorActions() {
 	useActionHandler(
 		"frame-step-forward",
 		() => {
-			const fps = editor.project.getActive().settings.fps;
+			const fps = editor.project.getActiveForScene().settings.fps;
 			const ticksPerFrame = mediaTime({
 				ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 			});
@@ -144,7 +144,7 @@ export function useEditorActions() {
 	useActionHandler(
 		"frame-step-backward",
 		() => {
-			const fps = editor.project.getActive().settings.fps;
+			const fps = editor.project.getActiveForScene().settings.fps;
 			const ticksPerFrame = mediaTime({
 				ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 			});

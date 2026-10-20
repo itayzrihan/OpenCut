@@ -13,7 +13,14 @@ mock.module("@/brand-kits/server", () => ({
 }));
 const projects = new Map<
 	string,
-	{ metadata: { name: string; updatedAt: string }; currentSceneId?: string }
+	{
+		metadata: { name: string; updatedAt: string };
+		currentSceneId?: string;
+		automationEdits?: import("./scene-jobs").SceneJob[];
+		automationCheckpoint?: number;
+		automationSource?: { projectId: string; jobId: string; sceneId: string };
+		scenes?: Array<{ id: string; name: string }>;
+	}
 >();
 const root = await mkdtemp(join(tmpdir(), "opencut-batch-test-"));
 mock.module("@/services/local-drive/server", () => ({
@@ -39,6 +46,13 @@ mock.module("opencut-wasm", () => ({
 		status: string;
 		event: string;
 	}) => {
+		if (
+			event === "recover" &&
+			["ready", "running", "interrupted"].includes(status)
+		)
+			return "ready";
+		if (event === "retry" && ["failed", "interrupted"].includes(status))
+			return "ready";
 		if (!["queued", "importing", "ready", "running"].includes(status))
 			return "";
 		return (
@@ -69,6 +83,9 @@ const {
 	updateBatch,
 	cancelBatch,
 	assertBatchProjectWrite,
+	createSceneEdits,
+	recoverSceneWorker,
+	retrySceneEdit,
 } = await import("./server");
 const options = {
 	zoom: true,
@@ -628,4 +645,233 @@ test("Full Auto queues freeze the account kit, reject missing kits and discard c
 		options: { ...options, brandKit: kit, brandKitAccountId: "bob" },
 	});
 	expect(plain.run.options.brandKit).toBeUndefined();
+});
+
+test("scene queue is serial, source stays writable, reload fences old workers and resumes durable stages", async () => {
+	await writeFile(join(root, "batch/queue.json"), JSON.stringify({ runs: [] }));
+	const job = (id: string) => ({
+		id,
+		sceneId: `scene-${id}`,
+		workerProjectId: `worker-${id}`,
+		outputSceneId: `output-${id}`,
+		action: "full-auto" as const,
+		options,
+		status: "queued" as const,
+	});
+	projects.set("source", {
+		metadata: { name: "Source", updatedAt: "now" },
+		automationEdits: [job("first"), job("second")],
+		scenes: [
+			{ id: "scene-first", name: "First scene" },
+			{ id: "scene-second", name: "Second scene" },
+		],
+	});
+	projects.set("worker-first", {
+		metadata: { name: "Working", updatedAt: "now" },
+		automationCheckpoint: 0,
+		automationSource: {
+			projectId: "source",
+			jobId: "first",
+			sceneId: "scene-first",
+		},
+	});
+	projects.set("worker-second", {
+		metadata: { name: "Working", updatedAt: "now" },
+		automationCheckpoint: 0,
+		automationSource: {
+			projectId: "source",
+			jobId: "second",
+			sceneId: "scene-second",
+		},
+	});
+	await createSceneEdits({
+		projectId: "source",
+		jobIds: ["first", "second"],
+		ownerId: "tab",
+	});
+	await createSceneEdits({
+		projectId: "source",
+		jobIds: ["first", "second"],
+		ownerId: "tab",
+	});
+	expect((await getBatchState()).runs).toHaveLength(2);
+	await assertBatchProjectWrite({ projectId: "source", token: null });
+	const first = await recoverSceneWorker({ ownerId: "tab" });
+	expect(first?.run.id).toBe("first");
+	if (!first) throw new Error("Missing worker");
+	expect(await recoverSceneWorker({ ownerId: "another-tab" })).toBeNull();
+	expect(
+		await recoverSceneWorker({ ownerId: "tab", activeRunId: "first" }),
+	).toBeNull();
+	await updateBatch({
+		id: "first",
+		token: first.token,
+		projectId: "worker-first",
+		event: "run",
+	});
+	projects.get("worker-first")!.automationCheckpoint = 2;
+	const reloaded = await recoverSceneWorker({ ownerId: "tab" });
+	expect(reloaded?.run.jobs[0].resumeFromStage).toBe(2);
+	expect(reloaded?.token).not.toBe(first.token);
+	await expect(
+		updateBatch({
+			id: "first",
+			token: first.token,
+			projectId: "worker-first",
+			event: "complete",
+		}),
+	).rejects.toThrow("expired");
+	if (!reloaded) throw new Error("Missing recovered worker");
+	await expect(
+		assertBatchProjectWrite({
+			projectId: "worker-second",
+			token: reloaded.token,
+		}),
+	).rejects.toThrow("Expired");
+	await updateBatch({
+		id: "first",
+		token: reloaded.token,
+		projectId: "worker-first",
+		event: "run",
+	});
+	await updateBatch({
+		id: "first",
+		token: reloaded.token,
+		projectId: "worker-first",
+		event: "complete",
+	});
+	const second = await recoverSceneWorker({ ownerId: "tab" });
+	expect(second?.run.id).toBe("second");
+	if (!second) throw new Error("Missing second worker");
+	await updateBatch({
+		id: "second",
+		token: second.token,
+		projectId: "worker-second",
+		event: "run",
+	});
+	projects.get("worker-second")!.automationCheckpoint = 4;
+	await updateBatch({
+		id: "second",
+		token: second.token,
+		projectId: "worker-second",
+		event: "fail",
+	});
+	await retrySceneEdit({ id: "second", ownerId: "tab" });
+	const retry = await recoverSceneWorker({ ownerId: "tab" });
+	expect(retry?.run.jobs[0].resumeFromStage).toBe(4);
+	await cancelBatch({ id: "second" });
+	expect(
+		(await getBatchState()).runs.find((r) => r.id === "second")?.jobs[0].status,
+	).toBe("cancelled");
+	await assertBatchProjectWrite({ projectId: "source", token: null });
+});
+
+test("retrying an older stopped job does not preempt an already-dispatched scene", async () => {
+	await writeFile(join(root, "batch/queue.json"), JSON.stringify({ runs: [] }));
+	await createSceneEdits({
+		projectId: "source",
+		jobIds: ["first", "second"],
+		ownerId: "tab",
+	});
+	const first = await recoverSceneWorker({ ownerId: "tab" });
+	if (!first) throw Error("No first worker");
+	await updateBatch({
+		id: "first",
+		token: first.token,
+		projectId: "worker-first",
+		event: "fail",
+	});
+	const second = await recoverSceneWorker({ ownerId: "tab" });
+	expect(second?.run.id).toBe("second");
+	await retrySceneEdit({ id: "first", ownerId: "tab" });
+	expect((await getBatchState()).executionRunId).toBe("second");
+	expect(
+		await recoverSceneWorker({ ownerId: "tab", activeRunId: "second" }),
+	).toBeNull();
+	await cancelBatch({ id: "first" });
+	await cancelBatch({ id: "second" });
+});
+
+test("independent windows do not steal a live executor and editor reload cannot fence it", async () => {
+	await writeFile(join(root, "batch/queue.json"), JSON.stringify({ runs: [] }));
+	await createSceneEdits({
+		projectId: "source",
+		jobIds: ["first", "second"],
+		ownerId: "tab",
+	});
+	const first = await recoverSceneWorker({
+		ownerId: "tab",
+		executor: "window",
+		workerId: "worker-window-a",
+	});
+	if (!first) throw Error("No runner");
+	// A background window can deliver delayed heartbeats; protect its full lease.
+	const journalPath = join(root, "batch/queue.json");
+	const journal = JSON.parse(await readFile(journalPath, "utf8"));
+	journal.runs.find(
+		(run: { id: string }) => run.id === "first",
+	).workerHeartbeatAt = Date.now() - 90_000;
+	await writeFile(journalPath, JSON.stringify(journal));
+	expect(
+		await recoverSceneWorker({ ownerId: "tab", executor: "iframe" }),
+	).toBeNull();
+	expect(
+		await recoverSceneWorker({
+			ownerId: "tab",
+			executor: "window",
+			workerId: "worker-window-b",
+		}),
+	).toBeNull();
+	await updateBatch({
+		id: first.run.id,
+		token: first.token,
+		projectId: "worker-first",
+		event: "run",
+	});
+	await updateBatch({
+		id: first.run.id,
+		token: first.token,
+		projectId: "worker-first",
+		event: "complete",
+	});
+	const second = await recoverSceneWorker({
+		ownerId: "tab",
+		executor: "window",
+		workerId: "worker-window-a",
+	});
+	expect(second?.run.id).toBe("second");
+	await cancelBatch({ id: "second" });
+});
+
+test("waiting scene jobs never expire while a long edit is executing", async () => {
+	await writeFile(join(root, "batch/queue.json"), JSON.stringify({ runs: [] }));
+	await createSceneEdits({
+		projectId: "source",
+		jobIds: ["first", "second"],
+		ownerId: "tab",
+	});
+	const first = await recoverSceneWorker({
+		ownerId: "tab",
+		workerId: "runner",
+	});
+	if (!first) throw Error("Missing worker");
+	await updateBatch({
+		id: "first",
+		token: first.token,
+		projectId: "worker-first",
+		event: "run",
+	});
+	const path = join(root, "batch/queue.json");
+	const stored = JSON.parse(await readFile(path, "utf8"));
+	for (const run of stored.runs) run.heartbeat = Date.now() - 600_000;
+	await writeFile(path, JSON.stringify(stored));
+	const state = await getBatchState();
+	expect(state.runs.find((r) => r.id === "first")?.jobs[0].status).toBe(
+		"interrupted",
+	);
+	expect(state.runs.find((r) => r.id === "second")?.jobs[0].status).toBe(
+		"ready",
+	);
+	await cancelBatch({ id: "first" });
+	await cancelBatch({ id: "second" });
 });

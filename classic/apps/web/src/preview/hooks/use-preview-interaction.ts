@@ -35,7 +35,8 @@ export function usePreviewInteraction({
 			getTracks: () => editor.scenes.getActiveScene().tracks,
 			getCurrentTime: () => editor.playback.getCurrentTime(),
 			getMediaAssets: () => editor.media.getAssets(),
-			getCanvasSize: () => editor.project.getActive().settings.canvasSize,
+			getCanvasSize: () =>
+				editor.project.getActiveForScene().settings.canvasSize,
 		},
 		selection: {
 			getSelected: () => editor.selection.getSelectedElements(),
@@ -66,10 +67,7 @@ export function usePreviewInteraction({
 	);
 
 	const [, rerender] = useReducer((n: number) => n + 1, 0);
-	useEffect(
-		() => controller.subscribe({ listener: rerender }),
-		[controller],
-	);
+	useEffect(() => controller.subscribe({ listener: rerender }), [controller]);
 
 	useEffect(() => {
 		if (!controller.isDragging) return;

@@ -12,12 +12,15 @@ export function findSceneCheckpoint({
 	sceneId?: string;
 }) {
 	const scoped = runs.some((run) =>
-		run.jobs.some((job) => job.projectId === projectId && !!job.sceneId),
+		run.jobs.some(
+			(job) =>
+				(job.sourceProjectId ?? job.projectId) === projectId && !!job.sceneId,
+		),
 	);
 	return runs.find((run) =>
 		run.jobs.some(
 			(job) =>
-				job.projectId === projectId &&
+				(job.sourceProjectId ?? job.projectId) === projectId &&
 				(job.sceneId === sceneId || (!scoped && !job.sceneId)),
 		),
 	);

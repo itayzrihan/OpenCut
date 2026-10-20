@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fb6b241cd3f47ea6762360e2f9e84e2aa2eacbf06b9f3b43a987af5a1b92b02",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:46:44.283Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'applyCanonical|syncCanonical|document\\.|hydrate|snapshot' classic/apps/web/src/core/managers/commands.ts | head -35; rg -n -A45 'applyCanonical' classic/apps/web/src/core/managers/project-manager.ts; rg -n 'settings:.*document|document.*settings|aiEditHistory|automationEdits' classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-da89b4f7-c1ea-4b70-8e46-08606e109902"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:46:44.286Z",
+  "parents": [],
+  "branch": "main"
+}

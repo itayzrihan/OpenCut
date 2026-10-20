@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f37051c591d50871c4ab5ece918c190f57264f6fa178aa9b43a4414be5711760",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:17:57.854Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node ../../node_modules/eslint/bin/eslint.js src/export/scratch.ts src/export/audio-stream.ts src/export/pcm-file.ts src/export/__tests__/scratch.test.ts src/transcription/timeline-stream.ts src/core/managers/transcription-manager.ts src/batch/standalone-worker.tsx > /Users/itayzrihan/Documents/PoCut/.local/scene-ai-queue-2026-10-20/audio-lint.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c5e28e98-2646-44ed-9eb6-90fe961fe0d5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:17:57.857Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -4,6 +4,7 @@ import { cp, mkdir, readFile, writeFile, rm, access, symlink } from 'node:fs/pro
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { classicRoot, repository, deploymentRoot, configuration, writeJson, readJson, runtimeEnvironment } from './common.mjs';
+import { pruneReleases } from './prune-releases.mjs';
 
 const config = await configuration();
 const stageOnly = process.argv.includes('--stage');
@@ -134,6 +135,10 @@ try {
     await writeJson(join(deploymentRoot, 'current.json'), metadata);
   }
   await status(stageOnly ? 'Candidate ready (not activated)' : 'Production ready', { running: false, release: metadata });
+  // Retain active/rollback/candidate and three newest verified builds. Repeated
+  // local deployment must not consume the audio decoder's scratch disk space.
+  try { console.log('[production] Release retention', await pruneReleases({ deploymentRoot })); }
+  catch (error) { console.warn('[production] Release cleanup skipped:', error.message); }
 } catch (error) {
   console.error(error);
   if (ownsLock) await status('Build failed', { running: false, error: error.message });

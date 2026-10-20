@@ -1,4 +1,12 @@
 "use client";
+import { openSceneWorker, sceneWorkerUrl } from "./window-worker";
+import { EditorCore as BackgroundEditor } from "@/core";
+import {
+	enqueueScenes,
+	publishSceneResults,
+	queueOwner,
+	type SceneAction,
+} from "./scene-jobs";
 import { BrandKitPicker } from "@/brand-kits/picker";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 import {
@@ -29,11 +37,13 @@ import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
 import type { FullAutoOptions } from "@/ai/full-auto-edit";
 import type { BatchRun, BatchState, BatchSource } from "./types";
 import { batchRequest } from "./client";
-import { setBatchReadOnlyProjects, beginAutomationHandoff } from "./read-only";
+import { setBatchReadOnlyProjects } from "./read-only";
 import { AutomationProgress } from "./automation-progress";
 import { AutomationWorkerHost, type AutomationWorkerTask } from "./worker-host";
 import { createWorkerReadiness } from "./worker-readiness";
 type StartProject = (input: {
+	sceneIds?: string[];
+	action?: SceneAction;
 	resumeRunId?: string;
 	editor: EditorCore;
 	options: FullAutoOptions;
@@ -64,6 +74,7 @@ export function BatchEditProvider({ children }: { children: ReactNode }) {
 function BatchEditHost({ children }: { children: ReactNode }) {
 	const [state, setState] = useState<BatchState>({ runs: [] });
 	const [loaded, setLoaded] = useState(false);
+	const [polledAt, setPolledAt] = useState(0);
 	const [open, setOpen] = useState(false);
 	const [files, setFiles] = useState<BatchSource[]>([]);
 	const [options, setOptions] = useState<FullAutoOptions>({
@@ -77,9 +88,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		Array<AutomationWorkerTask & { hostKey: string }>
 	>([]);
 	const [idleHostKey, setIdleHostKey] = useState(() => crypto.randomUUID());
-	const [preparingProjectId, setPreparingProjectId] = useState<string | null>(
-		null,
-	);
+	const preparingProjectId = null;
 	const preparing = useRef(false);
 	const [workerReadiness] = useState(createWorkerReadiness);
 	const requestVersion = useRef(0);
@@ -96,6 +105,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 			),
 		);
 		setState(value);
+		setPolledAt(Date.now());
 		setLoaded(true);
 	}, []);
 	const refresh = useCallback(async () => {
@@ -123,13 +133,12 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		};
 	}, [refresh]);
 	useEffect(() => {
-		// A crashed frame cannot send its finish message. Retire it after lease expiry.
+		// Terminal jobs have already saved/released ownership (or never started).
+		// Retire their frames even if a cancelled worker cannot send its finish message.
 		const expired = new Set(
 			state.runs
-				.filter(
-					(r) =>
-						r.jobs.some((j) => j.status === "interrupted") &&
-						r.jobs.every((j) => !batchEditIsLocked({ status: j.status })),
+				.filter((r) =>
+					r.jobs.every((j) => !batchEditIsLocked({ status: j.status })),
 				)
 				.map((r) => r.id),
 		);
@@ -165,57 +174,80 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		setWorkers((prev) => [...prev, { ...task, hostKey }]);
 		void refresh().catch(() => {});
 	};
+	const workerRef = useRef(workers);
+	const launchRef = useRef(launch);
+	useEffect(() => {
+		workerRef.current = workers;
+		launchRef.current = launch;
+	});
+	useEffect(() => {
+		let stopped = false,
+			pending = false;
+		const recover = async () => {
+			if (pending) return;
+			pending = true;
+			try {
+				const task = await batchRequest<AutomationWorkerTask | null>({
+					action: "recover",
+					executor: "iframe",
+					ownerId: queueOwner(),
+					activeRunId: workerRef.current[0]?.run.id,
+				});
+				if (task && !stopped && !workerRef.current.length)
+					await launchRef.current(task);
+				if (!stopped)
+					await publishSceneResults({
+						editor: BackgroundEditor.getInstance(),
+						runs: latestState.current.runs,
+					});
+			} catch (error) {
+				console.warn("Scene automation recovery/publication", error);
+			} finally {
+				pending = false;
+			}
+		};
+		void recover();
+		const timer = setInterval(() => void recover(), 3000);
+		return () => {
+			stopped = true;
+			clearInterval(timer);
+		};
+	}, []);
 	const checkModel = async () => {
 		assertBrowserTranscriptionAvailable();
 	};
 	const startProject: StartProject = async ({
 		editor,
 		options,
+		sceneIds,
 		resumeRunId,
+		action = "full-auto",
 	}) => {
 		if (preparing.current)
-			throw new Error(
-				"Another project is being handed off. Please try again in a moment.",
-			);
-		const projectId = editor.project.getActive().metadata.id;
-		let release: (() => void) | undefined;
+			throw new Error("Saving another scene selection. Try again in a moment.");
 		preparing.current = true;
+		openSceneWorker({ runs: latestState.current.runs });
 		try {
-			await checkModel();
-			// Compiling the first worker route can reload a development page.
-			// Do this before installing the unload guard or creating a durable job.
-			await workerReadiness.wait();
-			if (editor.project.getActive().metadata.id !== projectId)
-				throw new Error("Project changed before handoff. Nothing was queued.");
-			release = beginAutomationHandoff(projectId);
-			setPreparingProjectId(projectId);
-			await editor.save.flush();
-			await editor.command.flushHistory();
-			const project = editor.project.getActive();
-			if (project.metadata.id !== projectId)
-				throw new Error("Project changed before handoff. Nothing was queued.");
-			const result = await batchRequest<{ run: BatchRun; token: string }>({
-				action: "project",
-				resumeRunId,
-				id: crypto.randomUUID(),
-				projectId,
-				expectedUpdatedAt: project.metadata.updatedAt.toISOString(),
-				options: {
-					zoom: options.zoom,
-					transitions: options.transitions,
-					wordAnimation: options.wordAnimation,
-					music: options.music,
-					...(options.brandKitId ? { brandKitId: options.brandKitId } : {}),
-				},
-			});
-			await launch({ ...result, files: [] });
-			toast.success("Full Auto Edit queued. You can work in another project.");
+			if (action === "full-auto" || action === "auto-texts") await checkModel();
+			const value = resumeRunId
+				? await batchRequest({
+						action: "retry",
+						id: resumeRunId,
+						ownerId: queueOwner(),
+					})
+				: await enqueueScenes({
+						editor,
+						sceneIds: sceneIds ?? [editor.scenes.getActiveScene().id],
+						action,
+						options,
+					});
+			applyState(value);
+			toast.success("Scene edits queued. You can continue in any scene.");
 		} finally {
-			release?.();
 			preparing.current = false;
-			setPreparingProjectId(null);
 		}
 	};
+
 	const finishWorker = (id: string) => {
 		setWorkers((prev) => prev.filter((w) => w.run.id !== id));
 		void refresh().catch(() => {});
@@ -300,6 +332,28 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 				onOpenBatch={() => setOpen(true)}
 				onCancel={cancel}
 			/>
+
+			{state.runs.some(
+				(r) =>
+					r.executor === "window" &&
+					r.jobs.some((j) => ["ready", "running"].includes(j.status)),
+			) &&
+				!state.runs.some(
+					(r) =>
+						r.executor === "window" &&
+						r.workerHeartbeatAt &&
+						polledAt - r.workerHeartbeatAt < 180_000 &&
+						r.jobs.some((j) => ["ready", "running"].includes(j.status)),
+				) && (
+					<a
+						href={sceneWorkerUrl()}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="fixed bottom-3 right-3 z-50 rounded border bg-background px-3 py-1 text-xs"
+					>
+						Open background editor
+					</a>
+				)}
 
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -425,9 +479,9 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 							edge feather.
 						</p>
 						<p className="text-xs text-muted-foreground">
-							You can keep using the app. Automatic edits show live progress and
-							stay read-only until their job stops. Keep this app tab open while
-							editing runs. You can add more projects to the queue.
+							עריכות של סצנות רצות בחלון ״עריכות ברקע״ ויש להשאיר אותו פתוח.
+							אפשר לעבור בין סצנות ולרענן את העורך. בייבוא קבוצת סרטונים יש
+							להשאיר גם את הלשונית הזו פתוחה. אפשר להוסיף עבודות לתור.
 						</p>
 						{!isLoading && !status.authenticated && (
 							<Button variant="outline" onClick={login}>
@@ -491,15 +545,35 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 												{job.message}
 											</p>
 											<div className="flex gap-4">
+												{job.sourceProjectId &&
+													["failed", "interrupted"].includes(job.status) && (
+														<button
+															className="text-xs underline"
+															onClick={() => {
+																openSceneWorker({ runs: state.runs });
+																void batchRequest({
+																	action: "retry",
+																	id: run.id,
+																	ownerId: queueOwner(),
+																})
+																	.then(refresh)
+																	.catch((e) => toast.error(String(e)));
+															}}
+														>
+															Resume saved edit
+														</button>
+													)}
 												{job.created && (
 													<Link
-														href={`/editor/${job.projectId}`}
+														href={`/editor/${job.sourceProjectId ?? job.projectId}`}
 														onClick={() => setOpen(false)}
 														className="text-xs underline"
 													>
-														{batchEditIsLocked({ status: job.status })
-															? "View live · read-only"
-															: "Open project"}
+														{job.sourceProjectId
+															? "Open source · editable"
+															: batchEditIsLocked({ status: job.status })
+																? "View live · read-only"
+																: "Open project"}
 													</Link>
 												)}
 												{batchEditIsLocked({ status: job.status }) && (

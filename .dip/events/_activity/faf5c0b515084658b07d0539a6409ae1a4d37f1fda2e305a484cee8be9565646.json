@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "faf5c0b515084658b07d0539a6409ae1a4d37f1fda2e305a484cee8be9565646",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:02:33.909Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__ai____tests____subject-framing-source.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__batch__progress-view.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__batch__scene-checkpoint.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__core____tests____canonical-scene-automation.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__ai____tests____timeline-document-v2.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__core__managers____tests____playback-manager.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__core__managers____tests____playback-preparation.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__core__managers____tests____timeline-manager-preview.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/src__services__storage____tests____project-source-roundtrip.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/configured-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4fc138f1-c8aa-4fef-b1a8-cc5ade2b8290"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:02:33.910Z",
+  "parents": [],
+  "branch": "main"
+}

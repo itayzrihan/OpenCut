@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "667741336a9d738efd42fb83ce8880870fc32324049d7c830bcc9f3ad6db1062",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:03.736Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short -uno | head -65\nrg -n 'createSceneEdits|recoverSceneWorker' classic/apps/web/src/batch/server.ts\nsed -n '395,410p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\ncat classic/apps/web/src/editor/snapshot.ts | head -75",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-12ffc5c5-1485-4bca-9078-26132face844"
+      },
+      {
+        "at": "2026-10-20T18:49:03.919Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short -uno | head -65\nrg -n 'createSceneEdits|recoverSceneWorker' classic/apps/web/src/batch/server.ts\nsed -n '395,410p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\ncat classic/apps/web/src/editor/snapshot.ts | head -75",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-12ffc5c5-1485-4bca-9078-26132face844"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:04.711Z",
+  "parents": [],
+  "branch": "main"
+}

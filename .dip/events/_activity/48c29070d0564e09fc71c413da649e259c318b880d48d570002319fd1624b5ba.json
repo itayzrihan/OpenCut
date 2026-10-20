@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48c29070d0564e09fc71c413da649e259c318b880d48d570002319fd1624b5ba",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:56:43.939Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "kill -TERM 98966\npython3 - <<'PY'\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read();s=s.replace('''r.jobs.some((j) => j.status === \"interrupted\") &&\n\t\t\t\t\t\tr.jobs.every((j) => !batchEditIsLocked({ status: j.status }))''','''r.jobs.every((j) => !batchEditIsLocked({ status: j.status }))''');s=s.replace('// A crashed frame cannot send its finish message. Retire it after lease expiry.','// Terminal jobs have already saved/released ownership (or never started).\\n\\t\\t// Retire their frames even if a cancelled worker cannot send its finish message.');open(p,'w').write(s)\nPY\nrg -n 'expired|interrupted|every' classic/apps/web/src/batch/provider.tsx | head -7\ncat .local/scene-ai-queue-2026-10-20/wasm-tests.log | tail -12\ncat .local/scene-ai-queue-2026-10-20/native-lifecycle-tests.log | tail -8",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-668a1663-3ac1-4073-b504-4a0188dcb743"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:56:44.024Z",
+  "parents": [],
+  "branch": "main"
+}

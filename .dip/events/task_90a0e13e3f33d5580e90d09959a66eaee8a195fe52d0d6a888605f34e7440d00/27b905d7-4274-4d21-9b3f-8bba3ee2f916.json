@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27b905d7-4274-4d21-9b3f-8bba3ee2f916",
+  "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+  "type": "task.update",
+  "payload": {
+    "title": "Repair durable scene AI edit queue and batch sequence actions",
+    "acceptance": [
+      "Full Auto Edit survives scene switching and reload without losing completed work; fix observed reload cause",
+      "Serial durable queue displays waiting scene jobs in Background Edits",
+      "Assets multi-scene context actions enqueue Full Auto and existing individual AI actions",
+      "Deploy and verify current project without harming original scenes/captions"
+    ],
+    "scope": [
+      "classic/apps/web/src",
+      "crates/editor-api",
+      ".dip",
+      "analysis/scene-ai-queue-2026-10-20"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T18:35:21.176Z",
+  "parents": [
+    "08c95b07-5fb5-43a3-b1c4-b117e62fb298"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f5ae30a92b936dafa6cb7994a0b03f058b9f57e3c3b1a4bdf51b8c5cff815e8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:56:25.696Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-scene-ai-queue.mjs');s=p.read_text().replace(\"run('cargo',['test'\", \"run('node',['--test','classic/scripts/local-production/prune-releases.test.mjs']);\\nrun('cargo',['test'\",1);p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-aee161f3-4e79-4aea-b354-7a0831f2dd32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:56:25.698Z",
+  "parents": [],
+  "branch": "main"
+}

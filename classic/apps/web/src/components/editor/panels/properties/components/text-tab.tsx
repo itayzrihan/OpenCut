@@ -31,7 +31,7 @@ export function TextTab({
 }) {
 	const editor = useEditor();
 	const canvasSize = useEditorProject(
-		(current) => current.project.getActive().settings.canvasSize,
+		(current) => current.project.getActiveForScene().settings.canvasSize,
 	);
 	const targets = (
 		elementsWithTracks ?? [{ track: { id: trackId }, element }]

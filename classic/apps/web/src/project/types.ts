@@ -20,6 +20,7 @@ export interface TCanvasSize {
 }
 
 export interface TProjectMetadata {
+	automationWorkingCopy?: boolean;
 	id: string;
 	name: string;
 	thumbnail?: string;
@@ -85,7 +86,9 @@ export interface AiEditPlanRecord {
 }
 
 export interface TProject {
- transcriptionEngine?: import("@/transcription/job").TranscriptionEngine;
+	automationEdits?: import("@/batch/scene-jobs").SceneJob[];
+	automationCheckpoint?: number;
+	transcriptionEngine?: import("@/transcription/job").TranscriptionEngine;
 	transcriptionJobs?: import("@/transcription/job").TranscriptionJob[];
 	hyperframesCompositions?: Record<string, HyperframesComposition>;
 	metadata: TProjectMetadata;

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "403bb91973b7a865b720912edc40e66e0c65396abc7f102d3004140816231706",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:36:28.583Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/server.test.ts",
+          "classic/apps/web/src/batch/provider.tsx",
+          ".local/scene-ai-queue-2026-10-20/format-window-tests.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "78777ccb-a40a-48d1-88fa-7f2583ed0bfd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:36:28.585Z",
+  "parents": [],
+  "branch": "main"
+}

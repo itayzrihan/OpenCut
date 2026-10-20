@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6dd21ef66fc35a95d889ea404fcf139b9ef0733e3eb6d2146d7d27a7ac0230f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:24:45.611Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'scratch.file\\(' classic/apps/web/src | head -18; cat classic/apps/web/src/export/disk-target.ts | head -85; sed -n '1,95p' classic/apps/web/src/export/scratch.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b854d1f3-aaf0-4e18-aba5-a9bc21357ec7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:24:45.613Z",
+  "parents": [],
+  "branch": "main"
+}

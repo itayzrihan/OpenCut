@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0182885780c0ba2c29606bca62c30f6dda515cf2bb2b85bae240153cbaf48996",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:07:29.915Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/regressions.log",
+          ".local/scene-ai-queue-2026-10-20/regressions",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__ai____tests____subject-framing-source.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__batch__progress-view.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__batch__scene-checkpoint.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/regressions/src__ai____tests____full-auto-edit-takes.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8ee308a5-ee95-42bc-9559-5f126b373a12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:07:29.916Z",
+  "parents": [],
+  "branch": "main"
+}

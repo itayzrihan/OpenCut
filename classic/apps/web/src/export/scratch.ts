@@ -22,20 +22,30 @@ export class ExportScratch {
 		// Reclaim abandoned/completed exports after a day. An active export in
 		// another tab is protected by its lease, including exports over 24 hours.
 		if (navigator.locks) {
-			for await (const name of parent.keys()) {
-				const created = Number(name.split("-")[0]);
-				if (!Number.isFinite(created) || Date.now() - created < 86400000)
-					continue;
-				await navigator.locks.request(
-					`opencut-export-${name}`,
-					{ ifAvailable: true },
-					async (lock) => {
-						if (lock)
-							await parent
-								.removeEntry(name, { recursive: true })
-								.catch(() => undefined);
-					},
-				);
+			try {
+				// Snapshot before mutation: deleting entries while advancing an OPFS
+				// directory iterator can invalidate its cached filesystem state.
+				const names: string[] = [];
+				for await (const name of parent.keys()) names.push(name);
+				for (const name of names) {
+					const created = Number(name.split("-")[0]);
+					if (!Number.isFinite(created) || Date.now() - created < 86400000)
+						continue;
+					await navigator.locks.request(
+						`opencut-export-${name}`,
+						{ ifAvailable: true },
+						async (lock) => {
+							if (lock)
+								await parent
+									.removeEntry(name, { recursive: true })
+									.catch(() => undefined);
+						},
+					);
+				}
+			} catch (error) {
+				// Expiry cleanup is housekeeping. A stale iterator or another tab's
+				// concurrent removal must never prevent a fresh transcription/export.
+				console.warn("Old audio scratch cleanup skipped", String(error));
 			}
 		}
 		const name = `${Date.now()}-${crypto.randomUUID()}`;

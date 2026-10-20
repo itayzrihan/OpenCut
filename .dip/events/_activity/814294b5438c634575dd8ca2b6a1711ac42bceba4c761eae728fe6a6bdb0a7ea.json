@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "814294b5438c634575dd8ca2b6a1711ac42bceba4c761eae728fe6a6bdb0a7ea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:07:28.527Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/subject-framing-source.test.ts src/batch/server.test.ts src/batch/worker.test.ts src/batch/progress-view.test.ts src/batch/scene-checkpoint.test.ts src/ai/__tests__/full-auto-edit-resume.test.ts src/ai/__tests__/full-auto-edit-takes.test.ts src/core/__tests__/canonical-scene-automation.test.ts src/ai/__tests__/timeline-document-v2.test.ts src/core/managers/__tests__/playback-manager.test.ts src/core/managers/__tests__/playback-preparation.test.ts src/core/managers/__tests__/timeline-manager-preview.test.ts src/services/storage/__tests__/project-source-roundtrip.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/regressions > .local/scene-ai-queue-2026-10-20/regressions.log 2>&1\ngit diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5fcc4c54-6b2b-4d66-999a-659aedc78b44"
+      },
+      {
+        "at": "2026-10-20T19:07:29.757Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'ownerId|sourceProjectId|automation' classic/apps/web/src/batch/server.ts | tail -18\ncat .local/scene-ai-queue-2026-10-20/deployment.json\nrg -n 'settings.*value|projectSettings.*value' classic/apps/web/src/core/managers/commands.ts | head -8\nrg -n '^\\s*export' classic/apps/web/src/batch/scene-jobs.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-25d110a8-be5a-4b08-a00d-e0dd05feebc5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:07:29.916Z",
+  "parents": [],
+  "branch": "main"
+}

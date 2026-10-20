@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1322f386392c8d3b4572126a0309dea247f9884e31b7da223d1f21934077a297",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:26.721Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/api/batch-edit/route.ts",
+          "classic/apps/web/src/batch/automation-progress.tsx",
+          "classic/apps/web/src/batch/progress-view.ts",
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/batch/scene-checkpoint.ts",
+          "classic/apps/web/src/batch/server.test.ts",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/batch/worker.ts",
+          "classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+          "classic/apps/web/src/components/editor/panels/properties/components/text-placement-tab.tsx",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts",
+          "classic/apps/web/src/core/managers/scenes-manager.ts",
+          "classic/apps/web/src/editor/use-editor.ts",
+          "classic/apps/web/src/preview/components/offline-media.tsx",
+          "classic/apps/web/src/preview/components/panel-with-overlays.tsx",
+          "classic/apps/web/src/preview/components/toolbar.tsx",
+          "classic/apps/web/src/preview/hooks/use-preview-interaction.ts",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/subtitles/components/assets-view.tsx",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx",
+          "classic/apps/web/src/timeline/hooks/element/use-element-interaction.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-drag-drop.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-playhead.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-resize.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-seek.ts",
+          "classic/apps/web/src/batch/scene-jobs.ts",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "caf06466-5450-46e5-a083-c8e4b7d130fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:26.723Z",
+  "parents": [],
+  "branch": "main"
+}

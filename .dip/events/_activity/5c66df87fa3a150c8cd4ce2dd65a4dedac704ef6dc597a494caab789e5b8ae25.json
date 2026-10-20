@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5c66df87fa3a150c8cd4ce2dd65a4dedac704ef6dc597a494caab789e5b8ae25",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:43:25.159Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_settings.rs",
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/ai/timeline-tools.ts",
+          "classic/apps/web/src/actions/use-editor-actions.ts",
+          "classic/apps/web/src/subtitles/caption-tracks.ts",
+          "classic/apps/web/src/subtitles/insert.ts",
+          "classic/apps/web/src/subtitles/auto-texts.ts",
+          "classic/apps/web/src/masks/use-mask-handles.ts",
+          "classic/apps/web/src/masks/components/masks-tab.tsx",
+          "classic/apps/web/src/timeline/components/timeline-playhead.tsx",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx",
+          "classic/apps/web/src/timeline/hooks/use-timeline-playhead.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-resize.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-drag-drop.ts",
+          "classic/apps/web/src/timeline/hooks/use-timeline-seek.ts",
+          "classic/apps/web/src/timeline/hooks/element/use-keyframe-drag.ts",
+          "classic/apps/web/src/timeline/hooks/element/use-element-interaction.ts",
+          "classic/apps/web/src/subtitles/components/assets-view.tsx",
+          "classic/apps/web/src/commands/timeline/element/move-elements.ts",
+          "classic/apps/web/src/ai/components/ai-chat-view.tsx",
+          "classic/apps/web/src/ai/components/ai-range-dialog.tsx",
+          "classic/apps/web/src/components/editor/panels/properties/components/text-tab.tsx",
+          "classic/apps/web/src/components/editor/panels/properties/components/text-placement-tab.tsx",
+          "classic/apps/web/src/backgrounds/components/assets-view.tsx",
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "classic/apps/web/src/core/managers/scenes-manager.ts",
+          "classic/apps/web/src/core/managers/playback-manager.ts",
+          "classic/apps/web/src/preview/components/guide-popover.tsx",
+          "classic/apps/web/src/preview/components/preview-viewport.tsx",
+          "classic/apps/web/src/preview/components/snap-guides.tsx",
+          "classic/apps/web/src/preview/preview-snap.ts",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "dc86e772-6acc-4fd0-af71-7acdd4d55031"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:43:25.161Z",
+  "parents": [],
+  "branch": "main"
+}

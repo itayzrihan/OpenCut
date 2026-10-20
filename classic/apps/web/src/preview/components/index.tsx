@@ -62,7 +62,7 @@ import { Button } from "@/components/ui/button";
 
 function usePreviewSize() {
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive()?.settings.canvasSize,
+		(e) => e.project.getActiveForScene()?.settings.canvasSize,
 	);
 	const activeScene = useEditorTimelineScenes((e) =>
 		e.scenes.getActiveSceneOrNull(),
@@ -142,7 +142,7 @@ function RenderTreeController() {
 		e.scenes.getActiveScene(),
 	]);
 	const mediaAssets = useEditorMedia((e) => e.media.getAssets());
-	const activeProject = useEditorProject((e) => e.project.getActive());
+	const activeProject = useEditorProject((e) => e.project.getActiveForScene());
 	const hyperframesResourceRevision = useEditorRenderer((e) =>
 		e.renderer.getHyperframesResourceRevision(),
 	);
@@ -219,7 +219,7 @@ function PreviewCanvas({
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
 	const playbackProbe = useMemo(() => new PreviewPlaybackProbe(), []);
-	const activeProject = useEditorProject((e) => e.project.getActive());
+	const activeProject = useEditorProject((e) => e.project.getActiveForScene());
 	const renderTree = useEditorRenderer((e) => e.renderer.getRenderTree());
 	const videoLookaheadRef = useRef<VideoLookahead | null>(null);
 	useEffect(() => {

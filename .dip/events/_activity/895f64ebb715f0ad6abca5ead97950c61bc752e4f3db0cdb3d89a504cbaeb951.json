@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "895f64ebb715f0ad6abca5ead97950c61bc752e4f3db0cdb3d89a504cbaeb951",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:17:02.897Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/__tests__/scratch.test.ts <<'EOF'\n/* eslint-disable @typescript-eslint/no-unsafe-type-assertion, opencut/prefer-object-params -- Platform handle doubles. */\nimport {test,expect} from 'bun:test';\nimport {ExportScratch} from '../scratch';\n\nasync function fixture({brokenIterator=false}={}) {\n const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');\n const warn=console.warn;\n const old=`${Date.now()-172800000}-old`, active=`${Date.now()-172800000}-active`;\n const removed:string[]=[];\n const warnings:string[]=[];\n let iterating=false;\n const parent={\n  async *keys(){\n   if(brokenIterator) throw new DOMException('Cached directory state changed','NotReadableError');\n   iterating=true;\n   try {for(const name of [old,active]){if(removed.length)throw new DOMException('Iterator invalidated by deletion','NotReadableError');yield name;}}\n   finally {iterating=false;}\n  },\n  removeEntry:async(name:string)=>{expect(iterating).toBe(false);removed.push(name);},\n  getDirectoryHandle:async(name:string)=>({name}),\n };\n Object.defineProperty(globalThis,'navigator',{configurable:true,value:{\n  storage:{getDirectory:async()=>({getDirectoryHandle:async()=>parent})},\n  locks:{request:async(name:string,options:unknown,callback?: (lock:unknown)=>unknown)=>callback ? callback(name.endsWith('-active')?null:{}) : (options as ()=>unknown)()},\n }});\n console.warn=(...args:unknown[])=>{warnings.push(args.join(' '));};\n try {\n  const scratch=await ExportScratch.create();\n  expect(removed).not.toContain(active);\n  expect(removed).toEqual(brokenIterator?[]:[old]);\n  expect(warnings.length).toBe(brokenIterator?1:0);\n  await scratch.dispose();\n } finally {\n  console.warn=warn;\n  if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);\n  else Reflect.deleteProperty(globalThis,'navigator');\n }\n}\ntest('snapshots expired scratch names before deletion and protects another tab lease',()=>fixture());\ntest('a stale OPFS directory iterator never p",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1c7556c5-4350-46cf-9143-14c53dc01a31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:17:02.899Z",
+  "parents": [],
+  "branch": "main"
+}

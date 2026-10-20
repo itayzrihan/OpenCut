@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75e54ac9353f9faf4e3923f30d479df4da94a00198549b1d5e3e86c42f64f393",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:14:25.760Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,os\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/e77b1f2c-5eb6-4022-8030-313d538d342a/media/index.json'\na=next(m for m in json.load(open(p)) if m['id']=='eb86620a-ed01-4c37-86e0-18f156c77473')\ns=os.stat(a['sourcePath'])\nwith open(a['sourcePath'],'rb') as f:\n f.seek(42_000_000); data=f.read(4096)\nprint(json.dumps({'recordedBytes':a['size'],'actualBytes':s.st_size,'sampleBytesRead':len(data),'mtimeNs':s.st_mtime_ns}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-bb1d89d1-856c-4bae-8131-bd311a119155"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:14:25.764Z",
+  "parents": [],
+  "branch": "main"
+}

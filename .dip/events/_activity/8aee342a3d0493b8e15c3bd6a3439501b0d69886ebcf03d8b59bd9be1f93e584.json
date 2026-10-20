@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8aee342a3d0493b8e15c3bd6a3439501b0d69886ebcf03d8b59bd9be1f93e584",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:56:33.124Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/scene-ai-queue-2026-10-20/build.log\nps -p 98966 -o pid=,command=\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-scene-automation.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/wasm-tests > .local/scene-ai-queue-2026-10-20/wasm-tests.log 2>&1\ncargo test -q --manifest-path classic/Cargo.toml -p timeline batch_edit > .local/scene-ai-queue-2026-10-20/native-lifecycle-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-dada2c8c-a273-462b-9760-f96fbbe2f32f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:56:33.984Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -293,7 +293,7 @@ export function Captions() {
 	const editor = useEditor();
 	const { status: aiStatus, login: loginToAi } = useAiOAuthStatus();
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveForScene().settings.canvasSize,
 	);
 
 	const transcriptionState = useEditorTranscription((e) =>
@@ -558,7 +558,7 @@ export function Captions() {
 			tracks: activeScene.tracks,
 			words: source.words,
 			settings,
-			canvasSize: editor.project.getActive().settings.canvasSize,
+			canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 			layerCount: source.layerCount,
 			preserveEditedElements: false,
 		});
@@ -630,7 +630,7 @@ export function Captions() {
 				tracks: before,
 				words: corrected.words,
 				settings: source.settings,
-				canvasSize: editor.project.getActive().settings.canvasSize,
+				canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 				layerCount: source.layerCount,
 				preserveEditedElements: false,
 			});
@@ -736,7 +736,7 @@ export function Captions() {
 					tracks: after,
 					words: canonicalWords,
 					settings: cutSource.settings,
-					canvasSize: editor.project.getActive().settings.canvasSize,
+					canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 					layerCount: cutSource.layerCount,
 					preserveEditedElements: false,
 				});
@@ -826,7 +826,7 @@ export function Captions() {
 				tracks: before,
 				words: source.words,
 				settings: nextSettings,
-				canvasSize: editor.project.getActive().settings.canvasSize,
+				canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 				layerCount: source.layerCount,
 				preserveEditedElements: false,
 			});

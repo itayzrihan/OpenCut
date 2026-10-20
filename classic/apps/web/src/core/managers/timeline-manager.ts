@@ -378,7 +378,10 @@ export class TimelineManager {
 
 	getLastFrameTime(): MediaTime {
 		const duration = this.getTotalDuration();
-		const fps = this.editor.project.getActive()?.settings.fps;
+		const fps = (
+			this.editor.project.getActiveForScene?.() ??
+			this.editor.project.getActive()
+		)?.settings.fps;
 		if (!fps || duration <= 0) return duration;
 		return lastFrameMediaTime({ duration, fps });
 	}

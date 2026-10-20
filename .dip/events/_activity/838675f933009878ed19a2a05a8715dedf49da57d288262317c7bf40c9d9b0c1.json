@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "838675f933009878ed19a2a05a8715dedf49da57d288262317c7bf40c9d9b0c1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:36:56.635Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'canvasSize' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/preview | head -40\nsed -n '55,120p' classic/apps/web/src/project/types.ts\nrg -n 'export.*TScene|interface.*Scene' classic/apps/web/src/timeline/types.ts\nsed -n '590,657p' classic/apps/web/src/services/storage/service.ts\nsed -n '1,200p' classic/apps/web/src/core/canonical-classic-session.ts\nrg -n 'getActive\\(|settings|setScenes|canonical' classic/apps/web/src/core/managers/commands.ts | head -55\nrg --files classic/apps/web/src/ai/components | head -25\nsed -n '148,228p' classic/apps/web/src/ai/subject-framing.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-65826dfc-ef49-4626-a3e0-ff1daa09efe1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:36:56.688Z",
+  "parents": [],
+  "branch": "main"
+}

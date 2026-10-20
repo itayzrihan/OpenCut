@@ -19,6 +19,7 @@ import { loadBundledAssistantBold } from "@/fonts/bundled-fonts";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
+	action?: import("@/batch/scene-jobs").SceneAction;
 	brandKitId?: string;
 	/** Host-resolved immutable recipe; never accepted from a queue request. */
 	brandKit?: BrandKit;
@@ -70,11 +71,15 @@ export async function runFullAutoEdit({
 	let fontFamily = "";
 	const notes: string[] = [];
 	const steps = fullAutoEditStages(options);
+	const durableWorker =
+		editor.project.getActiveOrNull?.()?.automationCheckpoint !== undefined;
 	if (
 		resumeFromStage !== 0 &&
 		(!Number.isInteger(resumeFromStage) ||
-			resumeFromStage < 3 ||
-			resumeFromStage >= steps.length)
+			resumeFromStage < 0 ||
+			(!durableWorker && resumeFromStage < 3) ||
+			resumeFromStage > steps.length ||
+			(!durableWorker && resumeFromStage === steps.length))
 	)
 		throw new Error("Invalid automatic editing checkpoint");
 	const assertContext = () => {
@@ -208,12 +213,13 @@ export async function runFullAutoEdit({
 					}
 					break;
 				}
+				case "center-subject":
 				case "framing": {
 					const framed = await runLocalSubjectFraming({
 						editor,
 						signal,
 						onProgress: progress,
-						mode: "framing",
+						mode: stage === "center-subject" ? "center-subject" : "framing",
 					});
 					notes.push(...framed.warnings);
 					break;
@@ -311,6 +317,15 @@ export async function runFullAutoEdit({
 					await editor.save.flush();
 					break;
 			}
+			if (
+				editor.project.getActiveOrNull?.()?.automationCheckpoint !== undefined
+			) {
+				const { automationControl } = await import("@/batch/scene-jobs");
+				automationControl({
+					editor,
+					change: { type: "checkpoint", completed: index + 1 },
+				});
+			}
 			// A stage is complete only once its canonical project and history are durable.
 			if (stage !== "save") await editor.save.flush();
 			await editor.command.flushHistory();
@@ -321,6 +336,7 @@ export async function runFullAutoEdit({
 				message: `Completed ${stage}`,
 			});
 		} catch (error) {
+			console.error("Automatic edit stage failed", { stage, error });
 			const detail = error instanceof Error ? error.message : "Unknown error";
 			throw new Error(
 				`${stage}: ${signal.aborted ? "Cancelled" : detail}. Completed stages remain in the timeline and can be undone; nothing was exported.`,

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f86f1f7c545e7e8d628c5f0c641bd2f36e4eb0f2aa815cb0ef01c1e44724aa16",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:02.720Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_automation.rs",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f0fbc832-1270-434c-a58c-98a7e26d4a7e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:02.722Z",
+  "parents": [],
+  "branch": "main"
+}

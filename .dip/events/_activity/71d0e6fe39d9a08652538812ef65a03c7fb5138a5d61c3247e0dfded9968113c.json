@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71d0e6fe39d9a08652538812ef65a03c7fb5138a5d61c3247e0dfded9968113c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:54:21.957Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re,json\npat=re.compile(r'(?<![A-Za-z0-9_])(sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{30,}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN .*PRIVATE KEY-----)')\nfiles=subprocess.check_output(['git','diff','--cached','--name-only','--','.dip'],text=True).splitlines()\nfor f in files:\n s=subprocess.check_output(['git','show',':'+f],text=True)\n matches=list(pat.finditer(s))\n if matches:\n  print(json.dumps({'file':f,'matches':[{'prefix':m.group()[:7],'length':len(m.group()),'preceding':s[max(0,m.start()-25):m.start()]} for m in matches[:2]]}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8511f11f-1318-4be2-b8b3-79930641107c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:54:21.960Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -9,6 +9,9 @@ export type BatchJobStatus =
 	| "cancelled"
 	| "interrupted";
 export interface BatchJob {
+	sourceProjectId?: string;
+	automationJobId?: string;
+	action?: import("./scene-jobs").SceneAction;
 	resumeFromStage?: number;
 	source?: "existing" | "import";
 	projectId: string;
@@ -23,6 +26,8 @@ export interface BatchJob {
 	completedStages: number;
 }
 export interface BatchRun {
+	executor?: "iframe" | "window";
+	workerHeartbeatAt?: number;
 	kind?: "single" | "batch";
 	createdAt?: number;
 	id: string;

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b94bb1efcc5c8f4ba01a71d0f5ba2eb4e33b8a3584299ef8744e0cd9115b8cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:34:55.457Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.build.tsbuildinfo",
+          ".local/scene-ai-queue-2026-10-20/types.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests",
+          ".local/scene-ai-queue-2026-10-20/window-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/window-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6ea87f76-d1ef-4733-8739-ff38542a3134"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:34:55.458Z",
+  "parents": [],
+  "branch": "main"
+}

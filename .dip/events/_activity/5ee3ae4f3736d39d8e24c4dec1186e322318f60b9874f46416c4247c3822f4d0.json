@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ee3ae4f3736d39d8e24c4dec1186e322318f60b9874f46416c4247c3822f4d0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:48:43.691Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/playback-manager.ts",
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7c8ce4c2-5219-4015-98b2-9c434535c130"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:48:43.693Z",
+  "parents": [],
+  "branch": "main"
+}

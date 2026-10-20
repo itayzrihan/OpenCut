@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "39279bd880ab565e00ca97a1f9febcbd43d68d20bebb3f01376cf31bb0746837",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:51:37.547Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/scene-jobs.ts';s=open(p).read();a=s.index('export async function publishSceneResults');s=s[:a].replace('}});','});')+s[a:];open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/{scene-jobs,provider,server,server.test}.ts* classic/apps/web/src/ai/{full-auto-edit.ts,__tests__/subject-framing-source.test.ts} > .local/scene-ai-queue-2026-10-20/format.log 2>&1\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-924389de-48d3-4697-afbe-d09af7bf7bf5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:51:37.665Z",
+  "parents": [],
+  "branch": "main"
+}

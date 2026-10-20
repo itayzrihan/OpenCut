@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a313781b3271d2c362e65e27096b32a54d75d07c9efddc35ef6c7033798708e4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:14:59.579Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nq=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'));print([{'id':r['id'],'status':r['jobs'][0]['status'],'stages':r['jobs'][0]['completedStages']} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])])\nPY\nnode .local/scene-ai-queue-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e809f4c4-fcd7-430a-8f69-b7b6b026fd0b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:15:00.418Z",
+  "parents": [],
+  "branch": "main"
+}

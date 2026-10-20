@@ -124,7 +124,7 @@ export class MoveElementCommand extends Command {
 				trackId: targetTrackId,
 				elementId,
 			})),
-			canvasSize: editor.project.getActive().settings.canvasSize,
+			canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 		});
 		updatedTracks = syncTextLayerWordsIntoCaptionSource({
 			tracks: updatedTracks,

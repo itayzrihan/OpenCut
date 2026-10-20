@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b7ad6fe496dfcfd2538c08a2f36076eaca9664c2b60700dccf04856a1cd6c51b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:58:00.059Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -7 .local/scene-ai-queue-2026-10-20/build.log\nrg --files classic/apps/web/src | rg '(settings.*view|project-settings|settings-panel|settings\\.tsx)$'\nnode classic/scripts/test-web.mjs src/ai/__tests__/subject-framing-source.test.ts src/batch/server.test.ts src/batch/worker.test.ts src/batch/progress-view.test.ts src/batch/scene-checkpoint.test.ts src/ai/__tests__/full-auto-edit-resume.test.ts src/ai/__tests__/full-auto-edit-takes.test.ts src/core/__tests__/canonical-scene-automation.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/final-host-tests > .local/scene-ai-queue-2026-10-20/final-host-tests.log 2>&1\ncargo test -q -p opencut-editor-api --test classic_scenes --test classic_export > .local/scene-ai-queue-2026-10-20/native-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-37643d1e-4865-4fba-b77d-fbc7fca63486"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:58:00.437Z",
+  "parents": [],
+  "branch": "main"
+}

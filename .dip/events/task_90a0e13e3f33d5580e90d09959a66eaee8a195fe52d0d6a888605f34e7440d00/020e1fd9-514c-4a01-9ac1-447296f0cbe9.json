@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "020e1fd9-514c-4a01-9ac1-447296f0cbe9",
+  "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Canonical scene capture/checkpoint/publication and Assets multi-selection implemented. Production standalone window worker is actually processing original first two saved jobs: first reached stage6 after source editor reload during local transcription, second auto-resumes after prior queue timeout. Six baseline scenes/settings independently remain exact. 16 Rust +63 host/WASM tests and TS passed before final waiting-lease correction; added passing regression (64 host total) proving waiting scene jobs never expire. Final small UI+waiting-lease build18166 running. Need complete2 jobs, deploy finalcandidate, preview/preservation evidence, configuredfinishcheck, commit/push.",
+    "next": "Observe active job2c3c stage6 and next61c7, finish live outputs; don't create additional jobs or restart current worker.",
+    "head": "70d8e8b44cf8f7b18dd81e69ce5611e252554097"
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T19:44:38.528Z",
+  "parents": [
+    "186d2637-11d6-483a-97f9-3bda8bad9692"
+  ],
+  "branch": "main"
+}

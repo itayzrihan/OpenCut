@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99e1bf21-a876-4ad1-98db-f5e5941dce65",
+  "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Deployed isolated durable scene AI queue, native immutable source capture/checkpoints/new-scene publication, serial background window and multi-select eight AI actions. Live main-tab reload and scene switching preserved work and waiting queue. Both jobs completed 10/10 and saved as new 1080x1920 scenes, reopened and previewed; all six source scenes and project settings exactly unchanged. Added bounded 128 MiB short mixed-audio storage fallback, robust lease ownership and safe generated-release retention. Final configured check verifies tests, TypeScript, live results and exact deployed product source fingerprint.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Representative playback checked; no export or exhaustive human listening. First output used centered-cover fallback when local face sampling failed; independent detector smoke now passed five frames."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Scene worker survives main editor reload and scene changes while separate background window remains open. Closing the worker/browser pauses execution; retry resumes durable completed stages."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Browser profile disk-storage opener remains unavailable; short mixed-audio jobs have bounded 128 MiB PCM fallback. Larger edited mixes require functioning browser disk storage."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T20:51:38.183Z",
+  "parents": [
+    "957da024-ec32-453c-8d8a-994b9c9d782e"
+  ],
+  "branch": "main"
+}

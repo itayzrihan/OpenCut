@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8e754a89a76850d1d0665ac960d2a5aa6f4289865dc2ca59911b5696f9b8712c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:42:36.547Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/eslint/bin/eslint.js src/batch/standalone-worker.tsx src/batch/window-worker.ts src/batch/scene-jobs.ts src/batch/provider.tsx src/app/batch-worker/page.tsx src/app/batch-worker/layout.tsx src/ai/components/full-auto-edit-button.tsx > /Users/itayzrihan/Documents/PoCut/.local/scene-ai-queue-2026-10-20/lint.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-24c25ca9-a2fa-4570-8bed-4c0b12683b50"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:42:36.549Z",
+  "parents": [],
+  "branch": "main"
+}

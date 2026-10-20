@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af7f025969d6618e5d6efa996e2f98ef89346b36320745101ac8551c75c44db9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:37:34.956Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,subprocess,base64\nroot=Path('.local/scene-ai-queue-2026-10-20/framing-probe');root.mkdir(exist_ok=True)\nindex=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/803317ca-3b4b-48c4-a759-298178ab212f/media/index.json')\na=next(m for m in json.loads(index.read_text()) if m['id']=='ef2b3936-e827-43f0-925f-9e8828e38355')\nsubprocess.run(['ffmpeg','-v','error','-ss','130','-i',a['sourcePath'],'-vf','fps=1/2,scale=640:-2','-frames:v','5',str(root/'frame-%02d.jpg')],check=True)\n(root/'input.json').write_text(json.dumps({'frames':[base64.b64encode(p.read_bytes()).decode() for p in sorted(root.glob('frame-*.jpg'))]}))\nr=subprocess.run(['classic/.local/subject-framing/bin/python','classic/scripts/local-subject-framing/detect.py',str(root/'input.json'),str(root/'output.json')],capture_output=True,text=True)\nif r.returncode: print(json.dumps({'detectorSucceeded':False,'exit':r.returncode,'errorTail':r.stderr[-1200:]}))\nelse:\n data=json.loads((root/'output.json').read_text());print(json.dumps({'detectorSucceeded':True,'frames':len(data.get('frames',[])),'faces':sum(len(f.get('faces',[])) for f in data.get('frames',[]))}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-555bb897-262a-4093-a503-31c734a23a9a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:37:34.961Z",
+  "parents": [],
+  "branch": "main"
+}

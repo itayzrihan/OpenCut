@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6628074b8a70226090677d680a5ec32f0bfc48359efc84def1aba73de72835df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:55:46.091Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions.log",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions/src__core__managers____tests____playback-manager.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions/src__core__managers____tests____playback-preparation.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions/src__core__managers____tests____timeline-manager-preview.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions/src__services__storage____tests____project-source-roundtrip.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/scene-settings-regressions/summary.json",
+          ".local/scene-ai-queue-2026-10-20/native-lifecycle-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "30390940-ef1f-474b-a677-ee73555b8238"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:55:46.096Z",
+  "parents": [],
+  "branch": "main"
+}

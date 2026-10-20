@@ -1,14 +1,28 @@
 /* eslint-disable opencut/prefer-object-params -- Internal filesystem adapters mirror platform handle, buffer and offset APIs. */
-/** Interleaved float PCM on disk. Only the requested window enters RAM. */
+/** Interleaved float PCM in job-owned storage. Only bounded windows enter the decoder. */
+export interface PcmWriter {
+	write(data: {
+		type: "write";
+		position: number;
+		data: Uint8Array<ArrayBuffer>;
+	}): Promise<void>;
+	truncate(size: number): Promise<void>;
+	close(): Promise<void>;
+	abort(): Promise<void>;
+}
+export interface PcmStorage {
+	createWritable(): Promise<PcmWriter>;
+	getFile(): Promise<File>;
+}
 export class PcmFile {
 	private snapshot?: File;
-	private writer?: FileSystemWritableFileStream;
+	private writer?: PcmWriter;
 	private pending = new Uint8Array(0);
 	private pendingLength = 0;
 	private pendingStart = 0;
 	frames = 0;
 	constructor(
-		readonly handle: FileSystemFileHandle,
+		readonly handle: PcmStorage,
 		readonly sampleRate: number,
 		readonly channels: number,
 	) {}
@@ -113,11 +127,32 @@ export class PcmFile {
 		const first = Math.max(0, startFrame);
 		const last = Math.min(this.frames, startFrame + length);
 		if (last <= first) return output;
-		const data = new Float32Array(
-			await this.snapshot
-				.slice(first * this.channels * 4, last * this.channels * 4)
-				.arrayBuffer(),
-		);
+		const readWindow = () =>
+			this.snapshot!.slice(
+				first * this.channels * 4,
+				last * this.channels * 4,
+			).arrayBuffer();
+		let bytes: ArrayBuffer;
+		try {
+			bytes = await readWindow();
+		} catch (error) {
+			// Chromium can invalidate an OPFS File snapshot while its handle is
+			// still valid. Refresh only that sealed, job-owned file, once. Never
+			// retry changed-length PCM or restart the complete transcription.
+			if (
+				!(error instanceof DOMException) ||
+				!["NotReadableError", "InvalidStateError"].includes(error.name)
+			)
+				throw error;
+			const fresh = await this.handle.getFile();
+			if (fresh.size !== this.frames * this.channels * 4)
+				throw new Error(
+					"Sealed audio scratch file changed size; retry this saved edit",
+				);
+			this.snapshot = fresh;
+			bytes = await readWindow();
+		}
+		const data = new Float32Array(bytes);
 		for (let channel = 0; channel < this.channels; channel++) {
 			const dest = output.getChannelData(channel);
 			for (let i = 0; i < last - first; i++)

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f2adcd2717be9062693f306e4afbe75b242d85584a58e9dcdf274df812ff5c61",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:34:01.390Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/window-worker.ts",
+          "classic/apps/web/src/batch/types.ts",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/app/api/batch-edit/route.ts",
+          "classic/apps/web/src/batch/provider.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d4172665-82d5-47c2-ab2e-248f4a9c4184"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:34:01.393Z",
+  "parents": [],
+  "branch": "main"
+}

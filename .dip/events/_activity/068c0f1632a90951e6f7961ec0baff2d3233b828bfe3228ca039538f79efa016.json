@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "068c0f1632a90951e6f7961ec0baff2d3233b828bfe3228ca039538f79efa016",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:43:03.106Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/project-manager.ts",
+          "classic/apps/web/src/preview/preview-snap.ts",
+          "classic/apps/web/src/preview/preview-coords.ts",
+          "classic/apps/web/src/preview/render-size.ts",
+          "classic/apps/web/src/preview/overlays.ts",
+          "classic/apps/web/src/preview/preview-store.ts",
+          "classic/apps/web/src/preview/hit-test.ts",
+          "classic/apps/web/src/preview/element-bounds.ts",
+          "classic/apps/web/src/preview/safe-area-overlay.tsx",
+          "classic/apps/web/src/preview/zoom.ts",
+          "classic/apps/web/src/preview/video-lookahead.ts",
+          "classic/apps/web/src/preview/components/text-edit-overlay.tsx",
+          "classic/apps/web/src/preview/components/index.tsx",
+          "classic/apps/web/src/preview/components/preview-interaction-overlay.tsx",
+          "classic/apps/web/src/preview/components/mask-handles.tsx",
+          "classic/apps/web/src/preview/components/guide-popover.tsx",
+          "classic/apps/web/src/preview/components/panel-with-overlays.tsx",
+          "classic/apps/web/src/preview/components/transform-handles.tsx",
+          "classic/apps/web/src/preview/components/handle-primitives.tsx",
+          "classic/apps/web/src/preview/components/toolbar.tsx",
+          "classic/apps/web/src/preview/components/overlay-layer.tsx",
+          "classic/apps/web/src/preview/components/offline-media.tsx",
+          "classic/apps/web/src/preview/components/preview-viewport.tsx",
+          "classic/apps/web/src/preview/components/snap-guides.tsx",
+          "classic/apps/web/src/preview/components/cursors.ts",
+          "classic/apps/web/src/preview/components/context-menu.tsx",
+          "classic/apps/web/src/preview/hooks/use-transform-handles.ts",
+          "classic/apps/web/src/preview/hooks/use-preview-interaction.ts",
+          "classic/apps/web/src/preview/controllers/preview-interaction-controller.ts",
+          "classic/apps/web/src/preview/controllers/transform-handle-controller.ts",
+          "classic/apps/web/src/core/managers/renderer-manager.ts",
+          "classic/apps/web/src/editor/use-editor.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8ababb74-fc28-4fce-b9a9-9cee1ce29778"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:43:03.110Z",
+  "parents": [],
+  "branch": "main"
+}

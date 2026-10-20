@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6be9b617d1ea732f49b3c59dbfc88d41826d823bd793370ed21d2f721d9a470a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:53:07.732Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_scenes.rs",
+          "classic/apps/web/src/batch/server.test.ts",
+          "classic/apps/web/src/batch/server.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d74b074d-e933-4f35-9e14-a84fd9472217"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:53:07.733Z",
+  "parents": [],
+  "branch": "main"
+}

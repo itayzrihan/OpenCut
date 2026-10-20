@@ -801,6 +801,7 @@ export class CanonicalClassicSession {
 	}
 
 	updateSettings(input: {
+		sceneId?: string;
 		settings: Partial<import("@/project/types").TProjectSettings>;
 		historyGroup?: string;
 	}): void {

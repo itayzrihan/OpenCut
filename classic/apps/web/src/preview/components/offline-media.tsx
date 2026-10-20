@@ -9,7 +9,9 @@ import {
 export function OfflineMediaPanel() {
 	const editor = useEditor();
 	const assets = useEditorMedia((e) => e.media.getAssets());
-	const projectId = useEditorProject((e) => e.project.getActive()?.metadata.id);
+	const projectId = useEditorProject(
+		(e) => e.project.getActiveForScene()?.metadata.id,
+	);
 	const [open, setOpen] = useState(false);
 	const [paths, setPaths] = useState<Record<string, string>>({});
 	const [busy, setBusy] = useState(false);

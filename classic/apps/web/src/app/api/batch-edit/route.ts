@@ -12,6 +12,9 @@ import {
 	createBatch,
 	updateBatch,
 	cancelBatch,
+	createSceneEdits,
+	recoverSceneWorker,
+	retrySceneEdit,
 } from "@/batch/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,6 +33,24 @@ const options = z
 	})
 	.strict();
 const schema = z.discriminatedUnion("action", [
+	z.object({
+		action: z.literal("retry"),
+		id: z.string().uuid(),
+		ownerId: z.string().uuid(),
+	}),
+	z.object({
+		action: z.literal("scenes"),
+		projectId: z.string().uuid(),
+		jobIds: z.array(z.string().uuid()).min(1).max(100),
+		ownerId: z.string().uuid(),
+	}),
+	z.object({
+		action: z.literal("recover"),
+		executor: z.enum(["iframe", "window"]).optional(),
+		workerId: z.string().uuid().optional(),
+		ownerId: z.string().uuid(),
+		activeRunId: z.string().uuid().optional(),
+	}),
 	z.object({ action: z.literal("pick") }),
 	z.object({
 		action: z.literal("project"),
@@ -87,6 +108,12 @@ async function POSTHandler(request: Request) {
 		const raw = await request.text();
 		if (raw.length > 50000) throw new Error("Batch request too large");
 		const body = schema.parse(JSON.parse(raw));
+		if (body.action === "retry")
+			return NextResponse.json(await retrySceneEdit(body));
+		if (body.action === "scenes")
+			return NextResponse.json(await createSceneEdits(body));
+		if (body.action === "recover")
+			return NextResponse.json(await recoverSceneWorker(body));
 		if (body.action === "pick")
 			return NextResponse.json(
 				(await chooseFiles())

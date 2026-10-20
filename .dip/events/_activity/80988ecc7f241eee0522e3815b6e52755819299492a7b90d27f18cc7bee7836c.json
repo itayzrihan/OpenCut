@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "80988ecc7f241eee0522e3815b6e52755819299492a7b90d27f18cc7bee7836c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:37:34.276Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm-opt.wasm",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/apps/web/.hyperframes-references/prepared/4c4b8574406cc566d28778a13f22c072d727a871/scroll-feed/evidence/frame-2.png",
+          "classic/apps/web/.hyperframes-references/prepared/4c4b8574406cc566d28778a13f22c072d727a871/scroll-feed/evidence/frame-1.png",
+          "classic/apps/web/.hyperframes-references/prepared/4c4b8574406cc566d28778a13f22c072d727a871/scroll-feed/evidence/source.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "dde31701-7ab0-4b31-b66d-9c431d7c56ac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:37:34.277Z",
+  "parents": [],
+  "branch": "main"
+}

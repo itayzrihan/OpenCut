@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd4912703a4652804d684b32c053c5c8637c3a5701ab36ef2665dbc5391c9026",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:50:48.584Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/subject-framing-source.test.ts",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/src__ai____tests____subject-framing-source.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "db8c548f-ab97-481f-a5a5-c9166258f5e5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:50:48.587Z",
+  "parents": [],
+  "branch": "main"
+}

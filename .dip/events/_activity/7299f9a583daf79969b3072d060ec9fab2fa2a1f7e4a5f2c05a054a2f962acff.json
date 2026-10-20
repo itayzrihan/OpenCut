@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7299f9a583daf79969b3072d060ec9fab2fa2a1f7e4a5f2c05a054a2f962acff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:35:38.239Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '210,340p' classic/apps/web/src/batch/worker.ts\nsed -n '240,430p' classic/apps/web/src/batch/server.ts\ncat classic/apps/web/src/batch/read-only.ts\ncat classic/apps/web/src/ai/full-auto-edit.ts\nrg -n 'batch|automation|reload|location' classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/batch/provider.tsx\nrg --files classic/apps/web/src/editor | rg 'assets|sequence'\nrg -l 'Sequence' classic/apps/web/src/editor --glob '*.tsx' | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6519ebb3-5682-43ad-bd76-1d6ab967a6e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:35:38.274Z",
+  "parents": [],
+  "branch": "main"
+}

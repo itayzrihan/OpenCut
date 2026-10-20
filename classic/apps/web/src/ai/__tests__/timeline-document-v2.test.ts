@@ -90,6 +90,21 @@ beforeEach(() => {
 });
 
 describe("Timeline Source v2 web adapter", () => {
+	test("scene canvas projects independently without changing project defaults", () => {
+		const { project, scene } = createRichFixture();
+		const original = structuredClone(project.settings);
+		scene.settings = {
+			...project.settings,
+			canvasSize: { width: 1080, height: 1920 },
+		};
+		const result = buildTimelineDocumentV2({ project, scene });
+		expect(result.valid).toBe(true);
+		expect(JSON.parse(result.formattedText).projectSettings.canvasSize).toEqual(
+			{ width: 1080, height: 1920 },
+		);
+		expect(project.settings).toEqual(original);
+	});
+
 	test("builds an ordered full-fidelity document and strips only AudioBuffer", () => {
 		const { project, scene } = createRichFixture();
 

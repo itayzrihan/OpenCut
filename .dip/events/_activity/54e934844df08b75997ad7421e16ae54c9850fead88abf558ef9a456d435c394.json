@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54e934844df08b75997ad7421e16ae54c9850fead88abf558ef9a456d435c394",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:59:33.774Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/panels/assets/views/settings/index.tsx",
+          "classic/apps/web/src/ai/timeline-document-v2.ts",
+          ".local/scene-ai-queue-2026-10-20/format-settings.log",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "848966d3-f4bf-481c-9ee8-59912d874735"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:59:33.778Z",
+  "parents": [],
+  "branch": "main"
+}

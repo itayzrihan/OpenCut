@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11f564375ba36f78796e33ef626d926543e0c2e88d16ad77ef8e1048852643d4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:27:41.439Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/export/__tests__/audio-scratch.test.ts');s=p.read_text().replace('@typescript-eslint/no-unsafe-type-assertion -- Native AudioBuffer test double.', '@typescript-eslint/no-unsafe-type-assertion, opencut/prefer-object-params -- Native AudioBuffer test double.');p.write_text(s)\np=Path('.dip/tools/verify-scene-ai-queue.mjs');s=p.read_text().replace(\"'src/export/__tests__/scratch.test.ts'\", \"'src/export/__tests__/audio-scratch.test.ts','src/export/__tests__/scratch.test.ts'\");p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/pcm-file.ts classic/apps/web/src/export/__tests__/audio-scratch.test.ts\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8fe0c597-5953-40e5-8db5-48485a7cb8b3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:27:41.441Z",
+  "parents": [],
+  "branch": "main"
+}

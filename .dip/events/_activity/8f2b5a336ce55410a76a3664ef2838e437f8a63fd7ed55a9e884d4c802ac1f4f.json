@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8f2b5a336ce55410a76a3664ef2838e437f8a63fd7ed55a9e884d4c802ac1f4f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:40:37.821Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/app/batch-worker/page.tsx\ncat classic/apps/web/src/batch/worker-readiness.ts\nsed -n '1300,1325p' classic/apps/web/src/core/managers/project-manager.ts\nsed -n '1,120p' classic/apps/web/src/ai/automatic-zoom.ts\nrg -n 'transcri|audio.*file|prepare' classic/apps/web/src/subtitles/auto-texts.ts | head -28",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2d20c76f-8cb5-4bdc-882d-cfc940838c34"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:40:37.896Z",
+  "parents": [],
+  "branch": "main"
+}

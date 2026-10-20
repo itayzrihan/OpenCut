@@ -64,7 +64,7 @@ export function useTransformHandles({
 			: null;
 	const selectedMediaAsset = useEditorMediaAsset({ mediaId: selectedMediaId });
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveForScene().settings.canvasSize,
 	);
 	const deps: TransformHandleDeps = {
 		viewport,

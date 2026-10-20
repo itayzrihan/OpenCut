@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f91b94db7f30125d5b2da7e92217860454c861d296072475706219504305445",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:40:38.890Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/app/api/batch-edit/route.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c9932756-8b26-409b-bc26-1c5f57f97ed8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:40:38.892Z",
+  "parents": [],
+  "branch": "main"
+}

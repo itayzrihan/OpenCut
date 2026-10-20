@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "18261c041e38ff88285eb211657f9caa9c72435e51a75f97d39f1e6e6d1b4c2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:06:30.494Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/components/editor/panels/assets/views/assets.tsx';s=open(p).read();a=s.index('function SequenceItem(');s=s[:a]+s[a:].replace('const [editAction, setEditAction] = useState<SceneAction | null>(null);','const [editAction, setEditAction] = useState<SceneAction | null>(null);\\n\\tconst [editSceneIds,setEditSceneIds]=useState<string[]>([scene.id]);',1).replace('<ContextMenu>','<ContextMenu onOpenChange={open=>{if(open)setEditSceneIds(ids);}}>',1).replace('sceneIds={ids}','sceneIds={editSceneIds}',1);open(p,'w').write(s)\np='classic/apps/web/src/ai/components/full-auto-edit-button.tsx';s=open(p).read().replace('<div className=\"mb-4 space-y-2 rounded-md border p-3\">','<div className={hideTrigger?undefined:\"mb-4 space-y-2 rounded-md border p-3\"}>',1).replace('<p className=\"text-xs text-muted-foreground\">\\n\\t\\t\\t\\tVertical','{!hideTrigger && <p className=\"text-xs text-muted-foreground\">\\n\\t\\t\\t\\tVertical',1).replace('finishing.\\n\\t\\t\\t</p>','finishing.\\n\\t\\t\\t</p>}',1);open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/components/editor/panels/assets/views/assets.tsx classic/apps/web/src/ai/components/full-auto-edit-button.tsx > .local/scene-ai-queue-2026-10-20/format-selection.log 2>&1\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3466e903-d0a8-4157-bb7e-38ccfdc92785"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:06:31.147Z",
+  "parents": [],
+  "branch": "main"
+}

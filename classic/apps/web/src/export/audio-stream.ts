@@ -19,8 +19,9 @@ import {
 import type { SceneTracks } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import { TICKS_PER_SECOND } from "@/wasm";
-import { ExportScratch, checkExportDiskSpace } from "./scratch";
+import { checkExportDiskSpace } from "./scratch";
 import { PcmFile } from "./pcm-file";
+import type { AudioScratch } from "./audio-scratch";
 import { streamPitchPreserved } from "./pitch-stream";
 import { exportSourceWindows } from "./audio-source-windows";
 
@@ -73,7 +74,7 @@ export async function prepareExportAudio({
 	mediaAssets: MediaAsset[];
 	duration: number;
 	additionalClips: AudioClipSource[];
-	scratch: ExportScratch;
+	scratch: AudioScratch;
 	signal: AbortSignal;
 	onProgress: (progress: number, phase: string) => void;
 }): Promise<ExportAudioStream | undefined> {
@@ -127,7 +128,12 @@ export async function prepareExportAudio({
 			0,
 		) +
 		seconds * EXPORT_AUDIO_RATE * 2 * 4;
-	await checkExportDiskSpace(estimate + 64 * 1024 ** 2);
+	if (scratch.capacityBytes !== undefined) {
+		if (estimate > scratch.capacityBytes)
+			throw new Error(
+				"This audio mix exceeds the bounded memory fallback. Restore browser temporary storage and resume this saved edit.",
+			);
+	} else await checkExportDiskSpace(estimate + 64 * 1024 ** 2);
 	const sourcePcm = new Map<
 		string,
 		Array<{ pcm: PcmFile; origin: number; end: number }>
@@ -231,7 +237,11 @@ export async function prepareExportAudio({
 					sourceReport(index, 1, true);
 				} catch (error) {
 					await pcm?.abort();
-					throw error;
+					if (signal.aborted) throw error;
+					throw new Error(
+						`Reading source audio: ${error instanceof Error ? error.message : String(error)}`,
+						{ cause: error },
+					);
 				} finally {
 					signal.removeEventListener("abort", abort);
 					input.dispose();
@@ -391,7 +401,11 @@ export async function prepareExportAudio({
 					clipReport(index, 1, true);
 				} catch (error) {
 					await pcm.abort();
-					throw error;
+					if (signal.aborted) throw error;
+					throw new Error(
+						`Processing edited audio: ${error instanceof Error ? error.message : String(error)}`,
+						{ cause: error },
+					);
 				}
 			},
 			stopJobs,
@@ -454,7 +468,11 @@ export async function prepareExportAudio({
 			await mix.seal();
 		} catch (error) {
 			await mix.abort();
-			throw error;
+			if (signal.aborted) throw error;
+			throw new Error(
+				`Mixing scene audio: ${error instanceof Error ? error.message : String(error)}`,
+				{ cause: error },
+			);
 		}
 		// Preserve the whole-timeline mastering decision, rather than toggling the
 		// compressor on/off independently for loud and quiet windows.

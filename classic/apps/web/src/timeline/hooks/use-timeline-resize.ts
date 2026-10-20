@@ -40,7 +40,8 @@ export function useTimelineResize({
 		isShiftHeld: () => isShiftHeldRef.current,
 		getSceneTracks: () => editor.scenes.getActiveScene().tracks,
 		getCurrentPlayheadTime: () => editor.playback.getCurrentTime(),
-		getActiveProjectFps: () => editor.project.getActive()?.settings.fps ?? null,
+		getActiveProjectFps: () =>
+			editor.project.getActiveForScene()?.settings.fps ?? null,
 		selectedElements,
 		discardPreview: () => editor.timeline.discardPreview(),
 		previewElements: (updates) =>

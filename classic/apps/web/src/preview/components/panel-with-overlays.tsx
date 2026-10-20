@@ -34,7 +34,9 @@ export function PreviewPanelWithOverlays() {
 		editor.scenes.getActiveSceneOrNull(),
 		editor.timeline.getTotalDuration(),
 	]);
-	const project = useEditorProject((editor) => editor.project.getActive());
+	const project = useEditorProject((editor) =>
+		editor.project.getActiveForScene(),
+	);
 	const cameraManPhase = useCameraManStore((state) => state.phase);
 	const cameraManSceneId = useCameraManStore((state) => state.sceneId);
 	const cameraManCurrent = useCameraManStore((state) => state.current);

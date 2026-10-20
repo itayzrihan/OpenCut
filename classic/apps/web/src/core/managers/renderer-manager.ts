@@ -81,7 +81,7 @@ export class RendererManager {
 	}) {
 		this.updateHyperframesCache();
 		return this.hyperframesCache.readManifest({
-			project: this.editor.project.getActive(),
+			project: this.editor.project.getActiveForScene(),
 			assetId,
 			signal,
 		});
@@ -95,7 +95,7 @@ export class RendererManager {
 		signal?: AbortSignal;
 	}): Promise<AudioClipSource[]> {
 		this.updateHyperframesCache();
-		const project = this.editor.project.getActive();
+		const project = this.editor.project.getActiveForScene();
 		if (!Object.keys(project.hyperframesCompositions ?? {}).length) return [];
 		const projection = await this.editor.command.readHyperframesAudioClips({
 			projectId: project.metadata.id,
@@ -170,7 +170,7 @@ export class RendererManager {
 	}: PlaybackPreparationContext): Promise<void> => {
 		await this.waitForFreshRenderTree({ signal });
 		const renderTree = this.renderTree;
-		const fps = this.editor.project.getActive()?.settings.fps;
+		const fps = this.editor.project.getActiveForScene()?.settings.fps;
 		if (!renderTree || !fps || signal.aborted) return;
 
 		const framesPerSecond = fps.numerator / fps.denominator;
@@ -332,7 +332,7 @@ export class RendererManager {
 	} = {}): Promise<SnapshotResult> {
 		try {
 			const renderTree = this.getRenderTree();
-			const activeProject = this.editor.project.getActive();
+			const activeProject = this.editor.project.getActiveForScene();
 
 			if (!renderTree || !activeProject) {
 				return { success: false, error: "No project or scene to capture" };
@@ -458,7 +458,7 @@ export class RendererManager {
 			const activeScene = this.editor.scenes.getActiveScene();
 			const tracks = activeScene.tracks;
 			const mediaAssets = this.editor.media.getAssets();
-			const activeProject = this.editor.project.getActive();
+			const activeProject = this.editor.project.getActiveForScene();
 			const missing: string[] = JSON.parse(
 				mediaMissingUsed({
 					projectJson: JSON.stringify(this.editor.scenes.getScenes()),

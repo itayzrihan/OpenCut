@@ -95,7 +95,7 @@ export function buildTimelineDocumentV2({
 		return canonicalizeJson({
 			json: serializeTimelineDocumentV2ForCore({
 				document: {
-					projectSettings: project.settings,
+					projectSettings: scene.settings ?? project.settings,
 					scene: {
 						id: scene.id,
 						name: scene.name,

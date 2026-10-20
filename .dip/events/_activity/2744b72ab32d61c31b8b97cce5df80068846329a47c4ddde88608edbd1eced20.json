@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2744b72ab32d61c31b8b97cce5df80068846329a47c4ddde88608edbd1eced20",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:24:19.013Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/worker-host.tsx';s=open(p).read().replace('const [saveFailure, setSaveFailure] = useState(\"\");','const [saveFailure, setSaveFailure] = useState(\"\");\\n\\tconst [bootState,setBootState]=useState(\"loading\");');s=s.replace('if (event.data?.type === \"opencut-batch-ready\") onReady?.();','if (event.data?.type === \"opencut-batch-ready\") {setBootState(\"ready\");onReady?.();}');s=s.replace('started = true;\\n\\t\\t\\t\\tclearTimeout(deadline);','started = true;\\n\\t\\t\\t\\tsetBootState(\"started\");\\n\\t\\t\\t\\tclearTimeout(deadline);');s=s.replace('window.addEventListener(\"message\", receive);\\n\\t\\treturn () => {','''window.addEventListener(\"message\", receive);\n        // Hidden documents may throttle timers. Readiness is also requested by\n        // the visible host, rather than depending on the child's interval.\n        const ping=setInterval(()=>{\n            if(!started&&!ended)frame.current?.contentWindow?.postMessage({type:\"opencut-batch-probe\"},location.origin);\n        },1000);\n\t\treturn () => {\n            clearInterval(ping);''');s=s.replace('ref={frame}\\n\\t\\t\\t\\tsrc=','ref={frame}\\n\\t\\t\\t\\tdata-worker-state={bootState}\\n\\t\\t\\t\\tonLoad={()=>{setBootState(previous=>previous===\"started\"?previous:\"document-loaded\");frame.current?.contentWindow?.postMessage({type:\"opencut-batch-probe\"},location.origin);}}\\n\\t\\t\\t\\tsrc=');open(p,'w').write(s)\np='classic/apps/web/src/app/batch-worker/page.tsx';s=open(p).read().replace('const handle = (event: MessageEvent) => {','''const handle = (event: MessageEvent) => {\n            if(event.origin===location.origin&&event.source===parent&&event.data?.type===\"opencut-batch-probe\"){ready();return;}\n''');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/worker-host.tsx classic/apps/web/src/app/batch-worker/page.tsx > .local/scene-ai-queue-2026-10-20/format-handshake.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-87a5d0d7-cb22-44e2-991c-fe553c580c5b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:24:19.287Z",
+  "parents": [],
+  "branch": "main"
+}

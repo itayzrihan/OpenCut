@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4e5c9be21a741f3b0d1bc40afe83689bd376c16fe885f00c5eac6b8eab18a5db",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:42:41.311Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/lint.log; head -10 .local/scene-ai-queue-2026-10-20/check.log; git diff -- classic/apps/web/src/core/managers/scenes-manager.ts classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/batch/provider.tsx | head -190",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d34beadb-7f8b-4dae-838c-b2ecd281cb0d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:42:41.313Z",
+  "parents": [],
+  "branch": "main"
+}

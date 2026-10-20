@@ -195,6 +195,8 @@ pub(crate) fn validate_settings(settings: &Value) -> Result<(), String> {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SettingsInput {
+    #[serde(default)]
+    scene_id: Option<String>,
     project_id: String,
     expected_revision: u64,
     settings: SettingsPatch,
@@ -214,7 +216,7 @@ pub(super) fn register_classic_settings(
         crate::CapabilityExecution::Immediate,
         "project.classic.settings.update",
         "Update Classic project settings",
-        "Change Classic timeline track controls width (80..480 pixels; absent defaults to 112), canvas dimensions, rational FPS, color/CSS gradient or blur background, canvas preset/custom mode and remembered original/custom dimensions. Supply only changed settings; each supplied object replaces that setting. Explicit null clears remembered dimensions. Does not scale or retime clips. Preserves all other project fields/media/sources. Requires projectId and expectedRevision; supports undo/redo, dry run, exact retries and atomic transactions. Optional historyGroup coalesces an uninterrupted UI gesture into one undo boundary; agent edits normally omit it. Every preview remains a validated committed revision, and any intervening edit or undo breaks coalescing.",
+        "Optionally target sceneId for a scene with independent settings (base project settings remain unchanged). Change Classic timeline track controls width (80..480 pixels; absent defaults to 112), canvas dimensions, rational FPS, color/CSS gradient or blur background, canvas preset/custom mode and remembered original/custom dimensions. Supply only changed settings; each supplied object replaces that setting. Explicit null clears remembered dimensions. Does not scale or retime clips. Preserves all other project fields/media/sources. Requires projectId and expectedRevision; supports undo/redo, dry run, exact retries and atomic transactions. Optional historyGroup coalesces an uninterrupted UI gesture into one undo boundary; agent edits normally omit it. Every preview remains a validated committed revision, and any intervening edit or undo breaks coalescing.",
         "project",
         AccessLevel::Write,
         false,
@@ -274,13 +276,26 @@ pub(super) fn register_classic_settings(
                                 "Classic settings require a Classic project".into(),
                             )
                         })?;
-                        let settings = classic
-                            .document
-                            .get_mut("settings")
-                            .and_then(Value::as_object_mut)
-                            .ok_or_else(|| {
-                                CapabilityError::InvalidInput("invalid Classic settings".into())
-                            })?;
+                        let target = if let Some(id) = &input.scene_id {
+                            classic.document["scenes"]
+                                .as_array_mut()
+                                .unwrap()
+                                .iter_mut()
+                                .find(|s| s["id"] == *id)
+                                .and_then(|s| s.get_mut("settings"))
+                                .ok_or_else(|| {
+                                    CapabilityError::InvalidInput(
+                                        "Scene has no independent settings".into(),
+                                    )
+                                })?
+                        } else {
+                            classic.document.get_mut("settings").ok_or_else(|| {
+                                CapabilityError::InvalidInput("Missing settings".into())
+                            })?
+                        };
+                        let settings = target.as_object_mut().ok_or_else(|| {
+                            CapabilityError::InvalidInput("invalid Classic settings".into())
+                        })?;
                         settings.extend(updates.clone());
                         classic.document.get_mut("metadata").unwrap()["updatedAt"] =
                             Value::String(now);

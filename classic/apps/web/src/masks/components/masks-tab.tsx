@@ -115,7 +115,7 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 				: null,
 	});
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveForScene().settings.canvasSize,
 	);
 	const masks = element.masks ?? [];
 	const renderMasks = renderElement.masks ?? masks;

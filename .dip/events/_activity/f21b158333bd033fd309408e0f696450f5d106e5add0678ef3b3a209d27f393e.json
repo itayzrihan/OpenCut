@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f21b158333bd033fd309408e0f696450f5d106e5add0678ef3b3a209d27f393e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:21:50.802Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/export/__tests__/scratch.test.ts');s=p.read_text().replace('@typescript-eslint/no-unsafe-type-assertion, opencut/prefer-object-params','@typescript-eslint/no-unsafe-type-assertion');p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-405ad21d-77b4-4019-91ca-6fc7e35fd0fd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:21:50.805Z",
+  "parents": [],
+  "branch": "main"
+}

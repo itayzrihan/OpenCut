@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e166fcb92ded912b5b3023790c89f93effc1ab7039f390ee0891fe0a6f4fca6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+    "records": [
+      {
+        "at": "2026-10-20T18:30:46.642Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+        "taskId": "task_7ee200621cb3a3faa2de8781b92815fe234e5a2db2a938da49843bf39a8954a9",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain | head -50; git log --all --since='2026-10-19' --oneline --decorate; git log --all --grep='teaser\\|strategic' --oneline -10",
+        "recordId": "codex:01a15a94-37c3-7a52-ad2f-56a31ff04b70:PreToolUse:exec-304b2956-ebc3-4f1a-a7a9-f202baf03a67"
+      },
+      {
+        "at": "2026-10-20T18:30:46.850Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+        "taskId": "task_7ee200621cb3a3faa2de8781b92815fe234e5a2db2a938da49843bf39a8954a9",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain | head -50; git log --all --since='2026-10-19' --oneline --decorate; git log --all --grep='teaser\\|strategic' --oneline -10",
+        "recordId": "codex:01a15a94-37c3-7a52-ad2f-56a31ff04b70:PostToolUse:exec-304b2956-ebc3-4f1a-a7a9-f202baf03a67"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:30:46.993Z",
+  "parents": [],
+  "branch": "main"
+}

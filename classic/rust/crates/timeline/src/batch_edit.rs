@@ -14,6 +14,8 @@ pub fn batch_edit_transition(o: BatchEditTransitionOptions) -> String {
         ("queued", "import") => "importing",
         ("importing", "ready") => "ready",
         ("ready", "run") => "running",
+        ("ready" | "running" | "interrupted", "recover") => "ready",
+        ("failed" | "interrupted", "retry") => "ready",
         ("running", "complete") => "completed",
         ("queued" | "importing" | "ready" | "running", "fail") => "failed",
         ("queued" | "importing" | "ready" | "running", "cancel") => "cancelled",
@@ -77,4 +79,11 @@ mod tests {
             assert_eq!(step(s, "interrupt"), "interrupted");
         }
     }
+    #[test]
+    fn recovery_fences_only_resumable_work() {
+        for status in ["ready","running","interrupted"] {assert_eq!(step(status,"recover"),"ready");}
+        for status in ["failed","interrupted"] {assert_eq!(step(status,"retry"),"ready");}
+        for status in ["completed","cancelled"] {assert_eq!(step(status,"recover"),"");assert_eq!(step(status,"retry"),"");}
+    }
+
 }

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d367be3c7447dcfcb855633101ea277b5111b409a33634135f2f3f593a4f140",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:59:44.499Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'file:|getFile|OPFS|hydrate|loadProjectMedia' classic/apps/web/src/core/managers/media-manager.ts | head -50; sed -n '1,130p' classic/apps/web/src/media/unified-angles-audio.ts 2>/dev/null; rg -n -A45 'collectMediaAudioClip' classic/apps/web/src/media/audio.ts | head -55; rg -n 'audioAsset|file:' classic/apps/web/src/media/unified-angles.ts | tail -25",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d14a5ce6-c36a-4efb-a94f-df4d7ad8f1e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:59:44.505Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2f4c26b9a5ca0ea626be9a17f5382a4bd7e2ea176d5611cc302c96543cb76aeb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:49:50.735Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/export/__tests__/pcm-file.test.ts <<'EOF'\n\ntest(\"refreshes one invalidated OPFS snapshot without changing samples or retrying changed audio\", async () => {\n const f = file();\n const getFile = f.handle.getFile.bind(f.handle);\n let snapshots = 0;\n let wrongSize = false;\n f.handle.getFile = async () => {\n  snapshots++;\n  if (snapshots === 1) return {\n   slice: () => ({arrayBuffer: async () => {throw new DOMException(\"Cached file state changed\", \"NotReadableError\");}}),\n  } as unknown as File;\n  return wrongSize ? new File([], \"changed.pcm\") : getFile();\n };\n const pcm = new PcmFile(f.handle, 16000, 1);\n await pcm.open();\n const input = audio(1, 4, 16000);\n input.getChannelData(0).set([0.2, -0.3, 0.4, 0.5]);\n await pcm.write(input, 0);\n await pcm.seal();\n expect(Array.from((await pcm.read(context, 0, 4)).getChannelData(0))).toEqual(Array.from(input.getChannelData(0)));\n expect(snapshots).toBe(2);\n snapshots = 0;\n await pcm.open();\n await pcm.write(input, 0);\n await pcm.seal();\n wrongSize = true;\n await expect(pcm.read(context, 0, 4)).rejects.toThrow(\"changed size\");\n});\nEOF\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/pcm-file.ts classic/apps/web/src/export/__tests__/pcm-file.test.ts\nnode classic/scripts/test-web.mjs src/export/__tests__/pcm-file.test.ts src/export/__tests__/audio-quality.test.ts src/export/__tests__/audio-source-windows.test.ts --report=.local/scene-ai-queue-2026-10-20/pcm-check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9816e21e-d261-46d7-8c52-f172884b4987"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:49:50.737Z",
+  "parents": [],
+  "branch": "main"
+}

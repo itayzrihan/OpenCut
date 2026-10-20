@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "87d44c7512af11e9361ed62c7d831870d9539098273e690a9b18fba5e8e3fceb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:51:38.655Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/scene-jobs.ts",
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/batch/server.test.ts",
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          "classic/apps/web/src/ai/__tests__/subject-framing-source.test.ts",
+          ".local/scene-ai-queue-2026-10-20/format.log",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "48da310b-c8b2-40b1-8702-f5e94f8080d1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:51:38.656Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -78,6 +78,7 @@ mod classic_remove;
 mod classic_ripple;
 mod classic_ripple_delete;
 mod classic_scenes;
+pub(crate) mod classic_automation;
 mod classic_session;
 pub(crate) mod classic_settings;
 mod classic_source_audio;
@@ -177,6 +178,7 @@ pub(crate) fn register_all(
     classic_push_broll::register(registry, state.clone(), events.clone())?;
     classic_text_graphics::register(registry, state.clone(), events.clone())?;
     classic_scenes::register_classic_scene_operations(registry, state.clone(), events.clone())?;
+    classic_automation::register_classic_automation(registry, state.clone(), events.clone())?;
     classic_takes::register_classic_takes(registry, state.clone(), events.clone())?;
     classic_bookmarks::register_classic_bookmark_operations(
         registry,

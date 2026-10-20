@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c19c4f6715d887739b6fa38a4fe7c213c15b5998d4c675c68c277ed27134084c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:38.501Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,76p' classic/apps/web/src/ai/automatic-zoom.ts; sed -n '1,100p' classic/apps/web/src/core/managers/renderer-manager.ts; rg -n 'renderToCanvas' classic/apps/web/src/services/renderer/canvas-renderer.ts; rg -n 'capturePreviewFrameAt|setRenderTree|renderTree' classic/apps/web/src/batch/worker.ts classic/apps/web/src/core/managers/scenes-manager.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5667a5ea-3c3e-439f-9d3b-4fd529b6a9cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:38.504Z",
+  "parents": [],
+  "branch": "main"
+}

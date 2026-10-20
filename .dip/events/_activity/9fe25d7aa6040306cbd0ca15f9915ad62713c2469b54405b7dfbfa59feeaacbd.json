@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9fe25d7aa6040306cbd0ca15f9915ad62713c2469b54405b7dfbfa59feeaacbd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:45:03.295Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/automation-progress.tsx",
+          "crates/editor-api/src/operations/classic_export.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f5c37ca9-e504-498f-95fd-eb93eb00aac1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:45:03.298Z",
+  "parents": [],
+  "branch": "main"
+}

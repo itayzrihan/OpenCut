@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2152ebd1f4d30c87735909c96d23012bed1412f0c65527b587817d014ad25860",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:56:07.574Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/scripts/local-production/prune-releases.mjs <<'JS'\n// Generated deployment artifacts only. Never inspect or remove account/media data.\nimport {readdir, readFile, lstat, rm} from 'node:fs/promises';\nimport {join} from 'node:path';\nconst releaseName=/^\\d{4}-\\d{2}-\\d{2}T\\d{2}-\\d{2}-\\d{2}-\\d{3}Z-[a-f0-9]{8}$/;\nexport async function pruneReleases({deploymentRoot, keepRecent=3, dryRun=false}) {\n  if (!Number.isInteger(keepRecent) || keepRecent < 1) throw Error('Keep at least one recent release');\n  const root=join(deploymentRoot,'releases');\n  const releases=[];\n  for(const name of await readdir(root)) {\n    if(!releaseName.test(name)) continue;\n    const path=join(root,name);\n    if(!(await lstat(path)).isDirectory()) continue;\n    try {\n      const metadata=JSON.parse(await readFile(join(path,'release.json'),'utf8'));\n      if(metadata.id===name) releases.push(name);\n    } catch { /* Unknown or incomplete directories are never pruned. */ }\n  }\n  releases.sort().reverse();\n  const protectedIds=new Set(releases.slice(0,keepRecent));\n  for(const name of ['current.json','previous.json','candidate.json']) {\n    try { protectedIds.add(JSON.parse(await readFile(join(deploymentRoot,name),'utf8')).id); }\n    catch(error) { if(error.code!=='ENOENT') throw error; }\n  }\n  const removed=[];\n  for(const id of releases) {\n    if(protectedIds.has(id)) continue;\n    if(!dryRun) await rm(join(root,id),{recursive:true});\n    removed.push(id);\n  }\n  return {removed,retained:releases.filter(id=>protectedIds.has(id)),dryRun};\n}\nJS\ncat > classic/scripts/local-production/prune-releases.test.mjs <<'JS'\nimport {test} from 'node:test';\nimport assert from 'node:assert/strict';\nimport {mkdtemp,mkdir,writeFile,readdir,readFile,symlink,rm} from 'node:fs/promises';\nimport {join} from 'node:path';\nimport {tmpdir} from 'node:os';\nimport {pruneReleases} from './prune-releases.mjs';\ntest('retains active, rollback, candidate and newest releases; ignores unknown data and symlinks',async()=>{\n ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-65c5976c-60e7-4c1e-8efe-0b18d4892607"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:56:07.579Z",
+  "parents": [],
+  "branch": "main"
+}

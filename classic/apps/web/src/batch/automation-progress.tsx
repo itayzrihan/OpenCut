@@ -113,6 +113,7 @@ export function AutomationProgress({
 		stages,
 		completed,
 		totalVideos,
+		waiting,
 		ready,
 		stopped,
 		active,
@@ -155,6 +156,7 @@ export function AutomationProgress({
 								<h2 className="text-sm font-semibold">Background edits</h2>
 								<p className="text-xs text-muted-foreground mt-1">
 									{ready}/{totalVideos} videos ready
+									{waiting > 0 ? ` · ${waiting} waiting in queue` : ""}
 									{stopped > ready
 										? ` · ${stopped - ready} stopped`
 										: ""} · {completed}/{stages.length} stages in this video

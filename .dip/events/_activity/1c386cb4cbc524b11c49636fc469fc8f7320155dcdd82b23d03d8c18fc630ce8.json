@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1c386cb4cbc524b11c49636fc469fc8f7320155dcdd82b23d03d8c18fc630ce8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:52:05.208Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/scene-ai-queue-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b06386a5-ce41-44f7-8ba9-7268be5e8b31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:52:05.210Z",
+  "parents": [],
+  "branch": "main"
+}

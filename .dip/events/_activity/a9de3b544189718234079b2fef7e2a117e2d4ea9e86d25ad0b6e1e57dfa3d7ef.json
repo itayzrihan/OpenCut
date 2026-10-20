@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9de3b544189718234079b2fef7e2a117e2d4ea9e86d25ad0b6e1e57dfa3d7ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:45:29.804Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_export.rs",
+          "classic/apps/web/src/batch/scene-checkpoint.ts",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/app/api/batch-edit/route.ts",
+          "classic/apps/web/src/batch/provider.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d22e60ed-3af2-4d22-a684-c10bbb6d5fa3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:45:29.806Z",
+  "parents": [],
+  "branch": "main"
+}

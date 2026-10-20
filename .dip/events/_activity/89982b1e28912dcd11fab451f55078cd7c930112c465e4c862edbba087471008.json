@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89982b1e28912dcd11fab451f55078cd7c930112c465e4c862edbba087471008",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:04:18.110Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/14.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/14.pack",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fb596b40-de11-4bf3-aab6-bb746615c303"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:04:18.110Z",
+  "parents": [],
+  "branch": "main"
+}

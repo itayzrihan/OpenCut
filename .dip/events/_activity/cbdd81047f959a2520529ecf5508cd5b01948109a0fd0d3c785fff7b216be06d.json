@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cbdd81047f959a2520529ecf5508cd5b01948109a0fd0d3c785fff7b216be06d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:41:43.990Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/subject-framing.ts",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "91fe901c-e41f-49f3-92e0-a1c19b3e7b82"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:41:43.996Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -140,7 +140,7 @@ function BackgroundPresetItem({ preset }: { preset: BackgroundPreset }) {
 	});
 
 	const handleAddToTimeline = () => {
-		const canvasSize = editor.project.getActive().settings.canvasSize;
+		const canvasSize = editor.project.getActiveForScene().settings.canvasSize;
 		const element = buildGraphicElement({
 			definitionId: BACKGROUND_DEFINITION_ID,
 			name: preset.name,

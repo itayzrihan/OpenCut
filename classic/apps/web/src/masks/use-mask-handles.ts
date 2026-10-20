@@ -147,7 +147,7 @@ export function useMaskHandles({
 		shouldTrackPlaybackForMasks ? e.playback.getCurrentTime() : 0,
 	);
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveForScene().settings.canvasSize,
 	);
 	const selectedMediaId = useMemo(
 		() => getMediaIdForElement({ element: selectedMaskableElement }),

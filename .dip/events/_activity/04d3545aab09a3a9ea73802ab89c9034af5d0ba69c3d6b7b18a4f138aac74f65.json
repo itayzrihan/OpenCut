@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "04d3545aab09a3a9ea73802ab89c9034af5d0ba69c3d6b7b18a4f138aac74f65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:22:43.619Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nq=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'));print(json.dumps([{'id':r['id'],'status':r['jobs'][0]['status'],'stage':r['jobs'][0]['completedStages'],'message':r['jobs'][0]['message'],'tokenHash':hashlib.sha256(r['token'].encode()).hexdigest()} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])]))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-37ecd78b-8a81-4ea7-bbda-e82a082471e9"
+      },
+      {
+        "at": "2026-10-20T19:22:43.739Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nq=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'));print(json.dumps([{'id':r['id'],'status':r['jobs'][0]['status'],'stage':r['jobs'][0]['completedStages'],'message':r['jobs'][0]['message'],'tokenHash':hashlib.sha256(r['token'].encode()).hexdigest()} for r in q['runs'] if any(j.get('sourceProjectId') for j in r['jobs'])]))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-37ecd78b-8a81-4ea7-bbda-e82a082471e9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:22:44.076Z",
+  "parents": [],
+  "branch": "main"
+}

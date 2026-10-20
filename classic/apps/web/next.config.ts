@@ -28,7 +28,10 @@ const nextConfig: NextConfig = {
 			: []),
 	],
 	compiler: {
-		removeConsole: process.env.NODE_ENV === "production",
+		removeConsole:
+			process.env.NODE_ENV === "production"
+				? { exclude: ["error", "warn"] }
+				: false,
 	},
 	compress: runtimeTarget === "browser",
 	poweredByHeader: false,
@@ -55,7 +58,9 @@ const nextConfig: NextConfig = {
 	},
 	output: "standalone",
 	outputFileTracingIncludes: {
-        "/api/editor-agent/hyperframes-catalog-preview": ["./.hyperframes-references/**/*"],
+		"/api/editor-agent/hyperframes-catalog-preview": [
+			"./.hyperframes-references/**/*",
+		],
 		"/api/editor-agent/hyperframes-references": [
 			"./.hyperframes-references/**/*",
 		],

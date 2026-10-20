@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aef5380f865b6ffa938b2a59db6633b772b2d0ab61cb75eaa5b97c19683dee35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:06:39.158Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.build.tsbuildinfo",
+          ".local/scene-ai-queue-2026-10-20/types.log",
+          ".local/scene-ai-queue-2026-10-20/build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "386eaa8b-f2a1-41c4-9dff-cc4261100c50"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:06:39.182Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17023818ade1da59323b78ef75566b0197ce064007119f99e9a6ae5fefc2a016",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:44:13.287Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/batch/server.test.ts <<'EOF'\n\ntest(\"waiting scene jobs never expire while a long edit is executing\", async () => {\n await writeFile(join(root, \"batch/queue.json\"), JSON.stringify({runs: []}));\n await createSceneEdits({projectId: \"source\", jobIds: [\"first\", \"second\"], ownerId: \"tab\"});\n const first = await recoverSceneWorker({ownerId: \"tab\", workerId: \"runner\"});\n if (!first) throw Error(\"Missing worker\");\n await updateBatch({id: \"first\", token: [REDACTED], projectId: \"worker-first\", event: \"run\"});\n const path = join(root, \"batch/queue.json\");\n const stored = JSON.parse(await readFile(path, \"utf8\"));\n for (const run of stored.runs) run.heartbeat = Date.now() - 600_000;\n await writeFile(path, JSON.stringify(stored));\n const state = await getBatchState();\n expect(state.runs.find(r => r.id === \"first\")?.jobs[0].status).toBe(\"interrupted\");\n expect(state.runs.find(r => r.id === \"second\")?.jobs[0].status).toBe(\"ready\");\n await cancelBatch({id: \"first\"});\n await cancelBatch({id: \"second\"});\n});\nEOF\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/server.test.ts\nnode classic/scripts/test-web.mjs src/batch/server.test.ts --report=.local/scene-ai-queue-2026-10-20/queue-final-test",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-eb607186-ee70-41ef-9d3e-465cbeb3a3eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:44:13.290Z",
+  "parents": [],
+  "branch": "main"
+}

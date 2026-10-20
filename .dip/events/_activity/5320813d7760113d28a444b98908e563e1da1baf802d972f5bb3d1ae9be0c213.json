@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5320813d7760113d28a444b98908e563e1da1baf802d972f5bb3d1ae9be0c213",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:59:28.658Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '765,850p' classic/apps/web/src/core/managers/project-manager.ts; rg -n 'file|loadFonts|customFonts|capture' classic/apps/web/src/core/managers/project-manager.ts | head -25; sed -n '1,72p' classic/apps/web/src/core/managers/transcription-manager.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ef45ed70-f0da-4910-a55c-d1758b45251b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:59:28.663Z",
+  "parents": [],
+  "branch": "main"
+}

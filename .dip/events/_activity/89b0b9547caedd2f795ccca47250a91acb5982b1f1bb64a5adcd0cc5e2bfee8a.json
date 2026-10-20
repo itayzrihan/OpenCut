@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89b0b9547caedd2f795ccca47250a91acb5982b1f1bb64a5adcd0cc5e2bfee8a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:50:59.597Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/batch/scene-jobs.ts",
+          "classic/apps/web/src/ai/full-auto-edit.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f68546af-1163-4ca4-b574-1b70a309f359"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:50:59.682Z",
+  "parents": [],
+  "branch": "main"
+}

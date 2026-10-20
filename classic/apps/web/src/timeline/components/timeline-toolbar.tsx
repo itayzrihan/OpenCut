@@ -659,7 +659,9 @@ function ReorganizeTakesToolbarControl({
 }
 
 function BookmarkToolbarButton() {
-	const fps = useEditorProject((e) => e.project.getActive().settings.fps);
+	const fps = useEditorProject(
+		(e) => e.project.getActiveForScene().settings.fps,
+	);
 	const currentFrameTime = useEditorPlayback((e) =>
 		getToolbarFrameTime({
 			time: e.playback.getCurrentTime(),

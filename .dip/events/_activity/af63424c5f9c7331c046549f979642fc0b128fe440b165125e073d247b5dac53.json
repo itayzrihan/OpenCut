@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af63424c5f9c7331c046549f979642fc0b128fe440b165125e073d247b5dac53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:43:58.190Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_settings.rs",
+          "classic/apps/web/src/core/managers/playback-manager.ts",
+          "classic/apps/web/src/ai/subject-framing.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "24673a01-13d3-4e16-81ec-2a8c0dd87aa6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:43:58.194Z",
+  "parents": [],
+  "branch": "main"
+}

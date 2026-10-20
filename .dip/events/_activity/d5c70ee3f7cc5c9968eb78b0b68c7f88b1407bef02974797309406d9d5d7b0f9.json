@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d5c70ee3f7cc5c9968eb78b0b68c7f88b1407bef02974797309406d9d5d7b0f9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:46:51.782Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          ".local/scene-ai-queue-2026-10-20/host-tests.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__worker.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__progress-view.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__batch__scene-checkpoint.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/host-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ee8381d7-150c-44dd-b6bb-bb2901370f7f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:46:51.785Z",
+  "parents": [],
+  "branch": "main"
+}

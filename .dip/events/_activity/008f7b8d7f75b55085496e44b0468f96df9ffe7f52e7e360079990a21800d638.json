@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "008f7b8d7f75b55085496e44b0468f96df9ffe7f52e7e360079990a21800d638",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:13:49.990Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -65 classic/apps/web/src/media/noise-reduction.worker.ts; tail -5 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-00fd0e23-5aa5-43e5-9dcc-dc6b71f6ff65"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:13:49.994Z",
+  "parents": [],
+  "branch": "main"
+}

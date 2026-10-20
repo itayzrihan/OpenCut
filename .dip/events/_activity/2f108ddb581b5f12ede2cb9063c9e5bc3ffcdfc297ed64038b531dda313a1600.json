@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2f108ddb581b5f12ede2cb9063c9e5bc3ffcdfc297ed64038b531dda313a1600",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:15:24.875Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node - <<'JS'\n(async()=>{const r=await fetch('http://localhost:3211/editor/c4b3910e-71c0-44b5-843b-6efcf00d9cac'); console.log(Object.fromEntries([...r.headers].filter(([k])=>/security|frame|origin|policy/.test(k))));})();\nJS\nrg -n 'iframe|createElement|srcdoc|blank|contentWindow|frame-src|child-src' classic/apps/web/src/accounts classic/apps/web/public -g '*.js' -g '*.ts*' --glob '!**/hyperframes*/**' --glob '!**/vendor/**' --max-columns 180 | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-061ffb0c-7504-4741-869b-ccfc457487e4"
+      },
+      {
+        "at": "2026-10-20T19:15:25.042Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node - <<'JS'\n(async()=>{const r=await fetch('http://localhost:3211/editor/c4b3910e-71c0-44b5-843b-6efcf00d9cac'); console.log(Object.fromEntries([...r.headers].filter(([k])=>/security|frame|origin|policy/.test(k))));})();\nJS\nrg -n 'iframe|createElement|srcdoc|blank|contentWindow|frame-src|child-src' classic/apps/web/src/accounts classic/apps/web/public -g '*.js' -g '*.ts*' --glob '!**/hyperframes*/**' --glob '!**/vendor/**' --max-columns 180 | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-061ffb0c-7504-4741-869b-ccfc457487e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:15:25.140Z",
+  "parents": [],
+  "branch": "main"
+}

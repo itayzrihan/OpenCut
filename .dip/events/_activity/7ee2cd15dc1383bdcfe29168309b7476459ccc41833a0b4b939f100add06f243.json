@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ee2cd15dc1383bdcfe29168309b7476459ccc41833a0b4b939f100add06f243",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:08.820Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/batch/provider.tsx"
+        ],
+        "changeHash": "352e15c06c13ea95dae94cfa09f59e5d1ae8461d2313e236c1d78c0adf0dd8ac",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7eecd7bf-c13e-4720-ac71-a7a061e538f2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:08.821Z",
+  "parents": [],
+  "branch": "main"
+}

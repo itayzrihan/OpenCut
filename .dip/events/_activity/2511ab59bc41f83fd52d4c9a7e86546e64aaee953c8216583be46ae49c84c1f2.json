@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2511ab59bc41f83fd52d4c9a7e86546e64aaee953c8216583be46ae49c84c1f2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:53:31.412Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,command | rg 'cargo test.*classic_scenes|rustc --crate-name opencut_editor_api' | head -5\npython3 - <<'PY'\np='crates/editor-api/tests/classic_scenes.rs';s=open(p).read().replace('\"resolution\":\"1080p\"','\"resolution\":\"project\"');open(p,'w').write(s)\nPY\ncargo test -q -p opencut-editor-api --test classic_scenes scene_automation > .local/scene-ai-queue-2026-10-20/native-scene-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e68ee26b-2a86-467f-bd65-604cc453c3c9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:53:31.912Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a5f2ffee87e40e2bb9b0f2ce0c68065b0a2aca92b7ab0d21c22bc011f985424",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:51:10.652Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '56,78p' classic/apps/web/src/batch/scene-jobs.ts\nsed -n '104,170p' classic/apps/web/src/batch/scene-jobs.ts\nsed -n '185,202p' classic/apps/web/src/batch/provider.tsx\nrg -n 'settings' classic/apps/web/src/preview/components/offline-media.tsx | head -4",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5342f7fa-5dbc-4ec1-9192-b71ec70ac8e5"
+      },
+      {
+        "at": "2026-10-20T18:51:10.653Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/scene-jobs.ts';s=open(p).read().replace('change: { type: \"enqueue\", jobs }) as {','change: { type: \"enqueue\", jobs }}) as {');s=s.replace('export async function publishSceneResults(\\n\\teditor: EditorCore,\\n\\truns: BatchRun[],\\n)','export async function publishSceneResults({editor,runs}: {editor:EditorCore;runs:BatchRun[]})');a=s.index('automationControl({editor,change:',s.index('export async function publishSceneResults'));b=s.index('\\n\\t\\t\\tawait editor.save.flush();',a);s=s[:a]+s[a:b].replace('\\n\\t\\t\\t});','\\n\\t\\t\\t}});')+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read().replace('await publishSceneResults(\\n\\t\\t\\t\\t\\t\\tBackgroundEditor.getInstance(),\\n\\t\\t\\t\\t\\t\\tlatestState.current.runs,\\n\\t\\t\\t\\t\\t);','await publishSceneResults({editor:BackgroundEditor.getInstance(),runs:latestState.current.runs});');open(p,'w').write(s)\np='classic/apps/web/src/ai/__tests__/subject-framing-source.test.ts';s=open(p).read().replace('mock.module(\"@/ai/subject-detector-client\"','mock.module(\"@/ai/timeline-document-v2\",()=>({buildTimelineDocumentV2:()=>{},parseTimelineDocumentV2:()=>{}}));\\nmock.module(\"@/timeline/scenes\",()=>({updateSceneInArray:()=>{}}));\\nmock.module(\"@/ai/subject-detector-client\"');open(p,'w').write(s)\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1\nnode classic/scripts/test-web.mjs src/ai/__tests__/subject-framing-source.test.ts src/batch/server.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/new-host-tests > .local/scene-ai-queue-2026-10-20/new-host-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-219b3062-8a4a-42e1-8ac4-4a2901297e25"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:51:11.633Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb705010d551cdec0d3dd7513415677406390cc729e6342e2149942d80b0ed4b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:29:48.975Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/batch-worker/layout.tsx",
+          "classic/apps/web/src/batch/worker-host.tsx",
+          ".local/scene-ai-queue-2026-10-20/format-worker-document.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "763e9d9c-a4b2-44f4-b45d-1d1b400dc272"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:29:48.978Z",
+  "parents": [],
+  "branch": "main"
+}

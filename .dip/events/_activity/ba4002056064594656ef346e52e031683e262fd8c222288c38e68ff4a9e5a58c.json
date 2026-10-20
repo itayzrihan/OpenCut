@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ba4002056064594656ef346e52e031683e262fd8c222288c38e68ff4a9e5a58c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:45:28.839Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_export.rs';s=open(p).read().replace('let settings = &doc[\"settings\"];','let settings = scene.get(\"settings\").unwrap_or(&doc[\"settings\"]);');open(p,'w').write(s)\np='classic/apps/web/src/batch/scene-checkpoint.ts';s=open(p).read().replace('job.projectId === projectId','(job.sourceProjectId ?? job.projectId) === projectId');open(p,'w').write(s)\np='classic/apps/web/src/ai/components/full-auto-edit-button.tsx';s=open(p).read().replace('j.projectId === projectId','(j.sourceProjectId ?? j.projectId) === projectId').replace('previousJob.completedStages >= 3','(!!previousJob.sourceProjectId || previousJob.completedStages >= 3)');open(p,'w').write(s)\np='classic/apps/web/src/batch/server.ts';s=open(p).read();s+='''\nexport async function retrySceneEdit({id,ownerId}:{id:string;ownerId:string}) {\n return transaction(async s=>{\n  const run=s.runs.find(r=>r.id===id&&r.jobs.every(j=>!!j.sourceProjectId));\n  if(!run||!run.jobs.every(j=>[\"failed\",\"interrupted\"].includes(j.status)))throw new Error(\"Only a stopped scene edit can be resumed\");\n  for(const job of run.jobs){\n   const project=await getProject(job.projectId) as {automationCheckpoint?:number}|null;\n   if(!project)throw new Error(\"Saved working copy unavailable\");\n   job.completedStages=project.automationCheckpoint??job.completedStages;\n   job.resumeFromStage=job.completedStages;job.status=\"ready\";job.cancelRequested=false;job.message=`Waiting to resume stage ${job.completedStages+1}`;\n  }\n  run.ownerId=ownerId;run.heartbeat=Date.now();run.updatedAt=Date.now();return publicState(s);\n });\n}\n''';open(p,'w').write(s)\np='classic/apps/web/src/app/api/batch-edit/route.ts';s=open(p).read().replace('\\trecoverSceneWorker,','\\trecoverSceneWorker,\\n\\tretrySceneEdit,').replace('const schema = z.discriminatedUnion(\"action\", [','const schema = z.discriminatedUnion(\"action\", [\\n\\tz.object({action:z.literal(\"retry\"),id:z.string().uuid(),ownerId:z.string().uuid()}),').replace('\\t\\tif",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9d5c8cc5-b5e4-4955-a23c-bff9d97965ce"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:45:29.805Z",
+  "parents": [],
+  "branch": "main"
+}

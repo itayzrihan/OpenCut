@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fa9827621273819dc909daf7e6a16db51a13298ee012471ad8e26db725521c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:00:31.369Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts';s=open(p).read();needle='describe(\"Timeline Source v2 web adapter\", () => {';s=s.replace(needle,needle+'''\n test(\"scene canvas projects independently without changing project defaults\",()=>{\n  const {project,scene}=createRichFixture();\n  const original=structuredClone(project.settings);\n  scene.settings={...project.settings,canvasSize:{width:1080,height:1920}};\n  const result=buildTimelineDocumentV2({project,scene});\n  expect(result.valid).toBe(true);\n  expect(JSON.parse(result.formattedText).projectSettings.canvasSize).toEqual({width:1080,height:1920});\n  expect(project.settings).toEqual(original);\n });\n''');open(p,'w').write(s)\np='classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts';s=open(p).read().replace('import { expect, test }','import {fullAutoEditStages} from \"opencut-wasm\";\\nimport { expect, test }',1);s+='''\ntest(\"individual scene actions use their own native recipe instead of running the full pipeline\",()=>{\n const base={zoom:true,transitions:true,wordAnimation:true,music:true};\n for(const action of [\"center-subject\",\"framing\",\"zoom\",\"transitions\",\"word-animation\",\"music\",\"auto-texts\"]){expect(fullAutoEditStages({...base,action})).toEqual([action,\"save\"]);}\n expect(fullAutoEditStages({...base,action:\"full-auto\"})).toHaveLength(10);\n});\n''';open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts > .local/scene-ai-queue-2026-10-20/format-tests.log 2>&1\nnode classic/scripts/test-web.mjs src/ai/__tests__/timeline-document-v2.test.ts src/core/__tests__/canonical-scene-automation.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/extra-wasm-tests > .local/scene-ai-queue-2026-10-20/extra-wasm-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e65dc966-53d4-4c80-8bf0-5dbbafc424fb"
+      },
+      {
+        "at": "2026-10-20T19:00:31.373Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -7 .local/scene-ai-queue-2026-10-20/build.log\nps -p 262 -o command=",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-aac169bd-b5a3-4262-8afe-9065c01dfa47"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:00:31.558Z",
+  "parents": [],
+  "branch": "main"
+}

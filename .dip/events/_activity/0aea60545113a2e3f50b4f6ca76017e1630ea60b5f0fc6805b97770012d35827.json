@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0aea60545113a2e3f50b4f6ca76017e1630ea60b5f0fc6805b97770012d35827",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:48:42.715Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/playback-manager.ts';s=open(p).read().replace('getActiveForScene()', 'getActive()');open(p,'w').write(s)\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read().replace('setBatchReadOnlyProjects, beginAutomationHandoff','setBatchReadOnlyProjects');s=s.replace('const [preparingProjectId, setPreparingProjectId] = useState<string | null>(\\n\\t\\tnull,\\n\\t);','const preparingProjectId = null;');open(p,'w').write(s)\np='classic/apps/web/src/ai/components/full-auto-edit-button.tsx';s=open(p).read().replace('Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · Smart','Hebrew · configured speech engine · 1 row · Smart');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e1f89052-43fe-45fc-ab4e-632462dc08af"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:48:43.692Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -71,7 +71,7 @@ export function TimelinePlayhead({
 		if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 
 		event.preventDefault();
-		const fps = editor.project.getActive().settings.fps;
+		const fps = editor.project.getActiveForScene().settings.fps;
 		const ticksPerFrame = mediaTime({
 			ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 		});

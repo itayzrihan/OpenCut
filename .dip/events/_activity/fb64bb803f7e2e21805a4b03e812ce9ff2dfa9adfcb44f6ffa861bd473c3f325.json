@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fb64bb803f7e2e21805a4b03e812ce9ff2dfa9adfcb44f6ffa861bd473c3f325",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:53:06.680Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/tests/classic_scenes.rs';s=open(p).read();needle='''    assert_eq!(document[\"automationEdits\"][0][\"status\"],\"published\");''';# current compact test exact unformatted line\nreplacement=needle+'''\n    let plan=call(&runtime,\"project.classic.export.plan\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":after[\"revision\"],\"sceneId\":\"output-a\",\"preferences\":{\"resolution\":\"1080p\",\"encoding\":\"compact\"},\"quality\":\"very_high\",\"format\":\"mp4\"})).await;\n    assert_eq!(plan[\"logicalWidth\"],1080);assert_eq!(plan[\"logicalHeight\"],1920);\n''';s=s.replace(needle,replacement);open(p,'w').write(s)\nPY\nnode - <<'JS'\nconst {execFileSync}=require('node:child_process');const fs=require('node:fs');\nconst changed=execFileSync('git',['diff','--name-only']).toString().trim().split('\\n').filter(p=>/\\.tsx?$/.test(p));changed.push('classic/apps/web/src/batch/scene-jobs.ts','classic/apps/web/src/ai/__tests__/subject-framing-source.test.ts');\nexecFileSync('classic/node_modules/.bin/prettier',['--write',...changed],{stdio:['ignore','ignore','inherit']});\ntry{execFileSync('../../node_modules/.bin/eslint',changed.map(p=>p.replace(/^classic\\/apps\\/web\\//,'')),{cwd:'classic/apps/web',stdio:['ignore',fs.openSync('.local/scene-ai-queue-2026-10-20/lint.log','w'),'inherit']});}catch(e){process.exitCode=1;}\nJS\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_automation.rs\ncargo test -q -p opencut-editor-api --test classic_scenes --test classic_export > .local/scene-ai-queue-2026-10-20/native-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a49fdfa3-abca-451b-b570-8434a7c83ba3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:53:06.739Z",
+  "parents": [],
+  "branch": "main"
+}

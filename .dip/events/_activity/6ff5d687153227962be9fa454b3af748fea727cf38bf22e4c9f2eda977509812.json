@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ff5d687153227962be9fa454b3af748fea727cf38bf22e4c9f2eda977509812",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:04:40.673Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/scene-ai-queue-2026-10-20/project-before.json'));print([{k:j.get(k) for k in ['id','engine','status','sceneId','language','completedWindows']} for j in p.get('transcriptionJobs',[])])\nPY\nsed -n '190,239p' classic/apps/web/src/core/managers/transcription-manager.ts\nrg -n 'engine.*\\?\\?|getEngine|transcriptionEngine|localStorage' classic/apps/web/src/core/managers/transcription-manager.ts | head -18\nsed -n '154,182p' classic/apps/web/src/core/managers/transcription-manager.ts\ntail -6 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2e03a9a0-a8b3-4809-b48c-c599973efe98"
+      },
+      {
+        "at": "2026-10-20T19:04:40.832Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/scene-ai-queue-2026-10-20/project-before.json'));print([{k:j.get(k) for k in ['id','engine','status','sceneId','language','completedWindows']} for j in p.get('transcriptionJobs',[])])\nPY\nsed -n '190,239p' classic/apps/web/src/core/managers/transcription-manager.ts\nrg -n 'engine.*\\?\\?|getEngine|transcriptionEngine|localStorage' classic/apps/web/src/core/managers/transcription-manager.ts | head -18\nsed -n '154,182p' classic/apps/web/src/core/managers/transcription-manager.ts\ntail -6 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-2e03a9a0-a8b3-4809-b48c-c599973efe98"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:04:41.145Z",
+  "parents": [],
+  "branch": "main"
+}

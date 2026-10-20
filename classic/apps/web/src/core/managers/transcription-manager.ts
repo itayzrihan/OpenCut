@@ -427,6 +427,16 @@ export class TranscriptionManager {
 			if (isAbortError({ error }) || this.state.task.status === "cancelling") {
 				this.transition({ type: "cancel", taskId });
 			} else {
+				console.error(
+					"Transcription failed",
+					JSON.stringify({
+						phase: this.state.task.phase,
+						detail:
+							error instanceof Error
+								? (error.stack ?? error.message)
+								: String(error),
+					}),
+				);
 				this.transition({
 					type: "fail",
 					taskId,

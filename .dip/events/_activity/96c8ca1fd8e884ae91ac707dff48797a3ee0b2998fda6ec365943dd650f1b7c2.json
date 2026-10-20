@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "96c8ca1fd8e884ae91ac707dff48797a3ee0b2998fda6ec365943dd650f1b7c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:44:22.569Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/batch/window-worker.ts');s=p.read_text().replace('Date.now() - run.workerHeartbeatAt < 30_000','Date.now() - run.workerHeartbeatAt < 180_000');p.write_text(s)\np=Path('classic/apps/web/src/batch/provider.tsx');s=p.read_text().replace('polledAt - r.workerHeartbeatAt < 30_000','polledAt - r.workerHeartbeatAt < 180_000');s=s.replace('''You can keep using the app. Automatic edits show live progress and\n\t\t\t\t\t\tstay read-only until their job stops. Keep this app tab open while\n\t\t\t\t\t\tediting runs. You can add more projects to the queue.''','''עריכות של סצנות רצות בחלון ״עריכות ברקע״ ויש להשאיר אותו פתוח.\n                        אפשר לעבור בין סצנות ולרענן את העורך. בייבוא קבוצת סרטונים\n                        יש להשאיר גם את הלשונית הזו פתוחה. אפשר להוסיף עבודות לתור.''');p.write_text(s)\np=Path('classic/apps/web/src/batch/server.ts');s=p.read_text().replace('Date.now() - (next.workerHeartbeatAt ?? 0) < 30_000','Date.now() - (next.workerHeartbeatAt ?? 0) < leaseMs');p.write_text(s)\np=Path('classic/apps/web/src/batch/server.test.ts');s=p.read_text();needle='''\tif (!first) throw Error(\"No runner\");\n''';s=s.replace(needle,needle+'''\t// A background window can deliver delayed heartbeats; protect its full lease.\n const journalPath = join(root, \"batch/queue.json\");\n const journal = JSON.parse(await readFile(journalPath, \"utf8\"));\n journal.runs.find((run: {id: string}) => run.id === \"first\").workerHeartbeatAt = Date.now() - 90_000;\n await writeFile(journalPath, JSON.stringify(journal));\n''');p.write_text(s)\nPY\nrg -n -A6 'You can keep|עריכות של סצנות' classic/apps/web/src/batch/provider.tsx\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/batch/window-worker.ts classic/apps/web/src/batch/provider.tsx classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/server.test.ts\nnode classic/scripts/test-web.mjs src/batch/server.test.ts --report=.local/scene-ai-queue-2026-10-20/lease",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4845563b-674d-42bf-8a0e-3ba2ed08fe3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:44:22.571Z",
+  "parents": [],
+  "branch": "main"
+}

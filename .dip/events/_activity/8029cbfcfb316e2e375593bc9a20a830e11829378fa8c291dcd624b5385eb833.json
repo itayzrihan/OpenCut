@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8029cbfcfb316e2e375593bc9a20a830e11829378fa8c291dcd624b5385eb833",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:53:32.919Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7f7c8a9b-0bba-455a-ac83-7718c787473e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:53:32.921Z",
+  "parents": [],
+  "branch": "main"
+}

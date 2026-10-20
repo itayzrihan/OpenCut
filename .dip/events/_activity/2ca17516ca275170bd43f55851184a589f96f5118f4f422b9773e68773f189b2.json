@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2ca17516ca275170bd43f55851184a589f96f5118f4f422b9773e68773f189b2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+    "records": [
+      {
+        "at": "2026-10-20T18:30:39.936Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a15a94-37c3-7a52-ad2f-56a31ff04b70",
+        "taskId": "task_7ee200621cb3a3faa2de8781b92815fe234e5a2db2a938da49843bf39a8954a9",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -8 --oneline -- classic/apps/web/src | head -8 && rg -n \"teaser|strategic|compression\" classic/apps/web/src | head -40",
+        "recordId": "codex:01a15a94-37c3-7a52-ad2f-56a31ff04b70:PreToolUse:exec-2e1cdbc0-63b7-4bed-873c-73c84f505201"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:30:39.980Z",
+  "parents": [],
+  "branch": "main"
+}

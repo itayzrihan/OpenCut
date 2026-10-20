@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9a641940798753a6b7ff6bf37a5ec3006086920c2e0e8d5a94b0940c978a6e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:52:45.353Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/timeline/src/batch_edit.rs';s=open(p).read().replace('(\"ready\", \"run\") => \"running\",','(\"ready\", \"run\") => \"running\",\\n        (\"ready\" | \"running\" | \"interrupted\", \"recover\") => \"ready\",\\n        (\"failed\" | \"interrupted\", \"retry\") => \"ready\",');pos=s.rindex('\\n}');s=s[:pos]+'''\\n    #[test]\n    fn recovery_fences_only_resumable_work() {\n        for status in [\"ready\",\"running\",\"interrupted\"] {assert_eq!(step(status,\"recover\"),\"ready\");}\n        for status in [\"failed\",\"interrupted\"] {assert_eq!(step(status,\"retry\"),\"ready\");}\n        for status in [\"completed\",\"cancelled\"] {assert_eq!(step(status,\"recover\"),\"\");assert_eq!(step(status,\"retry\"),\"\");}\n    }\n'''+s[pos:];open(p,'w').write(s)\np='classic/apps/web/src/batch/server.ts';s=open(p).read().replace('job.status = \"ready\";\\n\\t\\t\\tjob.message = completed','job.status = batchEditTransition({status:job.status,event:\"recover\"}) as BatchJobStatus;\\n\\t\\t\\tjob.message = completed').replace('job.status = \"ready\";\\n\\t\\t\\tjob.cancelRequested','job.status = batchEditTransition({status:job.status,event:\"retry\"}) as BatchJobStatus;\\n\\t\\t\\tjob.cancelRequested');open(p,'w').write(s)\np='classic/apps/web/src/batch/server.test.ts';s=open(p).read().replace('if (![\"queued\", \"importing\", \"ready\", \"running\"].includes(status))','if(event===\"recover\"&&[\"ready\",\"running\",\"interrupted\"].includes(status))return \"ready\";\\n\\t\\tif(event===\"retry\"&&[\"failed\",\"interrupted\"].includes(status))return \"ready\";\\n\\t\\tif (![\"queued\", \"importing\", \"ready\", \"running\"].includes(status))');open(p,'w').write(s)\nPY\nsed -n '198,228p' crates/editor-api/src/operations/classic_automation.rs\ncat .local/scene-ai-queue-2026-10-20/types.log\ncat .local/scene-ai-queue-2026-10-20/host-tests.log | tail -3\ncat .local/scene-ai-queue-2026-10-20/native-tests.log | tail -10",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-df15778c-88f7-4a05-8bfd-77eb4dc69de7"
+      },
+      {
+        "at": "2026-10-20T18:52:45.461Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/timeline/src/batch_edit.rs';s=open(p).read().replace('(\"ready\", \"run\") => \"running\",','(\"ready\", \"run\") => \"running\",\\n        (\"ready\" | \"running\" | \"interrupted\", \"recover\") => \"ready\",\\n        (\"failed\" | \"interrupted\", \"retry\") => \"ready\",');pos=s.rindex('\\n}');s=s[:pos]+'''\\n    #[test]\n    fn recovery_fences_only_resumable_work() {\n        for status in [\"ready\",\"running\",\"interrupted\"] {assert_eq!(step(status,\"recover\"),\"ready\");}\n        for status in [\"failed\",\"interrupted\"] {assert_eq!(step(status,\"retry\"),\"ready\");}\n        for status in [\"completed\",\"cancelled\"] {assert_eq!(step(status,\"recover\"),\"\");assert_eq!(step(status,\"retry\"),\"\");}\n    }\n'''+s[pos:];open(p,'w').write(s)\np='classic/apps/web/src/batch/server.ts';s=open(p).read().replace('job.status = \"ready\";\\n\\t\\t\\tjob.message = completed','job.status = batchEditTransition({status:job.status,event:\"recover\"}) as BatchJobStatus;\\n\\t\\t\\tjob.message = completed').replace('job.status = \"ready\";\\n\\t\\t\\tjob.cancelRequested','job.status = batchEditTransition({status:job.status,event:\"retry\"}) as BatchJobStatus;\\n\\t\\t\\tjob.cancelRequested');open(p,'w').write(s)\np='classic/apps/web/src/batch/server.test.ts';s=open(p).read().replace('if (![\"queued\", \"importing\", \"ready\", \"running\"].includes(status))','if(event===\"recover\"&&[\"ready\",\"running\",\"interrupted\"].includes(status))return \"ready\";\\n\\t\\tif(event===\"retry\"&&[\"failed\",\"interrupted\"].includes(status))return \"ready\";\\n\\t\\tif (![\"queued\", \"importing\", \"ready\", \"running\"].includes(status))');open(p,'w').write(s)\nPY\nsed -n '198,228p' crates/editor-api/src/operations/classic_automation.rs\ncat .local/scene-ai-queue-2026-10-20/types.log\ncat .local/scene-ai-queue-2026-10-20/host-tests.log | tail -3\ncat .local/scene-ai-queue-2026-10-20/native-tests.log | tail -10",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-df15778c-88f7-4a05-8bfd-77eb4dc69de7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:52:45.722Z",
+  "parents": [],
+  "branch": "main"
+}

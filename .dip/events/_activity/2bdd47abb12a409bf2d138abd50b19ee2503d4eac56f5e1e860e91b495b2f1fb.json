@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2bdd47abb12a409bf2d138abd50b19ee2503d4eac56f5e1e860e91b495b2f1fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:46:29.815Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '988,1020p' classic/apps/web/src/core/managers/commands.ts\nrg -n 'prepare_for_auto|prepare.*auto|prepare-auto' crates/editor-api/src/operations/classic_takes* -g '*.rs'\nsed -n '38,56p' classic/apps/web/src/subtitles/auto-texts.ts\nrg -n 'captionSource|overlay|clear' classic/rust/crates/timeline/src/full_auto_edit.rs | head -25\ncat .local/scene-ai-queue-2026-10-20/native-tests.log | tail -25\nrg -n 'assertBrowser' classic/apps/web/src/services/transcription/service.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-497edf68-76bd-412e-ab3e-fbda9f381fe9"
+      },
+      {
+        "at": "2026-10-20T18:46:29.943Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '988,1020p' classic/apps/web/src/core/managers/commands.ts\nrg -n 'prepare_for_auto|prepare.*auto|prepare-auto' crates/editor-api/src/operations/classic_takes* -g '*.rs'\nsed -n '38,56p' classic/apps/web/src/subtitles/auto-texts.ts\nrg -n 'captionSource|overlay|clear' classic/rust/crates/timeline/src/full_auto_edit.rs | head -25\ncat .local/scene-ai-queue-2026-10-20/native-tests.log | tail -25\nrg -n 'assertBrowser' classic/apps/web/src/services/transcription/service.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-497edf68-76bd-412e-ab3e-fbda9f381fe9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:46:30.760Z",
+  "parents": [],
+  "branch": "main"
+}

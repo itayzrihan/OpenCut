@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a861297d07df71206560154a177bba586b69fc9060593b2fc3f4910f87fa563",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:00:31.446Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts",
+          "classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts",
+          ".local/scene-ai-queue-2026-10-20/format-tests.log",
+          ".local/scene-ai-queue-2026-10-20/extra-wasm-tests.log",
+          ".local/scene-ai-queue-2026-10-20/extra-wasm-tests",
+          ".local/scene-ai-queue-2026-10-20/extra-wasm-tests/src__ai____tests____timeline-document-v2.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/extra-wasm-tests/src__core____tests____canonical-scene-automation.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d2f4260a-809c-4ba5-912d-2a7caff6f8c2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:00:31.561Z",
+  "parents": [],
+  "branch": "main"
+}

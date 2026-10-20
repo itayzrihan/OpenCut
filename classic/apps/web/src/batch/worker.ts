@@ -241,6 +241,7 @@ export async function executeBatch({
 				});
 				if (!(await editor.project.loadProject({ id: current })))
 					throw new Error("Imported project is unavailable");
+				if (job.sceneId) editor.command.openClassicScene(job.sceneId, false);
 				const notes = await runFullAutoEdit({
 					editor,
 					signal: abort.signal,
@@ -296,7 +297,11 @@ export async function executeBatch({
 	} finally {
 		clearInterval(heartbeat);
 		window.removeEventListener("pagehide", stop);
-		await send.flush();
+		// The canonical working copy is already durable; an expired host lease
+		// must not prevent the frame from releasing the queue dispatcher.
+		await send
+			.flush()
+			.catch((error) => console.warn("Final batch update was fenced", error));
 		editor.save.stop();
 		setBatchWriteToken("");
 		parent.postMessage(

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "efa52b822534b1b9a52a4b0d90d0962a30326f7465234ea38622ef59cf5b0ace",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:00.146Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '327,355p' classic/apps/web/src/batch/provider.tsx; sed -n '510,580p' classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-72af9661-e07c-48d1-b219-ae21fecf35c9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:00.147Z",
+  "parents": [],
+  "branch": "main"
+}

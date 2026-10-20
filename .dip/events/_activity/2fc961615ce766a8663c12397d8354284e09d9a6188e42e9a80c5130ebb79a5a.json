@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2fc961615ce766a8663c12397d8354284e09d9a6188e42e9a80c5130ebb79a5a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:54:43.253Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts';s=open(p).read().replace('session.snapshot()','session.read()');s='/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Actual Rust registry validates the result. */\\n'+s;open(p,'w').write(s)\np='classic/apps/web/src/core/managers/playback-manager.ts';s=open(p).read().replace('type PlaybackProjectReader = {','type PlaybackProjectReader = {\\n\\tgetActiveForScene?: () => { settings: { fps: FrameRate } } | null | undefined;').replace('const fps = this.editor.project.getActive()?.settings.fps;','const fps = (this.editor.project.getActiveForScene?.() ?? this.editor.project.getActive())?.settings.fps;');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/timeline-manager.ts';s=open(p).read().replace('this.editor.project.getActiveForScene()?.settings.fps','(this.editor.project.getActiveForScene?.() ?? this.editor.project.getActive())?.settings.fps');open(p,'w').write(s)\np='classic/apps/web/src/ai/components/full-auto-edit-button.tsx';s=open(p).read().replace('runs: state.runs,','runs: state.runs.filter(run=>!run.options.action || run.options.action===action),');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts classic/apps/web/src/core/managers/{playback-manager,timeline-manager}.ts classic/apps/web/src/ai/components/full-auto-edit-button.tsx > .local/scene-ai-queue-2026-10-20/format-extra.log 2>&1\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-715b1d51-822c-476d-b78a-320be36384b1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:54:43.990Z",
+  "parents": [],
+  "branch": "main"
+}

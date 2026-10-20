@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95b72387f2cf22ba22974ba7b319ab9e458157d2136e30173751109ea586e482",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:56:56.943Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport {pruneReleases} from './classic/scripts/local-production/prune-releases.mjs';\nconst deploymentRoot='/Users/itayzrihan/Library/Application Support/OpenCut Local';\nconst result=await pruneReleases({deploymentRoot});\nconsole.log(JSON.stringify({removedGeneratedReleaseCount:result.removed.length,retained:result.retained}));\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-244c49c0-4434-42ad-9ce8-1ddbd9a484a1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:56:56.945Z",
+  "parents": [],
+  "branch": "main"
+}

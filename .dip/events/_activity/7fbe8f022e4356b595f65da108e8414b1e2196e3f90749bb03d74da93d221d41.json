@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fbe8f022e4356b595f65da108e8414b1e2196e3f90749bb03d74da93d221d41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:02:14.139Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\nfrom pathlib import Path\np='classic/apps/web/src/subtitles/components/assets-view.tsx';s=subprocess.check_output(['git','show','HEAD:'+p]);s=s.replace(b'.project.getActive().settings',b'.project.getActiveForScene().settings').replace(b'.project.getActive()?.settings',b'.project.getActiveForScene()?.settings');Path(p).write_bytes(s)\nPY\nps -axo pid,command | rg 'node classic/scripts/local-production/build.mjs --stage' | head -2\ntail -5 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d27bc042-a35d-4826-9a14-55bbcd5e705b"
+      },
+      {
+        "at": "2026-10-20T19:02:14.393Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\nfrom pathlib import Path\np='classic/apps/web/src/subtitles/components/assets-view.tsx';s=subprocess.check_output(['git','show','HEAD:'+p]);s=s.replace(b'.project.getActive().settings',b'.project.getActiveForScene().settings').replace(b'.project.getActive()?.settings',b'.project.getActiveForScene()?.settings');Path(p).write_bytes(s)\nPY\nps -axo pid,command | rg 'node classic/scripts/local-production/build.mjs --stage' | head -2\ntail -5 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d27bc042-a35d-4826-9a14-55bbcd5e705b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:02:14.846Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e6cc35a7a00c43b2d4263af78d818efd051866675cde3e874ed6ce9f7c08773b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:47:00.681Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.dip/events/_activity/666b5726673aad3f43d9332824954b1824b7384794e696e448e42ac43f9b92dd.json')\ns=p.read_text();d=json.loads(s)\nprint(json.dumps({'keys':list(d),'containsUnrelatedAmounts':('498'+chr(44)+'000') in s,'containsScanCommand':'matched=[]' in s}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8ab5522e-0e51-4147-9302-97436a635f0f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:47:00.688Z",
+  "parents": [],
+  "branch": "main"
+}

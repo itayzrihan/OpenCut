@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5b92743cf8033be05e7bfb5b23a449f224162cab12bf39b35061ccc92bdcd9f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:38:55.901Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport {readFile,writeFile} from 'node:fs/promises';\nconst current=JSON.parse(await readFile('/Users/itayzrihan/Library/Application Support/OpenCut Local/current.json','utf8'));\nconst evidence={accountId:'4fec0688-9a78-4304-849c-9ea937873751',projectId:'c4b3910e-71c0-44b5-843b-6efcf00d9cac',productionRelease:current.id,batchSelected:true,waitingShown:true,switchedDuringWork:true,reloadResumed:true,completedJobs:['2c3c83df-8e8d-4cd5-b8f4-09536345dc38','61c71ff3-8c75-4c1b-a791-bf78fc68a38c'],resultSceneIds:['2c8411be-6015-4005-9f7b-9ea73c500c76','181b70fd-8f3d-4c0c-afa6-e81be3617309'],resumeCheckpoint:3,subjectDetectorSmoke:{frames:5,faceDetections:23},observedAt:new Date().toISOString(),limits:['Representative playback; no export or exhaustive listening review','First output used centered cover fallback when local sampling failed','Short mixed-audio jobs can use a 128 MiB temporary PCM pool if browser disk storage cannot open; larger edited mixes require working disk storage']};\nawait writeFile('analysis/scene-ai-queue-2026-10-20/live-verification.json',JSON.stringify(evidence,null,2)+'\\n');\nconsole.log(JSON.stringify({release:current.id,completedJobs:evidence.completedJobs.length}));\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f52db5b6-4cfd-4cdc-bb86-cef710fb2d71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:38:55.906Z",
+  "parents": [],
+  "branch": "main"
+}

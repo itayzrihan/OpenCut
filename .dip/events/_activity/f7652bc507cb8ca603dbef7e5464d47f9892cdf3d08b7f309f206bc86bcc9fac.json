@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f7652bc507cb8ca603dbef7e5464d47f9892cdf3d08b7f309f206bc86bcc9fac",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:42:25.143Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          "classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c458fdf5-83b5-4601-9c43-4509a770fc74"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:42:25.145Z",
+  "parents": [],
+  "branch": "main"
+}

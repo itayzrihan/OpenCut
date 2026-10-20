@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddd6c794c30af02ea339075d921b1b4a231828b658fc98f37a8b6f23ffeb8d43",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:19:18.958Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/server.ts';s=open(p).read();a=s.index('export async function retrySceneEdit');s=s[:a]+s[a:].replace('run.updatedAt = Date.now();','run.updatedAt = Date.now();\\n\\t\\t// A retry joins the tail; it must not preempt a later job already dispatched.\\n\\t\\ts.runs=[run,...s.runs.filter(r=>r.id!==run.id)];',1);open(p,'w').write(s)\np='classic/apps/web/src/batch/server.test.ts';s=open(p).read();s+='''\ntest(\"retrying an older stopped job does not preempt an already-dispatched scene\",async()=>{\n await writeFile(join(root,\"batch/queue.json\"),JSON.stringify({runs:[]}));\n await createSceneEdits({projectId:\"source\",jobIds:[\"first\",\"second\"],ownerId:\"tab\"});\n const first=await recoverSceneWorker({ownerId:\"tab\"});if(!first)throw Error(\"No first worker\");\n await updateBatch({id:\"first\",token:[REDACTED],projectId:\"worker-first\",event:\"fail\"});\n const second=await recoverSceneWorker({ownerId:\"tab\"});expect(second?.run.id).toBe(\"second\");\n await retrySceneEdit({id:\"first\",ownerId:\"tab\"});\n expect((await getBatchState()).executionRunId).toBe(\"second\");\n expect(await recoverSceneWorker({ownerId:\"tab\",activeRunId:\"second\"})).toBeNull();\n await cancelBatch({id:\"first\"});await cancelBatch({id:\"second\"});\n});\n''';open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/server.test.ts > .local/scene-ai-queue-2026-10-20/format-retry.log 2>&1\nnode classic/scripts/test-web.mjs src/batch/server.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/retry-tests > .local/scene-ai-queue-2026-10-20/retry-tests.log 2>&1\nps -p 7053 -o command=",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-426dc525-207a-4ede-a98e-324c24a6d4f4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:19:19.436Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f00b412bae0b66e5f4881832f2c5ba0d8794460106a4a459397a2997e8cd0acb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:02:41.810Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\np='classic/apps/web/src/subtitles/components/assets-view.tsx';old=subprocess.check_output(['git','show','HEAD:'+p]);cur=open(p,'rb').read();print({'oldCRLF':old.count(b'\\r\\n'),'oldLF':old.count(b'\\n'),'currentCRLF':cur.count(b'\\r\\n')})\nlines=cur.splitlines(keepends=True);open(p,'wb').write(b''.join(line.replace(b'\\r\\n',b'\\n') if b'getActiveForScene' in line else line for line in lines))\nPY\ngit diff --check\ncat .local/scene-ai-queue-2026-10-20/build.log | tail -6\nps -axo pid,command | rg 'node classic/scripts/local-production/build.mjs --stage' | head -2\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c6bb664b-1408-4f2b-a3c2-24632081cfff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:02:41.889Z",
+  "parents": [],
+  "branch": "main"
+}

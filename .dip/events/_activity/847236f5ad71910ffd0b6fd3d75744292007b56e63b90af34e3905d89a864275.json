@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "847236f5ad71910ffd0b6fd3d75744292007b56e63b90af34e3905d89a864275",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:52:45.719Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/batch_edit.rs",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/apps/web/src/batch/server.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fa080cc4-3909-475d-b7ea-99a9c5014640"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:52:45.724Z",
+  "parents": [],
+  "branch": "main"
+}

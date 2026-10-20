@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "597eca2e7fbbd66af160a16eb003e9a2675050fc4f0d2b5a1f659c2a70338658",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:25:46.119Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/pcm-file.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/audio-stream.ts"
+        ],
+        "changeHash": "2daf029387732592b721085cbd410771af392fdd073bc61b16b03cdb42964315",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5b5c7d4d-17a3-47be-b581-dc1214cbdf0b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:25:46.121Z",
+  "parents": [],
+  "branch": "main"
+}

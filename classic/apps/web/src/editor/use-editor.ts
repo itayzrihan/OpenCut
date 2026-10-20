@@ -45,8 +45,14 @@ const subscribeTimeline: EditorSubscribe = ({ editor, onChange }) =>
 	editor.timeline.subscribe(onChange);
 const subscribeScenes: EditorSubscribe = ({ editor, onChange }) =>
 	editor.scenes.subscribe(onChange);
-const subscribeProject: EditorSubscribe = ({ editor, onChange }) =>
-	editor.project.subscribe(onChange);
+const subscribeProject: EditorSubscribe = ({ editor, onChange }) => {
+	const a = editor.project.subscribe(onChange),
+		b = editor.scenes.subscribe(onChange);
+	return () => {
+		a();
+		b();
+	};
+};
 const subscribeHistory: EditorSubscribe = ({ editor, onChange }) =>
 	editor.command.subscribeHistory(onChange);
 const subscribeMedia: EditorSubscribe = ({ editor, onChange }) =>

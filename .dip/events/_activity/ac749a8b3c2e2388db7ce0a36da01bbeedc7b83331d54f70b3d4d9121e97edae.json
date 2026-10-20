@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac749a8b3c2e2388db7ce0a36da01bbeedc7b83331d54f70b3d4d9121e97edae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:50:49.578Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c0bf5fcb-cfa6-4f4d-8547-acf93cfe16e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:50:49.581Z",
+  "parents": [],
+  "branch": "main"
+}

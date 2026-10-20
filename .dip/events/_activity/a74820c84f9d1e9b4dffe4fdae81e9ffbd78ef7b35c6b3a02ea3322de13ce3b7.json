@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a74820c84f9d1e9b4dffe4fdae81e9ffbd78ef7b35c6b3a02ea3322de13ce3b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:51:13.649Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/types.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/src__ai____tests____subject-framing-source.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/src__batch__server.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/new-host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3e6afd2d-5601-40db-8db5-f807f037fdae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:51:13.650Z",
+  "parents": [],
+  "branch": "main"
+}

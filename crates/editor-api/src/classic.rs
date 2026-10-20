@@ -195,6 +195,7 @@ impl ClassicProject {
         crate::operations::classic_transcription::validate_jobs(self.document.get("transcriptionJobs")).map_err(|e| invalid(&e))?;
         self.name()?;
         self.settings()?;
+        crate::operations::classic_automation::validate(self.document.get("automationEdits")).map_err(|e| invalid(&e))?;
         let scenes = self.scenes()?;
         let active = self
             .document
@@ -267,6 +268,7 @@ impl ClassicProject {
             }
         }
         for scene in scenes {
+            if let Some(settings)=scene.get("settings") { crate::operations::classic_settings::validate_settings(settings).map_err(|e| invalid(&e))?; }
             crate::operations::classic_multicam::validate_scene(scene, &asset_ids)
                 .map_err(|e| invalid(&e))?;
             crate::operations::classic_takes::validate_scene(scene, &asset_ids)

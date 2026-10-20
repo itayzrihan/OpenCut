@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4f77d33e30cf5342ca2e958011bc6ac6b853a0a786738a1ccfe94464589e527c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:46:10.624Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,180p' classic/apps/web/src/ai/subject-framing.ts; node -e 'const fs=require(\"fs\");const p=JSON.parse(fs.readFileSync(\"/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac/project.json\"));console.log(JSON.stringify({scenes:p.scenes.map(s=>({id:s.id,name:s.name,canvas:s.settings?.canvasSize})),jobs:p.automationEdits}))'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-57ab8940-71b2-43d5-8c30-60c3a61aed87"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:46:10.630Z",
+  "parents": [],
+  "branch": "main"
+}

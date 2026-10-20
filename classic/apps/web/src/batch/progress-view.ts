@@ -58,6 +58,11 @@ export function automationView({
 		stages,
 		completed: selected?.job.completedStages ?? 0,
 		totalVideos: entries.length,
+		waiting: entries.filter(
+			(e) =>
+				["queued", "ready"].includes(e.job.status) &&
+				e.run.id !== state.executionRunId,
+		).length,
 		ready,
 		stopped,
 		active: activeRuns.length > 0,

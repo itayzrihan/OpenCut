@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffd528c461e227cb8eba8a6ca4d671897deef1508c22bda35ede38bcd46778b9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:56:33.983Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/wasm-tests.log",
+          ".local/scene-ai-queue-2026-10-20/wasm-tests",
+          ".local/scene-ai-queue-2026-10-20/wasm-tests/src__core____tests____canonical-scene-automation.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/wasm-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/native-lifecycle-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1200eb47-3c5c-4852-8cef-b641c09ea8e9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:56:33.985Z",
+  "parents": [],
+  "branch": "main"
+}

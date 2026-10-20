@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fa17304340d77b4989930609c106d22c92d04cb768a33cc867366b4020881ea3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:49:20.057Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'temporary|name =' classic/apps/web/src/export/audio-stream.ts; sed -n '1,220p' classic/apps/web/src/export/__tests__/pcm-file.test.ts; sed -n '90,145p' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e8d420f3-990e-4e7f-8d8a-0fa0b45adc72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:49:20.059Z",
+  "parents": [],
+  "branch": "main"
+}

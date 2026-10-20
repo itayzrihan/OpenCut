@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53bf18441e71b555bf0ca7b803ca239bb85a7858caf7e7d2059a9f65994a7a45",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:43:18.202Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sampling framing|sample|decode|resolveUnified|capture' classic/apps/web/src/ai/automatic-zoom.ts classic/apps/web/src/ai/*framing*; rg --files classic/apps/web/src/ai | rg 'zoom|frame'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-89f1fc4d-5578-4f36-8aa5-6137b0e32be4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:43:18.205Z",
+  "parents": [],
+  "branch": "main"
+}

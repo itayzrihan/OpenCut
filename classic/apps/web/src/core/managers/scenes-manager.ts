@@ -183,7 +183,8 @@ export class ScenesManager {
 		const ensuredScenes = ensureMainScene({ scenes });
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes: ensuredScenes,
-			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize:
+				this.editor.project.getActiveForScene()?.settings.canvasSize,
 		});
 		const currentScene = currentSceneId
 			? normalizedScenes.find((s) => s.id === currentSceneId)
@@ -247,7 +248,8 @@ export class ScenesManager {
 	}): void {
 		const normalizedScenes = restoreParallaxSceneMetadataForScenes({
 			scenes,
-			cameraCanvasSize: this.editor.project.getActive()?.settings.canvasSize,
+			cameraCanvasSize:
+				this.editor.project.getActiveForScene()?.settings.canvasSize,
 		});
 		const nextActiveSceneId = activeSceneId ?? this.active?.id ?? null;
 		const nextActive = nextActiveSceneId

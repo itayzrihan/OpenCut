@@ -12,7 +12,12 @@ import { getLocalDriveStatus, getProject } from "@/services/local-drive/server";
 import type { BatchRun, BatchState, BatchJobStatus } from "./types";
 import { findSceneCheckpoint } from "./scene-checkpoint";
 import type { FullAutoOptions } from "@/ai/full-auto-edit";
-type StoredRun = BatchRun & { token: string; heartbeat: number };
+type StoredRun = BatchRun & {
+	token: string;
+	heartbeat: number;
+	ownerId?: string;
+	workerId?: string;
+};
 type Store = { runs: StoredRun[] };
 const host = globalThis as typeof globalThis & {
 	__opencutBatchQueues?: Map<string, Promise<unknown>>;
@@ -60,7 +65,15 @@ async function transaction<T>(
 				for (const run of store.runs)
 					if (Date.now() - run.heartbeat > leaseMs) {
 						for (const job of run.jobs)
-							if (batchEditIsLocked({ status: job.status })) {
+							if (
+								batchEditIsLocked({ status: job.status }) &&
+								// A captured scene waiting for its turn has no active worker
+								// lease to lose. It remains durable regardless of queue length.
+								!(
+									job.sourceProjectId &&
+									["ready", "queued"].includes(job.status)
+								)
+							) {
 								job.status = batchEditTransition({
 									status: job.status,
 									event: "interrupt",
@@ -106,7 +119,15 @@ const publicState = (s: Store): BatchState => ({
 		.reverse()
 		.find((r) => r.jobs.some((j) => batchEditIsLocked({ status: j.status })))
 		?.id,
-	runs: s.runs.map(({ token: _token, heartbeat: _heartbeat, ...run }) => run),
+	runs: s.runs.map(
+		({
+			token: _token,
+			heartbeat: _heartbeat,
+			ownerId: _ownerId,
+			workerId: _workerId,
+			...run
+		}) => run,
+	),
 });
 async function resolveBrandOptions(
 	options: FullAutoOptions,
@@ -321,6 +342,7 @@ export async function updateBatch({
 			run.updatedAt = Date.now();
 		}
 		run.heartbeat = Date.now();
+		run.workerHeartbeatAt = Date.now();
 		return publicState(s);
 	});
 }
@@ -416,4 +438,201 @@ export async function assertNoActiveBatch() {
 		)
 	)
 		throw new Error("Cannot clear storage while a batch is active");
+}
+
+/** Native scene intent is the source of truth; this journal holds only host IO
+ * checkpoints, execution leases and locations of isolated working projects. */
+export async function createSceneEdits({
+	projectId,
+	jobIds,
+	ownerId,
+}: {
+	projectId: string;
+	jobIds: string[];
+	ownerId: string;
+}) {
+	return transaction(async (s) => {
+		const source = (await getProject(projectId)) as {
+			automationEdits?: import("./scene-jobs").SceneJob[];
+			scenes?: Array<{ id: string; name: string }>;
+		} | null;
+		for (const id of jobIds) {
+			const job = source?.automationEdits?.find((j) => j.id === id);
+			if (!job || job.status !== "queued")
+				throw new Error("Save the native scene edit intent before queuing");
+			if (s.runs.some((r) => r.id === id)) continue; // exact retry after an uncertain response
+			const worker = (await getProject(job.workerProjectId)) as {
+				automationSource?: {
+					projectId: string;
+					jobId: string;
+					sceneId: string;
+				};
+			} | null;
+			if (
+				!worker ||
+				worker.automationSource?.projectId !== projectId ||
+				worker.automationSource?.jobId !== job.id ||
+				worker.automationSource?.sceneId !== job.sceneId
+			)
+				throw new Error(
+					"The isolated working copy does not belong to this scene job",
+				);
+			const name =
+				source?.scenes?.find((s) => s.id === job.sceneId)?.name ?? "Scene";
+			const options = await resolveBrandOptions({
+				...job.options,
+				action: job.action,
+			});
+			s.runs.unshift({
+				id,
+				ownerId,
+				kind: "single",
+				executor: "window",
+				token: randomUUID(),
+				heartbeat: Date.now(),
+				createdAt: Date.now(),
+				updatedAt: Date.now(),
+				options,
+				jobs: [
+					{
+						projectId: job.workerProjectId,
+						sourceProjectId: projectId,
+						automationJobId: id,
+						sceneId: job.sceneId,
+						action: job.action,
+						name,
+						fileName: name,
+						source: "existing",
+						status: "ready",
+						message: "Waiting in scene edit queue",
+						cancelRequested: false,
+						created: true,
+						completedStages: 0,
+					},
+				],
+			});
+		}
+		return publicState(s);
+	});
+}
+/** A reloaded owner atomically fences its vanished frame. Other browsers can
+ * recover only expired owners. Exactly one oldest run is dispatched at a time. */
+export async function recoverSceneWorker({
+	ownerId,
+	activeRunId,
+	executor = "window",
+	workerId,
+}: {
+	ownerId: string;
+	activeRunId?: string;
+	executor?: "iframe" | "window";
+	workerId?: string;
+}) {
+	return transaction(async (s) => {
+		for (const run of s.runs) {
+			if (
+				(run.executor ?? "window") !== executor ||
+				!run.jobs.some((j) => j.sourceProjectId) ||
+				!run.jobs.some(
+					(j) =>
+						batchEditIsLocked({ status: j.status }) ||
+						j.status === "interrupted",
+				)
+			)
+				continue;
+			if (run.ownerId !== ownerId && Date.now() - run.heartbeat <= leaseMs)
+				continue;
+			run.ownerId = ownerId;
+			run.heartbeat = Date.now();
+		}
+		const next = [...s.runs]
+			.reverse()
+			.find((r) =>
+				r.jobs.some(
+					(j) =>
+						batchEditIsLocked({ status: j.status }) ||
+						(j.sourceProjectId && j.status === "interrupted"),
+				),
+			);
+		if (
+			!next ||
+			(next.executor ?? "window") !== executor ||
+			next.ownerId !== ownerId ||
+			next.id === activeRunId
+		)
+			return null;
+		if (
+			workerId &&
+			next.workerId &&
+			next.workerId !== workerId &&
+			Date.now() - (next.workerHeartbeatAt ?? 0) < leaseMs
+		)
+			return null;
+		next.workerId = workerId;
+		next.workerHeartbeatAt = Date.now();
+		next.token = randomUUID();
+		for (const job of next.jobs) {
+			if (!job.sourceProjectId) continue;
+			const project = (await getProject(job.projectId)) as {
+				automationCheckpoint?: number;
+			} | null;
+			const completed = project?.automationCheckpoint ?? job.completedStages;
+			job.completedStages = completed;
+			job.resumeFromStage = completed;
+			job.status = batchEditTransition({
+				status: job.status,
+				event: "recover",
+			}) as BatchJobStatus;
+			job.message = completed
+				? `Resuming saved stage ${completed + 1}`
+				: "Starting queued scene edit";
+		}
+		return {
+			run: publicState({ runs: [next] }).runs[0],
+			token: next.token,
+			files: [],
+		};
+	});
+}
+
+export async function retrySceneEdit({
+	id,
+	ownerId,
+}: {
+	id: string;
+	ownerId: string;
+}) {
+	return transaction(async (s) => {
+		const run = s.runs.find(
+			(r) => r.id === id && r.jobs.every((j) => !!j.sourceProjectId),
+		);
+		if (
+			!run ||
+			!run.jobs.every((j) => ["failed", "interrupted"].includes(j.status))
+		)
+			throw new Error("Only a stopped scene edit can be resumed");
+		for (const job of run.jobs) {
+			const project = (await getProject(job.projectId)) as {
+				automationCheckpoint?: number;
+			} | null;
+			if (!project) throw new Error("Saved working copy unavailable");
+			job.completedStages = project.automationCheckpoint ?? job.completedStages;
+			job.resumeFromStage = job.completedStages;
+			job.status = batchEditTransition({
+				status: job.status,
+				event: "retry",
+			}) as BatchJobStatus;
+			job.cancelRequested = false;
+			job.message = `Waiting to resume stage ${job.completedStages + 1}`;
+		}
+		run.ownerId = ownerId;
+		run.executor = "window";
+		run.workerId = undefined;
+		run.workerHeartbeatAt = undefined;
+		run.heartbeat = Date.now();
+		run.updatedAt = Date.now();
+		// A retry joins the tail; it must not preempt a later job already dispatched.
+		s.runs = [run, ...s.runs.filter((r) => r.id !== run.id)];
+		return publicState(s);
+	});
 }

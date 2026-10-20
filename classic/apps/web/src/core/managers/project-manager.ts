@@ -1434,6 +1434,13 @@ export class ProjectManager {
 		return this.active;
 	}
 
+	/** Effective rendering settings; persistence always reads the base document. */
+	getActiveForScene(): TProject {
+		const project = this.getActive();
+		const settings = this.editor.scenes.getActiveSceneOrNull()?.settings;
+		return settings ? { ...project, settings } : project;
+	}
+
 	/**
 	 * for agents:
 	 * in most cases, the project is guaranteed to be active, in which getActive() should be used instead.
@@ -1473,7 +1480,9 @@ export class ProjectManager {
 	}
 
 	getSavedProjects(): TProjectMetadata[] {
-		return this.savedProjects;
+		return this.savedProjects.filter(
+			(project) => !project.automationWorkingCopy,
+		);
 	}
 
 	getIsLoading(): boolean {

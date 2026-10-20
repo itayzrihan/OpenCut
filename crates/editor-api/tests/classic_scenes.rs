@@ -80,6 +80,64 @@ fn ignore_project_time(mut project: Value) -> Value {
 }
 
 #[tokio::test]
+async fn scene_automation_forks_and_publishes_without_touching_sources_or_navigation() {
+    let runtime=attached().await;
+    let before=read(&runtime).await;
+    let recipe=json!({"zoom":true,"transitions":true,"wordAnimation":true,"music":true});
+    let request=input(&before,json!({"type":"enqueue","jobs":[{"id":"job-a","sceneId":"main-scene","workerProjectId":"worker-a","outputSceneId":"output-a","action":"full-auto","options":recipe},{"id":"job-b","sceneId":"other-scene","workerProjectId":"worker-b","outputSceneId":"output-b","action":"zoom","options":recipe}]}));
+    runtime.registry().invoke("project.classic.automation.edit",InvocationContext{dry_run:true,..Default::default()},request.clone()).await.unwrap();
+    assert_eq!(read(&runtime).await,before);
+    let result=call(&runtime,"project.classic.automation.edit",request).await;
+    assert_eq!(result["workers"].as_array().unwrap().len(),2);
+    let queued=read(&runtime).await;
+    assert_eq!(queued["project"]["classic"]["document"]["scenes"],before["project"]["classic"]["document"]["scenes"]);
+    let mut worker=queued["project"]["classic"].clone();
+    worker["document"]=result["workers"][0]["project"].clone();
+    worker["document"]["settings"]["canvasSize"]=json!({"width":1080,"height":1920});
+    worker["document"]["scenes"][0]["name"]=json!("Edited result");
+    call(&runtime,SCENES,input(&queued,json!({"type":"select","sceneId":"other-scene"}))).await;
+    let switched=read(&runtime).await;
+    let publish=input(&switched,json!({"type":"publish","jobId":"job-a","worker":worker}));
+    call(&runtime,"project.classic.automation.edit",publish.clone()).await;
+    let after=read(&runtime).await;
+    let document=&after["project"]["classic"]["document"];
+    assert_eq!(document["currentSceneId"],"other-scene");
+    assert_eq!(document["settings"],before["project"]["classic"]["document"]["settings"]);
+    let scenes=document["scenes"].as_array().unwrap();
+    assert_eq!(&scenes[..2],before["project"]["classic"]["document"]["scenes"].as_array().unwrap());
+    assert_eq!(scenes[2]["id"],"output-a");
+    assert_eq!(scenes[2]["settings"]["canvasSize"],json!({"width":1080,"height":1920}));
+    assert_ne!(scenes[2]["tracks"]["main"]["id"],scenes[0]["tracks"]["main"]["id"]);
+    assert_eq!(document["automationEdits"][0]["status"],"published");
+    let plan=call(&runtime,"project.classic.export.plan",json!({"projectId":"classic-project","expectedRevision":after["revision"],"sceneId":"output-a","preferences":{"resolution":"project","encoding":"compact"},"quality":"very_high","format":"mp4"})).await;
+    assert_eq!(plan["logicalWidth"],1080);assert_eq!(plan["logicalHeight"],1920);
+
+    // A resumed publication never duplicates the result.
+    let mut replay=publish;replay["expectedRevision"]=after["revision"].clone();
+    call(&runtime,"project.classic.automation.edit",replay).await;
+    assert_eq!(read(&runtime).await["project"]["classic"]["document"]["scenes"].as_array().unwrap().len(),3);
+    // Changing this scene's canvas leaves both project defaults and sources intact.
+    let state=read(&runtime).await;
+    call(&runtime,"project.classic.settings.update",json!({"projectId":"classic-project","sceneId":"output-a","expectedRevision":state["revision"],"settings":{"canvasSize":{"width":720,"height":1280}}})).await;
+    let resized=read(&runtime).await;
+    assert_eq!(resized["project"]["classic"]["document"]["settings"],document["settings"]);
+    call(&runtime,"history.undo",json!({})).await;
+    call(&runtime,"history.undo",json!({})).await;
+    assert_eq!(read(&runtime).await["project"]["classic"]["document"]["scenes"],switched["project"]["classic"]["document"]["scenes"]);
+}
+
+#[tokio::test]
+async fn scene_automation_rejects_unknown_scenes_and_stale_revisions_atomically() {
+    let runtime=attached().await;let before=read(&runtime).await;
+    for scene in ["missing","main-scene"] {
+        let mut request=input(&before,json!({"type":"enqueue","jobs":[{"id":"a","sceneId":scene,"workerProjectId":"w","outputSceneId":"o","action":"full-auto","options":{"zoom":false,"transitions":false,"wordAnimation":false,"music":false}}]}));
+        if scene=="main-scene" {request["expectedRevision"]=json!(0);}
+        assert!(runtime.registry().invoke("project.classic.automation.edit",InvocationContext::default(),request).await.is_err());
+        assert_eq!(read(&runtime).await,before);
+    }
+}
+
+#[tokio::test]
 async fn scene_lifecycle_preserves_media_unknown_fields_and_restores_active_scene_through_history()
 {
     let runtime = attached().await;

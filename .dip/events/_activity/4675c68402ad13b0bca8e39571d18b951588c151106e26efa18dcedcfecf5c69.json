@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4675c68402ad13b0bca8e39571d18b951588c151106e26efa18dcedcfecf5c69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:55:45.181Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/scene-ai-queue-2026-10-20/build.log\nnode classic/scripts/test-web.mjs src/core/managers/__tests__/playback-manager.test.ts src/core/managers/__tests__/playback-preparation.test.ts src/core/managers/__tests__/timeline-manager-preview.test.ts src/services/storage/__tests__/project-source-roundtrip.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/scene-settings-regressions > .local/scene-ai-queue-2026-10-20/scene-settings-regressions.log 2>&1\ncargo test -q --manifest-path classic/rust/Cargo.toml -p timeline batch_edit > .local/scene-ai-queue-2026-10-20/native-lifecycle-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e8050698-e216-4b77-878a-36731044b78e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:55:46.092Z",
+  "parents": [],
+  "branch": "main"
+}

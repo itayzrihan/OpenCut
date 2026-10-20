@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "435ba38ce1ce598b8239426712c1f5560bb8d05abaec9b1d2b841d71c3330b54",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:48:14.578Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/server.test.ts';s=open(p).read().replace('{ metadata: { name: string; updatedAt: string }; currentSceneId?: string }','{ metadata: { name: string; updatedAt: string }; currentSceneId?: string; automationEdits?: import(\"./scene-jobs\").SceneJob[];automationCheckpoint?:number;scenes?:Array<{id:string;name:string}> }').replace('\\tassertBatchProjectWrite,','\\tassertBatchProjectWrite,\\n\\tcreateSceneEdits,\\n\\trecoverSceneWorker,\\n\\tretrySceneEdit,');s+='''\n\ntest(\"scene queue is serial, source stays writable, reload fences old workers and resumes durable stages\",async()=>{\n await writeFile(join(root,\"batch/queue.json\"),JSON.stringify({runs:[]}));\n const job=(id:string)=>({id,sceneId:`scene-${id}`,workerProjectId:`worker-${id}`,outputSceneId:`output-${id}`,action:\"full-auto\" as const,options,status:\"queued\" as const});\n projects.set(\"source\",{metadata:{name:\"Source\",updatedAt:\"now\"},automationEdits:[job(\"first\"),job(\"second\")],scenes:[{id:\"scene-first\",name:\"First scene\"},{id:\"scene-second\",name:\"Second scene\"}]});\n projects.set(\"worker-first\",{metadata:{name:\"Working\",updatedAt:\"now\"},automationCheckpoint:0});\n projects.set(\"worker-second\",{metadata:{name:\"Working\",updatedAt:\"now\"},automationCheckpoint:0});\n await createSceneEdits({projectId:\"source\",jobIds:[\"first\",\"second\"],ownerId:\"tab\"});\n await createSceneEdits({projectId:\"source\",jobIds:[\"first\",\"second\"],ownerId:\"tab\"});\n expect((await getBatchState()).runs).toHaveLength(2);\n await assertBatchProjectWrite({projectId:\"source\",token:[REDACTED];\n const first=await recoverSceneWorker({ownerId:\"tab\"});expect(first?.run.id).toBe(\"first\");\n if(!first)throw new Error(\"Missing worker\");\n expect(await recoverSceneWorker({ownerId:\"another-tab\"})).toBeNull();\n expect(await recoverSceneWorker({ownerId:\"tab\",activeRunId:\"first\"})).toBeNull();\n await updateBatch({id:\"first\",token:[REDACTED],projectId:\"worker-first\",event:\"run\"});\n projects.get(\"worker-first\")!.automationCheckpoint=2;\n ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-302502d4-995c-4f02-bfe0-22f25eb4c003"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:48:14.852Z",
+  "parents": [],
+  "branch": "main"
+}

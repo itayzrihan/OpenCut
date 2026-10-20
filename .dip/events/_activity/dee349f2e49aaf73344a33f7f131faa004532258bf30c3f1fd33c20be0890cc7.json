@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dee349f2e49aaf73344a33f7f131faa004532258bf30c3f1fd33c20be0890cc7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:59:18.777Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '198,292p' classic/apps/web/src/core/managers/transcription-manager.ts; rg -n -A75 'collectAudioClips' classic/apps/web/src/media/audio.ts | head -85; rg -n -A20 'getFile\\(|\\.file|createObjectURL|cache' classic/apps/web/src/media/unified-angles*.ts | head -65",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4d5fbe5a-d1bb-4259-b0f5-92a1f21b2eb9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:59:18.781Z",
+  "parents": [],
+  "branch": "main"
+}

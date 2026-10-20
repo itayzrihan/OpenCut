@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0cf0c08ea874fc32fbc51309ef052a784cf94f8a936891020762d6064b98a3bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:41:44.853Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,120p' classic/apps/web/src/selection/hooks.ts\nsed -n '438,470p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nrg -n 'export.*useSelection' classic/apps/web/src/selection -g '*.ts*'\nrg -n 'getActiveOrNull|settings' classic/apps/web/src/preview/components/index.tsx | head -10\ncat classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts | head -22",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-895ac481-a1fe-47f5-835e-11cf31eb00f1"
+      },
+      {
+        "at": "2026-10-20T18:41:44.955Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,120p' classic/apps/web/src/selection/hooks.ts\nsed -n '438,470p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nrg -n 'export.*useSelection' classic/apps/web/src/selection -g '*.ts*'\nrg -n 'getActiveOrNull|settings' classic/apps/web/src/preview/components/index.tsx | head -10\ncat classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts | head -22",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-895ac481-a1fe-47f5-835e-11cf31eb00f1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:41:44.984Z",
+  "parents": [],
+  "branch": "main"
+}

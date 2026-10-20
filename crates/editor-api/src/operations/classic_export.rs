@@ -176,7 +176,7 @@ pub(super) fn register_export(
                     .as_array()
                     .and_then(|s| s.iter().find(|s| s["id"] == input.scene_id))
                     .ok_or_else(|| CapabilityError::InvalidInput("Unknown export scene".into()))?;
-                let settings = &doc["settings"];
+                let settings = scene.get("settings").unwrap_or(&doc["settings"]);
                 let w = number(&settings["canvasSize"], "width", 1920.0);
                 let h = number(&settings["canvasSize"], "height", 1080.0);
                 if w < 2.0 || h < 2.0 || w > 8192.0 || h > 8192.0 {

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "98e9b912bad8bce9394472c0019ff2c2313681fea9ee4be8493c31e38b7a206c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:22:58.613Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src/app/api | rg 'scratch|export'; rg -n 'export.scratch|scratch\\.|createScratch' classic/apps/web/src/services/local-drive classic/apps/web/src/app/api -g '*.ts' | head -25",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-fb60a222-4dd1-4cbc-ba57-f91139f6711c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:22:58.615Z",
+  "parents": [],
+  "branch": "main"
+}

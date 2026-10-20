@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a2eb7d04046ed3dea56fcdb1ad68164489d2540ae93bbb38d6869ed15cd782f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:58:02.360Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/activate.mjs",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/src__core____tests____canonical-scene-automation.test.ts.log",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests/summary.json",
+          ".local/scene-ai-queue-2026-10-20/final-host-tests.log",
+          ".local/scene-ai-queue-2026-10-20/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bca1c51f-0363-4f2a-808e-66c362ef837b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:58:02.362Z",
+  "parents": [],
+  "branch": "main"
+}

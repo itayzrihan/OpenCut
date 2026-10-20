@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54e0ff554d8139560768719ed1ca5eab79831d9bad6a801d32811e0fdc75b091",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:24:34.540Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/types.log",
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/.gitignore",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "04f56dc9-5172-4556-96cf-18918d6d977f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:24:34.548Z",
+  "parents": [],
+  "branch": "main"
+}

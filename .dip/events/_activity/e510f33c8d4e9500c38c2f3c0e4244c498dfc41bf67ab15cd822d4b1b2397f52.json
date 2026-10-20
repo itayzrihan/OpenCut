@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e510f33c8d4e9500c38c2f3c0e4244c498dfc41bf67ab15cd822d4b1b2397f52",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:14:06.627Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/19.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/19.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/15.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/15.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/4.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/4.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/2.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/2.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/17.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/17.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack_",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9e9866d9-76f1-4493-ae21-12ecd29afc0f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:14:06.628Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -69,6 +69,8 @@ pub fn full_auto_framing_sample_times(o: FullAutoFramingSampleOptions) -> Vec<f6
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FullAutoEditOptions {
+    #[serde(default)]
+    pub action: Option<String>,
     pub zoom: bool,
     pub transitions: bool,
     pub word_animation: bool,
@@ -77,6 +79,10 @@ pub struct FullAutoEditOptions {
 }
 #[export]
 pub fn full_auto_edit_stages(o: FullAutoEditOptions) -> Vec<String> {
+    if let Some(action)=o.action.as_deref().filter(|a|*a!="full-auto") {
+        if matches!(action,"center-subject"|"framing"|"zoom"|"transitions"|"word-animation"|"music"|"auto-texts") { return vec![action.into(),"save".into()]; }
+        return vec![];
+    }
     let mut stages = vec!["preflight", "framing", "silence", "auto-texts", "finish"]
         .into_iter()
         .map(str::to_owned)
@@ -405,6 +411,7 @@ mod tests {
     fn options_are_independent_and_base_order_is_fixed() {
         for n in 0..16 {
             let s = full_auto_edit_stages(FullAutoEditOptions {
+                action: None,
                 zoom: n & 1 != 0,
                 transitions: n & 2 != 0,
                 word_animation: n & 4 != 0,

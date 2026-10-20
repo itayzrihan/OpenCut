@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e901fa43533a4b8651b64212769c27e549b2a87f97da3c9c2960b35da3369a4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:49:03.439Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,147p' classic/apps/web/src/transcription/timeline-stream.ts; cat classic/apps/web/src/export/scratch.ts | head -175; sed -n '1,100p' classic/apps/web/src/subtitles/auto-texts.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-24eec26a-99d8-4c37-acd5-0a22044d7524"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:49:03.441Z",
+  "parents": [],
+  "branch": "main"
+}

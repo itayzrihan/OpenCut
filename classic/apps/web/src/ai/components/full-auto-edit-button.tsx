@@ -16,13 +16,24 @@ import { useEditor } from "@/editor/use-editor";
 import { type FullAutoOptions } from "@/ai/full-auto-edit";
 import { toast } from "sonner";
 import { useBatchEdit } from "@/batch/provider";
+import { sceneActions, type SceneAction } from "@/batch/scene-jobs";
 import { findSceneCheckpoint } from "@/batch/scene-checkpoint";
 
 export function FullAutoEditButton({
 	disabled,
 	onRunningChange,
+	sceneIds,
+	action = "full-auto",
+	initialOpen = false,
+	onClose,
+	hideTrigger = false,
 }: {
 	disabled: boolean;
+	sceneIds?: string[];
+	action?: SceneAction;
+	initialOpen?: boolean;
+	onClose?: () => void;
+	hideTrigger?: boolean;
 	onRunningChange?: (running: boolean) => void;
 }) {
 	const editor = useEditor();
@@ -30,16 +41,20 @@ export function FullAutoEditButton({
 	const projectId = editor.project.getActive().metadata.id;
 	const sceneId = editor.scenes.getActiveScene().id;
 	const previous = findSceneCheckpoint({
-		runs: state.runs,
+		runs: state.runs.filter(
+			(run) => !run.options.action || run.options.action === action,
+		),
 		projectId,
 		sceneId,
 	});
-	const previousJob = previous?.jobs.find((j) => j.projectId === projectId);
+	const previousJob = previous?.jobs.find(
+		(j) => (j.sourceProjectId ?? j.projectId) === projectId,
+	);
 	const resumable =
 		(previousJob?.status === "failed" ||
 			previousJob?.status === "interrupted") &&
-		previousJob.completedStages >= 3;
-	const [open, setOpen] = useState(false);
+		(!!previousJob.sourceProjectId || previousJob.completedStages >= 3);
+	const [open, setOpen] = useState(initialOpen);
 	const [running, setRunning] = useState(false);
 	const [status, setStatus] = useState("");
 	const [options, setOptions] = useState<FullAutoOptions>({
@@ -55,10 +70,13 @@ export function FullAutoEditButton({
 		try {
 			await startProject({
 				editor,
+				sceneIds,
+				action,
 				options: resume && previous ? previous.options : options,
 				...(resume && previous ? { resumeRunId: previous.id } : {}),
 			});
 			setOpen(false);
+			onClose?.();
 		} catch (e) {
 			const message =
 				e instanceof Error ? e.message : "Could not queue Full Auto Edit";
@@ -71,25 +89,36 @@ export function FullAutoEditButton({
 	};
 
 	return (
-		<div className="mb-4 space-y-2 rounded-md border p-3">
-			<Button
-				className="w-full"
-				disabled={disabled || running}
-				onClick={() => (resumable ? void run(true) : setOpen(true))}
-			>
-				<WandSparkles />{" "}
-				{resumable
-					? `Resume Full Auto Edit · stage ${previousJob.completedStages + 1}`
-					: "Full Auto Edit"}
-			</Button>
-			<p className="text-xs text-muted-foreground">
-				Vertical framing, smart silence removal, complete Hebrew Auto Texts and
-				finishing.
-			</p>
+		<div
+			className={
+				hideTrigger ? undefined : "mb-4 space-y-2 rounded-md border p-3"
+			}
+		>
+			{!hideTrigger && (
+				<Button
+					className="w-full"
+					disabled={disabled || running}
+					onClick={() => (resumable ? void run(true) : setOpen(true))}
+				>
+					<WandSparkles />{" "}
+					{resumable
+						? `Resume Full Auto Edit · stage ${previousJob.completedStages + 1}`
+						: "Full Auto Edit"}
+				</Button>
+			)}
+			{!hideTrigger && (
+				<p className="text-xs text-muted-foreground">
+					Vertical framing, smart silence removal, complete Hebrew Auto Texts
+					and finishing.
+				</p>
+			)}
 			<Dialog
 				open={open}
 				onOpenChange={(value) => {
-					if (!running) setOpen(value);
+					if (!running) {
+						setOpen(value);
+						if (!value) onClose?.();
+					}
 				}}
 			>
 				<DialogContent
@@ -101,12 +130,13 @@ export function FullAutoEditButton({
 					}}
 				>
 					<DialogHeader>
-						<DialogTitle>Full Auto Edit</DialogTitle>
+						<DialogTitle>
+							{sceneActions.find(([id]) => id === action)?.[1]} ·{" "}
+							{sceneIds?.length ?? 1} סצנות
+						</DialogTitle>
 						<DialogDescription>
-							Start from imported video or your selected Smart Takes. Smart
-							Takes keeps its selected cuts without rendering; existing text and
-							take alternatives are cleared, then speech is transcribed afresh.
-							Undo restores the assembly. Choose any optional finishing steps.
+							כל סצנה תעובד בתור. התוצאה תישמר כסצנה חדשה; המקור והכתוביות
+							יישארו ללא שינוי. אפשר להמשיך לעבוד ולעבור בין סצנות.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3">
@@ -117,31 +147,32 @@ export function FullAutoEditButton({
 								setOptions((previous) => ({ ...previous, brandKitId }))
 							}
 						/>
-						{(
-							[
-								["zoom", "Automatic Zoom"],
-								["transitions", "Automatic Transition Edit"],
-								["wordAnimation", "Automatic Word Animation and Reveal"],
-								["music", "Automatic Music"],
-							] as const
-						).map(([key, label]) => (
-							<label key={key} className="flex items-center gap-3 text-sm">
-								<Checkbox
-									checked={options[key]}
-									disabled={running}
-									onCheckedChange={(checked) =>
-										setOptions((previous) => ({
-											...previous,
-											[key]: checked === true,
-										}))
-									}
-								/>
-								{label}
-							</label>
-						))}
+						{action === "full-auto" &&
+							(
+								[
+									["zoom", "Automatic Zoom"],
+									["transitions", "Automatic Transition Edit"],
+									["wordAnimation", "Automatic Word Animation and Reveal"],
+									["music", "Automatic Music"],
+								] as const
+							).map(([key, label]) => (
+								<label key={key} className="flex items-center gap-3 text-sm">
+									<Checkbox
+										checked={options[key]}
+										disabled={running}
+										onCheckedChange={(checked) =>
+											setOptions((previous) => ({
+												...previous,
+												[key]: checked === true,
+											}))
+										}
+									/>
+									{label}
+								</label>
+							))}
 						<p className="text-xs text-muted-foreground">
-							Hebrew · ivrit-ai Large v3 Turbo in your browser · 1 row · Smart
-							audio cut · protect speech ·{" "}
+							Hebrew · configured speech engine · 1 row · Smart audio cut ·
+							protect speech ·{" "}
 							{options.brandKitId ? "Brand Kit fonts" : "Assistant bold"} · fade
 							60% / 25%. Local face/body framing uses five source samples per
 							source; no cloud AI is used for centering. Uncertain subjects use
@@ -157,13 +188,15 @@ export function FullAutoEditButton({
 						<Button
 							variant="outline"
 							disabled={running}
-							onClick={() => setOpen(false)}
+							onClick={() => {
+								setOpen(false);
+								onClose?.();
+							}}
 						>
 							Close
 						</Button>
 						<Button disabled={running} onClick={() => void run()}>
-							{running && <Loader2 className="animate-spin" />}Start Full Auto
-							Edit
+							{running && <Loader2 className="animate-spin" />}שלח לתור
 						</Button>
 					</DialogFooter>
 				</DialogContent>

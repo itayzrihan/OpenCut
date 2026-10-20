@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f7cc9327f58f1f8ac4e7cca004eddfe278100570099498fe95c50755e4a2d0e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:50:59.397Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/new-host-tests.log\ncat .local/scene-ai-queue-2026-10-20/new-host-tests/src__ai____tests____subject-framing-source.test.ts.log\nrg 'error ' .local/scene-ai-queue-2026-10-20/lint.log | tail -12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f2a1c052-b1ae-4396-9088-a0e48dad73a4"
+      },
+      {
+        "at": "2026-10-20T18:50:59.478Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/new-host-tests.log\ncat .local/scene-ai-queue-2026-10-20/new-host-tests/src__ai____tests____subject-framing-source.test.ts.log\nrg 'error ' .local/scene-ai-queue-2026-10-20/lint.log | tail -12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f2a1c052-b1ae-4396-9088-a0e48dad73a4"
+      },
+      {
+        "at": "2026-10-20T18:50:59.481Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read().replace('\\tworkerRef.current = workers;\\n\\tconst launchRef = useRef(launch);\\n\\tlaunchRef.current = launch;','\\tconst launchRef = useRef(launch);\\n\\tuseEffect(()=>{workerRef.current=workers;launchRef.current=launch;});');s=s.replace('publishSceneResults(BackgroundEditor.getInstance(), latestState.current.runs)','publishSceneResults({editor:BackgroundEditor.getInstance(), runs:latestState.current.runs})');open(p,'w').write(s)\np='classic/apps/web/src/batch/scene-jobs.ts';s=open(p).read().replace('export function automationControl(\\n\\teditor: EditorCore,\\n\\tchange: Record<string, unknown>,\\n)','export function automationControl({editor,change}: {editor:EditorCore;change:Record<string,unknown>})').replace('automationControl(editor, {','automationControl({editor,change: {');# closing call counterpart targeted\ns=s.replace('jobs,\\n\\t}) as {','jobs,\\n\\t}}) as {');s=s.replace('export async function publishSceneResults(editor: EditorCore, runs: BatchRun[])','export async function publishSceneResults({editor,runs}:{editor:EditorCore;runs:BatchRun[]})');s=s.replace('\\t\\t\\t\\t},\\n\\t\\t\\t});','\\t\\t\\t\\t},\\n\\t\\t\\t}});');open(p,'w').write(s)\np='classic/apps/web/src/ai/full-auto-edit.ts';s=open(p).read().replace('automationControl(editor, { type: \"checkpoint\", completed: index + 1 });','automationControl({editor,change: { type: \"checkpoint\", completed: index + 1 }});');open(p,'w').write(s)\nPY\nrg -n 'automationControl|publishSceneResults' classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/ai/full-auto-edit.ts classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b339f9ad-b087-4d5e-858b-446978bff0a5"
+      },
+      {
+        "at": "2026-10-20T18:50:59.579Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read().replace('\\tworkerRef.current = workers;\\n\\tconst launchRef = useRef(launch);\\n\\tlaunchRef.current = launch;','\\tconst launchRef = useRef(launch);\\n\\tuseEffect(()=>{workerRef.current=workers;launchRef.current=launch;});');s=s.replace('publishSceneResults(BackgroundEditor.getInstance(), latestState.current.runs)','publishSceneResults({editor:BackgroundEditor.getInstance(), runs:latestState.current.runs})');open(p,'w').write(s)\np='classic/apps/web/src/batch/scene-jobs.ts';s=open(p).read().replace('export function automationControl(\\n\\teditor: EditorCore,\\n\\tchange: Record<string, unknown>,\\n)','export function automationControl({editor,change}: {editor:EditorCore;change:Record<string,unknown>})').replace('automationControl(editor, {','automationControl({editor,change: {');# closing call counterpart targeted\ns=s.replace('jobs,\\n\\t}) as {','jobs,\\n\\t}}) as {');s=s.replace('export async function publishSceneResults(editor: EditorCore, runs: BatchRun[])','export async function publishSceneResults({editor,runs}:{editor:EditorCore;runs:BatchRun[]})');s=s.replace('\\t\\t\\t\\t},\\n\\t\\t\\t});','\\t\\t\\t\\t},\\n\\t\\t\\t}});');open(p,'w').write(s)\np='classic/apps/web/src/ai/full-auto-edit.ts';s=open(p).read().replace('automationControl(editor, { type: \"checkpoint\", completed: index + 1 });','automationControl({editor,change: { type: \"checkpoint\", completed: index + 1 }});');open(p,'w').write(s)\nPY\nrg -n 'automationControl|publishSceneResults' classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/ai/full-auto-edit.ts classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b339f9ad-b087-4d5e-858b-446978bff0a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:50:59.681Z",
+  "parents": [],
+  "branch": "main"
+}

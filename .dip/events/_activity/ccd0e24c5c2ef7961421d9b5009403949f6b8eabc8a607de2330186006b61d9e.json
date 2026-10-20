@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccd0e24c5c2ef7961421d9b5009403949f6b8eabc8a607de2330186006b61d9e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:03:29.904Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/scene-ai-queue-2026-10-20/project-before.json'))\nprint({'sceneCount':len(p['scenes']),'canvas':p['settings']['canvasSize'],'scenes':[{'id':s['id'],'name':s['name'],'clips':len(s['tracks']['main']['elements']),'captionTracks':sum(bool(t.get('captionSource')) for t in s['tracks']['overlay']),'takes':bool(s.get('takeAssembly'))} for s in p['scenes']]})\nPY\ngit diff --check\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4bd61ad0-98dd-428b-8a1a-adc276fe1b28"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:03:30.829Z",
+  "parents": [],
+  "branch": "main"
+}

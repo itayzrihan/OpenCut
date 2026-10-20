@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6836b2d377c2dd664b0b15b7d706e149c82f8c62bb0128a24c46660d27efde35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:12:18.237Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '65,151p' classic/apps/web/src/transcription/windows.ts; cat classic/apps/web/src/transcription/overlap-reader.ts | head -140; tail -5 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d44e53b1-175c-4f67-864f-cdefb4e885ac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:12:18.242Z",
+  "parents": [],
+  "branch": "main"
+}

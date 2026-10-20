@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ee7279c6484152d4be270fdd104030745ac1719c45ab4f8dfc2032c63cb006b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:46:35.323Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n -A80 'deserializeProject' classic/apps/web/src/services/storage/service.ts | tail -85; rg -n -A25 -B10 'setActiveProject|this.active =' classic/apps/web/src/core/managers/project-manager.ts | head -100",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d61680a5-47cc-4d8e-b078-5c742a6da02c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:46:35.328Z",
+  "parents": [],
+  "branch": "main"
+}

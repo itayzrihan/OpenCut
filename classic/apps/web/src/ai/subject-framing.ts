@@ -1,4 +1,5 @@
 /** Local source decoding + OpenCV + local pose inference. Rust owns detection acceptance and crop math. */
+import { resolveUnifiedAnglesVideoTiming } from "@/media/unified-angles";
 import type { EditorCore } from "@/core";
 import {
 	resolveLocalSubjectFraming,
@@ -64,9 +65,22 @@ export async function detectSubjectFraming({
 	for (const clip of scene.tracks.main.elements) {
 		if (clip.type !== "video")
 			throw new Error("Subject framing requires main-track video");
-		const group = groups.get(clip.mediaId) ?? [];
-		group.push(clip);
-		groups.set(clip.mediaId, group);
+		const wrapper = assets.find((a) => a.id === clip.mediaId);
+		if (!wrapper) throw new Error("Original source media unavailable");
+		const resolved = resolveUnifiedAnglesVideoTiming({
+			asset: wrapper,
+			element: clip,
+			mediaMap: new Map(assets.map((a) => [a.id, a])),
+		});
+		if (!resolved)
+			throw new Error("Selected camera source does not cover this cut");
+		const group = groups.get(resolved.asset.id) ?? [];
+		group.push({
+			...clip,
+			trimStart: resolved.trimStart as typeof clip.trimStart,
+			trimEnd: resolved.trimEnd as typeof clip.trimEnd,
+		});
+		groups.set(resolved.asset.id, group);
 	}
 	const results = [];
 	let faceSamples = 0,
@@ -142,6 +156,20 @@ export async function detectSubjectFraming({
 					height: video.videoHeight,
 					samples: resolved.valid ? JSON.parse(resolved.samplesJson) : [],
 				});
+		} catch (error) {
+			signal.throwIfAborted();
+			if (!allowFallback || !asset.width || !asset.height) throw error;
+			warnings.push(
+				`${asset.name}: frame sampling unavailable; used centered vertical cover (${error instanceof Error ? error.message : String(error)}).`,
+			);
+			for (const clip of clips)
+				results.push({
+					elementId: clip.id,
+					width: asset.width,
+					height: asset.height,
+					samples: [],
+				});
+			onProgress(warnings[warnings.length - 1]);
 		} finally {
 			video.pause();
 			video.removeAttribute("src");

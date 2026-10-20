@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b0d2f506fba12e03b12e9403732e1b8934d4afce324c725a2953cb2e589cbbef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:25:39.450Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/scene-ai-queue-2026-10-20/build.log\ncat .local/scene-ai-queue-2026-10-20/types.log\nnode classic/scripts/test-web.mjs src/batch/server.test.ts src/batch/worker.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/queue-final-tests > .local/scene-ai-queue-2026-10-20/queue-final-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-92d001a9-e3e6-4889-bb0e-40166a421d29"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:25:40.349Z",
+  "parents": [],
+  "branch": "main"
+}

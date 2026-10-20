@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89ac765ae8ea559a5314d9cd34ffe2ffb0f3c5d1dc81fb090cae5d3c0dc38224",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:06:31.146Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          ".local/scene-ai-queue-2026-10-20/format-selection.log",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "90865b74-57da-42a4-9e0d-b84b4743acf3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:06:31.158Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c966a949da6c13541934526aaf240b1e1458a70da0c240dfb984bc75864e4b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:35:55.489Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'decode|video|mediaId|source' classic/apps/web/src/ai/subject-framing.ts | head -75\ncat classic/apps/web/src/batch/scene-checkpoint.ts\nrg -l 'isBatchReadOnly|isBatchProjectLocked' classic/apps/web/src --glob '!**/*.generated.*'\nrg -l 'Sequence' classic/apps/web/src --glob '*.tsx' --glob '!**/skills/**' | head -25\nrg -n 'batch|full.auto' crates/editor-api/src/model.rs classic/rust/wasm/src/lib.rs\nsed -n '1,140p' classic/apps/web/src/ai/subject-framing.ts\nsed -n '260,305p' classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c899339f-7716-40a3-8c1d-3835f1deb059"
+      },
+      {
+        "at": "2026-10-20T18:35:55.658Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'decode|video|mediaId|source' classic/apps/web/src/ai/subject-framing.ts | head -75\ncat classic/apps/web/src/batch/scene-checkpoint.ts\nrg -l 'isBatchReadOnly|isBatchProjectLocked' classic/apps/web/src --glob '!**/*.generated.*'\nrg -l 'Sequence' classic/apps/web/src --glob '*.tsx' --glob '!**/skills/**' | head -25\nrg -n 'batch|full.auto' crates/editor-api/src/model.rs classic/rust/wasm/src/lib.rs\nsed -n '1,140p' classic/apps/web/src/ai/subject-framing.ts\nsed -n '260,305p' classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c899339f-7716-40a3-8c1d-3835f1deb059"
+      },
+      {
+        "at": "2026-10-20T18:35:55.660Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/scene-ai-queue-2026-10-20\ncp '/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac/project.json' .local/scene-ai-queue-2026-10-20/project-before.json\npython3 - <<'PY'\nimport json\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'\ns=json.load(open(p)); json.dump(s,open('.local/scene-ai-queue-2026-10-20/queue-before.json','w'))\nfor r in s['runs'][:4]:\n print({k:v for k,v in r.items() if k not in ['token','heartbeat']})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-bcfaf117-9894-4816-aa36-6d9496f80010"
+      },
+      {
+        "at": "2026-10-20T18:35:55.804Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/scene-ai-queue-2026-10-20\ncp '/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac/project.json' .local/scene-ai-queue-2026-10-20/project-before.json\npython3 - <<'PY'\nimport json\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json'\ns=json.load(open(p)); json.dump(s,open('.local/scene-ai-queue-2026-10-20/queue-before.json','w'))\nfor r in s['runs'][:4]:\n print({k:v for k,v in r.items() if k not in ['token','heartbeat']})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-bcfaf117-9894-4816-aa36-6d9496f80010"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:35:56.289Z",
+  "parents": [],
+  "branch": "main"
+}

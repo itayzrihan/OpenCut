@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6965c49e5e124edc5d91506334f35a49d68e90fb241e7494f6e706ff6970e944",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:02.537Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_automation.rs';s=open(p).read().replace('worker.insert(\"scenes\".into(), json!([scene]));','''let mut scenes=classic.document[\"scenes\"].as_array().unwrap().clone();\n                                    for item in &mut scenes { item[\"isMain\"]=json!(item[\"id\"]==job.scene_id); }\n                                    // Keep nested sequence/B-roll references available in the isolated document.\n                                    worker.insert(\"scenes\".into(), json!(scenes));''');open(p,'w').write(s)\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1\ncargo test -q -p opencut-editor-api --test classic_scenes > .local/scene-ai-queue-2026-10-20/native-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6dc5fd26-8799-4be8-9d3a-69e250b54e6e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:02.722Z",
+  "parents": [],
+  "branch": "main"
+}

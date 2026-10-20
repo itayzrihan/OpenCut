@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "630c532d7e7290355f51604b245b1c8af7d4644eb98b5b25650d782199b17cce",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:49:25.371Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_automation.rs';s=open(p).read().replace('for item in &mut scenes { item[\"isMain\"]=json!(item[\"id\"]==job.scene_id); }','for item in &mut scenes { item[\"isMain\"]=json!(item[\"id\"]==job.scene_id); if item[\"id\"]==job.scene_id {item.as_object_mut().unwrap().remove(\"settings\");} }');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_settings.rs\nnode - <<'JS'\nconst {execFileSync}=require('node:child_process');\nconst changed=execFileSync('git',['diff','--name-only']).toString().trim().split('\\n').filter(p=>/\\.tsx?$/.test(p));\nchanged.push('classic/apps/web/src/batch/scene-jobs.ts');\nexecFileSync('classic/node_modules/.bin/prettier',['--write',...changed],{stdio:['ignore','ignore','inherit']});\nJS\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/scene-ai-queue-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-64860e89-0ba1-4038-8c80-7d0de7b1eb32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:49:25.714Z",
+  "parents": [],
+  "branch": "main"
+}

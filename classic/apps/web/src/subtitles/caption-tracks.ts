@@ -199,7 +199,7 @@ export function updateCaptionSourceWords({
 		tracks: activeScene.tracks,
 		words,
 		settings: nextSettings,
-		canvasSize: editor.project.getActive().settings.canvasSize,
+		canvasSize: editor.project.getActiveForScene().settings.canvasSize,
 		layerCount: source.layerCount,
 		preserveEditedElements: false,
 	});

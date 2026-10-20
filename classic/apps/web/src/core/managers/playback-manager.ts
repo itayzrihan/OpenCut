@@ -13,6 +13,7 @@ import {
 } from "@/wasm";
 
 type PlaybackProjectReader = {
+	getActiveForScene?: () => { settings: { fps: FrameRate } } | null | undefined;
 	getActive: () => { settings: { fps: FrameRate } } | null | undefined;
 };
 
@@ -421,7 +422,10 @@ export class PlaybackManager {
 	private updateTime = (): void => {
 		if (!this.isPlaying) return;
 
-		const fps = this.editor.project.getActive()?.settings.fps;
+		const fps = (
+			this.editor.project.getActiveForScene?.() ??
+			this.editor.project.getActive()
+		)?.settings.fps;
 		const rawTime = this.getClockTime();
 		const newTime = fps ? roundFrameTime({ time: rawTime, fps }) : rawTime;
 		const maxTime = this.editor.timeline.getTotalDuration();

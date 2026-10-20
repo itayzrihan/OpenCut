@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d27f126e5beb1e37c1077eb8dfa565e94a20d93bc93fcf2af7888798ff2f66c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:46:11.741Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_automation.rs",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts",
+          "crates/editor-api/tests/classic_scenes.rs",
+          ".local/scene-ai-queue-2026-10-20/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3b068d77-986f-432d-9aa9-52a413e2a8f7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:46:11.743Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc4f18bb99d7dc8b4f3cd8340b8f846cfae2ec4ac86b3d5a576ed10e20714535",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:16:41.781Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/scratch.ts classic/apps/web/src/transcription/timeline-stream.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c7a6a9ef-6c9f-4138-8d3a-8a10718fb670"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:16:41.783Z",
+  "parents": [],
+  "branch": "main"
+}

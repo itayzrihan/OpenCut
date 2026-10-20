@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78a42ebcf7e6f349364d848424feefb34b427fb7386fd2008594e9ce2ad830d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:47:36.455Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_automation.rs';s=open(p).read().replace('let mut workers = Vec::new();','''if let Change::Publish{job_id,..}=&input.change {\n                    let store=state.read().map_err(|_|CapabilityError::Failed(\"State lock poisoned\".into()))?;\n                    if store.document.revision!=input.expected_revision {return Err(CapabilityError::Conflict(\"Scene edit revision changed\".into()));}\n                    let classic=store.document.project.as_ref().filter(|p|p.id==input.project_id).and_then(|p|p.classic.as_ref()).ok_or_else(||CapabilityError::Conflict(\"Scene edit project changed\".into()))?;\n                    if classic.document.get(\"automationEdits\").and_then(Value::as_array).is_some_and(|jobs|jobs.iter().any(|j|j[\"id\"]==*job_id&&j[\"status\"]==\"published\")) {\n                        return Ok(OperationSuccess::new(Output{mutation:MutationOutput{project_id:Some(input.project_id),previous_revision:input.expected_revision,revision:input.expected_revision,committed:false,undo_entry:None,warnings:vec![],changed_ids:vec![]},workers:vec![]}));\n                    }\n                }\n                let mut workers = Vec::new();''',1).replace('for id in scene_ids {','let mut scene_ids:Vec<_>=scene_ids.into_iter().collect();scene_ids.sort();\\n                                for id in scene_ids {');open(p,'w').write(s)\nPY\ncargo test -q -p opencut-editor-api --test classic_scenes scene_automation > .local/scene-ai-queue-2026-10-20/native-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-52482d06-292c-4a8c-8acc-0fb5f2634482"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:47:36.816Z",
+  "parents": [],
+  "branch": "main"
+}

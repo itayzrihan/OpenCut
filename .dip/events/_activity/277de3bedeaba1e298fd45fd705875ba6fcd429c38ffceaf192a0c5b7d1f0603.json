@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "277de3bedeaba1e298fd45fd705875ba6fcd429c38ffceaf192a0c5b7d1f0603",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:49:27.538Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'catch|console|error:' classic/apps/web/src/core/managers/transcription-manager.ts | tail -30; rg -n 'InvalidState|NotReadable|changed since|OPFS' classic/apps/web/src/export/__tests__/streaming*; rg -n 'resume|phase|message' classic/apps/web/src/core/managers/transcription-manager.ts | tail -40",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d95adf68-9746-49e2-820c-246ae2f0c008"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:49:27.540Z",
+  "parents": [],
+  "branch": "main"
+}

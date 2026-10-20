@@ -105,7 +105,7 @@ function useCanvasDimensionDraft({
 export function SettingsView() {
 	const [view, setView] = useState<SettingsView>("project-info");
 	const editor = useEditor();
-	const activeProject = useEditorProject((e) => e.project.getActive());
+	const activeProject = useEditorProject((e) => e.project.getActiveForScene());
 	const activeScene = useEditorTimelineScenes((e) =>
 		e.scenes.getActiveSceneOrNull(),
 	);

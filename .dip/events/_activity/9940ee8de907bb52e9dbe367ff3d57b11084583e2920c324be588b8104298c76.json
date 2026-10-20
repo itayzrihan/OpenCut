@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9940ee8de907bb52e9dbe367ff3d57b11084583e2920c324be588b8104298c76",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:52:05.198Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-scene-ai-queue.mjs')\ns=p.read_text().replace(\"'src/ai/__tests__/subject-framing-source.test.ts'\", \"'src/export/__tests__/pcm-file.test.ts','src/export/__tests__/audio-quality.test.ts','src/export/__tests__/audio-source-windows.test.ts','src/ai/__tests__/subject-framing-source.test.ts'\")\np.write_text(s)\np=Path('analysis/scene-ai-queue-2026-10-20/architecture.md');s=p.read_text().replace('64 host/WASM tests','72 host/WASM tests');p.write_text(s)\nPY\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b7867d2e-d19f-4c6d-b300-854e482550fc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:52:05.202Z",
+  "parents": [],
+  "branch": "main"
+}

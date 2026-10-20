@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6960827ab225eb08b1bf1d40945da79ec9ba2f30ba2fa2bfa39f513775d774b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:53:46.024Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/core/managers/transcription-manager.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/batch/standalone-worker.tsx"
+        ],
+        "changeHash": "4739637fd12c94893ea3905bb6f3e554d56eb82f0552764092e2241b6691a1fb",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b959170d-069f-411c-bad9-072aaa5371fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:53:46.052Z",
+  "parents": [],
+  "branch": "main"
+}

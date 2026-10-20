@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7c7280549e5be203b2be2786a5327e4ddd0b0e3da9d3e56fbe33d09d1068fa3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:58:07.422Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '65,198p' classic/apps/web/src/core/managers/transcription-manager.ts; sed -n '98,210p' classic/apps/web/src/subtitles/auto-texts.ts; rg -n 'loadCaptionFont|resumeTranscript' classic/apps/web/src/ai/full-auto-edit.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7f23f6ab-8557-4dc2-a4dd-ea5791437d2d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:58:07.423Z",
+  "parents": [],
+  "branch": "main"
+}

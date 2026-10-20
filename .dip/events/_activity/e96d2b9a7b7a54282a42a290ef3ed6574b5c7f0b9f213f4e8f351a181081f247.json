@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e96d2b9a7b7a54282a42a290ef3ed6574b5c7f0b9f213f4e8f351a181081f247",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:04:32.961Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/scene-ai-queue-2026-10-20/project-before.json'));print({'transcriptionEngine':p.get('transcriptionEngine'),'jobs':len(p.get('transcriptionJobs',[]))})\nPY\ntail -6 .local/scene-ai-queue-2026-10-20/build.log\nrg -n '\\[production\\]' .local/scene-ai-queue-2026-10-20/build.log | tail -5\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-scene-automation.test.ts src/ai/__tests__/timeline-document-v2.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/final-wasm-tests > .local/scene-ai-queue-2026-10-20/final-wasm-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5ea88a69-cea4-41e6-b809-0ff48c7252fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:04:33.142Z",
+  "parents": [],
+  "branch": "main"
+}

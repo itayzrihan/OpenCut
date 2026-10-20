@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ed23bfffd9e02b1afaef297c32617862161257bc9d596132e86522aba981dc0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T18:54:43.985Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-scene-automation.test.ts",
+          "classic/apps/web/src/core/managers/playback-manager.ts",
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          ".local/scene-ai-queue-2026-10-20/format-extra.log",
+          ".local/scene-ai-queue-2026-10-20/types.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "44e6b42f-2b95-455f-8d4c-aec4d021c10f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:54:43.991Z",
+  "parents": [],
+  "branch": "main"
+}

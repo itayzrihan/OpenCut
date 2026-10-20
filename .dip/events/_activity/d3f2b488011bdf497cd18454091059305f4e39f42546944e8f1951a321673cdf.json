@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d3f2b488011bdf497cd18454091059305f4e39f42546944e8f1951a321673cdf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:43:02.420Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -l 'getActive\\(\\).*settings|getActiveOrNull\\(\\).*settings' classic/apps/web/src --glob '*.ts*' --glob '!**/__tests__/**' --glob '!**/skills/**'\nrg -n 'const activeProject =|e.project.getActive' classic/apps/web/src/preview/components/index.tsx classic/apps/web/src/core/managers/renderer-manager.ts\nrg -n 'useEditorProject|PROJECT_STORES' classic/apps/web/src/editor/use-editor.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7e3c8130-3456-47a3-985a-6e84ef7e026a"
+      },
+      {
+        "at": "2026-10-20T18:43:02.557Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -l 'getActive\\(\\).*settings|getActiveOrNull\\(\\).*settings' classic/apps/web/src --glob '*.ts*' --glob '!**/__tests__/**' --glob '!**/skills/**'\nrg -n 'const activeProject =|e.project.getActive' classic/apps/web/src/preview/components/index.tsx classic/apps/web/src/core/managers/renderer-manager.ts\nrg -n 'useEditorProject|PROJECT_STORES' classic/apps/web/src/editor/use-editor.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7e3c8130-3456-47a3-985a-6e84ef7e026a"
+      },
+      {
+        "at": "2026-10-20T18:43:02.561Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/project-manager.ts';s=open(p).read().replace('\\t\\tconst settings = this.editor.scenes.getActiveSceneOrNull()?.settings;\\n\\t\\treturn settings ? { ...this.active, settings } : this.active;','\\t\\treturn this.active;');pos=s.index('\\n\\t/**',s.index('\\tgetActive():'));s=s[:pos]+'''\\n\t/** Effective rendering settings; persistence always reads the base document. */\n\tgetActiveForScene(): TProject {\n\t\tconst project=this.getActive();\n\t\tconst settings=this.editor.scenes.getActiveSceneOrNull()?.settings;\n\t\treturn settings?{...project,settings}:project;\n\t}\n''' + s[pos:];open(p,'w').write(s)\n# Explicit render/UI consumers, never mutations or persistence.\nfrom pathlib import Path\nroots=['classic/apps/web/src/preview','classic/apps/web/src/components/editor/panels/settings']\nfor root in roots:\n for p in Path(root).rglob('*.ts*'):\n  if '__tests__' in str(p):continue\n  s=p.read_text();s=s.replace('e.project.getActive()', 'e.project.getActiveForScene()').replace('editor.project.getActive()', 'editor.project.getActiveForScene()');p.write_text(s)\np='classic/apps/web/src/core/managers/renderer-manager.ts';s=open(p).read().replace('this.editor.project.getActive()', 'this.editor.project.getActiveForScene()');open(p,'w').write(s)\np='classic/apps/web/src/editor/use-editor.ts';s=open(p).read();# project subscribers must notice per-scene settings changes\ns=s.replace('const subscribeProject: EditorSubscribe = ({ editor, onChange }) =>\\n\\teditor.project.subscribe(onChange);','const subscribeProject: EditorSubscribe = ({ editor, onChange }) => {\\n\\tconst a=editor.project.subscribe(onChange),b=editor.scenes.subscribe(onChange);\\n\\treturn()=>{a();b();};\\n};');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0c81ad63-93b2-4e96-bf08-13823f6a584e"
+      },
+      {
+        "at": "2026-10-20T18:43:02.674Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/project-manager.ts';s=open(p).read().replace('\\t\\tconst settings = this.editor.scenes.getActiveSceneOrNull()?.settings;\\n\\t\\treturn settings ? { ...this.active, settings } : this.active;','\\t\\treturn this.active;');pos=s.index('\\n\\t/**',s.index('\\tgetActive():'));s=s[:pos]+'''\\n\t/** Effective rendering settings; persistence always reads the base document. */\n\tgetActiveForScene(): TProject {\n\t\tconst project=this.getActive();\n\t\tconst settings=this.editor.scenes.getActiveSceneOrNull()?.settings;\n\t\treturn settings?{...project,settings}:project;\n\t}\n''' + s[pos:];open(p,'w').write(s)\n# Explicit render/UI consumers, never mutations or persistence.\nfrom pathlib import Path\nroots=['classic/apps/web/src/preview','classic/apps/web/src/components/editor/panels/settings']\nfor root in roots:\n for p in Path(root).rglob('*.ts*'):\n  if '__tests__' in str(p):continue\n  s=p.read_text();s=s.replace('e.project.getActive()', 'e.project.getActiveForScene()').replace('editor.project.getActive()', 'editor.project.getActiveForScene()');p.write_text(s)\np='classic/apps/web/src/core/managers/renderer-manager.ts';s=open(p).read().replace('this.editor.project.getActive()', 'this.editor.project.getActiveForScene()');open(p,'w').write(s)\np='classic/apps/web/src/editor/use-editor.ts';s=open(p).read();# project subscribers must notice per-scene settings changes\ns=s.replace('const subscribeProject: EditorSubscribe = ({ editor, onChange }) =>\\n\\teditor.project.subscribe(onChange);','const subscribeProject: EditorSubscribe = ({ editor, onChange }) => {\\n\\tconst a=editor.project.subscribe(onChange),b=editor.scenes.subscribe(onChange);\\n\\treturn()=>{a();b();};\\n};');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0c81ad63-93b2-4e96-bf08-13823f6a584e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:43:03.108Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0480683d8c3baa47fdc2882933f720e6d9ea64c446d721364d69e0a0b98228da",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:39:32.648Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sessionStorage|localStorage|pair|companion' classic/apps/web/src/ai/client-transport.ts classic/apps/web/src/ai/client-*.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-bafd1cb6-5a8e-46bf-bd18-512510d55928"
+      },
+      {
+        "at": "2026-10-20T19:39:32.648Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/server.test.ts';s=open(p).read();s+='''\ntest(\"independent windows do not steal a live executor and editor reload cannot fence it\",async()=>{\n await writeFile(join(root,\"batch/queue.json\"),JSON.stringify({runs:[]}));\n await createSceneEdits({projectId:\"source\",jobIds:[\"first\",\"second\"],ownerId:\"tab\"});\n const first=await recoverSceneWorker({ownerId:\"tab\",executor:\"window\",workerId:\"worker-window-a\"});if(!first)throw Error(\"No runner\");\n expect(await recoverSceneWorker({ownerId:\"tab\",executor:\"iframe\"})).toBeNull();\n expect(await recoverSceneWorker({ownerId:\"tab\",executor:\"window\",workerId:\"worker-window-b\"})).toBeNull();\n await updateBatch({id:first.run.id,token:[REDACTED],projectId:\"worker-first\",event:\"run\"});\n await updateBatch({id:first.run.id,token:[REDACTED],projectId:\"worker-first\",event:\"complete\"});\n const second=await recoverSceneWorker({ownerId:\"tab\",executor:\"window\",workerId:\"worker-window-a\"});expect(second?.run.id).toBe(\"second\");\n await cancelBatch({id:\"second\"});\n});\n''';open(p,'w').write(s)\np='classic/apps/web/src/batch/provider.tsx';s=open(p).read().replace('r.executor === \"window\" &&\\n\\t\\t\\t\\t\\tr.jobs.some','r.executor === \"window\" && (!r.workerHeartbeatAt || Date.now()-r.workerHeartbeatAt>30_000) &&\\n\\t\\t\\t\\t\\tr.jobs.some');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/provider.tsx classic/apps/web/src/batch/server.test.ts > .local/scene-ai-queue-2026-10-20/format-window-tests.log 2>&1\nnode classic/scripts/test-web.mjs src/batch/server.test.ts src/batch/worker.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/window-tests > .local/scene-ai-queue-2026-10-20/window-tests.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-97afc786-f053-49ca-a6cb-a6e63481b2fc"
+      },
+      {
+        "at": "2026-10-20T19:39:32.651Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7b61f27a-c440-409b-b2b7-81aaf79e6daa"
+      },
+      {
+        "at": "2026-10-20T19:39:32.744Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/scene-ai-queue-2026-10-20/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7b61f27a-c440-409b-b2b7-81aaf79e6daa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:39:33.395Z",
+  "parents": [],
+  "branch": "main"
+}

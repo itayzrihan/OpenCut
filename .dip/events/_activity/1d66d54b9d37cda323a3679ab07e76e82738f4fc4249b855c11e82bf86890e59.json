@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d66d54b9d37cda323a3679ab07e76e82738f4fc4249b855c11e82bf86890e59",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:26:23.287Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/audio-scratch.ts <<'EOF'\n/** Temporary host PCM, never editor/project state. A browser that cannot open\n * OPFS can still edit short scenes, within a strict per-job memory ceiling. */\nimport { ExportScratch } from './scratch';\nimport type { PcmStorage, PcmWriter } from './pcm-file';\nexport interface AudioScratch {\n readonly capacityBytes?: number;\n file(name:string):Promise<PcmStorage>;\n remove(name:string):Promise<void>;\n dispose():Promise<void>;\n}\nconst MAX_MEMORY_BYTES=128*1024**2;\ntype Entry={bytes:Uint8Array;size:number;snapshot?:File;writing:boolean;deleted:boolean};\nexport class MemoryAudioScratch implements AudioScratch {\n private entries=new Map<string,Entry>();\n private used=0;\n constructor(readonly capacityBytes=MAX_MEMORY_BYTES){\n  if(!Number.isSafeInteger(capacityBytes)||capacityBytes<1||capacityBytes>MAX_MEMORY_BYTES)throw Error('Invalid audio memory budget');\n }\n async file(name:string):Promise<PcmStorage>{\n  let entry=this.entries.get(name);\n  if(!entry){entry={bytes:new Uint8Array(0),size:0,writing:false,deleted:false};this.entries.set(name,entry);}\n  const value=entry;\n  const alive=()=>{if(value.deleted)throw new DOMException('Audio scratch was disposed','NotFoundError');};\n  const resize=(size:number)=>{\n   alive();\n   if(!Number.isSafeInteger(size)||size<0||this.used-value.size+size>this.capacityBytes)throw Error('Audio exceeds the bounded memory fallback; restore browser temporary storage and resume the saved edit');\n   const next=new Uint8Array(size);next.set(value.bytes.subarray(0,size));\n   this.used+=size-value.size;value.size=size;value.bytes=next;value.snapshot=undefined;\n  };\n  return {\n   createWritable:async():Promise<PcmWriter>=>{\n    alive();if(value.writing)throw Error('Audio scratch already has a writer');\n    resize(0);value.writing=true;\n    const open=()=>{alive();if(!value.writing)throw Error('Audio scratch writer is closed');};\n    return {\n     write:async({position,data})=>{open();if(!Number",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8292df75-107b-43b7-8f69-053813b6c6ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:26:23.290Z",
+  "parents": [],
+  "branch": "main"
+}

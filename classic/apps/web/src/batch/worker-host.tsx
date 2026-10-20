@@ -20,6 +20,8 @@ export function AutomationWorkerHost({
 	onReady?: () => void;
 }) {
 	const [saveFailure, setSaveFailure] = useState("");
+	const [bootState, setBootState] = useState("loading");
+	const [instanceId] = useState(() => crypto.randomUUID());
 	const [retrying, setRetrying] = useState(false);
 	const frame = useRef<HTMLIFrameElement>(null);
 	const finish = useRef(onFinished);
@@ -48,7 +50,10 @@ export function AutomationWorkerHost({
 					setRetrying(false);
 				}
 			}
-			if (event.data?.type === "opencut-batch-ready") onReady?.();
+			if (event.data?.type === "opencut-batch-ready") {
+				setBootState("ready");
+				onReady?.();
+			}
 			if (
 				task &&
 				event.data?.type === "opencut-batch-ready" &&
@@ -56,6 +61,7 @@ export function AutomationWorkerHost({
 				!ended
 			) {
 				started = true;
+				setBootState("started");
 				clearTimeout(deadline);
 				frame.current.contentWindow?.postMessage(
 					{ type: "opencut-batch-start", ...task },
@@ -95,7 +101,17 @@ export function AutomationWorkerHost({
 			finish.current(task.run.id);
 		}, 90_000);
 		window.addEventListener("message", receive);
+		// Hidden documents may throttle timers. Readiness is also requested by
+		// the visible host, rather than depending on the child's interval.
+		const ping = setInterval(() => {
+			if (!started && !ended)
+				frame.current?.contentWindow?.postMessage(
+					{ type: "opencut-batch-probe" },
+					location.origin,
+				);
+		}, 1000);
 		return () => {
+			clearInterval(ping);
 			clearTimeout(deadline);
 			window.removeEventListener("message", receive);
 		};
@@ -124,7 +140,22 @@ export function AutomationWorkerHost({
 			)}
 			<iframe
 				ref={frame}
-				src="/batch-worker"
+				data-worker-state={bootState}
+				onLoad={() => {
+					setBootState((previous) =>
+						previous === "started" ? previous : "document-loaded",
+					);
+					frame.current?.contentWindow?.postMessage(
+						{ type: "opencut-batch-probe" },
+						location.origin,
+					);
+				}}
+				src={
+					task
+						? `/batch-worker?instance=${instanceId}&run=${encodeURIComponent(task.run.id)}`
+						: `/batch-worker?instance=${instanceId}&warm=1`
+				}
+				loading="eager"
 				title={
 					task
 						? "Full Auto Edit background worker"
@@ -134,9 +165,13 @@ export function AutomationWorkerHost({
 				tabIndex={-1}
 				style={{
 					position: "fixed",
-					left: -10000,
-					width: 640,
-					height: 360,
+					right: 0,
+					bottom: 0,
+					opacity: 1,
+					zIndex: 1,
+					border: 0,
+					width: 2,
+					height: 2,
 					pointerEvents: "none",
 				}}
 			/>

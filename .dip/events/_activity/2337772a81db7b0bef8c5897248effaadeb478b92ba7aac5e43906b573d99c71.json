@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2337772a81db7b0bef8c5897248effaadeb478b92ba7aac5e43906b573d99c71",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:52:01.134Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/types.log | head -15\nsed -n '620,680p' classic/apps/web/src/batch/server.test.ts\nsed -n '300,322p' classic/apps/web/src/services/local-drive/server.ts\nrg -n 'async fn request' crates/editor-api/tests/classic_export.rs\nrg -n 'pub.*ClassicProject|document:|media_assets' classic/rust/editor-runtime-wasm/src/lib.rs | head -4\nrg -n 'queue|capability' classic/scripts/editor-architecture/feature-coverage* | head -3",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-26f28f98-df46-4df1-a44d-d851aca2bb41"
+      },
+      {
+        "at": "2026-10-20T18:52:01.228Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/scene-ai-queue-2026-10-20/types.log | head -15\nsed -n '620,680p' classic/apps/web/src/batch/server.test.ts\nsed -n '300,322p' classic/apps/web/src/services/local-drive/server.ts\nrg -n 'async fn request' crates/editor-api/tests/classic_export.rs\nrg -n 'pub.*ClassicProject|document:|media_assets' classic/rust/editor-runtime-wasm/src/lib.rs | head -4\nrg -n 'queue|capability' classic/scripts/editor-architecture/feature-coverage* | head -3",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-26f28f98-df46-4df1-a44d-d851aca2bb41"
+      },
+      {
+        "at": "2026-10-20T18:52:01.230Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/subject-framing-source.test.ts src/batch/server.test.ts src/batch/worker.test.ts src/batch/progress-view.test.ts src/batch/scene-checkpoint.test.ts src/ai/__tests__/full-auto-edit-resume.test.ts src/ai/__tests__/full-auto-edit-takes.test.ts --jobs=1 --report=.local/scene-ai-queue-2026-10-20/host-tests > .local/scene-ai-queue-2026-10-20/host-tests.log 2>&1\ncargo test -q -p opencut-editor-api --test classic_scenes --test classic_export > .local/scene-ai-queue-2026-10-20/native-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-aeec3745-47d4-4fae-8696-88c8697216cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:52:01.683Z",
+  "parents": [],
+  "branch": "main"
+}

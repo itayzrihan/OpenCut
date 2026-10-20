@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c05ac03252b1f5d19d136bce0cf82c7506c1a29f1de69de3e12f4529f4333043",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:50:26.513Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '475,505p' classic/apps/web/src/batch/server.ts\nsed -n '173,191p' crates/editor-api/src/operations/classic_automation.rs\nsed -n '1,45p' classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts\nrg -n 'pub.*struct ClassicDocument' crates/editor-api/src/classic.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2bf0bb15-8716-4128-8747-4686e71ab8c4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:50:26.561Z",
+  "parents": [],
+  "branch": "main"
+}

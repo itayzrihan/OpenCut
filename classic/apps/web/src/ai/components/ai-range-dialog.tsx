@@ -178,7 +178,7 @@ export function AiRangeDialog() {
 				mediaAssets: editor.media.getAssets(),
 				scenes: editor.scenes.getScenes(),
 				activeSceneId: scene.id,
-				projectSettings: editor.project.getActive().settings,
+				projectSettings: editor.project.getActiveForScene().settings,
 				exportState: editor.project.getExportState(),
 				transcriptionState: editor.transcription.getState(),
 			});
@@ -223,7 +223,7 @@ export function AiRangeDialog() {
 			mediaAssets: editor.media.getAssets(),
 			scenes: editor.scenes.getScenes(),
 			activeSceneId: scene.id,
-			projectSettings: editor.project.getActive().settings,
+			projectSettings: editor.project.getActiveForScene().settings,
 			exportState: editor.project.getExportState(),
 			transcriptionState: editor.transcription.getState(),
 		});

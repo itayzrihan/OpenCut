@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9cec9fce6774099f911f51eae2e2f96b2ca9fb61a4cf4dd81c5200a20a51d413",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:45:50.100Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain | wc -l; du -sh .dip/events/_activity; tail -5 .local/scene-ai-queue-2026-10-20/build.log; node -e 'const fs=require(\"fs\");const q=JSON.parse(fs.readFileSync(\"/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json\")); console.log(JSON.stringify(q.runs.filter(r=>r.jobs.some(j=>j.sourceProjectId)).map(r=>({id:r.id,jobs:r.jobs.map(j=>({status:j.status,stage:j.completedStages,message:j.message}))}))))'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d3479726-2fef-4663-8dc1-a3f12a907fd2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:45:50.104Z",
+  "parents": [],
+  "branch": "main"
+}

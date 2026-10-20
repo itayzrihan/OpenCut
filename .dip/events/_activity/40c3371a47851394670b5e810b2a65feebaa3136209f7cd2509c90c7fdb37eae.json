@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "40c3371a47851394670b5e810b2a65feebaa3136209f7cd2509c90c7fdb37eae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:52:04.270Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re\npaths=subprocess.check_output(['git','diff','--cached','--name-only','-z']).decode().split('\\0')\npatterns=[re.compile(rb'(?<![A-Za-z0-9_])sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{32,}'),re.compile(rb'gh[pousr]_[A-Za-z0-9]{30,}'),re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')]\nhits=[]\nfor p in filter(None,paths):\n if p.endswith(('.png','.jpg','.webp')): continue\n b=subprocess.check_output(['git','show',':'+p])\n if any(x.search(b) for x in patterns): hits.append(p)\nprint({'staged_files':len(list(filter(None,paths))),'possible_secret_paths':hits})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cd895f10-b46d-4b99-8070-100be879ce56"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:52:04.273Z",
+  "parents": [],
+  "branch": "main"
+}

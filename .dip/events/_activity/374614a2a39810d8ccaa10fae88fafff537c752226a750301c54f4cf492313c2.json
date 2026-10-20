@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "374614a2a39810d8ccaa10fae88fafff537c752226a750301c54f4cf492313c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:17:42.676Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/worker-host.tsx';s=open(p).read().replace('src=\"/batch-worker\"','src={task ? `/batch-worker?run=${encodeURIComponent(task.run.id)}` : \"/batch-worker?warm=1\"}');open(p,'w').write(s)\np='classic/apps/web/src/app/batch-worker/page.tsx';s=open(p).read().replace('void executeBatch(event.data);','''void executeBatch(event.data).catch(async (error:unknown)=>{\n                const message=error instanceof Error?error.message:\"Background worker initialization failed\";\n                for(const job of event.data.run.jobs) await fetch(\"/api/batch-edit\",{\n                    method:\"POST\",headers:{\"Content-Type\":\"application/json\",\"X-OpenCut-Batch-Token\":event.data.token},\n                    body:JSON.stringify({action:\"update\",id:event.data.run.id,projectId:job.projectId,event:\"fail\",message:message.slice(0,4000)})\n                }).catch(()=>{});\n                parent.postMessage({type:\"opencut-batch-finished\",id:event.data.run.id},location.origin);\n            });''');open(p,'w').write(s)\nPY\nnode classic/node_modules/.bin/prettier --write classic/apps/web/src/batch/worker-host.tsx classic/apps/web/src/app/batch-worker/page.tsx > .local/scene-ai-queue-2026-10-20/format-startup.log 2>&1\nnode classic/scripts/local-production/build.mjs --stage > .local/scene-ai-queue-2026-10-20/build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2116ea37-216f-4be6-90e8-2c5c33b0ba35"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:17:43.374Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b071ccdeb0cb0e1b74909a39f23ddc67e061026539dec139858d4e205b3ada3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T19:38:36.246Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scene-ai-queue-2026-10-20/build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a3c12ded-f1c4-4e83-9631-57d71dde6e97"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:38:36.280Z",
+  "parents": [],
+  "branch": "main"
+}

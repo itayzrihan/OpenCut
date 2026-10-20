@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ecb73a41f779d9dd4b697adde6949472646752fb3da66c45acdc509b7e1889b3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T19:41:48.229Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Worker|pipeline|env|onnx|device' classic/apps/web/src/transcription/*worker* classic/apps/web/src/services/transcription/* 2>/dev/null | head -35; rg -n 'heartbeat|90_000|120_000|timeout' classic/apps/web/src/batch/server.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c46db6f9-5e3e-4241-8039-8ed125846fbd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T19:41:48.232Z",
+  "parents": [],
+  "branch": "main"
+}

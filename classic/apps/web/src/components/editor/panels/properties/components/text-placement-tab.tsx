@@ -65,7 +65,7 @@ export function TextPlacementTab({
 	const [presetName, setPresetName] = useState("");
 	const [selectedPresetId, setSelectedPresetId] = useState("");
 	const canvasSize = useEditorProject(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveForScene().settings.canvasSize,
 	);
 	const isBulk = (elementsWithTracks?.length ?? 0) > 1;
 	const scope = textScope ?? { type: "layer" as const };
@@ -90,9 +90,10 @@ export function TextPlacementTab({
 					right: placementTargets[0].placement.center,
 				}),
 		);
-	const selectedCell = placement && !hasMixedPlacement
-		? getNearestGridCell({ center: placement.center, canvasSize, grid })
-		: null;
+	const selectedCell =
+		placement && !hasMixedPlacement
+			? getNearestGridCell({ center: placement.center, canvasSize, grid })
+			: null;
 	const lineArrangement = useMemo(
 		() =>
 			isBulk
@@ -562,12 +563,11 @@ function getLineArrangement({
 	return {
 		lineIndexes,
 		lines: lineIndexes.map((lineIndex) => {
-			const center =
-				getScopedWordsCenter({
-					element: measurementElement,
-					measured,
-					scope: { type: "row", lineIndex },
-				}) ?? { x: 0, y: 0 };
+			const center = getScopedWordsCenter({
+				element: measurementElement,
+				measured,
+				scope: { type: "row", lineIndex },
+			}) ?? { x: 0, y: 0 };
 			return center;
 		}),
 	};
@@ -751,10 +751,7 @@ function arePointsEqual({
 	left: Point;
 	right: Point;
 }): boolean {
-	return (
-		Math.abs(left.x - right.x) < 0.01 &&
-		Math.abs(left.y - right.y) < 0.01
-	);
+	return Math.abs(left.x - right.x) < 0.01 && Math.abs(left.y - right.y) < 0.01;
 }
 
 function getGridCellCenter({

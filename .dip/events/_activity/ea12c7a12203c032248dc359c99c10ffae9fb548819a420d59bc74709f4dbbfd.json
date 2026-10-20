@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ea12c7a12203c032248dc359c99c10ffae9fb548819a420d59bc74709f4dbbfd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T18:54:44.457Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check\ncat .local/scene-ai-queue-2026-10-20/types.log | head -5\ncat .local/scene-ai-queue-2026-10-20/native-scene-tests.log | tail -4\nsed -n '1,45p' .local/teleprompter-review-fix-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a5c51ceb-cd19-4118-bbf2-3af30c18311a"
+      },
+      {
+        "at": "2026-10-20T18:54:44.605Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check\ncat .local/scene-ai-queue-2026-10-20/types.log | head -5\ncat .local/scene-ai-queue-2026-10-20/native-scene-tests.log | tail -4\nsed -n '1,45p' .local/teleprompter-review-fix-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a5c51ceb-cd19-4118-bbf2-3af30c18311a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T18:54:44.979Z",
+  "parents": [],
+  "branch": "main"
+}
