@@ -26,6 +26,28 @@ struct Input {
     camera_track_ids: Vec<String>,
 }
 
+pub(super) fn finish_audio_element(e: &mut Value) -> Result<(), CapabilityError> {
+    if e["podcastFinishingVersion"] == 1 {
+        return Ok(());
+    }
+    let gain = e["params"]["gainDb"].as_f64().unwrap_or(0.0) - 1.0;
+    let p = e["params"]
+        .as_object_mut()
+        .ok_or_else(|| invalid("Audio parameters missing"))?;
+    for (key, value) in [
+        ("volume", json!(15)),
+        ("gainDb", json!(gain.max(-60.0))),
+        ("noiseReduction", json!(100)),
+        ("hardLimiterEnabled", json!(true)),
+        ("hardLimiterCeilingDb", json!(-1)),
+        ("hardLimiterLookAheadMs", json!(7)),
+        ("hardLimiterReleaseMs", json!(100)),
+    ] {
+        p.insert(key.into(), value);
+    }
+    e["podcastFinishingVersion"] = json!(1);
+    Ok(())
+}
 pub(super) fn finish(
     scene: &mut Value,
     microphones: &[String],
@@ -67,25 +89,7 @@ pub(super) fn finish(
         for track in tracks[bucket].as_array_mut().unwrap() {
             if microphones.iter().any(|id| track["id"] == *id) {
                 for e in track["elements"].as_array_mut().unwrap() {
-                    if e["podcastFinishingVersion"] == 1 {
-                        continue;
-                    }
-                    let gain = e["params"]["gainDb"].as_f64().unwrap_or(0.0) - 1.0;
-                    let p = e["params"]
-                        .as_object_mut()
-                        .ok_or_else(|| invalid("Audio parameters missing"))?;
-                    for (key, value) in [
-                        ("volume", json!(15)),
-                        ("gainDb", json!(gain.max(-60.0))),
-                        ("noiseReduction", json!(100)),
-                        ("hardLimiterEnabled", json!(true)),
-                        ("hardLimiterCeilingDb", json!(-1)),
-                        ("hardLimiterLookAheadMs", json!(7)),
-                        ("hardLimiterReleaseMs", json!(100)),
-                    ] {
-                        p.insert(key.into(), value);
-                    }
-                    e["podcastFinishingVersion"] = json!(1);
+                    finish_audio_element(e)?;
                 }
             }
             if cameras.iter().any(|id| track["id"] == *id) {

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83c207707a1c5bcc4cd11d0f5ce6f02112d864578b57a638732e07114ebca884",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:44:05.330Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_unified/with_audio.rs",
+          "classic/rust/crates/timeline/src/audio_sync.rs",
+          "classic/rust/crates/timeline/src/restore_silence.rs",
+          "crates/editor-api/src/operations/classic_transcription.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast/reference.rs",
+          "crates/editor-api/tests/classic_source_audio.rs",
+          "classic/apps/web/src/media/audio-sync.ts",
+          "classic/apps/web/src/services/storage/types.ts",
+          "classic/apps/web/src/podcast-sync/engine.ts",
+          "classic/apps/web/src/media/unified-sync-task.ts",
+          "classic/apps/web/src/media/unified-angles.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7ed9f18d-dea2-4cd6-84c2-6f827554da78"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:44:05.331Z",
+  "parents": [],
+  "branch": "main"
+}

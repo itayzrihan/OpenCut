@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0c0938a680b7423a2b565641e689030e16ffb8d1463e3e8a1f89d86b3b032b91",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:51:50.972Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/media/audio-sync.ts src/media/unified-angles.ts src/media/unified-sync-task.ts src/podcast-sync/engine.ts src/core/managers/media-manager.ts src/components/editor/panels/assets/views/assets.tsx src/core/__tests__/canonical-unified-audio.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c6525f12-42c5-4922-8cd7-0783ffd68da8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:51:51.363Z",
+  "parents": [],
+  "branch": "main"
+}

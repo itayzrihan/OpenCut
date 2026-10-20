@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7509eaeffb6cf90d9ccf65d32e4fcb34ac23096d6cbb751df199c9284bcd0dda",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:56:26.870Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts src/media/__tests__/unified-sync-task.test.ts src/media/__tests__/unified-angles-audio.test.ts src/podcast-sync/__tests__/unified-engine.test.ts src/export/__tests__/audio-source-windows.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/bridge-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5d656dde-6916-4143-ba62-dafc4a3646ea"
+      },
+      {
+        "at": "2026-10-20T14:56:26.869Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "mcp__dip__task_document_link",
+        "branch": "main",
+        "path": "analysis/unified-with-audio-2026-10-20/verification.he.md",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-eff2d089-8810-404e-87e2-c878115da264"
+      },
+      {
+        "at": "2026-10-20T14:56:26.949Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "mcp__dip__task_document_link",
+        "branch": "main",
+        "path": "analysis/unified-with-audio-2026-10-20/verification.he.md",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-eff2d089-8810-404e-87e2-c878115da264"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:56:27.708Z",
+  "parents": [],
+  "branch": "main"
+}

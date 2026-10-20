@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e8fbd31927c0e98db1d5ee7d431b689bdd7918b607aedd81967d0e4f8ea46105",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:46:05.954Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_source_audio.rs');s=p.read_text().replace('        \"audioSyncOffset\",','        \"audioSyncOffset\",\\n        \"sourceAudioOffsetSeconds\",',1);p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_unified.rs');s=p.read_text();a=s.index('                        if let Some(task_id) = &input.task_id');s=s[:a]+'''                        if u.external_audio() && u.sync.is_some() && !sync_current(&u, &classic.media_assets) {\n                            fn used(v: &Value,id:&str)->bool {match v {Value::Object(o)=>o.get(\"mediaId\").is_some_and(|v|v==id)||o.values().any(|v|used(v,id)),Value::Array(a)=>a.iter().any(|v|used(v,id)),_=>false}}\n                            if used(&classic.document[\"scenes\"], &input.media_id) {\n                                return Err(CapabilityError::Conflict(\"Source changed after editing. Create a new Unified with Audio asset to preserve existing cuts and transcripts\".into()));\n                            }\n                        }\n''' +s[a:];s=s.replace('|| sync.reference_asset_id != u.default_angle_asset_id', '|| (u.external_audio() && !sync.sources.iter().any(|s|s.id==u.audio_asset_id && s.start<clock.duration && s.start+s.duration>0.0))\\n                || sync.reference_asset_id != u.default_angle_asset_id');p.write_text(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/src/operations/classic_source_audio.rs crates/editor-api/src/operations/classic_unified.rs\ncargo test -p opencut-editor-api --test classic_unified --test classic_source_audio --test classic_podcast_finish --quiet",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1f2eaf17-bdb4-4309-bdeb-2277cb6dedb4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:46:06.465Z",
+  "parents": [],
+  "branch": "main"
+}

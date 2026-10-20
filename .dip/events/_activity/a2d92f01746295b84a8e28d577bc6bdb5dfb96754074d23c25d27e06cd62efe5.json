@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a2d92f01746295b84a8e28d577bc6bdb5dfb96754074d23c25d27e06cd62efe5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:57:03.755Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts",
+          ".local/unified-with-audio-2026-10-20/real-bridge",
+          ".local/unified-with-audio-2026-10-20/real-bridge/src__core____tests____canonical-unified-audio.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/real-bridge/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "551eb109-90f7-4342-a023-2d869e741590"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:57:03.758Z",
+  "parents": [],
+  "branch": "main"
+}

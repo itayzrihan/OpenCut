@@ -104,6 +104,11 @@ export function resolveUnifiedAnglesAudioAsset({
 	mediaMap: ReadonlyMap<string, MediaAsset>;
 }): MediaAsset | null {
 	if (!isUnifiedAnglesAsset(asset)) return asset;
+	if (
+		asset.unifiedAngles.audioFinishingVersion === 1 &&
+		unifiedAnglesSyncStatus({ asset, mediaMap }) !== "synced"
+	)
+		return null;
 	return mediaMap.get(asset.unifiedAngles.audioAssetId) ?? null;
 }
 

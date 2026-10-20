@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5128eda22559cce98414e85057fcfa8478e1a8773273e07b36600fc9c6e1dad8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:44:40.367Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/media-manager.ts",
+          "classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+          "classic/apps/web/src/media/unified-angles.ts",
+          "classic/apps/web/src/media/unified-sync-task.ts",
+          "classic/apps/web/src/podcast-sync/engine.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3ed35a95-eb80-461d-963a-21c23830bdd0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:44:40.372Z",
+  "parents": [],
+  "branch": "main"
+}

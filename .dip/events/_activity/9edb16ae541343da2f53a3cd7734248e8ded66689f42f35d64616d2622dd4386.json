@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9edb16ae541343da2f53a3cd7734248e8ded66689f42f35d64616d2622dd4386",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:04:13.961Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '378,401p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2233,2265p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '1235,1254p' classic/apps/web/src/ai/__tests__/edit-plan.test.ts\nsed -n '280,310p' classic/apps/web/src/ai/types.ts\nsed -n '290,315p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '195,212p' classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-721e0cec-82ef-4153-b41e-60bb65d285a0"
+      },
+      {
+        "at": "2026-10-20T15:04:14.045Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '378,401p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2233,2265p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '1235,1254p' classic/apps/web/src/ai/__tests__/edit-plan.test.ts\nsed -n '280,310p' classic/apps/web/src/ai/types.ts\nsed -n '290,315p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '195,212p' classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-721e0cec-82ef-4153-b41e-60bb65d285a0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:04:14.403Z",
+  "parents": [],
+  "branch": "main"
+}

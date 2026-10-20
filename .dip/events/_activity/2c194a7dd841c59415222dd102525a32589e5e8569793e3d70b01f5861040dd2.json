@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c194a7dd841c59415222dd102525a32589e5e8569793e3d70b01f5861040dd2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:07:10.286Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/components/timeline-element.tsx');s=p.read_text();old='''\tconst clipMediaAssets = useEditorMedia((currentEditor) =>\n\t\tcurrentEditor.media\n\t\t\t.getAssets()\n\t\t\t.filter((asset) => asset.type === \"image\" || asset.type === \"video\"),\n\t);''';new='''\tconst allMediaAssets = useEditorMedia((currentEditor) => currentEditor.media.getAssets());\n\tconst clipMediaAssets = useMemo(() => allMediaAssets.filter((asset) => asset.type === \"image\" || asset.type === \"video\"), [allMediaAssets]);''';assert old in s;s=s.replace(old,new,1).replace('mediaMap: new Map(clipMediaAssets.map((a) => [a.id, a])),','mediaMap: new Map(allMediaAssets.map((a) => [a.id, a])),');p.write_text(s)\np=Path('classic/apps/web/src/media/__tests__/unified-angles-audio.test.ts');s=p.read_text().replace('import { createUnifiedAnglesAsset }','import { createUnifiedAnglesAsset, getUnifiedAngleRange }');anchor='\\tconst mediaAssets = [first, second, mic, virtual];';assert anchor in s;s=s.replace(anchor,anchor+'''\n    expect(getUnifiedAngleRange({asset:virtual,angleAssetId:\"two\",mediaMap:new Map(mediaAssets.map(a=>[a.id,a])),trimStart:5,duration:4}).available).toBe(true);\n    expect(getUnifiedAngleRange({asset:virtual,angleAssetId:\"two\",mediaMap:new Map([first,second,virtual].map(a=>[a.id,a])),trimStart:5,duration:4}).available).toBe(false);\n''',1);p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/timeline/components/timeline-element.tsx classic/apps/web/src/media/__tests__/unified-angles-audio.test.ts\nnode classic/scripts/test-web.mjs src/media/__tests__/unified-angles-audio.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/angle-regression\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b6af9378-0183-44b7-b7f6-6e31a9a8b259"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:07:10.672Z",
+  "parents": [],
+  "branch": "main"
+}

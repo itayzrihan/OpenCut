@@ -8,6 +8,7 @@ use classic_podcast::{
 use serde_json::json;
 use std::collections::HashMap;
 mod task;
+pub(super) mod with_audio;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -24,9 +25,23 @@ pub(crate) struct Unified {
     pub default_angle_asset_id: String,
     pub audio_asset_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audio_finishing_version: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sync: Option<AudioSync>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sync_task: Option<task::SyncTask>,
+}
+impl Unified {
+    fn source_ids(&self) -> Vec<String> {
+        let mut ids = self.angle_asset_ids.clone();
+        if !ids.contains(&self.audio_asset_id) {
+            ids.push(self.audio_asset_id.clone());
+        }
+        ids
+    }
+    fn external_audio(&self) -> bool {
+        self.audio_finishing_version == Some(1)
+    }
 }
 fn invalid(s: &str) -> CapabilityError {
     CapabilityError::InvalidInput(s.into())
@@ -76,11 +91,21 @@ pub(crate) fn validate_assets(assets: &[Map<String, Value>]) -> Result<(), Strin
         if asset["type"] != "video"
             || u.version != 1
             || unique.len() != u.angle_asset_ids.len()
-            || !(2..=32).contains(&unique.len())
+            || !(if u.external_audio() { 1..=32 } else { 2..=32 }).contains(&unique.len())
             || !unique.contains(&u.default_angle_asset_id)
-            || !unique.contains(&u.audio_asset_id)
+            || (u.external_audio() == unique.contains(&u.audio_asset_id))
+            || u.audio_finishing_version.is_some_and(|v| v != 1)
         {
             return Err("Invalid Unified Angles membership".into());
+        }
+        if u.external_audio()
+            && !assets.iter().any(|a| {
+                a["id"] == u.audio_asset_id
+                    && a["type"] == "audio"
+                    && a.get("unifiedAngles").is_none_or(Value::is_null)
+            })
+        {
+            return Err("Unified with Audio requires a registered external recording".into());
         }
         for id in &u.angle_asset_ids {
             if !assets.iter().any(|a| {
@@ -94,12 +119,27 @@ pub(crate) fn validate_assets(assets: &[Map<String, Value>]) -> Result<(), Strin
         if let Some(sync) = &u.sync {
             let ids: HashSet<_> = sync.sources.iter().map(|s| &s.id).collect();
             let clock = podcast_camera_clock(CameraClockOptions {
-                sources: sync.sources.clone(),
+                sources: sync
+                    .sources
+                    .iter()
+                    .filter(|s| u.angle_asset_ids.contains(&s.id))
+                    .cloned()
+                    .collect(),
             })
             .ok_or("Invalid Unified Angles source clock")?;
             if sync.method != "audio"
-                || ids != unique
-                || sync.sources.len() != unique.len()
+                || ids != u.source_ids().iter().collect::<HashSet<_>>()
+                || sync.sources.len() != u.source_ids().len()
+                || sync
+                    .sources
+                    .iter()
+                    .any(|s| !s.start.is_finite() || !s.duration.is_finite() || s.duration <= 0.0)
+                || (u.external_audio()
+                    && !sync.sources.iter().any(|s| {
+                        s.id == u.audio_asset_id
+                            && s.start < clock.duration
+                            && s.start + s.duration > 0.0
+                    }))
                 || sync.reference_asset_id != u.default_angle_asset_id
                 || clock.reference_id != sync.reference_asset_id
                 || clock.origin.abs() > 1e-6
@@ -119,7 +159,7 @@ struct SyncInput {
     project_id: String,
     expected_revision: u64,
     media_id: String,
-    #[schemars(length(min = 2, max = 32))]
+    #[schemars(length(min = 2, max = 33))]
     sources: Vec<CameraSource>,
     #[serde(default)]
     task_id: Option<String>,
@@ -143,6 +183,7 @@ pub(super) fn register_unified(
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
     task::register(registry, state.clone(), events.clone())?;
+    with_audio::register(registry, state.clone(), events.clone())?;
     let sync_state = state.clone();
     let sync_events = events.clone();
     register::<SyncInput, MutationOutput, _, _>(
@@ -178,6 +219,24 @@ pub(super) fn register_unified(
                         let mut u = metadata(&classic.media_assets[index])
                             .map_err(|s| invalid(&s))?
                             .ok_or_else(|| invalid("Not a Unified Angles asset"))?;
+                        if u.external_audio()
+                            && u.sync.is_some()
+                            && !sync_current(&u, &classic.media_assets)
+                        {
+                            fn used(v: &Value, id: &str) -> bool {
+                                match v {
+                                    Value::Object(o) => {
+                                        o.get("mediaId").is_some_and(|v| v == id)
+                                            || o.values().any(|v| used(v, id))
+                                    }
+                                    Value::Array(a) => a.iter().any(|v| used(v, id)),
+                                    _ => false,
+                                }
+                            }
+                            if used(&classic.document["scenes"], &input.media_id) {
+                                return Err(CapabilityError::Conflict("Source changed after editing. Create a new Unified with Audio asset to preserve existing cuts and transcripts".into()));
+                            }
+                        }
                         if let Some(task_id) = &input.task_id {
                             let task = u
                                 .sync_task
@@ -202,11 +261,11 @@ pub(super) fn register_unified(
                                 ));
                             }
                         }
-                        if input.sources.len() != u.angle_asset_ids.len()
+                        if input.sources.len() != u.source_ids().len()
                             || input
                                 .sources
                                 .iter()
-                                .any(|s| !u.angle_asset_ids.contains(&s.id))
+                                .any(|s| !u.source_ids().contains(&s.id))
                         {
                             return Err(invalid("Sync must include every camera"));
                         }
@@ -229,7 +288,12 @@ pub(super) fn register_unified(
                             }
                         }
                         let clock = podcast_camera_clock(CameraClockOptions {
-                            sources: input.sources.clone(),
+                            sources: input
+                                .sources
+                                .iter()
+                                .filter(|s| u.angle_asset_ids.contains(&s.id))
+                                .cloned()
+                                .collect(),
                         })
                         .ok_or_else(|| invalid("Invalid camera clock"))?;
                         let sources = input
@@ -248,10 +312,12 @@ pub(super) fn register_unified(
                             sources,
                         });
                         // Prefer a continuous audio source on the same zero as the base.
-                        if classic.media_assets.iter().any(|a| {
-                            a["id"] == clock.reference_id
-                                && a.get("hasAudio").and_then(Value::as_bool) != Some(false)
-                        }) {
+                        if !u.external_audio()
+                            && classic.media_assets.iter().any(|a| {
+                                a["id"] == clock.reference_id
+                                    && a.get("hasAudio").and_then(Value::as_bool) != Some(false)
+                            })
+                        {
                             u.audio_asset_id = clock.reference_id;
                         }
                         let a = &mut classic.media_assets[index];

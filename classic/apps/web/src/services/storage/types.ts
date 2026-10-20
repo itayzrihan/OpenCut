@@ -45,6 +45,8 @@ export interface UnifiedAnglesMetadata {
 	angleAssetIds: string[];
 	defaultAngleAssetId: string;
 	audioAssetId: string;
+	/** Shared podcast microphone preset, with external recording as the only audio route. */
+	audioFinishingVersion?: 1;
 	syncTask?: {
 		id: string;
 		status: "running" | "failed" | "cancelled";

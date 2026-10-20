@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c6a23fd927449f4cb54a34249ba8801111dd0358bb4b354b0c356bffd5b607d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:53:12.090Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/classic_source_audio.rs');s=p.read_text().replace('source[\"params\"][\"audioSyncOffset\"] = json!(offset);','source[\"params\"][\"audioSyncOffset\"] = json!(offset);\\n        source[\"params\"][\"sourceAudioOffsetSeconds\"] = json!(120);\\n        source[\"podcastFinishingVersion\"] = json!(1);',1).replace('for key in [\"audioSyncOffset\", \"fadeInDuration\", \"fadeOutDuration\"]', 'for key in [\"audioSyncOffset\", \"sourceAudioOffsetSeconds\", \"fadeInDuration\", \"fadeOutDuration\"]').replace('source_offset_seconds: None,','source_offset_seconds: clip[\"params\"][\"sourceAudioOffsetSeconds\"].as_f64(),',1);s=s.replace('        assert_eq!(timing(audio), timing(video));','        assert_eq!(audio[\"podcastFinishingVersion\"], 1);\\n        assert_eq!(timing(audio), timing(video));',1);p.write_text(s)\np=Path('crates/editor-api/tests/classic_unified.rs');s=p.read_text();a=s.index('        let after = read(&r).await;\\n        let c = &after[\"project\"][\"classic\"];',s.index('async fn external_audio_compound'));b=s.index('        call(&r, \"history.undo\"',a);s=s[:b]+'''        assert!(r.registry().invoke(\"media.classic.remove\",InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":after[\"revision\"],\"mediaIds\":[\"recorder\"],\"cascade\":true})).await.is_err());\n        assert_eq!(read(&r).await, after);\n''' +s[b:];p.write_text(s)\nPY\nrustfmt --edition 2024 --config skip_children=true crates/editor-api/tests/classic_source_audio.rs crates/editor-api/tests/classic_unified.rs\ncargo test -p opencut-editor-api --test classic_unified --test classic_source_audio --quiet\nnode classic/scripts/local-production/build.mjs --stage",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f8574945-a8b3-4fb5-aa44-b309bfc268e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:53:12.484Z",
+  "parents": [],
+  "branch": "main"
+}

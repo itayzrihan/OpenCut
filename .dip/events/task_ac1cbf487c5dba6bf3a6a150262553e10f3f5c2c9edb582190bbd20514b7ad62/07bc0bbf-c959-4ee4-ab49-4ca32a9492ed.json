@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07bc0bbf-c959-4ee4-ab49-4ca32a9492ed",
+  "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+  "type": "task.update",
+  "payload": {
+    "title": "Create draggable Unified with Audio assets from video or unified angles plus external recording",
+    "acceptance": [
+      "Assets context menu supports exactly one video or Unified Angles plus one external audio recording",
+      "Canonical asset retains camera angles and audio sync offsets with podcast audio finishing, without podcast scene analysis",
+      "Drag as one timeline clip; angle switching retains external processed audio and original source assets",
+      "Automatic sync shows progress/error/retry and persists safely with undo and stale-source protection",
+      "Native and host/real runtime checks verify audio routing, trimming, multi-angle switching, persistence; deploy local production"
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src/media",
+      "classic/apps/web/src/podcast-sync",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/timeline",
+      ".dip",
+      "analysis/unified-with-audio-2026-10-20"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T14:39:35.484Z",
+  "parents": [
+    "c22606ef-7ec3-4031-bca8-daee1ae42ee5"
+  ],
+  "branch": "main"
+}

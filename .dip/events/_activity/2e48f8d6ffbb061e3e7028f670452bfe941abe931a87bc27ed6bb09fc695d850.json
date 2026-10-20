@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e48f8d6ffbb061e3e7028f670452bfe941abe931a87bc27ed6bb09fc695d850",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:49:28.201Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/audio_sync.rs",
+          "crates/editor-api/tests/classic_unified.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0db400a1-7b23-4dcc-9563-d801c262a3be"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:49:28.204Z",
+  "parents": [],
+  "branch": "main"
+}

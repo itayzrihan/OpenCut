@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16e450f08c58a234818eb239ec9028b25f67a6cec1caa09a1d430aee1284d733",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:40:01.163Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/services/storage/types.ts | head -90\nsed -n '90,310p' classic/apps/web/src/podcast-sync/engine.ts\nsed -n '447,540p' classic/apps/web/src/podcast-sync/engine.ts\nrg -n 'unified|audioSyncOffset|resolveAudio' classic/apps/web/src/media/audio.ts\ncat classic/apps/web/src/media/__tests__/unified-angles-audio.test.ts\nrg --files classic/rust/crates | rg 'podcast.*\\.rs'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f5c87a30-af4d-4f04-b6fb-a7d7d37d94f6"
+      },
+      {
+        "at": "2026-10-20T14:40:01.270Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/services/storage/types.ts | head -90\nsed -n '90,310p' classic/apps/web/src/podcast-sync/engine.ts\nsed -n '447,540p' classic/apps/web/src/podcast-sync/engine.ts\nrg -n 'unified|audioSyncOffset|resolveAudio' classic/apps/web/src/media/audio.ts\ncat classic/apps/web/src/media/__tests__/unified-angles-audio.test.ts\nrg --files classic/rust/crates | rg 'podcast.*\\.rs'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f5c87a30-af4d-4f04-b6fb-a7d7d37d94f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:40:02.121Z",
+  "parents": [],
+  "branch": "main"
+}

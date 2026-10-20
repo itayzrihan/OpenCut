@@ -27,7 +27,7 @@ impl SyncTask {
             && self.error.as_ref().is_none_or(|s| s.len() <= 2000)
             && self.progress.is_finite()
             && (0.0..=1.0).contains(&self.progress)
-            && self.sources.len() == u.angle_asset_ids.len()
+            && self.sources.len() == u.source_ids().len()
             && self
                 .sources
                 .iter()
@@ -36,7 +36,7 @@ impl SyncTask {
                 .len()
                 == self.sources.len()
             && self.sources.iter().all(|s| {
-                u.angle_asset_ids.contains(&s.id)
+                u.source_ids().contains(&s.id)
                     && s.duration.is_finite()
                     && s.duration > 0.0
                     && s.start == 0.0
@@ -131,7 +131,7 @@ pub(super) fn register(
                                         return Err(invalid("Use a new synchronization task ID"));
                                     }
                                 }
-                                let sources=u.angle_asset_ids.iter().map(|id| {
+                                let sources=u.source_ids().iter().map(|id| {
                             let a=classic.media_assets.iter().find(|a|a["id"]==*id).ok_or_else(||invalid("Camera missing"))?;
                             if a.get("missing").and_then(Value::as_bool)==Some(true) || a.get("hasAudio").and_then(Value::as_bool)==Some(false) {
                                 return Err(invalid("Every camera needs available reference audio to synchronize"));

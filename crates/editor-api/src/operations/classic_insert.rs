@@ -261,6 +261,10 @@ pub(super) fn register_classic_insert(
                                 .as_str()
                                 .and_then(|id| classic.media_assets.iter().find(|a| a["id"] == id))
                                 .cloned();
+                            super::classic_unified::with_audio::prepare_element(
+                                &mut element,
+                                &classic.media_assets,
+                            )?;
                             let id = fresh(document, &mut occupied, "classic-clip");
                             element["id"] = json!(id);
                             let track_type = track_type(clip.element.kind);

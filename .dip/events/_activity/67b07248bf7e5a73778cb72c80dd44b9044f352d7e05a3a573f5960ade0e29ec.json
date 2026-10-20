@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "67b07248bf7e5a73778cb72c80dd44b9044f352d7e05a3a573f5960ade0e29ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:17:06.085Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/timeline/components/timeline-element.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d55f6eb8-69a9-4e05-ae9c-a19c8ed1c133"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:17:06.710Z",
+  "parents": [],
+  "branch": "main"
+}

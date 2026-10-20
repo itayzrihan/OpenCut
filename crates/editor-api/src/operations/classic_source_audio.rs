@@ -215,14 +215,22 @@ fn apply_source_audio(
     // dropping fades makes an otherwise identical source audible differently.
     for key in [
         "audioSyncOffset",
+        "sourceAudioOffsetSeconds",
         "fadeInDuration",
         "fadeOutDuration",
         "noiseReduction",
-        "gainDb", "hardLimiterEnabled", "hardLimiterCeilingDb", "hardLimiterLookAheadMs", "hardLimiterReleaseMs",
+        "gainDb",
+        "hardLimiterEnabled",
+        "hardLimiterCeilingDb",
+        "hardLimiterLookAheadMs",
+        "hardLimiterReleaseMs",
     ] {
         if let Some(value) = source["params"].get(key) {
             audio["params"][key] = value.clone();
         }
+    }
+    if let Some(value) = source.get("podcastFinishingVersion") {
+        audio["podcastFinishingVersion"] = value.clone();
     }
     if let Some(value) = source.get("sourceDuration") {
         audio["sourceDuration"] = value.clone();

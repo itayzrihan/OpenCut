@@ -4,6 +4,7 @@ import { podcastMulticamDefaults, analyzePodcastMulticam } from "opencut-wasm";
 import type { MediaAsset } from "@/media/types";
 import { createUnifiedAnglesAsset } from "@/media/unified-angles";
 const readNames: string[] = [];
+let externalRecorder = false;
 type WorkerRequest =
 	| { type: "read"; asset: MediaAsset }
 	| { type: "align" }
@@ -31,10 +32,10 @@ mock.module("../sync-jobs", () => ({
 		}
 		if (message.type === "align")
 			return {
-				offsets: [50, 20],
+				offsets: externalRecorder ? [50, 20, -100] : [50, 20],
 				referenceIndex: 1,
-				confidence: [1, 1],
-				parents: [1, undefined],
+				confidence: externalRecorder ? [1, 1, 1] : [1, 1],
+				parents: externalRecorder ? [1, undefined, 1] : [1, undefined],
 			};
 		if (message.type === "precision")
 			return { offsetSeconds: 0, confidence: 1 };
@@ -112,5 +113,68 @@ test("automatic reaction shots never choose a camera before it starts or after i
 	for (const cut of cuts.filter((c) => c.channelId === "short")) {
 		expect(cut.timestamp).toBeGreaterThanOrEqual(30);
 		expect(cut.timestamp + cut.duration).toBeLessThanOrEqual(80);
+	}
+});
+
+test("Unified with Audio aligns all cameras plus the recorder without replacing it with camera sound", async () => {
+	externalRecorder = true;
+	readNames.length = 0;
+	try {
+		const camera = (id: string, duration: number): MediaAsset => ({
+			id,
+			name: id,
+			type: "video",
+			duration,
+			hasAudio: true,
+			bindingRevision: 1,
+			url: `blob:${id}`,
+		});
+		const short = camera("short", 50),
+			long = camera("long", 120);
+		const recorder: MediaAsset = {
+			id: "recorder",
+			name: "Recorder",
+			type: "audio",
+			duration: 7200,
+			hasAudio: true,
+			bindingRevision: 2,
+			url: "blob:recorder",
+		};
+		const unified: MediaAsset = {
+			id: "with-audio",
+			...createUnifiedAnglesAsset({ assets: [short, long] }),
+		};
+		unified.unifiedAngles!.audioAssetId = recorder.id;
+		unified.unifiedAngles!.audioFinishingVersion = 1;
+		const channels = resolvePodcastChannelSources({
+			channels: [
+				{
+					id: "speaker",
+					name: "Teleprompter",
+					video: unified,
+					audio: recorder,
+				},
+			],
+			mediaAssets: [short, long, recorder, unified],
+		});
+		expect(channels[0].audio.id).toBe("recorder");
+		const aligned = await runPodcastAlignment({
+			channels,
+			settings: podcastMulticamDefaults({ quick: true }),
+		});
+		expect(readNames).toEqual(["short", "long", "Recorder"]);
+		expect(aligned.duration).toBe(120);
+		expect(aligned.unifiedSync[0].sources.map((s) => s.id)).toEqual([
+			"short",
+			"long",
+			"recorder",
+		]);
+		expect(
+			aligned.unifiedSync[0].sources.find((s) => s.id === "recorder")
+				?.bindingRevision,
+		).toBe(2);
+		expect(aligned.audioOffsets.speaker).toBe(120);
+	} finally {
+		externalRecorder = false;
 	}
 });

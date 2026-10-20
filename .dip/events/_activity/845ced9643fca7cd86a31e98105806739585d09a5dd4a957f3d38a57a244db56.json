@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "845ced9643fca7cd86a31e98105806739585d09a5dd4a957f3d38a57a244db56",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:49:27.722Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/crates/timeline/src/audio_sync.rs');s=p.read_text();a=s.index('    #[test]\\n    fn advance_reads_later_source');s=s[:a]+'''    #[test]\n    fn external_recording_clock_is_not_clamped_to_manual_lip_sync_and_does_not_scale_with_retime() {\n        let t = resolve_clip_audio_timing(ClipAudioTimingOptions {start_time:10.0,duration:2.0,trim_start:5.0,rate:2.0,offset_seconds:-0.25,source_offset_seconds:Some(120.0)});\n        assert_eq!((t.start_time,t.duration,t.trim_start),(10.0,2.0,125.5));\n        let delayed = resolve_clip_audio_timing(ClipAudioTimingOptions {start_time:10.0,duration:2.0,trim_start:11.0,rate:2.0,offset_seconds:0.0,source_offset_seconds:Some(-12.0)});\n        assert_eq!((delayed.start_time,delayed.duration,delayed.trim_start),(10.5,1.5,0.0));\n    }\n''' +s[a:];p.write_text(s)\nPY\ncat >> crates/editor-api/tests/classic_unified.rs <<'RS'\n\n#[tokio::test]\nasync fn external_audio_selection_and_sync_reject_wrong_sources_or_no_overlap_atomically(){\n    let r=with_recorder().await;let s=read(&r).await;\n    for ids in [json!([\"video-asset\",\"short\"]),json!([\"recorder\",\"recorder\"]),json!([\"recorder\"]),json!([\"unified\",\"not-registered\"])] {\n        assert!(r.registry().invoke(\"media.classic.unified.with_audio.create\",InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":s[\"revision\"],\"mediaIds\":ids})).await.is_err());assert_eq!(read(&r).await,s);\n    }\n    call(&r,\"media.classic.unified.with_audio.create\",with_audio_input(&s,\"video-asset\")).await;\n    let s=read(&r).await;let id=s[\"project\"][\"classic\"][\"mediaAssets\"][4][\"id\"].clone();\n    for audio in [json!({\"id\":\"recorder\",\"duration\":7200,\"start\":4000,\"bindingRevision\":8}),json!({\"id\":\"recorder\",\"duration\":7200,\"start\":-100,\"bindingRevision\":9})] {\n        assert!(r.registry().invoke(\"media.classic.unified.sync\",InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":s[\"revision\"],\"mediaId\":id,\"",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-78271a4b-60a7-4598-9253-4845f13a1e88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:49:28.203Z",
+  "parents": [],
+  "branch": "main"
+}

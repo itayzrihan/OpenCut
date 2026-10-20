@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fab2a5307aabf60434c0a288da212836bfcd3984ccce93de0a9d68a482a1b320",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T15:13:30.290Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/configured-host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "82ce41a3-4704-4e11-9172-68808a10255a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:13:30.291Z",
+  "parents": [],
+  "branch": "main"
+}

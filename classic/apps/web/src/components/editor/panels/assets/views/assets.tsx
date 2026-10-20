@@ -785,6 +785,35 @@ function MediaAssetDraggable({
 	);
 }
 
+function UnifiedWithAudioAction({ ids }: { ids: string[] }) {
+	const editor = useEditor();
+	useEditorMedia((e) => e.media.getAssets());
+	const enabled = editor.command.canCreateUnifiedWithAudio(ids);
+	return (
+		<ContextMenuItem
+			disabled={!enabled}
+			onClick={() => {
+				void editor.media
+					.createUnifiedWithAudio({ mediaIds: ids })
+					.then(() => {
+						toast.success("Unified with Audio created", {
+							description:
+								"Audio is syncing in the background. Drag the asset once Audio synced appears; microphone processing is applied automatically.",
+						});
+					})
+					.catch((error: unknown) =>
+						toast.error("Could not create Unified with Audio", {
+							description:
+								error instanceof Error ? error.message : String(error),
+						}),
+					);
+			}}
+		>
+			Unify with Audio · סנכרון וידאו ואודיו
+		</ContextMenuItem>
+	);
+}
+
 function MediaItemWithContextMenu({
 	item,
 	children,
@@ -814,6 +843,7 @@ function MediaItemWithContextMenu({
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
 				<ContextMenuItem>Export clips</ContextMenuItem>
+				<UnifiedWithAudioAction ids={idsToDelete} />
 				<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
 					Unify as Unified Angles
 				</ContextMenuItem>
@@ -1261,7 +1291,11 @@ function MediaPreview({
 			return (
 				<MediaTypePlaceholder
 					icon={Video01Icon}
-					label="Unified Angles"
+					label={
+						item.unifiedAngles?.audioFinishingVersion === 1
+							? "Unified with Audio"
+							: "Unified Angles"
+					}
 					duration={item.duration}
 					variant="bordered"
 				/>

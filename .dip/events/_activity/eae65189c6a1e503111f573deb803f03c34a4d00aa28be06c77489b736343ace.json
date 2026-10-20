@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eae65189c6a1e503111f573deb803f03c34a4d00aa28be06c77489b736343ace",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:57:13.944Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "19ef7c03-6914-4678-8f37-e8b46ec2a9ab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:57:13.946Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "344ad751e1e6fde0ac696dbc91559bab00bf5b00dd114f99035b204c7d5d429d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:51:12.683Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_media.rs');s=p.read_text().replace('\"mediaId\" | \"sourceMediaId\"','\"mediaId\" | \"sourceMediaId\" | \"audioAssetId\"');p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_source_audio.rs');s=p.read_text();a=s.index('    if let Some(value) = source.get(\"sourceDuration\")');s=s[:a]+'''    if let Some(value) = source.get(\"podcastFinishingVersion\") {\n        audio[\"podcastFinishingVersion\"] = value.clone();\n    }\n''' +s[a:];p.write_text(s)\np=Path('classic/apps/web/src/media/__tests__/unified-sync-task.test.ts');s=p.read_text().replace('getActiveOrNull: () => ({ metadata: { id: projectId } }),','getActiveOrNull: () => ({ metadata: { id: projectId } }),\\n            getActive: () => ({ metadata: { id: projectId } }),');a=s.index('\\t\\t\\tsynchronizeMedia() {},');s=s[:a]+'''            createUnifiedWithAudio: () => {\n                const created = {id:\"with-audio\",...virtual,unifiedAngles:{...virtual.unifiedAngles,angleAssetIds:[\"cam-a\"],audioAssetId:\"recorder\",audioFinishingVersion:1}};\n                manager.setAssets({assets:[...manager.getAssets(),created]});return created;\n            },\n''' +s[a:];s+='''\ntest(\"canonical external-audio creation is persisted then starts one local recorder sync job\",async()=>{\n const f=fixture();const recorder={id:\"recorder\",type:\"audio\",name:\"Recorder\",duration:300,hasAudio:true};\n f.manager.setAssets({assets:[...f.manager.getAssets(),recorder]});\n const asset=await f.manager.createUnifiedWithAudio({mediaIds:[\"cam-a\",\"recorder\"]});\n const joined=f.manager.syncUnifiedAngles({projectId:\"project-a\",mediaId:asset.id});\n const w=await worker();expect(w.input.channels[0].audio.id).toBe(\"recorder\");expect(saves[0].mediaAsset.unifiedAngles.audioFinishingVersion).toBe(1);\n w.resolve(result(asset.id));expect(await joined).toBe(true);expect(f.commits).toHaveLength(1);\n});\n''';p.write_text(s)\nPY\ncat > classic/apps/web/src/core/__tests__/canonical-unifi",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1e6b255e-8fbd-4660-8ea1-b6ed15b0bfde"
+      },
+      {
+        "at": "2026-10-20T14:51:13.071Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_media.rs');s=p.read_text().replace('\"mediaId\" | \"sourceMediaId\"','\"mediaId\" | \"sourceMediaId\" | \"audioAssetId\"');p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_source_audio.rs');s=p.read_text();a=s.index('    if let Some(value) = source.get(\"sourceDuration\")');s=s[:a]+'''    if let Some(value) = source.get(\"podcastFinishingVersion\") {\n        audio[\"podcastFinishingVersion\"] = value.clone();\n    }\n''' +s[a:];p.write_text(s)\np=Path('classic/apps/web/src/media/__tests__/unified-sync-task.test.ts');s=p.read_text().replace('getActiveOrNull: () => ({ metadata: { id: projectId } }),','getActiveOrNull: () => ({ metadata: { id: projectId } }),\\n            getActive: () => ({ metadata: { id: projectId } }),');a=s.index('\\t\\t\\tsynchronizeMedia() {},');s=s[:a]+'''            createUnifiedWithAudio: () => {\n                const created = {id:\"with-audio\",...virtual,unifiedAngles:{...virtual.unifiedAngles,angleAssetIds:[\"cam-a\"],audioAssetId:\"recorder\",audioFinishingVersion:1}};\n                manager.setAssets({assets:[...manager.getAssets(),created]});return created;\n            },\n''' +s[a:];s+='''\ntest(\"canonical external-audio creation is persisted then starts one local recorder sync job\",async()=>{\n const f=fixture();const recorder={id:\"recorder\",type:\"audio\",name:\"Recorder\",duration:300,hasAudio:true};\n f.manager.setAssets({assets:[...f.manager.getAssets(),recorder]});\n const asset=await f.manager.createUnifiedWithAudio({mediaIds:[\"cam-a\",\"recorder\"]});\n const joined=f.manager.syncUnifiedAngles({projectId:\"project-a\",mediaId:asset.id});\n const w=await worker();expect(w.input.channels[0].audio.id).toBe(\"recorder\");expect(saves[0].mediaAsset.unifiedAngles.audioFinishingVersion).toBe(1);\n w.resolve(result(asset.id));expect(await joined).toBe(true);expect(f.commits).toHaveLength(1);\n});\n''';p.write_text(s)\nPY\ncat > classic/apps/web/src/core/__tests__/canonical-unifi",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1e6b255e-8fbd-4660-8ea1-b6ed15b0bfde"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:51:13.304Z",
+  "parents": [],
+  "branch": "main"
+}

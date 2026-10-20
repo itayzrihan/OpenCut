@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "879ba0b2c13f116e528eac290370f405ee9049bbaaf3667bd397e99d40dd3dd1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:14:21.258Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1038,1070p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '1655,1685p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2260,2290p' classic/apps/web/src/ai/edit-plan.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9d7e702e-896b-4a17-be29-f4b075fc7b04"
+      },
+      {
+        "at": "2026-10-20T15:14:21.344Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1038,1070p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '1655,1685p' classic/apps/web/src/ai/edit-plan.ts\nsed -n '2260,2290p' classic/apps/web/src/ai/edit-plan.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9d7e702e-896b-4a17-be29-f4b075fc7b04"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:14:21.383Z",
+  "parents": [],
+  "branch": "main"
+}

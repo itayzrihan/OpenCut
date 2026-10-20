@@ -13,6 +13,9 @@ pub struct ClipAudioTimingOptions {
     pub rate: f64,
     /// Timeline seconds: negative advances sound, positive delays it.
     pub offset_seconds: f64,
+    /// Physical recording-clock offset, independent of retime and manual lip-sync.
+    #[serde(default)]
+    pub source_offset_seconds: Option<f64>,
 }
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
@@ -37,7 +40,11 @@ pub fn resolve_clip_audio_timing(o: ClipAudioTimingOptions) -> ClipAudioTiming {
     } else {
         0.0
     };
-    let source_start = o.trim_start - offset * rate;
+    let physical = o
+        .source_offset_seconds
+        .filter(|v| v.is_finite() && v.abs() <= 1e9)
+        .unwrap_or(0.0);
+    let source_start = o.trim_start + physical - offset * rate;
     // Missing source before time zero is silence, never a shifted video edit.
     let leading_silence = (-source_start / rate).max(0.0).min(o.duration.max(0.0));
     ClipAudioTiming {
@@ -57,7 +64,32 @@ mod tests {
             trim_start: trim,
             rate,
             offset_seconds: offset,
+            source_offset_seconds: None,
         })
+    }
+    #[test]
+    fn external_recording_clock_is_not_clamped_to_manual_lip_sync_and_does_not_scale_with_retime() {
+        let t = resolve_clip_audio_timing(ClipAudioTimingOptions {
+            start_time: 10.0,
+            duration: 2.0,
+            trim_start: 5.0,
+            rate: 2.0,
+            offset_seconds: -0.25,
+            source_offset_seconds: Some(120.0),
+        });
+        assert_eq!((t.start_time, t.duration, t.trim_start), (10.0, 2.0, 125.5));
+        let delayed = resolve_clip_audio_timing(ClipAudioTimingOptions {
+            start_time: 10.0,
+            duration: 2.0,
+            trim_start: 11.0,
+            rate: 2.0,
+            offset_seconds: 0.0,
+            source_offset_seconds: Some(-12.0),
+        });
+        assert_eq!(
+            (delayed.start_time, delayed.duration, delayed.trim_start),
+            (10.5, 1.5, 0.0)
+        );
     }
     #[test]
     fn advance_reads_later_source_without_moving_clip() {
@@ -72,6 +104,7 @@ mod tests {
             trim_start: 4.2,
             rate: 1.0,
             offset_seconds: -0.1,
+            source_offset_seconds: None,
         });
         assert_eq!(t.start_time, 3.0);
         assert_eq!(t.duration, 0.08);

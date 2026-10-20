@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46e1fe9ea6e318ab96f7e20c69107c84fd7760c57b714d52fb7e2e34bbaadfd3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:43:23.192Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_unified/with_audio.rs <<'RS'\n//! Non-destructive, Classic compound media: camera clock + one processed recorder.\nuse super::*;\n#[derive(Deserialize,JsonSchema)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\nstruct Input {project_id:String,expected_revision:u64,#[schemars(length(min=2,max=2))] media_ids:Vec<String>}\n#[derive(Serialize,JsonSchema)]\n#[serde(rename_all=\"camelCase\")]\nstruct Prepared {video_media_id:String,audio_media_id:String}\nfn selected<'a>(assets:&'a [Map<String,Value>],ids:&[String])->Result<(&'a Map<String,Value>, &'a Map<String,Value>),CapabilityError>{\n    if ids.len()!=2||ids[0]==ids[1]{return Err(invalid(\"Select one video or Unified Angles and one external audio recording\"));}\n    let mut chosen=ids.iter().map(|id|assets.iter().find(|a|a[\"id\"]==*id).ok_or_else(||invalid(\"Selected media is missing\"))).collect::<Result<Vec<_>,_>>()?;\n    chosen.sort_by_key(|a|a[\"type\"]!=\"video\");let(v,a)=(chosen[0],chosen[1]);\n    if v[\"type\"]!=\"video\"||a[\"type\"]!=\"audio\"{return Err(invalid(\"Select one video or Unified Angles and one external audio recording\"));}\n    let u=metadata(v).map_err(|e|invalid(&e))?;\n    let ids=u.as_ref().map(|u|u.angle_asset_ids.clone()).unwrap_or_else(||vec![v[\"id\"].as_str().unwrap().into()]);\n    for id in ids.iter().chain(std::iter::once(&a[\"id\"].as_str().unwrap().to_owned())) {\n        let source=assets.iter().find(|s|s[\"id\"]==*id).ok_or_else(||invalid(\"Compound source is missing\"))?;\n        if source[\"missing\"]==true||source[\"hasAudio\"]==false||!source[\"duration\"].as_f64().is_some_and(|d|d.is_finite()&&d>0.){return Err(invalid(\"Every selected source needs available reference audio and a known duration\"));}\n    }\n    Ok((v,a))\n}\n/// Only insertion initializes processing. Later manual edits, splits and take\n/// swaps retain their own parameters; source media are never processed in place.\npub(in crate::operations) fn prepare_element(e:&mut Value,assets:&[Map<String,Value>])->Res",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-416fb952-4515-451d-ab24-52135bf6f991"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:43:23.320Z",
+  "parents": [],
+  "branch": "main"
+}

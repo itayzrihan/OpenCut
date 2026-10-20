@@ -145,7 +145,15 @@ export class UnifiedAnglesSyncTasks {
 			check();
 			const channels = resolvePodcastChannelSources({
 				channels: [
-					{ id: mediaId, name: asset.name, video: asset, audio: asset },
+					{
+						id: mediaId,
+						name: asset.name,
+						video: asset,
+						audio:
+							asset.unifiedAngles.audioFinishingVersion === 1
+								? mediaMap.get(asset.unifiedAngles.audioAssetId)!
+								: asset,
+					},
 				],
 				mediaAssets: this.editor.media.getAssets(),
 			});

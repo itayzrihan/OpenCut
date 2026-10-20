@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70f179d0095a53f87266b717575e5c4fce3a53df450074d1077647e7a18e067c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:56:48.734Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/export/_next",
+          "classic/apps/web/.next-local-production/export",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/routes-manifest.json",
+          "classic/apps/web/.next-local-production/prerender-manifest.json",
+          "classic/apps/web/.next-local-production/server/prefetch-hints.json",
+          "classic/apps/web/.next-local-production/static/Ki3v605-EQoBH3hBTIRJJ/_ssgManifest.js",
+          "classic/apps/web/.next-local-production/images-manifest.json",
+          "classic/apps/web/.next-local-production/export-marker.json",
+          "classic/apps/web/.next-local-production/export-detail.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "61e54de5-2268-46af-acbf-b28ed4b131de"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:56:48.735Z",
+  "parents": [],
+  "branch": "main"
+}

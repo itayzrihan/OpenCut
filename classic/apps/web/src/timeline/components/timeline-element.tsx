@@ -641,10 +641,15 @@ function TimelineElementMenuContent({
 	isExpanded: boolean;
 }) {
 	const editor = useEditor();
-	const clipMediaAssets = useEditorMedia((currentEditor) =>
-		currentEditor.media
-			.getAssets()
-			.filter((asset) => asset.type === "image" || asset.type === "video"),
+	const allMediaAssets = useEditorMedia((currentEditor) =>
+		currentEditor.media.getAssets(),
+	);
+	const clipMediaAssets = useMemo(
+		() =>
+			allMediaAssets.filter(
+				(asset) => asset.type === "image" || asset.type === "video",
+			),
+		[allMediaAssets],
 	);
 	const selectedElements = useEditorSelection((e) =>
 		e.selection.getSelectedElements(),
@@ -833,7 +838,7 @@ function TimelineElementMenuContent({
 				getUnifiedAngleRange({
 					asset: mediaAsset,
 					angleAssetId: id,
-					mediaMap: new Map(clipMediaAssets.map((a) => [a.id, a])),
+					mediaMap: new Map(allMediaAssets.map((a) => [a.id, a])),
 					trimStart: clip.trimStart / 120000,
 					duration:
 						(clip.sourceDuration

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9ea7cecc097b206198f8619fa4aa2a1e7b7524b04212820d31f6024d6e545b9f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:57:02.913Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts');s=p.read_text().replace('bindingRevision: 0,','bindingRevision: camera.bindingRevision ?? 0,');p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/real-bridge",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-43377cc1-ded2-40f5-b09d-57416094a0da"
+      },
+      {
+        "at": "2026-10-20T14:57:03.597Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts');s=p.read_text().replace('bindingRevision: 0,','bindingRevision: camera.bindingRevision ?? 0,');p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/real-bridge",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-43377cc1-ded2-40f5-b09d-57416094a0da"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:57:03.757Z",
+  "parents": [],
+  "branch": "main"
+}

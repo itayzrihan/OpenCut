@@ -282,7 +282,12 @@ export async function runPodcastAlignment({
 		if (channel.angles)
 			unifiedSync.push({
 				mediaId: channel.video.id,
-				sources: channel.angles.map((a) => ({
+				sources: [
+					...channel.angles,
+					...(channel.video.unifiedAngles?.audioFinishingVersion === 1
+						? [channel.audio]
+						: []),
+				].map((a) => ({
 					id: a.id,
 					duration: a.duration!,
 					start: offsets.get(a.id)!,
@@ -459,7 +464,10 @@ export function resolvePodcastChannelSources({
 			asset: audioInput,
 			mediaMap: map,
 		});
-		if (isUnifiedAnglesAsset(audioInput)) {
+		if (
+			isUnifiedAnglesAsset(audioInput) &&
+			!audioInput.unifiedAngles.audioFinishingVersion
+		) {
 			const sources = audioInput.unifiedAngles.angleAssetIds
 				.map((id) => map.get(id))
 				.filter((a): a is MediaAsset => !!a);

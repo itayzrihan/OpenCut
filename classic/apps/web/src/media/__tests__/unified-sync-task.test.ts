@@ -59,9 +59,24 @@ function fixture() {
 	const editor: any = {
 		project: {
 			getActiveOrNull: () => ({ metadata: { id: projectId } }),
+			getActive: () => ({ metadata: { id: projectId } }),
 			getSessionReadOnlyReason: () => null,
 		},
 		command: {
+			createUnifiedWithAudio: () => {
+				const created = {
+					id: "with-audio",
+					...virtual,
+					unifiedAngles: {
+						...virtual.unifiedAngles,
+						angleAssetIds: ["cam-a"],
+						audioAssetId: "recorder",
+						audioFinishingVersion: 1,
+					},
+				};
+				manager.setAssets({ assets: [...manager.getAssets(), created] });
+				return created;
+			},
 			synchronizeMedia() {},
 			flushHistory: async () => {},
 			prepareClassicMediaImport:
@@ -258,4 +273,29 @@ test("a persisted running task after reload is retryable without pretending a wo
 	expect(f.updates[0].replaceTaskId).toBe("orphan");
 	w.resolve(result(asset.id));
 	expect(await job).toBe(true);
+});
+
+test("canonical external-audio creation is persisted then starts one local recorder sync job", async () => {
+	const f = fixture();
+	const recorder = {
+		id: "recorder",
+		type: "audio",
+		name: "Recorder",
+		duration: 300,
+		hasAudio: true,
+	};
+	f.manager.setAssets({ assets: [...f.manager.getAssets(), recorder] });
+	const asset = await f.manager.createUnifiedWithAudio({
+		mediaIds: ["cam-a", "recorder"],
+	});
+	const joined = f.manager.syncUnifiedAngles({
+		projectId: "project-a",
+		mediaId: asset.id,
+	});
+	const w = await worker();
+	expect(w.input.channels[0].audio.id).toBe("recorder");
+	expect(saves[0].mediaAsset.unifiedAngles.audioFinishingVersion).toBe(1);
+	w.resolve(result(asset.id));
+	expect(await joined).toBe(true);
+	expect(f.commits).toHaveLength(1);
 });

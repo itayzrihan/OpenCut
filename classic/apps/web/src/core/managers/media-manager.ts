@@ -33,6 +33,16 @@ export class MediaManager {
 	syncUnifiedAngles(input: { projectId: string; mediaId: string }) {
 		return this.unifiedSync.start(input);
 	}
+	async createUnifiedWithAudio({ mediaIds }: { mediaIds: string[] }) {
+		const projectId = this.editor.project.getActive().metadata.id;
+		const created = this.editor.command.createUnifiedWithAudio(mediaIds);
+		await storageService.saveMediaAsset({ projectId, mediaAsset: created });
+		await this.editor.command.flushHistory();
+		// Creation is native; host only persists metadata and runs local decoding.
+		void this.syncUnifiedAngles({ projectId, mediaId: created.id });
+		return created;
+	}
+
 	isUnifiedAnglesSyncing(mediaId: string) {
 		return this.unifiedSync.isRunning(mediaId);
 	}

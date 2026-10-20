@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ae0d1395a9ee1a0ea32357c2892ac32dd85f76ad922cd91586352c15f89128dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:57:13.449Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts');s=p.read_text().replace('bindingRevision: 0','bindingRevision: camera.bindingRevision ?? 0');p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/__tests__/canonical-unified-audio.test.ts\nnode classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/real-bridge",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a3201d62-55f0-4e04-b8ba-f61cc2733a84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:57:13.945Z",
+  "parents": [],
+  "branch": "main"
+}

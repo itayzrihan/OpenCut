@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ef565a2bf4ccc98bbc834e3704d268ecb48f95e7dc94540139470fda6163931",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T15:07:11.805Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/angle-regression/src__media____tests____unified-angles-audio.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/angle-regression/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "71755153-27a3-43d1-8595-7253b19dbab8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:07:11.809Z",
+  "parents": [],
+  "branch": "main"
+}

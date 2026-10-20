@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a1a5fc6b74a93996bba7d2e584c1bc3df7c3bff503ff10dfb5e90a9e19153ba1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:58:57.318Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts src/media/__tests__/unified-sync-task.test.ts src/media/__tests__/unified-angles-audio.test.ts src/media/__tests__/unified-angles.test.ts src/podcast-sync/__tests__/unified-engine.test.ts src/timeline/__tests__/unified-angles-cycle.test.ts src/export/__tests__/audio-source-windows.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/all-host-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5e2de2b6-9178-4aff-8fe5-23e08aa080a7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:58:57.327Z",
+  "parents": [],
+  "branch": "main"
+}

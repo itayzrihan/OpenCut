@@ -2,7 +2,10 @@
 import { wasm } from "../../../test-support/wasm";
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 import type { MediaAsset } from "@/media/types";
-import { createUnifiedAnglesAsset } from "@/media/unified-angles";
+import {
+	createUnifiedAnglesAsset,
+	getUnifiedAngleRange,
+} from "@/media/unified-angles";
 import type { SceneTracks } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 
@@ -128,4 +131,114 @@ describe("Unified Angles audio consumers", () => {
 		expect(decodedElements).toHaveLength(2);
 		expect(decodedAssetIds).toEqual(["one"]);
 	});
+});
+
+test("external recording is the only processed playback/export route with a large source clock offset and alternate camera", async () => {
+	const first = video({ id: "one" }),
+		second = video({ id: "two" });
+	const mic: MediaAsset = {
+		id: "mic",
+		name: "External recorder",
+		type: "audio",
+		duration: 180,
+		hasAudio: true,
+		url: "blob:mic",
+	};
+	const virtual: MediaAsset = {
+		id: "with-audio",
+		...createUnifiedAnglesAsset({ assets: [first, second] }),
+	};
+	virtual.unifiedAngles!.audioAssetId = "mic";
+	virtual.unifiedAngles!.audioFinishingVersion = 1;
+	virtual.unifiedAngles!.sync = {
+		method: "audio",
+		referenceAssetId: "one",
+		sources: [
+			{ id: "one", duration: 30, start: 0, bindingRevision: 0 },
+			{ id: "two", duration: 30, start: 0, bindingRevision: 0 },
+			{ id: "mic", duration: 180, start: -120, bindingRevision: 0 },
+		],
+	};
+	const element: import("@/timeline").VideoElement = {
+		id: "clip",
+		type: "video",
+		mediaId: virtual.id,
+		unifiedAngleId: "two",
+		name: "Synced",
+		startTime: mediaTime(10),
+		duration: mediaTime(2),
+		trimStart: mediaTime(5),
+		trimEnd: mediaTime(21),
+		sourceDuration: mediaTime(30),
+		isSourceAudioEnabled: true,
+		retime: { rate: 2 },
+		params: {
+			volume: 15,
+			gainDb: -1,
+			noiseReduction: 100,
+			hardLimiterEnabled: true,
+			hardLimiterCeilingDb: -1,
+			hardLimiterLookAheadMs: 7,
+			hardLimiterReleaseMs: 100,
+			audioSyncOffset: -0.25,
+			sourceAudioOffsetSeconds: 120,
+		},
+	};
+	const tracks: SceneTracks = {
+		main: {
+			id: "video",
+			type: "video",
+			name: "Video",
+			muted: false,
+			hidden: false,
+			elements: [element],
+		},
+		overlay: [],
+		audio: [],
+		order: ["video"],
+	};
+	const mediaAssets = [first, second, mic, virtual];
+	expect(
+		getUnifiedAngleRange({
+			asset: virtual,
+			angleAssetId: "two",
+			mediaMap: new Map(mediaAssets.map((a) => [a.id, a])),
+			trimStart: 5,
+			duration: 4,
+		}).available,
+	).toBe(true);
+	expect(
+		getUnifiedAngleRange({
+			asset: virtual,
+			angleAssetId: "two",
+			mediaMap: new Map([first, second, virtual].map((a) => [a.id, a])),
+			trimStart: 5,
+			duration: 4,
+		}).available,
+	).toBe(false);
+
+	const sources = await collectAudioMixSources({ tracks, mediaAssets });
+	const clips = await collectAudioClips({ tracks, mediaAssets });
+	const decoded: string[] = [];
+	const elements = await collectAudioElements({
+		tracks,
+		mediaAssets,
+		audioContext: {} as AudioContext,
+		resolveAssetAudio: async ({ asset }) => {
+			decoded.push(asset.id);
+			return {} as AudioBuffer;
+		},
+	});
+	expect(sources).toHaveLength(1);
+	expect(sources[0].url).toBe("blob:mic");
+	expect(clips).toHaveLength(1);
+	expect(clips[0].sourceKey).toBe("mic");
+	expect(decoded).toEqual(["mic"]);
+	for (const audio of [...sources, ...clips, ...elements]) {
+		expect(audio.trimStart).toBe(125.5);
+		expect(audio.startTime).toBe(10);
+		expect(audio.duration).toBe(2);
+		expect(audio.timelineElement.params.noiseReduction).toBe(100);
+		expect(audio.timelineElement.params.hardLimiterEnabled).toBe(true);
+	}
 });

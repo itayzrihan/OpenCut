@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cbfe913e26b23c474d3d3847528c95134432b616268041973de8d1f925f7383e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:06:37.614Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '635,650p' classic/apps/web/src/timeline/components/timeline-element.tsx\nsed -n '818,845p' classic/apps/web/src/timeline/components/timeline-element.tsx\nrg -n 'fn unified_camera_range|fn unified_camera_sources_current' classic/rust/crates/podcast/src --glob '*.rs'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a4b245b2-0c5c-473f-ae38-be1581d5bb85"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:06:37.620Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4267a94ab6fe994c9438740e3443449257f0811b8397246df0cd90f64f857ab6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T15:06:33.348Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'angleAvailable|clipMediaAssets' classic/apps/web/src/timeline/components/timeline-element.tsx | head -20\nsed -n '770,815p' classic/apps/web/src/timeline/components/timeline-element.tsx\nrg -n 'unified_camera_sources_current|unified_camera_range' classic/rust/crates/podcast/src/podcast.rs\nsed -n '99,155p' classic/apps/web/src/media/unified-angles.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c06547dd-3849-42de-9896-3a0c2ab98650"
+      },
+      {
+        "at": "2026-10-20T15:06:33.435Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'angleAvailable|clipMediaAssets' classic/apps/web/src/timeline/components/timeline-element.tsx | head -20\nsed -n '770,815p' classic/apps/web/src/timeline/components/timeline-element.tsx\nrg -n 'unified_camera_sources_current|unified_camera_range' classic/rust/crates/podcast/src/podcast.rs\nsed -n '99,155p' classic/apps/web/src/media/unified-angles.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c06547dd-3849-42de-9896-3a0c2ab98650"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T15:06:33.626Z",
+  "parents": [],
+  "branch": "main"
+}

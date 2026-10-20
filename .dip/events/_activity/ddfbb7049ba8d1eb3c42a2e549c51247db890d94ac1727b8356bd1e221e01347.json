@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddfbb7049ba8d1eb3c42a2e549c51247db890d94ac1727b8356bd1e221e01347",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:47:39.750Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'fn input|enum|struct Input' crates/editor-api/tests/classic_source_audio.rs crates/editor-api/src/operations/classic_source_audio.rs\nsed -n '20,55p' crates/editor-api/src/operations/classic_source_audio.rs\nsed -n '1,80p' classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts\nsed -n '162,215p' classic/apps/web/src/media/__tests__/unified-sync-task.test.ts\nrg -n 'source_offset_seconds' classic/rust/wasm/pkg/*.d.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9ac6e9fe-6e1c-41d2-804e-0702f5a4b49b"
+      },
+      {
+        "at": "2026-10-20T14:47:39.854Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cargo test -p opencut-editor-api --test classic_unified --test classic_source_audio --test classic_audio_sharpen --quiet",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-386f0bab-1d5e-4a73-ba9b-b7bb7f304247"
+      },
+      {
+        "at": "2026-10-20T14:47:39.857Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> crates/editor-api/tests/classic_unified.rs <<'RS'\n\nasync fn with_recorder() -> OpenCutRuntime {\n    let r=fixture().await;let s=read(&r).await;let mut c=s[\"project\"][\"classic\"].clone();\n    c[\"mediaAssets\"].as_array_mut().unwrap().push(json!({\"id\":\"recorder\",\"name\":\"External recorder\",\"type\":\"audio\",\"duration\":7200,\"hasAudio\":true,\"bindingRevision\":8}));\n    call(&r,\"project.classic.commit\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":s[\"revision\"],\"classic\":c})).await;r\n}\nfn with_audio_input(s:&Value,video:&str)->Value {json!({\"projectId\":\"classic-project\",\"expectedRevision\":s[\"revision\"],\"mediaIds\":[video,\"recorder\"]})}\n#[tokio::test]\nasync fn external_audio_compound_from_single_or_unified_is_new_full_camera_clock_and_undoable(){\n    for video in [\"video-asset\",\"unified\"] {\n        let r=with_recorder().await;let before=read(&r).await;let input=with_audio_input(&before,video);\n        let prep=call(&r,\"media.classic.unified.with_audio.prepare\",input.clone()).await;assert_eq!(prep[\"audioMediaId\"],\"recorder\");assert_eq!(read(&r).await,before);\n        r.registry().invoke(\"media.classic.unified.with_audio.create\",InvocationContext{dry_run:true,..Default::default()},input.clone()).await.unwrap();assert_eq!(read(&r).await,before);\n        let mut ctx=InvocationContext::default();ctx.metadata.insert(\"opencut/idempotencyKey\".into(),json!(\"compound-once\"));\n        let receipt=r.registry().invoke(\"media.classic.unified.with_audio.create\",ctx.clone(),input.clone()).await.unwrap();assert_eq!(r.registry().invoke(\"media.classic.unified.with_audio.create\",ctx,input).await.unwrap(),receipt);\n        let after=read(&r).await;let c=&after[\"project\"][\"classic\"];assert_eq!(c[\"document\"],before[\"project\"][\"classic\"][\"document\"]);\n        assert_eq!(&c[\"mediaAssets\"].as_array().unwrap()[..4],before[\"project\"][\"classic\"][\"mediaAssets\"].as_array().unwrap());\n        let a=&c[\"mediaAssets\"][4];assert_eq!(a[\"duration\"],3600.0);assert_eq!(a[\"unifiedAngles\"][\"defaultAngle",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3cf06945-bf17-4ee0-bb88-5e5785f4b736"
+      },
+      {
+        "at": "2026-10-20T14:47:39.858Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "wasm-pack build rust/wasm --target bundler --out-dir pkg --no-pack",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7de51c76-e800-4e7d-96ad-95ef17e2e01d"
+      },
+      {
+        "at": "2026-10-20T14:47:39.870Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'fn input|enum|struct Input' crates/editor-api/tests/classic_source_audio.rs crates/editor-api/src/operations/classic_source_audio.rs\nsed -n '20,55p' crates/editor-api/src/operations/classic_source_audio.rs\nsed -n '1,80p' classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts\nsed -n '162,215p' classic/apps/web/src/media/__tests__/unified-sync-task.test.ts\nrg -n 'source_offset_seconds' classic/rust/wasm/pkg/*.d.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9ac6e9fe-6e1c-41d2-804e-0702f5a4b49b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:47:40.105Z",
+  "parents": [],
+  "branch": "main"
+}

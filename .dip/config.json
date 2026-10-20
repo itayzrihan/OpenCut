@@ -241,6 +241,13 @@
         ".dip/tools/verify-teleprompter-cuts.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "unified-with-audio": {
+      "command": [
+        "node",
+        ".dip/tools/verify-unified-with-audio.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

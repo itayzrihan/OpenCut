@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d819f49a0a13eb0d1a70f72c641a426517ac0e3cb2edfefeee2ab5dc73cc8f66",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T14:48:56.200Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/host-tests/src__media____tests____unified-angles-audio.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/host-tests/src__media____tests____unified-sync-task.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/host-tests/src__media____tests____unified-angles.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/host-tests/src__timeline____tests____unified-angles-cycle.test.ts.log",
+          ".local/unified-with-audio-2026-10-20/host-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "040fa309-c800-4b4b-a235-6fa467bf472b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:48:56.202Z",
+  "parents": [],
+  "branch": "main"
+}

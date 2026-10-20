@@ -248,6 +248,7 @@ pub(super) fn audio_inputs(
                     trim_start: tick(&e["trimStart"])? as f64 / TPS,
                     rate,
                     offset_seconds: e["params"]["audioSyncOffset"].as_f64().unwrap_or(0.0),
+                    source_offset_seconds: e["params"]["sourceAudioOffsetSeconds"].as_f64(),
                 },
             );
             let from = (timing.start_time * TPS).round() as i64;
@@ -281,6 +282,7 @@ pub(super) fn audio_inputs(
                 );
                 clip["trimEnd"] = json!(0);
                 clip["params"]["audioSyncOffset"] = json!(0);
+                clip["params"]["sourceAudioOffsetSeconds"] = json!(0);
                 clip["retime"] = json!({"rate":rate});
                 out.push(AudioInput {
                     reference_id: r.id.clone(),

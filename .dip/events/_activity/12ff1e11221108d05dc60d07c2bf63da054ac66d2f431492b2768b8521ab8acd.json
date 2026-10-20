@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "12ff1e11221108d05dc60d07c2bf63da054ac66d2f431492b2768b8521ab8acd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:46:23.526Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,190p' crates/editor-api/tests/classic_unified.rs\nsed -n '1,70p' crates/editor-api/tests/classic_source_audio.rs\nrg -n 'noiseReduction|gainDb|15' crates/editor-api/tests/classic_audio_sharpen.rs | head -20\nrg -n 'params:|sourceDuration|audioSyncOffset' classic/apps/web/src/timeline/__tests__/audio-sync.test.ts\nrg --files classic/apps/web/src | rg '(audio-sync|unified).*test'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-db0d1010-1828-41b0-a351-0091bc51c4bf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:46:23.571Z",
+  "parents": [],
+  "branch": "main"
+}

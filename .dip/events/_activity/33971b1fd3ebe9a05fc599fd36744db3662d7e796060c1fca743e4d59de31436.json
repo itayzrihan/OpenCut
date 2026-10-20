@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "33971b1fd3ebe9a05fc599fd36744db3662d7e796060c1fca743e4d59de31436",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:46:12.568Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "wasm-pack build rust/wasm --target bundler --out-dir pkg --no-pack",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7de51c76-e800-4e7d-96ad-95ef17e2e01d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:46:13.535Z",
+  "parents": [],
+  "branch": "main"
+}

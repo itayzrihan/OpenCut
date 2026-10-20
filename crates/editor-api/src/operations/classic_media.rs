@@ -33,7 +33,7 @@ fn references_media(value: &Value, ids: &HashSet<&str>) -> bool {
                         .any(|v| v.as_str().is_some_and(|id| ids.contains(id)))
                 })
                 || fields.iter().any(|(key, value)| {
-                    (matches!(key.as_str(), "mediaId" | "sourceMediaId")
+                    (matches!(key.as_str(), "mediaId" | "sourceMediaId" | "audioAssetId")
                         && value.as_str().is_some_and(|id| ids.contains(id)))
                         || references_media(value, ids)
                 })

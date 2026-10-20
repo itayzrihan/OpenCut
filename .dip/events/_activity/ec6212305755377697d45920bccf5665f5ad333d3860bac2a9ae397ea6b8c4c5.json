@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ec6212305755377697d45920bccf5665f5ad333d3860bac2a9ae397ea6b8c4c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T14:56:25.835Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/core/__tests__/canonical-unified-audio.test.ts src/media/__tests__/unified-sync-task.test.ts src/media/__tests__/unified-angles-audio.test.ts src/podcast-sync/__tests__/unified-engine.test.ts src/export/__tests__/audio-source-windows.test.ts --jobs=1 --report=.local/unified-with-audio-2026-10-20/bridge-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5d656dde-6916-4143-ba62-dafc4a3646ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T14:56:26.717Z",
+  "parents": [],
+  "branch": "main"
+}

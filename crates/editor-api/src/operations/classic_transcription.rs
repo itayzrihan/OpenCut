@@ -259,6 +259,7 @@ fn spans(tracks: &Value, media: &[Map<String, Value>]) -> Vec<Span> {
                 trim_start: n(&e["trimStart"], 0.0) / TPS,
                 rate,
                 offset_seconds: n(&e["params"]["audioSyncOffset"], 0.0),
+                source_offset_seconds: e["params"]["sourceAudioOffsetSeconds"].as_f64(),
             });
             Some(Span {
                 media: audio_id.into(),

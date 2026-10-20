@@ -9,6 +9,8 @@ async fn extraction_preserves_sync_offsets_and_audio_fades_for_playback_and_expo
         let mut classic = fixture();
         let source = &mut classic["document"]["scenes"][0]["tracks"]["main"]["elements"][0];
         source["params"]["audioSyncOffset"] = json!(offset);
+        source["params"]["sourceAudioOffsetSeconds"] = json!(120);
+        source["podcastFinishingVersion"] = json!(1);
         source["params"]["fadeInDuration"] = json!(0.4);
         source["params"]["fadeOutDuration"] = json!(0.6);
         let runtime = attached(classic).await;
@@ -18,7 +20,12 @@ async fn extraction_preserves_sync_offsets_and_audio_fades_for_playback_and_expo
         let tracks = &edited["project"]["classic"]["document"]["scenes"][0]["tracks"];
         let video = &tracks["main"]["elements"][0];
         let audio = &tracks["audio"][0]["elements"][0];
-        for key in ["audioSyncOffset", "fadeInDuration", "fadeOutDuration"] {
+        for key in [
+            "audioSyncOffset",
+            "sourceAudioOffsetSeconds",
+            "fadeInDuration",
+            "fadeOutDuration",
+        ] {
             assert_eq!(audio["params"][key], video["params"][key]);
         }
         let timing = |clip: &Value| {
@@ -29,10 +36,12 @@ async fn extraction_preserves_sync_offsets_and_audio_fades_for_playback_and_expo
                     trim_start: clip["trimStart"].as_f64().unwrap() / 120000.0,
                     rate: clip["retime"]["rate"].as_f64().unwrap(),
                     offset_seconds: clip["params"]["audioSyncOffset"].as_f64().unwrap(),
+                    source_offset_seconds: clip["params"]["sourceAudioOffsetSeconds"].as_f64(),
                 },
             ))
             .unwrap()
         };
+        assert_eq!(audio["podcastFinishingVersion"], 1);
         assert_eq!(timing(audio), timing(video));
         call(&runtime, "history.undo", json!({})).await;
         assert_eq!(read(&runtime).await["project"], original["project"]);

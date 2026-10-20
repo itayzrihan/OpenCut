@@ -10,5 +10,6 @@ export function getClipAudioTiming(element: AudioCapableElement) {
 		trimStart: element.trimStart / TICKS_PER_SECOND,
 		rate: element.retime?.rate ?? 1,
 		offsetSeconds: Number(element.params.audioSyncOffset ?? 0),
+		sourceOffsetSeconds: Number(element.params.sourceAudioOffsetSeconds ?? 0),
 	});
 }

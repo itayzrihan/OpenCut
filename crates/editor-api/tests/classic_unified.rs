@@ -308,3 +308,251 @@ async fn cancelled_jobs_cannot_apply_offsets_and_missing_camera_audio_never_clai
             .is_err()
     );
 }
+
+async fn with_recorder() -> OpenCutRuntime {
+    let r = fixture().await;
+    let s = read(&r).await;
+    let mut c = s["project"]["classic"].clone();
+    c["mediaAssets"].as_array_mut().unwrap().push(json!({"id":"recorder","name":"External recorder","type":"audio","duration":7200,"hasAudio":true,"bindingRevision":8}));
+    call(
+        &r,
+        "project.classic.commit",
+        json!({"projectId":"classic-project","expectedRevision":s["revision"],"classic":c}),
+    )
+    .await;
+    r
+}
+fn with_audio_input(s: &Value, video: &str) -> Value {
+    json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaIds":[video,"recorder"]})
+}
+#[tokio::test]
+async fn external_audio_compound_from_single_or_unified_is_new_full_camera_clock_and_undoable() {
+    for video in ["video-asset", "unified"] {
+        let r = with_recorder().await;
+        let before = read(&r).await;
+        let input = with_audio_input(&before, video);
+        let prep = call(
+            &r,
+            "media.classic.unified.with_audio.prepare",
+            input.clone(),
+        )
+        .await;
+        assert_eq!(prep["audioMediaId"], "recorder");
+        assert_eq!(read(&r).await, before);
+        r.registry()
+            .invoke(
+                "media.classic.unified.with_audio.create",
+                InvocationContext {
+                    dry_run: true,
+                    ..Default::default()
+                },
+                input.clone(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(read(&r).await, before);
+        let mut ctx = InvocationContext::default();
+        ctx.metadata
+            .insert("opencut/idempotencyKey".into(), json!("compound-once"));
+        let receipt = r
+            .registry()
+            .invoke(
+                "media.classic.unified.with_audio.create",
+                ctx.clone(),
+                input.clone(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            r.registry()
+                .invoke("media.classic.unified.with_audio.create", ctx, input)
+                .await
+                .unwrap(),
+            receipt
+        );
+        let after = read(&r).await;
+        let c = &after["project"]["classic"];
+        assert_eq!(c["document"], before["project"]["classic"]["document"]);
+        assert_eq!(
+            &c["mediaAssets"].as_array().unwrap()[..4],
+            before["project"]["classic"]["mediaAssets"]
+                .as_array()
+                .unwrap()
+        );
+        let a = &c["mediaAssets"][4];
+        assert_eq!(a["duration"], 3600.0);
+        assert_eq!(a["unifiedAngles"]["defaultAngleAssetId"], "video-asset");
+        assert_eq!(a["unifiedAngles"]["audioAssetId"], "recorder");
+        assert_eq!(a["unifiedAngles"]["audioFinishingVersion"], 1);
+        assert_eq!(
+            a["unifiedAngles"]["angleAssetIds"]
+                .as_array()
+                .unwrap()
+                .len(),
+            if video == "unified" { 2 } else { 1 }
+        );
+        assert!(r.registry().invoke("media.classic.remove",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":after["revision"],"mediaIds":["recorder"],"cascade":true})).await.is_err());
+        assert_eq!(read(&r).await, after);
+        call(&r, "history.undo", json!({})).await;
+        assert_eq!(read(&r).await["project"], before["project"]);
+        call(&r, "history.redo", json!({})).await;
+        assert_eq!(read(&r).await["project"], after["project"]);
+    }
+}
+#[tokio::test]
+async fn external_recorder_offsets_preset_angle_switch_extract_and_reopen_keep_one_audio_clock() {
+    for video in ["video-asset", "unified"] {
+        let r = with_recorder().await;
+        call(
+            &r,
+            "media.classic.unified.with_audio.create",
+            with_audio_input(&read(&r).await, video),
+        )
+        .await;
+        let s = read(&r).await;
+        let id = s["project"]["classic"]["mediaAssets"][4]["id"].clone();
+        let mut insert = json!({"projectId":"classic-project","expectedRevision":s["revision"],"sceneId":"main-scene","clips":[{"element":{"type":"video","mediaId":id,"name":"Teleprompter clean audio","startTime":0,"duration":5*120000,"trimStart":60*120000,"trimEnd":3530*120000,"sourceDuration":3600*120000,"retime":{"rate":2},"params":{"gainDb":0,"audioSyncOffset":-0.25}},"placement":{"mode":"auto"}}]});
+        assert!(
+            r.registry()
+                .invoke(
+                    "timeline.classic.elements.insert",
+                    InvocationContext::default(),
+                    insert.clone()
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&r).await, s);
+        call(&r,"media.classic.unified.sync_task",json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":id,"taskId":"recorder-job","action":"start"})).await;
+        let s = read(&r).await;
+        let task_sources =
+            &s["project"]["classic"]["mediaAssets"][4]["unifiedAngles"]["syncTask"]["sources"];
+        assert_eq!(
+            task_sources.as_array().unwrap().len(),
+            if video == "unified" { 3 } else { 2 }
+        );
+        let mut clocks = vec![
+            json!({"id":"video-asset","duration":3600,"start":20,"bindingRevision":3}),
+            json!({"id":"recorder","duration":7200,"start":-100,"bindingRevision":8}),
+        ];
+        if video == "unified" {
+            clocks.push(sources()[0].clone());
+        }
+        call(&r,"media.classic.unified.sync",json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":id,"taskId":"recorder-job","sources":clocks})).await;
+        let s = read(&r).await;
+        let a = &s["project"]["classic"]["mediaAssets"][4];
+        assert_eq!(a["duration"], 3600.0);
+        assert_eq!(a["unifiedAngles"]["audioAssetId"], "recorder");
+        insert["expectedRevision"] = s["revision"].clone();
+        let added = call(&r, "timeline.classic.elements.insert", insert).await;
+        let target = &added["elements"][0];
+        let s = read(&r).await;
+        let tracks = &s["project"]["classic"]["document"]["scenes"][0]["tracks"];
+        let clip = std::iter::once(&tracks["main"])
+            .chain(tracks["overlay"].as_array().unwrap())
+            .flat_map(|t| t["elements"].as_array().unwrap())
+            .find(|e| e["id"] == target["elementId"])
+            .unwrap()
+            .clone();
+        assert_eq!(clip["params"]["sourceAudioOffsetSeconds"], 120.0);
+        assert_eq!(clip["params"]["volume"], 15);
+        assert_eq!(clip["params"]["gainDb"], -1.0);
+        assert_eq!(clip["params"]["noiseReduction"], 100);
+        assert_eq!(clip["params"]["hardLimiterEnabled"], true);
+        assert_eq!(clip["params"]["hardLimiterCeilingDb"], -1);
+        assert_eq!(clip["isSourceAudioEnabled"], true);
+        let timing =
+            classic_timeline::resolve_clip_audio_timing(classic_timeline::ClipAudioTimingOptions {
+                start_time: 0.,
+                duration: 5.,
+                trim_start: 60.,
+                rate: 2.,
+                offset_seconds: -0.25,
+                source_offset_seconds: clip["params"]["sourceAudioOffsetSeconds"].as_f64(),
+            });
+        assert_eq!(timing.trim_start, 180.5);
+        let angle = if video == "unified" {
+            "short"
+        } else {
+            "video-asset"
+        };
+        call(&r,"timeline.classic.unified.switch",json!({"projectId":"classic-project","expectedRevision":s["revision"],"sceneId":"main-scene","mediaId":id,"elementIds":[target["elementId"]],"angleAssetId":angle})).await;
+        let s = read(&r).await;
+        let mut c = s["project"]["classic"].clone();
+        let tracks = &c["document"]["scenes"][0]["tracks"];
+        let switched = std::iter::once(&tracks["main"])
+            .chain(tracks["overlay"].as_array().unwrap())
+            .flat_map(|t| t["elements"].as_array().unwrap())
+            .find(|e| e["id"] == target["elementId"])
+            .unwrap();
+        assert_eq!(switched["params"], clip["params"]);
+        assert_eq!(switched["unifiedAngleId"], angle);
+        call(&r,"timeline.classic.audio.source.edit",json!({"projectId":"classic-project","expectedRevision":s["revision"],"sceneId":"main-scene","trackId":target["trackId"],"elementId":target["elementId"],"action":"extract"})).await;
+        let s = read(&r).await;
+        let audios = &s["project"]["classic"]["document"]["scenes"][0]["tracks"]["audio"];
+        assert!(
+            audios
+                .as_array()
+                .unwrap()
+                .iter()
+                .flat_map(|t| t["elements"].as_array().unwrap())
+                .any(|e| e["mediaId"] == id
+                    && e["params"]["sourceAudioOffsetSeconds"] == 120.0
+                    && e["params"]["noiseReduction"] == 100)
+        );
+        let reopened = OpenCutRuntime::default();
+        call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":s["project"]["classic"]})).await;
+        assert_eq!(
+            read(&reopened).await["project"]["classic"],
+            s["project"]["classic"]
+        );
+        // A relink after cuts cannot silently replace their clock; make a new asset.
+        c["mediaAssets"][3]["bindingRevision"] = json!(9);
+        call(
+            &r,
+            "project.classic.commit",
+            json!({"projectId":"classic-project","expectedRevision":s["revision"],"classic":c}),
+        )
+        .await;
+        let stale = read(&r).await;
+        clocks = vec![
+            json!({"id":"video-asset","duration":3600,"start":20,"bindingRevision":3}),
+            json!({"id":"recorder","duration":7200,"start":-100,"bindingRevision":9}),
+        ];
+        if video == "unified" {
+            clocks.push(sources()[0].clone());
+        }
+        assert!(r.registry().invoke("media.classic.unified.sync",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":stale["revision"],"mediaId":id,"sources":clocks})).await.is_err());
+        assert_eq!(read(&r).await, stale);
+    }
+}
+
+#[tokio::test]
+async fn external_audio_selection_and_sync_reject_wrong_sources_or_no_overlap_atomically() {
+    let r = with_recorder().await;
+    let s = read(&r).await;
+    for ids in [
+        json!(["video-asset", "short"]),
+        json!(["recorder", "recorder"]),
+        json!(["recorder"]),
+        json!(["unified", "not-registered"]),
+    ] {
+        assert!(r.registry().invoke("media.classic.unified.with_audio.create",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaIds":ids})).await.is_err());
+        assert_eq!(read(&r).await, s);
+    }
+    call(
+        &r,
+        "media.classic.unified.with_audio.create",
+        with_audio_input(&s, "video-asset"),
+    )
+    .await;
+    let s = read(&r).await;
+    let id = s["project"]["classic"]["mediaAssets"][4]["id"].clone();
+    for audio in [
+        json!({"id":"recorder","duration":7200,"start":4000,"bindingRevision":8}),
+        json!({"id":"recorder","duration":7200,"start":-100,"bindingRevision":9}),
+    ] {
+        assert!(r.registry().invoke("media.classic.unified.sync",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":id,"sources":[{"id":"video-asset","duration":3600,"start":0,"bindingRevision":3},audio]})).await.is_err());
+        assert_eq!(read(&r).await, s);
+    }
+}

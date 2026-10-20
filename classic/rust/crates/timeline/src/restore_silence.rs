@@ -176,6 +176,7 @@ fn compile(options: RestoreSilenceOptions) -> Result<RestoreSilenceResult, Strin
             trim_start: source_end as f64 / TICKS,
             rate: lr,
             offset_seconds: l["params"]["audioSyncOffset"].as_f64().unwrap_or(0.0),
+            source_offset_seconds: l["params"]["sourceAudioOffsetSeconds"].as_f64(),
         });
         restored_intervals.push(RestoredSilenceInterval {
             track_id: options.track_id.clone(),

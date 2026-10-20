@@ -741,6 +741,42 @@ export class CommandManager {
 		});
 	}
 
+	canCreateUnifiedWithAudio(mediaIds: string[]): boolean {
+		if (!this.canonical || this.editor.project.getSessionReadOnlyReason())
+			return false;
+		try {
+			this.canonical.invokeControl({
+				capabilityId: "media.classic.unified.with_audio.prepare",
+				input: { mediaIds },
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}
+	createUnifiedWithAudio(
+		mediaIds: string[],
+	): import("@/media/types").MediaAsset {
+		if (!this.canonical || this.editor.project.getSessionReadOnlyReason())
+			throw new Error("Open an editable canonical project first");
+		const before = new Set(this.editor.media.getAssets().map((a) => a.id));
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "media.classic.unified.with_audio.create",
+					input: { mediaIds },
+				});
+				this.publishCanonical();
+			},
+		});
+		const created = this.editor.media
+			.getAssets()
+			.find((a) => !before.has(a.id));
+		if (!created) throw new Error("Compound asset was not published");
+		return created;
+	}
+
 	syncUnifiedAngles(
 		updates: Array<{
 			mediaId: string;
