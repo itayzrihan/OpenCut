@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83d97592d8630faaf5b6a512af3b8b716f08183f5f60b75193534e6295b0fa2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T16:32:39.929Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/export-verification.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "020dda00-146a-42b1-91a6-953ed16a3b04"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:32:40.740Z",
+  "parents": [],
+  "branch": "main"
+}

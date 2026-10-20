@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c5329a13e2c02b213c75d84e599dca4fac3020175e8edb343b1af6a5a38dacc9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T16:33:47.511Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat\ngit status --short -uno",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d72ca05c-6a2d-42ba-94e8-52c21e6f5465"
+      },
+      {
+        "at": "2026-10-20T16:33:47.637Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat\ngit status --short -uno",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d72ca05c-6a2d-42ba-94e8-52c21e6f5465"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:33:47.901Z",
+  "parents": [],
+  "branch": "main"
+}

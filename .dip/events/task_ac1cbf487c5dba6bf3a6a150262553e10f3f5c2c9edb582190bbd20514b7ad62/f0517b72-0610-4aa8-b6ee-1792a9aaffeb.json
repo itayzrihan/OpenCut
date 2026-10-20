@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0517b72-0610-4aa8-b6ee-1792a9aaffeb",
+  "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Deployed Unified with Audio complete; after unlock live native Save/export also passed: five-second 4K H.264 + AAC from source30–35s with camera2/external processed recorder. Decoded nonzero audio peak−18.94dBFS RMS−40.79dBFS; output hash saved. All five QA actions undone; original scenes/settings/media index exact and synced asset retained. Existing62 regression tests plus TypeScript and local export artifact checks configured.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Representative five-second export and signal decoding verified; exhaustive human listening and full-episode lip-sync not claimed. Source relinks after cuts require a fresh compound asset to preserve edit clocks."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T16:33:28.887Z",
+  "parents": [
+    "af7795a1-f4aa-4842-84be-a93574689d1b"
+  ],
+  "branch": "main"
+}

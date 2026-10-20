@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "04603f81d46437022a03c118cd12b7811ad0e9a67ebeaa8a254a2731c0433b09",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T16:32:38.507Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,subprocess,hashlib,re\nroot=pathlib.Path('.local/unified-with-audio-2026-10-20'); live=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac')\na=json.loads((root/'export-project-before.json').read_text()); b=json.loads((live/'project.json').read_text()); m0=json.loads((root/'export-media-before.json').read_text()); m1=json.loads((live/'media/index.json').read_text())\nchecks={'originalScenesPreserved':a['scenes']==b['scenes'],'originalSettingsPreserved':a['settings']==b['settings'],'originalMediaPreserved':m0==m1,'finalActiveSceneIsOriginal':a['currentSceneId']==b['currentSceneId'],'temporarySceneRemoved':len(a['scenes'])==len(b['scenes'])==1}\nassert all(checks.values()),checks\nf=root/'unified-with-audio-export-test.mp4'; probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration,size:stream=index,codec_name,codec_type,width,height,sample_rate,channels,duration','-of','json',str(f)])); stats=subprocess.run(['ffmpeg','-hide_banner','-i',str(f),'-map','0:a:0','-af','astats=metadata=0:reset=0','-f','null','-'],capture_output=True,text=True,check=True).stderr\npeak=float(re.findall(r'Peak level dB: ([-.0-9]+)',stats)[-1]); rms=float(re.findall(r'RMS level dB: ([-.0-9]+)',stats)[-1]); assert peak>-60 and rms>-80\nresult={'passed':True,'file':str(f),'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'probe':probe,'audioPeakDbfs':peak,'audioRmsDbfs':rms,'preservation':checks,'temporarySceneId':'8659281f-4de8-498b-ac7e-79edd73d2d7c','temporarySceneRemoved':True,'exportedAngleId':'d9a43acb-aebb-49f3-9c10-0b4a1f6dda7d','sourceStartSeconds':30,'sourceEndSeconds':35}\n(root/'export-verification.json').write_text(json.dumps(result,indent=2)+'\\n'); print(json.dumps(result,indent=2))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b701bcd4-86be-4b22-95d1-7a914efa0b06"
+      },
+      {
+        "at": "2026-10-20T16:32:39.129Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,subprocess,hashlib,re\nroot=pathlib.Path('.local/unified-with-audio-2026-10-20'); live=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/c4b3910e-71c0-44b5-843b-6efcf00d9cac')\na=json.loads((root/'export-project-before.json').read_text()); b=json.loads((live/'project.json').read_text()); m0=json.loads((root/'export-media-before.json').read_text()); m1=json.loads((live/'media/index.json').read_text())\nchecks={'originalScenesPreserved':a['scenes']==b['scenes'],'originalSettingsPreserved':a['settings']==b['settings'],'originalMediaPreserved':m0==m1,'finalActiveSceneIsOriginal':a['currentSceneId']==b['currentSceneId'],'temporarySceneRemoved':len(a['scenes'])==len(b['scenes'])==1}\nassert all(checks.values()),checks\nf=root/'unified-with-audio-export-test.mp4'; probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration,size:stream=index,codec_name,codec_type,width,height,sample_rate,channels,duration','-of','json',str(f)])); stats=subprocess.run(['ffmpeg','-hide_banner','-i',str(f),'-map','0:a:0','-af','astats=metadata=0:reset=0','-f','null','-'],capture_output=True,text=True,check=True).stderr\npeak=float(re.findall(r'Peak level dB: ([-.0-9]+)',stats)[-1]); rms=float(re.findall(r'RMS level dB: ([-.0-9]+)',stats)[-1]); assert peak>-60 and rms>-80\nresult={'passed':True,'file':str(f),'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'probe':probe,'audioPeakDbfs':peak,'audioRmsDbfs':rms,'preservation':checks,'temporarySceneId':'8659281f-4de8-498b-ac7e-79edd73d2d7c','temporarySceneRemoved':True,'exportedAngleId':'d9a43acb-aebb-49f3-9c10-0b4a1f6dda7d','sourceStartSeconds':30,'sourceEndSeconds':35}\n(root/'export-verification.json').write_text(json.dumps(result,indent=2)+'\\n'); print(json.dumps(result,indent=2))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b701bcd4-86be-4b22-95d1-7a914efa0b06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:32:39.468Z",
+  "parents": [],
+  "branch": "main"
+}

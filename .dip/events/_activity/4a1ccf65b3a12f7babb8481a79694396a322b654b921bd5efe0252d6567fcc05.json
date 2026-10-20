@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a1ccf65b3a12f7babb8481a79694396a322b654b921bd5efe0252d6567fcc05",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T16:32:07.305Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ffprobe -v error -show_entries format=duration,size:stream=index,codec_name,codec_type,width,height,sample_rate,channels,duration -of json .local/unified-with-audio-2026-10-20/unified-with-audio-export-test.mp4",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5753468a-1765-4974-b4a3-dac2343b4531"
+      },
+      {
+        "at": "2026-10-20T16:32:07.668Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ffprobe -v error -show_entries format=duration,size:stream=index,codec_name,codec_type,width,height,sample_rate,channels,duration -of json .local/unified-with-audio-2026-10-20/unified-with-audio-export-test.mp4",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5753468a-1765-4974-b4a3-dac2343b4531"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:32:07.798Z",
+  "parents": [],
+  "branch": "main"
+}

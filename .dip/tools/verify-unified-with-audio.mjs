@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {join} from 'node:path';
 import {homedir} from 'node:os';
+import {createHash} from 'node:crypto';
 function run(command,args){const result=spawnSync(command,args,{encoding:'utf8',maxBuffer:6*1024*1024});if(result.status!==0)throw Error(`${command}: ${result.stdout}\n${result.stderr}`);console.log(result.stdout.trim());}
 run('cargo',['test','-p','timeline','audio_sync::tests','--quiet']);
 run('cargo',['test','-p','opencut-editor-api','--test','classic_unified','--test','classic_source_audio','--test','classic_audio_sharpen','--test','classic_insert','--test','classic_transcription','--test','classic_podcast_reference','--quiet']);
@@ -11,5 +12,14 @@ run('node',['classic/node_modules/typescript/bin/tsc','--noEmit','-p','classic/a
 run('git',['diff','--check']);
 const live=JSON.parse(await readFile('analysis/unified-with-audio-2026-10-20/live-verification.json','utf8'));
 assert(live.contextMenuEnabled&&live.createdCompound&&live.synced&&live.processingVerified&&live.originalScenesPreserved&&live.originalMediaPreserved&&live.reloaded&&live.playbackAdvanced&&live.angleSwitched&&live.temporarySceneRemoved&&live.finalActiveSceneIsOriginal&&live.currentSceneCount===live.sourceSceneCount&&live.originalSettingsPreserved);
+const exported=JSON.parse(await readFile('analysis/unified-with-audio-2026-10-20/export-verification.json','utf8'));
+assert(exported.passed&&Object.values(exported.preservation).every(Boolean));
+assert.equal(createHash('sha256').update(await readFile(exported.file)).digest('hex'),exported.sha256);
+const probe=spawnSync('ffprobe',['-v','error','-show_streams','-of','json',exported.file],{encoding:'utf8'});
+assert.equal(probe.status,0);
+const streams=JSON.parse(probe.stdout).streams;
+assert(streams.some(s=>s.codec_type==='video'&&s.codec_name==='h264'&&Number(s.duration)===5));
+assert(streams.some(s=>s.codec_type==='audio'&&s.codec_name==='aac'&&Number(s.duration)>=5));
+assert(exported.audioPeakDbfs>-60&&exported.audioRmsDbfs>-80);
 const current=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));assert.equal(current.id,live.productionRelease);assert((await fetch('http://localhost:3211')).ok);
 console.log(JSON.stringify({passed:true,productionRelease:current.id,assetId:live.assetId,sourcePreserved:true}));

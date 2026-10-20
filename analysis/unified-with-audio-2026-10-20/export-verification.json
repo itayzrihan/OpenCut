@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "file": ".local/unified-with-audio-2026-10-20/unified-with-audio-export-test.mp4",
+  "sha256": "c3849e797374d4952c7c2617950e3c67c8a86cbe0ca5ebb45c4d6d4bd7274e17",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 3840,
+        "height": 2160,
+        "duration": "5.000000"
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "44100",
+        "channels": 2,
+        "duration": "5.085170"
+      }
+    ],
+    "format": {
+      "duration": "5.085170",
+      "size": "10338660"
+    }
+  },
+  "audioPeakDbfs": -18.941568,
+  "audioRmsDbfs": -40.785106,
+  "preservation": {
+    "originalScenesPreserved": true,
+    "originalSettingsPreserved": true,
+    "originalMediaPreserved": true,
+    "finalActiveSceneIsOriginal": true,
+    "temporarySceneRemoved": true
+  },
+  "temporarySceneId": "8659281f-4de8-498b-ac7e-79edd73d2d7c",
+  "temporarySceneRemoved": true,
+  "exportedAngleId": "d9a43acb-aebb-49f3-9c10-0b4a1f6dda7d",
+  "sourceStartSeconds": 30,
+  "sourceEndSeconds": 35
+}

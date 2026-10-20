@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "058e4f6fc4392f77acdda7060c2eb7517b1149537cb3f6db0bdf18edc00b05e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T16:33:58.667Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_ac1cbf487c5dba6bf3a6a150262553e10f3f5c2c9edb582190bbd20514b7ad62",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit -m \"Verify live Unified with Audio export after unlock\" --quiet",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-61370d4a-5215-4fcc-b07c-a35e39b76d62"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:33:58.919Z",
+  "parents": [],
+  "branch": "main"
+}

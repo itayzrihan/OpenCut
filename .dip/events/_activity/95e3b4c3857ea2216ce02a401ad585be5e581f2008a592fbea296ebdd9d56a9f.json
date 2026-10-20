@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95e3b4c3857ea2216ce02a401ad585be5e581f2008a592fbea296ebdd9d56a9f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T16:31:53.807Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-with-audio-2026-10-20/unified-with-audio-export-test.mp4"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ae2fba98-8c1c-4349-beee-af98a0d58c8b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T16:31:53.929Z",
+  "parents": [],
+  "branch": "main"
+}
