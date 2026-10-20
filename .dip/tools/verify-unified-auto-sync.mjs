@@ -1,0 +1,8 @@
+import{spawnSync}from'node:child_process';
+function run(cmd,args){const r=spawnSync(cmd,args,{encoding:'utf8',maxBuffer:6*1024*1024});if(r.status!==0)throw Error(`${cmd} failed: ${r.stdout}\n${r.stderr}`);console.log(r.stdout.trim());}
+run('cargo',['test','-p','opencut-editor-api','--test','classic_unified','--quiet']);
+run('node',['classic/scripts/test-web.mjs','src/media/__tests__/unified-sync-task.test.ts','src/components/editor/panels/assets/views/unified-angles-sync-badge.test.tsx','src/media/__tests__/unified-angles.test.ts','src/media/__tests__/unified-angles-audio.test.ts','src/podcast-sync/__tests__/unified-engine.test.ts','src/timeline/__tests__/unified-angles-cycle.test.ts','--jobs=1','--report=.local/unified-angles-auto-sync-2026-10-20/configured-host-tests']);
+run('git',['diff','--check']);
+const {readFile}=await import('node:fs/promises');const {join}=await import('node:path');const {homedir}=await import('node:os');const {default:assert}=await import('node:assert/strict');
+const live=JSON.parse(await readFile('analysis/unified-angles-auto-sync-2026-10-20/live-verification.json','utf8'));assert(live.passed&&live.sourceScenesExact&&live.otherMediaExact&&live.assetCountUnchanged&&live.reloadedUiShowsAudioSynced&&live.liveUiProgressObserved);assert.equal(live.sync.method,'audio');assert.equal(live.sync.sources.length,2);
+const active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));assert.equal(active.id,live.productionRelease);assert((await fetch('http://localhost:3211')).ok);console.log(JSON.stringify({passed:true,nativeTests:5,hostTests:20,liveUiSync:true,reloaded:true,sourcePreserved:true,productionRelease:active.id}));

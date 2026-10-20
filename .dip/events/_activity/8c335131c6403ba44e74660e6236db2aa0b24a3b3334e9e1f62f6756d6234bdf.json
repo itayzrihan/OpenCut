@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8c335131c6403ba44e74660e6236db2aa0b24a3b3334e9e1f62f6756d6234bdf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:24:04.397Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/media/unified-sync-task.ts",
+          "classic/apps/web/src/core/managers/media-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a86d15d6-bbca-449f-9aae-d7d2367ba2dd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:24:04.399Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a3b8b0e2eb6b321cefef83a0b1a35cdba801c15b43dc330b4fcdc801c71ed51e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:22:57.330Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-angles-auto-sync-2026-10-20/native-initial.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c374dfa4-750a-4712-ba20-b53e5404d354"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:22:57.331Z",
+  "parents": [],
+  "branch": "main"
+}

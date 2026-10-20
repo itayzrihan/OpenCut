@@ -227,6 +227,13 @@
         ".dip/tools/verify-seven-smart.mjs"
       ],
       "timeoutMs": 480000
+    },
+    "unified-auto-sync": {
+      "command": [
+        "node",
+        ".dip/tools/verify-unified-auto-sync.mjs"
+      ],
+      "timeoutMs": 240000
     }
   },
   "mode": "coordinate"

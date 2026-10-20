@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c356fc6df95f590846c4606213b652be9d2eadbc40f61502b74626c697a16584",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:32:43.146Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/src__core__managers____tests____canonical-command-manager.test.ts.log",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/summary.json",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "068d4e2d-4e87-4ea1-bb18-f5634cc34bcb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:32:43.147Z",
+  "parents": [],
+  "branch": "main"
+}

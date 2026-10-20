@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ec0b1256-2ce2-4522-be2c-63e515992f85",
+  "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+  "type": "task.update",
+  "payload": {
+    "title": "Automatically synchronize unified angles with visible progress and retry",
+    "description": "Determine present behavior of Unify selected angles; start audio synchronization automatically, show Syncing audio and a loading indicator, expose retry on unsynced/failed/interrupted assets. Keep project/editor authority canonical and guard background work across project changes.",
+    "acceptance": [
+      "Unifying supported selected camera assets starts existing audio synchronization automatically without blocking asset creation.",
+      "UI distinguishes syncing, synced and failed/interrupted states; syncing shows loading/progress and unsynced state can retry with one click.",
+      "Canonical runtime owns serializable synchronization state and validated transitions; UI/IO orchestration cannot mutate independent project state.",
+      "Meaningful regressions cover auto-start, duplicate prevention, failure/retry, cancellation/stale scope and preservation; deploy and verify the resulting product flow."
+    ],
+    "scope": [
+      "classic/apps/web/src/media",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/components/editor/panels/assets",
+      "classic/rust",
+      "crates/editor-api",
+      ".dip",
+      "analysis/unified-angles-auto-sync-2026-10-20"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T13:18:08.569Z",
+  "parents": [
+    "93e1f573-1a77-4b4d-ad67-b4938e134147"
+  ],
+  "branch": "main"
+}

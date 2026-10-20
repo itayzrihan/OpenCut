@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9aa086e32974b996afca94e4b9ae0ec8c3684671fbcba566b9d9c061cdbacd7e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:34:17.463Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "kill -TERM 780\npython3 - <<'PY'\np='classic/apps/web/src/media/unified-sync-task.ts';s=open(p).read();s=s.replace('constructor(\\n\\t\\tprivate editor: EditorCore,\\n\\t\\tprivate onSettled: () => void = () => {},\\n\\t) {}','private editor: EditorCore;\\n private onSettled: () => void;\\n constructor({editor,onSettled=()=>{}}:{editor:EditorCore;onSettled?:()=>void}) {this.editor=editor;this.onSettled=onSettled;}');s=s.replace('private key(projectId: string, mediaId: string)', 'private key({projectId,mediaId}:{projectId:string;mediaId:string})');s=s.replace('this.key(projectId, mediaId)','this.key({projectId, mediaId})');s=s.replace('this.run(projectId, mediaId, job)','this.run({projectId, mediaId, job})');s=s.replace('private async run(projectId: string, mediaId: string, job: Job)', 'private async run({projectId,mediaId,job}:{projectId:string;mediaId:string;job:Job})');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/media-manager.ts';s=open(p).read().replace('new UnifiedAnglesSyncTasks(editor, () => this.notify())','new UnifiedAnglesSyncTasks({editor,onSettled:() => this.notify()})');open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier classic/apps/web/src/media/unified-sync-task.ts classic/apps/web/src/core/managers/media-manager.ts --write > /dev/null\nnode classic/scripts/local-production/build.mjs --stage > .local/unified-angles-auto-sync-2026-10-20/build-final.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-26936fe0-594c-40fd-83fd-d76551c4436c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:34:17.577Z",
+  "parents": [],
+  "branch": "main"
+}

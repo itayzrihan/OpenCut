@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff5fc21ef3c85af5c21fbdd0f015a83a5b7daae6c0203e7cf29e43b0208c4cec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:28:22.124Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/media/__tests__/unified-sync-task.test.ts <<'TS'\nimport {beforeEach,expect,mock,test} from 'bun:test';\nconst saves:any[]=[];const pending:any[]=[];\nmock.module('@/services/storage/service',()=>({storageService:{saveMediaAsset:async(input:any)=>{saves.push(structuredClone(input));},isQuotaExceededError:()=>false}}));\nmock.module('@/services/video-cache/service',()=>({videoCache:{clearAll(){}}}));\nmock.module('@/services/waveform-cache/service',()=>({waveformCache:{clearAll(){}}}));\nmock.module('@/media/waveform-summary',()=>({buildWaveformSourceKey:()=>''}));\nmock.module('@/services/local-drive/client',()=>({localDriveRequest:async()=>({})}));\nmock.module('sonner',()=>({toast:{success(){},error(){},warning(){}}}));\nmock.module('opencut-wasm',()=>({unifiedCameraSourcesCurrent:()=>false,podcastMulticamDefaults:()=>({})}));\nmock.module('@/podcast-sync/engine',()=>({\n resolvePodcastChannelSources:({channels}:any)=>channels,\n runPodcastAlignment:(input:any)=>new Promise((resolve,reject)=>pending.push({input,resolve,reject})),\n}));\nconst {MediaManager}=await import('@/core/managers/media-manager');\nconst cameras=[{id:'cam-a',name:'A',type:'video',duration:120,hasAudio:true},{id:'cam-b',name:'B',type:'video',duration:100,hasAudio:true}];\nconst virtual={name:'Interview',type:'video',duration:120,unifiedAngles:{version:1,angleAssetIds:['cam-a','cam-b'],defaultAngleAssetId:'cam-a',audioAssetId:'cam-a'}};\nfunction fixture(){\n let projectId='project-a';const updates:any[]=[];const commits:any[]=[];let manager:any;\n const editor:any={project:{getActiveOrNull:()=>({metadata:{id:projectId}}),getSessionReadOnlyReason:()=>null},command:{\n synchronizeMedia(){},flushHistory:async()=>{},\n prepareClassicMediaImport:({assets}:any)=>()=>manager.setAssets({assets:[...manager.getAssets(),...assets]}),\n updateUnifiedSyncTask:(input:any)=>{\n  updates.push(input);manager.setAssets({assets:manager.getAssets().map((a:any)=>a.id!==input.mediaId?a:{...a,unifiedAngles:{...",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7a95bc8d-751e-4f66-a118-64bb64f3cee2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:28:22.891Z",
+  "parents": [],
+  "branch": "main"
+}

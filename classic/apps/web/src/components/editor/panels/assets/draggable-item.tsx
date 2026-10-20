@@ -155,12 +155,12 @@ export function DraggableItem({
 			) : (
 				<div
 					ref={dragRef}
-					className={cn("group relative w-full", containerClassName)}
+					className={cn("group relative flex w-full items-center", containerClassName)}
 				>
 					<button
 						type="button"
 						className={cn(
-							"flex h-8 w-full cursor-default items-center gap-3 px-1 outline-none",
+							"flex h-8 min-w-0 flex-1 cursor-default items-center gap-3 px-1 outline-none",
 							isDraggable && "[&::-webkit-drag-ghost]:opacity-0",
 							className,
 						)}
@@ -174,8 +174,8 @@ export function DraggableItem({
 						<span className="w-full flex-1 truncate text-sm text-left">
 							{name}
 						</span>
-						{labelExtra && <span className="shrink-0">{labelExtra}</span>}
 					</button>
+					{labelExtra && <span className="shrink-0 pr-1">{labelExtra}</span>}
 				</div>
 			)}
 

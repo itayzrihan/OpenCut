@@ -81,10 +81,10 @@ import { MASKABLE_ELEMENT_TYPES } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import {
 	createUnifiedAnglesAsset,
-	unifiedAnglesSyncStatus,
 	isUnifiedAnglesAsset,
 } from "@/media/unified-angles";
 import type { TScene } from "@/timeline";
+import { UnifiedAnglesSyncBadge } from "./unified-angles-sync-badge";
 import { cn } from "@/utils/ui";
 import { useContainerSize } from "@/hooks/use-container-size";
 import {
@@ -245,7 +245,8 @@ function MediaViewContent() {
 							projectId: activeProject.metadata.id,
 							asset,
 						});
-						if (!added) throw new Error(`Could not add ${asset.name} to Assets`);
+						if (!added)
+							throw new Error(`Could not add ${asset.name} to Assets`);
 					}
 					return {
 						uploadedCount: processedAssets.length,
@@ -283,7 +284,8 @@ function MediaViewContent() {
 							projectId: activeProject.metadata.id,
 							asset,
 						});
-						if (!added) throw new Error(`Could not add ${asset.name} to Assets`);
+						if (!added)
+							throw new Error(`Could not add ${asset.name} to Assets`);
 					}
 					return {
 						uploadedCount: processedAssets.length,
@@ -503,7 +505,7 @@ function MediaViewContent() {
 				setSelectedMediaIds([]);
 				toast.success("Unified Angles created", {
 					description:
-						"Drag the new virtual video to the timeline and switch angles after any cut.",
+						"Audio is syncing in the background. Progress and retry are available on the new asset.",
 				});
 			} catch (error) {
 				toast.error("Could not unify these videos", {
@@ -1226,35 +1228,6 @@ function MediaTypePlaceholder({
 			<span className="text-xs">{label}</span>
 			<MediaDurationLabel duration={duration} />
 		</div>
-	);
-}
-
-function UnifiedAnglesSyncBadge({ item }: { item: MediaAsset }) {
-	const media = useEditorMedia((e) => e.media.getAssets());
-	const status = unifiedAnglesSyncStatus({
-		asset: item,
-		mediaMap: new Map(media.map((a) => [a.id, a])),
-	});
-	const label =
-		status === "synced"
-			? "Audio synced"
-			: status === "stale"
-				? "Sync outdated"
-				: "Not audio synced";
-	return (
-		<span
-			className={cn(
-				"block text-[11px] font-medium",
-				status === "synced" ? "text-emerald-500" : "text-amber-500",
-			)}
-			title={
-				status === "synced"
-					? "Camera angles are synchronized by audio"
-					: "Run synchronization in Podcast multicam to align these camera angles"
-			}
-		>
-			{label}
-		</span>
 	);
 }
 

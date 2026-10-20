@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78145026-947b-4513-aba2-3073c61eae1b",
+  "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect current unify/sync flow and design canonical task lifecycle",
+          "status": "completed"
+        },
+        {
+          "step": "Implement automatic host synchronization, canonical state/provenance and actionable UI",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify lifecycle regressions, deploy and check the live flow",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T13:25:30.696Z",
+  "parents": [
+    "b3bcaf64-559c-4a32-a2a3-82cdc69d5bcc"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75a69b4976b7af81b5c3405441b9c7cdc58bff9d33a06bcd600e9f182daae1dc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:25:21.475Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/panels/assets/views/unified-angles-sync-badge.tsx",
+          "classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+          "classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx",
+          ".local/unified-angles-auto-sync-2026-10-20/format.log",
+          "classic/apps/web/src/media/unified-sync-task.ts",
+          "classic/apps/web/src/core/managers/media-manager.ts",
+          "classic/apps/web/src/core/managers/commands.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8a774780-c25e-48e3-a3b6-0cad93ca28e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:25:21.478Z",
+  "parents": [],
+  "branch": "main"
+}

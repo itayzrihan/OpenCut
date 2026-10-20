@@ -255,6 +255,21 @@ export class CanonicalClassicSession {
 		return state.project.classic;
 	}
 
+	updateUnifiedSyncTask(
+		input: import("@/media/unified-sync-task").UnifiedSyncTaskUpdate,
+	): {
+		unifiedAngles: NonNullable<MediaAsset["unifiedAngles"]>;
+	} {
+		return this.call({
+			capability: "media.classic.unified.sync_task",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	providerRetryPlan(
 		failure: import("@/editor-agent/transport").ProviderFailureInput,
 	): import("@/editor-agent/transport").ProviderRetryPlan {

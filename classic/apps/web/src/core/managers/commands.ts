@@ -745,6 +745,7 @@ export class CommandManager {
 		updates: Array<{
 			mediaId: string;
 			sources: import("opencut-wasm").CameraSource[];
+			taskId?: string;
 		}>,
 	): void {
 		if (!this.canonical)
@@ -760,6 +761,40 @@ export class CommandManager {
 				this.publishCanonical();
 			},
 		});
+	}
+
+	updateUnifiedSyncTask(
+		input: import("@/media/unified-sync-task").UnifiedSyncTaskUpdate,
+	): void {
+		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
+		if (
+			!this.canonical ||
+			this.canonical.projectId !==
+				this.editor.project.getActiveOrNull()?.metadata.id ||
+			this.editor.project.getSessionReadOnlyReason()
+		)
+			throw new Error(
+				"Open an editable canonical project before synchronizing",
+			);
+		const output = this.canonical.updateUnifiedSyncTask(input);
+		// Project only the canonical asset metadata. Progress must not restore
+		// every scene/caption or invalidate a large edited timeline.
+		this.isProjectingCanonical = true;
+		try {
+			this.editor.media.setAssets({
+				assets: this.editor.media
+					.getAssets()
+					.map((asset) =>
+						asset.id === input.mediaId
+							? { ...asset, unifiedAngles: output.unifiedAngles }
+							: asset,
+					),
+			});
+		} finally {
+			this.isProjectingCanonical = false;
+		}
+		this.stateRevision += 1;
+		if (input.action !== "progress") this.persistHistory();
 	}
 
 	switchUnifiedAngles(input: {

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "43e11fe337cfce4f4fbecb7cebd14d17dc34db10d46d4059f032ec882a4ede96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:29:44.447Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,95p' classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts; sed -n '208,272p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; git diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-16bed738-f29d-42a7-b85b-831d4e57426d"
+      },
+      {
+        "at": "2026-10-20T13:29:44.552Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,95p' classic/apps/web/src/core/managers/__tests__/command-manager-state-revision.test.ts; sed -n '208,272p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; git diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-16bed738-f29d-42a7-b85b-831d4e57426d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:29:44.992Z",
+  "parents": [],
+  "branch": "main"
+}

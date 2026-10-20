@@ -7,6 +7,7 @@ const readNames: string[] = [];
 type WorkerRequest =
 	| { type: "read"; asset: MediaAsset }
 	| { type: "align" }
+	| { type: "precision" }
 	| {
 			type: "route";
 			envelopes: Float32Array[];
@@ -29,7 +30,14 @@ mock.module("../sync-jobs", () => ({
 			return new Float32Array(12001).fill(0.5);
 		}
 		if (message.type === "align")
-			return { offsets: [50, 20], referenceIndex: 1, confidence: [1, 1] };
+			return {
+				offsets: [50, 20],
+				referenceIndex: 1,
+				confidence: [1, 1],
+				parents: [1, undefined],
+			};
+		if (message.type === "precision")
+			return { offsetSeconds: 0, confidence: 1 };
 		if (message.type === "route")
 			return analyzePodcastMulticam({
 				...message,
@@ -75,6 +83,7 @@ test("Unified podcast decodes physical cameras once, keeps the longest clock and
 	const alignment = await runPodcastAlignment({ channels, settings });
 	expect(readNames.sort()).toEqual(["long", "short"]);
 	expect(alignment.duration).toBe(120);
+	expect(alignment.precisionWarnings).toEqual([]);
 	expect(alignment.videoOffsets.speaker).toBe(0);
 	expect(alignment.audioOffsets.speaker).toBe(0);
 	expect(alignment.unifiedSync[0].sources.map((s) => [s.id, s.start])).toEqual([

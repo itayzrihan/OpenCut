@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1e154b43aff07f757439903768372a3ec1024d0212f80b69b73faa7d2c9e5900",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:29:56.999Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6e9778c6-15b0-4cdc-9a29-b52845886ff5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:29:57.001Z",
+  "parents": [],
+  "branch": "main"
+}

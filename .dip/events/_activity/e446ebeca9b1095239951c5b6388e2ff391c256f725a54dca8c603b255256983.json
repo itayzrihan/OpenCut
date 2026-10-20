@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e446ebeca9b1095239951c5b6388e2ff391c256f725a54dca8c603b255256983",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:27:20.264Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '165,205p' classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx; sed -n '764,818p' classic/apps/web/src/core/managers/commands.ts; git diff --stat; node classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/unified-angles-auto-sync-2026-10-20/types.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ac3fc1eb-bfa6-4f96-ae24-7fe86401e209"
+      },
+      {
+        "at": "2026-10-20T13:27:20.267Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> crates/editor-api/tests/classic_unified.rs <<'RS'\n\nasync fn task(r: &OpenCutRuntime, action: &str, id: &str, extra: Value) -> Result<Value,String> {\n    let s=read(r).await;\n    let mut input=json!({\"projectId\":\"classic-project\",\"expectedRevision\":s[\"revision\"],\"mediaId\":\"unified\",\"taskId\":id,\"action\":action});\n    input.as_object_mut().unwrap().extend(extra.as_object().unwrap().clone());\n    r.registry().invoke(\"media.classic.unified.sync_task\",InvocationContext::default(),input).await.map(|r|r.result.data).map_err(|e|e.to_string())\n}\n#[tokio::test]\nasync fn audio_task_progress_is_canonical_grouped_undoable_and_source_preserving() {\n    let r=fixture().await;let before=read(&r).await;\n    let input=json!({\"projectId\":\"classic-project\",\"expectedRevision\":before[\"revision\"],\"mediaId\":\"unified\",\"taskId\":\"job-a\",\"action\":\"start\"});\n    r.registry().invoke(\"media.classic.unified.sync_task\",InvocationContext{dry_run:true,..Default::default()},input).await.unwrap();\n    assert_eq!(read(&r).await,before);\n    task(&r,\"start\",\"job-a\",json!({})).await.unwrap();\n    let output=task(&r,\"progress\",\"job-a\",json!({\"progress\":0.6,\"stage\":\"Comparing waveform windows\"})).await.unwrap();\n    assert_eq!(output[\"unifiedAngles\"][\"syncTask\"][\"progress\"],0.6);\n    let after=read(&r).await;\n    assert_eq!(after[\"project\"][\"classic\"][\"document\"],before[\"project\"][\"classic\"][\"document\"]);\n    assert_eq!(after[\"project\"][\"classic\"][\"mediaAssets\"][2][\"unifiedAngles\"][\"syncTask\"][\"status\"],\"running\");\n    assert_eq!(after[\"project\"][\"classic\"][\"mediaAssets\"][0],before[\"project\"][\"classic\"][\"mediaAssets\"][0]);\n    for (action,extra) in [(\"progress\",json!({\"progress\":0.2})),(\"start\",json!({})),(\"progress\",json!({\"progress\":1.1}))] {\n        assert!(task(&r,action,\"job-a\",extra).await.is_err());assert_eq!(read(&r).await,after);\n    }\n    call(&r,\"history.undo\",json!({})).await;\n    assert_eq!(read(&r).await[\"project\"],before[\"project\"]);\n    call(&r,\"history.redo\",json!({})).await;\n    asse",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0376e4c0-b657-4527-988a-897f61c749d5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:27:20.551Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4fbb2dc5a6336cf04d5ce5c07f017cb5453f792e3c3f7d05c915b3d145f86390",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:44:41.285Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-angles-auto-sync-2026-10-20/credential-scan.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a900d213-5e6b-4ff4-a397-54ab8580df53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:44:41.287Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bb5b23eab194e5964b9ad5a4e69de5f8606d513a40e4f84ecd27c44b77e1d960",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:14:48.074Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/push-receipts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "42536d3e-f46f-4216-a0cd-ed84a39d6f7b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:14:48.075Z",
+  "parents": [],
+  "branch": "main"
+}

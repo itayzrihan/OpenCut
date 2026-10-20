@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "15daf29832be0fb7c291331d4e9eba22766766df16e058aa3707096db7d341ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:24:29.418Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/media-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9ea503e8-ca92-46f6-9ae9-28c0c7d6579b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:24:29.420Z",
+  "parents": [],
+  "branch": "main"
+}

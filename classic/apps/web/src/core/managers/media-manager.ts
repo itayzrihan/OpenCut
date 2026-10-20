@@ -7,6 +7,8 @@ import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
 import { buildWaveformSourceKey } from "@/media/waveform-summary";
 import { localDriveRequest } from "@/services/local-drive/client";
+import { UnifiedAnglesSyncTasks } from "@/media/unified-sync-task";
+import { isUnifiedAnglesAsset } from "@/media/unified-angles";
 
 export class MediaManager {
 	private assetViews: MediaAsset[] = [];
@@ -20,7 +22,20 @@ export class MediaManager {
 	private isLoading = false;
 	private listeners = new Set<() => void>();
 
-	constructor(private editor: EditorCore) {}
+	private unifiedSync: UnifiedAnglesSyncTasks;
+	constructor(private editor: EditorCore) {
+		this.unifiedSync = new UnifiedAnglesSyncTasks({
+			editor,
+			onSettled: () => this.notify(),
+		});
+	}
+
+	syncUnifiedAngles(input: { projectId: string; mediaId: string }) {
+		return this.unifiedSync.start(input);
+	}
+	isUnifiedAnglesSyncing(mediaId: string) {
+		return this.unifiedSync.isRunning(mediaId);
+	}
 
 	async relink({
 		projectId,
@@ -88,6 +103,8 @@ export class MediaManager {
 			});
 			await storageService.saveMediaAsset({ projectId, mediaAsset: newAsset });
 			publish();
+			if (isUnifiedAnglesAsset(newAsset))
+				void this.syncUnifiedAngles({ projectId, mediaId: newAsset.id });
 			return newAsset;
 		} catch (error) {
 			console.error("Failed to save media asset:", error);
@@ -132,6 +149,7 @@ export class MediaManager {
 	}
 
 	async loadProjectMedia({ projectId }: { projectId: string }): Promise<void> {
+		this.unifiedSync.cancelAll();
 		this.isLoading = true;
 		this.notify();
 
@@ -150,6 +168,7 @@ export class MediaManager {
 	}
 
 	async clearProjectMedia({ projectId }: { projectId: string }): Promise<void> {
+		this.unifiedSync.cancelAll();
 		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		waveformCache.clearAll();
 
@@ -178,6 +197,7 @@ export class MediaManager {
 	}
 
 	clearAllAssets(): void {
+		this.unifiedSync.cancelAll();
 		this.editor.command.synchronizeMedia({ assets: [], dryRun: true });
 		videoCache.clearAll();
 		waveformCache.clearAll();

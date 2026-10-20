@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "111f658baf72188bcbf567153b64c8c5b59a23dfffdf6a092dc25f061bbcbfe3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:32:00.099Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests.log",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/src__media____tests____unified-angles.test.ts.log",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/src__media____tests____unified-angles-audio.test.ts.log",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/src__podcast-sync____tests____unified-engine.test.ts.log",
+          ".local/unified-angles-auto-sync-2026-10-20/integration-tests/src__timeline____tests____unified-angles-cycle.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3a8850de-2a37-47df-814f-8cad040b0c5e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:32:00.100Z",
+  "parents": [],
+  "branch": "main"
+}

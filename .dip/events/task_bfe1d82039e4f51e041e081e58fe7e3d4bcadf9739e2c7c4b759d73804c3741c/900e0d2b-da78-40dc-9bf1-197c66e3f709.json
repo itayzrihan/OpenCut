@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "900e0d2b-da78-40dc-9bf1-197c66e3f709",
+  "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Unify now automatically starts the existing local podcast waveform alignment after media registration. Canonical serializable sync tasks show spinner/progress, interrupted/failed/stale/legacy assets expose sync/retry, duplicates share workers, and explicit task IDs plus source bindings reject cancelled or superseded results. Progress projects only canonical media metadata, not entire scene tracks. Deployed 2026-10-20T13-37-47-684Z-4e29ba26; real existing C7452+C7455 asset reached Audio synced and retained it after reload, with all scenes/settings/other media exact and no test assets added. Five native and20 focused host/UI tests pass;79 existing canonical command tests also passed.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Live UI verified retry/start on the existing asset and persistence after reload. Automatic start on creation is covered through actual MediaManager with mocked IO; no extra test assets added to the user's project. No exhaustive human lip-sync/listening review."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Two existing prefer-object-params errors and two existing unsafe assertion warnings in unrelated CommandManager methods remain; targeted new-source lint is clean. Audio synchronization cannot align sources without sufficient shared audio; existing precision warnings/rejection behavior remains."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T13:44:16.548Z",
+  "parents": [
+    "5ae75191-4273-46f9-817c-a3a9995ab43a"
+  ],
+  "branch": "main"
+}

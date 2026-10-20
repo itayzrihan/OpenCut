@@ -45,6 +45,14 @@ export interface UnifiedAnglesMetadata {
 	angleAssetIds: string[];
 	defaultAngleAssetId: string;
 	audioAssetId: string;
+	syncTask?: {
+		id: string;
+		status: "running" | "failed" | "cancelled";
+		progress: number;
+		stage: string;
+		error?: string;
+		sources: import("opencut-wasm").CameraSource[];
+	};
 	sync?: {
 		method: "audio";
 		referenceAssetId: string;

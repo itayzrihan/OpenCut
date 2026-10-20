@@ -7,6 +7,7 @@ use classic_podcast::{
 };
 use serde_json::json;
 use std::collections::HashMap;
+mod task;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -24,6 +25,8 @@ pub(crate) struct Unified {
     pub audio_asset_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sync: Option<AudioSync>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sync_task: Option<task::SyncTask>,
 }
 fn invalid(s: &str) -> CapabilityError {
     CapabilityError::InvalidInput(s.into())
@@ -104,6 +107,9 @@ pub(crate) fn validate_assets(assets: &[Map<String, Value>]) -> Result<(), Strin
                 return Err("Invalid Unified Angles audio synchronization".into());
             }
         }
+        if u.sync_task.as_ref().is_some_and(|t| !t.validate(&u)) {
+            return Err("Invalid Unified Angles synchronization task".into());
+        }
     }
     Ok(())
 }
@@ -115,6 +121,8 @@ struct SyncInput {
     media_id: String,
     #[schemars(length(min = 2, max = 32))]
     sources: Vec<CameraSource>,
+    #[serde(default)]
+    task_id: Option<String>,
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -134,6 +142,7 @@ pub(super) fn register_unified(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    task::register(registry, state.clone(), events.clone())?;
     let sync_state = state.clone();
     let sync_events = events.clone();
     register::<SyncInput, MutationOutput, _, _>(
@@ -169,6 +178,30 @@ pub(super) fn register_unified(
                         let mut u = metadata(&classic.media_assets[index])
                             .map_err(|s| invalid(&s))?
                             .ok_or_else(|| invalid("Not a Unified Angles asset"))?;
+                        if let Some(task_id) = &input.task_id {
+                            let task = u
+                                .sync_task
+                                .as_ref()
+                                .filter(|t| {
+                                    t.id == *task_id && t.status == task::TaskStatus::Running
+                                })
+                                .ok_or_else(|| {
+                                    CapabilityError::Conflict(
+                                        "Audio synchronization task was replaced or stopped".into(),
+                                    )
+                                })?;
+                            if input.sources.iter().any(|s| {
+                                !task.sources.iter().any(|old| {
+                                    old.id == s.id
+                                        && old.duration == s.duration
+                                        && old.binding_revision == s.binding_revision
+                                })
+                            }) {
+                                return Err(CapabilityError::Conflict(
+                                    "Audio worker source bindings changed".into(),
+                                ));
+                            }
+                        }
                         if input.sources.len() != u.angle_asset_ids.len()
                             || input
                                 .sources
@@ -208,6 +241,7 @@ pub(super) fn register_unified(
                             })
                             .collect();
                         u.default_angle_asset_id = clock.reference_id.clone();
+                        u.sync_task = None;
                         u.sync = Some(AudioSync {
                             method: "audio".into(),
                             reference_asset_id: clock.reference_id.clone(),

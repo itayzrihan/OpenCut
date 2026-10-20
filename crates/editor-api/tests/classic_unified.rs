@@ -152,3 +152,159 @@ async fn sync_rejects_stale_duplicate_or_partial_audio_results_atomically() {
     assert!(r.registry().invoke("media.classic.remove",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":after["revision"],"mediaIds":["short"],"cascade":true})).await.is_err());
     assert_eq!(read(&r).await, after);
 }
+
+async fn task(r: &OpenCutRuntime, action: &str, id: &str, extra: Value) -> Result<Value, String> {
+    let s = read(r).await;
+    let mut input = json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":"unified","taskId":id,"action":action});
+    input
+        .as_object_mut()
+        .unwrap()
+        .extend(extra.as_object().unwrap().clone());
+    r.registry()
+        .invoke(
+            "media.classic.unified.sync_task",
+            InvocationContext::default(),
+            input,
+        )
+        .await
+        .map(|r| r.result.data)
+        .map_err(|e| e.to_string())
+}
+#[tokio::test]
+async fn audio_task_progress_is_canonical_grouped_undoable_and_source_preserving() {
+    let r = fixture().await;
+    let before = read(&r).await;
+    let input = json!({"projectId":"classic-project","expectedRevision":before["revision"],"mediaId":"unified","taskId":"job-a","action":"start"});
+    r.registry()
+        .invoke(
+            "media.classic.unified.sync_task",
+            InvocationContext {
+                dry_run: true,
+                ..Default::default()
+            },
+            input,
+        )
+        .await
+        .unwrap();
+    assert_eq!(read(&r).await, before);
+    task(&r, "start", "job-a", json!({})).await.unwrap();
+    let output = task(
+        &r,
+        "progress",
+        "job-a",
+        json!({"progress":0.6,"stage":"Comparing waveform windows"}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(output["unifiedAngles"]["syncTask"]["progress"], 0.6);
+    let after = read(&r).await;
+    assert_eq!(
+        after["project"]["classic"]["document"],
+        before["project"]["classic"]["document"]
+    );
+    assert_eq!(
+        after["project"]["classic"]["mediaAssets"][2]["unifiedAngles"]["syncTask"]["status"],
+        "running"
+    );
+    assert_eq!(
+        after["project"]["classic"]["mediaAssets"][0],
+        before["project"]["classic"]["mediaAssets"][0]
+    );
+    for (action, extra) in [
+        ("progress", json!({"progress":0.2})),
+        ("start", json!({})),
+        ("progress", json!({"progress":1.1})),
+    ] {
+        assert!(task(&r, action, "job-a", extra).await.is_err());
+        assert_eq!(read(&r).await, after);
+    }
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(read(&r).await["project"], after["project"]);
+}
+#[tokio::test]
+async fn interrupted_retry_replaces_exact_task_and_rejects_all_late_results() {
+    let r = fixture().await;
+    task(&r, "start", "old", json!({})).await.unwrap();
+    assert!(task(&r, "start", "new", json!({})).await.is_err());
+    task(&r, "start", "new", json!({"replaceTaskId":"old"}))
+        .await
+        .unwrap();
+    let before = read(&r).await;
+    assert!(
+        task(&r, "fail", "old", json!({"error":"late failure"}))
+            .await
+            .is_err()
+    );
+    assert!(r.registry().invoke("media.classic.unified.sync",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":before["revision"],"mediaId":"unified","taskId":"old","sources":sources()})).await.is_err());
+    assert_eq!(read(&r).await, before);
+    task(
+        &r,
+        "fail",
+        "new",
+        json!({"error":"No common reference audio"}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        read(&r).await["project"]["classic"]["mediaAssets"][2]["unifiedAngles"]["syncTask"]["status"],
+        "failed"
+    );
+    task(&r, "start", "retry", json!({})).await.unwrap();
+    let s = read(&r).await;
+    call(&r,"media.classic.unified.sync",json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":"unified","taskId":"retry","sources":sources()})).await;
+    let done = read(&r).await;
+    assert!(
+        done["project"]["classic"]["mediaAssets"][2]["unifiedAngles"]
+            .get("syncTask")
+            .is_none()
+    );
+    assert_eq!(
+        done["project"]["classic"]["mediaAssets"][2]["unifiedAngles"]["sync"]["method"],
+        "audio"
+    );
+    assert!(
+        task(&r, "progress", "retry", json!({"progress":1}))
+            .await
+            .is_err()
+    );
+}
+#[tokio::test]
+async fn cancelled_jobs_cannot_apply_offsets_and_missing_camera_audio_never_claims_sync() {
+    let r = fixture().await;
+    task(&r, "start", "cancel", json!({})).await.unwrap();
+    task(&r, "cancel", "cancel", json!({})).await.unwrap();
+    let s = read(&r).await;
+    assert!(r.registry().invoke("media.classic.unified.sync",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":s["revision"],"mediaId":"unified","taskId":"cancel","sources":sources()})).await.is_err());
+    assert_eq!(read(&r).await, s);
+    // Invalid persisted task fields are rejected by document validation too.
+    let mut classic = s["project"]["classic"].clone();
+    classic["mediaAssets"][2]["unifiedAngles"]["syncTask"]["progress"] = json!(2);
+    let fresh = OpenCutRuntime::default();
+    assert!(
+        fresh
+            .registry()
+            .invoke(
+                "project.classic.session.attach",
+                InvocationContext::default(),
+                json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})
+            )
+            .await
+            .is_err()
+    );
+    classic = s["project"]["classic"].clone();
+    classic["mediaAssets"][0]["hasAudio"] = json!(false);
+    let missing = OpenCutRuntime::default();
+    call(
+        &missing,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    assert!(
+        task(&missing, "start", "missing-audio", json!({}))
+            .await
+            .is_err()
+    );
+}

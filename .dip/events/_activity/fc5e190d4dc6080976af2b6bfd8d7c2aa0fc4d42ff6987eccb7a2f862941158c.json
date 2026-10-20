@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc5e190d4dc6080976af2b6bfd8d7c2aa0fc4d42ff6987eccb7a2f862941158c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T13:22:27.306Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_unified",
+          ".local/unified-angles-auto-sync-2026-10-20",
+          "analysis/unified-angles-auto-sync-2026-10-20",
+          "crates/editor-api/src/operations/classic_unified/task.rs",
+          "crates/editor-api/src/operations/classic_unified.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f3b60865-70ff-455a-820b-11f9271ce2d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:22:27.308Z",
+  "parents": [],
+  "branch": "main"
+}

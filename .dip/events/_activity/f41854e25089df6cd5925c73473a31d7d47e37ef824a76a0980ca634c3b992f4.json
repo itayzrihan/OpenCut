@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f41854e25089df6cd5925c73473a31d7d47e37ef824a76a0980ca634c3b992f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:19:08.917Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '720,780p' classic/apps/web/src/core/managers/commands.ts; rg -n 'syncUnified' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '351,379p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; rg -n 'unifiedAngles' classic/apps/web/src/services/storage/types.ts; sed -n '1,70p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; rg -n 'setAssets|notifyMedia|publishCanonical' classic/apps/web/src/core/managers/commands.ts | tail -n 24",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9166f277-9993-4be2-be86-104993f2140c"
+      },
+      {
+        "at": "2026-10-20T13:19:09.015Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '720,780p' classic/apps/web/src/core/managers/commands.ts; rg -n 'syncUnified' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '351,379p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; rg -n 'unifiedAngles' classic/apps/web/src/services/storage/types.ts; sed -n '1,70p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; rg -n 'setAssets|notifyMedia|publishCanonical' classic/apps/web/src/core/managers/commands.ts | tail -n 24",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9166f277-9993-4be2-be86-104993f2140c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:19:09.116Z",
+  "parents": [],
+  "branch": "main"
+}

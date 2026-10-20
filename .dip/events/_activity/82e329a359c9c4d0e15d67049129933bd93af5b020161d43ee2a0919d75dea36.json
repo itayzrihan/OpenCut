@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "82e329a359c9c4d0e15d67049129933bd93af5b020161d43ee2a0919d75dea36",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T13:25:21.037Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/components/editor/panels/assets/views/unified-angles-sync-badge.tsx <<'TSX'\n\"use client\";\nimport { LoaderCircle } from \"lucide-react\";\nimport type { MediaAsset } from \"@/media/types\";\nimport { unifiedAnglesSyncStatus } from \"@/media/unified-angles\";\nimport { useEditor, useEditorMedia, useEditorProject } from \"@/editor/use-editor\";\n\nexport function UnifiedAnglesSyncBadge({item}:{item:MediaAsset}) {\n const editor=useEditor();\n const media=useEditorMedia(e=>e.media.getAssets());\n const project=useEditorProject(e=>e.project.getActiveOrNull());\n const status=unifiedAnglesSyncStatus({asset:item,mediaMap:new Map(media.map(a=>[a.id,a]))});\n const task=item.unifiedAngles?.syncTask;\n const running=task?.status==='running'&&editor.media.isUnifiedAnglesSyncing(item.id);\n const readOnly=editor.project.getSessionReadOnlyReason();\n if(status==='synced')return <span className=\"block text-[11px] font-medium text-emerald-500\" title=\"Camera angles are synchronized by audio\">Audio synced</span>;\n const interrupted=task?.status==='cancelled'||(task?.status==='running'&&!running);\n const failed=task?.status==='failed';\n const label=running?'Syncing audio':interrupted?'Sync interrupted · Retry':failed?'Sync failed · Retry':status==='stale'?'Sync outdated · Retry':'Not audio synced';\n const hint=readOnly??(running?task?.stage:task?.error??'Click to synchronize the selected camera angles by their recorded audio');\n return <button type=\"button\" disabled={running||!!readOnly||!project} aria-busy={running}\n  aria-label={`${running?'Syncing audio':interrupted||failed||status==='stale'?'Retry audio sync':'Sync audio'} for ${item.name}`}\n  title={hint} className=\"block max-w-full text-left text-[11px] font-medium text-amber-500 hover:underline disabled:cursor-default disabled:no-underline\"\n  onPointerDown={e=>e.stopPropagation()} onDoubleClick={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();if(project)void editor.media.syncUnifiedAngles({projectId:project.meta",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0d1d5d66-41a8-4b93-a56b-74b7bb063433"
+      },
+      {
+        "at": "2026-10-20T13:25:21.415Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_bfe1d82039e4f51e041e081e58fe7e3d4bcadf9739e2c7c4b759d73804c3741c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/components/editor/panels/assets/views/unified-angles-sync-badge.tsx <<'TSX'\n\"use client\";\nimport { LoaderCircle } from \"lucide-react\";\nimport type { MediaAsset } from \"@/media/types\";\nimport { unifiedAnglesSyncStatus } from \"@/media/unified-angles\";\nimport { useEditor, useEditorMedia, useEditorProject } from \"@/editor/use-editor\";\n\nexport function UnifiedAnglesSyncBadge({item}:{item:MediaAsset}) {\n const editor=useEditor();\n const media=useEditorMedia(e=>e.media.getAssets());\n const project=useEditorProject(e=>e.project.getActiveOrNull());\n const status=unifiedAnglesSyncStatus({asset:item,mediaMap:new Map(media.map(a=>[a.id,a]))});\n const task=item.unifiedAngles?.syncTask;\n const running=task?.status==='running'&&editor.media.isUnifiedAnglesSyncing(item.id);\n const readOnly=editor.project.getSessionReadOnlyReason();\n if(status==='synced')return <span className=\"block text-[11px] font-medium text-emerald-500\" title=\"Camera angles are synchronized by audio\">Audio synced</span>;\n const interrupted=task?.status==='cancelled'||(task?.status==='running'&&!running);\n const failed=task?.status==='failed';\n const label=running?'Syncing audio':interrupted?'Sync interrupted · Retry':failed?'Sync failed · Retry':status==='stale'?'Sync outdated · Retry':'Not audio synced';\n const hint=readOnly??(running?task?.stage:task?.error??'Click to synchronize the selected camera angles by their recorded audio');\n return <button type=\"button\" disabled={running||!!readOnly||!project} aria-busy={running}\n  aria-label={`${running?'Syncing audio':interrupted||failed||status==='stale'?'Retry audio sync':'Sync audio'} for ${item.name}`}\n  title={hint} className=\"block max-w-full text-left text-[11px] font-medium text-amber-500 hover:underline disabled:cursor-default disabled:no-underline\"\n  onPointerDown={e=>e.stopPropagation()} onDoubleClick={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();if(project)void editor.media.syncUnifiedAngles({projectId:project.meta",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0d1d5d66-41a8-4b93-a56b-74b7bb063433"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T13:25:21.477Z",
+  "parents": [],
+  "branch": "main"
+}
