@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "500987316afd51a9af995b6ed0e40cf058d288a392073fa8f58f2ca13e5b2697",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:10:20.150Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/seven-smart-2026-10-20/mcp-call.mjs playback.control '{\"operation\":\"seek\",\"timeSeconds\":6}'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5ea15e85-dae7-4d16-b9da-5dfbd6c0910b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:10:20.546Z",
+  "parents": [],
+  "branch": "main"
+}

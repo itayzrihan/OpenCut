@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9319e6d5eef3fe8694000243428091212c487aec1a133fcd5ed74c6fc102a2d1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T10:04:44.820Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-sources-2026-10-19/episode4-ready.png"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5fce94ea-de08-4858-b4c9-ff91245dcb99"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:04:44.823Z",
+  "parents": [],
+  "branch": "main"
+}

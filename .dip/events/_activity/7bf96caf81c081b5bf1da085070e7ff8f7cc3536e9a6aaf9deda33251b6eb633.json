@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7bf96caf81c081b5bf1da085070e7ff8f7cc3536e9a6aaf9deda33251b6eb633",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:10:40.917Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,140p' classic/apps/web/src/brand-kits/apply.ts; sed -n '70,190p' classic/apps/web/src/subtitles/auto-texts.ts; rg -n 'brandKit|captionRecipe|caption.*recipe|replace.*caption|rebuildCaption' classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/canonical-classic-session.ts; sed -n '1,130p' classic/scripts/editor-architecture/check.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-818ebcbe-4c7f-4cbb-9b8e-45310a3f9f54"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:10:41.063Z",
+  "parents": [],
+  "branch": "main"
+}

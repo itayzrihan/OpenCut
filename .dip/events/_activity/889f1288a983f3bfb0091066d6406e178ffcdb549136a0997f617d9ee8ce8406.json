@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "889f1288a983f3bfb0091066d6406e178ffcdb549136a0997f617d9ee8ce8406",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:52:55.661Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/verify-seven-smart.mjs <<'JS'\nimport {readFile} from 'node:fs/promises';\nimport {spawnSync} from 'node:child_process';\nimport assert from 'node:assert/strict';\nimport {homedir} from 'node:os';\nimport {join} from 'node:path';\nfunction run(cmd,args){const p=spawnSync(cmd,args,{encoding:'utf8',maxBuffer:12*1024*1024});if(p.status!==0)throw Error(`${cmd} failed: ${p.stdout}\\n${p.stderr}`);console.log(p.stdout.trim());}\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_podcast_reference','--test','classic_takes','--test','classic_podcast','--test','classic_podcast_editorial','--test','classic_teaser_editorial','--test','classic_transcription','--quiet']);\nrun('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/__tests__/timeline-tools.test.ts','src/ai/podcast-plan-cache.test.ts','src/timeline/smart-takes/audio-evidence.test.ts','src/timeline/smart-takes/audio-checkpoints.test.ts','src/core/managers/__tests__/transcription-manager.test.ts','--jobs=1','--report=.local/seven-smart-2026-10-20/configured-web-tests']);\nrun('bun',['run','.dip/tools/check-seven-scenes.ts']);\nrun('python3',['.dip/tools/check-seven-audio.py']);\nconst report=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/outputs.json','utf8'));\nassert(report.passed&&report.outputCount===7&&report.canonicalReload&&report.sourceScenesExact);\nconst status=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/mcp-result.json','utf8'));\nassert.equal(status.status,'succeeded');assert(status.reusedTranscript&&status.resumedAnalysis);assert.equal(status.analysisRequests,0);\nconst deployment=JSON.parse(await readFile('.local/seven-smart-2026-10-20/deployment.json','utf8'));\nconst active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));\nassert.equal(active.id,deployment.release);assert(deployment.runni",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2826787d-cb23-4a65-a3c8-f5319c42e7c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:52:55.894Z",
+  "parents": [],
+  "branch": "main"
+}

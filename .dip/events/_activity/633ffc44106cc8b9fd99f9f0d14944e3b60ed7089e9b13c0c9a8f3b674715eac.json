@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "633ffc44106cc8b9fd99f9f0d14944e3b60ed7089e9b13c0c9a8f3b674715eac",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:30:10.503Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes/podcast.rs';s=open(p).read();a=s.index('// Legacy source projects');b=s.index('// Extracts never restore',a);s=s[:a]+s[b:];a=s.index('    let dialogue_ids =');b=s.index('    for track in compact',a);s=s[:a]+s[b:];a=s.index('                let mut audio_source = scene[\"tracks\"].clone();');b=s.index('                let mut windows:',a);s=s[:a]+'                let audio_inputs = reference::audio_inputs(&scene[\"tracks\"], &reference_regions)?;\\n'+s[b:];open(p,'w').write(s)\np='crates/editor-api/src/operations/classic_takes/podcast/reference.rs';s=open(p).read().replace('                || e[\"params\"][\"volume\"].as_f64() == Some(0.0)\\n','');open(p,'w').write(s)\np='crates/editor-api/tests/classic_podcast.rs';s=open(p).read().replace('async fn legacy_zero_gain_dialogue_restores_only_in_new_scene_and_keeps_authored_audio_routes()', 'async fn zero_and_negative_db_dialogue_preserves_gain_and_authored_audio_routes()').replace('            \"legacy\",','            \"zero-db\",\\n            \"negative-db\",',1).replace('                \"track-mute\"=>','                \"negative-db\"=>tracks[\"main\"][\"elements\"][0][\"params\"][\"volume\"]=json!(-18),\\n                \"track-mute\"=>',1).replace('let expected = if variant == \"legacy\" { 1.0 } else { 0.0 };','let expected = if variant == \"negative-db\" { -18.0 } else { 0.0 };');marker='            let before = state(&isolated).await;\\n';a=s.index(marker,s.index('async fn zero_and_negative_db_dialogue'));b=a+len(marker);s=s[:b]+'''            if [\"zero-db\", \"negative-db\"].contains(&variant) {\n                let prepared=call(&isolated,\"timeline.classic.podcast.prepare\",json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"elementIds\":[],\"expectedRevision\":before[\"revision\"]})).await;\n                assert!(!prepared[\"audioInputs\"].as_array().unwrap().is_empty(), \"Normal decibel gain must not exclude dialogue\");\n            }\n'''+s[b:];open(p,'w').write(s)\np='.dip/tools/ev",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2ea7f429-09fd-4f19-ab52-da3bba6baaaf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:30:11.502Z",
+  "parents": [],
+  "branch": "main"
+}

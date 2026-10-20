@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b13255f514240603376b35dfbda2da0d3804c4cecd72e6a63f857167fa37aae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:46:39.653Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ec8616450002537cbfc49a34da968aab95934f4dac05438b31f74e9f963bd9cb",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ffprobe -v error -show_entries format=duration,size,bit_rate:stream=codec_name,codec_type,width,height,r_frame_rate,bit_rate,duration -of json '/Volumes/Portable Sandisk SSD/לקוחות/Lior Niva New/פרק 4 — המציאות לא זזה — 4K HEVC.mp4'",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-d2b10164-adcf-400b-890b-c621f2e2bfc5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:46:39.886Z",
+  "parents": [],
+  "branch": "main"
+}

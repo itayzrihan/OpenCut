@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c8cb4ee2821e87bf375f9827755a435b528da7b15db98f917d396df1db6d1119",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:51:56.542Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,255p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; sed -n '1,90p' .local/seven-smart-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-45ba7ecd-37d4-4075-81b6-b3338e087255"
+      },
+      {
+        "at": "2026-10-20T00:51:56.623Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,255p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; sed -n '1,90p' .local/seven-smart-2026-10-20/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-45ba7ecd-37d4-4075-81b6-b3338e087255"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:51:57.023Z",
+  "parents": [],
+  "branch": "main"
+}

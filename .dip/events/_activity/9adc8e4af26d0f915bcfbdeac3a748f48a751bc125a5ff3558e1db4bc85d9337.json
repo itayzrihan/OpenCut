@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9adc8e4af26d0f915bcfbdeac3a748f48a751bc125a5ff3558e1db4bc85d9337",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:45:24.490Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_0ceb1bc2fecd38d595cdbf0e7bfbb0594eb1418b5921f9e2da46e6e3f260b957",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/itay-yarden-podcast-2026-10-19/verify.py <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nbase=Path(__file__).resolve().parent\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\np=root/'9deb36b6-ef21-47bd-a830-9ad0ea784759/project.json'\nd=json.loads(p.read_text());before=json.loads((base/'before.json').read_text())\nfor old in before['scenes']:\n assert old==next(s for s in d['scenes'] if s['id']==old['id']),'Original scene changed'\ns=next(s for s in d['scenes'] if s.get('multicam'));m=s['multicam'];duration=round(m['duration']*120000)\ntracks=[*s['tracks']['overlay'],s['tracks']['main'],*s['tracks']['audio']]\nv=[t for t in tracks if t['type']=='video' and t['elements']];a=[t for t in tracks if t['type']=='audio']\nassert len(v)==2 and len(a)==2\nassert len(m['cuts'])==232 and 1900<m['duration']<2000\nassert m['settings']['minCutDuration']==1 and m['settings']['maxCutDuration']==20\nassert m['settings']['keepCameraMics']==False\nfor c,t in zip(m['channels'],v):\n assert t['muted'] is True\n for e in t['elements']:\n  assert e['mediaId']==c['videoId'] and e['isSourceAudioEnabled'] is False\n  assert abs((e['trimStart']-e['startTime'])/120000-(c['videoOffset']-c['videoDelay']))<1/120000\nfor cut in m['cuts']:\n time=(cut['timestamp']+cut['duration']/2)*120000\n active=[e for t in v for e in t['elements'] if e.get('enabled',True) and e['startTime']<=time<e['startTime']+e['duration']]\n assert len(active)==1,'Camera coverage gap/overlap'\n c=next(c for c in m['channels'] if c['id']==cut['channelId']);assert active[0]['mediaId']==c['videoId']\nfor c,t in zip(m['channels'],a):\n assert len(t['elements'])==1 and not t.get('muted',False)\n e=t['elements'][0];assert e['mediaId']==c['audioId'] and e['name'].lower().endswith('.wav')\n for k,value in {'volume':15,'gainDb':-1,'noiseReduction':100,'hardLimiterEnabled':True,'hardLimiterCeilingDb':-1}.items():assert e['params'][k]==value\n assert abs((e['trimStart']-e['startTime'])",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-731e5881-365f-4b50-8610-26409b57d870"
+      },
+      {
+        "at": "2026-10-19T15:45:24.641Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_0ceb1bc2fecd38d595cdbf0e7bfbb0594eb1418b5921f9e2da46e6e3f260b957",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/itay-yarden-podcast-2026-10-19/verify.py <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nbase=Path(__file__).resolve().parent\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\np=root/'9deb36b6-ef21-47bd-a830-9ad0ea784759/project.json'\nd=json.loads(p.read_text());before=json.loads((base/'before.json').read_text())\nfor old in before['scenes']:\n assert old==next(s for s in d['scenes'] if s['id']==old['id']),'Original scene changed'\ns=next(s for s in d['scenes'] if s.get('multicam'));m=s['multicam'];duration=round(m['duration']*120000)\ntracks=[*s['tracks']['overlay'],s['tracks']['main'],*s['tracks']['audio']]\nv=[t for t in tracks if t['type']=='video' and t['elements']];a=[t for t in tracks if t['type']=='audio']\nassert len(v)==2 and len(a)==2\nassert len(m['cuts'])==232 and 1900<m['duration']<2000\nassert m['settings']['minCutDuration']==1 and m['settings']['maxCutDuration']==20\nassert m['settings']['keepCameraMics']==False\nfor c,t in zip(m['channels'],v):\n assert t['muted'] is True\n for e in t['elements']:\n  assert e['mediaId']==c['videoId'] and e['isSourceAudioEnabled'] is False\n  assert abs((e['trimStart']-e['startTime'])/120000-(c['videoOffset']-c['videoDelay']))<1/120000\nfor cut in m['cuts']:\n time=(cut['timestamp']+cut['duration']/2)*120000\n active=[e for t in v for e in t['elements'] if e.get('enabled',True) and e['startTime']<=time<e['startTime']+e['duration']]\n assert len(active)==1,'Camera coverage gap/overlap'\n c=next(c for c in m['channels'] if c['id']==cut['channelId']);assert active[0]['mediaId']==c['videoId']\nfor c,t in zip(m['channels'],a):\n assert len(t['elements'])==1 and not t.get('muted',False)\n e=t['elements'][0];assert e['mediaId']==c['audioId'] and e['name'].lower().endswith('.wav')\n for k,value in {'volume':15,'gainDb':-1,'noiseReduction':100,'hardLimiterEnabled':True,'hardLimiterCeilingDb':-1}.items():assert e['params'][k]==value\n assert abs((e['trimStart']-e['startTime'])",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-731e5881-365f-4b50-8610-26409b57d870"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:45:25.111Z",
+  "parents": [],
+  "branch": "main"
+}

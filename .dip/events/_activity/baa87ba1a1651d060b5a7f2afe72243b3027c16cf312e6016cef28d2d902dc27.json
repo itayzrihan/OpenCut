@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "baa87ba1a1651d060b5a7f2afe72243b3027c16cf312e6016cef28d2d902dc27",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T09:37:27.632Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_podcast.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c8480cfa-3773-4b74-a450-47acf3645524"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:37:27.633Z",
+  "parents": [],
+  "branch": "main"
+}

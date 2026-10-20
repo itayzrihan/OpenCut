@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af815758bbead31512422ea9eefabcd7777394e77022ecbd0904107c381e4142",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:28:59.049Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_takes/podcast.rs');s=p.read_text();at=s.index('// Extracts never restore')\ns=s[:at]+'''// Legacy source projects can have a zero-gain main clip with no detached audio.\n// A speech extract should carry that dialogue. Repair only the new scene's\n// independent archive; explicit mutes, automation and alternate audio routes\n// retain their authored mix. Never change the source document.\nfn restore_legacy_dialogue(tracks: &mut Value, element_ids: &[String]) {\n    if tracks[\"main\"][\"muted\"].as_bool() == Some(true)\n        || [\"audio\", \"overlay\"].iter().any(|key| {\n            arr(&tracks[*key]).iter().any(|t| {\n                arr(&t[\"elements\"]).iter().any(|e| {\n                    matches!(e[\"type\"].as_str(), Some(\"audio\" | \"video\"))\n                })\n            })\n        })\n    { return; }\n    for e in tracks[\"main\"][\"elements\"].as_array_mut().into_iter().flatten() {\n        let automated = e.get(\"keyframes\").is_some_and(|v| {\n            !v.is_null() && *v != json!([]) && *v != json!({})\n        });\n        if element_ids.iter().any(|id| e[\"id\"].as_str() == Some(id.as_str()))\n            && e[\"type\"] == \"video\" && e[\"params\"][\"volume\"].as_f64() == Some(0.0)\n            && e[\"muted\"].as_bool() != Some(true)\n            && e[\"params\"][\"muted\"].as_bool() != Some(true) && !automated\n        { e[\"params\"][\"volume\"] = json!(1.0); }\n    }\n}\n\n'''+s[at:];s=s.replace('let mut compact = tracks.clone();','let mut compact = tracks.clone();\\n    restore_legacy_dialogue(&mut compact, element_ids);',1);p.write_text(s)\np=Path('crates/editor-api/tests/classic_podcast.rs');s=p.read_text()+'''\n#[tokio::test]\nasync fn legacy_zero_gain_dialogue_restores_only_in_new_scene_and_keeps_authored_audio_routes() {\n    for mode in [\"teaser\", \"highlights\", \"chronological\"] {\n        for variant in [\"legacy\", \"track-mute\", \"clip-mute\", \"automation\", \"detached-audio\", \"overlay-video\"] {\n            let r = se",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e9d7f241-e0b2-43f1-b920-1bf5cf2aeb45"
+      },
+      {
+        "at": "2026-10-19T16:28:59.050Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_takes/podcast/podcast-shorts-policy.md');p.write_text(p.read_text()+'\\nCanonical output audio: when a legacy zero-gain main dialogue clip has no separate audio/video routes, explicit mute or authored keyframes, restore its speech gain only in the new scene/archive. Never unmute the source or override an explicit mute/automation/separate mix.\\n')\np=Path('.dip/tools/evaluate-podcast-shorts.ts');s=p.read_text().replace('const cuts=videos.map', '''const sourceGain=old.scenes[0].tracks.main.elements[0].params.volume;\n   const outputGains=generated.flatMap((s:any)=>s.tracks.main.elements.map((e:any)=>e.params.volume??1));\n   assert.equal(sourceGain,0);assert(outputGains.every((v:number)=>v>0),'Legacy silent gain propagated to derived dialogue');\n   const cuts=videos.map''').replace('sourceSceneCount:old.scenes.length','sourceAudioGain:sourceGain,outputAudioGains:outputGains,legacyDialogueRestored:true,sourceSceneCount:old.scenes.length');p.write_text(s)\np=Path('.dip/tools/verify-podcast-editorial.mjs');s=p.read_text().replace('assert.equal(r.report.critiques.length,r.outputScenes);','assert.equal(r.report.critiques.length,r.outputScenes);assert(r.legacyDialogueRestored);assert.equal(r.sourceAudioGain,0);assert(r.outputAudioGains.every(g=>g>0));').replace('coreTests:12','coreTests:13').replace('additionalProviderCalls:r.providerCalls','additionalProviderCalls:r.providerCalls,legacyDialogueRestored:r.legacyDialogueRestored').replace(\"'Source audio mix is preserved. No export/B-roll/motion finishing requested.'\",\"'Source audio mix is unchanged; only isolated legacy zero-gain output dialogue is restored. Explicit mutes/separate mixes/automation preserved. No export/B-roll/motion finishing requested.'\");p.write_text(s)\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/audit.he.md');s=p.read_text().replace('מיקס האודיו של המקור נשמר; ההשבחה אינה מאשרת שינוי עוצמה/השתקה של הפרויקט הראש",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a37b0e5e-805c-49f5-b562-3aaa3136265e"
+      },
+      {
+        "at": "2026-10-19T16:28:59.156Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_takes/podcast/podcast-shorts-policy.md');p.write_text(p.read_text()+'\\nCanonical output audio: when a legacy zero-gain main dialogue clip has no separate audio/video routes, explicit mute or authored keyframes, restore its speech gain only in the new scene/archive. Never unmute the source or override an explicit mute/automation/separate mix.\\n')\np=Path('.dip/tools/evaluate-podcast-shorts.ts');s=p.read_text().replace('const cuts=videos.map', '''const sourceGain=old.scenes[0].tracks.main.elements[0].params.volume;\n   const outputGains=generated.flatMap((s:any)=>s.tracks.main.elements.map((e:any)=>e.params.volume??1));\n   assert.equal(sourceGain,0);assert(outputGains.every((v:number)=>v>0),'Legacy silent gain propagated to derived dialogue');\n   const cuts=videos.map''').replace('sourceSceneCount:old.scenes.length','sourceAudioGain:sourceGain,outputAudioGains:outputGains,legacyDialogueRestored:true,sourceSceneCount:old.scenes.length');p.write_text(s)\np=Path('.dip/tools/verify-podcast-editorial.mjs');s=p.read_text().replace('assert.equal(r.report.critiques.length,r.outputScenes);','assert.equal(r.report.critiques.length,r.outputScenes);assert(r.legacyDialogueRestored);assert.equal(r.sourceAudioGain,0);assert(r.outputAudioGains.every(g=>g>0));').replace('coreTests:12','coreTests:13').replace('additionalProviderCalls:r.providerCalls','additionalProviderCalls:r.providerCalls,legacyDialogueRestored:r.legacyDialogueRestored').replace(\"'Source audio mix is preserved. No export/B-roll/motion finishing requested.'\",\"'Source audio mix is unchanged; only isolated legacy zero-gain output dialogue is restored. Explicit mutes/separate mixes/automation preserved. No export/B-roll/motion finishing requested.'\");p.write_text(s)\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/audit.he.md');s=p.read_text().replace('מיקס האודיו של המקור נשמר; ההשבחה אינה מאשרת שינוי עוצמה/השתקה של הפרויקט הראש",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a37b0e5e-805c-49f5-b562-3aaa3136265e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:28:59.175Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed846babb4a7e729efbbb1bf4cb8fd026e5db5ff9ac7b69c938570816970a0e6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:00:59.556Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-cd904f72-a620-461d-94e0-23590d0bcd5b"
+      },
+      {
+        "at": "2026-10-19T17:00:59.557Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a39cc7bc-c636-4931-b7ce-2b2e2b0e549d"
+      },
+      {
+        "at": "2026-10-19T17:00:59.606Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a39cc7bc-c636-4931-b7ce-2b2e2b0e549d"
+      },
+      {
+        "at": "2026-10-19T17:00:59.607Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 3 .local/podcast-multicam-scope/web-scoped/summary.json; rg --files crates/editor-api/tests | rg '(take|caption)' | head -n 15; git status --short -uno | head -n 12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5b15d37a-c80e-424e-b12d-6f2a301d46d0"
+      },
+      {
+        "at": "2026-10-19T17:00:59.721Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 3 .local/podcast-multicam-scope/web-scoped/summary.json; rg --files crates/editor-api/tests | rg '(take|caption)' | head -n 15; git status --short -uno | head -n 12",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5b15d37a-c80e-424e-b12d-6f2a301d46d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:01:00.159Z",
+  "parents": [],
+  "branch": "main"
+}

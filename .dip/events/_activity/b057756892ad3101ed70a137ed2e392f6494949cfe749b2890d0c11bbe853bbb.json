@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b057756892ad3101ed70a137ed2e392f6494949cfe749b2890d0c11bbe853bbb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:48:05.357Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Import options|handleImport|importMedia' classic/apps/web/src/components/editor/panels/assets -g '*.tsx' | head -35\ntail -15 /tmp/podcast-source-release.log\nps -axo pid,etime,pcpu,command | rg 'wasm-opt|next build|build.mjs' | head -8",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-95a4d285-2fb0-43a8-92ef-9c0265b44b72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:48:05.643Z",
+  "parents": [],
+  "branch": "main"
+}

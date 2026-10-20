@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c27853ac-e76c-40bd-b837-13aa799382a5",
+  "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed MP4 self-match before WAV with canonical Rust embedded Unicode name ranking, editable ranked choices, ambiguity handling and explicit camera-audio opt-in guard. 23 regression tests and optimized production build/typecheck/smoke pass. Deployed local production 2026-10-19T09-49-46-170Z-d19882d9. Reran native four-source Quick Auto Edit in user Chrome: new multicam-scene-2,224 camera shots,two muted camera tracks,two external WAVs with +15 volume/-1 gain/-1 limiter/100 noise and15 Sharpen. Added saved editable nested intro with פרק 4 / המציאות לא זזה, original image/music SHA256 exact, source10.04–18.20,8.16s intro and5.96s episode offset. Verified old scenes and settings exact, saved1-frame nested metadata,20.73s playback and reopened intro. Episode42:07 remains open in Chrome; no render. Evidence .local/podcast-sources-2026-10-19/delivery-verification.json and episode4-ready.png.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Representative preview/playback, source/timing/settings invariants, saved reload and automated regressions verified; the complete42-minute episode was not listened through."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Focused ESLint still reports two pre-existing positional-parameter errors in unrelated CommandManager methods, plus non-blocking assertion/dependency warnings; production TypeScript and all focused tests pass."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:05:01.907Z",
+  "parents": [
+    "3ff70082-fcbc-487b-9a82-db91ed221385"
+  ],
+  "branch": "main"
+}

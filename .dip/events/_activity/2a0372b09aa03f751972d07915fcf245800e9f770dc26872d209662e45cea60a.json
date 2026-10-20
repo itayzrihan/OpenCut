@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a0372b09aa03f751972d07915fcf245800e9f770dc26872d209662e45cea60a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:33:09.045Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/podcast-editorial-upgrade/activate.mjs; python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/audit.he.md');d=json.loads(Path('.local/podcast-editorial-upgrade/deployment.json').read_text());p.write_text(p.read_text().replace('2026-10-19T16-14-27-290Z-d19882d9',d['release']))\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/verification.he.md');p.write_text(p.read_text()+'\\nגרסת הפרודקשן הסופית: `'+d['release']+'`.\\n')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ed2f45af-e6f5-45fc-b7d6-4019440f6c0d"
+      },
+      {
+        "at": "2026-10-19T16:33:09.734Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/podcast-editorial-upgrade/activate.mjs; python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/audit.he.md');d=json.loads(Path('.local/podcast-editorial-upgrade/deployment.json').read_text());p.write_text(p.read_text().replace('2026-10-19T16-14-27-290Z-d19882d9',d['release']))\np=Path('analysis/podcast-editorial-upgrade-2026-10-19/verification.he.md');p.write_text(p.read_text()+'\\nגרסת הפרודקשן הסופית: `'+d['release']+'`.\\n')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ed2f45af-e6f5-45fc-b7d6-4019440f6c0d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:33:09.785Z",
+  "parents": [],
+  "branch": "main"
+}

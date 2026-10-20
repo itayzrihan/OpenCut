@@ -1,8 +1,12 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Film, ListVideo, Scissors, X } from "lucide-react";
 import { toast } from "sonner";
-import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
+import {
+	useEditor,
+	useEditorSelection,
+	useEditorTimelineScenes,
+} from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,21 +25,22 @@ const modes = [
 		mode: "teaser",
 		label: "יצירת טיזר",
 		icon: Film,
-		description: "מיפוי רגעים מכל הפרק, חיבור שאלות, ניגודים ורגעי שיא לטיזר קצר, וביקורת תוכן לפני היצירה. נשמר ברצף חדש.",
+		description:
+			"מיפוי רגעים מכל הפרק, חיבור שאלות, ניגודים ורגעי שיא לטיזר קצר, וביקורת תוכן לפני היצירה. נשמר ברצף חדש.",
 	},
 	{
 		mode: "highlights",
 		label: "קטעים חכמים מפודקאסט",
 		icon: Scissors,
 		description:
-			"סרטונים של 20–90 שניות מרגעים חזקים בכל כחמש דקות. אפשר לשנות את סדר הקטעים.",
+			"רעיונות חזקים מכל הפרק, עם פתיחה ברורה, דוגמה או תפנית וסיום בעל ערך. כל קטע עובר ביקורת ונשמר בסצנה חדשה.",
 	},
 	{
 		mode: "chronological",
 		label: "קטעים לפי סדר המקור",
 		icon: ListVideo,
 		description:
-			"סרטונים של 20–90 שניות, עם קיצור חזרות ושמירה על סדר הדברים בפרק.",
+			"בחירת תשובות וסיפורים שלמים, קיצור חזרות וביקורת על החיתוכים, תוך שמירת סדר המקור. כל קטע נשמר בסצנה חדשה.",
 	},
 ] as const;
 export function PodcastControls({
@@ -59,9 +64,20 @@ export function PodcastControls({
 	const [seconds, setSeconds] = useState(60);
 	const [count, setCount] = useState(24);
 	const selected = modes.find((m) => m.mode === mode);
-	const unavailable =
-		!scene?.tracks.main.elements.some((e) => e.type === "video") ||
-		!!scene?.takeAssembly;
+	const selectedElements = useEditorSelection((e) =>
+		e.selection.getSelectedElements(),
+	);
+	const reference = useMemo(() => {
+		try {
+			return editor.command.podcastScope(
+				selectedElements.map((e) => e.elementId),
+			);
+		} catch {
+			return null;
+		}
+	}, [editor, scene, selectedElements]);
+	const unavailable = !reference;
+
 	const run = async () => {
 		if (!mode) return;
 		setMode(null);
@@ -78,6 +94,11 @@ export function PodcastControls({
 	};
 	return (
 		<div className="mb-4 space-y-3 rounded-md border p-3" dir="rtl">
+			<p className="text-xs text-muted-foreground">
+				{selectedElements.length
+					? "מקור העריכה: טווחי הקליפים המסומנים בלבד, עם זוויות המצלמה והאודיו המסונכרן שלהם."
+					: "מקור העריכה: כל הטיימליין הפעיל, כולל עריכת המולטיקאם."}
+			</p>
 			{modes.map((item) => (
 				<div key={item.mode} className="space-y-1">
 					<Button
@@ -119,7 +140,7 @@ export function PodcastControls({
 			)}
 			{unavailable && (
 				<p className="text-xs text-muted-foreground">
-					פתח את רצף הפרק המקורי עם הווידאו המלא כדי להתחיל.
+					בחר סצנה עם וידאו או אודיו בטיימליין כדי להתחיל.
 				</p>
 			)}
 			{running && (
@@ -169,8 +190,8 @@ export function PodcastControls({
 					<DialogHeader>
 						<DialogTitle>{selected?.label}</DialogTitle>
 						<DialogDescription>
-							{selected?.description} כל תוצאה נשמרת כרצף נפרד. הווידאו והכתוביות בפרק המקורי
-							נשארים ללא שינוי, ואפשר להפיק ממנו שוב.
+							{selected?.description} כל תוצאה נשמרת כרצף נפרד. הווידאו
+							והכתוביות בפרק המקורי נשארים ללא שינוי, ואפשר להפיק ממנו שוב.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6">

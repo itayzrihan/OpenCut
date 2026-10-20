@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8888f361907d31c5a16cb209010ad6d945dc43c61b7f0096f9a6f6d171ef27f9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:31:20.519Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/db-gain-regressions.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "416b55de-20e7-4630-89c1-459edf03a622"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:31:20.519Z",
+  "parents": [],
+  "branch": "main"
+}

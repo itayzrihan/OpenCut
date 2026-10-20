@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d3848dc2a1cc9b0af5ba3f4a8c363a81d5d52bf4dcf5ca535d496abb4630f9bd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T10:34:08.775Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/episode4-lipsync-2026-10-19",
+          "analysis/episode4-lipsync-2026-10-19",
+          ".local/episode4-lipsync-2026-10-19/before-project.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4992fa52-7811-4a54-aa0a-550feebf3205"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:34:08.778Z",
+  "parents": [],
+  "branch": "main"
+}

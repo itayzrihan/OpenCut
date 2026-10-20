@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "13cc987122b17c77114581a0bf10d03f37174f94ad8301ef303ba3e61c3e1822",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:15:35.215Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/podcast-editorial-upgrade/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-927fc491-3a5e-45c4-99b4-762c74c968d3"
+      },
+      {
+        "at": "2026-10-19T16:15:35.220Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nsrc=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/847030af-0e59-4e41-b702-5d35549f3cd5/project.json')\np=json.loads(src.read_text())\nimport hashlib\nq={k:p.get(k) for k in ('scenes','settings','transcriptionJobs')}\nresult={'projectId':p['metadata']['id'],'scenes':len(p.get('scenes',[])),'sourceDataSha256':hashlib.sha256(json.dumps(q,sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()).hexdigest()}\nPath('.local/podcast-editorial-upgrade/live-source-before.json').write_text(json.dumps(result))\nprint(json.dumps(result))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-703f713d-61a7-44fd-8817-4034af251f51"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:15:35.942Z",
+  "parents": [],
+  "branch": "main"
+}

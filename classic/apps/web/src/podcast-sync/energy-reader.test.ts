@@ -44,3 +44,15 @@ test("pre-cancelled source does no decoding", async () => {
 		}),
 	).rejects.toThrow("cancelled");
 });
+test("bounded waveform windows preserve signed amplitude and fractional source origin", async () => {
+	const result = await readEnergyEnvelope({
+		asset: { name: "fixture.wav", file: wav() },
+		windowSeconds: 1 / 16000,
+		startSeconds: 0.1733125,
+		durationSeconds: 0.5,
+		sampleMode: "waveform",
+	});
+	expect(result.length).toBe(8000);
+	expect(result[100]).toBeCloseTo(0.25, 4);
+	expect(result[7000]).toBeCloseTo(0.5, 4);
+});

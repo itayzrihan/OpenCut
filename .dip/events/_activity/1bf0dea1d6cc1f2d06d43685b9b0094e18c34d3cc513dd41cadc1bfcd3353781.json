@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1bf0dea1d6cc1f2d06d43685b9b0094e18c34d3cc513dd41cadc1bfcd3353781",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:38:06.169Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/compaction-regression.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "76703a33-985e-4375-b2f6-bea813ea2d8b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:38:06.169Z",
+  "parents": [],
+  "branch": "main"
+}

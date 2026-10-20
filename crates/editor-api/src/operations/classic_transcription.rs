@@ -54,6 +54,10 @@ struct Job {
     engine: Engine,
     #[serde(default)]
     external_configuration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    reference_element_ids: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    reference_regions: Vec<classic_takes::PodcastReferenceRegion>,
     source_tracks: Value,
     source_media: Vec<Map<String, Value>>,
     total_duration: i64,
@@ -91,6 +95,8 @@ enum Change {
         defaults: Value,
     },
     Start {
+        #[serde(default, rename = "referenceElementIds")]
+        reference_element_ids: Option<Vec<String>>,
         #[serde(default)]
         engine: Engine,
         #[serde(default, rename = "externalConfiguration")]
@@ -137,6 +143,33 @@ fn validate_job(job: &Job) -> Result<(), String> {
     {
         return Err("Invalid transcription source snapshot".into());
     }
+    if job.reference_element_ids.is_some() {
+        if job.reference_regions.is_empty() || job.reference_regions.len() > 20000 {
+            return Err("Invalid scoped transcription regions".into());
+        }
+        let mut end = -1;
+        for r in &job.reference_regions {
+            if r.start < 0 || r.start <= end || r.end <= r.start || r.end > job.total_duration {
+                return Err("Invalid transcription scope timing".into());
+            }
+            end = r.end;
+        }
+        for t in all(&job.source_tracks) {
+            for e in arr(&t["elements"]) {
+                let a = n(&e["startTime"], -1.0) as i64;
+                let b = a + n(&e["duration"], 0.0) as i64;
+                if !job
+                    .reference_regions
+                    .iter()
+                    .any(|r| a >= r.start && b <= r.end)
+                {
+                    return Err("Transcription source exceeds selected reference".into());
+                }
+            }
+        }
+    } else if !job.reference_regions.is_empty() {
+        return Err("Unbound transcription scope".into());
+    }
     if job.engine == Engine::External
         && job
             .external_configuration
@@ -159,6 +192,11 @@ fn validate_job(job: &Job) -> Result<(), String> {
                 || w.start < 0.0
                 || w.end < w.start
                 || w.end > job.total_duration as f64 / TPS + 0.001
+                || (!job.reference_regions.is_empty()
+                    && !job
+                        .reference_regions
+                        .iter()
+                        .any(|r| w.start >= r.start as f64 / TPS && w.end <= r.end as f64 / TPS))
                 || middle < index as f64 * SECTION
                 || middle >= ((index + 1) as f64 * SECTION).min(job.total_duration as f64 / TPS)
             {
@@ -301,6 +339,14 @@ fn map_words(
         }
     }
     mapped.sort_by(|a, b| n(&a["start"], 0.0).total_cmp(&n(&b["start"], 0.0)));
+    if !job.reference_regions.is_empty() {
+        mapped.retain(|w| {
+            job.reference_regions.iter().any(|r| {
+                n(&w["start"], -1.0) >= r.start as f64 / TPS
+                    && n(&w["end"], f64::MAX) <= r.end as f64 / TPS
+            })
+        });
+    }
     mapped
 }
 fn publish(
@@ -431,6 +477,7 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
             }
         }
         Change::Start {
+            reference_element_ids,
             engine,
             external_configuration,
             scene_id,
@@ -441,7 +488,18 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
         } => {
             if found.is_none() {
                 for previous in jobs.iter_mut().filter(|j| {
-                    j.scene_id == scene_id && matches!(j.status, Status::Running | Status::Paused)
+                    j.scene_id == scene_id
+                        && matches!(j.status, Status::Running | Status::Paused)
+                        && j.reference_element_ids
+                            .as_deref()
+                            .unwrap_or(&[])
+                            .iter()
+                            .collect::<std::collections::BTreeSet<_>>()
+                            == reference_element_ids
+                                .as_deref()
+                                .unwrap_or(&[])
+                                .iter()
+                                .collect::<std::collections::BTreeSet<_>>()
                 }) {
                     previous.status = Status::Superseded;
                 }
@@ -449,6 +507,31 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
                     .iter()
                     .find(|s| s["id"] == scene_id)
                     .ok_or_else(|| invalid("Transcription scene not found"))?;
+                let reference_regions = match &reference_element_ids {
+                    Some(ids) => classic_takes::podcast_reference_scope(&scene["tracks"], ids)?,
+                    None => vec![],
+                };
+                let source_tracks = if reference_regions.is_empty() {
+                    scene["tracks"].clone()
+                } else {
+                    classic_takes::podcast_reference_tracks(&scene["tracks"], &reference_regions)?
+                };
+                let total_duration = reference_regions
+                    .last()
+                    .map_or(total_duration, |r| total_duration.min(r.end));
+                let chunks = if reference_regions.is_empty() {
+                    BTreeMap::new()
+                } else {
+                    (0..(total_duration as f64 / TPS / SECTION).ceil() as usize)
+                        .filter(|i| {
+                            !reference_regions.iter().any(|r| {
+                                (*i as i64) * 60 * 120000 < r.end
+                                    && (*i as i64 + 1) * 60 * 120000 > r.start
+                            })
+                        })
+                        .map(|i| (i, vec![]))
+                        .collect()
+                };
                 jobs.push(Job {
                     id: input.job_id.clone(),
                     scene_id,
@@ -458,10 +541,12 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
                     total_duration,
                     engine,
                     external_configuration,
-                    source_tracks: scene["tracks"].clone(),
+                    reference_element_ids,
+                    reference_regions,
+                    source_tracks,
                     source_media: classic.media_assets.clone(),
                     status: Status::Running,
-                    chunks: BTreeMap::new(),
+                    chunks,
                 });
             }
         }
@@ -476,7 +561,7 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
                 jobs.push(snapshot);
             }
         }
-        Change::Append { index, words } => {
+        Change::Append { index, mut words } => {
             let job = jobs
                 .get_mut(found.ok_or_else(|| invalid("Transcription job not found"))?)
                 .unwrap();
@@ -484,6 +569,13 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
                 return Err(invalid(
                     "Transcription was superseded by another transcript",
                 ));
+            }
+            if !job.reference_regions.is_empty() {
+                words.retain(|w| {
+                    job.reference_regions
+                        .iter()
+                        .any(|r| w.start >= r.start as f64 / TPS && w.end <= r.end as f64 / TPS)
+                });
             }
             if let Some(existing) = job.chunks.get(&index) {
                 if *existing != words {

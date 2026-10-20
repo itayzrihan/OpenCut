@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1fed8768070dc464aa610f3730f03bdfd2aea57bc59fe82b72a32ac3e6f55a41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:34:29.345Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -35 /tmp/podcast-precision-canonical.log\ncat classic/package.json | head -65\nrg --files classic/apps/web/src/core/__tests__ | rg multicam\nsed -n '1,80p' classic/apps/web/src/core/__tests__/canonical-multicam.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-e9f1e66a-2bfa-45b9-b37f-90c225ede571"
+      },
+      {
+        "at": "2026-10-19T15:34:29.454Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -35 /tmp/podcast-precision-canonical.log\ncat classic/package.json | head -65\nrg --files classic/apps/web/src/core/__tests__ | rg multicam\nsed -n '1,80p' classic/apps/web/src/core/__tests__/canonical-multicam.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-e9f1e66a-2bfa-45b9-b37f-90c225ede571"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:34:30.219Z",
+  "parents": [],
+  "branch": "main"
+}

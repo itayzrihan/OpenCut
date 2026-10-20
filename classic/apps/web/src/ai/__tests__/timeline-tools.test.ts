@@ -2225,3 +2225,25 @@ test("Smart takes requires both app control and network access and is never adve
 		allowed.tools.find((t) => t.name === "smart_takes.get_status"),
 	).toMatchObject({ readOnly: true, openWorld: false });
 });
+
+test("Podcast orchestration is an explicit write/network grant and exposes safe status", async () => {
+	const editor = {} as EditorCore;
+	const blocked = await createTimelineToolRuntime({
+		editor,
+		options: { includeAppControlAccess: true },
+	});
+	expect(blocked.tools.some((t) => t.name === "podcast.start")).toBe(false);
+	const allowed = await createTimelineToolRuntime({
+		editor,
+		options: { includeAppControlAccess: true, includeNetworkAccess: true },
+	});
+	expect(allowed.tools.find((t) => t.name === "podcast.start")).toMatchObject({
+		readOnly: false,
+		openWorld: true,
+		idempotent: true,
+		risk: "control",
+	});
+	expect(
+		allowed.tools.find((t) => t.name === "podcast.get_status"),
+	).toMatchObject({ readOnly: true, openWorld: false });
+});

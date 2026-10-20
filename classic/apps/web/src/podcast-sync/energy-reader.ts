@@ -6,12 +6,14 @@ export async function readEnergyEnvelope({
 	windowSeconds,
 	startSeconds = 0,
 	durationSeconds,
+	sampleMode = "rms",
 	signal,
 }: {
 	asset: BrowserMediaSource & { name: string };
 	windowSeconds: number;
 	startSeconds?: number;
 	durationSeconds?: number;
+	sampleMode?: "rms" | "waveform";
 	signal?: AbortSignal;
 }): Promise<Float32Array> {
 	signal?.throwIfAborted();
@@ -123,7 +125,7 @@ export async function readEnergyEnvelope({
 					let mono = 0;
 					for (const data of channels) mono += data[i] ?? 0;
 					mono /= channelCount;
-					sum += mono * mono;
+					sum += sampleMode === "waveform" ? mono : mono * mono;
 					count++;
 				}
 
@@ -144,7 +146,8 @@ export async function readEnergyEnvelope({
 		const envelope = new Float32Array(expectedLength);
 		for (let i = 0; i < expectedLength; i++) {
 			const count = counts[i] ?? 0;
-			envelope[i] = count > 0 ? Math.sqrt((sums[i] ?? 0) / count) : 0;
+			const mean = count > 0 ? (sums[i] ?? 0) / count : 0;
+			envelope[i] = sampleMode === "waveform" ? mean : Math.sqrt(mean);
 		}
 		return envelope;
 	} finally {

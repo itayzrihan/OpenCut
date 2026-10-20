@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c7387181598e31d190007e561bf49dff966304fd7fe064436468319968d3d81",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:48:54.555Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_transcription.rs",
+          "classic/apps/web/src/core/managers/transcription-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "486d28d8-f9e8-44e0-8e45-6941e9dc02c2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:48:54.558Z",
+  "parents": [],
+  "branch": "main"
+}

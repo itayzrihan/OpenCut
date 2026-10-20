@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "63f236c983db8bcf5baded68950d5e03ac89ca76fbcaf35f28c6bf76a367323d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:35:03.644Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .local/seven-smart-2026-10-20/probe-source.ts <<'EOF'\nimport{readFile,writeFile}from'node:fs/promises';\nimport{CanonicalClassicSession}from'../../classic/apps/web/src/core/canonical-classic-session';\nimport{createCanonicalTestRuntime}from'../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nconst doc=JSON.parse(await readFile('.local/seven-smart-2026-10-20/project-before-extract.json','utf8'));delete doc.__opencutEditorSession;\nconst mediaAssets=JSON.parse(await readFile('.local/seven-smart-2026-10-20/media-before.json','utf8'));\nconst rt=await createCanonicalTestRuntime();try{\nconst session=new CanonicalClassicSession({runtime:rt,projectId:doc.metadata.id});session.attach({classic:{document:doc,mediaAssets}});\nconst source=session.preparePodcast({sceneId:'multicam-scene-1',elementIds:[]});\nawait writeFile('.local/seven-smart-2026-10-20/prepared-before-fix.json',JSON.stringify(source));\nconst moved=source.words.filter(w=>w.id!==w.sourceIndex);console.log('word count',source.words.length,'moved',moved.length,'examples',JSON.stringify(moved.slice(0,8)));\nconst firstDiff=source.words.findIndex(w=>w.id!==w.sourceIndex);console.log(JSON.stringify(source.words.slice(Math.max(0,firstDiff-2),firstDiff+4)));\nconst video={title:'Probe',openingHook:'Known source',endingHook:'Complete thought',confidence:.9,alternatives:[{label:'Probe',reason:'No inference',parts:[{firstWord:80,lastWord:180}]}]};\ntry{session.podcast({sceneId:'multicam-scene-1',elementIds:[],expectedRevision:source.revision,options:{mode:'highlights',minSeconds:20,maxSeconds:90,maxOutputs:1},videos:[video]});console.log('compaction passed');}catch(e){console.log('compaction failed:',String(e));}\n}finally{rt.free();}\nEOF\nbun run .local/seven-smart-2026-10-20/probe-source.ts > .local/seven-smart-2026-10-20/compaction-probe.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a03f0b56-ad85-47ba-98f6-dd667a201e2b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:35:03.701Z",
+  "parents": [],
+  "branch": "main"
+}

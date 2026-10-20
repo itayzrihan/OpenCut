@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "37ed7469b2c5891dbf824d0a4edccebd61c41b8534f55f1c0bb351acdc6dbf6a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:30:40.352Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=json.loads(Path('.local/episode-teaser-90-2026-10-14/classic-source.json').read_text());s=p['document']['scenes'][0];e=s['tracks']['main']['elements'][0]\nprint(json.dumps({'keyframes':e.get('keyframes'),'mainMuted':s['tracks']['main'].get('muted'),'clipMuted':e.get('muted'),'paramsMuted':e.get('params',{}).get('muted'),'otherAudioRoutes':[t['type'] for k in ('audio','overlay') for t in s['tracks'][k] if any(e['type'] in ('audio','video') for e in t['elements'])]}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-58d51c8c-a5fd-49e3-a4a3-8b113fd9931c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:30:40.736Z",
+  "parents": [],
+  "branch": "main"
+}

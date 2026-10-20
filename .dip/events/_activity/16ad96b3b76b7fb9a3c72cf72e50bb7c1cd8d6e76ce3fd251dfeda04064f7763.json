@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16ad96b3b76b7fb9a3c72cf72e50bb7c1cd8d6e76ce3fd251dfeda04064f7763",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:13:59.204Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-editorial-upgrade/provider-checkpoints.json.tmp",
+          ".local/podcast-editorial-upgrade/provider-checkpoints.json",
+          "classic/apps/web/.next-local-production/cache/.tsbuildinfo"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e7ff8261-a622-4318-aaec-e23455d88a12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:13:59.205Z",
+  "parents": [],
+  "branch": "main"
+}

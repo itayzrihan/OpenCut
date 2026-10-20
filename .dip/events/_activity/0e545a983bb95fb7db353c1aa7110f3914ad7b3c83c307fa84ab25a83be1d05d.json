@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e545a983bb95fb7db353c1aa7110f3914ad7b3c83c307fa84ab25a83be1d05d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:06:35.481Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/lint.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "74947a24-2403-4fc9-9652-48af34e6b18f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:06:35.484Z",
+  "parents": [],
+  "branch": "main"
+}

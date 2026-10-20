@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "da7c071e99aefa8b1fab50fd4b6681b62b014cca7fcccaed9b30696df7b3f56c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:01:48.546Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/open-prs.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7121a1f6-8f7b-4c1e-9434-61ae4db145aa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:01:48.550Z",
+  "parents": [],
+  "branch": "main"
+}

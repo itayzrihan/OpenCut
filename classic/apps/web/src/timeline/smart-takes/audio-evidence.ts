@@ -17,6 +17,7 @@ import {
 export async function collectTakeAudioEvidence({
 	editor,
 	elementIds,
+	sourceClips,
 	signal,
 	boundedFrames = false,
 	onProgress,
@@ -25,6 +26,7 @@ export async function collectTakeAudioEvidence({
 }: {
 	editor: EditorCore;
 	elementIds: string[];
+	sourceClips?: import("@/timeline/audio-state").AudioCapableElement[];
 	signal: AbortSignal;
 	boundedFrames?: boolean;
 	onProgress?: (seconds: number, total: number) => void;
@@ -36,13 +38,21 @@ export async function collectTakeAudioEvidence({
 		editor.media.getAssets().map((asset) => [asset.id, asset]),
 	);
 	const evidence: TakeAudioEvidence[] = [];
-	const selectedSeconds = scene.tracks.main.elements
-		.filter((e) => elementIds.includes(e.id))
+	const clips = sourceClips ?? scene.tracks.main.elements;
+	const selectedIds = new Set(elementIds);
+	const selectedSeconds = clips
+		.filter((e) => selectedIds.has(e.id))
 		.reduce((sum, e) => sum + e.duration / 120000, 0);
 	const minFrame = boundedFrames ? Math.max(0.01, selectedSeconds / 340000) : 0;
-	for (const clip of scene.tracks.main.elements) {
-		if (clip.type !== "video" || !elementIds.includes(clip.id)) continue;
+	for (const clip of clips) {
+		if (
+			(clip.type !== "video" && clip.type !== "audio") ||
+			!selectedIds.has(clip.id)
+		)
+			continue;
 		signal.throwIfAborted();
+		// Library audio has no media binding; Rust retains unknown coverage.
+		if (!("mediaId" in clip)) continue;
 		const referenced = assets.get(clip.mediaId);
 		const asset = referenced
 			? resolveUnifiedAnglesAudioAsset({ asset: referenced, mediaMap: assets })
@@ -147,12 +157,26 @@ export async function collectTakeAudioEvidence({
 				}
 				signal.throwIfAborted();
 				assertCurrent?.();
-				for (const frame of windowFrames)
+				// Decoded PCM (including cached windows) may include a padded final
+				// sample. Keep evidence inside the requested clock interval before
+				// joining windows, so padding cannot overlap the following window.
+				const windowDuration = (end - start) / rate;
+				for (const frame of windowFrames) {
+					const frameStart = Math.max(0, Math.min(frame.start, windowDuration));
+					const frameEnd = Math.max(0, Math.min(frame.end, windowDuration));
+					if (frameEnd <= frameStart) continue;
+					const translatedStart =
+						frameStart + (start - timing.trimStart) / rate;
+					const translatedEnd = frameEnd + (start - timing.trimStart) / rate;
+					// Sub-sample padding can collapse to one clock value after adding
+					// a long timeline offset, even when its local endpoints differ.
+					if (translatedEnd <= translatedStart) continue;
 					frames.push({
 						...frame,
-						start: frame.start + (start - timing.trimStart) / rate,
-						end: frame.end + (start - timing.trimStart) / rate,
+						start: translatedStart,
+						end: translatedEnd,
 					});
+				}
 				onProgress?.((end - timing.trimStart) / rate, timing.duration);
 			}
 		}

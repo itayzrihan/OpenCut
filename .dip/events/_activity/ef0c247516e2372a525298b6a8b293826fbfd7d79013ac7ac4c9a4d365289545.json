@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ef0c247516e2372a525298b6a8b293826fbfd7d79013ac7ac4c9a4d365289545",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:06:18.493Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_export.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/operations/classic_settings.rs",
+          "classic/apps/web/src/project/types.ts",
+          "classic/apps/web/src/export/index.ts",
+          "classic/apps/web/src/core/managers/commands.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "30a7aeea-2914-4903-908f-50d529f6801d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:06:18.496Z",
+  "parents": [],
+  "branch": "main"
+}

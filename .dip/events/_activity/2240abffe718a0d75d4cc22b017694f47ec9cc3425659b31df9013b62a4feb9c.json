@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2240abffe718a0d75d4cc22b017694f47ec9cc3425659b31df9013b62a4feb9c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:34:40.182Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/evaluate-podcast-shorts.ts');p.write_text(p.read_text().replace('elapsedMs:Date.now()-start','elapsedMs:replay?0:Date.now()-start'))\nPY\nbun run .dip/tools/evaluate-podcast-shorts.ts --replay > .local/podcast-editorial-upgrade/replay-final.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-77d11647-1af5-45a4-a6d2-9d2453a7bd6b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:34:40.953Z",
+  "parents": [],
+  "branch": "main"
+}

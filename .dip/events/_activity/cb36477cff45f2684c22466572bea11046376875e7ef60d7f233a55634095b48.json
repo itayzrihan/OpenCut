@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb36477cff45f2684c22466572bea11046376875e7ef60d7f233a55634095b48",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:45:25.109Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/itay-yarden-podcast-2026-10-19/verify.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3a390e41-3d2c-471a-a5ef-70416dee895f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:45:25.112Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d86b901d89330539d6061d569a58ec213081481615cd39a1bdab7e76d9bdd591",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:24:04.694Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n '^\\s*read\\(|^\\s*status\\(' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '285,340p' classic/apps/web/src/core/canonical-classic-session.ts; tail -n 10 .local/podcast-editorial-upgrade/provider.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-91787cd1-c779-4d1f-9f54-79b17c2ff045"
+      },
+      {
+        "at": "2026-10-19T16:24:04.789Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n '^\\s*read\\(|^\\s*status\\(' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '285,340p' classic/apps/web/src/core/canonical-classic-session.ts; tail -n 10 .local/podcast-editorial-upgrade/provider.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-91787cd1-c779-4d1f-9f54-79b17c2ff045"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:24:05.400Z",
+  "parents": [],
+  "branch": "main"
+}

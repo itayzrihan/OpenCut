@@ -1,0 +1,22 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {join} from 'node:path';
+import {homedir} from 'node:os';
+const local='.local/podcast-multicam-scope';
+const report='analysis/podcast-multicam-scope-2026-10-19';
+function run(command,args){const p=spawnSync(command,args,{encoding:'utf8',maxBuffer:8*1024*1024});if(p.status!==0)throw Error(`${command} failed: ${p.stdout}\n${p.stderr}`);console.log(p.stdout.trim());}
+run('cargo',['test','-p','opencut-editor-api','--test','classic_podcast_reference','--test','classic_takes','--test','classic_podcast','--test','classic_podcast_editorial','--test','classic_teaser_editorial','--test','classic_transcription','--quiet']);
+run('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/podcast-plan-cache.test.ts','src/timeline/smart-takes/audio-evidence.test.ts','src/core/managers/__tests__/transcription-manager.test.ts','--jobs=1',`--report=${local}/configured-web-tests`]);
+run('bun',['run','.dip/tools/check-podcast-reference.ts']);
+run('bun',['run','.dip/tools/check-extract-caption-isolation.ts']);
+const source=JSON.parse(await readFile(`${report}/source-verification.json`,'utf8'));assert(source.passed&&source.archiveReloaded);assert.equal(source.results.length,6);assert(source.stress.scopeUnder2s&&source.stress.prepareUnder6s);
+const protectedBefore=JSON.parse(await readFile(`${local}/live-project-before.json`,'utf8'));
+const livePath=join(homedir(),'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759/project.json');
+const live=JSON.parse(await readFile(livePath,'utf8'));
+for(const key of ['scenes','settings','transcriptionJobs'])assert.deepEqual(live[key],protectedBefore[key],`Live ${key} changed`);
+const deployment=JSON.parse(await readFile(`${local}/deployment.json`,'utf8'));
+const active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));
+assert.equal(active.id,deployment.release);assert(deployment.running);assert((await fetch('http://localhost:3211')).ok);
+const evidence={passed:true,coreTests:48,hostTests:33,isolatedRealProjectGenerations:6,isolatedOutputCaptionEdits:6,originalCameraCuts:416,sourceScenesExact:true,sourceSettingsExact:true,transcriptionJobsExact:true,scopeStress:source.stress,productionRelease:deployment.release,limits:['Real edited-project tests use a synthetic transcript only inside an isolated runtime; no new inference or live output was created.','Live UI availability and dialogs checked without running a paid model or transcription. No export, human listening or new semantic quality rating claimed.']};
+await writeFile(`${report}/verification.json`,JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence));

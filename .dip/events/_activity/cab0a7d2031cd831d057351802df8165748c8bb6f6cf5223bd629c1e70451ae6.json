@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cab0a7d2031cd831d057351802df8165748c8bb6f6cf5223bd629c1e70451ae6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:14:44.837Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-podcast-lifecycle.test.ts <<'EOF'\n// Isolated host lifecycle regression with the real task, no live editor/provider.\n/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- editor doubles. */\nimport {afterEach,expect,mock,test} from 'bun:test';\nimport type {EditorCore} from '../../classic/apps/web/src/core';\nimport {getPodcastTask} from '../../classic/apps/web/src/ai/podcast-task';\nimport {podcastPlanCacheKey} from '../../classic/apps/web/src/ai/podcast-plan-cache';\nconst original={fetch:globalThis.fetch,window:globalThis.window,storage:globalThis.localStorage};\nafterEach(()=>{globalThis.fetch=original.fetch;globalThis.window=original.window;globalThis.localStorage=original.storage;});\nfor(const mode of ['highlights','chronological'] as const){\n test(`${mode} ignores legacy final proposal, saves new scenes and consumes only draft artifacts`,async()=>{\n const data=new Map<string,string>();const storage={getItem:(k:string)=>data.get(k)??null,setItem:(k:string,v:string)=>{data.set(k,v);},removeItem:(k:string)=>{data.delete(k);}};\n globalThis.localStorage=storage as Storage;globalThis.window=Object.assign(new EventTarget(),{__opencutAccountId:'account'}) as any;\n globalThis.fetch=mock(async()=>Response.json({models:[{id:'test'}]})) as any;\n const words=Array.from({length:10},(_,id)=>({id,sourceIndex:id,clipId:'clip',text:`word${id}`,start:id*360000,end:id*360000+120000}));\n const options={mode,minSeconds:20,maxSeconds:90,maxOutputs:3};\n const key=await podcastPlanCacheKey({account:'account',projectId:'project',sceneId:'source',words,options,sourceFingerprint:'same-source'});\n const video={title:'Specific complete insight',openingHook:'Actual words',endingHook:'Complete conclusion',confidence:.9,alternatives:[{label:'Reviewed',reason:'Specific example',parts:[{firstWord:0,lastWord:9}]}]};\n storage.setItem(key,JSON.stringify({videos:[{...video,title:'Unreviewed stale final'}]}));\n storage.setItem(`${key}:editorial-v1`,JSON.stringify({versio",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-61f150eb-a90b-4fa9-b4f4-dce48e885b33"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:14:45.746Z",
+  "parents": [],
+  "branch": "main"
+}

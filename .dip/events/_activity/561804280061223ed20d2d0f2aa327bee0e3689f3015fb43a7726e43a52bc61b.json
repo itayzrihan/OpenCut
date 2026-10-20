@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "561804280061223ed20d2d0f2aa327bee0e3689f3015fb43a7726e43a52bc61b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:59:30.556Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 10 .local/seven-smart-2026-10-20/pre-delivery-web.log; tail -n 7 .local/seven-smart-2026-10-20/build-audio-final.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-690e0030-f498-40f3-84be-7873291e4140"
+      },
+      {
+        "at": "2026-10-20T00:59:30.736Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 10 .local/seven-smart-2026-10-20/pre-delivery-web.log; tail -n 7 .local/seven-smart-2026-10-20/build-audio-final.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-690e0030-f498-40f3-84be-7873291e4140"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:59:31.225Z",
+  "parents": [],
+  "branch": "main"
+}

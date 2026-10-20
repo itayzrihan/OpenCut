@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bfbace965694f432f835861422809a08e23d59c44ef7965bfb2abe27a9d071c1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:10:42.052Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/services/renderer/nodes/root-node.ts; cat classic/apps/web/src/services/renderer/nodes/image-node.ts; head -50 classic/apps/web/src/services/renderer/nodes/visual-node.ts; sed -n '420,480p' classic/apps/web/src/export/__tests__/streaming-fixture.ts; sed -n '85,130p' classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ceeefd79-280b-45cd-b316-c1fa271efa31"
+      },
+      {
+        "at": "2026-10-19T11:10:42.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/services/renderer/nodes/root-node.ts; cat classic/apps/web/src/services/renderer/nodes/image-node.ts; head -50 classic/apps/web/src/services/renderer/nodes/visual-node.ts; sed -n '420,480p' classic/apps/web/src/export/__tests__/streaming-fixture.ts; sed -n '85,130p' classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-ceeefd79-280b-45cd-b316-c1fa271efa31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:10:42.734Z",
+  "parents": [],
+  "branch": "main"
+}

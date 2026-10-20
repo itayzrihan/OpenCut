@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a4d486c65e1c7b4f82b940bf3c60f05d6f5f842af847f6d1829e74b95b6a40d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:36:50.123Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; sed -n '320,480p' crates/editor-api/src/operations/classic_takes/quality.rs; sed -n '45,95p' crates/editor-api/src/operations/classic_takes.rs; sed -n '480,530p' crates/editor-api/src/operations/classic_takes.rs; rg -n 'captionSource|sourceId|transcription' crates/editor-api/src/operations/classic_multicam*.rs | head -n 25; cat classic/apps/web/src/ai/podcast-types.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cf3f93b9-1f82-4949-a2e1-e2ce7197b44e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:36:50.147Z",
+  "parents": [],
+  "branch": "main"
+}

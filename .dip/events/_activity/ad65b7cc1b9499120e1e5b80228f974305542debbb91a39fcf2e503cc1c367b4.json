@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad65b7cc1b9499120e1e5b80228f974305542debbb91a39fcf2e503cc1c367b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:52:25.766Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .dip/config.json; sed -n '1,220p' .dip/tools/check-seven-scenes.ts; sed -n '1,120p' .dip/tools/verify-podcast-editorial.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7567c3e9-8db6-4f79-929c-aa1bb2b4bdb9"
+      },
+      {
+        "at": "2026-10-20T00:52:25.888Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .dip/config.json; sed -n '1,220p' .dip/tools/check-seven-scenes.ts; sed -n '1,120p' .dip/tools/verify-podcast-editorial.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7567c3e9-8db6-4f79-929c-aa1bb2b4bdb9"
+      },
+      {
+        "at": "2026-10-20T00:52:25.889Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b07b4d30-d6c1-416b-9a2b-9b8d01901ca6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:52:26.215Z",
+  "parents": [],
+  "branch": "main"
+}

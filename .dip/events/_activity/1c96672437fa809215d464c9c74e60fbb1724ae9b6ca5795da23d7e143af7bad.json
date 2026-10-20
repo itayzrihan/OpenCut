@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1c96672437fa809215d464c9c74e60fbb1724ae9b6ca5795da23d7e143af7bad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:41:09.825Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/podcast-sync-precision-2026-10-19/verification.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cec04aa3-bd54-40c9-a195-1b5642e0b4d2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:41:09.828Z",
+  "parents": [],
+  "branch": "main"
+}

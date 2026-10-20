@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71af78de3ff3375ce686dc945708aa954de7e97701a6f18d802b7b4c2e540caa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:13:03.378Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/activate.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ae9c8e66-4d8e-42e3-8c32-3927ec5dd358"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:13:03.380Z",
+  "parents": [],
+  "branch": "main"
+}

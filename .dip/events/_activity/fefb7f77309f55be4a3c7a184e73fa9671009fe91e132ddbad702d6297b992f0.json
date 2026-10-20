@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fefb7f77309f55be4a3c7a184e73fa9671009fe91e132ddbad702d6297b992f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:24:35.118Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nc=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\nfor k,v in c.items():\n if k.endswith(':editorial-v1'):\n  r=json.loads(v)['responses']\n  for key,d in r.items():\n   if key.startswith('critique:'):\n    print(key,json.dumps([{k:v for k,v in x.items() if k!='evidence'} for x in d.get('reviews',[])],ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4771d897-5deb-440e-957e-a42e979e1f2f"
+      },
+      {
+        "at": "2026-10-19T16:24:35.224Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nc=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\nfor k,v in c.items():\n if k.endswith(':editorial-v1'):\n  r=json.loads(v)['responses']\n  for key,d in r.items():\n   if key.startswith('critique:'):\n    print(key,json.dumps([{k:v for k,v in x.items() if k!='evidence'} for x in d.get('reviews',[])],ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-4771d897-5deb-440e-957e-a42e979e1f2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:24:35.447Z",
+  "parents": [],
+  "branch": "main"
+}

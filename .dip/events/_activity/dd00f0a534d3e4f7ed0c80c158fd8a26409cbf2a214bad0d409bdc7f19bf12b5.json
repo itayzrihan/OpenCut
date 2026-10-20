@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dd00f0a534d3e4f7ed0c80c158fd8a26409cbf2a214bad0d409bdc7f19bf12b5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:39:34.720Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/_global-error/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/feedback/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/_not-found/page.js.nft.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c2fa882c-d15b-4f80-a55f-1e25f06a43d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:39:34.722Z",
+  "parents": [],
+  "branch": "main"
+}

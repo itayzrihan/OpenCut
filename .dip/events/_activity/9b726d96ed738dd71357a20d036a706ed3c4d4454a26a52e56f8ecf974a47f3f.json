@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b726d96ed738dd71357a20d036a706ed3c4d4454a26a52e56f8ecf974a47f3f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:34:18.242Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/src/precision.rs",
+          "classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx",
+          "classic/apps/web/src/podcast-sync/energy-reader.test.ts",
+          "crates/editor-api/tests/classic_multicam.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6710cbb2-411e-402e-a07a-e374b8ba4953"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:34:18.268Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b6c3f0234a509609a4b6c534788224e833240a8a3bae2e46b1d7845e158e0e3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:06:11.390Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/bridge-tests/src__ai____tests____timeline-tools.test.ts.log",
+          ".local/seven-smart-2026-10-20/bridge-tests/summary.json",
+          ".local/seven-smart-2026-10-20/bridge-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d81d4fe7-984f-44ee-ba27-f437e6f083c0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:06:11.391Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c37d101b9e415d578fed387acc09a9bee53409004ef664b582d464d11d0cebc1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:00:41.136Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+          "crates/editor-api/src/operations/classic_takes/podcast/reference.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "662314ac-94f6-4659-86b2-4703a392a301"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:00:41.137Z",
+  "parents": [],
+  "branch": "main"
+}

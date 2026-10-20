@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "82e692ee-373b-46f5-8a83-6941d56b7598",
+  "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+  "type": "task.update",
+  "payload": {
+    "title": "Smart source resolution and compact high-quality 4K export",
+    "acceptance": [
+      "Canonical export settings and source-resolution plan handle mixed media without changing composition",
+      "Efficient high-quality MP4 encoder option with explicit unsupported fallback and visible size/quality information",
+      "Export native source detail at chosen output size while preserving nested intro layout",
+      "Tests cover capability state, resolution policy, rendering scale and encoder selection; local production verified"
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src/export",
+      "classic/apps/web/src/services/renderer",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/components/editor/export-button.tsx",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:03:53.145Z",
+  "parents": [
+    "8da43a27-762e-45f7-8ad5-4bd5f7e73137"
+  ],
+  "branch": "main"
+}

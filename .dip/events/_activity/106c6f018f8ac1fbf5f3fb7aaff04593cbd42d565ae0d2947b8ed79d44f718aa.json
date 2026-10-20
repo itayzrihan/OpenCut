@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "106c6f018f8ac1fbf5f3fb7aaff04593cbd42d565ae0d2947b8ed79d44f718aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:12:14.000Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/sitemap.xml.body",
+          "classic/apps/web/.next-local-production/server/app/sitemap.xml.meta",
+          "classic/apps/web/.next-local-production/export-detail.json",
+          "classic/apps/web/.next-local-production/server/pages",
+          "classic/apps/web/.next-local-production/server/pages/404.html",
+          "classic/apps/web/.next-local-production/server/pages/500.html",
+          "classic/apps/web/.next-local-production/export/_next/gEf1401TrzlyK3JJSvQqT",
+          "classic/apps/web/.next-local-production/export/_next",
+          "classic/apps/web/.next-local-production/export",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e385fc4e-b8af-48a7-8d76-a7cd40cd3c15"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:12:14.001Z",
+  "parents": [],
+  "branch": "main"
+}

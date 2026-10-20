@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f68b8740cfb8346614e437eba059310466457fe5ecef17c43fbbf79f11d4c65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:36:32.012Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/podcast-sync/precision.integration.test.ts --jobs=1 --timeout=120000 > /tmp/podcast-wasm-precision.log 2>&1",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-513bba6c-53c5-4848-9cdd-294b23d1eee0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:36:32.672Z",
+  "parents": [],
+  "branch": "main"
+}

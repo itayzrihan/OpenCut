@@ -1,0 +1,18 @@
+{
+  "release": "2026-10-19T15-39-37-761Z-d19882d9",
+  "activeLocalPort": 3211,
+  "episode4Unchanged": true,
+  "episode4Sha256": "25d55ffaf2abaf6a0da91981edd0f5177c3bfcf616f9b760c7c0883afead9cba",
+  "tests": {
+    "podcastRust": 25,
+    "canonicalMulticam": 14,
+    "canonicalRemove": 8,
+    "web": 10
+  },
+  "realSourceEvidence": "real-source-results.json",
+  "limits": [
+    "No exhaustive visual lip-sync verification; fine waveform evidence can be rejected for weak or ambiguous sound.",
+    "Clock drift is detected/rejected, not time-stretched.",
+    "No full automatic edit was run on the new episode."
+  ]
+}

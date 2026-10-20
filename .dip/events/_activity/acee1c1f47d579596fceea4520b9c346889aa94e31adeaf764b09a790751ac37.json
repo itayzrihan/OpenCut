@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "acee1c1f47d579596fceea4520b9c346889aa94e31adeaf764b09a790751ac37",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:13:54.761Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/activate.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4ac7ef0d-c03a-4a62-ada7-0f11c5edc6e5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:13:54.763Z",
+  "parents": [],
+  "branch": "main"
+}

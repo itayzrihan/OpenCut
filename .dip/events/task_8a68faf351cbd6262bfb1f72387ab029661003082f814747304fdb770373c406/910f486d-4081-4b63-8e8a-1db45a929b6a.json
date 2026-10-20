@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "910f486d-4081-4b63-8e8a-1db45a929b6a",
+  "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Measure source audio offsets at several positions and inspect current trims",
+          "status": "completed"
+        },
+        {
+          "step": "Apply measured correction to microphone timing only",
+          "status": "completed"
+        },
+        {
+          "step": "Verify saved source alignment and preview",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:37:05.038Z",
+  "parents": [
+    "be0a5bac-bf65-486a-a52a-8a4a9314eef5"
+  ],
+  "branch": "main"
+}

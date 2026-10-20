@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abac7dbef6f0ed495a9149f65fccfea053b3ebd6edb27fe40d47982068b50b10",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:43:35.784Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 .local/seven-smart-2026-10-20/compaction-probe-after.log; tail -1 .local/seven-smart-2026-10-20/compaction-probe-after.log; node classic/scripts/test-web.mjs src/timeline/smart-takes/audio-evidence.test.ts src/core/managers/__tests__/transcription-manager.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/audio-final-tests > .local/seven-smart-2026-10-20/audio-final-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9973a702-2dd6-4dbf-8b1e-0916eeab451e"
+      },
+      {
+        "at": "2026-10-20T00:43:36.058Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 .local/seven-smart-2026-10-20/compaction-probe-after.log; tail -1 .local/seven-smart-2026-10-20/compaction-probe-after.log; node classic/scripts/test-web.mjs src/timeline/smart-takes/audio-evidence.test.ts src/core/managers/__tests__/transcription-manager.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/audio-final-tests > .local/seven-smart-2026-10-20/audio-final-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9973a702-2dd6-4dbf-8b1e-0916eeab451e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:43:36.770Z",
+  "parents": [],
+  "branch": "main"
+}

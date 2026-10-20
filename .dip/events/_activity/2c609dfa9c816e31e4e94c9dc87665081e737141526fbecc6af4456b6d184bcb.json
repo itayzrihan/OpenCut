@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c609dfa9c816e31e4e94c9dc87665081e737141526fbecc6af4456b6d184bcb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:15:21.035Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/configured-verification.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8cafb488-76c7-4d60-a591-7f7af52550d8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:15:21.037Z",
+  "parents": [],
+  "branch": "main"
+}

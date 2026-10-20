@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "03ed270e9c21279cf79643dbd90cad0f9be8b7a3ef26d89d01bb6d4f5025527d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:55:21.686Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/effects/definitions/directional-blur.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-7a5d9f51-1c86-41bc-9569-e2ed2eb10bf9"
+      },
+      {
+        "at": "2026-10-19T09:55:21.775Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/effects/definitions/directional-blur.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-7a5d9f51-1c86-41bc-9569-e2ed2eb10bf9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:55:22.123Z",
+  "parents": [],
+  "branch": "main"
+}

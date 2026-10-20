@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "760902dc350d2b38767ae824735ae4961706134323d3219f3dab2defba75117b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:25:46.236Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=json.loads(Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/847030af-0e59-4e41-b702-5d35549f3cd5/project.json').read_text())\ns=next(s for s in p['scenes'] if s['id']=='a51a420a-21b4-47ab-ac37-fcc602956361')\nprint(json.dumps({'mainVideo':[{k:e.get(k) for k in ['id','type','muted']}|{'volume':e.get('params',{}).get('volume')} for e in s['tracks']['main']['elements']], 'audioTracks':len(s['tracks'].get('audio',[]))}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-adaee7cb-84ba-497a-9b32-c3af397492d7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:25:46.539Z",
+  "parents": [],
+  "branch": "main"
+}

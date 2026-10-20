@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4aa6e83e27d2ac89d2b63f281267200e57e709b24807e5c35cc87e5f2256dec4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:17:15.740Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node_modules/.bin/eslint apps/web/src/ai/__tests__/podcast-plan.test.ts --rule 'opencut/prefer-object-params: off'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d5bfbf95-cedd-4fce-a1cf-5f055d3dab16"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:17:16.060Z",
+  "parents": [],
+  "branch": "main"
+}

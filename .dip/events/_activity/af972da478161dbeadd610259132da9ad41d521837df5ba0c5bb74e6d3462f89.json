@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af972da478161dbeadd610259132da9ad41d521837df5ba0c5bb74e6d3462f89",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:43:22.961Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 .local/seven-smart-2026-10-20/build-compaction-final.log; date -u; python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/seven-smart-2026-10-20/probe-source.ts');s=p.read_text().replace(\"await writeFile('.local/seven-smart-2026-10-20/prepared-before-fix.json',JSON.stringify(source));\", \"const old=JSON.parse(await readFile('.local/seven-smart-2026-10-20/prepared-before-fix.json','utf8'));\\nif(JSON.stringify(old.words)!==JSON.stringify(source.words)||old.sourceFingerprint!==source.sourceFingerprint)throw Error('Live planning evidence changed');\\nconsole.log('Planning words and source fingerprint unchanged; saved journal binding remains valid');\\nawait writeFile('.local/seven-smart-2026-10-20/prepared-after-fix.json',JSON.stringify(source));\")\np.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a5422b96-8be1-4c65-8464-6d97bdb11f94"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:43:23.041Z",
+  "parents": [],
+  "branch": "main"
+}

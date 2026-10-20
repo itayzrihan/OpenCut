@@ -1,3 +1,5 @@
+mod precision;
+pub use precision::*;
 mod coverage;
 pub use coverage::*;
 mod hard_limiter;

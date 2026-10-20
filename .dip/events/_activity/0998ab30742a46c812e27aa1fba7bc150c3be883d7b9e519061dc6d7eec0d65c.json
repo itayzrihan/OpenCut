@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0998ab30742a46c812e27aa1fba7bc150c3be883d7b9e519061dc6d7eec0d65c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:40:45.006Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'cache|resume' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts | head -18; sed -n '100,155p' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts; sed -n '1,45p' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-dafb0aa4-948a-4b6d-befe-e26ca5fe72b1"
+      },
+      {
+        "at": "2026-10-20T00:40:45.096Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'cache|resume' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts | head -18; sed -n '100,155p' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts; sed -n '1,45p' classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-dafb0aa4-948a-4b6d-befe-e26ca5fe72b1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:40:45.957Z",
+  "parents": [],
+  "branch": "main"
+}

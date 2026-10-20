@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fd97dce9973397f6f33b1ee517744fd3312319d3a6d2223ececc5a5722b669e8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:01:03.822Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/mcp-client-pids.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "570ac639-7bcc-43c5-8030-9fa24f989da4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:01:03.824Z",
+  "parents": [],
+  "branch": "main"
+}

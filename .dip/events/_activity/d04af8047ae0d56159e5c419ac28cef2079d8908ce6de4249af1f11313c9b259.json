@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d04af8047ae0d56159e5c419ac28cef2079d8908ce6de4249af1f11313c9b259",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:52:30.638Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/classic_podcast_reference.rs');s=p.read_text().replace('>= 20 * 120000','>= 198 * 12000',1);p.write_text(s)\np=Path('crates/editor-api/src/operations/classic_takes/podcast.rs');s=p.read_text().replace('struct ScopeSource {\\n    revision: u64,\\n    reference_regions: Vec<reference::Region>,\\n}','struct ScopeSource {\\n    revision: u64,\\n    reference_regions: Vec<reference::Region>,\\n    has_transcript: bool,\\n    resume_job_id: Option<String>,\\n}')\na=s.index('        Ok(OperationSuccess::new(ScopeSource');b=s.index('\\n    }})?;',a) if '\\n    }})?;' in s[a:] else -1\n# rustfmt expanded the scope handler; replace only its small output construction.\nold='''                Ok(OperationSuccess::new(ScopeSource {\n                    revision: store.document.revision,\n                    reference_regions: regions,\n                }))'''\nnew='''                let mut has_transcript=all(&scene[\"tracks\"]).flat_map(|t|arr(&t[\"captionSource\"][\"words\"])).any(|w|word_times(w).is_ok_and(|(a,b)|regions.iter().any(|r|a>=r.start&&b<=r.end)));\n                let classic=store.document.project.as_ref().unwrap().classic.as_ref().unwrap();\n                let mut resume_job_id=None;\n                for job in arr(&classic.document[\"transcriptionJobs\"]).iter().filter(|j|j[\"sceneId\"]==input.scene_id && matches!(j[\"status\"].as_str(),Some(\"running\"|\"paused\"))) {\n                    let job_regions=reference::regions(&job[\"sourceTracks\"],&[]).unwrap_or_default();\n                    let same=job_regions.len()==regions.len()&&job_regions.iter().zip(&regions).all(|(a,b)|a.start==b.start&&a.end==b.end);\n                    let missing=regions.iter().any(|r|{\n                        let from=(r.start/(60*120000)) as usize;let to=((r.end-1)/(60*120000)) as usize;\n                        (from..=to).any(|i|job_regions.iter().any(|j|i as i64*60*120000<j.end&&(i as i64+1)*60*120000>j.start)&&job[\"chunks\"].get(i.to_string()).is",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e80d3ef4-5879-4fe8-bb51-39b55198be56"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:52:31.142Z",
+  "parents": [],
+  "branch": "main"
+}

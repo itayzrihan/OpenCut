@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b93e66472ef4ac65311e052560d10b748e20135915cf4cb0fab5289f0e749c0f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:05:45.231Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/transcription-progress.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a8e71b6e-f4a5-4983-89ef-04a7dd8ff31b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:05:45.233Z",
+  "parents": [],
+  "branch": "main"
+}

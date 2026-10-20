@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aae75ef5-48fe-430e-82d4-987954774b41",
+  "taskId": "task_ea653cc362f12e216edf3fac35518a45b4f5fc39ec0d601a57e849a4a9126c6c",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "discussion",
+    "resolution": {
+      "outcome": "answered",
+      "summary": "Inspected actual user export with ffprobe:2693030309bytes,1748.81s,H264 High1920x1080@30fps,video12.007Mbps,AAC309kbps. Both camera sources3840x2160@25fps~56.95Mbps. Saved project1080p30; renderer exports exact project canvas. Very_high maps Mediabunny factor4×3Mbps=12Mbps at1080p, matching actual file. Thus high preset was applied but source-resolution detail discarded and source cadence converted. Diagnosis only; no project/encoder changes or new export.",
+      "replacedBy": []
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:02:04.727Z",
+  "parents": [
+    "7f6ffce0-38f7-4202-95b3-33d33f82835c"
+  ],
+  "branch": "main"
+}

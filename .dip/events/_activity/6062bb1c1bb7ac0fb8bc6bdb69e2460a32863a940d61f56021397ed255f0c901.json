@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6062bb1c1bb7ac0fb8bc6bdb69e2460a32863a940d61f56021397ed255f0c901",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:34:03.588Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '680,830p' classic/apps/web/src/core/managers/commands.ts; sed -n '680,770p' classic/apps/web/src/core/canonical-classic-session.ts; rg -n 'invoke.*Read|read.*Control|canonical.*invoke|invokeCanonical' classic/apps/web/src/core/managers/commands.ts; sed -n '1,100p' crates/editor-api/src/operations/classic_podcast_finish.rs; rg -n 'get_snapshot|read_classic|classic_target' crates/editor-api/src/operations/classic_*.rs | head -25; sed -n '1,100p' classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts; rg -n 'PodcastSyncDialog' classic/apps/web/src -g '*.tsx'",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-14a59132-9354-4a75-8d1b-8ba01cbaa0d7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:34:03.734Z",
+  "parents": [],
+  "branch": "main"
+}

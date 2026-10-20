@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4f466244398644e97eafa83d6fbe37a3b63b037b296462c881c550e1e38cdd94",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:40:57.627Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/ai/podcast-plan.ts';s=open(p).read().replace('\\tcache,\\n}: {','\\tcache,\\n\\tonProviderRequest,\\n\\tonResume,\\n}: {',1).replace('\\tplanRetry?: (failure:', '\\tonProviderRequest?: () => void;\\n\\tonResume?: (savedResponses: number) => void;\\n\\tplanRetry?: (failure:',1).replace('\\t\\t\\t\\t\\tsend: () =>\\n\\t\\t\\t\\t\\t\\tfetch(', '\\t\\t\\t\\t\\tsend: () => {\\n\\t\\t\\t\\t\\t\\tonProviderRequest?.();\\n\\t\\t\\t\\t\\t\\treturn fetch(',1).replace('\\t\\t\\t\\t\\t\\t}),\\n\\t\\t\\t\\t});','\\t\\t\\t\\t\\t\\t});\\n\\t\\t\\t\\t\\t},\\n\\t\\t\\t\\t});',1).replace('\\t\\t\\tonStage,\\n\\t\\t\\tcache,','\\t\\t\\tonStage,\\n\\t\\t\\tonResume,\\n\\t\\t\\tcache,',1);open(p,'w').write(s)\np='classic/apps/web/src/ai/podcast-editorial.ts';s=open(p).read().replace('\\tcache,\\n}: {','\\tcache,\\n\\tonResume,\\n}: {',1).replace('\\tonStage: (stage: string) => void;','\\tonStage: (stage: string) => void;\\n\\tonResume?: (savedResponses: number) => void;',1).replace('\\t// Bound a malformed host/runtime conversation','\\tif (Object.keys(responses).length) onResume?.(Object.keys(responses).length);\\n\\t// Bound a malformed host/runtime conversation',1);open(p,'w').write(s)\np='classic/apps/web/src/ai/podcast-task.ts';s=open(p).read().replace('\\trequestId?: string;','\\treusedTranscript?: boolean;\\n\\tresumedAnalysis?: boolean;\\n\\tanalysisRequests?: number;\\n\\trequestId?: string;',1).replace('\\t\\t\\tstage: \"Preparing episode\",','\\t\\t\\tstage: \"Preparing episode\",\\n\\t\\t\\treusedTranscript: reference.hasTranscript,\\n\\t\\t\\tresumedAnalysis: false,\\n\\t\\t\\tanalysisRequests: 0,',1).replace('\\t\\t\\tsource,\\n\\t\\t\\toptions,\\n\\t\\t\\tsignal: controller.signal,','\\t\\t\\tsource,\\n\\t\\t\\toptions,\\n\\t\\t\\tsignal: controller.signal,\\n\\t\\t\\tonResume: () => this.update({resumedAnalysis:true}),\\n\\t\\t\\tonProviderRequest: () => this.update({analysisRequests:(this.state.analysisRequests??0)+1}),',1);open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/ai/podcast-plan.ts classic/apps/web/src/ai/podcast-editorial.ts classic/apps/web/src",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-073f7e3d-fd76-4d49-aa93-bfd2947b9d12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:40:57.983Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ecf15c9d82d8783bcf19301879bd28a6f4dc4aa9d7dfbea49e153ffdb62a6541",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:23:27.602Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 10 .local/podcast-editorial-upgrade/provider.log; ps -ax -o pid,etime,command | rg '[b]un run .dip/tools/evaluate-podcast-shorts.ts'; ls -lh .local/podcast-editorial-upgrade/provider-checkpoints.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e8294aa9-bd2b-40d7-a0fb-f0528a4b3f92"
+      },
+      {
+        "at": "2026-10-19T16:23:27.715Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 10 .local/podcast-editorial-upgrade/provider.log; ps -ax -o pid,etime,command | rg '[b]un run .dip/tools/evaluate-podcast-shorts.ts'; ls -lh .local/podcast-editorial-upgrade/provider-checkpoints.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e8294aa9-bd2b-40d7-a0fb-f0528a4b3f92"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:23:28.343Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "079b8d7632b6cf7abe9c1a72bdd3acbab6490d6207fe885ee66f1f5d8430daad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T23:59:40.428Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/podcast-task.ts",
+          "classic/apps/web/src/ai/timeline-tools.ts",
+          "classic/apps/web/src/mcp/classic-mcp-bridge.tsx",
+          "classic/apps/web/src/ai/tool-wire-names.ts",
+          "classic/rust/crates/agent/src/agent.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b35798a0-bd40-4d1a-99fe-19764f884d1a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T23:59:40.432Z",
+  "parents": [],
+  "branch": "main"
+}

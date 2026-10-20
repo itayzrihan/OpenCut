@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "51f68a2c48c59ea93347d7e792509aeac4e4f37a2438ef1a5ee525aeb5c227b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:56:39.125Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile}from'node:fs/promises';const {audioInputs}=JSON.parse(await readFile('.local/seven-smart-2026-10-20/prepared-before-fix.json'));const clips=audioInputs.map(x=>x.clip);const size=Math.round(16000*Math.max(.01,clips.reduce((s,c)=>s+c.duration/120000,0)/340000)),span=Math.floor(480000/size)*size/16000;\nfor(const c of clips){let prev=0,count=0,bad=[];const trim=c.trimStart/120000,d=c.duration/120000;for(let start=trim;start<trim+d;start+=span){const end=Math.min(trim+d,start+span),duration=end-start;const finalSample=Math.ceil(duration*16000);for(let sample=0;sample<finalSample;sample+=size){const a=Math.max(0,Math.min(sample/16000,duration)),b=Math.max(0,Math.min(Math.min(finalSample,sample+size)/16000,duration));if(b<=a)continue;const from=a+start-trim,to=b+start-trim;if(to<=from||from+1e-6<prev||to>d+.001)bad.push({index:count,from,to,prev,localFrom:a,localTo:b});prev=to;count++;}}console.log({clip:c.id,count,badCount:bad.length,examples:bad.slice(0,2)});}\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-39fa8945-da55-4035-8d44-156fdfffcfc4"
+      },
+      {
+        "at": "2026-10-20T00:56:39.309Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile}from'node:fs/promises';const {audioInputs}=JSON.parse(await readFile('.local/seven-smart-2026-10-20/prepared-before-fix.json'));const clips=audioInputs.map(x=>x.clip);const size=Math.round(16000*Math.max(.01,clips.reduce((s,c)=>s+c.duration/120000,0)/340000)),span=Math.floor(480000/size)*size/16000;\nfor(const c of clips){let prev=0,count=0,bad=[];const trim=c.trimStart/120000,d=c.duration/120000;for(let start=trim;start<trim+d;start+=span){const end=Math.min(trim+d,start+span),duration=end-start;const finalSample=Math.ceil(duration*16000);for(let sample=0;sample<finalSample;sample+=size){const a=Math.max(0,Math.min(sample/16000,duration)),b=Math.max(0,Math.min(Math.min(finalSample,sample+size)/16000,duration));if(b<=a)continue;const from=a+start-trim,to=b+start-trim;if(to<=from||from+1e-6<prev||to>d+.001)bad.push({index:count,from,to,prev,localFrom:a,localTo:b});prev=to;count++;}}console.log({clip:c.id,count,badCount:bad.length,examples:bad.slice(0,2)});}\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-39fa8945-da55-4035-8d44-156fdfffcfc4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:56:39.766Z",
+  "parents": [],
+  "branch": "main"
+}

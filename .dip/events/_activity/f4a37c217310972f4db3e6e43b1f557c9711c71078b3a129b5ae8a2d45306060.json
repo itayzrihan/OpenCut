@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f4a37c217310972f4db3e6e43b1f557c9711c71078b3a129b5ae8a2d45306060",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:06:00.128Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'export type AiEditOperation|reorganize|takes|apply_timeline' classic/apps/web/src/ai/types.ts classic/apps/web/src/ai/edit-plan.ts; rg -n '\"type\": \"apply|apply_timeline_source_v2' .local/episode-teaser-90-2026-10-14 -g '*.json' | head -n 10; rg -n 'snapshot|canonical|native' classic/apps/web/src/mcp/classic-mcp-bridge.tsx | head -n 45",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f8dda309-5680-4f0e-b4eb-691e12632dcb"
+      },
+      {
+        "at": "2026-10-20T01:06:00.254Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'export type AiEditOperation|reorganize|takes|apply_timeline' classic/apps/web/src/ai/types.ts classic/apps/web/src/ai/edit-plan.ts; rg -n '\"type\": \"apply|apply_timeline_source_v2' .local/episode-teaser-90-2026-10-14 -g '*.json' | head -n 10; rg -n 'snapshot|canonical|native' classic/apps/web/src/mcp/classic-mcp-bridge.tsx | head -n 45",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f8dda309-5680-4f0e-b4eb-691e12632dcb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:06:00.950Z",
+  "parents": [],
+  "branch": "main"
+}

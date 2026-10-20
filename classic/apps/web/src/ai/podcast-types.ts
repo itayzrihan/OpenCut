@@ -16,7 +16,17 @@ export interface PodcastVideo {
 	confidence: number;
 	alternatives: TakeAlternative[];
 }
+export interface PodcastReferenceRegion {
+	id: string;
+	start: number;
+	end: number;
+}
 export interface PodcastSource {
+	referenceRegions?: PodcastReferenceRegion[];
+	audioInputs?: {
+		referenceId: string;
+		clip: import("@/timeline/audio-state").AudioCapableElement;
+	}[];
 	revision: number;
 	sourceFingerprint?: string;
 	words: SmartTakeWord[];

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0045e1f5bb0ca1819b6d2a990a5a295e7b528c62c23bd1aadc06aa5aff9d388c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:49:17.678Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check\nrg -n 'pickLocalMedia' classic/apps/web/src -g '*.ts' | head -12\nrg -n 'choose file' classic/apps/web/src -g '*.ts' | head -5\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-84ec0bd0-e41a-4f09-b952-8514ed3082ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:49:18.675Z",
+  "parents": [],
+  "branch": "main"
+}

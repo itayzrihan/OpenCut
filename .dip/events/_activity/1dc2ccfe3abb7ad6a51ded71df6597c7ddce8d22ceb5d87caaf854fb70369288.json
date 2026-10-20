@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1dc2ccfe3abb7ad6a51ded71df6597c7ddce8d22ceb5d87caaf854fb70369288",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T10:03:27.035Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-ca6b8914-ee6a-4fe6-b42e-20edd370e939"
+      },
+      {
+        "at": "2026-10-19T10:03:27.046Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nbase=pathlib.Path('.local/podcast-sources-2026-10-19'); root=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/3bf1516d-a949-46a0-b631-39089691e736')\np=json.load(open(root/'project.json'));b=json.load(open(base/'before-project.json'));scene=lambda d,i:next(s for s in d['scenes'] if s['id']==i)\nassert scene(p,'multicam-scene-1')==scene(b,'multicam-scene-1')\nassert scene(p,'67373943-7826-4246-87d9-b45bb403185f')==scene(b,'67373943-7826-4246-87d9-b45bb403185f')\nassert p['settings']==b['settings']\ns=scene(p,'multicam-scene-2');ts=s['tracks'];a=[t for t in ts['audio'] if t['id'].startswith('multicam')]; assert len(a)==2\nexpected={'51dbd9de-5549-4467-a3d1-40e97f093ef2','afbe0dd0-e4da-4eb8-b581-b659cf3e8e89'}\nassert {t['elements'][0]['mediaId'] for t in a}==expected\nfor t in a:\n e=t['elements'][0];assert e['startTime']==715200 and e['trimStart']==12757200\n for k,v in {'volume':15,'gainDb':-1,'hardLimiterEnabled':True,'hardLimiterCeilingDb':-1,'noiseReduction':100}.items(): assert e['params'][k]==v\nvs=[t for t in ts['overlay'] if t['type']=='video'];assert len(vs)==2 and all(t['muted'] for t in vs)\nassert all(not e['isSourceAudioEnabled'] for t in vs for e in t['elements'])\nassert [len(t['elements']) for t in vs]==[224,224]\nassert all(a['enabled']!=b['enabled'] for a,b in zip(vs[0]['elements'],vs[1]['elements']))\nintro=scene(p,'bf3d6d10-d200-4233-9b43-eba34389d244');assert intro['parallax']['worldWidthFrames']==1\ntexts=[e['params']['content'] for t in intro['tracks']['overlay'] for e in t['elements'] if e['type']=='text'];assert set(texts)=={'פרק 4','המציאות לא זזה'}\nmusic=next(t['elements'][0] for t in ts['audio'] if t['id']=='ep4-intro-music-track');assert music['trimStart']==1204800 and music['duration']==979200\nassets=json.load(open(root/'media/index.json'))\nfor a in assets[-2:]:\n src=base/'template/media'/('intro-background' if a['type']=='image' else 'intro-music')/a[",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-7cc81c08-5602-411f-8f46-be19cab7e481"
+      },
+      {
+        "at": "2026-10-19T10:03:27.209Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nbase=pathlib.Path('.local/podcast-sources-2026-10-19'); root=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/3bf1516d-a949-46a0-b631-39089691e736')\np=json.load(open(root/'project.json'));b=json.load(open(base/'before-project.json'));scene=lambda d,i:next(s for s in d['scenes'] if s['id']==i)\nassert scene(p,'multicam-scene-1')==scene(b,'multicam-scene-1')\nassert scene(p,'67373943-7826-4246-87d9-b45bb403185f')==scene(b,'67373943-7826-4246-87d9-b45bb403185f')\nassert p['settings']==b['settings']\ns=scene(p,'multicam-scene-2');ts=s['tracks'];a=[t for t in ts['audio'] if t['id'].startswith('multicam')]; assert len(a)==2\nexpected={'51dbd9de-5549-4467-a3d1-40e97f093ef2','afbe0dd0-e4da-4eb8-b581-b659cf3e8e89'}\nassert {t['elements'][0]['mediaId'] for t in a}==expected\nfor t in a:\n e=t['elements'][0];assert e['startTime']==715200 and e['trimStart']==12757200\n for k,v in {'volume':15,'gainDb':-1,'hardLimiterEnabled':True,'hardLimiterCeilingDb':-1,'noiseReduction':100}.items(): assert e['params'][k]==v\nvs=[t for t in ts['overlay'] if t['type']=='video'];assert len(vs)==2 and all(t['muted'] for t in vs)\nassert all(not e['isSourceAudioEnabled'] for t in vs for e in t['elements'])\nassert [len(t['elements']) for t in vs]==[224,224]\nassert all(a['enabled']!=b['enabled'] for a,b in zip(vs[0]['elements'],vs[1]['elements']))\nintro=scene(p,'bf3d6d10-d200-4233-9b43-eba34389d244');assert intro['parallax']['worldWidthFrames']==1\ntexts=[e['params']['content'] for t in intro['tracks']['overlay'] for e in t['elements'] if e['type']=='text'];assert set(texts)=={'פרק 4','המציאות לא זזה'}\nmusic=next(t['elements'][0] for t in ts['audio'] if t['id']=='ep4-intro-music-track');assert music['trimStart']==1204800 and music['duration']==979200\nassets=json.load(open(root/'media/index.json'))\nfor a in assets[-2:]:\n src=base/'template/media'/('intro-background' if a['type']=='image' else 'intro-music')/a[",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-7cc81c08-5602-411f-8f46-be19cab7e481"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:03:27.757Z",
+  "parents": [],
+  "branch": "main"
+}

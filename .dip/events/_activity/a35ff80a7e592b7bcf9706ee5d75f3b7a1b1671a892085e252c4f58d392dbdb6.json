@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a35ff80a7e592b7bcf9706ee5d75f3b7a1b1671a892085e252c4f58d392dbdb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:32:39.928Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Compact extract source changed|compacted_words|compact_extract_source' crates/editor-api/src/operations/classic_takes/podcast.rs; sed -n '22,80p' crates/editor-api/src/operations/classic_takes/podcast.rs; sed -n '345,400p' crates/editor-api/src/operations/classic_takes/podcast.rs; rg -n 'source_words|wordRuns|captionSourceIndex' crates/editor-api/src/operations/classic_takes/quality.rs | head -25; node .local/seven-smart-2026-10-20/mcp-call.mjs app.get_state",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e06c01c6-110a-458c-9cef-7907180376e0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:32:40.951Z",
+  "parents": [],
+  "branch": "main"
+}

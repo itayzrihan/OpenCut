@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "14f982309e793d172b40bb3bda66cd1a171319b736a3cf38cf46544868e4eb92",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:11:52.252Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/__tests__/source-resolution-fixture.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4a7851e8-4cd9-4ed5-b2e5-f5017f97f64d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:11:52.269Z",
+  "parents": [],
+  "branch": "main"
+}

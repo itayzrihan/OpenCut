@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3c399bc2da290ef2ba6c6af676540db89834984eff4968f00417189f1cea1dfe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:43:04.931Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/itay-yarden-podcast-2026-10-19/before.json",
+          "analysis/itay-yarden-podcast-2026-10-19/episode4-before.sha256"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "291e00c3-ecd7-410a-91bc-afd17744e584"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:43:04.933Z",
+  "parents": [],
+  "branch": "main"
+}

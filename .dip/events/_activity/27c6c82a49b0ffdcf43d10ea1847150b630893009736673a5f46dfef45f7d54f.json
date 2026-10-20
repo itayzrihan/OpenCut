@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27c6c82a49b0ffdcf43d10ea1847150b630893009736673a5f46dfef45f7d54f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:53:07.778Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport {execFileSync} from 'node:child_process';import {stat,readFile,writeFile} from 'node:fs/promises';\nconst files=[...new Set(execFileSync('git',['ls-files','--modified','--others','--exclude-standard','-z']).toString().split('\\0').filter(Boolean))];const findings=[];let bytes=0;let count=0;const largest=[];\nconst pattern=/(?:sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|Bearer\\s+[A-Za-z0-9_.-]{24,})/g;\nfor(const p of files){const s=await stat(p);if(!s.isFile())continue;bytes+=s.size;count++;largest.push({path:p,bytes:s.size});if(s.size>8e6)continue;const b=await readFile(p);if(b.includes(0))continue;const text=b.toString();if(pattern.test(text))findings.push({path:p,type:'credential-pattern'});pattern.lastIndex=0;}\nconst report={files:count,bytes,findings,largest:largest.sort((a,b)=>b.bytes-a.bytes).slice(0,8)};await writeFile('.local/seven-smart-2026-10-20/final-secret-scan.json',JSON.stringify(report,null,2));console.log(report);\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-2fad1619-8bc1-45f9-bd90-87c1c4fe34e2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:53:08.550Z",
+  "parents": [],
+  "branch": "main"
+}

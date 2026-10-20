@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27aaf4e8a91fd330e6515c8bd3cdd503e7ede920337d10e847403024ea7ed9ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T23:59:54.029Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/ai/__tests__/podcast-task.test.ts <<'EOF'\n\ntest(\"MCP start freezes explicit scope and exact retries never apply a second edit\", async () => {\n const {task,selectedRefs,preparedIds,apply}=setup();\n selectedRefs.push({trackId:'ignored-ui-selection',elementId:'unselected'});\n const input={...options,elementIds:[],requestId:'mcp-request'};\n task.startRemote(input);task.startRemote(input);\n if(task.getSnapshot().status==='running') await new Promise<void>(resolve=>{\n  const off=task.subscribe(()=>{if(task.getSnapshot().status!=='running'){off();resolve();}});\n });\n expect(task.getSnapshot()).toMatchObject({status:'succeeded',requestId:'mcp-request',projectId:'project',sceneId:'source'});\n task.startRemote(input);\n expect(preparedIds).toEqual([[]]);expect(apply).toHaveBeenCalledTimes(1);\n expect(()=>task.startRemote({...input,elementIds:['other']})).toThrow('different inputs');\n});\nEOF\ncat >> classic/apps/web/src/ai/__tests__/timeline-tools.test.ts <<'EOF'\n\ntest(\"Podcast orchestration is an explicit write/network grant and exposes safe status\",async()=>{\n const editor={} as EditorCore;\n const blocked=await createTimelineToolRuntime({editor,options:{includeAppControlAccess:true}});\n expect(blocked.tools.some(t=>t.name==='podcast.start')).toBe(false);\n const allowed=await createTimelineToolRuntime({editor,options:{includeAppControlAccess:true,includeNetworkAccess:true}});\n expect(allowed.tools.find(t=>t.name==='podcast.start')).toMatchObject({readOnly:false,openWorld:true,idempotent:true,risk:'control'});\n expect(allowed.tools.find(t=>t.name==='podcast.get_status')).toMatchObject({readOnly:true,openWorld:false});\n});\nEOF\nnode classic/scripts/test-web.mjs src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/timeline-tools.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/bridge-tests > .local/seven-smart-2026-10-20/bridge-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-da32bb2e-0ced-4f82-a88a-e17d5c1cd91d"
+      },
+      {
+        "at": "2026-10-19T23:59:54.031Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b51a438f-5c73-4ee4-aee7-f17df0ea5a90"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T23:59:54.400Z",
+  "parents": [],
+  "branch": "main"
+}

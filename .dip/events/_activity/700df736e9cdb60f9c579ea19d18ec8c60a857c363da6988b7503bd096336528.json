@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "700df736e9cdb60f9c579ea19d18ec8c60a857c363da6988b7503bd096336528",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:12:25.670Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run .dip/tools/check-extract-caption-isolation.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-dab9776b-82f2-45e4-b457-5ff1feb03a75"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:12:26.025Z",
+  "parents": [],
+  "branch": "main"
+}

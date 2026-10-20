@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9efe06017ceebf506eb0fb99b7060946d7e691019c44cf1ae99dafa5bea0a0d8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:07:02.448Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/video-encoding.ts",
+          "classic/apps/web/src/services/renderer/scene-exporter.ts",
+          "classic/apps/web/src/core/managers/renderer-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "dc3228bd-a566-491f-aeb1-b188c604dedb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:07:02.451Z",
+  "parents": [],
+  "branch": "main"
+}

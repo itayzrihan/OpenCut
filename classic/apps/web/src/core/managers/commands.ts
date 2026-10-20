@@ -783,22 +783,60 @@ export class CommandManager {
 		});
 	}
 
-	createMulticam(plan: {
-		settings: import("@/podcast-sync/engine").PodcastSyncSettings;
-		channels: Array<{
-			id: string;
-			name: string;
+	planExport(input: {
+		fps?: import("opencut-wasm").FrameRate;
+		sceneId: string;
+		preferences: import("@/export").ExportPreferences;
+		quality: import("@/export").ExportQuality;
+		format: import("@/export").ExportFormat;
+	}): import("@/export").ExportPlan {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before planning export");
+		return this.canonical.invokeControl({
+			capabilityId: "project.classic.export.plan",
+			input,
+		}) as import("@/export").ExportPlan;
+	}
+
+	/** Read-only filename evidence from the same registry used by MCP. */
+	suggestPodcastSources(videoIds: string[]): {
+		hasExternalAudio: boolean;
+		suggestions: Array<{
 			videoId: string;
-			audioId: string;
-			videoBindingRevision: number;
-			audioBindingRevision: number;
-			videoOffset: number;
-			videoDelay?: number;
-			audioOffset: number;
-			audioDelay: number;
+			audioId: string | null;
+			candidates: Array<{ audioId: string; score: number; reason: string }>;
 		}>;
-		duration: number;
-		cuts: import("@/podcast-sync/router").PodcastSyncCut[];
+	} {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before matching microphones");
+		return this.canonical.invokeControl({
+			capabilityId: "timeline.classic.multicam.sources.suggest",
+			input: { videoIds },
+		}) as ReturnType<CommandManager["suggestPodcastSources"]>;
+	}
+
+	createMulticam({
+		plan,
+		allowCameraAudio = false,
+	}: {
+		plan: {
+			settings: import("@/podcast-sync/engine").PodcastSyncSettings;
+			channels: Array<{
+				id: string;
+				name: string;
+				videoId: string;
+				audioId: string;
+				videoBindingRevision: number;
+				audioBindingRevision: number;
+				videoOffset: number;
+				videoDelay?: number;
+				audioOffset: number;
+				audioDelay: number;
+			}>;
+			duration: number;
+			cuts: import("@/podcast-sync/router").PodcastSyncCut[];
+		};
+		allowCameraAudio?: boolean;
 	}): void {
 		if (!this.canonical)
 			throw new Error("Open the canonical editor before creating multicam");
@@ -807,7 +845,7 @@ export class CommandManager {
 				this.synchronizeCanonicalViews();
 				this.canonical!.invokeControl({
 					capabilityId: "timeline.classic.multicam.create",
-					input: { plan, finishPodcast: true },
+					input: { plan, finishPodcast: true, allowCameraAudio },
 				});
 				this.publishCanonical();
 			},
@@ -894,6 +932,13 @@ export class CommandManager {
 		});
 	}
 
+	podcastScope(elementIds: string[]) {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the editor before choosing podcast reference");
+		return this.canonical.podcastScope({ sceneId, elementIds });
+	}
+
 	preparePodcast(elementIds: string[]) {
 		const session = this.canonical;
 		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
@@ -920,7 +965,12 @@ export class CommandManager {
 				responses: Record<string, unknown>;
 			}) => {
 				assertCurrent();
-				return session.podcastEditorial({ ...input, sceneId, elementIds, expectedRevision: source.revision });
+				return session.podcastEditorial({
+					...input,
+					sceneId,
+					elementIds,
+					expectedRevision: source.revision,
+				});
 			},
 			review: ({
 				options,
@@ -950,7 +1000,8 @@ export class CommandManager {
 				assertCurrent();
 				return collectTakeAudioEvidence({
 					editor: this.editor,
-					elementIds,
+					elementIds: source.audioInputs?.map((i) => i.clip.id) ?? elementIds,
+					sourceClips: source.audioInputs?.map((i) => i.clip),
 					signal,
 					boundedFrames: true,
 					onProgress,

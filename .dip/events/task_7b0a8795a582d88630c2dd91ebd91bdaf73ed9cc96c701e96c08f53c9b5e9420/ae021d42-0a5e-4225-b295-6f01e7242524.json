@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ae021d42-0a5e-4225-b295-6f01e7242524",
+  "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented canonical source-resolution export plan/preferences, duration-weighted mixed media selection, native 4K rendering with unchanged composition, compact HEVC/VP9 and compatible AVC bitrates, explicit host codec checks, UI size/warnings. Deployed local production 2026-10-19T11-16-01-037Z-d19882d9. Chrome episode4 UI verified source3840x2160 HEVC32Mbps estimated7.06GB, toggles tested and persisted. Saved scenes are exact unchanged; canvas stays1080p30. Rust7 + web9 checks and real Chrome 4K native-pixel fixture passed.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Real Chrome HEVC/AVC 4K encode/decode tested with fine-pixel fixture; full episode was not re-exported or perceptually compared. File size is an estimate, not measured final output. Upscaling does not restore missing source detail."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:17:49.093Z",
+  "parents": [
+    "28293431-1f86-43f8-b156-4c149e3782d4"
+  ],
+  "branch": "main"
+}

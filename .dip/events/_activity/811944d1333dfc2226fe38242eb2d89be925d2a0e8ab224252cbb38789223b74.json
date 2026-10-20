@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "811944d1333dfc2226fe38242eb2d89be925d2a0e8ab224252cbb38789223b74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:28:32.301Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a5546381-fb3a-40b2-8da4-919e8b6be9d0"
+      },
+      {
+        "at": "2026-10-19T16:28:32.302Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_takes/podcast.rs');s=p.read_text();at=s.index('// Extracts never restore')\ns=s[:at]+'''// Legacy source projects can have a zero-gain main clip with no detached audio.\n// A speech extract should carry that dialogue. Repair only the new scene's\n// independent archive; explicit mutes, automation and alternate audio routes\n// retain their authored mix. Never change the source document.\nfn restore_legacy_dialogue(tracks: &mut Value, element_ids: &[String]) {\n    if tracks[\"main\"][\"muted\"].as_bool() == Some(true)\n        || [\"audio\", \"overlay\"].iter().any(|key| {\n            arr(&tracks[*key]).iter().any(|t| {\n                arr(&t[\"elements\"]).iter().any(|e| {\n                    matches!(e[\"type\"].as_str(), Some(\"audio\" | \"video\"))\n                })\n            })\n        })\n    { return; }\n    for e in tracks[\"main\"][\"elements\"].as_array_mut().into_iter().flatten() {\n        let automated = e.get(\"keyframes\").is_some_and(|v| {\n            !v.is_null() && *v != json!([]) && *v != json!({})\n        });\n        if element_ids.iter().any(|id| e[\"id\"].as_str() == Some(id.as_str()))\n            && e[\"type\"] == \"video\" && e[\"params\"][\"volume\"].as_f64() == Some(0.0)\n            && e[\"muted\"].as_bool() != Some(true)\n            && e[\"params\"][\"muted\"].as_bool() != Some(true) && !automated\n        { e[\"params\"][\"volume\"] = json!(1.0); }\n    }\n}\n\n'''+s[at:];s=s.replace('let mut compact = tracks.clone();','let mut compact = tracks.clone();\\n    restore_legacy_dialogue(&mut compact, element_ids);',1);p.write_text(s)\np=Path('crates/editor-api/tests/classic_podcast.rs');s=p.read_text()+'''\n#[tokio::test]\nasync fn legacy_zero_gain_dialogue_restores_only_in_new_scene_and_keeps_authored_audio_routes() {\n    for mode in [\"teaser\", \"highlights\", \"chronological\"] {\n        for variant in [\"legacy\", \"track-mute\", \"clip-mute\", \"automation\", \"detached-audio\", \"overlay-video\"] {\n            let r = se",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e9d7f241-e0b2-43f1-b920-1bf5cf2aeb45"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:28:33.139Z",
+  "parents": [],
+  "branch": "main"
+}

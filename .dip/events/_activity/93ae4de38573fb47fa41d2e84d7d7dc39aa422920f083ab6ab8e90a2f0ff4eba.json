@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "93ae4de38573fb47fa41d2e84d7d7dc39aa422920f083ab6ab8e90a2f0ff4eba",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:15:34.521Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/podcast-editorial-upgrade/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-927fc491-3a5e-45c4-99b4-762c74c968d3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:15:34.895Z",
+  "parents": [],
+  "branch": "main"
+}

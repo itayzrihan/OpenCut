@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fe9721a58561f3bfb7612e2349e76f0e422caf7ae812debfd3d94dff30f465e3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:57:10.809Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/build-audio-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9e6c2397-d8a1-4d8f-8713-858a732db3d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:57:10.810Z",
+  "parents": [],
+  "branch": "main"
+}

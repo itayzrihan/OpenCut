@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0f1e02b495e3afe103b9fd9dcda9e1b7fa1c836585d1fb46b6aa54ca56509ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:13:51.733Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/check-podcast-reference.ts'\ns=open(p).read().replace(\"const bound={sceneId:actual.id,elementIds,expectedRevision:session.status().revision};const options=\", \"const modeVideo=mode==='chronological'?{...video,alternatives:[{...video.alternatives[0],parts:[{firstWord:first[0],lastWord:first[15]},{firstWord:first[22],lastWord:first[37]},{firstWord:first[44],lastWord:first[59]}]}]}:video;\\n   const bound={sceneId:actual.id,elementIds,expectedRevision:session.status().revision};const options=\").replace('videos:[video]','videos:[modeVideo]')\nopen(p,'w').write(s)\nPY\nbun run .dip/tools/check-podcast-reference.ts > .local/podcast-multicam-scope/source-check.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5658be85-610f-441c-9a3e-8e093f5ddb21"
+      },
+      {
+        "at": "2026-10-19T17:13:51.735Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 .local/podcast-multicam-scope/source-check.log; cat .local/podcast-multicam-scope/metrics.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b2e72607-eeb0-4f61-957b-3651da2b32a8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:13:51.748Z",
+  "parents": [],
+  "branch": "main"
+}

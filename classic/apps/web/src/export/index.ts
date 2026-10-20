@@ -13,7 +13,25 @@ export const EXPORT_FORMAT_VALUES = ["mp4", "webm"] as const;
 export type ExportFormat = (typeof EXPORT_FORMAT_VALUES)[number];
 export type ExportQuality = (typeof EXPORT_QUALITY_VALUES)[number];
 
+export interface ExportPreferences {
+	resolution: "project" | "source";
+	encoding: "compatible" | "compact";
+}
+
+export interface ExportPlan {
+	width: number;
+	height: number;
+	logicalWidth: number;
+	logicalHeight: number;
+	codec: "avc" | "hevc" | "vp9";
+	videoBitrate: number;
+	estimatedBytes: number;
+	upscaledSources: string[];
+	warnings: string[];
+}
+
 export interface ExportOptions {
+	preferences?: ExportPreferences;
 	format: ExportFormat;
 	quality: ExportQuality;
 	fps?: FrameRate;

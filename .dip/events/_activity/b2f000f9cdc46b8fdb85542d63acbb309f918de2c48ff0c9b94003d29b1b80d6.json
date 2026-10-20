@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2f000f9cdc46b8fdb85542d63acbb309f918de2c48ff0c9b94003d29b1b80d6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:53:56.578Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .dip/tools/verify-source-export.mjs > .local/seven-smart-2026-10-20/source-export-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-18a5710c-3d07-4036-a1ee-26e45491fd0d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:53:56.798Z",
+  "parents": [],
+  "branch": "main"
+}

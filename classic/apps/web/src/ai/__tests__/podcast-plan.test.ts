@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- isolated browser transport doubles. */
 import { afterEach, expect, mock, test } from "bun:test";
 import { parsePodcastProposal, requestPodcastPlan } from "../podcast-plan";
-import type { PodcastMode, PodcastVideo } from "../podcast-types";
+import type {
+	PodcastMode,
+	PodcastSource,
+	PodcastVideo,
+} from "../podcast-types";
 const video: PodcastVideo = {
 	title: "רעיון",
 	openingHook: "שאלה",
@@ -15,15 +19,6 @@ const video: PodcastVideo = {
 		},
 	],
 };
-const words = Array.from({ length: 30 }, (_, i) => ({
-	id: i,
-	sourceIndex: i,
-	clipId: "clip",
-	text: `מילה${i}`,
-	start: i * 360000,
-	end: i * 360000 + 120000,
-}));
-const source = { revision: 1, words, windows: [{ index: 0, words }] };
 const originalFetch = globalThis.fetch,
 	originalWindow = globalThis.window;
 afterEach(() => {
@@ -35,26 +30,92 @@ function browser() {
 		__opencutAccountId: "test",
 	}) as unknown as Window & typeof globalThis;
 }
-function stream(videos: PodcastVideo[]) {
+function stream(value: unknown) {
 	return new Response(
-		`data: ${JSON.stringify({ type: "response.completed", response: { status: "completed", output: [], output_text: JSON.stringify({ videos }) } })}\n\n`,
+		`data: ${JSON.stringify({ type: "response.completed", response: { status: "completed", output: [], output_text: JSON.stringify(value) } })}\n\n`,
 		{ headers: { "Content-Type": "text/event-stream" } },
 	);
 }
-for (const mode of ["highlights", "chronological"] as PodcastMode[]) {
-	test(`${mode} analyzes windows then validates its output through the canonical reviewer`, async () => {
+function source(mode: PodcastMode): PodcastSource {
+	return {
+		revision: 1,
+		words: [],
+		windows: [],
+		editorial: ({ responses }) => {
+			const missing = ["inventory:0:0", "inventory:1:0"].filter(
+				(k) => !responses[k],
+			);
+			const stage = missing.length
+				? "inventory"
+				: !responses["draft:0"]
+					? "compose"
+					: !responses["critique:0:0"]
+						? "critique"
+						: null;
+			const keys = missing.length
+				? missing
+				: stage === "compose"
+					? ["draft:0"]
+					: stage === "critique"
+						? ["critique:0:0"]
+						: [];
+			return {
+				policyVersion:
+					mode === "teaser" ? "strategic-teaser-v1" : "podcast-shorts-v2",
+				complete: !stage,
+				requests: keys.map((key) => ({
+					key,
+					stage: stage!,
+					instructions: `Canonical ${mode} ${stage}`,
+					prompt: { key },
+				})),
+				videos: stage ? [] : [video],
+				report: {},
+			};
+		},
+	};
+}
+const options = (mode: PodcastMode) => ({
+	mode,
+	minSeconds: 20,
+	maxSeconds: 60,
+	maxOutputs: 4,
+});
+function cache() {
+	const data = new Map<string, string>();
+	return {
+		key: "same-source",
+		data,
+		storage: {
+			getItem: (k: string) => data.get(k) ?? null,
+			setItem: (k: string, v: string) => {
+				data.set(k, v);
+			},
+			removeItem: (k: string) => {
+				data.delete(k);
+			},
+		},
+	};
+}
+for (const mode of ["teaser", "highlights", "chronological"] as PodcastMode[]) {
+	test(`${mode} delegates mapping, composition and critique to canonical workflow before final validation`, async () => {
 		browser();
 		const requests: Record<string, unknown>[] = [];
 		let reviews = 0;
-		globalThis.fetch = mock(async (_url, init) => {
-			requests.push(JSON.parse(String(init?.body)));
-			return requests.length === 1
+		let providerRequests = 0;
+		globalThis.fetch = mock(async (url, init) => {
+			const body = JSON.parse(String(init?.body));
+			requests.push(body);
+			return String(url).includes("connection")
 				? Response.json({ models: [{ id: "test-model" }] })
-				: stream([video]);
+				: stream({ reviewed: true });
 		}) as unknown as typeof fetch;
 		const result = await requestPodcastPlan({
-			source,
-			options: { mode, minSeconds: 20, maxSeconds: 60, maxOutputs: 4 },
+			onProviderRequest: () => {
+				providerRequests++;
+			},
+			source: source(mode),
+			options: options(mode),
 			signal: new AbortController().signal,
 			onStage: () => {},
 			review: () => {
@@ -62,46 +123,42 @@ for (const mode of ["highlights", "chronological"] as PodcastMode[]) {
 			},
 		});
 		expect(result).toEqual([video]);
-		expect(requests).toHaveLength(3);
-		expect(reviews).toBe(2);
-		expect(JSON.stringify(requests[2])).toContain(
-			mode === "teaser"
-				? "unresolved question"
-				: mode === "chronological"
-					? "strictly increasing"
-					: "THREE complete passages",
-		);
+		expect(requests).toHaveLength(5);
+		expect(providerRequests).toBe(4);
+		expect(reviews).toBe(1);
+		expect(requests.slice(1).map((r) => r.instructions)).toEqual([
+			`Canonical ${mode} inventory`,
+			`Canonical ${mode} inventory`,
+			`Canonical ${mode} compose`,
+			`Canonical ${mode} critique`,
+		]);
 		expect(requests[1].tools).toEqual([]);
 	});
 }
-test("invalid candidates get one bounded repair, while an invalid final proposal never escapes", async () => {
+test("a technically rejected completed plan never escapes the transport", async () => {
 	browser();
-	let calls = 0,
-		reviews = 0;
 	globalThis.fetch = mock(async () =>
-		++calls === 1
-			? Response.json({ models: [{ id: "test" }] })
-			: stream([video]),
+		Response.json({ models: [{ id: "test" }] }),
 	) as unknown as typeof fetch;
+	const s = source("highlights");
+	s.editorial = () => ({
+		policyVersion: "podcast-shorts-v2",
+		complete: true,
+		requests: [],
+		videos: [video],
+		report: {},
+	});
 	await expect(
 		requestPodcastPlan({
-			source,
-			options: {
-				mode: "highlights",
-				minSeconds: 20,
-				maxSeconds: 60,
-				maxOutputs: 1,
-			},
+			source: s,
+			options: options("highlights"),
 			signal: new AbortController().signal,
 			onStage: () => {},
 			review: () => {
-				reviews++;
-				throw new Error("invalid chronology");
+				throw Error("invalid chronology");
 			},
 		}),
 	).rejects.toThrow("invalid chronology");
-	expect(calls).toBe(3);
-	expect(reviews).toBe(2);
 });
 test("account changes and cancellation cannot return a proposal", async () => {
 	browser();
@@ -109,37 +166,20 @@ test("account changes and cancellation cannot return a proposal", async () => {
 		window.__opencutAccountId = "other";
 		return Response.json({ models: [{ id: "test" }] });
 	}) as unknown as typeof fetch;
-	await expect(
-		requestPodcastPlan({
-			source,
-			options: {
-				mode: "teaser",
-				minSeconds: 20,
-				maxSeconds: 60,
-				maxOutputs: 1,
-			},
-			signal: new AbortController().signal,
-			onStage: () => {},
-			review: () => {
-				throw new Error("must not review");
-			},
-		}),
-	).rejects.toThrow("Account changed");
+	const input = {
+		source: source("highlights"),
+		options: options("highlights"),
+		signal: new AbortController().signal,
+		onStage: () => {},
+		review: () => {
+			throw Error("must not review");
+		},
+	};
+	await expect(requestPodcastPlan(input)).rejects.toThrow("Account changed");
 	const controller = new AbortController();
 	controller.abort();
 	await expect(
-		requestPodcastPlan({
-			source,
-			options: {
-				mode: "teaser",
-				minSeconds: 20,
-				maxSeconds: 60,
-				maxOutputs: 1,
-			},
-			signal: controller.signal,
-			onStage: () => {},
-			review: () => {},
-		}),
+		requestPodcastPlan({ ...input, signal: controller.signal }),
 	).rejects.toThrow();
 });
 test("proposal parser rejects fabricated properties and malformed spans", () => {
@@ -155,113 +195,60 @@ test("proposal parser rejects fabricated properties and malformed spans", () => 
 		parsePodcastProposal('{"videos":[{"title":"only title"}]}'),
 	).toThrow();
 });
-
-test("window analysis overlaps two requests, remains bounded and preserves source order", async () => {
+test("both source requests overlap but remain bounded; failed sibling resumes without replaying successful work", async () => {
 	browser();
 	let active = 0,
-		peak = 0;
-	const finished: number[] = [];
-	let finalOrder: string[] = [];
+		peak = 0,
+		fail = true;
+	const asked: string[] = [];
+	const saved = cache();
 	globalThis.fetch = mock(async (url, init) => {
 		if (String(url).includes("connection"))
 			return Response.json({ models: [{ id: "test" }] });
-		const request = JSON.parse(String(init?.body));
-		const prompt = JSON.parse(request.input[0].content);
-		if (prompt.index !== undefined) {
-			active++;
-			peak = Math.max(peak, active);
-			await new Promise((resolve) =>
-				setTimeout(resolve, prompt.index === 0 ? 30 : 1),
+		const { key } = JSON.parse(JSON.parse(String(init?.body)).input[0].content);
+		asked.push(key);
+		active++;
+		peak = Math.max(peak, active);
+		await new Promise((r) => setTimeout(r, key === "inventory:0:0" ? 10 : 1));
+		active--;
+		if (key === "inventory:1:0" && fail)
+			return Response.json(
+				{
+					error:
+						"Our servers are currently overloaded. Please try again later.",
+				},
+				{ status: 503 },
 			);
-			active--;
-			finished.push(prompt.index);
-			return stream([{ ...video, title: `window-${prompt.index}` }]);
-		}
-		finalOrder = prompt.candidates.map((c: PodcastVideo) => c.title);
-		return stream([video]);
-	}) as unknown as typeof fetch;
-	await requestPodcastPlan({
-		source: {
-			...source,
-			windows: [0, 1, 2, 3].map((index) => ({ index, words })),
-		},
-		options: {
-			mode: "highlights",
-			minSeconds: 20,
-			maxSeconds: 60,
-			maxOutputs: 4,
-		},
-		signal: new AbortController().signal,
-		onStage: () => {},
-		review: () => {},
-	});
-	expect(peak).toBe(2);
-	expect(finished[0]).toBe(1);
-	expect(finalOrder).toEqual(["window-0", "window-1", "window-2", "window-3"]);
-});
-
-test("a failed later window resumes from reviewed checkpoints instead of requesting earlier windows again", async () => {
-	browser();
-	const data = new Map<string, string>();
-	const cache = {
-		key: "same-source",
-		storage: {
-			getItem: (k: string) => data.get(k) ?? null,
-			setItem: (k: string, v: string) => {
-				data.set(k, v);
-			},
-			removeItem: (k: string) => {
-				data.delete(k);
-			},
-		},
-	};
-	const requested: number[] = [];
-	let fail = true;
-	globalThis.fetch = mock(async (url, init) => {
-		if (String(url).includes("connection"))
-			return Response.json({ models: [{ id: "test" }] });
-		const prompt = JSON.parse(JSON.parse(String(init?.body)).input[0].content);
-		if (prompt.index !== undefined) {
-			requested.push(prompt.index);
-			if (prompt.index === 2 && fail)
-				return Response.json(
-					{
-						error:
-							"Our servers are currently overloaded. Please try again later.",
-					},
-					{ status: 503 },
-				);
-			return stream([{ ...video, title: `window-${prompt.index}` }]);
-		}
-		return stream([video]);
+		return stream({ reviewed: true });
 	}) as unknown as typeof fetch;
 	const input = {
-		source: {
-			...source,
-			windows: [0, 1, 2].map((index) => ({ index, words })),
-		},
-		options: {
-			mode: "highlights" as const,
-			minSeconds: 20,
-			maxSeconds: 60,
-			maxOutputs: 4,
-		},
+		source: source("chronological"),
+		options: options("chronological"),
 		signal: new AbortController().signal,
 		onStage: () => {},
 		review: () => {},
-		cache,
+		cache: saved,
 	};
 	await expect(requestPodcastPlan(input)).rejects.toThrow("overloaded");
-	expect(data.size).toBe(2);
+	expect(peak).toBe(2);
+	expect(
+		JSON.parse(saved.data.get(`${saved.key}:editorial-v1`)!).responses[
+			"inventory:0:0"
+		],
+	).toBeDefined();
 	fail = false;
 	expect(await requestPodcastPlan(input)).toEqual([video]);
-	expect(requested).toEqual([0, 1, 2, 2]);
+	expect(asked).toEqual([
+		"inventory:0:0",
+		"inventory:1:0",
+		"inventory:1:0",
+		"draft:0",
+		"critique:0:0",
+	]);
 });
-
-test("temporary provider stream failures use the native retry plan before any proposal escapes", async () => {
+test("temporary provider stream failure uses native retry policy without losing completed stages", async () => {
 	browser();
 	let asks = 0;
-	const retries: string[] = [];
 	const failures: unknown[] = [];
 	globalThis.fetch = mock(async (url) => {
 		if (String(url).includes("connection"))
@@ -271,20 +258,13 @@ test("temporary provider stream failures use the native retry plan before any pr
 				`data: ${JSON.stringify({ type: "error", error: { code: "overloaded", message: "Our servers are currently overloaded. Please try again later." } })}\n\n`,
 				{ headers: { "Content-Type": "text/event-stream" } },
 			);
-		return stream([video]);
+		return stream({ reviewed: true });
 	}) as unknown as typeof fetch;
 	const result = await requestPodcastPlan({
-		source,
-		options: {
-			mode: "highlights",
-			minSeconds: 20,
-			maxSeconds: 60,
-			maxOutputs: 4,
-		},
+		source: source("highlights"),
+		options: options("highlights"),
 		signal: new AbortController().signal,
-		onStage: (stage) => {
-			if (stage.includes("retrying")) retries.push(stage);
-		},
+		onStage: () => {},
 		review: () => {},
 		planRetry: (failure) => {
 			failures.push(failure);
@@ -292,8 +272,7 @@ test("temporary provider stream failures use the native retry plan before any pr
 		},
 	});
 	expect(result).toEqual([video]);
-	expect(asks).toBe(3);
-	expect(retries).toHaveLength(1);
+	expect(asks).toBe(5);
 	expect(failures[0]).toMatchObject({
 		kind: "providerFailure",
 		code: "overloaded",

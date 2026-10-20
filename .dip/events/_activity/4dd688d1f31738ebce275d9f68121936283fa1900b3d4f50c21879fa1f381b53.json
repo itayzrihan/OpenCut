@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4dd688d1f31738ebce275d9f68121936283fa1900b3d4f50c21879fa1f381b53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:31:21.530Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/rust/crates/podcast/src/precision.rs <<'EOF'\n//! Bounded, signed-waveform verification after shared-clock envelope alignment.\n//! No media IO. The host decodes only these short windows in cancellable workers.\nuse crate::PodcastGroupAlignment;\nuse bridge::export;\nuse rustfft::{FftPlanner, num_complex::Complex};\nuse serde::{Deserialize, Serialize};\n\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Deserialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct PodcastPrecisionPlanOptions {\n    pub alignment: PodcastGroupAlignment,\n    pub durations: Vec<f64>,\n}\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(into_wasm_abi, from_wasm_abi))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Clone, Debug, Deserialize, Serialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct PodcastPrecisionWindow {\n    pub reference_index: usize,\n    pub target_index: usize,\n    pub reference_start: f64,\n    pub target_start: f64,\n    pub duration_seconds: f64,\n}\nfn valid_group(g: &PodcastGroupAlignment) -> bool {\n    let n=g.offsets.len();\n    n>0 && n<=64 && g.parents.len()==n && g.confidence.len()==n && g.reference_index<n\n        && g.parents[g.reference_index].is_none()\n        && g.offsets.iter().all(|v|v.is_some_and(|v|v.is_finite()))\n        && g.parents.iter().enumerate().all(|(i,p)|p.is_none_or(|p|p<n&&p!=i))\n}\n#[export]\npub fn plan_podcast_precision(o: PodcastPrecisionPlanOptions) -> Vec<PodcastPrecisionWindow> {\n    let g=o.alignment;\n    if !valid_group(&g) || o.durations.len()!=g.offsets.len()\n        || o.durations.iter().any(|d|!d.is_finite()||*d<=0.0||*d>36000.0) {return vec![];}\n    let mut windows=vec![];\n    for (target,parent) in g.parents.iter().enumerate() {\n        let Some(reference)=*parent else {continue};\n        let a=g.offsets[reference].unwrap(); let b=g",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-4275f2fb-bb82-46a5-b0fa-291d8afc72d3"
+      },
+      {
+        "at": "2026-10-19T15:31:21.739Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/rust/crates/podcast/src/precision.rs <<'EOF'\n//! Bounded, signed-waveform verification after shared-clock envelope alignment.\n//! No media IO. The host decodes only these short windows in cancellable workers.\nuse crate::PodcastGroupAlignment;\nuse bridge::export;\nuse rustfft::{FftPlanner, num_complex::Complex};\nuse serde::{Deserialize, Serialize};\n\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Deserialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct PodcastPrecisionPlanOptions {\n    pub alignment: PodcastGroupAlignment,\n    pub durations: Vec<f64>,\n}\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(into_wasm_abi, from_wasm_abi))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Clone, Debug, Deserialize, Serialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct PodcastPrecisionWindow {\n    pub reference_index: usize,\n    pub target_index: usize,\n    pub reference_start: f64,\n    pub target_start: f64,\n    pub duration_seconds: f64,\n}\nfn valid_group(g: &PodcastGroupAlignment) -> bool {\n    let n=g.offsets.len();\n    n>0 && n<=64 && g.parents.len()==n && g.confidence.len()==n && g.reference_index<n\n        && g.parents[g.reference_index].is_none()\n        && g.offsets.iter().all(|v|v.is_some_and(|v|v.is_finite()))\n        && g.parents.iter().enumerate().all(|(i,p)|p.is_none_or(|p|p<n&&p!=i))\n}\n#[export]\npub fn plan_podcast_precision(o: PodcastPrecisionPlanOptions) -> Vec<PodcastPrecisionWindow> {\n    let g=o.alignment;\n    if !valid_group(&g) || o.durations.len()!=g.offsets.len()\n        || o.durations.iter().any(|d|!d.is_finite()||*d<=0.0||*d>36000.0) {return vec![];}\n    let mut windows=vec![];\n    for (target,parent) in g.parents.iter().enumerate() {\n        let Some(reference)=*parent else {continue};\n        let a=g.offsets[reference].unwrap(); let b=g",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-4275f2fb-bb82-46a5-b0fa-291d8afc72d3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:31:22.082Z",
+  "parents": [],
+  "branch": "main"
+}

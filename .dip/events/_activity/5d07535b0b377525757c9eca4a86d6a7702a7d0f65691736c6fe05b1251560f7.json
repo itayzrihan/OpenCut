@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d07535b0b377525757c9eca4a86d6a7702a7d0f65691736c6fe05b1251560f7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:16:22.808Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-seven-scenes.ts <<'EOF'\n// Reopen the real saved outputs in the canonical runtime. Never changes the live project.\nimport {readFile,writeFile,mkdir} from 'node:fs/promises';\nimport assert from 'node:assert/strict';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nimport {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nconst folder='.local/seven-smart-2026-10-20';\nconst report='analysis/seven-smart-2026-10-20';\nconst projectFolder='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759';\nconst baseline=JSON.parse(await readFile(`${folder}/project-before-extract.json`,'utf8'));\nconst earliest=JSON.parse(await readFile(`${folder}/project-before.json`,'utf8'));\nconst current=JSON.parse(await readFile(`${projectFolder}/project.json`,'utf8'));\nconst mediaAssets=JSON.parse(await readFile(`${projectFolder}/media/index.json`,'utf8'));\nconst sourceIds=new Set(baseline.scenes.map((s:any)=>s.id));\nconst outputs=current.scenes.filter((s:any)=>!sourceIds.has(s.id));\nassert.equal(outputs.length,7);\nfor(const scene of baseline.scenes)assert.deepEqual(current.scenes.find((s:any)=>s.id===scene.id),scene);\nassert.deepEqual(current.settings,baseline.settings);assert.deepEqual(current.transcriptionJobs,baseline.transcriptionJobs);\nfor(const scene of earliest.scenes){\n const after=current.scenes.find((s:any)=>s.id===scene.id);\n assert.deepEqual(after.tracks.main,scene.tracks.main);assert.deepEqual(after.tracks.audio,scene.tracks.audio);\n for(const track of scene.tracks.overlay)assert.deepEqual(after.tracks.overlay.find((t:any)=>t.id===track.id),track);\n}\nconst seen=new Set<number>();const results=[];\nfor(const scene of outputs){\n assert.equal(scene.podcastExtract.sourceSceneId,'multicam-scene-1');assert.equal(scene.podcastExtract.options.mode,'highlights');\n const archive=scene.takeAssem",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-76089214-91f8-42c4-a68b-041c03f5b5f6"
+      },
+      {
+        "at": "2026-10-20T00:16:22.895Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-seven-scenes.ts <<'EOF'\n// Reopen the real saved outputs in the canonical runtime. Never changes the live project.\nimport {readFile,writeFile,mkdir} from 'node:fs/promises';\nimport assert from 'node:assert/strict';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nimport {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nconst folder='.local/seven-smart-2026-10-20';\nconst report='analysis/seven-smart-2026-10-20';\nconst projectFolder='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759';\nconst baseline=JSON.parse(await readFile(`${folder}/project-before-extract.json`,'utf8'));\nconst earliest=JSON.parse(await readFile(`${folder}/project-before.json`,'utf8'));\nconst current=JSON.parse(await readFile(`${projectFolder}/project.json`,'utf8'));\nconst mediaAssets=JSON.parse(await readFile(`${projectFolder}/media/index.json`,'utf8'));\nconst sourceIds=new Set(baseline.scenes.map((s:any)=>s.id));\nconst outputs=current.scenes.filter((s:any)=>!sourceIds.has(s.id));\nassert.equal(outputs.length,7);\nfor(const scene of baseline.scenes)assert.deepEqual(current.scenes.find((s:any)=>s.id===scene.id),scene);\nassert.deepEqual(current.settings,baseline.settings);assert.deepEqual(current.transcriptionJobs,baseline.transcriptionJobs);\nfor(const scene of earliest.scenes){\n const after=current.scenes.find((s:any)=>s.id===scene.id);\n assert.deepEqual(after.tracks.main,scene.tracks.main);assert.deepEqual(after.tracks.audio,scene.tracks.audio);\n for(const track of scene.tracks.overlay)assert.deepEqual(after.tracks.overlay.find((t:any)=>t.id===track.id),track);\n}\nconst seen=new Set<number>();const results=[];\nfor(const scene of outputs){\n assert.equal(scene.podcastExtract.sourceSceneId,'multicam-scene-1');assert.equal(scene.podcastExtract.options.mode,'highlights');\n const archive=scene.takeAssem",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-76089214-91f8-42c4-a68b-041c03f5b5f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:16:23.550Z",
+  "parents": [],
+  "branch": "main"
+}

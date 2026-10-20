@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6182563dff7599434d604aa5c99d0b12e418f505e433444d7cfbb6d5a8e39a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:56:54.492Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '185,228p' classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3dcec29f-7ffd-4a70-b025-744696d44baf"
+      },
+      {
+        "at": "2026-10-20T00:56:54.573Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '185,228p' classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3dcec29f-7ffd-4a70-b025-744696d44baf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:56:54.800Z",
+  "parents": [],
+  "branch": "main"
+}

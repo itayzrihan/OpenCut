@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "969feb64dc500ef93faf92286ada5df5ffd19f4b74b03405fc7610c0f187d3f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:01:54.421Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/six-review.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4871f045-bcd0-4723-bafb-e1b4f5ce2d0d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:01:54.424Z",
+  "parents": [],
+  "branch": "main"
+}

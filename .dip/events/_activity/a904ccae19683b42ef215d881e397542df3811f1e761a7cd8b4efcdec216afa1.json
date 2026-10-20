@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a904ccae19683b42ef215d881e397542df3811f1e761a7cd8b4efcdec216afa1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:04:11.449Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/blog.segments",
+          "classic/apps/web/.next-local-production/server/app/blog.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.meta",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.html",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_full.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_index.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_head.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog/__PAGE__.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand.segments",
+          "classic/apps/web/.next-local-production/server/app/changelog.segments",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/brand-kits",
+          "classic/apps/web/.next-local-production/server/app/privacy.segments",
+          "classic/apps/web/.next-local-production/server/app/index.segments",
+          "classic/apps/web/.next-local-production/server/app/projects.segments"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6be31eb1-8e31-471c-a10c-95b41adb684e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:04:11.452Z",
+  "parents": [],
+  "branch": "main"
+}

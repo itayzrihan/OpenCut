@@ -51,55 +51,62 @@ fn collect_ids(value: &Value, ids: &mut HashSet<String>) {
     }
 }
 
-mod classic;
-mod classic_session;
-mod classic_tracks;
-mod classic_element_controls;
-mod classic_track_layout;
-mod classic_remove;
-mod classic_media;
-pub(crate) mod classic_unified;
 mod brand_kits;
-mod classic_media_register;
-mod classic_image_inspection;
-mod classic_captions;
-mod classic_caption_cues;
-pub(crate) mod classic_transcription;
-mod classic_duplicate;
-mod classic_clipboard;
-mod classic_move;
-mod classic_update;
+mod classic;
+mod classic_animation_catalog;
 mod classic_background_removal;
-mod classic_transitions;
-mod classic_split;
-mod classic_text;
-mod classic_text_merge;
+mod classic_bookmarks;
+mod classic_caption_cues;
+mod classic_captions;
+mod classic_clipboard;
+mod classic_duplicate;
+mod classic_effects;
+mod classic_element_controls;
+mod classic_export;
+mod classic_image_inspection;
+mod classic_insert;
+mod classic_keyframes;
+mod classic_masks;
+mod classic_media;
+mod classic_media_register;
+mod classic_move;
+pub(crate) mod classic_multicam;
+mod classic_multicam_sources;
+mod classic_podcast_finish;
+mod classic_push_broll;
+mod classic_remove;
 mod classic_ripple;
 mod classic_ripple_delete;
-mod classic_insert;
-pub(crate) mod classic_multicam;
-mod classic_podcast_finish;
 mod classic_scenes;
-mod classic_push_broll;
-mod classic_text_graphics;
-mod classic_bookmarks;
-pub(crate) mod classic_takes;
+mod classic_session;
 pub(crate) mod classic_settings;
-mod classic_effects;
-mod classic_masks;
-mod classic_keyframes;
-mod classic_animation_catalog;
 mod classic_source_audio;
+mod classic_split;
+pub(crate) mod classic_takes;
+mod classic_text;
+mod classic_text_graphics;
+mod classic_text_merge;
+mod classic_track_layout;
+mod classic_tracks;
+pub(crate) mod classic_transcription;
+mod classic_transitions;
+pub(crate) mod classic_unified;
+mod classic_update;
 mod hyperframes;
 mod hyperframes_examples;
 mod image_generation;
 mod owned_projects;
-pub use owned_projects::{owned_project_read, owned_media_transfer_plan, register_owned_project_capabilities};
-pub use image_generation::subscription_image_plan;
+pub use hyperframes_examples::{
+    hyperframes_embedding_plan, hyperframes_reference_source, register_hyperframes_embedding,
+    register_hyperframes_reference_source,
+};
 pub use image_generation::register_editor_image_generation;
-pub use hyperframes_examples::{hyperframes_reference_source, register_hyperframes_reference_source, hyperframes_embedding_plan, register_hyperframes_embedding};
-mod studio;
+pub use image_generation::subscription_image_plan;
+pub use owned_projects::{
+    owned_media_transfer_plan, owned_project_read, register_owned_project_capabilities,
+};
 mod silence;
+mod studio;
 
 pub(crate) fn register_all(
     registry: &CapabilityRegistry,
@@ -128,34 +135,75 @@ pub(crate) fn register_all(
     classic::register_classic_operations(registry, state.clone(), events.clone())?;
     classic_session::register_classic_session_operations(registry, state.clone(), events.clone())?;
     classic_tracks::register_classic_track_operations(registry, state.clone(), events.clone())?;
-    classic_element_controls::register_classic_element_controls(registry, state.clone(), events.clone())?;
+    classic_element_controls::register_classic_element_controls(
+        registry,
+        state.clone(),
+        events.clone(),
+    )?;
     classic_track_layout::register_classic_track_layout(registry, state.clone(), events.clone())?;
     classic_remove::register_classic_remove(registry, state.clone(), events.clone())?;
     classic_media::register_classic_media(registry, state.clone(), events.clone())?;
     classic_media_register::register(registry, state.clone(), events.clone())?;
-    classic_image_inspection::register_image_inspection(registry, state.clone(), artifacts.clone())?;
+    classic_image_inspection::register_image_inspection(
+        registry,
+        state.clone(),
+        artifacts.clone(),
+    )?;
     classic_duplicate::register_classic_duplicate(registry, state.clone(), events.clone())?;
-    classic_clipboard::register_classic_clipboard(registry, state.clone(), events.clone(), classic_animation.clone())?;
+    classic_clipboard::register_classic_clipboard(
+        registry,
+        state.clone(),
+        events.clone(),
+        classic_animation.clone(),
+    )?;
     classic_move::register_classic_move(registry, state.clone(), events.clone())?;
     classic_update::register_classic_update(registry, state.clone(), events.clone())?;
-    classic_background_removal::register_classic_background_removal(registry, state.clone(), events.clone())?;
+    classic_background_removal::register_classic_background_removal(
+        registry,
+        state.clone(),
+        events.clone(),
+    )?;
     classic_transitions::register_classic_transitions(registry, state.clone(), events.clone())?;
     classic_split::register_classic_split(registry, state.clone(), events.clone())?;
     classic_text_merge::register_classic_text_merge(registry, state.clone(), events.clone())?;
     classic_ripple::register_classic_ripple(registry, state.clone(), events.clone())?;
     classic_caption_cues::register_caption_cues(registry, state.clone())?;
-    classic_insert::register_classic_insert(registry, state.clone(), events.clone(), classic_animation.clone())?;
+    classic_insert::register_classic_insert(
+        registry,
+        state.clone(),
+        events.clone(),
+        classic_animation.clone(),
+    )?;
     classic_push_broll::register(registry, state.clone(), events.clone())?;
     classic_text_graphics::register(registry, state.clone(), events.clone())?;
     classic_scenes::register_classic_scene_operations(registry, state.clone(), events.clone())?;
     classic_takes::register_classic_takes(registry, state.clone(), events.clone())?;
-    classic_bookmarks::register_classic_bookmark_operations(registry, state.clone(), events.clone())?;
+    classic_bookmarks::register_classic_bookmark_operations(
+        registry,
+        state.clone(),
+        events.clone(),
+    )?;
     classic_settings::register_classic_settings(registry, state.clone(), events.clone())?;
+    classic_export::register_export(registry, state.clone())?;
     classic_source_audio::register_classic_source_audio(registry, state.clone(), events.clone())?;
-    classic_effects::register_classic_effects(registry, state.clone(), events.clone(), classic_effects)?;
+    classic_effects::register_classic_effects(
+        registry,
+        state.clone(),
+        events.clone(),
+        classic_effects,
+    )?;
     classic_masks::register_classic_masks(registry, state.clone(), events.clone(), classic_masks)?;
-    classic_keyframes::register_classic_keyframes(registry, state.clone(), events.clone(), classic_animation.clone())?;
-    classic_animation_catalog::register_animation_catalog(registry, state.clone(), classic_animation)?;
+    classic_keyframes::register_classic_keyframes(
+        registry,
+        state.clone(),
+        events.clone(),
+        classic_animation.clone(),
+    )?;
+    classic_animation_catalog::register_animation_catalog(
+        registry,
+        state.clone(),
+        classic_animation,
+    )?;
     silence::register_silence_operations(registry, state.clone(), events.clone())?;
     register_media_probe(registry)?;
     register_media_operations(registry, state.clone(), events.clone())?;
@@ -268,7 +316,11 @@ where
             "This capability requires a native OpenCut host; it is unavailable in the browser runtime".into(),
         );
     }
-    descriptor.transactional = (access <= AccessLevel::Write || matches!(id, "account.storage.configure" | "account.brand_kits.remove"))
+    descriptor.transactional = (access <= AccessLevel::Write
+        || matches!(
+            id,
+            "account.storage.configure" | "account.brand_kits.remove"
+        ))
         && (!open_world || id == "media.relink")
         && !id.starts_with("history.")
         && !id.starts_with("job.")
@@ -378,7 +430,8 @@ fn register_manifest(registry: &CapabilityRegistry) -> Result<(), RegistryError>
         move |_, _| {
             let registry = registry_for_handler();
             async move {
-                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
+                let registry = registry
+                    .ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let snapshot = registry
                     .snapshot()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -952,7 +1005,8 @@ fn register_observation_operations(
             let registry = health_registry();
             let state = health_state.clone();
             async move {
-                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
+                let registry = registry
+                    .ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let manifest = registry
                     .effective_snapshot()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -994,7 +1048,8 @@ fn register_observation_operations(
         move |_, _| {
             let registry = permissions_registry();
             async move {
-                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
+                let registry = registry
+                    .ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let policy = registry
                     .effective_policy()
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -1029,7 +1084,8 @@ fn register_observation_operations(
         move |_, input| {
             let registry = audit_registry();
             async move {
-                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
+                let registry = registry
+                    .ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 let entries = registry
                     .audit_log(input.limit, input.capability_id.as_deref())
                     .map_err(|error| CapabilityError::Failed(error.to_string()))?;
@@ -6282,7 +6338,8 @@ fn register_job_operations(
             let registry = start_registry();
             let jobs = start_jobs.clone();
             async move {
-                let registry = registry.ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
+                let registry = registry
+                    .ok_or_else(|| CapabilityError::Unavailable("Editor runtime closed".into()))?;
                 if input.capability_id.starts_with("job.") {
                     return Err(CapabilityError::InvalidInput(
                         "job capabilities cannot recursively start jobs".into(),
@@ -6620,18 +6677,39 @@ where
     // Content actions which remove/select scenes or replace a project cannot
     // leave a stale viewer reference overriding their explicit editing focus.
     if let Some(navigation) = &working.workspace.classic_scene {
-        let valid = working.project.as_ref().filter(|p| p.id == navigation.project_id).and_then(|p| p.classic.as_ref())
-            .is_some_and(|classic| classic.document["scenes"].as_array().is_some_and(|scenes| scenes.iter().any(|s| s["id"] == navigation.scene_id)));
-        let explicit_focus = before.project.as_ref().and_then(|p| p.classic.as_ref()).zip(working.project.as_ref().and_then(|p| p.classic.as_ref()))
-            .is_some_and(|(old, new)| old.document["currentSceneId"] != new.document["currentSceneId"] && new.document["currentSceneId"] != navigation.scene_id);
-        if (!valid && working.workspace.classic_scene == before.workspace.classic_scene) || explicit_focus { working.workspace.classic_scene = None; }
+        let valid = working
+            .project
+            .as_ref()
+            .filter(|p| p.id == navigation.project_id)
+            .and_then(|p| p.classic.as_ref())
+            .is_some_and(|classic| {
+                classic.document["scenes"]
+                    .as_array()
+                    .is_some_and(|scenes| scenes.iter().any(|s| s["id"] == navigation.scene_id))
+            });
+        let explicit_focus = before
+            .project
+            .as_ref()
+            .and_then(|p| p.classic.as_ref())
+            .zip(working.project.as_ref().and_then(|p| p.classic.as_ref()))
+            .is_some_and(|(old, new)| {
+                old.document["currentSceneId"] != new.document["currentSceneId"]
+                    && new.document["currentSceneId"] != navigation.scene_id
+            });
+        if (!valid && working.workspace.classic_scene == before.workspace.classic_scene)
+            || explicit_focus
+        {
+            working.workspace.classic_scene = None;
+        }
     }
     working
         .validate()
         .map_err(|error| CapabilityError::InvalidInput(error.to_string()))?;
     let previous_revision = before.revision;
     if context.cancellation.is_cancelled() {
-        return Err(CapabilityError::Failed("operation was cancelled before commit".into()));
+        return Err(CapabilityError::Failed(
+            "operation was cancelled before commit".into(),
+        ));
     }
     let project_id = working.project.as_ref().map(|project| project.id.clone());
     let next_revision = previous_revision + 1;
@@ -6672,7 +6750,11 @@ where
         && store.redo.is_empty()
         && history_group.is_some_and(|group| {
             store.undo.last().is_some_and(|entry| {
-                entry.host_context.get("gestureGroup").and_then(Value::as_str) == Some(group)
+                entry
+                    .host_context
+                    .get("gestureGroup")
+                    .and_then(Value::as_str)
+                    == Some(group)
                     && entry
                         .host_context
                         .get("gestureRevision")
@@ -6693,9 +6775,7 @@ where
         });
         store.redo.clear();
     }
-    if !in_transaction
-        && let Some(group) = history_group
-    {
+    if !in_transaction && let Some(group) = history_group {
         let entry = store.undo.last_mut().unwrap();
         entry
             .host_context
@@ -6766,27 +6846,49 @@ pub(crate) fn trim_history(history: &mut Vec<HistoryEntry>) {
     // Classic keeps its complete live command history. Adopting the canonical
     // runtime must not remove older undo actions. Its durable archive retains
     // the existing host limit separately.
-    if history.last().is_some_and(|entry| entry.document.is_classic()) {
+    if history
+        .last()
+        .is_some_and(|entry| entry.document.is_classic())
+    {
         return;
     }
     // Studio source is textual, so bound retained history by source bytes as well
     // as entry count. Media bytes are external immutable blobs. Keep at least one
     // undo boundary even for a large source; old history must not block new edits.
-    if history.last().is_some_and(|entry| entry.document.materialize().project.as_ref()
-        .is_some_and(|p| p.extensions.contains_key(crate::studio::STUDIO_KEY))) {
+    if history.last().is_some_and(|entry| {
+        entry
+            .document
+            .materialize()
+            .project
+            .as_ref()
+            .is_some_and(|p| p.extensions.contains_key(crate::studio::STUDIO_KEY))
+    }) {
         let mut bytes = 0usize;
         let mut keep_from = history.len();
         for (index, entry) in history.iter().enumerate().rev() {
-            let size = entry.document.materialize().project.as_ref()
+            let size = entry
+                .document
+                .materialize()
+                .project
+                .as_ref()
                 .and_then(|p| p.extensions.get(crate::studio::STUDIO_KEY))
-                .and_then(|s| s.get("files")).and_then(Value::as_object)
-                .map_or(0, |files| files.iter().map(|(path, value)|
-                    path.len() + value.as_str().map_or(0, str::len)).sum::<usize>());
-            if keep_from < history.len() && bytes.saturating_add(size) > 16 * 1024 * 1024 { break; }
+                .and_then(|s| s.get("files"))
+                .and_then(Value::as_object)
+                .map_or(0, |files| {
+                    files
+                        .iter()
+                        .map(|(path, value)| path.len() + value.as_str().map_or(0, str::len))
+                        .sum::<usize>()
+                });
+            if keep_from < history.len() && bytes.saturating_add(size) > 16 * 1024 * 1024 {
+                break;
+            }
             bytes = bytes.saturating_add(size);
             keep_from = index;
         }
-        if keep_from > 0 { history.drain(..keep_from); }
+        if keep_from > 0 {
+            history.drain(..keep_from);
+        }
     }
     const MAX_HISTORY: usize = 200;
     if history.len() > MAX_HISTORY {

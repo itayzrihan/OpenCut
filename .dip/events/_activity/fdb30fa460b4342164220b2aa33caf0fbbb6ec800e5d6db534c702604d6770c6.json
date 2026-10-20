@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fdb30fa460b4342164220b2aa33caf0fbbb6ec800e5d6db534c702604d6770c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:39:55.328Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/podcast/reference.rs",
+          ".local/seven-smart-2026-10-20/compaction-final-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0c13ecaa-b905-4a07-94b2-4937231ef723"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:39:55.331Z",
+  "parents": [],
+  "branch": "main"
+}

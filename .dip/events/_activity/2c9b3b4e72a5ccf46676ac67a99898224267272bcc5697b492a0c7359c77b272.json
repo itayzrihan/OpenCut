@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c9b3b4e72a5ccf46676ac67a99898224267272bcc5697b492a0c7359c77b272",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:06:09.083Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/ai/podcast-task.ts';s=open(p).read().replace('PodcastOptions & { elementIds: string[]; requestId: string },','PodcastOptions & { sceneId: string; elementIds: string[]; requestId: string },').replace('const { elementIds, requestId, ...options } = input;','const { sceneId, elementIds, requestId, ...options } = input;').replace('const sceneId = this.editor.scenes.getActiveScene().id;\\n','',1).replace('if (this.controller) throw new Error(\"Podcast analysis is already running\");\\n\\t\\t// UI','if (this.controller) throw new Error(\"Podcast analysis is already running\");\\n\\t\\tif (this.editor.scenes.getActiveScene().id !== sceneId) throw new Error(\"Activate the explicit podcast source scene first\");\\n\\t\\t// UI',1);open(p,'w').write(s)\np='classic/apps/web/src/ai/timeline-tools.ts';s=open(p).read();a=s.index('case \"podcast.start\":');b=s.index('case \"podcast.get_status\":',a);section=s[a:b].replace('mode: z.enum','sceneId: z.string().min(1),\\n\\t\\t\\t\\t\\t\\tmode: z.enum');s=s[:a]+section+s[b:];a=s.index('name: \"podcast.start\",');b=s.index('name: \"podcast.get_status\",',a);section=s[a:b].replace('properties: {\\n','properties: {\\n\\t\\t\\t\\t\\tsceneId: {type:\"string\"},\\n',1).replace('\"mode\",\\n','\"sceneId\",\\n\\t\\t\\t\\t\\t\"mode\",\\n',1);s=s[:a]+section+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/ai/__tests__/podcast-task.test.ts';s=open(p).read().replace('const input = { ...options, elementIds: [], requestId: \"mcp-request\" };','const input = { ...options, sceneId: \"source\", elementIds: [], requestId: \"mcp-request\" };').replace('const { task, selectedRefs, preparedIds, apply } = setup();','const { task, scene, selectedRefs, preparedIds, apply } = setup();');s=s.replace('\\ttask.startRemote(input);\\n\\texpect(preparedIds)', '\\tscene.id=\"created-output\";\\n\\ttask.startRemote(input);\\n\\texpect(preparedIds)');open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/ai/podcast-task.ts classic/apps/web/src/ai/timeline-tools.ts ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2b2f6576-0f57-4158-aec4-30466437ab23"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:06:09.379Z",
+  "parents": [],
+  "branch": "main"
+}

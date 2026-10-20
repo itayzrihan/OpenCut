@@ -65,6 +65,7 @@ export class TranscriptionManager {
 	private abortController: AbortController | null = null;
 	private pausePromise: Promise<void> | null = null;
 	private runningPromise: Promise<TranscriptionTaskState> | null = null;
+	private runningReference: string | null = null;
 	private readonly editor: EditorCore;
 	private readonly dependencies: TranscriptionManagerDependencies;
 	private state: TranscriptionTaskState = {
@@ -95,9 +96,26 @@ export class TranscriptionManager {
 	start(
 		input: Parameters<TranscriptionManager["run"]>[0] = {},
 	): Promise<TranscriptionTaskState> {
-		if (this.runningPromise) return this.runningPromise;
+		const referenceKey = JSON.stringify(
+			[
+				...(input.resumeJob
+					? (input.resumeJob.referenceElementIds ?? [])
+					: (input.referenceElementIds ?? [])),
+			].sort(),
+		);
+		if (this.runningPromise) {
+			if (this.runningReference !== referenceKey)
+				throw new Error(
+					"A different timeline reference is being transcribed. Pause it before starting the selected clips.",
+				);
+			return this.runningPromise;
+		}
+		this.runningReference = referenceKey;
 		const promise = this.run(input).finally(() => {
-			if (this.runningPromise === promise) this.runningPromise = null;
+			if (this.runningPromise === promise) {
+				this.runningPromise = null;
+				this.runningReference = null;
+			}
 		});
 		this.runningPromise = promise;
 		return promise;
@@ -107,10 +125,12 @@ export class TranscriptionManager {
 		language = "auto",
 		settings = DEFAULT_CAPTION_LAYOUT,
 		resumeJob,
+		referenceElementIds,
 	}: {
 		language?: TranscriptionLanguage;
 		settings?: CaptionLayoutSettings;
 		resumeJob?: TranscriptionJob;
+		referenceElementIds?: string[];
 	} = {}): Promise<TranscriptionTaskState> {
 		if (
 			this.state.task.status === "running" ||
@@ -184,6 +204,8 @@ export class TranscriptionManager {
 						.transcriptionJobs?.find(
 							(j) =>
 								j.sceneId === scene.id &&
+								JSON.stringify([...(j.referenceElementIds ?? [])].sort()) ===
+									JSON.stringify([...(referenceElementIds ?? [])].sort()) &&
 								j.language === language &&
 								(j.engine ?? "local") === engine &&
 								(j.status === "running" || j.status === "paused"),
@@ -226,6 +248,7 @@ export class TranscriptionManager {
 						? { type: "resume" }
 						: {
 								type: "start",
+								referenceElementIds,
 								engine,
 								externalConfiguration,
 								sceneId: scene.id,
@@ -344,6 +367,10 @@ export class TranscriptionManager {
 					},
 				});
 			} else {
+				if (referenceElementIds?.length)
+					throw new Error(
+						"Reload OpenCut to transcribe the selected timeline reference safely",
+					);
 				const audioBlob = await this.dependencies.extractAudio(timeline);
 				this.throwIfCancelled();
 				result = await this.dependencies.transcribe({ audioBlob, ...request });

@@ -1,3 +1,4 @@
+import { checkExportEncoder } from "@/export/video-encoding";
 import type { EditorCore } from "@/core";
 import type { PlaybackPreparationContext } from "@/core/managers/playback-manager";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
@@ -481,6 +482,21 @@ export class RendererManager {
 
 			const exportFps = fps ?? activeProject.settings.fps;
 			const canvasSize = activeProject.settings.canvasSize;
+			const preferences =
+				options.preferences ?? activeProject.settings.exportPreferences;
+			const plan = preferences
+				? this.editor.command.planExport({
+						sceneId: activeScene.id,
+						preferences,
+						quality,
+						format,
+						fps: exportFps,
+					})
+				: undefined;
+			if (plan) {
+				const unsupported = await checkExportEncoder(plan);
+				if (unsupported) throw new Error(unsupported);
+			}
 			const hyperframes = this.getHyperframesRenderContext();
 
 			scratch = await ExportScratch.create();
@@ -530,8 +546,12 @@ export class RendererManager {
 			});
 
 			exporter = new SceneExporter({
-				width: canvasSize.width,
-				height: canvasSize.height,
+				width: plan?.width ?? canvasSize.width,
+				height: plan?.height ?? canvasSize.height,
+				logicalWidth: canvasSize.width,
+				logicalHeight: canvasSize.height,
+				videoCodec: plan?.codec,
+				videoBitrate: plan?.videoBitrate,
 				fps: exportFps,
 				format,
 				quality,

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0b749c41b13bfa14d515b4ea41d4200f5e22efbfa6bf087e71dd052aa3bc45c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:00:14.551Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '180,260p' crates/editor-api/src/operations/classic_takes/podcast/reference.rs; sed -n '92,114p' crates/editor-api/src/operations/classic_takes/podcast/reference.rs; sed -n '14,40p' classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3ef0b871-0caf-4dd1-ad27-4f8daf48c87e"
+      },
+      {
+        "at": "2026-10-19T17:00:14.633Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '180,260p' crates/editor-api/src/operations/classic_takes/podcast/reference.rs; sed -n '92,114p' crates/editor-api/src/operations/classic_takes/podcast/reference.rs; sed -n '14,40p' classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3ef0b871-0caf-4dd1-ad27-4f8daf48c87e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:00:15.092Z",
+  "parents": [],
+  "branch": "main"
+}

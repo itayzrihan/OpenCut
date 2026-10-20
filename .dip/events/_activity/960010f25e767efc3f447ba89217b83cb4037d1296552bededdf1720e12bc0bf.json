@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "960010f25e767efc3f447ba89217b83cb4037d1296552bededdf1720e12bc0bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:57:39.009Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/dense-audio-probe.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a1c1fc7b-999e-45c5-b432-7304cd6e33dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:57:39.009Z",
+  "parents": [],
+  "branch": "main"
+}

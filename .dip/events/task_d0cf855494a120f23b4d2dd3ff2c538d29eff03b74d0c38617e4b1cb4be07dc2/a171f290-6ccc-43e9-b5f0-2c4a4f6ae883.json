@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a171f290-6ccc-43e9-b5f0-2c4a4f6ae883",
+  "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Audit main-lane assumptions, selection intake, transcript clocks and camera/audio slicing",
+          "status": "completed"
+        },
+        {
+          "step": "Implement canonical reference regions, scoped transcription, preserved multicam extraction and UI selection intake",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify source isolation, sparse selection, audio coverage/sync, archive reload and large-cut performance",
+          "status": "in_progress"
+        },
+        {
+          "step": "Validate real edited project, build/deploy local production and verify live buttons",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-19T17:00:59.562Z",
+  "parents": [
+    "50c564f1-8085-4ab2-b3e9-7e6b32bc07a1"
+  ],
+  "branch": "main"
+}

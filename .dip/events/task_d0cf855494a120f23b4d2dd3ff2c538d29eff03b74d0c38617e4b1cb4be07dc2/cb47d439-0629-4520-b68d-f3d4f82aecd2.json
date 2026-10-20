@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb47d439-0629-4520-b68d-f3d4f82aecd2",
+  "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+  "type": "task.update",
+  "payload": {
+    "title": "Enable all podcast extract modes on edited multicam timelines with strict selection scope",
+    "acceptance": [
+      "All three podcast modes work on edited multicam timelines including overlay video/audio and many cuts.",
+      "No selection uses the whole active scene timeline; explicit clip selection restricts source dialogue and extraction to selected timeline spans, including synchronized camera/audio routes.",
+      "Canonical runtime owns scope derivation, validation and append-only extraction; source scenes/captions/full transcript/prior outputs remain intact.",
+      "Regression tests cover whole timeline versus sparse selections, overlapping cameras, chronological order, contextual reads and prohibited unselected moments; deploy verified local production."
+    ],
+    "scope": [
+      "crates/editor-api/src/operations/classic_takes*",
+      "crates/editor-api/tests/classic_podcast*",
+      "classic/apps/web/src/ai",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/core/canonical-classic-session.ts",
+      ".dip",
+      "analysis/podcast-multicam-scope-2026-10-19"
+    ],
+    "status": "in_progress"
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-19T16:36:00.491Z",
+  "parents": [
+    "40f617434e52998d21d748f341a7e9331a82e9037db7fd8d3cfa813bae4b6a5e"
+  ],
+  "branch": "main"
+}

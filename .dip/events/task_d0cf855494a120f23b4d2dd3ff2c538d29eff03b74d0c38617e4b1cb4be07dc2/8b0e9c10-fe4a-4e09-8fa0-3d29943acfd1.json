@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b0e9c10-fe4a-4e09-8fa0-3d29943acfd1",
+  "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Enabled teaser/highlights/chronological extraction from edited multicam or derived scenes using canonical timeline scopes. Empty selection is whole media; explicit selection hard-limits words, context, STT, decoder ranges and output handles. Preserved source scenes/captions/audio/camera cuts and append-only v3 archives. Scoped STT resumes matching work, skips excluded chunks, guards partial coverage. Deployed 2026-10-19T17-12-23-118Z-d19882d9; live all3 buttons enabled none/one/all selection and dialogs verified. 48core+33host+83adapter tests,6real-project isolated generations,6caption isolation runs,10kcut stress passed; live originals exact.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Real 416-cut project tests used synthetic word clocks in isolated runtimes, not new model/STT inference. No live output, export or human listening claimed."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-19T17:16:56.541Z",
+  "parents": [
+    "c02c2134-272d-46e2-8bab-6d32e6db1aa4"
+  ],
+  "branch": "main"
+}

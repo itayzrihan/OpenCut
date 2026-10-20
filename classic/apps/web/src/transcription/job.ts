@@ -11,6 +11,8 @@ export interface TranscriptionJob {
 	language: TranscriptionLanguage;
 	settings: CaptionLayoutSettings;
 	defaults: Record<string, unknown>;
+	referenceElementIds?: string[];
+	referenceRegions?: import("@/ai/podcast-types").PodcastReferenceRegion[];
 	sourceTracks: SceneTracks;
 	sourceMedia: Record<string, unknown>[];
 	totalDuration: number;
@@ -28,6 +30,7 @@ export type TranscriptionChange =
 	  }
 	| {
 			type: "start";
+			referenceElementIds?: string[];
 			engine?: TranscriptionEngine;
 			externalConfiguration?: string;
 			sceneId: string;

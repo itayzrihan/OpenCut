@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6c13a989faf524cd29727389dbdaf98b5ec42c176b83bc4ea9998c591d8e0e81",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T10:37:03.947Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-6d4a627c-3763-4eeb-86e0-2500bd3a872a"
+      },
+      {
+        "at": "2026-10-19T10:37:04.076Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-6d4a627c-3763-4eeb-86e0-2500bd3a872a"
+      },
+      {
+        "at": "2026-10-19T10:37:04.090Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-88fa7a9e-6394-44c5-8286-41d900a2fd01"
+      },
+      {
+        "at": "2026-10-19T10:37:04.866Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-88fa7a9e-6394-44c5-8286-41d900a2fd01"
+      },
+      {
+        "at": "2026-10-19T10:37:04.877Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.local/episode4-lipsync-2026-10-19')\na={'appliedDelaySeconds':20800/120000,'reason':'Source trims differed by an extra20800ticks; camera/mic cross-correlation confirmed about173ms audio advance. Both microphones corrected equally, preserving their relative phase.','before':json.loads((p/'measurements.json').read_text()),'additionalBefore':json.loads((p/'additional-measurements.json').read_text()),'after':json.loads((p/'after-measurements.json').read_text()),'verificationLimit':'Acoustic comparison with camera audio, not a calibrated visual phoneme measurement. Residual correlation peaks range from−38.563ms to+6.25ms; strongest matches are within3ms. No sample-accurate visual lip-sync claim.'}\nPath('analysis/episode4-lipsync-2026-10-19/evidence.json').write_text(json.dumps(a,ensure_ascii=False,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-19e0f852-5898-447f-9d63-544600fc6a0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:37:04.934Z",
+  "parents": [],
+  "branch": "main"
+}

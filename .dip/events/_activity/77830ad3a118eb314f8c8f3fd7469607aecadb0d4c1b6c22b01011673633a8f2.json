@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "77830ad3a118eb314f8c8f3fd7469607aecadb0d4c1b6c22b01011673633a8f2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:10:30.500Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_export.rs');s=p.read_text().replace('    format: Format,\\n','    format: Format,\\n    #[serde(default)]\\n    fps: Option<Rational>,\\n')\ns=s.replace('let total: f64 = weights.values().sum();','let total: f64 = weights.values().sum();\\n                let threshold = (total * 0.1).min(weights.values().copied().fold(0.0, f64::max));')\ns=s.replace('weights[&s.id] >= total * 0.1','weights[&s.id] >= threshold')\nold='''let fps = number(&settings[\"fps\"], \"numerator\", 30.0)\n                    / number(&settings[\"fps\"], \"denominator\", 1.0).max(1.0);'''\nif old not in s: print('fps location',s[s.index('let fps ='):s.index('let fps =')+220])\nelse:s=s.replace(old,'''let fps_value = if let Some(rate) = &input.fps {\n                    rate.validate(\"Export fps\").map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;\n                    serde_json::to_value(rate).map_err(|e| CapabilityError::Failed(e.to_string()))?\n                } else { settings[\"fps\"].clone() };\n                let fps = number(&fps_value, \"numerator\", 30.0) / number(&fps_value, \"denominator\", 1.0).max(1.0);''')\np.write_text(s)\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text().replace('planExport(input: { sceneId: string;','planExport(input: { fps?: import(\"opencut-wasm\").FrameRate; sceneId: string;');p.write_text(s)\np=Path('classic/apps/web/src/core/managers/renderer-manager.ts');s=p.read_text().replace('preferences, quality, format }) : undefined','preferences, quality, format, fps: exportFps }) : undefined');p.write_text(s)\nPY\nrustfmt --edition 2024 crates/editor-api/src/operations/classic_export.rs crates/editor-api/tests/classic_export.rs\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/core/__tests__/canonical-export.test.ts classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/managers/renderer-manager.ts\ncargo test -p opencut-editor-api --test classic_",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-7b611f53-fd6b-45e0-b848-d0b69de02112"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:10:30.712Z",
+  "parents": [],
+  "branch": "main"
+}

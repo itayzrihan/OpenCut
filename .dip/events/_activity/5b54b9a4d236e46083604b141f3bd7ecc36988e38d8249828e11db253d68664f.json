@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b54b9a4d236e46083604b141f3bd7ecc36988e38d8249828e11db253d68664f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:53:08.549Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/final-secret-scan.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e6ba492c-a676-4768-9a58-ce1d55af6271"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:53:08.550Z",
+  "parents": [],
+  "branch": "main"
+}

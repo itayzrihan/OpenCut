@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "037cd94da46c8bff7334a2f04dc4bd964aea9d86ac06c9ebe3b19b3528ed3c16",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:02:09.230Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/integration-tests/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__timeline__smart-takes__audio-evidence.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__core__managers____tests____transcription-manager.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__podcast-sync__precision.integration.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__export____tests____video-encoding.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/src__services__renderer____tests____scale-frame-output.test.ts.log",
+          ".local/seven-smart-2026-10-20/integration-tests/summary.json",
+          ".local/seven-smart-2026-10-20/integration-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "676abbbc-a693-4f44-842b-0404dc5bfb1a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:02:09.320Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c47a70c73fa4087ebdacb242cd52dc68c9e191b6ea19c91e7b72f5d3adaa2b13",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:18:50.229Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/timeline/smart-takes/types.ts';s=open(p).read().replace('version: 1 | 2;','version: 1 | 2 | 3;\\n\\t/** Canonical hard reference intervals for edited-timeline podcast archives. */\\n\\treferenceRegions?: { id: string; start: number; end: number }[];',1);open(p,'w').write(s)\nPY\nnode classic/scripts/local-production/build.mjs --stage > .local/seven-smart-2026-10-20/build-final.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-aa781dcf-493b-47ab-87a5-7a200ed89113"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:18:50.881Z",
+  "parents": [],
+  "branch": "main"
+}

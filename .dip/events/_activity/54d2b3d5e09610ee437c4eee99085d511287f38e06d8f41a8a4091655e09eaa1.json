@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54d2b3d5e09610ee437c4eee99085d511287f38e06d8f41a8a4091655e09eaa1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:15:20.988Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/check-podcast-lifecycle.test.ts');s=p.read_text().replace(\"sceneId:'source',words,options,sourceFingerprint\", \"sceneId:'source',options,words,sourceFingerprint\");p.write_text(s)\nPY\nbun test ./.dip/tools/check-podcast-lifecycle.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8f270df9-b867-4da3-8b2f-065a67582ac3"
+      },
+      {
+        "at": "2026-10-19T16:15:20.990Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 8 .local/podcast-editorial-upgrade/provider.log; cat > .dip/tools/verify-podcast-editorial.mjs <<'EOF'\nimport {readFile,writeFile} from 'node:fs/promises';\nimport {spawnSync} from 'node:child_process';\nimport assert from 'node:assert/strict';\nimport {join} from 'node:path';\nimport {homedir} from 'node:os';\nconst root='analysis/podcast-editorial-upgrade-2026-10-19';\nfunction run(command,args){const p=spawnSync(command,args,{encoding:'utf8',maxBuffer:8*1024*1024});if(p.status!==0)throw Error(`${command} failed: ${p.stdout}\\n${p.stderr}`);console.log(p.stdout.trim());}\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_podcast','--test','classic_teaser_editorial','--test','classic_podcast_editorial','--quiet']);\nrun('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/podcast-plan-cache.test.ts','--jobs=1','--report=.local/podcast-editorial-upgrade/configured-web-tests']);\nrun('bun',['test','./.dip/tools/check-podcast-lifecycle.test.ts']);\nrun('bun',['run','.dip/tools/check-extract-caption-isolation.ts']);\nrun('bun',['run','.dip/tools/evaluate-podcast-shorts.ts','--replay']);\nconst replay=JSON.parse(await readFile(`${root}/replay.json`,'utf8'));\nassert.equal(replay.passed,true);assert.equal(replay.results.length,2);\nfor(const r of replay.results){assert.equal(r.windows,22);assert.equal(r.providerCalls,0);assert.equal(r.report.windowsReviewed,r.report.windowsTotal);assert(r.sourceScenesExact&&r.transcriptionExact);assert.equal(r.outputScenes,r.videos.length);assert(r.outputScenes>0);assert.equal(r.report.critiques.length,r.outputScenes);assert(r.cuts.every(c=>c.seconds>=20&&c.seconds<=90));}\nconst deployment=JSON.parse(await readFile('.local/podcast-editorial-upgrade/deployment.json','utf8'));\nconst active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));\nassert.equal(active",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-60d2407a-03bf-40ba-95fb-747de0df5abf"
+      },
+      {
+        "at": "2026-10-19T16:15:21.076Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 8 .local/podcast-editorial-upgrade/provider.log; cat > .dip/tools/verify-podcast-editorial.mjs <<'EOF'\nimport {readFile,writeFile} from 'node:fs/promises';\nimport {spawnSync} from 'node:child_process';\nimport assert from 'node:assert/strict';\nimport {join} from 'node:path';\nimport {homedir} from 'node:os';\nconst root='analysis/podcast-editorial-upgrade-2026-10-19';\nfunction run(command,args){const p=spawnSync(command,args,{encoding:'utf8',maxBuffer:8*1024*1024});if(p.status!==0)throw Error(`${command} failed: ${p.stdout}\\n${p.stderr}`);console.log(p.stdout.trim());}\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_podcast','--test','classic_teaser_editorial','--test','classic_podcast_editorial','--quiet']);\nrun('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/podcast-plan-cache.test.ts','--jobs=1','--report=.local/podcast-editorial-upgrade/configured-web-tests']);\nrun('bun',['test','./.dip/tools/check-podcast-lifecycle.test.ts']);\nrun('bun',['run','.dip/tools/check-extract-caption-isolation.ts']);\nrun('bun',['run','.dip/tools/evaluate-podcast-shorts.ts','--replay']);\nconst replay=JSON.parse(await readFile(`${root}/replay.json`,'utf8'));\nassert.equal(replay.passed,true);assert.equal(replay.results.length,2);\nfor(const r of replay.results){assert.equal(r.windows,22);assert.equal(r.providerCalls,0);assert.equal(r.report.windowsReviewed,r.report.windowsTotal);assert(r.sourceScenesExact&&r.transcriptionExact);assert.equal(r.outputScenes,r.videos.length);assert(r.outputScenes>0);assert.equal(r.report.critiques.length,r.outputScenes);assert(r.cuts.every(c=>c.seconds>=20&&c.seconds<=90));}\nconst deployment=JSON.parse(await readFile('.local/podcast-editorial-upgrade/deployment.json','utf8'));\nconst active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));\nassert.equal(active",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-60d2407a-03bf-40ba-95fb-747de0df5abf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:15:21.879Z",
+  "parents": [],
+  "branch": "main"
+}

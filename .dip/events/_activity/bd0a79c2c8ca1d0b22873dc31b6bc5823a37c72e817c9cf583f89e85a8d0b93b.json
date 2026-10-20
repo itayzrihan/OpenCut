@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bd0a79c2c8ca1d0b22873dc31b6bc5823a37c72e817c9cf583f89e85a8d0b93b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:11:09.684Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/configured-web-tests/src__ai____tests____timeline-tools.test.ts.log",
+          ".local/seven-smart-2026-10-20/configured-web-tests/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/seven-smart-2026-10-20/configured-web-tests/src__timeline__smart-takes__audio-evidence.test.ts.log",
+          ".local/seven-smart-2026-10-20/configured-web-tests/src__timeline__smart-takes__audio-checkpoints.test.ts.log",
+          ".local/seven-smart-2026-10-20/configured-web-tests/src__core__managers____tests____transcription-manager.test.ts.log",
+          ".local/seven-smart-2026-10-20/configured-web-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f07f972e-3371-4b2d-9408-762b5143c635"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:11:09.685Z",
+  "parents": [],
+  "branch": "main"
+}

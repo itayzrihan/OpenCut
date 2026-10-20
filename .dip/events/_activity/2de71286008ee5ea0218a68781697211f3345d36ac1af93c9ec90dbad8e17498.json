@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2de71286008ee5ea0218a68781697211f3345d36ac1af93c9ec90dbad8e17498",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:12:44.274Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 12 .local/podcast-editorial-upgrade/provider.log; tail -n 10 .local/podcast-editorial-upgrade/production-build.log; sed -n '90,110p' classic/apps/web/src/ai/__tests__/podcast-task.test.ts; git diff --numstat -- crates/editor-api/src/operations/classic_takes/podcast.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-20b593d9-ebed-442d-b0ad-1d63010d6bd7"
+      },
+      {
+        "at": "2026-10-19T16:12:44.452Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 12 .local/podcast-editorial-upgrade/provider.log; tail -n 10 .local/podcast-editorial-upgrade/production-build.log; sed -n '90,110p' classic/apps/web/src/ai/__tests__/podcast-task.test.ts; git diff --numstat -- crates/editor-api/src/operations/classic_takes/podcast.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-20b593d9-ebed-442d-b0ad-1d63010d6bd7"
+      },
+      {
+        "at": "2026-10-19T16:12:44.463Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run .dip/tools/check-extract-caption-isolation.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-dab9776b-82f2-45e4-b457-5ff1feb03a75"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:12:45.399Z",
+  "parents": [],
+  "branch": "main"
+}

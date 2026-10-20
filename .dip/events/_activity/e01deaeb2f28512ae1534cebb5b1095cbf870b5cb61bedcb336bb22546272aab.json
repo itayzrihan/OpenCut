@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e01deaeb2f28512ae1534cebb5b1095cbf870b5cb61bedcb336bb22546272aab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:09:00.150Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/smart-takes/audio-evidence.ts');s=p.read_text().replace('const clips = sourceClips ?? scene.tracks.main.elements;','const clips = sourceClips ?? scene.tracks.main.elements;\\n\\tconst selectedIds=new Set(elementIds);',1).replace('elementIds.includes(e.id)','selectedIds.has(e.id)').replace('elementIds.includes(clip.id)','selectedIds.has(clip.id)');p.write_text(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/timeline/smart-takes/audio-evidence.ts\nnode_modules/.bin/eslint apps/web/src/ai/components/podcast-controls.tsx apps/web/src/ai/podcast-task.ts apps/web/src/core/canonical-classic-session.ts apps/web/src/core/managers/transcription-manager.ts apps/web/src/timeline/smart-takes/audio-evidence.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7516f63d-1710-4ebe-8fdf-9060291dfd07"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:09:00.234Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -21,13 +21,15 @@ pub struct PodcastGroupAlignmentOptions {
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PodcastGroupAlignment {
     /// Recording start relative to the automatically selected reference.
     pub offsets: Vec<Option<f64>>,
     pub confidence: Vec<f64>,
     pub reference_index: usize,
+    /// Edges of the shared-clock tree, used for bounded waveform verification.
+    pub parents: Vec<Option<usize>>,
 }
 #[export]
 pub fn align_podcast_sources(o: PodcastGroupAlignmentOptions) -> PodcastGroupAlignment {
@@ -36,6 +38,7 @@ pub fn align_podcast_sources(o: PodcastGroupAlignmentOptions) -> PodcastGroupAli
         offsets: vec![None; n.min(MAX_PODCAST_SOURCES)],
         confidence: vec![0.0; n.min(MAX_PODCAST_SOURCES)],
         reference_index: 0,
+        parents: vec![None; n.min(MAX_PODCAST_SOURCES)],
     };
     if n == 0
         || n > MAX_PODCAST_SOURCES
@@ -96,6 +99,7 @@ pub fn align_podcast_sources(o: PodcastGroupAlignmentOptions) -> PodcastGroupAli
         let Some((target, (source, lag, confidence))) = next else {
             break;
         };
+        result.parents[target] = Some(source);
         result.offsets[target] = Some(result.offsets[source].unwrap() + lag);
         result.confidence[target] = confidence.min(result.confidence[source]);
         newest = target;

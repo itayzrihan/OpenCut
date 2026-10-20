@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "eventId": "09ac1aacf3b58f6b7ba8c65c8b1b2aa6572a546d46cdb0a876054078d7b55910",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T09:37:26.546Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs",
+          "crates/editor-api/src/operations/classic_duplicate.rs",
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_multicam.rs",
+          "crates/editor-api/src/operations/classic_multicam_sources.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_source_audio.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs",
+          "crates/editor-api/src/operations/classic_takes/review.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2b36f6c1-c632-4cf0-940d-978b09042179"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:37:26.554Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "714fb95a8987574db441c2078aaf998b73ff6edf902622e2c6be9fd1a043ac6a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:14:17.049Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nm=json.load(open('.local/seven-smart-2026-10-20/media-before.json'))\nfor x in m:\n if x.get('type')=='audio':print({k:x.get(k) for k in ['id','name','sourcePath','storagePath','duration','bindingRevision']})\nPY\ncommand -v ffmpeg; cat .local/seven-smart-2026-10-20/transcription-progress.json; date -u",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-114c38e2-175a-4fac-93b9-1cccda5ca830"
+      },
+      {
+        "at": "2026-10-20T00:14:17.238Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nm=json.load(open('.local/seven-smart-2026-10-20/media-before.json'))\nfor x in m:\n if x.get('type')=='audio':print({k:x.get(k) for k in ['id','name','sourcePath','storagePath','duration','bindingRevision']})\nPY\ncommand -v ffmpeg; cat .local/seven-smart-2026-10-20/transcription-progress.json; date -u",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-114c38e2-175a-4fac-93b9-1cccda5ca830"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:14:17.558Z",
+  "parents": [],
+  "branch": "main"
+}

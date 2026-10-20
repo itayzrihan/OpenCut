@@ -31,6 +31,10 @@ import { BoundedMemoryTarget } from "@/export/bounded-memory-target";
 import type { ExportAudioStream } from "@/export/audio-stream";
 
 export type ExportParams = {
+	logicalWidth?: number;
+	logicalHeight?: number;
+	videoCodec?: "avc" | "hevc" | "vp9";
+	videoBitrate?: number;
 	width: number;
 	height: number;
 	fps: FrameRate;
@@ -85,6 +89,8 @@ export type SceneExporterEvents = {
 
 export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 	private renderer: CanvasRenderer;
+	private videoCodec?: "avc" | "hevc" | "vp9";
+	private videoBitrate?: number;
 	private format: ExportFormat;
 	private quality: ExportQuality;
 	private shouldIncludeAudio: boolean;
@@ -96,6 +102,10 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 	private isCancelled = false;
 
 	constructor({
+		logicalWidth,
+		logicalHeight,
+		videoCodec,
+		videoBitrate,
 		width,
 		height,
 		fps,
@@ -108,7 +118,11 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 		signal,
 	}: ExportParams) {
 		super();
+		this.videoCodec = videoCodec;
+		this.videoBitrate = videoBitrate;
 		this.renderer = new CanvasRenderer({
+			logicalWidth,
+			logicalHeight,
 			width,
 			height,
 			fps,
@@ -156,8 +170,10 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 		});
 
 		const videoSource = new VideoSampleSource({
-			codec: this.format === "webm" ? "vp9" : "avc",
-			bitrate: qualityMap[this.quality],
+			codec: this.videoCodec ?? (this.format === "webm" ? "vp9" : "avc"),
+			bitrate: this.videoBitrate ?? qualityMap[this.quality],
+			bitrateMode: "variable",
+			latencyMode: "quality",
 			keyFrameInterval: 2,
 		});
 

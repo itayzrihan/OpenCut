@@ -11,12 +11,14 @@ export async function runPodcastEditorial({
 	assertCurrent,
 	onStage,
 	cache,
+	onResume,
 }: {
 	source: PodcastSource;
 	options: PodcastOptions;
 	ask: (input: { instructions: string; prompt: string }) => Promise<string>;
 	assertCurrent: () => void;
 	onStage: (stage: string) => void;
+	onResume?: (savedResponses: number) => void;
 	cache?: {
 		key: string;
 		storage: Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -24,7 +26,7 @@ export async function runPodcastEditorial({
 }): Promise<PodcastVideo[]> {
 	if (!source.editorial)
 		throw new Error(
-			"Reload OpenCut to load the strategic teaser runtime. No scenes were changed.",
+			"Reload OpenCut to load the podcast editorial runtime. No scenes were changed.",
 		);
 	const key = cache ? `${cache.key}:editorial-v1` : null;
 	let responses: Record<string, unknown> = {};
@@ -45,13 +47,17 @@ export async function runPodcastEditorial({
 			cache.storage.removeItem(key);
 		}
 	}
+	if (Object.keys(responses).length) onResume?.(Object.keys(responses).length);
 	// Bound a malformed host/runtime conversation as well as model retries.
-	for (let exchange = 0; exchange < 100; exchange++) {
+	for (let exchange = 0; exchange < 200; exchange++) {
 		assertCurrent();
 		const step = source.editorial({ options, responses });
-		if (step.policyVersion !== "strategic-teaser-v1")
+		if (
+			step.policyVersion !==
+			(options.mode === "teaser" ? "strategic-teaser-v1" : "podcast-shorts-v2")
+		)
 			throw new Error(
-				"Teaser runtime version changed; reload before retrying.",
+				"Podcast runtime version changed; reload before retrying.",
 			);
 		if (step.complete) {
 			if (cache && key)
@@ -68,7 +74,7 @@ export async function runPodcastEditorial({
 			throw new Error(step.report.error);
 		}
 		if (!step.requests.length || step.requests.length > 2)
-			throw new Error("Invalid bounded teaser request batch");
+			throw new Error("Invalid bounded podcast request batch");
 		const labels: Record<string, string> = {
 			inventory: "מיפוי רגעים קצרים מכל הפרק",
 			compose: "בניית רצף וסדר עריכתי",
@@ -99,7 +105,9 @@ export async function runPodcastEditorial({
 				if (cache && key) {
 					const raw = JSON.stringify({ version: 1, responses });
 					if (raw.length > 2_000_000)
-						throw new Error("Teaser analysis exceeds its bounded resume cache");
+						throw new Error(
+							"Podcast analysis exceeds its bounded resume cache",
+						);
 					cache.storage.setItem(key, raw);
 				}
 			}),
@@ -108,7 +116,7 @@ export async function runPodcastEditorial({
 		if (failure?.status === "rejected") throw failure.reason;
 	}
 	throw new Error(
-		"Teaser analysis reached its bounded request limit. Reviewed work remains saved.",
+		"Podcast analysis reached its bounded request limit. Reviewed work remains saved.",
 	);
 }
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "41f885862fefeae4149fd3444535d8a38b6a7469bf5bc1ef412ad144c8c43abc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:46:38.438Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport zipfile,json,pathlib\nout=pathlib.Path('.local/podcast-sources-2026-10-19/template');out.mkdir(parents=True,exist_ok=True)\nwith zipfile.ZipFile('/Users/itayzrihan/Documents/OpenCut Templates/Medabrim-Hitnagdut-Intro.opencut.zip') as z:\n for n in z.namelist():\n  if n.startswith(('media/','fonts/')) or n=='project.json':\n   p=out/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(n))\n d=json.loads(z.read('project.json'))\n for s in d['scenes']:\n  print(s['name'])\n  for area,v in s['tracks'].items():\n   tracks=v if isinstance(v,list) else [v] if isinstance(v,dict) else []\n   for t in tracks:\n    print(area,t['name'],[(e['type'],e.get('name'),e.get('content'),e.get('sceneId'),e.get('fontFamily')) for e in t['elements']])\nPY\nrg -n 'sharedFonts|loadProjectFonts|projectFonts' classic/apps/web/src/core/managers/project-manager.ts | head -30\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ca3e28b8-c1f1-4895-b3ed-f26fb31aad8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:46:38.636Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7acbfd409358c04c540a28e565682ae1705ebc70f6e016eb5350715a2772c8ba",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:06:20.400Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/.gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "38d28895-1501-4d4b-b7c3-3f63ef3a318d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:06:20.403Z",
+  "parents": [],
+  "branch": "main"
+}

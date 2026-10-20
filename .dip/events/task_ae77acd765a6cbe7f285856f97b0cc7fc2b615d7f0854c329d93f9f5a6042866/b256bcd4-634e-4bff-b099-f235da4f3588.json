@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b256bcd4-634e-4bff-b099-f235da4f3588",
+  "taskId": "task_ae77acd765a6cbe7f285856f97b0cc7fc2b615d7f0854c329d93f9f5a6042866",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Export current episode as source4K HEVC VeryHigh into original SSD folder.",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify completed video metadata and upload to existing Niva-Lior Drive folder.",
+          "status": "pending"
+        },
+        {
+          "step": "Verify upload completion and report local and Drive outputs.",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:22:15.930Z",
+  "parents": [
+    "d5866c75-6cdf-4d62-b879-778c599fa6f1"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2be4130009e277113e2e80c427a30558ecad45c3dd72e33387da414d587c2c65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:49:47.237Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile}from'node:fs/promises';const p=JSON.parse(await readFile('.local/seven-smart-2026-10-20/prepared-before-fix.json','utf8'));const seconds=p.audioInputs.reduce((sum,i)=>sum+i.clip.duration/120000,0);const size=Math.round(16000*Math.max(.01,seconds/340000));const span=Math.floor(30*16000/size)*size/16000;\nfor(const i of p.audioInputs){const c=i.clip,trim=c.trimStart/120000,stop=trim+c.duration/120000;let prev=0,overlaps=[];for(let start=trim;start<stop;start+=span){const end=Math.min(stop,start+span);const duration=Math.ceil((end-start)*16000)/16000;const a=start-trim,b=a+duration;if(a+1e-6<prev)overlaps.push({start:a,previous:prev,gap:a-prev});prev=b;}console.log(c.id,'window',span,'overlaps',overlaps.length,overlaps.slice(0,2));}\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6da310d5-c897-4c55-b49e-962764339ce9"
+      },
+      {
+        "at": "2026-10-20T00:49:47.350Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile}from'node:fs/promises';const p=JSON.parse(await readFile('.local/seven-smart-2026-10-20/prepared-before-fix.json','utf8'));const seconds=p.audioInputs.reduce((sum,i)=>sum+i.clip.duration/120000,0);const size=Math.round(16000*Math.max(.01,seconds/340000));const span=Math.floor(30*16000/size)*size/16000;\nfor(const i of p.audioInputs){const c=i.clip,trim=c.trimStart/120000,stop=trim+c.duration/120000;let prev=0,overlaps=[];for(let start=trim;start<stop;start+=span){const end=Math.min(stop,start+span);const duration=Math.ceil((end-start)*16000)/16000;const a=start-trim,b=a+duration;if(a+1e-6<prev)overlaps.push({start:a,previous:prev,gap:a-prev});prev=b;}console.log(c.id,'window',span,'overlaps',overlaps.length,overlaps.slice(0,2));}\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-6da310d5-c897-4c55-b49e-962764339ce9"
+      },
+      {
+        "at": "2026-10-20T00:49:47.351Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "",
+        "branch": "main",
+        "recordId": "6d3d299d-c752-4e93-9538-e451fa865b16"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:49:47.355Z",
+  "parents": [],
+  "branch": "main"
+}

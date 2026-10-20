@@ -1,0 +1,20 @@
+import {readFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {homedir} from 'node:os';
+import {join} from 'node:path';
+function run(cmd,args){const p=spawnSync(cmd,args,{encoding:'utf8',maxBuffer:12*1024*1024});if(p.status!==0)throw Error(`${cmd} failed: ${p.stdout}\n${p.stderr}`);console.log(p.stdout.trim());}
+run('cargo',['test','-p','opencut-editor-api','--test','classic_podcast_reference','--test','classic_takes','--test','classic_podcast','--test','classic_podcast_editorial','--test','classic_teaser_editorial','--test','classic_transcription','--quiet']);
+run('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/__tests__/timeline-tools.test.ts','src/ai/podcast-plan-cache.test.ts','src/timeline/smart-takes/audio-evidence.test.ts','src/timeline/smart-takes/audio-checkpoints.test.ts','src/core/managers/__tests__/transcription-manager.test.ts','--jobs=1','--report=.local/seven-smart-2026-10-20/configured-web-tests']);
+run('bun',['run','.dip/tools/check-seven-scenes.ts']);
+run('python3',['.dip/tools/check-seven-audio.py']);
+const report=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/outputs.json','utf8'));
+assert(report.passed&&report.outputCount===7&&report.canonicalReload&&report.sourceScenesExact);
+const status=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/mcp-result.json','utf8'));
+assert.equal(status.verifiedTotal,7);assert.equal(status.batches.length,2);assert(status.batches.every(b=>b.status==='succeeded'&&b.reusedTranscript));assert.equal(status.batches.reduce((n,b)=>n+b.outputCount,0),7);assert(status.batches[0].resumedAnalysis);assert.equal(status.batches[0].analysisRequests,0);assert.equal(status.batches[1].outputCount,1);
+const playback=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/playback.json','utf8'));assert(playback.passed);assert.equal(playback.outputs.length,7);assert(playback.outputs.every(r=>r.playbackAdvanced&&r.muted===false));assert.equal(playback.projectSceneCount,9);
+const deployment=JSON.parse(await readFile('.local/seven-smart-2026-10-20/deployment.json','utf8'));
+const active=JSON.parse(await readFile(join(homedir(),'Library/Application Support/OpenCut Local/current.json'),'utf8'));
+assert.equal(active.id,deployment.release);assert(deployment.running);assert((await fetch('http://localhost:3211')).ok);
+run('git',['diff','--check']);
+console.log(JSON.stringify({passed:true,outputs:7,productionRelease:active.id,sourcePreserved:true,firstBatchResumed:true,firstBatchNewModelCalls:0,seventhBatchNewModelCalls:status.batches[1].analysisRequests,limits:['Representative source audio signal checks, not export or exhaustive human listening.','Existing architecture migration gate has three unchanged violations; see audit.he.md.']}));

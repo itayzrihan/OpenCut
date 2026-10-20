@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aae83d1fab806b00325f9471bcd42a3b6a9ab3a4bcc7a6db720965428a718d31",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:13:39.037Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3875d3aa-e438-4a26-96c1-24c1fa1feb3d"
+      },
+      {
+        "at": "2026-10-19T16:13:39.040Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node_modules/.bin/eslint apps/web/src/ai/podcast-plan.ts apps/web/src/ai/podcast-task.ts apps/web/src/ai/podcast-editorial.ts apps/web/src/ai/components/podcast-controls.tsx",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-712e9ecd-f6ef-4b32-a4b7-65b75ebab609"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:13:39.237Z",
+  "parents": [],
+  "branch": "main"
+}

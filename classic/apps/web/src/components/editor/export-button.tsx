@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransitionTopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -37,6 +37,8 @@ import {
 	SectionTitle,
 } from "@/components/section";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
+import { checkExportEncoder } from "@/export/video-encoding";
+import type { ExportPlan, ExportPreferences } from "@/export";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
 
 function isExportFormat(value: string): value is ExportFormat {
@@ -108,15 +110,53 @@ function ExportPopover({
 	const [format, setFormat] = useState<ExportFormat>(
 		DEFAULT_EXPORT_OPTIONS.format,
 	);
-	const [quality, setQuality] = useState<ExportQuality>(
-		DEFAULT_EXPORT_OPTIONS.quality,
-	);
+	const [quality, setQuality] = useState<ExportQuality>("very_high");
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
+	const preferences: ExportPreferences = activeProject.settings
+		.exportPreferences ?? { resolution: "source", encoding: "compact" };
+	const updatePreferences = (patch: Partial<ExportPreferences>) =>
+		editor.project.updateSettings({
+			settings: { exportPreferences: { ...preferences, ...patch } },
+		});
+	let plan: ExportPlan | undefined;
+	let planError: string | undefined;
+	try {
+		plan = editor.command.planExport({
+			sceneId: editor.scenes.getActiveScene().id,
+			preferences,
+			quality,
+			format,
+		});
+	} catch (error) {
+		planError =
+			error instanceof Error ? error.message : "Could not plan export";
+	}
+	const planKey = JSON.stringify(plan);
+	const [encoderState, setEncoderState] = useState<{
+		key: string | undefined;
+		error: string | null;
+	}>({ key: undefined, error: null });
+	useEffect(() => {
+		let active = true;
+		if (planKey) {
+			void checkExportEncoder(JSON.parse(planKey) as ExportPlan).then(
+				(error) => {
+					if (active) setEncoderState({ key: planKey, error });
+				},
+			);
+		}
+		return () => {
+			active = false;
+		};
+	}, [planKey]);
+	const checkingEncoder = !!planKey && encoderState.key !== planKey;
+	const encoderError = encoderState.key === planKey ? encoderState.error : null;
 	const hasReadyExport = hasExportOutput(exportResult);
 	const handleExport = async () => {
-		if (!activeProject) return;
+		if (!activeProject || !plan || checkingEncoder || encoderError || planError)
+			return;
 
 		let destination: FileSystemFileHandle | undefined;
 		// The picker must run during this click's user activation, before audio
@@ -149,9 +189,12 @@ function ExportPopover({
 				);
 			return;
 		}
+		if (!activeProject.settings.exportPreferences)
+			updatePreferences(preferences);
 		const result = await editor.project.export({
 			destination,
 			options: {
+				preferences,
 				format,
 				quality,
 				fps: activeProject.settings.fps,
@@ -202,7 +245,7 @@ function ExportPopover({
 	};
 
 	return (
-		<PopoverContent className="bg-background mr-4 flex w-80 flex-col p-0">
+		<PopoverContent className="bg-background mr-4 flex w-96 max-h-[85vh] overflow-y-auto flex-col p-0">
 			{exportResult && !exportResult.success ? (
 				<ExportError
 					error={exportResult.error || "Unknown error occurred"}
@@ -219,6 +262,94 @@ function ExportPopover({
 					<div className="flex flex-col gap-4">
 						{!isExporting && !hasReadyExport && (
 							<>
+								<div className="space-y-3 p-3 text-sm">
+									<label className="flex flex-col gap-1">
+										Resolution
+										<select
+											aria-label="Export resolution"
+											className="bg-background border rounded p-2"
+											value={preferences.resolution}
+											onChange={(e) =>
+												updatePreferences({
+													resolution: e.target
+														.value as ExportPreferences["resolution"],
+												})
+											}
+										>
+											<option value="source">Source · smart resolution</option>
+											<option value="project">Project resolution</option>
+										</select>
+									</label>
+									{format === "mp4" && (
+										<label className="flex flex-col gap-1">
+											Encoding
+											<select
+												aria-label="Export encoding"
+												className="bg-background border rounded p-2"
+												value={preferences.encoding}
+												onChange={(e) =>
+													updatePreferences({
+														encoding: e.target
+															.value as ExportPreferences["encoding"],
+													})
+												}
+											>
+												<option value="compact">Compact · HEVC (H.265)</option>
+												<option value="compatible">Compatible · H.264</option>
+											</select>
+										</label>
+									)}
+									{plan && (
+										<div
+											aria-label="Export output summary"
+											className="space-y-1 text-xs text-muted-foreground"
+										>
+											<p className="font-medium text-foreground">
+												{plan.width} × {plan.height} ·{" "}
+												{plan.codec.toUpperCase()} ·{" "}
+												{(plan.videoBitrate / 1000000).toFixed(1)} Mbps
+											</p>
+											<p>
+												Estimated size:{" "}
+												{(plan.estimatedBytes / 1000000000).toFixed(2)} GB ·
+												actual size varies.
+											</p>
+											<p>
+												Composition and aspect ratio stay the same. Main video
+												sources determine smart resolution; short inserts and
+												still images do not lower it.
+											</p>
+											{plan.warnings.map((warning) => (
+												<p key={warning}>{warning}</p>
+											))}
+											{plan.upscaledSources.length > 0 && (
+												<details>
+													<summary>
+														{plan.upscaledSources.length} sources may be
+														enlarged
+													</summary>
+													{plan.upscaledSources.map((name) => (
+														<p key={name}>{name}</p>
+													))}
+												</details>
+											)}
+											{plan.codec === "hevc" && (
+												<p>
+													HEVC makes smaller files; older players may need
+													H.264.
+												</p>
+											)}
+										</div>
+									)}
+									{checkingEncoder && (
+										<p className="text-xs">Checking encoder support…</p>
+									)}
+									{(planError || encoderError) && (
+										<p role="alert" className="text-xs text-destructive">
+											{planError || encoderError}
+										</p>
+									)}
+								</div>
 								<div className="flex flex-col">
 									<Section
 										collapsible
@@ -239,9 +370,7 @@ function ExportPopover({
 											>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="mp4" id="mp4" />
-													<Label htmlFor="mp4">
-														MP4 (H.264) - Better compatibility
-													</Label>
+													<Label htmlFor="mp4">MP4 - H.264 or HEVC</Label>
 												</div>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="webm" id="webm" />
@@ -310,7 +439,13 @@ function ExportPopover({
 								</div>
 
 								<div className="p-3 pt-0">
-									<Button onClick={handleExport} className="w-full gap-2">
+									<Button
+										onClick={handleExport}
+										disabled={
+											!plan || checkingEncoder || !!encoderError || !!planError
+										}
+										className="w-full gap-2"
+									>
 										<Download className="size-4" />
 										Export
 									</Button>

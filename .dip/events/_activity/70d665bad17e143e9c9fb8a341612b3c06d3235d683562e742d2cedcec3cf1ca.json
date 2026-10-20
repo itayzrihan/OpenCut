@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70d665bad17e143e9c9fb8a341612b3c06d3235d683562e742d2cedcec3cf1ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:48:55.554Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/components/podcast-controls.tsx",
+          "classic/apps/web/src/ai/podcast-task.ts",
+          "classic/apps/web/src/ai/podcast-types.ts",
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/transcription-manager.ts",
+          "classic/apps/web/src/timeline/smart-takes/audio-evidence.ts",
+          "classic/apps/web/src/ai/__tests__/podcast-task.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cdf682be-ba17-494b-bfe4-2f62026a5d32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:48:55.559Z",
+  "parents": [],
+  "branch": "main"
+}

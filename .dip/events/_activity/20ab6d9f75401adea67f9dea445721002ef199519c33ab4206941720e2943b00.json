@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20ab6d9f75401adea67f9dea445721002ef199519c33ab4206941720e2943b00",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:18:50.858Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/smart-takes/types.ts",
+          ".local/seven-smart-2026-10-20/build-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4047453d-186d-41ae-a0cc-46d08dcb41bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:18:50.883Z",
+  "parents": [],
+  "branch": "main"
+}

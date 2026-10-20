@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "198bfcbbd6c66512a0e690a95ebe6963a1509c8a7f6e526e6b332d364e7c0025",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:37:50.690Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,re\np=json.load(open('.local/seven-smart-2026-10-20/project-before-extract.json'));tracks=[t for t in p['scenes'][1]['tracks']['overlay'] if 'captionSource'in t];mapping={}\ndef label(s):\n k=re.sub(r'[^\\w]', '',s).lower()\n if k not in mapping:mapping[k]='token'+str(len(mapping))\n return mapping[k]\nwords=[{**w,'text':label(w['text']),'start':w['start']-390,'end':w['end']-390}for w in tracks[0]['captionSource']['words']if w['start']>=390 and w['end']<=420]\ncues=[]\nfor ti,t in enumerate(tracks):\n elems=[]\n for e in t['elements']:\n  if e['startTime']<390*120000 or e['startTime']+e['duration']>420*120000:continue\n  runs=[{k:r[k]for k in ['text','startTime','endTime']if k in r}for r in e.get('wordRuns',[])]\n  for r in runs:r['text']=label(r['text'])\n  elems.append({'id':f'fixture-cue-{ti}-{len(elems)}','type':'text','name':'Synthetic cue','startTime':e['startTime']-390*120000,'duration':e['duration'],'trimStart':e.get('trimStart',0),'trimEnd':0,'params':{'content':' '.join(r['text']for r in runs),'fontFamily':'Arial','fontSize':80},'wordRuns':runs})\n cues.append(elems)\nf={'description':'Anonymized local-ASR clock/cue regression: repeated tokens sharing a start with different ends. No original dialogue.','words':words,'cues':cues}\njson.dump(f,open('crates/editor-api/tests/fixtures/podcast-overlapping-words.json','w'),indent=2)\np='crates/editor-api/src/operations/classic_takes/podcast.rs';s=open(p).read();a=s.index('                        if serde_json::to_value(&compact_words).unwrap()');b=s.index('                        let audio_ids =',a);s=s[:a]+'''                        // Model word IDs and their content/clocks must remain exact. The\n                        // source_index is an archive-local pointer: compacted caption\n                        // layers may reorder equal-start ASR words by end time.\n                        if compact_words.len() != words.len() || compact_words.iter().zip(&words).any(|(a,b)|\n                            a.id",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-deccde94-dbe9-426b-9e83-0c1a7f239905"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:37:51.142Z",
+  "parents": [],
+  "branch": "main"
+}

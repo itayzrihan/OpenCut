@@ -60,6 +60,7 @@ function cache() {
 test("a successful sibling checkpoints immediately and resumes after provider failure", async () => {
 	const saved = cache();
 	let fail = true;
+	const resumed: number[] = [];
 	const asked: string[] = [];
 	const source: PodcastSource = {
 		revision: 1,
@@ -85,6 +86,9 @@ test("a successful sibling checkpoints immediately and resumes after provider fa
 		assertCurrent: () => {},
 		onStage: () => {},
 		cache: saved,
+		onResume: (count: number) => {
+			resumed.push(count);
+		},
 	};
 	await expect(runPodcastEditorial(input)).rejects.toThrow("overloaded");
 	expect(
@@ -96,6 +100,15 @@ test("a successful sibling checkpoints immediately and resumes after provider fa
 	expect(await runPodcastEditorial(input)).toEqual([video]);
 	expect(asked).toEqual(["inventory:0:0", "inventory:1:0", "inventory:1:0"]);
 	expect(saved.data.has(`${saved.key}:editorial-v1:report`)).toBe(true);
+	expect(
+		await runPodcastEditorial({
+			...input,
+			ask: async () => {
+				throw Error("Completed analysis was replayed");
+			},
+		}),
+	).toEqual([video]);
+	expect(resumed).toEqual([1, 2]);
 });
 test("malformed JSON is evidence for canonical repair, never silently accepted", async () => {
 	let observed: unknown;

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "111a5525bdb0c70734149ae6a9e16551df6061e9eb8af04319141e1fee57e81f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:04:21.405Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -14 .local/seven-smart-2026-10-20/build.log; tail -12 .local/seven-smart-2026-10-20/editor-api-tests.log; cat .local/seven-smart-2026-10-20/transcription-progress.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8f8a7fce-d058-453d-a438-14b36523866a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:04:21.472Z",
+  "parents": [],
+  "branch": "main"
+}

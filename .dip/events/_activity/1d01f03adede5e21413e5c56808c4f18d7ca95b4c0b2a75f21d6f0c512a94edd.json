@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d01f03adede5e21413e5c56808c4f18d7ca95b4c0b2a75f21d6f0c512a94edd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:41:47.853Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792424505935/src__core____tests____canonical-multicam.test.ts.log",
+          ".local/classic-web-tests/1792424505935/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "55845501-271d-42d3-a70a-7ed730feb668"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:41:47.854Z",
+  "parents": [],
+  "branch": "main"
+}

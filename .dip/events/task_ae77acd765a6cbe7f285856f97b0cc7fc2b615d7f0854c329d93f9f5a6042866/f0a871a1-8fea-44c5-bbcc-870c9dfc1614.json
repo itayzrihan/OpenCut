@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0a871a1-8fea-44c5-bbcc-870c9dfc1614",
+  "taskId": "task_ae77acd765a6cbe7f285856f97b0cc7fc2b615d7f0854c329d93f9f5a6042866",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Export completed HEVC3840x2160 30fps32.05Mbps with AAC audio,1748.810884s,7074720912bytes. Start/middle/end decode passed. User performed Drive upload; agent discovered in progress, avoided duplication, verified Drive2uploadscomplete,newfilename in Niva-Lior/SE02 EP01,6.59GiB matching local7.07GB. Drive file12J4w2L3a_usGuHwmm6QJYm3efL_uF3sH. Heartbeat4 nowPAUSED. Evidence analysis/episode4-4k-delivery-2026-10-19, screenshot .local/episode4-4k-delivery/drive-complete.png.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Drive upload and displayed size verified in UI; remote checksum not fetched. Drive streaming processing may continue. User handled upload; agent did not upload duplicate."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:50:51.027Z",
+  "parents": [
+    "6c70d5a8-b31d-480e-9bd0-45a04ad29a70"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5e4d1076-c291-43fb-9086-48bd0a36ae24",
+  "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Live MCP session bound Yarden9deb/multicam-scene-1. Started local Hebrew transcription via canonical standalone reviewed MCP plan;17/29 completed sections persisted, no scene outputs yet. Added bridged podcast.start/get_status/cancel using same PodcastTask/native canonical actions, explicit scene/selection/request ID;39host+11Rustagent tests pass, full editor-api298pass/1ignored, integration34pass. Final staged production candidate2026-10-20T00-11-33-192Z-d19882d9 ready; NOT activated to avoid interrupting STT. Before+media snapshots private .local/seven-smart-2026-10-20; caffeinate owned session36887 prevents idle sleep; progress watcher8809. Read-only repo audit:0openPRs,all localbranches ancestors main,publicrepo, credential scans0. Architecture gate has3 pre-existing mutation sites in brand-kits/apply.ts/auto-texts.ts; do not silently waive. TS TakeAssembly DTO still needs version3/referenceRegions correction during final integration.",
+    "next": "Finish STT; capture post-STT baseline, activate candidate via .local/seven-smart-2026-10-20/activate.mjs, reload browser once, discover podcast tools then MCPstart highlights with maxOutputs7,elementIds[],explicitscene/request. Verify seven saved output scenes, source unchanged and audio; afterward commit/push all local application work, fetch/reconcile canonicalorigin and final audit/check. Do not start inference anew where durable chunks exist.",
+    "head": "d19882d9a55dd469988fa5738477a0eeadbd30b6"
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T00:13:56.377Z",
+  "parents": [
+    "44a4c8cc-b407-4265-a466-77772c966a9d"
+  ],
+  "branch": "main"
+}

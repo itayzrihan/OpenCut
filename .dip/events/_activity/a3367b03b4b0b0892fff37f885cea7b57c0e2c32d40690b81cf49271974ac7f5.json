@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a3367b03b4b0b0892fff37f885cea7b57c0e2c32d40690b81cf49271974ac7f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:50:01.512Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src | rg 'audio-evidence.*test|transcription-manager.*test'; cat > crates/editor-api/tests/classic_podcast_reference.rs <<'EOF'\nuse opencut_editor_api::{InvocationContext,OpenCutRuntime};\nuse serde_json::{Value,json};\nasync fn call(r:&OpenCutRuntime,id:&str,v:Value)->Value{r.registry().invoke(id,InvocationContext::default(),v).await.unwrap().result.data}\nasync fn state(r:&OpenCutRuntime)->Value{call(r,\"app.state.read\",json!({})).await[\"value\"].clone()}\nasync fn setup(cuts:usize)->OpenCutRuntime{\n let r=OpenCutRuntime::default();let mut c:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n let s=&mut c[\"document\"][\"scenes\"][0];let mut original=s[\"tracks\"][\"main\"][\"elements\"][0].clone();\n original[\"retime\"]=json!({\"rate\":1});original[\"trimStart\"]=json!(0);original[\"trimEnd\"]=json!(0);original[\"params\"][\"audioSyncOffset\"]=json!(0);\n s[\"tracks\"][\"main\"][\"elements\"]=json!([]);\n let mut cameras=vec![];\n for camera in 0..2{let elements=(0..cuts).map(|i|{let mut e=original.clone();e[\"id\"]=json!(format!(\"camera-{camera}-{i}\"));e[\"startTime\"]=json!(i as i64*60000);e[\"duration\"]=json!(60000);e[\"trimStart\"]=json!(i as i64*60000);e[\"enabled\"]=json!(i%2==camera);e[\"params\"][\"volume\"]=json!(0);e}).collect::<Vec<_>>();cameras.push(json!({\"id\":format!(\"camera-track-{camera}\"),\"type\":\"video\",\"name\":\"Routed camera\",\"muted\":true,\"hidden\":false,\"elements\":elements}));}\n let words=(0..cuts*2).map(|i|json!({\"text\":format!(\"word{i}\"),\"start\":i as f64*0.25,\"end\":i as f64*0.25+0.2})).collect::<Vec<_>>();\n cameras.push(json!({\"id\":\"captions\",\"type\":\"text\",\"name\":\"Captions\",\"hidden\":false,\"elements\":[],\"captionSource\":{\"sourceId\":\"podcast-source\",\"words\":words,\"settings\":{}}}));\n s[\"tracks\"][\"overlay\"]=json!(cameras);\n s[\"tracks\"][\"audio\"]=json!([{\"id\":\"voice\",\"type\":\"audio\",\"name\":\"Voice\",\"muted\":false,\"elements\":[{\"id\":\"voice-clip\",\"type\":\"audio\",\"mediaId\":\"video-asset\",\"startTime\":0,\"duration\":cuts as i64*60000,\"trimStart\":240000,",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0849ee96-916d-43a2-a5e6-1ed12c2f553f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:50:01.868Z",
+  "parents": [],
+  "branch": "main"
+}

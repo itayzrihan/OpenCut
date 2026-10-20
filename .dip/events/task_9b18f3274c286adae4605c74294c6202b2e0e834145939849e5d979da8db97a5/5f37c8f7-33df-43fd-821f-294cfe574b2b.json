@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f37c8f7-33df-43fd-821f-294cfe574b2b",
+  "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Diagnose episode-specific offset versus general synchronization precision.",
+          "status": "completed"
+        },
+        {
+          "step": "Implement bounded multi-window waveform verification on shared Rust clock and surface uncertain/drifting evidence.",
+          "status": "completed"
+        },
+        {
+          "step": "Validate actual sources, canonical subframe persistence, browser decoder/WASM and local deployment.",
+          "status": "in_progress"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T15:35:15.828Z",
+  "parents": [
+    "49f96917-1e6f-48be-bd7d-b68dc98ece9d"
+  ],
+  "branch": "main"
+}

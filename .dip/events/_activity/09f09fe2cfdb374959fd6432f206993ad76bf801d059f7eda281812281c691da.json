@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "09f09fe2cfdb374959fd6432f206993ad76bf801d059f7eda281812281c691da",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:05:10.789Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/bridge-tests.log",
+          ".local/seven-smart-2026-10-20/bridge-tests/src__ai____tests____podcast-task.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4d24a778-7ef9-4403-be9a-873f142d4442"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:05:10.792Z",
+  "parents": [],
+  "branch": "main"
+}

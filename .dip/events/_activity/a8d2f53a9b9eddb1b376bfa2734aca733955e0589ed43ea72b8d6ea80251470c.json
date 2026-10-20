@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8d2f53a9b9eddb1b376bfa2734aca733955e0589ed43ea72b8d6ea80251470c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:37:51.118Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/fixtures/podcast-overlapping-words.json",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs",
+          "crates/editor-api/tests/classic_podcast_reference.rs",
+          ".local/seven-smart-2026-10-20/compaction-regression.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6ad400af-943e-431c-8b85-080f69329580"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:37:51.143Z",
+  "parents": [],
+  "branch": "main"
+}

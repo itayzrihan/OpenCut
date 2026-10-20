@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27b1950e6f5498762e457183d91d069353ce950b37bfd4603a05a3bc46679b7a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:11:29.643Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/rendering/index.ts | head -75; rg -n 'DEFAULT_TRANSFORM|defaultTransform' classic/apps/web/src/rendering classic/apps/web/src/constants* classic/apps/web/src/services/renderer/__tests__ | head -20\ncat /tmp/opencut-source-export-build.log | tail -8",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-36d6eb37-41ef-48c7-ad48-1ea8930b574b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:11:29.847Z",
+  "parents": [],
+  "branch": "main"
+}

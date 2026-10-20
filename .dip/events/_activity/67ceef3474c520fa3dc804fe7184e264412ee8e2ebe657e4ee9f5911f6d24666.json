@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "67ceef3474c520fa3dc804fe7184e264412ee8e2ebe657e4ee9f5911f6d24666",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:47:05.781Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ae77acd765a6cbe7f285856f97b0cc7fc2b615d7f0854c329d93f9f5a6042866",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess\nfrom pathlib import Path\np='/Volumes/Portable Sandisk SSD/לקוחות/Lior Niva New/פרק 4 — המציאות לא זזה — 4K HEVC.mp4'\nmeta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',p]))\nPath('.local/episode4-4k-delivery/ffprobe.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2))\nfor t in ['0','870','1745']:\n subprocess.run(['ffmpeg','-v','error','-ss',t,'-i',p,'-t','2','-f','null','-'],check=True)\nprint('Beginning, middle, and end decode passed for video and audio.')\nPY",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-2a560666-47bb-47eb-9324-cc05426dcd61"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:47:05.803Z",
+  "parents": [],
+  "branch": "main"
+}

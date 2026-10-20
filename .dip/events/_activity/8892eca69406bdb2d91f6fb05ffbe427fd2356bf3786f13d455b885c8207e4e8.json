@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8892eca69406bdb2d91f6fb05ffbe427fd2356bf3786f13d455b885c8207e4e8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:58:46.406Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'worldWidthFrames|parallax.sceneId|worldFrames' classic/apps/web/src -g '*.ts' -g '*.tsx' -g '!*.generated.ts' | head -50",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-3c94c4da-4729-4133-9ab7-990c9021087b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:58:46.442Z",
+  "parents": [],
+  "branch": "main"
+}

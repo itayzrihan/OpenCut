@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dcb180e38553800a404fd5f18d2db79e293dff0e1e693a52bae710dbd3583ba9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:25:20.293Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/scripts/mcp-bridge-runner.mjs | head -130; git diff --stat -- classic/apps/web/src/timeline/smart-takes/types.ts; node .local/seven-smart-2026-10-20/mcp-call.mjs podcast.get_status; date -u",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-da85a68c-6882-406a-a5b5-9e0e289de03c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:25:20.557Z",
+  "parents": [],
+  "branch": "main"
+}

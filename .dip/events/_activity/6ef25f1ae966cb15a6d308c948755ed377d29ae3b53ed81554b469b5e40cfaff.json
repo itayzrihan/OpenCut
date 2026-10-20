@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ef25f1ae966cb15a6d308c948755ed377d29ae3b53ed81554b469b5e40cfaff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:35:09.698Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/seven-smart-2026-10-20/compaction-probe.log; tail -6 .local/seven-smart-2026-10-20/build-db-final.log; date -u",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-329c60f3-f071-4b49-9e0d-231ee9194909"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:35:09.768Z",
+  "parents": [],
+  "branch": "main"
+}

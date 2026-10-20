@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "49f96917-1e6f-48be-bd7d-b68dc98ece9d",
+  "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+  "type": "task.update",
+  "payload": {
+    "title": "Improve automatic podcast audio synchronization precision for future edits",
+    "description": "Prior episode4 correction was a per-project173.33ms adjustment. Diagnose generic sync precision and implement measured refinement without a fixed episode-specific offset. Preserve all-source synchronization and current project edits.",
+    "acceptance": [
+      "Improve generic automatic sync using measured signal evidence, not a hardcoded episode4 correction.",
+      "Verify offset sign, subframe accuracy, unreliable audio handling and multiparty synchronization.",
+      "Test real episode4 source audio and deploy verified local production without changing the finished episode."
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/rust",
+      "classic/apps/web/src/podcast-sync",
+      "classic/apps/web/src/core",
+      ".dip",
+      "analysis/podcast-sync-precision-2026-10-19"
+    ]
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T15:29:01.057Z",
+  "parents": [
+    "63ea747e-1975-4ba1-8f14-80cbb056109b"
+  ],
+  "branch": "main"
+}

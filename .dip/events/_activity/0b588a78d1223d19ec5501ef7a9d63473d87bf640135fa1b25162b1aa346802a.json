@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b588a78d1223d19ec5501ef7a9d63473d87bf640135fa1b25162b1aa346802a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:15:18.037Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/adapter-tests/src__core__managers____tests____canonical-command-manager.test.ts.log",
+          ".local/podcast-multicam-scope/adapter-tests/summary.json",
+          ".local/podcast-multicam-scope/adapter-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b3cd01cd-b3dc-4cc8-92b7-d19f6fa2c561"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:15:18.039Z",
+  "parents": [],
+  "branch": "main"
+}

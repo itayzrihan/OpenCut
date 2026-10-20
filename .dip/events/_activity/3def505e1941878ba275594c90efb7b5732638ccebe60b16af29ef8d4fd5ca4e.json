@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3def505e1941878ba275594c90efb7b5732638ccebe60b16af29ef8d4fd5ca4e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:29:38.852Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '165,230p' crates/editor-api/src/operations/classic_multicam.rs\ncat classic/rust/crates/podcast/src/lib.rs\ncat classic/rust/crates/podcast/Cargo.toml\ncat classic/apps/web/src/podcast-sync/energy-reader.test.ts\nsed -n '1,90p' analysis/episode4-lipsync-2026-10-19/evidence.json",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ee9c8c6c-ed73-413d-8b3d-fb6cb53800a5"
+      },
+      {
+        "at": "2026-10-19T15:29:38.941Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '165,230p' crates/editor-api/src/operations/classic_multicam.rs\ncat classic/rust/crates/podcast/src/lib.rs\ncat classic/rust/crates/podcast/Cargo.toml\ncat classic/apps/web/src/podcast-sync/energy-reader.test.ts\nsed -n '1,90p' analysis/episode4-lipsync-2026-10-19/evidence.json",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-ee9c8c6c-ed73-413d-8b3d-fb6cb53800a5"
+      },
+      {
+        "at": "2026-10-19T15:29:38.945Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/episode4-lipsync-2026-10-19/before-project.json'))\ns=next(s for s in p['scenes'] if s['id']=='multicam-scene-2')\nprint('multicam',str(s.get('multicam'))[:5000])\nfor t in s['tracks']['overlay']+s['tracks']['audio']:\n if t['elements']:\n  e=t['elements'][0];print(t['id'],e.get('name'),{k:e.get(k) for k in ['startTime','trimStart','duration','params']})\nPY",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-882a1129-4ae9-4271-8394-917ac3646f41"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:29:39.006Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a983cd0c34d00aca7bd5b89e4da4175529add581cab79e1678110c067ebda2e2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T10:36:00.860Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/episode4-lipsync-2026-10-19/after-measurements.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8a155313-8101-4b29-903e-389d18eeddd1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:36:00.862Z",
+  "parents": [],
+  "branch": "main"
+}

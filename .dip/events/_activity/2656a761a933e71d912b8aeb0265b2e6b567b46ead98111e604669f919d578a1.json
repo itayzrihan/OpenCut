@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2656a761a933e71d912b8aeb0265b2e6b567b46ead98111e604669f919d578a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T09:38:28.991Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs",
+          "crates/editor-api/src/operations/classic_duplicate.rs",
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_source_audio.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs",
+          "crates/editor-api/src/operations/classic_takes/review.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs",
+          "crates/editor-api/tests/classic_podcast.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs",
+          "crates/editor-api/src/operations.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c40b84a4-917a-4134-bca6-b341a64716cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:38:28.995Z",
+  "parents": [],
+  "branch": "main"
+}

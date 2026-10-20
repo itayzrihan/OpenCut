@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "67b185d67a5a4a3ec6b689f85ecac881c00b226f5bc66760d25f27a1d14cd539",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:52:36.080Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .dip/tools/verify-podcast-reference.mjs; sed -n '1,160p' analysis/seven-smart-2026-10-20/audit.he.md; git diff -- classic/apps/web/src/ai/podcast-task.ts | head -n 230",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-97e0e6c7-ca4f-4aa7-97f1-040012379e98"
+      },
+      {
+        "at": "2026-10-20T00:52:36.222Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .dip/tools/verify-podcast-reference.mjs; sed -n '1,160p' analysis/seven-smart-2026-10-20/audit.he.md; git diff -- classic/apps/web/src/ai/podcast-task.ts | head -n 230",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-97e0e6c7-ca4f-4aa7-97f1-040012379e98"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:52:36.420Z",
+  "parents": [],
+  "branch": "main"
+}

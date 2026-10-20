@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ff70082-fcbc-487b-9a82-db91ed221385",
+  "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect incorrect microphone selection and preserve original episode",
+          "status": "completed"
+        },
+        {
+          "step": "Implement canonical ranked name suggestions and source guard; regression tests",
+          "status": "completed"
+        },
+        {
+          "step": "Deploy and rerun native podcast multicam with external WAV microphones",
+          "status": "completed"
+        },
+        {
+          "step": "Add saved intro with פרק 4 / המציאות לא זזה and verify saved playback",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:05:01.787Z",
+  "parents": [
+    "eccd36a3-96c8-4a22-842e-310bdca56105"
+  ],
+  "branch": "main"
+}

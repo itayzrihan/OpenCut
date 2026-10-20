@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "02e35a40977d67fd4ed9a6e98c618fd55988f9768e8c5e1cba2a52d3ddcbdd4c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:08:01.852Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.local/seven-smart-2026-10-20/check-playback.mjs';s=open(p).read();s=s.replace(\"await new Promise(r=>setTimeout(r,1300));const end=await browserTool('playback.control',{operation:'pause'});\", \"let ready=false;for(let i=0;i<25;i++){await new Promise(r=>setTimeout(r,1000));const state=await browserTool('app.get_state');if(state.playback.isPlaying&&state.playback.currentTime/120000>.75){ready=true;break;}}if(!ready)throw Error('Playback preparation exceeded 25 seconds');const end=await browserTool('playback.control',{operation:'pause'});\");open(p,'w').write(s)\nPY\nnode .local/seven-smart-2026-10-20/check-playback.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2191be45-d7ea-430b-91fb-688f154861ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:08:02.049Z",
+  "parents": [],
+  "branch": "main"
+}

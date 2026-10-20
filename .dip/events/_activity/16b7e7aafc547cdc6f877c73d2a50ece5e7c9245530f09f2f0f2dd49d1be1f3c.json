@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16b7e7aafc547cdc6f877c73d2a50ece5e7c9245530f09f2f0f2dd49d1be1f3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:38:28.284Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,pathlib\nours={'crates/editor-api/src/operations/classic_multicam.rs','crates/editor-api/src/operations.rs','classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx'}\nfor f in subprocess.check_output(['git','diff','--name-only']).decode().splitlines():\n if f.startswith('crates/editor-api/') and f not in ours:\n  pathlib.Path(f).write_bytes(subprocess.check_output(['git','show','HEAD:'+f]))\np=pathlib.Path('crates/editor-api/src/operations.rs');s=subprocess.check_output(['git','show','HEAD:'+str(p)]).decode();p.write_text(s.replace('pub(crate) mod classic_multicam;','pub(crate) mod classic_multicam;\\nmod classic_multicam_sources;'))\nPY\n./classic/node_modules/.bin/prettier --write classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx\ncat >> crates/editor-api/tests/classic_multicam.rs <<'EOF'\n\nasync fn source_fixture(names: &[(&str, &str, &str)]) -> (OpenCutRuntime, u64) {\n    let r = OpenCutRuntime::default();\n    let mut classic: Value = serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n    // Keep original bound identities referenced by existing fixture scenes.\n    for (id, name, kind) in names {\n        if let Some(a) = classic[\"mediaAssets\"].as_array_mut().unwrap().iter_mut().find(|a| a[\"id\"] == *id) {\n            a[\"name\"] = json!(name); a[\"type\"] = json!(kind); a[\"duration\"] = json!(100.0);\n        } else {\n            classic[\"mediaAssets\"].as_array_mut().unwrap().push(json!({\"id\":id,\"name\":name,\"type\":kind,\"duration\":100.0,\"hasAudio\":true}));\n        }\n    }\n    call(&r,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await;\n    let rev = read(&r).await[\"revision\"].as_u64().unwrap();\n    (r, rev)\n}\n#[tokio::test]\nasync fn microphones_match_embedded_person_names_not_camera_self_or_import_order() {\n    let (r, rev) = so",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-a14445a6-8271-4d2b-881e-ead9fb417fd3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:38:28.992Z",
+  "parents": [],
+  "branch": "main"
+}

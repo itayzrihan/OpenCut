@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "862e285572a8282d29f3e928cb1a06441230575a14c7772262db2f6c0a7c6500",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T10:20:13.933Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/episode4-intro-fade-2026-10-19",
+          ".local/episode4-intro-fade-2026-10-19/before-project.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cf0786a8-7d7d-4883-9802-6c26be3dc1bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T10:20:13.936Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -29,6 +29,7 @@ export interface TProjectMetadata {
 }
 
 export interface TProjectSettings {
+	exportPreferences?: import("@/export").ExportPreferences;
 	timelineTrackControlsWidth?: number;
 	fps: FrameRate;
 	canvasSize: TCanvasSize;

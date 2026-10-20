@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c41e139a7d14ec55e6e3b8705b9689920a3476c49b38625c9086108481b2c9ed",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:57:35.911Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.local/seven-smart-2026-10-20/probe-source.ts';s=open(p).read();before='try{session.podcast({sceneId:'\ninsert='''const inputs=source.audioInputs.map((x:any)=>x.clip);const size=Math.round(16000*Math.max(.01,inputs.reduce((sum:number,c:any)=>sum+c.duration/120000,0)/340000));const span=Math.floor(480000/size)*size/16000;\nconst audioEvidence=inputs.map((c:any)=>{const frames:any[]=[];const trim=c.trimStart/120000,stop=trim+c.duration/120000;for(let start=trim;start<stop;start+=span){const end=Math.min(stop,start+span),d=end-start,n=Math.ceil(d*16000);for(let i=0;i<n;i+=size){const a=Math.min(i/16000,d)+((start-trim)),b=Math.min(Math.min(i+size,n)/16000,d)+((start-trim));if(b>a)frames.push({start:a,end:b,rms:.1,peak:.2,zeroCrossingRate:0});}}return{clipId:c.id,frames};});console.log('Dense actual-clock evidence',audioEvidence.map((e:any)=>({id:e.clipId,frames:e.frames.length})));\n'''\ns=s.replace(before,insert+before).replace('videos:[video]','videos:[video],audioEvidence');open('.local/seven-smart-2026-10-20/probe-dense-audio.ts','w').write(s)\nPY\nbun run .local/seven-smart-2026-10-20/probe-dense-audio.ts > .local/seven-smart-2026-10-20/dense-audio-probe.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-337a68da-1f5d-4ac8-8c28-1c754d8411fd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:57:36.020Z",
+  "parents": [],
+  "branch": "main"
+}

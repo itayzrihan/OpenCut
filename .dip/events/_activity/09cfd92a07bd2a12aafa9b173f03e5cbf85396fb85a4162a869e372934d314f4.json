@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "09cfd92a07bd2a12aafa9b173f03e5cbf85396fb85a4162a869e372934d314f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:01:35.583Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ea653cc362f12e216edf3fac35518a45b4f5fc39ec0d601a57e849a4a9126c6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ffprobe -v error -show_entries format=duration,size,bit_rate:stream=index,codec_name,profile,width,height,pix_fmt,r_frame_rate,avg_frame_rate,bit_rate,color_range,color_space,color_transfer,color_primaries -of json '/Volumes/Portable Sandisk SSD/לקוחות/Lior Niva New/פרק 4 — המציאות לא זזה.mp4'\nffprobe -v error -show_entries format=duration,size,bit_rate:stream=index,codec_name,profile,width,height,pix_fmt,r_frame_rate,avg_frame_rate,bit_rate,color_range,color_space,color_transfer,color_primaries -of json /Volumes/A1/PRIVATE/M4ROOT/CLIP/C7453lior.MP4\nsed -n '1,180p' classic/apps/web/src/services/renderer/nodes/video-node.ts\nrg -n 'preview|quality|scale|renderFrame' classic/apps/web/src/services/renderer/scene-exporter.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-920b3be8-e0d3-4b16-b6be-1610dc055a13"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:01:36.555Z",
+  "parents": [],
+  "branch": "main"
+}

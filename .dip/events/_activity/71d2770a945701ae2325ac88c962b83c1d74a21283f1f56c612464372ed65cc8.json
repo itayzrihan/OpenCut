@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71d2770a945701ae2325ac88c962b83c1d74a21283f1f56c612464372ed65cc8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:28:59.172Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/podcast/podcast-shorts-policy.md",
+          "analysis/podcast-editorial-upgrade-2026-10-19/audit.he.md"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "52fd8446-8229-451e-b116-e4e4d4f5e939"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:28:59.176Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b1db5f524820bb261088cd8c3931cb4b2ca11c8bf532f00bae05b34e5992b61a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:35:20.245Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -65 /tmp/podcast-precision-canonical.log\ncat /tmp/podcast-host-tests.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-44215544-41f4-4b90-9dad-ae00dac23a97"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:35:20.262Z",
+  "parents": [],
+  "branch": "main"
+}

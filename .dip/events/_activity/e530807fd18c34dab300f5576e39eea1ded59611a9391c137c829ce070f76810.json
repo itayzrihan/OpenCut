@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e530807fd18c34dab300f5576e39eea1ded59611a9391c137c829ce070f76810",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:06:26.553Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 1600 .local/seven-smart-2026-10-20/audio-signal.log; node --input-type=module - <<'JS'\nimport{execFileSync,spawnSync}from'node:child_process';import{writeFile}from'node:fs/promises';const refs=execFileSync('git',['for-each-ref','--format=%(refname:short)','refs/remotes/origin','refs/heads']).toString().trim().split('\\n');const rows=refs.filter(x=>x!=='origin'&&x!=='main'&&x!=='origin/main').map(ref=>({ref,merged:spawnSync('git',['merge-base','--is-ancestor',ref,'HEAD']).status===0,unique:Number(execFileSync('git',['rev-list','--count',`HEAD..${ref}`]).toString())}));await writeFile('.local/seven-smart-2026-10-20/branch-audit.json',JSON.stringify(rows,null,2));console.log(JSON.stringify(rows));\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-fc16d3b3-8bec-4ee0-af1e-769779b80aa4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:06:27.039Z",
+  "parents": [],
+  "branch": "main"
+}

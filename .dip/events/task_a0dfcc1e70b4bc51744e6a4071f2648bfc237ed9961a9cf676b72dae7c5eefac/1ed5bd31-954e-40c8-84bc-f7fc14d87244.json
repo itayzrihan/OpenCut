@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ed5bd31-954e-40c8-84bc-f7fc14d87244",
+  "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+  "type": "task.update",
+  "payload": {
+    "title": "Upgrade smart podcast shorts and chronological extracts with editorial review and isolated scenes",
+    "acceptance": [
+      "Both shorts modes analyze full source, select specific coherent ideas and independently critique cuts/context before application.",
+      "Chronological mode preserves source order; smart shorts permit meaningful rearrangement without fabricated context.",
+      "Canonical extraction appends scenes preserving all original scenes, subtitles and full transcript; regression tests cover both modes.",
+      "Resumable bounded inference, validation and local production deployment verified."
+    ],
+    "scope": [
+      "crates/editor-api/src/operations/classic_takes/podcast",
+      "crates/editor-api/src/operations/classic_takes/podcast.rs",
+      "crates/editor-api/tests/classic_podcast*",
+      "classic/apps/web/src/ai/podcast*",
+      "classic/apps/web/src/ai/__tests__/podcast*",
+      "analysis/podcast-editorial-upgrade-2026-10-19",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-19T16:05:58.304Z",
+  "parents": [
+    "1b0c59d9-e7bf-443b-8c83-1090a6417cd3"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e804779ea8b12c0ec95cb8c5ec01e87483ae2318795700a18b4113e9682e031",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:15:20.495Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/verify-podcast-reference.mjs <<'EOF'\nimport {readFile,writeFile} from 'node:fs/promises';\nimport {spawnSync} from 'node:child_process';\nimport assert from 'node:assert/strict';\nimport {join} from 'node:path';\nimport {homedir} from 'node:os';\nconst local='.local/podcast-multicam-scope';\nconst report='analysis/podcast-multicam-scope-2026-10-19';\nfunction run(command,args){const p=spawnSync(command,args,{encoding:'utf8',maxBuffer:8*1024*1024});if(p.status!==0)throw Error(`${command} failed: ${p.stdout}\\n${p.stderr}`);console.log(p.stdout.trim());}\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_podcast_reference','--test','classic_takes','--test','classic_podcast','--test','classic_podcast_editorial','--test','classic_teaser_editorial','--test','classic_transcription','--quiet']);\nrun('node',['classic/scripts/test-web.mjs','src/ai/__tests__/podcast-task.test.ts','src/ai/__tests__/podcast-plan.test.ts','src/ai/__tests__/podcast-editorial.test.ts','src/ai/podcast-plan-cache.test.ts','src/timeline/smart-takes/audio-evidence.test.ts','src/core/managers/__tests__/transcription-manager.test.ts','--jobs=1',`--report=${local}/configured-web-tests`]);\nrun('bun',['run','.dip/tools/check-podcast-reference.ts']);\nrun('bun',['run','.dip/tools/check-extract-caption-isolation.ts']);\nconst source=JSON.parse(await readFile(`${report}/source-verification.json`,'utf8'));assert(source.passed&&source.archiveReloaded);assert.equal(source.results.length,6);assert(source.stress.scopeUnder2s&&source.stress.prepareUnder6s);\nconst protectedBefore=JSON.parse(await readFile(`${local}/live-project-before.json`,'utf8'));\nconst livePath=join(homedir(),'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759/project.json');\nconst live=JSON.parse(await readFile(livePath,'utf8'));\nfor(const key of ['scenes','settings','transcriptionJobs'])assert.deepEqual(live[key],protectedBefore[key],`Live ${key} changed`);\nconst ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-951fc8b8-075a-4566-bdf1-11110dacedff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:15:21.036Z",
+  "parents": [],
+  "branch": "main"
+}

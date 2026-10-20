@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1494205d4a47aaefc7ad6904be8a46add26d08ee4ff58c05199a67eff8555797",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:31:22.080Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/src/precision.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "014b1a1b-6709-4c0b-a5a0-4113da5a19af"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:31:22.084Z",
+  "parents": [],
+  "branch": "main"
+}

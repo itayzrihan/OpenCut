@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eb37bbf8532546a7c87da398b99a69a8be4c22ec9638001d8ae9c4ff7fa7acc0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:19:55.964Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('.local/podcast-editorial-upgrade/provider-checkpoints.json')\nc=json.loads(p.read_text())\nfor k,v in c.items():\n if k.endswith(':editorial-v1'):\n  r=json.loads(v)['responses']; print(json.dumps({'savedResponses':len(r),'savedWindows':len([x for x in r if x.startswith('inventory:')]),'bytes':len(v.encode())}))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f8e78e8f-c2c3-4556-96fc-6cc70437c3e0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:19:55.979Z",
+  "parents": [],
+  "branch": "main"
+}

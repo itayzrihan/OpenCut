@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a12a93fe4c0cdc58ae28d8938510957ba773e014904f355ed2478f829b112173",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:49:09.405Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts <<'EOF'\n\ntest(\"rounded cached PCM tails never overlap the next decode window\", async () => {\n ranges.length=0;interrupt=undefined;\n const result=await collectTakeAudioEvidence({\n  editor:{scenes:{getActiveScene:()=>({tracks:{main:{elements:[]}}})},media:{getAssets:()=>[{id:'voice',url:'http://local/source'}]}} as any,\n  elementIds:['podcast-audio:0:6:0'],sourceClips:[{id:'podcast-audio:0:6:0',type:'audio',mediaId:'voice',startTime:0,duration:61*120000,trimStart:7616049,trimEnd:0,params:{audioSyncOffset:0}}] as any,\n  signal:new AbortController().signal,boundedFrames:true,\n  checkpoint:{key:'fractional-source-clock',store:{read:async({duration}:any)=>[{start:0,end:duration,rms:.1,peak:.2,zeroCrossingRate:0}],write:async()=>{throw Error('Cached audio was decoded again');}}},\n });\n expect(ranges).toHaveLength(0);\n const frames=result[0].frames;expect(frames).toHaveLength(3);\n for(let i=1;i<frames.length;i++)expect(frames[i].start).toBeGreaterThanOrEqual(frames[i-1].end-1e-8);\n expect(frames.at(-1)!.end).toBeLessThanOrEqual(61+1e-8);\n});\nEOF\nnode classic/scripts/test-web.mjs src/timeline/smart-takes/audio-evidence.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/padding-before > .local/seven-smart-2026-10-20/padding-before.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c1eeda9a-8ff6-4b7b-8b88-5acde35e5769"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:49:09.529Z",
+  "parents": [],
+  "branch": "main"
+}

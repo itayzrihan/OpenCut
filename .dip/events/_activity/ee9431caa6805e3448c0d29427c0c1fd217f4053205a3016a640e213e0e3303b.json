@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee9431caa6805e3448c0d29427c0c1fd217f4053205a3016a640e213e0e3303b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:51:25.092Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nout={}\nfor s in p['scenes']:\n tracks=[]\n for area in ['overlay','main','audio']:\n  for t in ([s['tracks'][area]] if area=='main' else s['tracks'][area]):\n   tracks.append(dict(t,area=area))\n byid={t['id']:t for t in tracks}\n tracks=[byid[i] for i in s['tracks']['order']]\n out[s['id']]={'tracks':tracks}\npathlib.Path('.local/podcast-sources-2026-10-19/template-tracks.json').write_text(json.dumps(out,ensure_ascii=False))\nprint([(k,len(v['tracks'])) for k,v in out.items()])\nPY\nnode_modules/.bin/eslint apps/web/src/core/managers/commands.ts apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx > /tmp/podcast-source-lint-final.log 2>&1\ncat /tmp/podcast-source-lint-final.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-dc7b76c4-bc9e-4b61-87f0-5c1450380d72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:51:25.654Z",
+  "parents": [],
+  "branch": "main"
+}

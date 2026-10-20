@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "33d21fbe5b2da9340f424b4d5290cfbd9e6e768d6ca9c85c9365a9dc7d722c3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:50:00.423Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nconst origin='http://127.0.0.1:3210';\nconst html=await(await fetch(origin)).text();\nconst token=[REDACTED];\nconst headers={'X-OpenCut-Launcher':token};\nfor(const path of ['/stop','/start']) {const r=await fetch(origin+path,{method:'POST',headers}); console.log(path,r.status); if(!r.ok) throw Error('Launcher action failed');}\nconst s=await(await fetch(origin+'/status',{headers})).json();console.log(JSON.stringify({running:s.running,release:s.release}));\nJS",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-9529973a-044f-444e-8d30-86e3579f1be9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:50:00.565Z",
+  "parents": [],
+  "branch": "main"
+}

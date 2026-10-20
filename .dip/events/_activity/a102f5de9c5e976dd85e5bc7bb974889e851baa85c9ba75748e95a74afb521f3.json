@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a102f5de9c5e976dd85e5bc7bb974889e851baa85c9ba75748e95a74afb521f3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:01:17.317Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/removed-format-only.patch",
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs",
+          "crates/editor-api/src/operations/classic_duplicate.rs",
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_source_audio.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs",
+          ".local/seven-smart-2026-10-20/mcp-requests/request-65e86393-20e4-4335-aef0-6bde655807f3.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4d08e9e2-faa6-41f7-bb14-0582275f5c9f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:01:17.318Z",
+  "parents": [],
+  "branch": "main"
+}

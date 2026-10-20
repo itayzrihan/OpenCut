@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6f593298e897470ccdc09eca4b8044b098ee211b81d4e10490e413ddded4e3d4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:32:30.809Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/mcp-responses/request-ecbe0b01-1d24-4563-98df-6efe75909898.json",
+          ".local/seven-smart-2026-10-20/mcp-requests/request-ecbe0b01-1d24-4563-98df-6efe75909898.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c9adf5b8-ae7a-48b1-aa03-c555127f6f70"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:32:30.810Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7eaf9436fc0e14b41767e33e2681ff88ebb3a54e8f8d6b58585cc20a4ffb4b62",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:49:44.163Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 /tmp/podcast-source-release.log\nsed -n '1,130p' classic/apps/web/src/core/__tests__/canonical-multicam.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-c5080d34-f85d-4e95-a827-ab3c656cf6e2"
+      },
+      {
+        "at": "2026-10-19T09:49:44.365Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 /tmp/podcast-source-release.log\nsed -n '1,130p' classic/apps/web/src/core/__tests__/canonical-multicam.test.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-c5080d34-f85d-4e95-a827-ab3c656cf6e2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:49:44.741Z",
+  "parents": [],
+  "branch": "main"
+}

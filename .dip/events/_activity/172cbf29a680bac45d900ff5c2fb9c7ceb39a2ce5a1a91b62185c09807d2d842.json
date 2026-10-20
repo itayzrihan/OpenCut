@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "172cbf29a680bac45d900ff5c2fb9c7ceb39a2ce5a1a91b62185c09807d2d842",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:13:54.622Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\ns=open('.local/podcast-editorial-upgrade/activate.mjs').read().replace('.local/podcast-editorial-upgrade/deployment.json','.local/podcast-multicam-scope/deployment.json')\nopen('.local/podcast-multicam-scope/activate.mjs','w').write(s)\nPY\nnode .local/podcast-multicam-scope/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c4ef64de-f0b8-4700-8b4e-b2df8a071f6e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:13:54.762Z",
+  "parents": [],
+  "branch": "main"
+}

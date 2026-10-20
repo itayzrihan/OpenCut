@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97b6fa04d29f9dcd9d4136217f41dbfabad53d53b03457ec89dad6ad56c9d9fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:06:45.894Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{readFile,writeFile}from'node:fs/promises';import{execFileSync,spawnSync}from'node:child_process';const rows=JSON.parse(await readFile('.local/seven-smart-2026-10-20/branch-audit.json'));for(const r of rows.filter(r=>!r.merged)){r.tip=execFileSync('git',['log','-1','--format=%h %ad %s','--date=short',r.ref]).toString().trim();r.hasMergeBase=spawnSync('git',['merge-base','HEAD',r.ref]).status===0;r.patchStatus=execFileSync('git',['cherry','HEAD',r.ref]).toString().trim().split('\\n').filter(Boolean).map(l=>l[0]);r.paths=r.hasMergeBase?execFileSync('git',['diff','--name-only',`HEAD...${r.ref}`]).toString().trim().split('\\n').filter(Boolean):[];r.commits=execFileSync('git',['log','--format=%h %s',`HEAD..${r.ref}`,'-4']).toString().trim().split('\\n');}await writeFile('analysis/seven-smart-2026-10-20/branches.json',JSON.stringify(rows,null,2));console.log(JSON.stringify(rows.filter(r=>!r.merged).map(({ref,tip,patchStatus,paths,commits,hasMergeBase})=>({ref,tip,patches:patchStatus,paths:paths.slice(0,3),commits,hasMergeBase})),null,2));\nJS",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b5bb1ad3-dd76-4562-a1db-9483707605eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:06:45.933Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0a2941d6314087838f900cd82447739852ced1a9e1b3dd366df152426c99e1c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:13:22.861Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "lsof -tiTCP:3245 -sTCP:LISTEN\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/source-resolution-export/serve.mjs');s=p.read_text().replace('const script=await result.outputs[0].text();','const script=(await result.outputs[0].text()).replaceAll(\\'\"opencut-wasm\"\\',\\'\"/opencut_wasm_bg.js\"\\');');p.write_text(s)\nPY\ntail -8 /tmp/opencut-source-export-build.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-3d683fe3-da14-4c5a-9399-b869c5a430a4"
+      },
+      {
+        "at": "2026-10-19T11:13:23.043Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "lsof -tiTCP:3245 -sTCP:LISTEN\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/source-resolution-export/serve.mjs');s=p.read_text().replace('const script=await result.outputs[0].text();','const script=(await result.outputs[0].text()).replaceAll(\\'\"opencut-wasm\"\\',\\'\"/opencut_wasm_bg.js\"\\');');p.write_text(s)\nPY\ntail -8 /tmp/opencut-source-export-build.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-3d683fe3-da14-4c5a-9399-b869c5a430a4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:13:23.742Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -57,6 +57,8 @@ interface ChannelDraft {
 	name: string;
 	videoAssetId: string;
 	audioAssetId: string;
+	/** Only a manual selection may opt into camera audio when external mics exist. */
+	audioExplicit: boolean;
 }
 
 type WizardMode = "quick" | "guided";
@@ -72,65 +74,32 @@ const STEPS: Array<{ id: WizardStep; label: string }> = [
 ];
 const CHANNEL_COLORS = ["#6366f1", "#f59e0b", "#22c55e", "#ef4444", "#8b5cf6"];
 
-function baseName(name: string): string {
-	return name
-		.replace(/\.[^.]+$/, "")
-		.toLowerCase()
-		.normalize("NFKD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.replace(/[^a-z0-9]+/g, "");
-}
-
 function displayBaseName(name: string): string {
 	return name.replace(/\.[^.]+$/, "");
 }
 
-function findMatchingAudio({
-	video,
-	audioAssets,
-	usedAudioIds,
-}: {
-	video: MediaAsset;
-	audioAssets: MediaAsset[];
-	usedAudioIds: Set<string>;
-}): MediaAsset | null {
-	const videoBase = baseName(video.name);
-	return (
-		audioAssets.find(
-			(asset) =>
-				!usedAudioIds.has(asset.id) && baseName(asset.name) === videoBase,
-		) ??
-		audioAssets.find((asset) => {
-			if (usedAudioIds.has(asset.id)) return false;
-			const audioBase = baseName(asset.name);
-			return audioBase.includes(videoBase) || videoBase.includes(audioBase);
-		}) ??
-		audioAssets.find((asset) => !usedAudioIds.has(asset.id)) ??
-		null
-	);
-}
+type SourceSuggestions = ReturnType<
+	import("@/core/managers/commands").CommandManager["suggestPodcastSources"]
+>["suggestions"];
 
 function buildInitialDrafts({
 	videoAssets,
-	audioAssets,
+	suggestions,
 	count,
 }: {
 	videoAssets: MediaAsset[];
-	audioAssets: MediaAsset[];
+	suggestions: SourceSuggestions;
 	count: number;
 }): ChannelDraft[] {
-	const usedAudioIds = new Set<string>();
 	return Array.from({ length: count }, (_, index) => {
 		const video = videoAssets[index];
-		const audio = video
-			? findMatchingAudio({ video, audioAssets, usedAudioIds })
-			: null;
-		if (audio) usedAudioIds.add(audio.id);
 		return {
 			id: `channel-${index + 1}`,
 			name: video ? displayBaseName(video.name) : `Channel ${index + 1}`,
 			videoAssetId: video?.id ?? NONE_VALUE,
-			audioAssetId: audio?.id ?? NONE_VALUE,
+			audioAssetId:
+				suggestions.find((s) => s.videoId === video?.id)?.audioId ?? NONE_VALUE,
+			audioExplicit: false,
 		};
 	});
 }
@@ -156,12 +125,25 @@ export function PodcastSyncDialog({
 	}, [assets]);
 	const audioAssets = useMemo(
 		() =>
-			assets.filter(
-				(asset) =>
-					asset.type === "audio" || (asset.type === "video" && asset.hasAudio),
-			),
-		[assets],
+			editor.media
+				.getAssets()
+				.filter(
+					(asset) =>
+						asset.type === "audio" ||
+						(asset.type === "video" && asset.hasAudio),
+				),
+		[assets, editor],
 	);
+	const sourceSuggestions = useMemo(
+		() =>
+			videoAssets.length
+				? editor.command.suggestPodcastSources(
+						videoAssets.slice(0, MAX_CHANNELS).map((a) => a.id),
+					)
+				: { hasExternalAudio: false, suggestions: [] },
+		[editor, videoAssets],
+	);
+	const suggestions = sourceSuggestions.suggestions;
 	const suggestedName = activeProject?.metadata.name
 		? `${activeProject.metadata.name} Podcast Multicam`
 		: "Podcast Multicam";
@@ -172,7 +154,7 @@ export function PodcastSyncDialog({
 	const [mode, setMode] = useState<WizardMode>("quick");
 	const [step, setStep] = useState<WizardStep>("media");
 	const [channels, setChannels] = useState<ChannelDraft[]>(() =>
-		buildInitialDrafts({ videoAssets, audioAssets, count: initialCount }),
+		buildInitialDrafts({ videoAssets, suggestions, count: initialCount }),
 	);
 	const [settings, setSettings] = useState<PodcastSyncSettings>(() => ({
 		...podcastMulticamDefaults({ quick: false }),
@@ -201,7 +183,7 @@ export function PodcastSyncDialog({
 			if (count <= current.length) return current.slice(0, count);
 			const allDrafts = buildInitialDrafts({
 				videoAssets,
-				audioAssets,
+				suggestions,
 				count,
 			});
 			return [...current, ...allDrafts.slice(current.length)];
@@ -215,6 +197,17 @@ export function PodcastSyncDialog({
 		channelId: string;
 		patch: Partial<Omit<ChannelDraft, "id">>;
 	}) => {
+		if (patch.videoAssetId !== undefined) {
+			patch = {
+				...patch,
+				audioAssetId:
+					suggestions.find((s) => s.videoId === patch.videoAssetId)?.audioId ??
+					NONE_VALUE,
+				audioExplicit: false,
+			};
+		} else if (patch.audioAssetId !== undefined) {
+			patch = { ...patch, audioExplicit: true };
+		}
 		setAlignment(null);
 		setResult(null);
 		setSequenceCreated(false);
@@ -245,6 +238,16 @@ export function PodcastSyncDialog({
 			}
 			if (!audio || (audio.type !== "audio" && audio.type !== "video")) {
 				toast.error(`${draft.name} needs a microphone source`);
+				return null;
+			}
+			if (
+				audio.type === "video" &&
+				editor.media.getAssets().some((a) => a.type === "audio") &&
+				!draft.audioExplicit
+			) {
+				toast.error(
+					`${draft.name}: choose the external microphone, or explicitly select camera audio`,
+				);
 				return null;
 			}
 			if (usedVideoIds.has(video.id)) {
@@ -313,21 +316,24 @@ export function PodcastSyncDialog({
 				throw new Error("Media changed. Run synchronization again.");
 		}
 		editor.command.createMulticam({
-			settings: resolvedSettings,
-			channels: resolvedChannels.map((channel) => ({
-				id: channel.id,
-				name: channel.name,
-				videoId: channel.video.id,
-				audioId: channel.audio.id,
-				videoBindingRevision: channel.video.bindingRevision ?? 0,
-				audioBindingRevision: channel.audio.bindingRevision ?? 0,
-				videoOffset: resolvedResult.videoOffsets[channel.id] ?? 0,
-				videoDelay: resolvedResult.videoDelays[channel.id] ?? 0,
-				audioOffset: resolvedResult.audioOffsets[channel.id] ?? 0,
-				audioDelay: resolvedResult.audioDelays[channel.id] ?? 0,
-			})),
-			duration: resolvedResult.duration,
-			cuts: resolvedResult.cuts,
+			plan: {
+				settings: resolvedSettings,
+				channels: resolvedChannels.map((channel) => ({
+					id: channel.id,
+					name: channel.name,
+					videoId: channel.video.id,
+					audioId: channel.audio.id,
+					videoBindingRevision: channel.video.bindingRevision ?? 0,
+					audioBindingRevision: channel.audio.bindingRevision ?? 0,
+					videoOffset: resolvedResult.videoOffsets[channel.id] ?? 0,
+					videoDelay: resolvedResult.videoDelays[channel.id] ?? 0,
+					audioOffset: resolvedResult.audioOffsets[channel.id] ?? 0,
+					audioDelay: resolvedResult.audioDelays[channel.id] ?? 0,
+				})),
+				duration: resolvedResult.duration,
+				cuts: resolvedResult.cuts,
+			},
+			allowCameraAudio: resolvedChannels.some((c) => c.audio.type === "video"),
 		});
 		await editor.save.flush();
 		setSequenceCreated(true);
@@ -365,6 +371,8 @@ export function PodcastSyncDialog({
 						?.bindingRevision ?? 0;
 			await editor.save.flush();
 			setAlignment(nextAlignment);
+			for (const warning of nextAlignment.precisionWarnings ?? [])
+				toast.warning(warning, { duration: 12000 });
 			return { resolvedChannels, resolvedSettings, nextAlignment };
 		} catch (error) {
 			if (analysisAbort.current?.signal.aborted) return null;
@@ -506,6 +514,7 @@ export function PodcastSyncDialog({
 							settings={settings}
 							videoAssets={videoAssets}
 							audioAssets={audioAssets}
+							suggestions={suggestions}
 							onChannelCountChange={setChannelCount}
 							onChannelChange={updateChannel}
 							onSequenceNameChange={(sequenceName) =>
@@ -699,6 +708,7 @@ function MediaStep({
 	settings,
 	videoAssets,
 	audioAssets,
+	suggestions,
 	onChannelCountChange,
 	onChannelChange,
 	onSequenceNameChange,
@@ -710,6 +720,7 @@ function MediaStep({
 	settings: PodcastSyncSettings;
 	videoAssets: MediaAsset[];
 	audioAssets: MediaAsset[];
+	suggestions: SourceSuggestions;
 	onChannelCountChange: (count: number) => void;
 	onChannelChange: (args: {
 		channelId: string;
@@ -837,13 +848,36 @@ function MediaStep({
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value={NONE_VALUE}>Choose audio</SelectItem>
-									{audioAssets.map((asset) => (
-										<SelectItem key={asset.id} value={asset.id}>
-											{asset.name}
-										</SelectItem>
-									))}
+									{[...audioAssets]
+										.sort((a, b) => {
+											const candidates =
+												suggestions.find(
+													(s) => s.videoId === channel.videoAssetId,
+												)?.candidates ?? [];
+											return (
+												(candidates.find((c) => c.audioId === b.id)?.score ??
+													-1) -
+												(candidates.find((c) => c.audioId === a.id)?.score ??
+													-1)
+											);
+										})
+										.map((asset) => (
+											<SelectItem key={asset.id} value={asset.id}>
+												{asset.name}
+												{asset.type === "video" ? " (camera audio)" : ""}
+											</SelectItem>
+										))}
 								</SelectContent>
 							</Select>
+							<p className="text-muted-foreground text-xs">
+								{suggestions
+									.find((s) => s.videoId === channel.videoAssetId)
+									?.candidates.find((c) => c.audioId === channel.audioAssetId)
+									?.reason ??
+									(channel.audioAssetId === NONE_VALUE
+										? "Choose a microphone; no unique name match"
+										: "Camera audio selected")}
+							</p>
 						</div>
 					</div>
 				))}
@@ -966,6 +1000,11 @@ function SyncStep({
 			{alignment ? (
 				<div className="space-y-2">
 					<h4 className="text-sm font-medium">Sync results</h4>
+					{alignment.precisionWarnings?.map((warning) => (
+						<p key={warning} role="status" className="text-sm text-amber-600">
+							{warning}
+						</p>
+					))}
 					<div className="overflow-hidden rounded-lg border">
 						<div className="grid grid-cols-3 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
 							<span>Channel</span>

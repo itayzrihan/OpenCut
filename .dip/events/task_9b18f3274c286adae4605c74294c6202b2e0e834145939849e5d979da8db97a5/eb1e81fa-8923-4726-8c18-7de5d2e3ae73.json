@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eb1e81fa-8923-4726-8c18-7de5d2e3ae73",
+  "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Previous +173.333ms repair was episode-specific; original group sync was substantially closer. Implemented generic signed-waveform refinement over five bounded windows per shared-clock tree edge, uncertainty warnings and clock-drift rejection, subframe-preserving registry capabilities, and web worker integration. 57 tests plus TypeScript and actual camera/microphone injection experiment pass. Activated local production 2026-10-19T15-39-37-761Z-d19882d9; refreshed saved idle new project and restored all four selected assets. Episode4 JSON SHA256 unchanged. Evidence in analysis/podcast-sync-precision-2026-10-19.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Actual-source measurement and real decoder/WASM integration verified; no exhaustive visual lip-sync inspection or complete new-episode automatic edit run."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Weak/ambiguous waveform edges retain coarse alignment with explicit warnings. Clock drift is flagged and stops automatic edit; no time-stretch correction."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T15:41:42.444Z",
+  "parents": [
+    "773b5e64-190f-45bd-a367-8d269187916b"
+  ],
+  "branch": "main"
+}

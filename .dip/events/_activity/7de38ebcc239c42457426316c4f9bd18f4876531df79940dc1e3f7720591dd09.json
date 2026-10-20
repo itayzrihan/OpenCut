@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7de38ebcc239c42457426316c4f9bd18f4876531df79940dc1e3f7720591dd09",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:14:04.264Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/source-resolution-export/browser-test.txt"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "62019a1e-d9d1-41c8-a079-3740b59486dd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:14:04.265Z",
+  "parents": [],
+  "branch": "main"
+}

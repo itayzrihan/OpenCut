@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "72da68198f8be005866b92e7f8d558d05e01873757fe034ab9b6b094e858e011",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:17:06.206Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/configured-web-tests/src__ai____tests____podcast-task.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/src__timeline__smart-takes__audio-evidence.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/src__core__managers____tests____transcription-manager.test.ts.log",
+          ".local/podcast-multicam-scope/configured-web-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9075731b-5335-42d3-a907-dd9fed6e6798"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:17:06.207Z",
+  "parents": [],
+  "branch": "main"
+}

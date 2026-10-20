@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a5286159332bf47e6cc4446c9089f597ce5a207228d4e5a8fb9655c49a3a36ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:31:56.262Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/podcast-sync/energy-reader.ts');s=p.read_text().replace('durationSeconds,\\n\\tsignal,','durationSeconds,\\n\\tsampleMode = \"rms\",\\n\\tsignal,').replace('durationSeconds?: number;','durationSeconds?: number;\\n\\tsampleMode?: \"rms\" | \"waveform\";').replace('sum += mono * mono;','sum += sampleMode === \"waveform\" ? mono : mono * mono;').replace('envelope[i] = count > 0 ? Math.sqrt((sums[i] ?? 0) / count) : 0;','const mean = count > 0 ? (sums[i] ?? 0) / count : 0;\\n\\t\\t\\tenvelope[i] = sampleMode === \"waveform\" ? mean : Math.sqrt(mean);');p.write_text(s)\np=Path('classic/apps/web/src/podcast-sync/sync.worker.ts');s=p.read_text().replace('| { type: \"align\";', '| { type: \"precision\"; reference: BrowserMediaSource & { name: string }; target: BrowserMediaSource & { name: string }; window: import(\"opencut-wasm\").PodcastPrecisionWindow }\\n\\t| { type: \"align\";')\ns=s.replace('} else if (message.type === \"route\") {','''} else if (message.type === \"precision\") {\n            const { estimatePodcastPrecision } = await import(\"opencut-wasm\");\n            const read = (asset: BrowserMediaSource & { name: string }, startSeconds: number) => readEnergyEnvelope({asset, startSeconds, durationSeconds: message.window.durationSeconds, windowSeconds: 1 / 16000, sampleMode: \"waveform\"});\n            const [reference, target] = await Promise.all([read(message.reference, message.window.referenceStart), read(message.target, message.window.targetStart)]);\n            self.postMessage({result: estimatePodcastPrecision({reference:Array.from(reference),target:Array.from(target),sampleRate:16000})});\n        } else if (message.type === \"route\") {''');p.write_text(s)\np=Path('classic/apps/web/src/podcast-sync/engine.ts');s=p.read_text().replace('podcastCameraClock,','podcastCameraClock,\\n\\tplanPodcastPrecision,\\n\\tresolvePodcastPrecision,\\n\\ttype PodcastPrecisionEstimate,').replace('duration: number;\\n\\tvideoOffsets:', 'duration: number;\\n\\tp",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-9154abd1-b57c-4e9d-addb-ccf9d6f3bb51"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:31:57.111Z",
+  "parents": [],
+  "branch": "main"
+}

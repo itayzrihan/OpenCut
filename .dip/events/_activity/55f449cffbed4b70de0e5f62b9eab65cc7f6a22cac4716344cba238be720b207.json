@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "55f449cffbed4b70de0e5f62b9eab65cc7f6a22cac4716344cba238be720b207",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:14:34.734Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run .dip/tools/check-extract-caption-isolation.ts > .local/podcast-multicam-scope/caption-isolation.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-873e0112-b894-4710-9f86-5a3f54527aa1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:14:34.965Z",
+  "parents": [],
+  "branch": "main"
+}

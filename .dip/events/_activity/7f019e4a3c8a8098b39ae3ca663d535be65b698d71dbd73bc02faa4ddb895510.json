@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7f019e4a3c8a8098b39ae3ca663d535be65b698d71dbd73bc02faa4ddb895510",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:10:10.219Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/podcast-plan.test.ts",
+          "classic/apps/web/src/ai/podcast-plan-cache.test.ts",
+          "classic/apps/web/src/ai/podcast-plan.ts",
+          "classic/apps/web/src/ai/podcast-task.ts",
+          "classic/apps/web/src/ai/podcast-editorial.ts",
+          "classic/apps/web/src/ai/components/podcast-controls.tsx",
+          ".local/podcast-editorial-upgrade/web-tests",
+          ".local/podcast-editorial-upgrade/web-tests/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/podcast-editorial-upgrade/web-tests/src__ai____tests____podcast-task.test.ts.log",
+          ".local/podcast-editorial-upgrade/web-tests/src__ai____tests____podcast-editorial.test.ts.log",
+          ".local/podcast-editorial-upgrade/web-tests/src__ai__podcast-plan-cache.test.ts.log",
+          ".local/podcast-editorial-upgrade/web-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c5356e4f-bdb9-4d7a-a2b9-170d440e358e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:10:10.224Z",
+  "parents": [],
+  "branch": "main"
+}

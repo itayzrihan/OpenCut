@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a80ce2f981ad1c5eb157426ac12d1c24e584725f60f250033bd8b5156416deb5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:05:35.971Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/ai/__tests__/podcast-task.test.ts');s=p.read_text().replace('const editor = {','const selectedRefs: {trackId:string;elementId:string}[]=[];\\n\\tconst scope=mock(()=>({revision:1,referenceRegions:[],hasTranscript:true}));\\n\\tconst preparedIds:string[][]=[];\\n\\tconst transcribe=mock(async()=>({task:{status:\"succeeded\"}}));\\n\\tconst editor = {',1).replace('selection: { getSelectedElements: () => [] },','selection: { getSelectedElements: () => selectedRefs },\\n\\t\\ttranscription:{start:transcribe,cancel:()=>{},subscribe:()=>()=>{}},',1)\na=s.index('\\t\\t\\tpodcastScope:');b=s.index('\\t\\t\\tgetCanonicalRevision',a);s=s[:a]+'\\t\\t\\tpodcastScope: scope,\\n'+s[b:]\ns=s.replace('preparePodcast: () => ({','preparePodcast: (ids:string[]) => {preparedIds.push(ids);return ({',1).replace('\\n\\t\\t\\t\\tapply,\\n\\t\\t\\t}),','\\n\\t\\t\\t\\tapply,\\n\\t\\t\\t});},',1)\ns=s.replace('return { task: getPodcastTask(editor), scene, apply, analyzeAudio, seek };','return { task: getPodcastTask(editor), scene, apply, analyzeAudio, seek,selectedRefs,scope,preparedIds,transcribe };',1)\ns+='''\ntest(\"empty selection reaches canonical preparation as whole-timeline reference\",async()=>{\n const {task,preparedIds}=setup();await task.start(options);expect(preparedIds).toEqual([[]]);\n});\ntest(\"selected clips stay frozen even when transcription changes UI selection\",async()=>{\n const {task,selectedRefs,scope,preparedIds,transcribe,apply}=setup();selectedRefs.push({trackId:\"routed-camera\",elementId:\"camera-A\"},{trackId:\"other-camera\",elementId:\"camera-C\"});scope.mockImplementation(()=>({revision:1,referenceRegions:[],hasTranscript:false}));\n transcribe.mockImplementation(async()=>{selectedRefs.splice(0);return {task:{status:\"succeeded\"}};});await task.start(options);\n expect(transcribe).toHaveBeenCalledWith({language:\"auto\",referenceElementIds:[\"camera-A\",\"camera-C\"],resumeJob:undefined});expect(preparedIds).toEqual([[\"camera-A\",\"camera-C\"]]);expect(apply)",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-5e42b225-6d33-44ca-a610-6d02ebe8b845"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:05:36.643Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "115ba49091c44ade15e52a30b355820747f6cb3be788b12722cfcf44ee593a69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:13:27.643Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "kill -TERM 32903\nbun .local/source-resolution-export/serve.mjs",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-19bfc907-7c83-4a70-9a2c-bf79a10de78a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:13:28.099Z",
+  "parents": [],
+  "branch": "main"
+}

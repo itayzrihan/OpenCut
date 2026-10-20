@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b8346a65aa198c88797c940d08ee03acf7a7e2140fd013ff1868f3d93b486152",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:46:02.988Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/local-production/build.mjs > /tmp/podcast-source-release.log 2>&1",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ff70d44a-2098-4c95-9d61-dafe349d8883"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:46:03.895Z",
+  "parents": [],
+  "branch": "main"
+}

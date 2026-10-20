@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "241e3e44a757e83daa40d6f25313037431ace4b9213744a23170acc41e97d2ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:05:58.440Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,os,signal,subprocess\np=json.load(open('/Users/itayzrihan/Library/Application Support/OpenCut Local/build.lock'))['pid']\ncmd=subprocess.check_output(['ps','-p',str(p),'-o','command=']).decode()\nassert 'node classic/scripts/local-production/build.mjs --stage' in cmd,cmd\nos.kill(p,signal.SIGTERM)\nprint('Stopped owned staged build to finalize request replay binding')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-78c86648-d0f9-42d7-b21a-93ebdc8f9154"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:05:58.725Z",
+  "parents": [],
+  "branch": "main"
+}

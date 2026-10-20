@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e8c603b0a0e63c12145745be59efa2626f2a9c76c14c1b53e51f22a9dc8a82f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:33:29.777Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/podcast-sync-precision-2026-10-19\ncat > analysis/podcast-sync-precision-2026-10-19/measure.py <<'PY'\n\"\"\"Run the production Rust precision kernel on bounded windows of episode4 sources.\"\"\"\nimport json,subprocess,array\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[2]\nP=Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/3bf1516d-a949-46a0-b631-39089691e736'\nmedia={m['name']:m.get('sourcePath') or str(P/m['storedPath']) for m in json.loads((P/'media/index.json').read_text())}\ndef pcm(name,start):\n data=subprocess.check_output(['ffmpeg','-v','error','-ss',str(start),'-i',media[name],'-t','8','-vn','-ac','1','-ar','16000','-f','f32le','pipe:1'])\n a=array.array('f');a.frombytes(data);return a.tolist()\nresults=[]\nfor camera,mic,offset in [('C7453lior.MP4','240427_0144_1lior.wav',146.11),('C7456Niva.MP4','240427_0144_2niva.wav',106.31)]:\n for time in [250,1200,2100]:\n  a=pcm(camera,time)\n  for injected in [0,0.1733125]:\n   b=pcm(mic,time+offset+injected)\n   r=json.loads(subprocess.check_output([str(ROOT/'target/debug/examples/precision_probe')],input=json.dumps({'reference':a,'target':b,'sampleRate':16000}).encode()))\n   r.update(camera=camera,time=time,injected=injected);results.append(r);print(json.dumps(r),flush=True)\nfor i in range(0,len(results),2):\n a,b=results[i:i+2]\n if min(a['confidence'],b['confidence'])>=.12:\n  assert abs((b['offsetSeconds']-a['offsetSeconds'])-.1733125)<.005\n(ROOT/'analysis/podcast-sync-precision-2026-10-19/real-source-results.json').write_text(json.dumps(results,indent=2)+'\\n')\nPY\npython3 analysis/podcast-sync-precision-2026-10-19/measure.py > /tmp/podcast-real-precision.log 2>&1",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-fa363aa1-05c1-481c-8f7d-623c75d35e6b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:33:30.206Z",
+  "parents": [],
+  "branch": "main"
+}

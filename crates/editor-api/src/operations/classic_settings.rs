@@ -48,6 +48,12 @@ struct SettingsPatch {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "non_null"
     )]
+    export_preferences: Option<super::classic_export::Preferences>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "non_null"
+    )]
     #[schemars(range(min = 80, max = 480))]
     timeline_track_controls_width: Option<u32>,
     #[serde(
@@ -153,7 +159,8 @@ pub(crate) fn validate_settings(settings: &Value) -> Result<(), String> {
         .filter(|(key, _)| {
             matches!(
                 key.as_str(),
-                "canvasSizeMode"
+                "exportPreferences"
+                    | "canvasSizeMode"
                     | "lastCustomCanvasSize"
                     | "originalCanvasSize"
                     | "background"

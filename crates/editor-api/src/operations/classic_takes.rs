@@ -9,7 +9,20 @@ mod auto_edit;
 mod podcast;
 mod quality;
 mod review;
+pub(super) use podcast::reference::Region as PodcastReferenceRegion;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
+pub(super) fn podcast_reference_scope(
+    tracks: &Value,
+    ids: &[String],
+) -> Result<Vec<PodcastReferenceRegion>, CapabilityError> {
+    podcast::reference::regions(tracks, ids)
+}
+pub(super) fn podcast_reference_tracks(
+    tracks: &Value,
+    regions: &[PodcastReferenceRegion],
+) -> Result<Value, CapabilityError> {
+    podcast::reference::mask_tracks(tracks, regions)
+}
 const TPS: f64 = 120_000.0;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -71,6 +84,8 @@ struct Assembly {
     version: u32,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     selection_only: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    reference_regions: Vec<PodcastReferenceRegion>,
     #[serde(default)]
     mode: review::Mode,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -317,6 +332,32 @@ fn inventory(
     }
     Ok((words, start, end))
 }
+fn assembly_inventory(a: &Assembly) -> Result<(Vec<Word>, i64, i64), CapabilityError> {
+    if a.version == 3 {
+        if !a.selection_only
+            || a.reference_regions != podcast::reference::regions(&a.source_tracks, &a.element_ids)?
+        {
+            return Err(invalid("Invalid archived podcast reference scope"));
+        }
+        podcast::reference::inventory(&a.source_tracks, &a.reference_regions)
+    } else {
+        if !a.reference_regions.is_empty() {
+            return Err(invalid("Legacy assembly cannot contain a reference scope"));
+        }
+        inventory(&a.source_tracks, &a.element_ids, a.version >= 2)
+    }
+}
+fn clip_bounds(tracks: &Value, id: &str) -> Result<(i64, i64), CapabilityError> {
+    if let Some(clip) = all(tracks)
+        .flat_map(|t| arr(&t["elements"]))
+        .find(|e| e["id"] == id && matches!(e["type"].as_str(), Some("video" | "audio")))
+    {
+        let start = tick(&clip["startTime"])?;
+        return Ok((start, start + tick(&clip["duration"])?));
+    }
+    podcast::reference::encoded_bounds(id).ok_or_else(|| invalid("Take source clip missing"))
+}
+
 fn label(s: &str) -> bool {
     !s.trim().is_empty() && s.len() <= 2000
 }
@@ -455,7 +496,7 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
 
 fn validate_assembly(value: &Value, asset_ids: &HashSet<&str>) -> Result<(), String> {
     let a: Assembly = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
-    if !matches!(a.version, 1 | 2) || !label(&a.id) || a.applied_digest.len() != 64 {
+    if !matches!(a.version, 1 | 2 | 3) || !label(&a.id) || a.applied_digest.len() != 64 {
         return Err("Invalid take assembly version/identity".into());
     }
     if let Some(metrics) = &a.run_metrics {
@@ -504,8 +545,7 @@ fn validate_assembly(value: &Value, asset_ids: &HashSet<&str>) -> Result<(), Str
     for b in arr(&a.source_bookmarks) {
         tick(&b["time"]).map_err(|e| e.to_string())?;
     }
-    let (words, _, _) =
-        inventory(&a.source_tracks, &a.element_ids, a.version >= 2).map_err(|e| e.to_string())?;
+    let (words, _, _) = assembly_inventory(&a).map_err(|e| e.to_string())?;
     if serde_json::to_value(&a.source_words).unwrap() != serde_json::to_value(&words).unwrap()
         || a.recommendations.len() != a.plan.groups.len()
         || a.recommendations
@@ -515,7 +555,12 @@ fn validate_assembly(value: &Value, asset_ids: &HashSet<&str>) -> Result<(), Str
     {
         return Err("Invalid take source evidence or recommendations".into());
     }
-    quality::validate_audio(&a.audio_gaps, &a.source_tracks, &a.element_ids)?;
+    let ids = if a.version == 3 {
+        a.reference_regions.iter().map(|r| r.id.clone()).collect()
+    } else {
+        a.element_ids.clone()
+    };
+    quality::validate_audio(&a.audio_gaps, &a.source_tracks, &ids)?;
     validate_plan(&a.plan, &words).map_err(|e| e.to_string())
 }
 
@@ -634,6 +679,7 @@ pub(super) fn register_classic_takes(
                                     quality: QualityReport::default(),
                                     version: 2,
                                     selection_only: false,
+                                    reference_regions: vec![],
                                     id: format!("takes-{}", document.revision),
                                     element_ids,
                                     source_tracks: scene["tracks"].clone(),
@@ -665,11 +711,7 @@ pub(super) fn register_classic_takes(
                                 a
                             }
                         };
-                        let (words, start, end) = inventory(
-                            &assembly.source_tracks,
-                            &assembly.element_ids,
-                            assembly.version >= 2,
-                        )?;
+                        let (words, start, end) = assembly_inventory(&assembly)?;
                         validate_plan(&assembly.plan, &words)?;
                         if assembly.version >= 2 {
                             // Only the initial AI recommendation is ranked. Manual selection is respected.
@@ -860,7 +902,11 @@ fn render(
         });
     }
     let transcript = source(&a.source_tracks)?;
-    let evidence = quality::source_words(&a.source_tracks, &a.element_ids, a.version >= 2)?;
+    let evidence = if a.version >= 3 {
+        podcast::reference::evidence(&a.source_tracks)?
+    } else {
+        quality::source_words(&a.source_tracks, &a.element_ids, a.version >= 2)?
+    };
     let mut tracks = a.source_tracks.clone();
     for track in std::iter::once(&mut tracks["main"]) {
         remap_track(track, &spans, a, fresh, context)?;
@@ -1016,7 +1062,9 @@ fn remap_track(
                 slice(clip, from, to, span.dest + from - span.from, fresh)?
             };
             if let Some(group) = span.group {
-                if a.element_ids.iter().any(|id| clip["id"] == *id) {
+                if a.element_ids.iter().any(|id| clip["id"] == *id)
+                    || (a.version == 3 && matches!(clip["type"].as_str(), Some("video" | "audio")))
+                {
                     next["takeGroup"] = json!({"assemblyId":a.id,"groupIndex":group});
                 }
             }

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce34e4e9f9eddeb7b4c6dd984c6caa6e016417f14b337bd156d401eb9805692d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:30:58.486Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes/podcast/reference.rs';s=open(p).read().replace('            if e[\"enabled\"] == false','            // Volume is measured in dB: zero is unity, not silence.\\n            if e[\"enabled\"] == false',1);open(p,'w').write(s)\np='crates/editor-api/src/operations/classic_takes/podcast/podcast-shorts-policy.md';s=open(p).read();a=s.index('Canonical output audio:');s=s[:a]+'Canonical output audio: preserve authored gain, mute flags, automation and separate microphone/camera routes. Volume is in decibels; 0dB is normal unity gain and negative dB is attenuated sound. Never reinterpret zero as silence or change the mix in an extract. Acoustic analysis must include every unmuted route, including 0dB dialogue.\\n';open(p,'w').write(s)\np='.dip/tools/check-seven-scenes.ts';s=open(p).read().replace(\"&&e.params?.muted!==true&&(e.params?.volume??1)>0\",\"&&e.params?.muted!==true\");open(p,'w').write(s)\nPY\nrustfmt --edition 2024 crates/editor-api/src/operations/classic_takes/podcast.rs crates/editor-api/src/operations/classic_takes/podcast/reference.rs crates/editor-api/tests/classic_podcast.rs\ncargo test -p opencut-editor-api --test classic_podcast --test classic_podcast_reference --test classic_takes --test classic_podcast_editorial --test classic_teaser_editorial --test classic_transcription --quiet > .local/seven-smart-2026-10-20/db-gain-regressions.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-18e22349-ce19-4212-ade8-533509b50dbd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:30:59.474Z",
+  "parents": [],
+  "branch": "main"
+}

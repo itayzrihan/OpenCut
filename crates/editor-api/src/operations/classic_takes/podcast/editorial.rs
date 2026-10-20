@@ -1,6 +1,7 @@
 //! Classic teaser policy. Hosts only send model requests and persist unapplied
 //! response checkpoints; this canonical read capability owns the adaptive loop.
 use super::*;
+mod shorts;
 use std::collections::BTreeMap;
 
 const SKILL: &str = include_str!("strategic-teaser-compression.md");
@@ -12,6 +13,7 @@ struct Input {
     project_id: String,
     scene_id: String,
     expected_revision: u64,
+    #[serde(default)]
     element_ids: Vec<String>,
     options: Options,
     /// Inference artifacts only; never an alternative editor state store.
@@ -232,7 +234,7 @@ fn draft_problems(draft: &Draft, options: &Options, words: &[Word]) -> Vec<Strin
 fn plan(input: &Input, words: &[Word]) -> Result<Output, CapabilityError> {
     input.options.validate()?;
     if input.options.mode != Mode::Teaser {
-        return Err(invalid("Strategic editorial workflow is teaser-only"));
+        return shorts::plan(input, words);
     }
     if input.responses.len() > 100
         || serde_json::to_vec(&input.responses).map_or(true, |b| b.len() > 2_000_000)
@@ -425,13 +427,21 @@ pub(super) fn register_editorial(
         DocumentSupport::Classic,
         crate::CapabilityExecution::Immediate,
         "timeline.classic.podcast.editorial",
-        "Plan and review a strategic teaser",
-        "Canonical bounded adaptive teaser workflow: full-episode short-moment inventory, contextual source reads, narrative assembly, skeptical critique and up to three repairs. Returns provider requests or a reviewed plan/ledger; no inference, IO or project mutation. Response checkpoints are unapplied artifacts. Explicit project/scene/revision and cancellation.",
+        "Plan and review podcast edits",
+        "Canonical bounded adaptive teaser and shorts workflow: full-episode short-moment inventory, contextual source reads, narrative assembly, skeptical critique and up to three repairs. Returns provider requests or a reviewed plan/ledger; no inference, IO or project mutation. Response checkpoints are unapplied artifacts. Explicit project/scene/revision and cancellation.",
         "timeline",
         AccessLevel::Read,
         true,
         false,
-        &["classic", "podcast", "teaser", "planning", "review"],
+        &[
+            "classic",
+            "podcast",
+            "teaser",
+            "highlights",
+            "chronological",
+            "planning",
+            "review",
+        ],
         move |context, input| {
             let state = state.clone();
             async move {
@@ -445,10 +455,8 @@ pub(super) fn register_editorial(
                     &input.scene_id,
                     input.expected_revision,
                 )?;
-                if scene.get("takeAssembly").is_some() {
-                    return Err(invalid("Choose the original episode scene"));
-                }
-                let (words, _, _) = inventory(&scene["tracks"], &input.element_ids, true)?;
+                let regions = reference::regions(&scene["tracks"], &input.element_ids)?;
+                let (words, _, _) = reference::inventory(&scene["tracks"], &regions)?;
                 Ok(OperationSuccess::new(plan(&input, &words)?))
             }
         },

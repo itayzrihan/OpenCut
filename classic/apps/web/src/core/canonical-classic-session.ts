@@ -799,6 +799,22 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	podcastScope(input: { sceneId: string; elementIds: string[] }): {
+		revision: number;
+		referenceRegions: import("@/ai/podcast-types").PodcastReferenceRegion[];
+		hasTranscript: boolean;
+		resumeJobId?: string | null;
+	} {
+		return this.call({
+			capability: "timeline.classic.podcast.scope",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	preparePodcast(input: {
 		sceneId: string;
 		elementIds: string[];

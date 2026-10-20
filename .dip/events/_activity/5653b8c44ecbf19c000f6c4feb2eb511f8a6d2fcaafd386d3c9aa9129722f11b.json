@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5653b8c44ecbf19c000f6c4feb2eb511f8a6d2fcaafd386d3c9aa9129722f11b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:41:36.533Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/seven-smart-2026-10-20/resume-tests.log; git diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-b75ae798-8d8d-45c2-b076-1eea2f8c49fb"
+      },
+      {
+        "at": "2026-10-20T00:41:36.642Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/seven-smart-2026-10-20/resume-tests.log; git diff --check",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b75ae798-8d8d-45c2-b076-1eea2f8c49fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:41:37.081Z",
+  "parents": [],
+  "branch": "main"
+}

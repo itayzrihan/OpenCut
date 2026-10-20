@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2cb22a3194d465335c9d517923bc5e80aa1b60b2a05ecab5c547776ca8784781",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:47:06.803Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/episode4-4k-delivery/ffprobe.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3975935f-6b54-44ef-9e55-bc68ed7140c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:47:06.806Z",
+  "parents": [],
+  "branch": "main"
+}

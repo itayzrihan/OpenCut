@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "326fe57e86896820000820c8fe752e61ede1c62fe1613c13428c5c58ad7cb6dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:14:54.274Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test ./.dip/tools/check-podcast-lifecycle.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-12b9692f-1463-4222-9b24-bae5ca2ca600"
+      },
+      {
+        "at": "2026-10-19T16:14:54.406Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/local-production/build.mjs --stage > .local/podcast-editorial-upgrade/production-build.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e1adfdb7-be4e-4de6-81e6-96b21c412403"
+      },
+      {
+        "at": "2026-10-19T16:14:54.407Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp .local/teaser-upgrade/activate.mjs .local/podcast-editorial-upgrade/activate.mjs; python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/podcast-editorial-upgrade/activate.mjs');p.write_text(p.read_text().replace('.local/teaser-upgrade/deployment.json','.local/podcast-editorial-upgrade/deployment.json'))\np=Path('.dip/config.json');import json;s=json.loads(p.read_text());s['verification']['podcast-editorial']={'command':['node','.dip/tools/verify-podcast-editorial.mjs'],'timeoutMs':480000};p.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-fe0e8c5a-4325-4015-ae10-21e3e7b729d2"
+      },
+      {
+        "at": "2026-10-19T16:14:54.408Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test ./.dip/tools/check-podcast-lifecycle.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-12b9692f-1463-4222-9b24-bae5ca2ca600"
+      },
+      {
+        "at": "2026-10-19T16:14:54.528Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp .local/teaser-upgrade/activate.mjs .local/podcast-editorial-upgrade/activate.mjs; python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/podcast-editorial-upgrade/activate.mjs');p.write_text(p.read_text().replace('.local/teaser-upgrade/deployment.json','.local/podcast-editorial-upgrade/deployment.json'))\np=Path('.dip/config.json');import json;s=json.loads(p.read_text());s['verification']['podcast-editorial']={'command':['node','.dip/tools/verify-podcast-editorial.mjs'],'timeoutMs':480000};p.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-fe0e8c5a-4325-4015-ae10-21e3e7b729d2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:14:54.755Z",
+  "parents": [],
+  "branch": "main"
+}

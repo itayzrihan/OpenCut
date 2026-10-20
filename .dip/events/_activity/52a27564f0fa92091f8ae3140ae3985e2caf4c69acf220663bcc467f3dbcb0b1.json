@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "52a27564f0fa92091f8ae3140ae3985e2caf4c69acf220663bcc467f3dbcb0b1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T09:38:30.098Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx",
+          "crates/editor-api/tests/classic_multicam.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1fdeccc2-74de-4aeb-9a63-e55946e566ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:38:30.121Z",
+  "parents": [],
+  "branch": "main"
+}

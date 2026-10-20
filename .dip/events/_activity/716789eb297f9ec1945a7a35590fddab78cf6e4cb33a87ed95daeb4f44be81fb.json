@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "716789eb297f9ec1945a7a35590fddab78cf6e4cb33a87ed95daeb4f44be81fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:05:44.656Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.tsbuildinfo",
+          ".local/podcast-multicam-scope/typecheck.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8937d3c8-b850-4b93-9656-4f86dc094d53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:05:44.657Z",
+  "parents": [],
+  "branch": "main"
+}

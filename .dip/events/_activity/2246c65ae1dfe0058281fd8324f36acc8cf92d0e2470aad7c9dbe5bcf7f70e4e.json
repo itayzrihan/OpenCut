@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2246c65ae1dfe0058281fd8324f36acc8cf92d0e2470aad7c9dbe5bcf7f70e4e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:12:26.333Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792408345674",
+          ".local/classic-web-tests/1792408345674/src__services__renderer____tests____scale-frame-output.test.ts.log",
+          ".local/classic-web-tests/1792408345674/src__services__renderer____tests____nested-opacity.test.ts.log",
+          ".local/classic-web-tests/1792408345674/src__export____tests____video-encoding.test.ts.log",
+          ".local/classic-web-tests/1792408345674/summary.json",
+          "classic/rust/wasm/pkg/.gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e06d5996-5bd1-4638-a619-11bd13bfe3e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:12:26.343Z",
+  "parents": [],
+  "branch": "main"
+}

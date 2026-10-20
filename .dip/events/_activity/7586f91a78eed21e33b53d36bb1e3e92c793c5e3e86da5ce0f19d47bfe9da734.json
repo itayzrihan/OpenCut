@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7586f91a78eed21e33b53d36bb1e3e92c793c5e3e86da5ce0f19d47bfe9da734",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:37:25.405Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text();i=s.index('\\n\\tcreateMulticam(plan:');s=s[:i]+'''\n\t/** Read-only filename evidence from the same registry used by MCP. */\n\tsuggestPodcastSources(videoIds: string[]): {\n\t\thasExternalAudio: boolean;\n\t\tsuggestions: Array<{\n\t\t\tvideoId: string;\n\t\t\taudioId: string | null;\n\t\t\tcandidates: Array<{ audioId: string; score: number; reason: string }>;\n\t\t}>;\n\t} {\n\t\tif (!this.canonical) throw new Error(\"Open the canonical editor before matching microphones\");\n\t\treturn this.canonical.invokeControl({\n\t\t\tcapabilityId: \"timeline.classic.multicam.sources.suggest\",\n\t\t\tinput: { videoIds },\n\t\t}) as ReturnType<CommandManager[\"suggestPodcastSources\"]>;\n\t}\n''' +s[i:];s=s.replace('\\n\\t}): void {\\n\\t\\tif (!this.canonical)\\n\\t\\t\\tthrow new Error(\"Open the canonical editor before creating multicam\");','\\n\\t}, { allowCameraAudio = false }: { allowCameraAudio?: boolean } = {}): void {\\n\\t\\tif (!this.canonical)\\n\\t\\t\\tthrow new Error(\"Open the canonical editor before creating multicam\");',1);s=s.replace('input: { plan, finishPodcast: true },','input: { plan, finishPodcast: true, allowCameraAudio },');p.write_text(s)\np=Path('classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx');s=p.read_text();s=s.replace('\\taudioAssetId: string;','\\taudioAssetId: string;\\n\\t/** Only a manual selection may opt into camera audio when external mics exist. */\\n\\taudioExplicit: boolean;');start=s.index('function baseName(');end=s.index('export function PodcastSyncDialog',start);s=s[:start]+'''function displayBaseName(name: string): string {\n\treturn name.replace(/\\\\.[^.]+$/, \"\");\n}\n\ntype SourceSuggestions = ReturnType<import(\"@/core/managers/commands\").CommandManager[\"suggestPodcastSources\"]>[\"suggestions\"];\n\nfunction buildInitialDrafts({ videoAssets, suggestions, count }: {\n\tvideoAssets: MediaAsset[];\n\tsuggestions: SourceSuggestions;\n\tcount: number;\n}): ChannelDraft[] {\n\treturn Array.from({",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-808a6599-9a11-486c-afe4-4bf5ddfed91a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:37:25.608Z",
+  "parents": [],
+  "branch": "main"
+}

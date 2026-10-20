@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fbf9d0221afeba07b664d5ea8da6916605b90df16e30d7c4e935e42cfd93bca8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:16:54.726Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\ncache=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\njournals=[json.loads(v) for k,v in cache.items() if k.endswith(':editorial-v1')]\nfor j in journals:\n for key,v in list(j['responses'].items())[:3]:\n  print(key, json.dumps(v,ensure_ascii=False)[:3300])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f83fc10c-6929-4f6f-99bb-f0eac66deb94"
+      },
+      {
+        "at": "2026-10-19T16:16:54.838Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\ncache=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\njournals=[json.loads(v) for k,v in cache.items() if k.endswith(':editorial-v1')]\nfor j in journals:\n for key,v in list(j['responses'].items())[:3]:\n  print(key, json.dumps(v,ensure_ascii=False)[:3300])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-f83fc10c-6929-4f6f-99bb-f0eac66deb94"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:16:55.018Z",
+  "parents": [],
+  "branch": "main"
+}

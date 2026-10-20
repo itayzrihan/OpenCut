@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9d9a6715d4cc50bff90f85bb3971dbbc8cca8386322d902313301feb43b2785",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:31:31.680Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-seven-audio.py <<'EOF'\n# Signal check on the actual bound sources used by each saved output.\n# Does not export media, alter any scene, or establish a human listening verdict.\nimport json,pathlib,subprocess,re,math\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759')\np=json.load(open(root/'project.json'));m={x['id']:x for x in json.load(open(root/'media/index.json'))}\nevidence=json.load(open('analysis/seven-smart-2026-10-20/outputs.json'));outputs=[]\nfor item in evidence['outputs']:\n s=next(s for s in p['scenes']if s['id']==item['sceneId']);routes=[]\n for t in s['tracks']['audio']:\n  if t.get('muted'):continue\n  clips=sorted((e for e in t['elements']if e.get('enabled')is not False and not e.get('params',{}).get('muted')),key=lambda e:e['startTime'])\n  if not clips:continue\n  e=next((x for x in clips if x['duration']>=3*120000),clips[0]);asset=m[e['mediaId']]\n  paths=[pathlib.Path(asset['sourcePath'])]if asset.get('sourcePath')else list((root/'media/files').glob(e['mediaId']+'--*'))\n  assert len(paths)==1 and paths[0].is_file()\n  rate=e.get('retime',{}).get('rate',1);offset=e.get('params',{}).get('audioSyncOffset',0)\n  start=max(0,e.get('trimStart',0)/120000-offset*rate);duration=min(8,e['duration']/120000)*rate\n  result=subprocess.run(['ffmpeg','-nostdin','-hide_banner','-ss',str(start),'-t',str(duration),'-i',str(paths[0]),'-vn','-sn','-af','volumedetect','-f','null','-'],stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=30)\n  assert result.returncode==0,result.stderr[-500:]\n  mean=re.search(r'mean_volume:\\s*([\\-\\w.]+) dB',result.stderr);peak=re.search(r'max_volume:\\s*([\\-\\w.]+) dB',result.stderr);assert mean and peak\n  db=float(mean.group(1));assert math.isfinite(db)\n  routes.append({'mediaId':e['mediaId'],'gainDb':e.get('params',{}).get('volume',0),'sampleSeconds':round(duration,3),'sourceMeanDb':db,'sourcePeakDb':float(peak.group(1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f794a593-b798-42a4-ad14-92c8225886bd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:31:32.584Z",
+  "parents": [],
+  "branch": "main"
+}

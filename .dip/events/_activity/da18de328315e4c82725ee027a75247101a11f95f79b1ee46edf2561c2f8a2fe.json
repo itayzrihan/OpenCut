@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "eventId": "da18de328315e4c82725ee027a75247101a11f95f79b1ee46edf2561c2f8a2fe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:56:18.539Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_settings.rs",
+          "crates/editor-api/src/operations/classic_source_audio.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast/reference.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs",
+          "classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts",
+          ".local/seven-smart-2026-10-20/audio-diagnostic-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "abd88404-0893-4278-82de-98e410278bca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:56:18.539Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5848a6324b136ac8f6dacbfd1aabda71f07bb60e6b296b4e06890f310e31b660",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:11:01.209Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-podcast-reference.ts <<'EOF'\n// Canonical browser adapter/WASM regression on a saved edited-project copy.\n// Synthetic transcript supplies known word clocks only; no model/audio claims.\nimport {readFile,writeFile,mkdir} from 'node:fs/promises';\nimport assert from 'node:assert/strict';\nimport {performance} from 'node:perf_hooks';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nimport {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nconst folder='.local/podcast-multicam-scope';\nconst reportFolder='analysis/podcast-multicam-scope-2026-10-19';\nawait mkdir(reportFolder,{recursive:true});\nconst document=JSON.parse(await readFile(`${folder}/live-project-before.json`,'utf8'));delete document.__opencutEditorSession;\nconst mediaAssets=JSON.parse(await readFile(`${folder}/live-media-index.json`,'utf8')).map(({file,url,thumbnailUrl,buffer,...m}:any)=>m);\nconst actual=document.scenes.find((s:any)=>s.id==='multicam-scene-1');assert(actual);assert.equal(actual.tracks.main.elements.length,0);\nconst cuts=actual.tracks.overlay.filter((t:any)=>t.type==='video').flatMap((t:any)=>t.elements);\nconst allMedia=[...cuts,...actual.tracks.audio.flatMap((t:any)=>t.elements)];\nconst end=Math.max(...allMedia.map((e:any)=>e.startTime+e.duration));\nactual.tracks.overlay.push({id:'scoped-fixture-transcript',type:'text',name:'Isolated synthetic word-clock fixture',hidden:false,elements:[],captionSource:{sourceId:'scope-fixture',settings:{wordsPerRow:3,rows:1},words:Array.from({length:Math.floor(end/60000)},(_,i)=>({text:`scope-word-${i}`,start:i*.5,end:i*.5+.35}))}});\nconst active=cuts.filter((e:any)=>e.enabled!==false).sort((a:any,b:any)=>a.startTime-b.startTime);\nfunction group(after:number){const ids:string[]=[];let seconds=0;for(const e of active){if(e.startTime<after)continue;ids.push(e.id);seconds+=e.duration/120000;if(seconds>=50)break;}assert(seconds>=30);return i",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2ee35bd6-b7f6-4185-90b1-b53a0e8c9349"
+      },
+      {
+        "at": "2026-10-19T17:11:01.452Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/check-podcast-reference.ts <<'EOF'\n// Canonical browser adapter/WASM regression on a saved edited-project copy.\n// Synthetic transcript supplies known word clocks only; no model/audio claims.\nimport {readFile,writeFile,mkdir} from 'node:fs/promises';\nimport assert from 'node:assert/strict';\nimport {performance} from 'node:perf_hooks';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nimport {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nconst folder='.local/podcast-multicam-scope';\nconst reportFolder='analysis/podcast-multicam-scope-2026-10-19';\nawait mkdir(reportFolder,{recursive:true});\nconst document=JSON.parse(await readFile(`${folder}/live-project-before.json`,'utf8'));delete document.__opencutEditorSession;\nconst mediaAssets=JSON.parse(await readFile(`${folder}/live-media-index.json`,'utf8')).map(({file,url,thumbnailUrl,buffer,...m}:any)=>m);\nconst actual=document.scenes.find((s:any)=>s.id==='multicam-scene-1');assert(actual);assert.equal(actual.tracks.main.elements.length,0);\nconst cuts=actual.tracks.overlay.filter((t:any)=>t.type==='video').flatMap((t:any)=>t.elements);\nconst allMedia=[...cuts,...actual.tracks.audio.flatMap((t:any)=>t.elements)];\nconst end=Math.max(...allMedia.map((e:any)=>e.startTime+e.duration));\nactual.tracks.overlay.push({id:'scoped-fixture-transcript',type:'text',name:'Isolated synthetic word-clock fixture',hidden:false,elements:[],captionSource:{sourceId:'scope-fixture',settings:{wordsPerRow:3,rows:1},words:Array.from({length:Math.floor(end/60000)},(_,i)=>({text:`scope-word-${i}`,start:i*.5,end:i*.5+.35}))}});\nconst active=cuts.filter((e:any)=>e.enabled!==false).sort((a:any,b:any)=>a.startTime-b.startTime);\nfunction group(after:number){const ids:string[]=[];let seconds=0;for(const e of active){if(e.startTime<after)continue;ids.push(e.id);seconds+=e.duration/120000;if(seconds>=50)break;}assert(seconds>=30);return i",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-2ee35bd6-b7f6-4185-90b1-b53a0e8c9349"
+      },
+      {
+        "at": "2026-10-19T17:11:01.454Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "",
+        "branch": "main",
+        "recordId": "6dab1699-f1ec-4e16-9777-740e60c03ed7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:11:01.459Z",
+  "parents": [],
+  "branch": "main"
+}

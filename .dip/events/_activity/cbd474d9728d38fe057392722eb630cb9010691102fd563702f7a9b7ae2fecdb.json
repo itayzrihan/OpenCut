@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cbd474d9728d38fe057392722eb630cb9010691102fd563702f7a9b7ae2fecdb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:46:54.356Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files '/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751' | rg 'font.*(json|ttf|otf)$' | head -30\npython3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nfor s in p['scenes']:\n print(s['name'])\n for k in ['overlay','main','audio']:\n  v=s['tracks'][k]; ts=[v] if k=='main' else v\n  for t in ts:\n   print(k,t['name'],[(e['type'],e.get('name'),e.get('content'),e.get('sceneId'),e.get('fontFamily')) for e in t['elements']])\nPY",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-98429782-7d4e-42bc-910e-3962ca26d4da"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:46:55.227Z",
+  "parents": [],
+  "branch": "main"
+}

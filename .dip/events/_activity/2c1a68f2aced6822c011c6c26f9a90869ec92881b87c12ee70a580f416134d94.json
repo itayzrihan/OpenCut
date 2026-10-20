@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2c1a68f2aced6822c011c6c26f9a90869ec92881b87c12ee70a580f416134d94",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:52:21.578Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'));print(p['settings'])\nPY\nsed -n '2250,2300p' classic/apps/web/src/ai/timeline-tools.ts\nsed -n '110,140p' classic/apps/web/src/ai/types.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-4018d3a7-c88d-40eb-bfe6-c2a3cd3de7ae"
+      },
+      {
+        "at": "2026-10-19T09:52:21.777Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'));print(p['settings'])\nPY\nsed -n '2250,2300p' classic/apps/web/src/ai/timeline-tools.ts\nsed -n '110,140p' classic/apps/web/src/ai/types.ts",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-4018d3a7-c88d-40eb-bfe6-c2a3cd3de7ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:52:22.540Z",
+  "parents": [],
+  "branch": "main"
+}

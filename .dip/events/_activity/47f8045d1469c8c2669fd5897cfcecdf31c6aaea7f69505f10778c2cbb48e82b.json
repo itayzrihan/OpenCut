@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "47f8045d1469c8c2669fd5897cfcecdf31c6aaea7f69505f10778c2cbb48e82b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:47:03.268Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nfor s in p['scenes']:\n for t in s['tracks']['overlay']:\n  for e in t['elements']: print(json.dumps(e,ensure_ascii=False)[:4000])\nf=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/shared-library/metadata/fonts.json'));print('sharedfont',str(f)[:1200])\nPY\ntail -10 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-549042b8-0f36-4c77-a8a1-4116b18ad2e7"
+      },
+      {
+        "at": "2026-10-19T09:47:03.470Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nfor s in p['scenes']:\n for t in s['tracks']['overlay']:\n  for e in t['elements']: print(json.dumps(e,ensure_ascii=False)[:4000])\nf=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/shared-library/metadata/fonts.json'));print('sharedfont',str(f)[:1200])\nPY\ntail -10 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-549042b8-0f36-4c77-a8a1-4116b18ad2e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:47:04.347Z",
+  "parents": [],
+  "branch": "main"
+}

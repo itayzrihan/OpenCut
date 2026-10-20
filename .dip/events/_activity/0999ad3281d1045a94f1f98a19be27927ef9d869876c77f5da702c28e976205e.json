@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0999ad3281d1045a94f1f98a19be27927ef9d869876c77f5da702c28e976205e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:23:39.207Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nc=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\nfor k,v in c.items():\n if k.endswith(':editorial-v1'):\n  r=json.loads(v)['responses']\n  for key,d in r.items():\n   if key.startswith('draft:'):\n    print(json.dumps({'stage':key,'selectionReason':d.get('selectionReason'),'shorts':[{'premise':x.get('premise'),'video':x.get('video')} for x in d.get('shorts',[])]},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3b1c53af-1f16-4bc7-97d4-47f77e098212"
+      },
+      {
+        "at": "2026-10-19T16:23:39.307Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nc=json.loads(Path('.local/podcast-editorial-upgrade/provider-checkpoints.json').read_text())\nfor k,v in c.items():\n if k.endswith(':editorial-v1'):\n  r=json.loads(v)['responses']\n  for key,d in r.items():\n   if key.startswith('draft:'):\n    print(json.dumps({'stage':key,'selectionReason':d.get('selectionReason'),'shorts':[{'premise':x.get('premise'),'video':x.get('video')} for x in d.get('shorts',[])]},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-3b1c53af-1f16-4bc7-97d4-47f77e098212"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:23:39.350Z",
+  "parents": [],
+  "branch": "main"
+}

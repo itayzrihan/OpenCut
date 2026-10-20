@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c728850adae06e28c50032edbfe82cea3cf3951b58cdb92abddf85ce909fb28d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:49:36.069Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1535,1585p' classic/apps/web/src/services/local-drive/server.ts\nsed -n '140,180p' classic/apps/web/src/services/local-drive/client.ts\nps -axo pid,etime,pcpu,command | rg 'next build|typescript|build.mjs' | head -8\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-41a3d84d-4b7b-40db-9b27-6f76724bd3b5"
+      },
+      {
+        "at": "2026-10-19T09:49:36.285Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1535,1585p' classic/apps/web/src/services/local-drive/server.ts\nsed -n '140,180p' classic/apps/web/src/services/local-drive/client.ts\nps -axo pid,etime,pcpu,command | rg 'next build|typescript|build.mjs' | head -8\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-41a3d84d-4b7b-40db-9b27-6f76724bd3b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:49:36.695Z",
+  "parents": [],
+  "branch": "main"
+}

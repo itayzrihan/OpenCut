@@ -133,40 +133,122 @@ pub(super) fn register_review(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
 ) -> Result<(), RegistryError> {
-    register::<Input, Output, _, _>(registry, DocumentSupport::Classic, crate::CapabilityExecution::Immediate,
-        "timeline.classic.takes.review", "Prepare experimental take review",
+    register::<Input, Output, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.takes.review",
+        "Prepare experimental take review",
         "Read-only experimental review: validate a complete draft against explicit selected source clips, return all selected dialogue and discarded dialogue plus alternatives only for risky groups. Optional selections change recommendations in the returned proposal only, restricted to flagged groups. Never changes editor state. Full source coverage, project/revision and cancellation checks apply. Use takes.edit to commit the final proposal with undo/dry-run support. No IO or inference.",
-        "timeline", AccessLevel::Read, true, false, &["classic", "takes", "experimental", "review"],
-        move |context, input| { let state = state.clone(); async move {
-            if context.cancellation.is_cancelled() { return Err(CapabilityError::Failed("Take review cancelled".into())); }
-            let store = state.read().map_err(|_| invalid("State lock poisoned"))?;
-            if store.active_project_id() != Some(input.project_id.as_str()) || store.document.revision != input.expected_revision {
-                return Err(CapabilityError::Conflict("Take source project or revision changed".into()));
-            }
-            let classic = store.document.project.as_ref().and_then(|p| p.classic.as_ref()).ok_or_else(|| invalid("Classic project required"))?;
-            let scene = arr(&classic.document["scenes"]).iter().find(|s| s["id"] == input.scene_id).ok_or_else(|| invalid("Scene not found"))?;
-            let (words, _, _) = inventory(&scene["tracks"], &input.element_ids, true)?;
-            validate_plan(&input.plan, &words)?;
-            let groups: Vec<_> = input.plan.groups.iter().enumerate().filter_map(|(i,g)| {
-                let reasons = risks(g, &words);
-                (!reasons.is_empty()).then(|| ReviewGroup { group_index: i, reasons, alternatives: g.alternatives.iter().enumerate().map(|(index,a)| Candidate {
-                    alternative_index: index, label: a.label.clone(), dialogue: dialogue(&a.parts, &words), parts: a.parts.clone(),
-                }).collect() })
-            }).collect();
-            if input.selections.len() > 1000 { return Err(invalid("Too many review selections")); }
-            let mut plan = input.plan;
-            let mut seen = HashSet::new();
-            for s in input.selections {
-                if !seen.insert(s.group_index) || !groups.iter().any(|g| g.group_index == s.group_index) {
-                    return Err(invalid("Experimental review may select each flagged group only once"));
+        "timeline",
+        AccessLevel::Read,
+        true,
+        false,
+        &["classic", "takes", "experimental", "review"],
+        move |context, input| {
+            let state = state.clone();
+            async move {
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("Take review cancelled".into()));
                 }
-                let g = &mut plan.groups[s.group_index];
-                if s.alternative_index >= g.alternatives.len() { return Err(invalid("Review alternative out of bounds")); }
-                g.selected = s.alternative_index;
+                let store = state.read().map_err(|_| invalid("State lock poisoned"))?;
+                if store.active_project_id() != Some(input.project_id.as_str())
+                    || store.document.revision != input.expected_revision
+                {
+                    return Err(CapabilityError::Conflict(
+                        "Take source project or revision changed".into(),
+                    ));
+                }
+                let classic = store
+                    .document
+                    .project
+                    .as_ref()
+                    .and_then(|p| p.classic.as_ref())
+                    .ok_or_else(|| invalid("Classic project required"))?;
+                let scene = arr(&classic.document["scenes"])
+                    .iter()
+                    .find(|s| s["id"] == input.scene_id)
+                    .ok_or_else(|| invalid("Scene not found"))?;
+                let (words, _, _) = inventory(&scene["tracks"], &input.element_ids, true)?;
+                validate_plan(&input.plan, &words)?;
+                let groups: Vec<_> = input
+                    .plan
+                    .groups
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, g)| {
+                        let reasons = risks(g, &words);
+                        (!reasons.is_empty()).then(|| ReviewGroup {
+                            group_index: i,
+                            reasons,
+                            alternatives: g
+                                .alternatives
+                                .iter()
+                                .enumerate()
+                                .map(|(index, a)| Candidate {
+                                    alternative_index: index,
+                                    label: a.label.clone(),
+                                    dialogue: dialogue(&a.parts, &words),
+                                    parts: a.parts.clone(),
+                                })
+                                .collect(),
+                        })
+                    })
+                    .collect();
+                if input.selections.len() > 1000 {
+                    return Err(invalid("Too many review selections"));
+                }
+                let mut plan = input.plan;
+                let mut seen = HashSet::new();
+                for s in input.selections {
+                    if !seen.insert(s.group_index)
+                        || !groups.iter().any(|g| g.group_index == s.group_index)
+                    {
+                        return Err(invalid(
+                            "Experimental review may select each flagged group only once",
+                        ));
+                    }
+                    let g = &mut plan.groups[s.group_index];
+                    if s.alternative_index >= g.alternatives.len() {
+                        return Err(invalid("Review alternative out of bounds"));
+                    }
+                    g.selected = s.alternative_index;
+                }
+                validate_plan(&plan, &words)?;
+                let story = plan
+                    .groups
+                    .iter()
+                    .enumerate()
+                    .map(|(i, g)| StoryBeat {
+                        group_index: i,
+                        label: g.label.clone(),
+                        selected: g.selected,
+                        dialogue: dialogue(&g.alternatives[g.selected].parts, &words),
+                    })
+                    .collect();
+                let discarded = plan
+                    .discarded
+                    .iter()
+                    .map(|d| DiscardedDialogue {
+                        first_word: d.first_word,
+                        last_word: d.last_word,
+                        reason: d.reason.clone(),
+                        dialogue: dialogue(
+                            &[Part {
+                                first_word: d.first_word,
+                                last_word: d.last_word,
+                            }],
+                            &words,
+                        ),
+                    })
+                    .collect();
+                Ok(OperationSuccess::new(Output {
+                    plan,
+                    story,
+                    groups,
+                    discarded,
+                }))
             }
-            validate_plan(&plan, &words)?;
-            let story = plan.groups.iter().enumerate().map(|(i,g)| StoryBeat { group_index:i, label:g.label.clone(), selected:g.selected, dialogue:dialogue(&g.alternatives[g.selected].parts,&words) }).collect();
-            let discarded = plan.discarded.iter().map(|d| DiscardedDialogue { first_word:d.first_word,last_word:d.last_word,reason:d.reason.clone(),dialogue:dialogue(&[Part{first_word:d.first_word,last_word:d.last_word}],&words) }).collect();
-            Ok(OperationSuccess::new(Output { plan, story, groups, discarded }))
-        }})
+        },
+    )
 }

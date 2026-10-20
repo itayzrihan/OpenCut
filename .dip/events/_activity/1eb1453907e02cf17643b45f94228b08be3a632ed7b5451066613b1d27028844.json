@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1eb1453907e02cf17643b45f94228b08be3a632ed7b5451066613b1d27028844",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:11:45.917Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re,os,json\npaths=set(filter(None,subprocess.check_output(['git','ls-files','--others','--exclude-standard','-z']).decode().split('\\0')))|set(filter(None,subprocess.check_output(['git','diff','--name-only','-z']).decode().split('\\0')))\nrx=re.compile(r'(?i)(?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret)[\\\\\"\\s:=]+([A-Za-z0-9_./+-]{32,})');found=[]\nfor p in paths:\n if not os.path.isfile(p):continue\n try:s=open(p).read()\n except(UnicodeError,IsADirectoryError):continue\n for m in rx.finditer(s):\n  if len(set(m.group(1)))>12:found.append({'path':p,'offset':m.start(),'kind':'credential-shaped field'})\nprint('additional credential-shaped findings',len(found));print(json.dumps(found[:8]))\njson.dump(found,open('.local/seven-smart-2026-10-20/credential-fields.json','w'))\nPY\ntail -5 .local/seven-smart-2026-10-20/build-final.log; cat .local/seven-smart-2026-10-20/transcription-progress.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a591939a-8179-4a7c-b97e-ed5a47d5cdc5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:11:46.578Z",
+  "parents": [],
+  "branch": "main"
+}

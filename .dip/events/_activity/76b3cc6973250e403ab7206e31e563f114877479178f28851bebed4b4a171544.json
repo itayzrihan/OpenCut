@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "76b3cc6973250e403ab7206e31e563f114877479178f28851bebed4b4a171544",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:56:17.532Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs",
+          "crates/editor-api/src/operations/classic_duplicate.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "37fbefb9-500c-41f7-b9d1-147f036a9a86"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:56:17.533Z",
+  "parents": [],
+  "branch": "main"
+}

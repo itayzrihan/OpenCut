@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d80bb3a1cb5a3632ecbdd8bdc9a7b1bad585d33ca7312c88a15d6a640b2afd3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:48:37.016Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 /tmp/podcast-source-release.log\nps -axo pid,etime,pcpu,command | rg 'wasm-opt|osascript' | head -6",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-0664ca1a-ee68-4db8-b6b4-574a27539b78"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:48:38.121Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f89d28154fcd729e070969edb485025e7ddb6ea6547bd19f1432f5afefd1637a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:00:43.264Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ea653cc362f12e216edf3fac35518a45b4f5fc39ec0d601a57e849a4a9126c6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'maximum|max.*quality|quality.*max|bitrate|bitRate' classic/apps/web/src/components/export* classic/apps/web/src/export classic/apps/web/src/services/renderer classic/rust/crates/export* 2>/dev/null | head -100\nrg --files classic/apps/web/src | rg 'export.*(dialog|settings|manager)|exporter'",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-95223a97-d0a2-47b0-8a50-099687674d63"
+      },
+      {
+        "at": "2026-10-19T11:00:43.387Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ea653cc362f12e216edf3fac35518a45b4f5fc39ec0d601a57e849a4a9126c6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'maximum|max.*quality|quality.*max|bitrate|bitRate' classic/apps/web/src/components/export* classic/apps/web/src/export classic/apps/web/src/services/renderer classic/rust/crates/export* 2>/dev/null | head -100\nrg --files classic/apps/web/src | rg 'export.*(dialog|settings|manager)|exporter'",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-95223a97-d0a2-47b0-8a50-099687674d63"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:00:43.887Z",
+  "parents": [],
+  "branch": "main"
+}

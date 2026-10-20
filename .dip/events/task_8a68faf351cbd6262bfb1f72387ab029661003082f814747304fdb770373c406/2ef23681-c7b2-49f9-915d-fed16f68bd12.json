@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2ef23681-c7b2-49f9-915d-fed16f68bd12",
+  "taskId": "task_8a68faf351cbd6262bfb1f72387ab029661003082f814747304fdb770373c406",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Applied +173.333ms Audio Sync Offset equally to both external WAV microphones via canonical live transaction. Twelve pre-correction bounded source comparisons established audio advance and an extra20800ticks in audio source trims. Six repeat comparisons improved. Saved project exact except two params; all video cuts, intro, mastering and settings preserved. Live playback ran55.17–70.3s; paused at55.17 for review.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Verified by bounded camera/microphone audio cross-correlation at six points; residual acoustic peaks between−38.563ms and+6.25ms (strongest within3ms). No calibrated visual phoneme or sample-perfect lip-sync claim."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:37:17.152Z",
+  "parents": [
+    "910f486d-4081-4b63-8e8a-1db45a929b6a"
+  ],
+  "branch": "main"
+}

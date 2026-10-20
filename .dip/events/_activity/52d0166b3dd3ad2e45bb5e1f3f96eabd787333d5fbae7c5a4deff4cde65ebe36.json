@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "52d0166b3dd3ad2e45bb5e1f3f96eabd787333d5fbae7c5a4deff4cde65ebe36",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:47:58.174Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/seven-smart-2026-10-20/prepared-before-fix.json'))\nfor x in p['audioInputs']:\n c=x['clip'];print(c['id'],c['startTime']/120000,c['duration']/120000,c['trimStart']/120000,c.get('retime'),{k:v for k,v in c['params'].items()if k in ['volume','gainDb','audioSyncOffset']})\nPY\nsed -n '1,113p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; rg -n 'sourceStartSeconds|playbackRate|frame_duration|frame.start' classic/rust/crates -g '*audio*' | head -25",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-68a8d8dd-bb31-47d1-a638-cba1440875eb"
+      },
+      {
+        "at": "2026-10-20T00:47:58.320Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/seven-smart-2026-10-20/prepared-before-fix.json'))\nfor x in p['audioInputs']:\n c=x['clip'];print(c['id'],c['startTime']/120000,c['duration']/120000,c['trimStart']/120000,c.get('retime'),{k:v for k,v in c['params'].items()if k in ['volume','gainDb','audioSyncOffset']})\nPY\nsed -n '1,113p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts; rg -n 'sourceStartSeconds|playbackRate|frame_duration|frame.start' classic/rust/crates -g '*audio*' | head -25",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-68a8d8dd-bb31-47d1-a638-cba1440875eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:47:58.432Z",
+  "parents": [],
+  "branch": "main"
+}

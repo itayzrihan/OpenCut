@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bbdfd505-46b7-4637-9ce0-81899c256ed1",
+  "taskId": "task_9d9c233700499ebf6b58c111c07d7c6c1231a4b4f2db189dd0a66e487761d83d",
+  "type": "task.update",
+  "payload": {
+    "description": "All179 paired camera segments have identical durations/complementary enable states, but Lior is displaced +39.8seconds relative to Niva. At7.3267s Niva is disabled and Lior absent, causing correct intro opacity to reveal black. Repair only Lior track positions through canonical editor transaction; preserve all clip trims, other tracks/scenes/settings and current user edits. Verify saved output coverage and live fade; no compositor code change warranted.",
+    "scope": [
+      "analysis/episode4-intro-fade-2026-10-19",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:20:12.736Z",
+  "parents": [
+    "673841e9-5df4-4425-99e7-077bd46efad7"
+  ],
+  "branch": "main"
+}

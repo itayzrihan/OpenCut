@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20132eda865da85379dc0ee471158e704f415ca2833d96a4fe6429451d941c16",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:07:24.993Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/github-runs.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "300fde60-2e96-408b-bf64-806e7ba148ba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:07:24.995Z",
+  "parents": [],
+  "branch": "main"
+}

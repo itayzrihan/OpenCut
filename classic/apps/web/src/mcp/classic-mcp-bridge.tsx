@@ -89,7 +89,10 @@ async function createBridgeToolRuntime({
 			includeMediaAccess: true,
 			includePreviewImage: true,
 			includeAppControlAccess: true,
-			includeNetworkAccess: !toolName || toolName === "smart_takes.start",
+			includeNetworkAccess:
+				!toolName ||
+				toolName === "smart_takes.start" ||
+				toolName === "podcast.start",
 		},
 	});
 }

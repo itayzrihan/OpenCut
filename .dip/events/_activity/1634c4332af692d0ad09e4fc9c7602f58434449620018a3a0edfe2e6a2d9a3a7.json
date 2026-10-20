@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1634c4332af692d0ad09e4fc9c7602f58434449620018a3a0edfe2e6a2d9a3a7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:49:35.265Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts';s=open(p).read();a=s.index('test(\"rounded cached PCM tails');s=s[:a]+'''test(\"rounded cached PCM tails never overlap the next decode window\", async () => {\n ranges.length=0;interrupt=undefined;\n const clips=[0,1].flatMap(mic=>[0,1].map(part=>({id:`podcast-audio:0:${6+mic}:${part}`,type:\"audio\",mediaId:\"voice\",startTime:part?1564000:0,duration:part?203932000:1564000,trimStart:part?9704049:7616049,trimEnd:0,retime:{rate:1},params:{audioSyncOffset:0}})));\n const result=await collectTakeAudioEvidence({\n  editor:{scenes:{getActiveScene:()=>({tracks:{main:{elements:[]}}})},media:{getAssets:()=>[{id:\"voice\",url:\"http://local/source\"}]}} as any,\n  elementIds:clips.map(c=>c.id),sourceClips:clips as any,\n  signal:new AbortController().signal,boundedFrames:true,\n  checkpoint:{key:\"fractional-source-clock\",store:{read:async({duration}:any)=>[{start:0,end:duration,rms:.1,peak:.2,zeroCrossingRate:0}],write:async()=>{throw Error(\"Cached audio was decoded again\");}}},\n });\n expect(ranges).toHaveLength(0);\n expect(result).toHaveLength(4);\n for(let k=0;k<result.length;k++){\n  const frames=result[k].frames;expect(frames.length).toBeGreaterThan(0);\n  for(let i=1;i<frames.length;i++)expect(frames[i].start).toBeGreaterThanOrEqual(frames[i-1].end-1e-8);\n  expect(frames.at(-1)!.end).toBeLessThanOrEqual(clips[k].duration/120000+1e-8);\n }\n});\n''';open(p,'w').write(s)\nPY\nnode classic/scripts/test-web.mjs src/timeline/smart-takes/audio-evidence.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/padding-before > .local/seven-smart-2026-10-20/padding-before.log 2>&1\ntail -15 .local/seven-smart-2026-10-20/padding-before.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-0ff1a413-f2b9-4a70-afac-4e81e7846200"
+      },
+      {
+        "at": "2026-10-20T00:49:35.510Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/timeline/smart-takes/audio-evidence.test.ts';s=open(p).read();a=s.index('test(\"rounded cached PCM tails');s=s[:a]+'''test(\"rounded cached PCM tails never overlap the next decode window\", async () => {\n ranges.length=0;interrupt=undefined;\n const clips=[0,1].flatMap(mic=>[0,1].map(part=>({id:`podcast-audio:0:${6+mic}:${part}`,type:\"audio\",mediaId:\"voice\",startTime:part?1564000:0,duration:part?203932000:1564000,trimStart:part?9704049:7616049,trimEnd:0,retime:{rate:1},params:{audioSyncOffset:0}})));\n const result=await collectTakeAudioEvidence({\n  editor:{scenes:{getActiveScene:()=>({tracks:{main:{elements:[]}}})},media:{getAssets:()=>[{id:\"voice\",url:\"http://local/source\"}]}} as any,\n  elementIds:clips.map(c=>c.id),sourceClips:clips as any,\n  signal:new AbortController().signal,boundedFrames:true,\n  checkpoint:{key:\"fractional-source-clock\",store:{read:async({duration}:any)=>[{start:0,end:duration,rms:.1,peak:.2,zeroCrossingRate:0}],write:async()=>{throw Error(\"Cached audio was decoded again\");}}},\n });\n expect(ranges).toHaveLength(0);\n expect(result).toHaveLength(4);\n for(let k=0;k<result.length;k++){\n  const frames=result[k].frames;expect(frames.length).toBeGreaterThan(0);\n  for(let i=1;i<frames.length;i++)expect(frames[i].start).toBeGreaterThanOrEqual(frames[i-1].end-1e-8);\n  expect(frames.at(-1)!.end).toBeLessThanOrEqual(clips[k].duration/120000+1e-8);\n }\n});\n''';open(p,'w').write(s)\nPY\nnode classic/scripts/test-web.mjs src/timeline/smart-takes/audio-evidence.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/padding-before > .local/seven-smart-2026-10-20/padding-before.log 2>&1\ntail -15 .local/seven-smart-2026-10-20/padding-before.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0ff1a413-f2b9-4a70-afac-4e81e7846200"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:49:35.887Z",
+  "parents": [],
+  "branch": "main"
+}

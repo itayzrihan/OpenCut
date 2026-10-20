@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "141a64493d67de9299a89233a5ce5d8b3e0cf24f1d013c7e3c74c9e084ca35ae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:05:34.864Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/audio-signal.log",
+          "analysis/seven-smart-2026-10-20/audio-verification.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0550cdea-2d72-49e8-a6eb-e3b99d8d519f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:05:34.865Z",
+  "parents": [],
+  "branch": "main"
+}

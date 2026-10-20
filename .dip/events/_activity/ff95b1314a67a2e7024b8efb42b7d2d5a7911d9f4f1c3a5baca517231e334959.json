@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff95b1314a67a2e7024b8efb42b7d2d5a7911d9f4f1c3a5baca517231e334959",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:04:41.555Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/web-scoped/src__timeline__smart-takes__audio-evidence.test.ts.log",
+          ".local/podcast-multicam-scope/web-scoped/src__core__managers____tests____transcription-manager.test.ts.log",
+          ".local/podcast-multicam-scope/web-scoped/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2519a858-71d8-4551-bc34-f68c3be05204"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:04:41.556Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84caaa7fd5a88fd4a7fcb5a3077dee900f2ffe584523094f5c4039a16d9af235",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:09:05.585Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/services/renderer/__tests__/scale-frame-output.test.ts",
+          "classic/apps/web/src/export/__tests__/video-encoding.test.ts",
+          ".local/classic-web-tests/1792408144880",
+          ".local/classic-web-tests/1792408144880/src__services__renderer____tests____scale-frame-output.test.ts.log",
+          ".local/classic-web-tests/1792408144880/src__services__renderer____tests____nested-opacity.test.ts.log",
+          ".local/classic-web-tests/1792408144880/src__export____tests____video-encoding.test.ts.log",
+          ".local/classic-web-tests/1792408144880/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "13fc452b-fbe5-48ed-a5b3-db4141d1194f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:09:05.589Z",
+  "parents": [],
+  "branch": "main"
+}

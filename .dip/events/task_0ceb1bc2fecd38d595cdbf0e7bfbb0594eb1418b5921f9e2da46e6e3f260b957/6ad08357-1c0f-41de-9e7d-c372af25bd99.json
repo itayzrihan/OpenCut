@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ad08357-1c0f-41de-9e7d-c372af25bd99",
+  "taskId": "task_0ceb1bc2fecd38d595cdbf0e7bfbb0594eb1418b5921f9e2da46e6e3f260b957",
+  "type": "task.update",
+  "payload": {
+    "title": "Run full automatic podcast edit for Itay and Yarden in existing New project",
+    "acceptance": [
+      "Use existing project 9deb36b6-ef21-47bd-a830-9ad0ea784759 and existing four assets; match WAV microphones to same-name cameras.",
+      "Run native full podcast multicam with improved shared synchronization, speaker cuts, two camera tracks using enable/disable, camera audio muted, configured audio and sharpen finishing.",
+      "Verify saved editable result, microphone source selection, applied processing and preview; preserve episode4. No export requested."
+    ],
+    "scope": [
+      "analysis/itay-yarden-podcast-2026-10-19",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T15:42:20.966Z",
+  "parents": [
+    "e788ede5-d1c3-4ad7-badf-5eaafd118b68"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2cb8e3941e8cda60927118890828fcbe45e13935c524cff99e60ab7ea07994ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:15:02.365Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/podcast-multicam-scope/adapter-tests.log; tail -10 .local/podcast-multicam-scope/caption-isolation.log; git diff --check; cat .agents/skills/dip/SKILL.md",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7527f492-e074-410f-9270-b9769e3e1e38"
+      },
+      {
+        "at": "2026-10-19T17:15:02.477Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 .local/podcast-multicam-scope/adapter-tests.log; tail -10 .local/podcast-multicam-scope/caption-isolation.log; git diff --check; cat .agents/skills/dip/SKILL.md",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7527f492-e074-410f-9270-b9769e3e1e38"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:15:03.007Z",
+  "parents": [],
+  "branch": "main"
+}

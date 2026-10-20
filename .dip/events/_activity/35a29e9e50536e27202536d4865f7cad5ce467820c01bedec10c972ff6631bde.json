@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "35a29e9e50536e27202536d4865f7cad5ce467820c01bedec10c972ff6631bde",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:14:34.964Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/podcast-multicam-scope/caption-isolation.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6e1e1167-3b50-4e07-8ceb-1f53239efbb0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:14:34.966Z",
+  "parents": [],
+  "branch": "main"
+}

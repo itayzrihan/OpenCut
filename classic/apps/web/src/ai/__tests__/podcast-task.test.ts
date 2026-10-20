@@ -72,6 +72,14 @@ function setup() {
 	const apply = mock(() => {});
 	const analyzeAudio = mock(async () => []);
 	const seek = mock(() => {});
+	const selectedRefs: { trackId: string; elementId: string }[] = [];
+	const scope = mock(() => ({
+		revision: 1,
+		referenceRegions: [],
+		hasTranscript: true,
+	}));
+	const preparedIds: string[][] = [];
+	const transcribe = mock(async () => ({ task: { status: "succeeded" } }));
 	const editor = {
 		project: {
 			getActive: () => ({ metadata: { id: "project" } }),
@@ -79,29 +87,55 @@ function setup() {
 			getSessionReadOnlyReason: () => null,
 		},
 		scenes: { getActiveScene: () => scene, getActiveSceneOrNull: () => scene },
+		selection: { getSelectedElements: () => selectedRefs },
+		transcription: {
+			start: transcribe,
+			cancel: () => {},
+			subscribe: () => () => {},
+		},
 		command: {
+			podcastScope: scope,
 			getCanonicalRevision: () => 1,
 			planEditingProviderRetry: () => ({
 				retry: false,
 				delayMs: 0,
 				maxAttempts: 1,
 			}),
-			preparePodcast: () => ({
-				revision: 1,
-				words,
-				windows: [{ index: 0, words }],
-				editorial: () => ({policyVersion:"strategic-teaser-v1",complete:true,requests:[],videos:[video],report:{}}),
-				review: () => {},
-				analyzeAudio,
-				apply,
-			}),
+			preparePodcast: (ids: string[]) => {
+				preparedIds.push(ids);
+				return {
+					revision: 1,
+					words,
+					windows: [{ index: 0, words }],
+					editorial: () => ({
+						policyVersion: "strategic-teaser-v1",
+						complete: true,
+						requests: [],
+						videos: [video],
+						report: {},
+					}),
+					review: () => {},
+					analyzeAudio,
+					apply,
+				};
+			},
 			undo: () => {},
 			flushHistory: async () => {},
 		},
 		save: { flush: async () => {} },
 		playback: { pause: () => {}, seek },
 	} as unknown as EditorCore;
-	return { task: getPodcastTask(editor), scene, apply, analyzeAudio, seek };
+	return {
+		task: getPodcastTask(editor),
+		scene,
+		apply,
+		analyzeAudio,
+		seek,
+		selectedRefs,
+		scope,
+		preparedIds,
+		transcribe,
+	};
 }
 test("podcast task applies once after audio and resets output playback", async () => {
 	const { task, apply, analyzeAudio, seek } = setup();
@@ -136,4 +170,72 @@ test("switching the source scene while audio is decoded discards the proposal", 
 		status: "failed",
 		error: "The active episode changed. No extracts were applied.",
 	});
+});
+
+test("empty selection reaches canonical preparation as whole-timeline reference", async () => {
+	const { task, preparedIds } = setup();
+	await task.start(options);
+	expect(preparedIds).toEqual([[]]);
+});
+test("selected clips stay frozen even when transcription changes UI selection", async () => {
+	const { task, selectedRefs, scope, preparedIds, transcribe, apply } = setup();
+	selectedRefs.push(
+		{ trackId: "routed-camera", elementId: "camera-A" },
+		{ trackId: "other-camera", elementId: "camera-C" },
+	);
+	scope.mockImplementation(() => ({
+		revision: 1,
+		referenceRegions: [],
+		hasTranscript: false,
+	}));
+	transcribe.mockImplementation(async () => {
+		selectedRefs.splice(0);
+		return { task: { status: "succeeded" } };
+	});
+	await task.start(options);
+	expect(transcribe).toHaveBeenCalledWith({
+		language: "auto",
+		referenceElementIds: ["camera-A", "camera-C"],
+		resumeJob: undefined,
+	});
+	expect(preparedIds).toEqual([["camera-A", "camera-C"]]);
+	expect(apply).toHaveBeenCalledTimes(1);
+});
+
+test("MCP start freezes explicit scope and exact retries never apply a second edit", async () => {
+	const { task, scene, selectedRefs, preparedIds, apply } = setup();
+	selectedRefs.push({
+		trackId: "ignored-ui-selection",
+		elementId: "unselected",
+	});
+	const input = {
+		...options,
+		sceneId: "source",
+		elementIds: [],
+		requestId: "mcp-request",
+	};
+	task.startRemote(input);
+	task.startRemote(input);
+	if (task.getSnapshot().status === "running")
+		await new Promise<void>((resolve) => {
+			const off = task.subscribe(() => {
+				if (task.getSnapshot().status !== "running") {
+					off();
+					resolve();
+				}
+			});
+		});
+	expect(task.getSnapshot()).toMatchObject({
+		status: "succeeded",
+		requestId: "mcp-request",
+		projectId: "project",
+		sceneId: "source",
+	});
+	scene.id = "created-output";
+	task.startRemote(input);
+	expect(preparedIds).toEqual([[]]);
+	expect(apply).toHaveBeenCalledTimes(1);
+	expect(() => task.startRemote({ ...input, elementIds: ["other"] })).toThrow(
+		"different inputs",
+	);
 });

@@ -347,3 +347,208 @@ async fn short_camera_can_start_late_and_end_early_without_truncating_main_recor
         assert_eq!(clip["trimStart"].as_f64().unwrap() / 120000.0, start - 10.0);
     }
 }
+
+async fn source_fixture(names: &[(&str, &str, &str)]) -> (OpenCutRuntime, u64) {
+    let r = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    // Keep original bound identities referenced by existing fixture scenes.
+    for (id, name, kind) in names {
+        if let Some(a) = classic["mediaAssets"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|a| a["id"] == *id)
+        {
+            a["name"] = json!(name);
+            a["type"] = json!(kind);
+            a["duration"] = json!(100.0);
+        } else {
+            classic["mediaAssets"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!({"id":id,"name":name,"type":kind,"duration":100.0,"hasAudio":true}));
+        }
+    }
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let rev = read(&r).await["revision"].as_u64().unwrap();
+    (r, rev)
+}
+#[tokio::test]
+async fn microphones_match_embedded_person_names_not_camera_self_or_import_order() {
+    let (r, rev) = source_fixture(&[
+        ("video-asset", "C7453lior.MP4", "video"),
+        ("camera-n", "C7456Niva.MP4", "video"),
+        ("mic-n", "240427_0144_2niva.wav", "audio"),
+        ("mic-l", "240427_0144_1lior.wav", "audio"),
+    ])
+    .await;
+    let before = read(&r).await;
+    for ids in [
+        json!(["video-asset", "camera-n"]),
+        json!(["camera-n", "video-asset"]),
+    ] {
+        let output = call(
+            &r,
+            "timeline.classic.multicam.sources.suggest",
+            json!({"projectId":"classic-project","expectedRevision":rev,"videoIds":ids}),
+        )
+        .await;
+        for s in output["suggestions"].as_array().unwrap() {
+            assert_eq!(
+                s["audioId"],
+                if s["videoId"] == "video-asset" {
+                    "mic-l"
+                } else {
+                    "mic-n"
+                }
+            );
+            assert!(s["candidates"][0]["score"].as_u64().unwrap() >= 80);
+        }
+    }
+    assert_eq!(
+        read(&r).await,
+        before,
+        "Suggestions must not mutate editor/history"
+    );
+    assert!(r.registry().invoke("timeline.classic.multicam.sources.suggest",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":rev+1,"videoIds":["video-asset"]})).await.is_err());
+}
+#[tokio::test]
+async fn ambiguous_missing_and_colliding_microphones_require_manual_selection() {
+    for names in [
+        vec![
+            ("video-asset", "C12_Lior.MP4", "video"),
+            ("mic-a", "rec_Lior_1.wav", "audio"),
+            ("mic-b", "rec_Lior_2.wav", "audio"),
+        ],
+        vec![
+            ("video-asset", "C12_Lior.MP4", "video"),
+            ("mic-a", "rec_01.wav", "audio"),
+        ],
+        vec![
+            ("video-asset", "C12_Lior.MP4", "video"),
+            ("camera-b", "C13_Lior.MP4", "video"),
+            ("mic-a", "rec_Lior.wav", "audio"),
+        ],
+    ] {
+        let ids = names
+            .iter()
+            .filter(|n| n.2 == "video")
+            .map(|n| n.0)
+            .collect::<Vec<_>>();
+        let (r, rev) = source_fixture(&names).await;
+        let output = call(
+            &r,
+            "timeline.classic.multicam.sources.suggest",
+            json!({"projectId":"classic-project","expectedRevision":rev,"videoIds":ids}),
+        )
+        .await;
+        assert!(
+            output["suggestions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|s| s["audioId"].is_null())
+        );
+    }
+}
+#[tokio::test]
+async fn hebrew_names_and_external_exact_names_are_supported() {
+    let (r, rev) = source_fixture(&[
+        ("video-asset", "C12ניבה.MP4", "video"),
+        ("mic-n", "הקלטה_ניבה_2.wav", "audio"),
+        ("camera-b", "Lior.MP4", "video"),
+        ("mic-l", "Lior.wav", "audio"),
+    ])
+    .await;
+    let output=call(&r,"timeline.classic.multicam.sources.suggest",json!({"projectId":"classic-project","expectedRevision":rev,"videoIds":["video-asset","camera-b"]})).await;
+    assert_eq!(output["suggestions"][0]["audioId"], "mic-n");
+    assert_eq!(output["suggestions"][1]["audioId"], "mic-l");
+}
+#[tokio::test]
+async fn camera_audio_with_imported_microphones_requires_explicit_opt_in_atomically() {
+    let (r, mut input) = fixture().await;
+    input["plan"]["channels"][0]["audioId"] = json!("video-asset");
+    input["finishPodcast"] = json!(true);
+    let before = read(&r).await;
+    let err = r
+        .registry()
+        .invoke(CREATE, InvocationContext::default(), input.clone())
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("External microphone"));
+    assert_eq!(read(&r).await, before);
+    input["allowCameraAudio"] = json!(true);
+    call(&r, CREATE, input).await;
+    assert_eq!(
+        read(&r).await["project"]["classic"]["document"]["scenes"][2]["tracks"]["audio"][0]["elements"]
+            [0]["mediaId"],
+        "video-asset"
+    );
+}
+#[tokio::test]
+async fn full_podcast_finishing_uses_external_mic_bindings() {
+    let (r, mut input) = fixture().await;
+    input["finishPodcast"] = json!(true);
+    call(&r, CREATE, input).await;
+    let state = read(&r).await;
+    let scene = &state["project"]["classic"]["document"]["scenes"][2];
+    for (index, id) in ["mic-a", "mic-b"].iter().enumerate() {
+        let e = &scene["tracks"]["audio"][index]["elements"][0];
+        assert_eq!(e["mediaId"], *id);
+        assert_eq!(e["params"]["noiseReduction"], 100);
+        assert_eq!(e["params"]["volume"], 15);
+        assert_eq!(e["params"]["hardLimiterCeilingDb"], -1);
+    }
+}
+
+#[tokio::test]
+async fn appended_name_suggestions_rank_below_exact_and_missing_audio_never_falls_back() {
+    let (r, rev) = source_fixture(&[
+        ("video-asset", "C12interviewLiorFinal.MP4", "video"),
+        ("mic-l", "rec_LIOR.wav", "audio"),
+    ])
+    .await;
+    let output = call(
+        &r,
+        "timeline.classic.multicam.sources.suggest",
+        json!({"projectId":"classic-project","expectedRevision":rev,"videoIds":["video-asset"]}),
+    )
+    .await;
+    assert_eq!(output["suggestions"][0]["audioId"], "mic-l");
+    assert_eq!(output["suggestions"][0]["candidates"][0]["score"], 70);
+}
+
+#[tokio::test]
+async fn precision_registry_reads_are_revision_checked_and_commit_preserves_subframes() {
+    let (r, mut input) = fixture().await;
+    let before = read(&r).await;
+    let group =
+        json!({"offsets":[0.0,10.0],"confidence":[1.0,0.8],"referenceIndex":0,"parents":[null,0]});
+    let windows=call(&r,"timeline.classic.multicam.precision.plan",json!({"projectId":"classic-project","expectedRevision":before["revision"],"options":{"alignment":group,"durations":[100.0,100.0]}})).await;
+    let windows = windows["windows"].clone();
+    assert_eq!(windows.as_array().unwrap().len(), 5);
+    let estimates = windows
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|_| json!({"offsetSeconds":0.1733125,"confidence":0.9}))
+        .collect::<Vec<_>>();
+    let resolved=call(&r,"timeline.classic.multicam.precision.resolve",json!({"projectId":"classic-project","expectedRevision":before["revision"],"options":{"alignment":group,"windows":windows,"estimates":estimates}})).await;
+    assert!((resolved["offsets"][1].as_f64().unwrap() - 10.1733125).abs() < 1e-9);
+    let silent=call(&r,"timeline.classic.multicam.precision.estimate",json!({"projectId":"classic-project","expectedRevision":before["revision"],"options":{"reference":vec![0.0;32000],"target":vec![0.0;32000],"sampleRate":16000}})).await;
+    assert_eq!(silent["confidence"], 0.0);
+    assert_eq!(read(&r).await, before);
+    assert!(r.registry().invoke("timeline.classic.multicam.precision.plan",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":0,"options":{"alignment":group,"durations":[100.0,100.0]}})).await.is_err());
+    input["plan"]["channels"][0]["audioOffset"] = json!(10.1733125);
+    call(&r, CREATE, input).await;
+    let after = read(&r).await;
+    let serialized = serde_json::to_string(&after).unwrap();
+    // Source offset is stored in 120kHz ticks, not snapped to a 25fps boundary.
+    assert!(serialized.contains("1220798"));
+}

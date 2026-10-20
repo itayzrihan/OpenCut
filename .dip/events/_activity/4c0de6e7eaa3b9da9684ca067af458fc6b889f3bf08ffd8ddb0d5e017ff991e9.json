@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c0de6e7eaa3b9da9684ca067af458fc6b889f3bf08ffd8ddb0d5e017ff991e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T11:09:24.611Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/services/renderer/__tests__/scale-frame-output.test.ts",
+          "classic/apps/web/src/components/editor/export-button.tsx",
+          "classic/apps/web/src/export/index.ts",
+          "classic/apps/web/src/export/video-encoding.ts",
+          "classic/apps/web/src/export/__tests__/video-encoding.test.ts",
+          "classic/apps/web/src/services/renderer/scene-exporter.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "61aa402c-fd29-4ab2-bce6-52d1e844ac6d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:09:24.612Z",
+  "parents": [],
+  "branch": "main"
+}

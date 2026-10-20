@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a29f7b757236cd34434a38e21916566f4ae0f30ce44ec9fecd9213f1cfb5ce6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:35:28.091Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md; cat /Users/itayzrihan/.codex/skills/custom-brag/SKILL.md",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-a002b478-abda-4549-b46d-db242c195b71"
+      },
+      {
+        "at": "2026-10-19T09:35:28.215Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md; cat /Users/itayzrihan/.codex/skills/custom-brag/SKILL.md",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-a002b478-abda-4549-b46d-db242c195b71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:35:28.831Z",
+  "parents": [],
+  "branch": "main"
+}

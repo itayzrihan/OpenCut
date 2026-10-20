@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a65fddfe5231403d53a18a345ddeea139322ceb7ad7a619e36048b448c62f3f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:37:22.797Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/podcast-sync-precision-2026-10-19/measure.py');s=p.read_text().replace('[250,1200,2100]','[250,750,1200,1700,2100]');p.write_text(s)\nPY\npython3 analysis/podcast-sync-precision-2026-10-19/measure.py > /tmp/podcast-real-precision2.log 2>&1",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ebae6afe-0eb0-4b51-945e-847215dad0e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:37:22.938Z",
+  "parents": [],
+  "branch": "main"
+}

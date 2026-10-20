@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f7445f0f5511a4a85d5765b41d15291d16cc6f1ff10757990713fe7d58c8190d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:43:36.769Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/audio-final-tests.log",
+          ".local/seven-smart-2026-10-20/audio-final-tests",
+          ".local/seven-smart-2026-10-20/audio-final-tests/src__timeline__smart-takes__audio-evidence.test.ts.log",
+          ".local/seven-smart-2026-10-20/audio-final-tests/src__core__managers____tests____transcription-manager.test.ts.log",
+          ".local/seven-smart-2026-10-20/audio-final-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fb7221ff-1af6-473f-b704-de36d06c5dfa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:43:36.770Z",
+  "parents": [],
+  "branch": "main"
+}

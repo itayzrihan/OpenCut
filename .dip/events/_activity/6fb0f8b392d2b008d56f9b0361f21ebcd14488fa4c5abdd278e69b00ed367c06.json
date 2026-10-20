@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6fb0f8b392d2b008d56f9b0361f21ebcd14488fa4c5abdd278e69b00ed367c06",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:35:21.917Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.local/seven-smart-2026-10-20/probe-source.ts';s=open(p).read().replace(\"readFile('.local/seven-smart-2026-10-20/media-before.json','utf8'));\",\"readFile('.local/seven-smart-2026-10-20/media-before.json','utf8')).map(({file,url,thumbnailUrl,buffer,...m}:any)=>m);\");open(p,'w').write(s)\np='.dip/tools/check-seven-scenes.ts';s=open(p).read().replace(\"readFile(`${projectFolder}/media/index.json`,'utf8'));\",\"readFile(`${projectFolder}/media/index.json`,'utf8')).map(({file,url,thumbnailUrl,buffer,...m}:any)=>m);\");open(p,'w').write(s)\nPY\nbun run .local/seven-smart-2026-10-20/probe-source.ts > .local/seven-smart-2026-10-20/compaction-probe.log 2>&1\ncat .local/seven-smart-2026-10-20/compaction-probe.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c38c927d-4f1e-4961-8991-629a595ff7c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:35:22.724Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cf65ababc5aee279373c8d3ab9d62e35216437d2f241b6c13948fdb26f9386b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:12:56.687Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/source-resolution-export\ncat > .local/source-resolution-export/serve.mjs <<'JS'\nimport { resolve } from 'node:path';\nconst root=process.cwd();\nconst wasm=resolve(root,'classic/rust/wasm/pkg');\nconst result=await Bun.build({entrypoints:[resolve(root,'classic/apps/web/src/export/__tests__/source-resolution-fixture.ts')],target:'browser',format:'esm',plugins:[{name:'real-wasm',setup(b){b.onResolve({filter:/^opencut-wasm$/},()=>({path:'/opencut_wasm_bg.js',external:true}));}}]});\nif(!result.success)throw Error(result.logs.join('\\n'));\nconst script=await result.outputs[0].text();\nconst boot=\"const glue=await import('/opencut_wasm_bg.js');const {instance}=await WebAssembly.instantiate(await(await fetch('/opencut_wasm_bg.wasm')).arrayBuffer(),{'./opencut_wasm_bg.js':glue});glue.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();\";\nconst server=Bun.serve({hostname:'127.0.0.1',port:3245,async fetch(req){const p=new URL(req.url).pathname;if(p==='/fixture.js')return new Response(script,{headers:{'Content-Type':'text/javascript'}});if(p==='/opencut_wasm_bg.js'||p==='/opencut_wasm_bg.wasm')return new Response(Bun.file(wasm+p),{headers:{'Content-Type':p.endsWith('.wasm')?'application/wasm':'text/javascript'}});return new Response(`<!doctype html><title>OpenCut 4K export verification</title><style>body{font:18px system-ui;background:#171717;color:#eee;padding:40px}button{padding:15px;font:inherit}pre{white-space:pre-wrap}</style><h1>OpenCut 4K export verification</h1><p>Encodes and decodes three synthetic 4K frames. No project edits or full-episode export.</p><button id=\"run\">Run 4K encode test</button><pre id=\"result\">Ready</pre><script type=\"module\">document.querySelector('#run').onclick=async()=>{document.querySelector('#run').disabled=true;const out=document.querySelector('#result');out.textContent='Running';try{${boot}const result=await(await import('/fixture.js')).verifySourceResolution();out.textContent=JSON.stringify(result,null,2);}catch(",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-b91ba597-1955-4962-825c-2f7057319182"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:12:57.996Z",
+  "parents": [],
+  "branch": "main"
+}

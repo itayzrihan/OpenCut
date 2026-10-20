@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d8fdb8cb323a42de4206d523fb8943ddd401c0e18bbac7ea47a9949008838bed",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:40:30.490Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'session|dirty' classic/scripts/local-production/launcher.mjs | head -n 12",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-4545d4c1-ada6-42d0-bb93-cf2e81477760"
+      },
+      {
+        "at": "2026-10-19T15:40:30.579Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'session|dirty' classic/scripts/local-production/launcher.mjs | head -n 12",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-4545d4c1-ada6-42d0-bb93-cf2e81477760"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:40:30.640Z",
+  "parents": [],
+  "branch": "main"
+}

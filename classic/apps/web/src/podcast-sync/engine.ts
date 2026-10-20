@@ -5,6 +5,9 @@ import {
 import type { MediaAsset } from "@/media/types";
 import {
 	podcastCameraClock,
+	planPodcastPrecision,
+	resolvePodcastPrecision,
+	type PodcastPrecisionEstimate,
 	type CameraSource,
 	type PodcastCameraWindow,
 	type PodcastMulticamSettings,
@@ -30,6 +33,7 @@ export type PodcastSyncSettings = PodcastMulticamSettings;
 
 export interface PodcastSyncAlignment {
 	duration: number;
+	precisionWarnings?: string[];
 	videoOffsets: Record<string, number>;
 	videoDelays: Record<string, number>;
 	cameraWindows: PodcastCameraWindow[];
@@ -160,9 +164,10 @@ export async function runPodcastAlignment({
 		progress: 0.82,
 	});
 	const group = await runSyncWorker<{
-		offsets: (number | null)[];
+		offsets: (number | undefined)[];
 		confidence: number[];
 		referenceIndex: number;
+		parents: (number | undefined)[];
 	}>({
 		message: {
 			type: "align",
@@ -176,7 +181,62 @@ export async function runPodcastAlignment({
 		throw new Error(
 			`Cannot reliably synchronize: ${missing.map((a) => a.name).join(", ")}. Check recording overlap and audible reference sound.`,
 		);
-	const offsets = new Map(assets.map((a, i) => [a.id, group.offsets[i]!]));
+	report({
+		onProgress,
+		step: "Verifying waveform sync across the recording",
+		progress: 0.88,
+	});
+	const precisionWindows = planPodcastPrecision({
+		alignment: group,
+		durations: assets.map(
+			(a, i) =>
+				a.duration ?? envelopes[i]!.length * PODCAST_SYNC_RESOLUTION_SECONDS,
+		),
+	});
+	let verifiedWindows = 0;
+	const estimates = await mapConcurrent({
+		items: precisionWindows,
+		concurrency: 2,
+		signal,
+		task: async (window, jobSignal) => {
+			const source = (index: number) => ({
+				file: assets[index]!.file,
+				url: assets[index]!.url,
+				name: assets[index]!.name,
+			});
+			const result = await runSyncWorker<PodcastPrecisionEstimate>({
+				message: {
+					type: "precision",
+					reference: source(window.referenceIndex),
+					target: source(window.targetIndex),
+					window,
+				},
+				signal: jobSignal,
+			});
+			report({
+				onProgress,
+				step: `Verifying waveform sync (${++verifiedWindows}/${precisionWindows.length})`,
+				progress: 0.88 + (0.1 * verifiedWindows) / precisionWindows.length,
+			});
+			return result;
+		},
+	});
+	const precise = resolvePodcastPrecision({
+		alignment: group,
+		windows: precisionWindows,
+		estimates,
+	});
+	if (precise.drifting.length)
+		throw new Error(
+			`Recording timing changes between sections: ${precise.drifting.map((i) => assets[i]!.name).join(", ")}. Check recorder clock drift or edited source files; automatic fixed-offset sync is not reliable.`,
+		);
+	if (precise.offsets.some((v) => v == null))
+		throw new Error("Cannot verify a shared synchronization clock");
+	const precisionWarnings = precise.unverified.map(
+		(i) =>
+			`Fine waveform sync could not be verified for ${assets[i]!.name}; coarse alignment retained. Check lip sync before export.`,
+	);
+	const offsets = new Map(assets.map((a, i) => [a.id, precise.offsets[i]!]));
 	const baseVideos = channels.map((c) => {
 		if (!c.angles) return c.video;
 		const clock = podcastCameraClock({
@@ -235,6 +295,7 @@ export async function runPodcastAlignment({
 	);
 	report({ onProgress, step: "Synchronization complete", progress: 1 });
 	const alignment = {
+		precisionWarnings,
 		duration,
 		videoOffsets,
 		videoDelays,

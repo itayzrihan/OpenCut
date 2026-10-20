@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6bd959ea33f6a6d1b1138358b5ba7974b63bb64e11e86ea543b716f1a54bf365",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:35:46.772Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/build-db-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d07b438d-c02f-4cb3-9643-af70542e3174"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:35:46.774Z",
+  "parents": [],
+  "branch": "main"
+}

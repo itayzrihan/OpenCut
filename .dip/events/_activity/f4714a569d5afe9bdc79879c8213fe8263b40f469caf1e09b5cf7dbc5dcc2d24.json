@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f4714a569d5afe9bdc79879c8213fe8263b40f469caf1e09b5cf7dbc5dcc2d24",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:46:22.780Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/canonical-classic-session.ts');s=p.read_text();a=s.index('\\n\\tpreparePodcast(input:');s=s[:a]+'''\n\tpodcastScope(input: {sceneId:string;elementIds:string[]}): {revision:number;referenceRegions: import(\"@/ai/podcast-types\").PodcastReferenceRegion[]} {\n\t\treturn this.call({capability:\"timeline.classic.podcast.scope\",input:{...input,projectId:this.projectId,expectedRevision:this.status().revision}});\n\t}\n'''+s[a:];p.write_text(s)\np=Path('classic/apps/web/src/ai/podcast-types.ts');s=p.read_text().replace('export interface PodcastSource {','export interface PodcastReferenceRegion {id:string;start:number;end:number}\\nexport interface PodcastSource {\\n\\treferenceRegions?: PodcastReferenceRegion[];\\n\\taudioInputs?: {referenceId:string;clip:import(\"@/timeline/audio-state\").AudioCapableElement}[];');p.write_text(s)\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text();a=s.index('\\n\\tpreparePodcast(elementIds:');s=s[:a]+'''\n\tpodcastScope(elementIds:string[]) {\n\t\tconst sceneId=this.editor.scenes.getActiveSceneOrNull()?.id;\n\t\tif(!this.canonical||!sceneId)throw new Error(\"Open the editor before choosing podcast reference\");\n\t\treturn this.canonical.podcastScope({sceneId,elementIds});\n\t}\n'''+s[a:];a=s.index('\\tpreparePodcast(elementIds:');b=s.index('\\n\\tprepareSmartTakes(',a);chunk=s[a:b];chunk=chunk.replace('\\t\\t\\t\\t\\telementIds,\\n\\t\\t\\t\\t\\tsignal,','\\t\\t\\t\\t\\telementIds: source.audioInputs?.map(i=>i.clip.id) ?? elementIds,\\n\\t\\t\\t\\t\\tsourceClips: source.audioInputs?.map(i=>i.clip),\\n\\t\\t\\t\\t\\tsignal,');s=s[:a]+chunk+s[b:];p.write_text(s)\np=Path('classic/apps/web/src/timeline/smart-takes/audio-evidence.ts');s=p.read_text().replace('\\telementIds,\\n\\tsignal,','\\telementIds,\\n\\tsourceClips,\\n\\tsignal,',1).replace('\\telementIds: string[];','\\telementIds: string[];\\n\\tsourceClips?: import(\"@/timeline/audio-state\").AudioCapableElement[];',1).replace('const selectedSeconds = scene.tracks.main.elem",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7651cadb-fd3f-4f78-aa3f-47e75b27984c"
+      },
+      {
+        "at": "2026-10-19T16:46:22.888Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/canonical-classic-session.ts');s=p.read_text();a=s.index('\\n\\tpreparePodcast(input:');s=s[:a]+'''\n\tpodcastScope(input: {sceneId:string;elementIds:string[]}): {revision:number;referenceRegions: import(\"@/ai/podcast-types\").PodcastReferenceRegion[]} {\n\t\treturn this.call({capability:\"timeline.classic.podcast.scope\",input:{...input,projectId:this.projectId,expectedRevision:this.status().revision}});\n\t}\n'''+s[a:];p.write_text(s)\np=Path('classic/apps/web/src/ai/podcast-types.ts');s=p.read_text().replace('export interface PodcastSource {','export interface PodcastReferenceRegion {id:string;start:number;end:number}\\nexport interface PodcastSource {\\n\\treferenceRegions?: PodcastReferenceRegion[];\\n\\taudioInputs?: {referenceId:string;clip:import(\"@/timeline/audio-state\").AudioCapableElement}[];');p.write_text(s)\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text();a=s.index('\\n\\tpreparePodcast(elementIds:');s=s[:a]+'''\n\tpodcastScope(elementIds:string[]) {\n\t\tconst sceneId=this.editor.scenes.getActiveSceneOrNull()?.id;\n\t\tif(!this.canonical||!sceneId)throw new Error(\"Open the editor before choosing podcast reference\");\n\t\treturn this.canonical.podcastScope({sceneId,elementIds});\n\t}\n'''+s[a:];a=s.index('\\tpreparePodcast(elementIds:');b=s.index('\\n\\tprepareSmartTakes(',a);chunk=s[a:b];chunk=chunk.replace('\\t\\t\\t\\t\\telementIds,\\n\\t\\t\\t\\t\\tsignal,','\\t\\t\\t\\t\\telementIds: source.audioInputs?.map(i=>i.clip.id) ?? elementIds,\\n\\t\\t\\t\\t\\tsourceClips: source.audioInputs?.map(i=>i.clip),\\n\\t\\t\\t\\t\\tsignal,');s=s[:a]+chunk+s[b:];p.write_text(s)\np=Path('classic/apps/web/src/timeline/smart-takes/audio-evidence.ts');s=p.read_text().replace('\\telementIds,\\n\\tsignal,','\\telementIds,\\n\\tsourceClips,\\n\\tsignal,',1).replace('\\telementIds: string[];','\\telementIds: string[];\\n\\tsourceClips?: import(\"@/timeline/audio-state\").AudioCapableElement[];',1).replace('const selectedSeconds = scene.tracks.main.elem",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7651cadb-fd3f-4f78-aa3f-47e75b27984c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:46:23.324Z",
+  "parents": [],
+  "branch": "main"
+}

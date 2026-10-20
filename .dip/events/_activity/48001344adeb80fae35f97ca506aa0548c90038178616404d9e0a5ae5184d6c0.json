@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48001344adeb80fae35f97ca506aa0548c90038178616404d9e0a5ae5184d6c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:07:42.850Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/components/editor/export-button.tsx');s=p.read_text().replace('import { useState }','import { useEffect, useState }');s=s.replace('import { DEFAULT_EXPORT_OPTIONS }','import { checkExportEncoder } from \"@/export/video-encoding\";\\nimport type { ExportPlan, ExportPreferences } from \"@/export\";\\nimport { DEFAULT_EXPORT_OPTIONS }')\ns=s.replace('DEFAULT_EXPORT_OPTIONS.quality,','\"very_high\",')\nneedle='\\tconst hasReadyExport = hasExportOutput(exportResult);'\ninsert='''\tconst preferences: ExportPreferences = activeProject.settings.exportPreferences ?? { resolution: \"source\", encoding: \"compact\" };\n\tconst updatePreferences = (patch: Partial<ExportPreferences>) => editor.project.updateSettings({ settings: { exportPreferences: { ...preferences, ...patch } } });\n\tlet plan: ExportPlan | undefined;\n\tlet planError: string | undefined;\n\ttry {\n\t\tplan = editor.command.planExport({ sceneId: editor.scenes.getActiveScene().id, preferences, quality, format });\n\t} catch (error) { planError = error instanceof Error ? error.message : \"Could not plan export\"; }\n\tconst planKey = JSON.stringify(plan);\n\tconst [encoderState, setEncoderState] = useState<{key: string | undefined; error: string | null}>({key: undefined, error: null});\n\tuseEffect(() => {\n\t\tlet active = true;\n\t\tif (planKey) {\n\t\t\tvoid checkExportEncoder(JSON.parse(planKey) as ExportPlan).then(error => {\n\t\t\t\tif (active) setEncoderState({key: planKey, error});\n\t\t\t});\n\t\t}\n\t\treturn () => { active = false; };\n\t}, [planKey]);\n\tconst checkingEncoder = !!planKey && encoderState.key !== planKey;\n\tconst encoderError = encoderState.key === planKey ? encoderState.error : null;\n'''\ns=s.replace(needle,insert+needle)\ns=s.replace('if (!activeProject) return;\\n\\n\\t\\tlet destination','if (!activeProject || !plan || checkingEncoder || encoderError || planError) return;\\n\\n\\t\\tlet destination')\ns=s.replace('\\t\\tconst result = await editor.project.export({','\\t\\tif (!activeProject.set",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-25cb0ab5-7343-4b0d-9b24-562713bc7c93"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:07:43.474Z",
+  "parents": [],
+  "branch": "main"
+}

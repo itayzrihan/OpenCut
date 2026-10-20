@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "coreTests": 13,
+  "hostTests": 20,
+  "isolatedBrowserGenerations": 6,
+  "isolatedOutputCaptionEdits": 6,
+  "realProviderReplay": [
+    {
+      "mode": "highlights",
+      "windows": 22,
+      "outputs": 3,
+      "rounds": 1,
+      "seconds": [
+        52.19,
+        41.36,
+        44.04
+      ],
+      "sourceScenesExact": true,
+      "transcriptionExact": true,
+      "additionalProviderCalls": 0,
+      "legacyDialogueRestored": true
+    },
+    {
+      "mode": "chronological",
+      "windows": 22,
+      "outputs": 3,
+      "rounds": 1,
+      "seconds": [
+        77.93,
+        40.62,
+        41.36
+      ],
+      "sourceScenesExact": true,
+      "transcriptionExact": true,
+      "additionalProviderCalls": 0,
+      "legacyDialogueRestored": true
+    }
+  ],
+  "productionRelease": "2026-10-19T16-32-52-725Z-d19882d9",
+  "limits": [
+    "Transcript-semantic model critique does not establish human preference, listening or phoneme alignment.",
+    "Generated examples were extracted only into isolated runtimes; no source project edited.",
+    "Source audio mix is unchanged; only isolated legacy zero-gain output dialogue is restored. Explicit mutes/separate mixes/automation preserved. No export/B-roll/motion finishing requested."
+  ]
+}

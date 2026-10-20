@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "df9f55707b89647c74214206bfaceb8dfec8353e2041adcbb9a21015e5af551d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:35:06.257Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/podcast-sync/precision.integration.test.ts",
+          "classic/apps/web/src/podcast-sync/engine.ts",
+          "classic/apps/web/src/podcast-sync/energy-reader.test.ts",
+          "classic/apps/web/src/podcast-sync/sync.worker.ts",
+          "classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "02b99fbd-e65a-43c4-bfa9-4830df104900"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:35:06.259Z",
+  "parents": [],
+  "branch": "main"
+}

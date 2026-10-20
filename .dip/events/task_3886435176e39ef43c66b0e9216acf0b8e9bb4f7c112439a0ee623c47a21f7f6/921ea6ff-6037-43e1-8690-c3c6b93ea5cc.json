@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "921ea6ff-6037-43e1-8690-c3c6b93ea5cc",
+  "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Full source STT saved 29 chunks/4453 raw words. Two atomic extraction attempts preserved all original scenes: fixed archive ordinal rebinding with identical source/model IDs and added actual overlap fixture; retry reused transcript+analysis with zero new model requests, then strict audio validation exposed padded PCM tails. Fixed bounded host window joining for cached/fresh frames; 7 audio/checkpoint tests pass. Official audio-fix production build running. No output scenes yet. No git push yet per requested order.",
+    "next": "Activate build, reload once, refresh official MCP session, retry v3 seven outputs with same saved analysis; verify seven/audio/source persistence, then fetch/integrate/push and app audit.",
+    "head": "d19882d9a55dd469988fa5738477a0eeadbd30b6"
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-20T00:52:26.348Z",
+  "parents": [
+    "dfd80996-f72f-4d32-81d8-40bb8e52dacd"
+  ],
+  "branch": "main"
+}

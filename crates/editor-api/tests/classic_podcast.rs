@@ -47,24 +47,44 @@ async fn seven_extract_archives_keep_corrected_words_without_copying_every_capti
     call(&r,"project.classic.commit",json!({"projectId":"classic-project","expectedRevision":state(&r).await["revision"],"classic":classic})).await;
     let before = state(&r).await;
     let prepared = call(&r,"timeline.classic.podcast.prepare",json!({"projectId":"classic-project","sceneId":"main-scene","elementIds":["item-2"],"expectedRevision":before["revision"]})).await;
-    let videos = json!((0..7).map(|i| video(json!([{"firstWord":i*20,"lastWord":i*20+7}]))).collect::<Vec<_>>());
-    call(&r,"timeline.classic.podcast.extract",request(&before,"highlights",videos)).await;
+    let videos = json!(
+        (0..7)
+            .map(|i| video(json!([{"firstWord":i*20,"lastWord":i*20+7}])))
+            .collect::<Vec<_>>()
+    );
+    call(
+        &r,
+        "timeline.classic.podcast.extract",
+        request(&before, "highlights", videos),
+    )
+    .await;
     let after = state(&r).await;
-    let scenes = after["project"]["classic"]["document"]["scenes"].as_array().unwrap();
+    let scenes = after["project"]["classic"]["document"]["scenes"]
+        .as_array()
+        .unwrap();
     assert_eq!(scenes.len(), 9);
-    assert_eq!(scenes[0], before["project"]["classic"]["document"]["scenes"][0]);
+    assert_eq!(
+        scenes[0],
+        before["project"]["classic"]["document"]["scenes"][0]
+    );
     for scene in &scenes[2..] {
         let archive = &scene["takeAssembly"];
-        assert_eq!(archive["sourceTracks"]["overlay"][0]["elements"].as_array().unwrap().len(), 1);
+        assert_eq!(
+            archive["sourceTracks"]["overlay"][0]["elements"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
         assert_eq!(archive["sourceWords"], prepared["words"]);
         assert_eq!(archive["sourceWords"][0]["start"], 24000);
     }
     let reopened = OpenCutRuntime::default();
     call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
-    call(&r,"history.undo",json!({})).await;
-    assert_eq!(state(&r).await["project"],before["project"]);
-    call(&r,"history.redo",json!({})).await;
-    assert_eq!(state(&r).await["project"],after["project"]);
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(state(&r).await["project"], before["project"]);
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(state(&r).await["project"], after["project"]);
 }
 #[tokio::test]
 async fn extracts_are_new_scenes_with_exact_transcripts_archives_and_undo() {
@@ -161,7 +181,7 @@ async fn extracts_are_new_scenes_with_exact_transcripts_archives_and_undo() {
     assert_eq!(state(&r).await["project"], after["project"]);
 }
 #[tokio::test]
-async fn chronology_window_duration_duplicates_and_word_bounds_are_enforced_atomically() {
+async fn chronology_locality_duration_duplicates_and_word_bounds_are_enforced_atomically() {
     let r = setup().await;
     let before = state(&r).await;
     let invalid = [
@@ -174,8 +194,10 @@ async fn chronology_window_duration_duplicates_and_word_bounds_are_enforced_atom
         ),
         request(
             &before,
-            "highlights",
-            json!([video(json!([{"firstWord":95,"lastWord":108}]))]),
+            "chronological",
+            json!([video(
+                json!([{"firstWord":0,"lastWord":4},{"firstWord":120,"lastWord":124}])
+            )]),
         ),
         request(
             &before,
@@ -299,14 +321,28 @@ async fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outp
         call(&r,"transcription.classic.edit",json!({"projectId":"classic-project","expectedRevision":state(&r).await["revision"],"jobId":"completed-job","change":{"type":"append","index":index,"words":[]}})).await;
     }
     let before = state(&r).await;
-    assert_eq!(before["project"]["classic"]["document"]["transcriptionJobs"][0]["status"],"complete");
+    assert_eq!(
+        before["project"]["classic"]["document"]["transcriptionJobs"][0]["status"],
+        "complete"
+    );
     let source = before["project"]["classic"]["document"]["scenes"].clone();
     let mut previous = source.as_array().unwrap().clone();
     // Each generation starts from Main, even when the previous output remains
     // the viewer's active scene. Earlier extracts must stay editable and exact.
-    for mode in ["teaser", "highlights", "chronological", "teaser", "chronological", "highlights"] {
+    for mode in [
+        "teaser",
+        "highlights",
+        "chronological",
+        "teaser",
+        "chronological",
+        "highlights",
+    ] {
         let current = state(&r).await;
-        let input = request(&current, mode, json!([video(json!([{"firstWord":10,"lastWord":20}]))]));
+        let input = request(
+            &current,
+            mode,
+            json!([video(json!([{"firstWord":10,"lastWord":20}]))]),
+        );
         let result = call(&r, "timeline.classic.podcast.extract", input).await;
         let after = state(&r).await;
         let doc = &after["project"]["classic"]["document"];
@@ -314,18 +350,120 @@ async fn repeated_teasers_and_both_short_modes_preserve_source_and_previous_outp
         assert_eq!(&scenes[..previous.len()], previous.as_slice());
         assert_eq!(scenes.len(), previous.len() + 1);
         assert_eq!(scenes[0], source[0]);
-        assert_eq!(scenes.last().unwrap()["podcastExtract"]["options"]["mode"], mode);
-        assert_eq!(doc["transcriptionJobs"], before["project"]["classic"]["document"]["transcriptionJobs"]);
+        assert_eq!(
+            scenes.last().unwrap()["podcastExtract"]["options"]["mode"],
+            mode
+        );
+        assert_eq!(
+            doc["transcriptionJobs"],
+            before["project"]["classic"]["document"]["transcriptionJobs"]
+        );
         assert!(result["revision"].as_u64().unwrap() > current["revision"].as_u64().unwrap());
         previous = scenes.clone();
     }
-    let archive = call(&r, "project.classic.session.archive", json!({"projectId":"classic-project","compact":true,"chained":true})).await;
+    let archive = call(
+        &r,
+        "project.classic.session.archive",
+        json!({"projectId":"classic-project","compact":true,"chained":true}),
+    )
+    .await;
     let reopened = OpenCutRuntime::default();
-    call(&reopened, "project.classic.session.restore", json!({"projectId":"classic-project","expectedRevision":0,"archive":archive})).await;
-    assert_eq!(state(&reopened).await["project"]["classic"], state(&r).await["project"]["classic"]);
+    call(
+        &reopened,
+        "project.classic.session.restore",
+        json!({"projectId":"classic-project","expectedRevision":0,"archive":archive}),
+    )
+    .await;
+    assert_eq!(
+        state(&reopened).await["project"]["classic"],
+        state(&r).await["project"]["classic"]
+    );
     // Undo and Redo never remove or change the Main transcript.
-    call(&r,"history.undo",json!({})).await;
-    assert_eq!(state(&r).await["project"]["classic"]["document"]["scenes"][0],source[0]);
-    call(&r,"history.redo",json!({})).await;
-    assert_eq!(state(&r).await["project"]["classic"]["document"]["scenes"],json!(previous));
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(
+        state(&r).await["project"]["classic"]["document"]["scenes"][0],
+        source[0]
+    );
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(
+        state(&r).await["project"]["classic"]["document"]["scenes"],
+        json!(previous)
+    );
+}
+
+#[tokio::test]
+async fn zero_and_negative_db_dialogue_preserves_gain_and_authored_audio_routes() {
+    for mode in ["teaser", "highlights", "chronological"] {
+        for variant in [
+            "zero-db",
+            "negative-db",
+            "track-mute",
+            "clip-mute",
+            "automation",
+            "detached-audio",
+            "overlay-video",
+        ] {
+            let r = setup().await;
+            let mut classic = state(&r).await["project"]["classic"].clone();
+            let tracks = &mut classic["document"]["scenes"][0]["tracks"];
+            tracks["main"]["elements"][0]["params"]["volume"] = json!(0);
+            match variant {
+                "negative-db"=>tracks["main"]["elements"][0]["params"]["volume"]=json!(-18),
+                "track-mute"=>tracks["main"]["muted"]=json!(true),
+                "clip-mute"=>tracks["main"]["elements"][0]["params"]["muted"]=json!(true),
+                // Valid authored non-volume automation is also conservatively retained.
+                "automation"=>tracks["main"]["elements"][0]["keyframes"]=json!({"channels":{"transform.scaleX":{"type":"scalar","keyframes":[{"id":"scale-k","time":0,"value":1.2}]}}}),
+                "detached-audio"=>tracks["audio"]=json!([{"id":"voice","type":"audio","name":"Separate dialogue","muted":false,"elements":[{"id":"voice-clip","type":"audio","mediaId":"video-asset","startTime":0,"duration":650*120000,"trimStart":0,"trimEnd":0,"params":{"volume":1}}]}]),
+                "overlay-video"=>tracks["overlay"].as_array_mut().unwrap().push(json!({"id":"angle","type":"video","name":"Other audio route","muted":false,"hidden":false,"elements":[{"id":"angle-clip","type":"video","mediaId":"video-asset","startTime":0,"duration":650*120000,"trimStart":0,"trimEnd":0,"params":{"volume":1}}]})),
+                _=>{}
+            }
+            let isolated = OpenCutRuntime::default();
+            call(
+                &isolated,
+                "project.classic.session.attach",
+                json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+            )
+            .await;
+            let before = state(&isolated).await;
+            if ["zero-db", "negative-db"].contains(&variant) {
+                let prepared=call(&isolated,"timeline.classic.podcast.prepare",json!({"projectId":"classic-project","sceneId":"main-scene","elementIds":[],"expectedRevision":before["revision"]})).await;
+                assert!(
+                    !prepared["audioInputs"].as_array().unwrap().is_empty(),
+                    "Normal decibel gain must not exclude dialogue"
+                );
+            }
+            call(
+                &isolated,
+                "timeline.classic.podcast.extract",
+                request(
+                    &before,
+                    mode,
+                    json!([video(json!([{"firstWord":10,"lastWord":20}]))]),
+                ),
+            )
+            .await;
+            let after = state(&isolated).await;
+            let scenes = after["project"]["classic"]["document"]["scenes"]
+                .as_array()
+                .unwrap();
+            assert_eq!(
+                &scenes[..2],
+                before["project"]["classic"]["document"]["scenes"]
+                    .as_array()
+                    .unwrap()
+            );
+            let output = scenes.last().unwrap();
+            let expected = if variant == "negative-db" { -18.0 } else { 0.0 };
+            assert_eq!(
+                output["tracks"]["main"]["elements"][0]["params"]["volume"].as_f64(),
+                Some(expected),
+                "{mode} {variant}"
+            );
+            assert_eq!(
+                output["takeAssembly"]["sourceTracks"]["main"]["elements"][0]["params"]["volume"]
+                    .as_f64(),
+                Some(expected)
+            );
+        }
+    }
 }

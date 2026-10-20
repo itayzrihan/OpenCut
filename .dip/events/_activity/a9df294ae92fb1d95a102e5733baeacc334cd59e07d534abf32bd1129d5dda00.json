@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9df294ae92fb1d95a102e5733baeacc334cd59e07d534abf32bd1129d5dda00",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:13:42.509Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/check-podcast-reference.ts'\ns=open(p).read().replace(\"const bound={sceneId:actual.id,elementIds,expectedRevision:session.status().revision};const options=\", \"const modeVideo=mode==='chronological'?{...video,alternatives:[{...video.alternatives[0],parts:[{firstWord:first[0],lastWord:first[15]},{firstWord:first[22],lastWord:first[37]},{firstWord:first[44],lastWord:first[59]}]}]}:video;\\n   const bound={sceneId:actual.id,elementIds,expectedRevision:session.status().revision};const options=\").replace('videos:[video]','videos:[modeVideo]')\nopen(p,'w').write(s)\nPY\nbun run .dip/tools/check-podcast-reference.ts > .local/podcast-multicam-scope/source-check.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5658be85-610f-441c-9a3e-8e093f5ddb21"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:13:42.732Z",
+  "parents": [],
+  "branch": "main"
+}

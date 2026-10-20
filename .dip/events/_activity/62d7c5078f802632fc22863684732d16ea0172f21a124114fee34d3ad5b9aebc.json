@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "62d7c5078f802632fc22863684732d16ea0172f21a124114fee34d3ad5b9aebc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:01:17.475Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport{execFileSync}from'node:child_process';import{readFile,writeFile}from'node:fs/promises';const rows=JSON.parse(await readFile('.local/seven-smart-2026-10-20/format-only-proof.json'));if(rows.length!==30||rows.some(x=>!x.onlyFormatter))throw Error('Unexpected non-format edit');const files=rows.map(x=>x.path);await writeFile('.local/seven-smart-2026-10-20/removed-format-only.patch',execFileSync('git',['diff','--',...files]));for(const p of files)await writeFile(p,execFileSync('git',['show',`HEAD:${p}`]));console.log('Removed only 30 independently proven formatter-only changes; original 48 modified files preserved.');\nJS\nnode .local/seven-smart-2026-10-20/mcp-call.mjs --refresh",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1d2c586d-868f-41e3-bca7-c18e7e34e67e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:01:18.341Z",
+  "parents": [],
+  "branch": "main"
+}

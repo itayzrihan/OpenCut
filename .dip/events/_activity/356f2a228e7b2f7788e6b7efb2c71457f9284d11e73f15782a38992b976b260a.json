@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "356f2a228e7b2f7788e6b7efb2c71457f9284d11e73f15782a38992b976b260a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T17:09:08.894Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/smart-takes/audio-evidence.ts",
+          ".local/podcast-multicam-scope/production-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "835fbca1-aa4e-43c8-9b80-d3c4284985ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:09:08.895Z",
+  "parents": [],
+  "branch": "main"
+}

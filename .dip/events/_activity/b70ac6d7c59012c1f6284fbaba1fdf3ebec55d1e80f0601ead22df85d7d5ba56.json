@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b70ac6d7c59012c1f6284fbaba1fdf3ebec55d1e80f0601ead22df85d7d5ba56",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:34:17.944Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/crates/podcast/src/precision.rs');s=p.read_text().replace('[0.1, 0.5, 0.9]','[0.1, 0.3, 0.5, 0.7, 0.9]').replace('o.windows.len() > 189','o.windows.len() > 315').replace('assert_eq!(windows.len(), 6);','assert_eq!(windows.len(), 10);');p.write_text(s)\np=Path('classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx');s=p.read_text().replace('<h4 className=\"text-sm font-medium\">Sync results</h4>','''<h4 className=\"text-sm font-medium\">Sync results</h4>\n                    {alignment.precisionWarnings?.map((warning) => <p key={warning} role=\"status\" className=\"text-sm text-amber-600\">{warning}</p>)}''');p.write_text(s)\nPY\ncat >> classic/apps/web/src/podcast-sync/energy-reader.test.ts <<'EOF'\ntest(\"bounded waveform windows preserve signed amplitude and fractional source origin\", async () => {\n const result = await readEnergyEnvelope({asset:{name:\"fixture.wav\",file:wav()},windowSeconds:1/16000,startSeconds:0.1733125,durationSeconds:0.5,sampleMode:\"waveform\"});\n expect(result.length).toBe(8000);\n expect(result[100]).toBeCloseTo(0.25,4);\n expect(result[7000]).toBeCloseTo(0.5,4);\n});\nEOF\ncat >> crates/editor-api/tests/classic_multicam.rs <<'EOF'\n\n#[tokio::test]\nasync fn precision_registry_reads_are_revision_checked_and_commit_preserves_subframes() {\n    let (r, mut input)=fixture().await;\n    let before=read(&r).await;\n    let group=json!({\"offsets\":[0.0,10.0],\"confidence\":[1.0,0.8],\"referenceIndex\":0,\"parents\":[null,0]});\n    let windows=call(&r,\"timeline.classic.multicam.precision.plan\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":before[\"revision\"],\"options\":{\"alignment\":group,\"durations\":[100.0,100.0]}})).await;\n    assert_eq!(windows.as_array().unwrap().len(),5);\n    let estimates=windows.as_array().unwrap().iter().map(|_|json!({\"offsetSeconds\":0.1733125,\"confidence\":0.9})).collect::<Vec<_>>();\n    let resolved=call(&r,\"timeline.classic.multicam.precision.resolve\",json!({\"projectId\":",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-de5fc872-7721-448c-863f-eac40b758841"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:34:18.266Z",
+  "parents": [],
+  "branch": "main"
+}

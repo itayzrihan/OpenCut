@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bb840015ea963b114215975fbb37e5d78fc86581745a61a3a35053d1c518acf1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:45:15.574Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_takes/podcast/reference.rs');s=p.read_text().replace('pub(super) fn inventory(','pub(in crate::operations::classic_takes) fn inventory(')\na=s.index('pub(crate) fn regions(');b=s.index('pub(crate) fn encoded_bounds',a)\ns=s[:a]+'''fn merged_ranges(mut spans:Vec<(i64,i64)>)->Vec<(i64,i64)> {\n    spans.sort_unstable();let mut out:Vec<(i64,i64)>=vec![];\n    for (a,b) in spans {if a>=b{continue;}if let Some(last)=out.last_mut(){if a<=last.1{last.1=last.1.max(b);continue;}}out.push((a,b));}out\n}\npub(crate) fn regions(tracks:&Value,ids:&[String])->Result<Vec<Region>,CapabilityError> {\n    let unique:HashSet<&str>=ids.iter().map(String::as_str).collect();\n    if ids.len()>20000||unique.len()!=ids.len(){return Err(invalid(\"Choose at most20000 distinct timeline clips\"));}\n    let elements:Vec<_>=all(tracks).flat_map(|t|arr(&t[\"elements\"])).collect();\n    let known:HashSet<_>=elements.iter().filter_map(|e|e[\"id\"].as_str()).collect();\n    if unique.iter().any(|id|!known.contains(id)){return Err(invalid(\"Selected timeline clip no longer exists\"));}\n    let times=|e:&&Value|->Result<(i64,i64),CapabilityError>{let a=tick(&e[\"startTime\"])?;Ok((a,a+tick(&e[\"duration\"])?))};\n    let media=merged_ranges(elements.iter().filter(|e|av(e)).map(times).collect::<Result<Vec<_>,_>>()?);\n    let selected:Vec<_>=elements.iter().filter(|e|unique.contains(e[\"id\"].as_str().unwrap_or(\"\"))).copied().collect();\n    let has_av=selected.iter().any(|e|av(e));\n    let ranges=if ids.is_empty(){media}else{\n        let chosen=merged_ranges(selected.iter().filter(|e|!has_av||av(e)).map(times).collect::<Result<Vec<_>,_>>()?);\n        let(mut i,mut j)=(0,0);let mut intersections=vec![];\n        while i<media.len()&&j<chosen.len(){let a=media[i].0.max(chosen[j].0);let b=media[i].1.min(chosen[j].1);if a<b{intersections.push((a,b));}if media[i].1<=chosen[j].1{i+=1;}else{j+=1;}}\n        merged_ranges(intersections)\n    };\n   ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e6af15f9-01c8-4fd8-a5ef-5ebf7987617d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:45:16.216Z",
+  "parents": [],
+  "branch": "main"
+}

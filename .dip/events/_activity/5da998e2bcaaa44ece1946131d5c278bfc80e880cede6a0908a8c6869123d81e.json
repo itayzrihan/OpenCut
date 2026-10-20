@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5da998e2bcaaa44ece1946131d5c278bfc80e880cede6a0908a8c6869123d81e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:37:38.414Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '82,168p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; sed -n '654,691p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; tail -15 /tmp/podcast-sources-rust.log; rg -n 'sources|suggestions|audioExplicit|allowCameraAudio' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx classic/apps/web/src/core/managers/commands.ts; git diff --stat | tail -10",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-1cdf75cf-bf7a-488b-b720-a0e7b4797b17"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:37:38.617Z",
+  "parents": [],
+  "branch": "main"
+}

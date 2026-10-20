@@ -37,6 +37,9 @@ struct Input {
     plan: Plan,
     #[serde(default)]
     finish_podcast: bool,
+    /// Explicit caller choice; automatic runs must never silently discard imported microphones.
+    #[serde(default)]
+    allow_camera_audio: bool,
 }
 fn invalid(message: &str) -> CapabilityError {
     CapabilityError::InvalidInput(message.into())
@@ -174,11 +177,38 @@ struct AlignInput {
     options: classic_podcast::PodcastGroupAlignmentOptions,
 }
 
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrecisionPlanInput {
+    project_id: String,
+    expected_revision: u64,
+    options: classic_podcast::PodcastPrecisionPlanOptions,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrecisionEstimateInput {
+    project_id: String,
+    expected_revision: u64,
+    options: classic_podcast::PodcastPrecisionOptions,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PrecisionResolveInput {
+    project_id: String,
+    expected_revision: u64,
+    options: classic_podcast::PodcastPrecisionResolveOptions,
+}
+
+#[derive(Serialize, JsonSchema)]
+struct PrecisionPlanOutput {
+    windows: Vec<classic_podcast::PodcastPrecisionWindow>,
+}
 pub(super) fn register_multicam(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    super::classic_multicam_sources::register_sources(registry, state.clone())?;
     let alignment_state = state.clone();
     register::<AlignInput, classic_podcast::PodcastGroupAlignment, _, _>(
         registry,
@@ -213,6 +243,131 @@ pub(super) fn register_multicam(
                     return Err(CapabilityError::Failed("operation was cancelled".into()));
                 }
                 let result = classic_podcast::align_podcast_sources(input.options);
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                Ok(OperationSuccess::new(result))
+            }
+        },
+    )?;
+    let alignment_state = state.clone();
+    register::<PrecisionPlanInput, PrecisionPlanOutput, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.multicam.precision.plan",
+        "Plan bounded waveform sync verification",
+        "Shared Rust waveform precision kernel. Plans bounded windows, estimates signed PCM lag or resolves consistent multi-window evidence on the shared clock. Unverified and drifting sources are explicit. No media IO or state changes. Optimistic revision and cancellation checks. Browser invokes the same kernel in cancellable workers; commit via timeline.classic.multicam.create.",
+        "timeline",
+        AccessLevel::Read,
+        true,
+        false,
+        &["classic", "multicam", "sync", "audio"],
+        move |context, input| {
+            let state = alignment_state.clone();
+            async move {
+                {
+                    let store = state.read().map_err(|_| invalid("State lock poisoned"))?;
+                    if store.document.revision != input.expected_revision
+                        || store
+                            .document
+                            .project
+                            .as_ref()
+                            .is_none_or(|p| p.id != input.project_id || p.classic.is_none())
+                    {
+                        return Err(CapabilityError::Conflict(
+                            "Multicam synchronization target or revision changed".into(),
+                        ));
+                    }
+                }
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                let result = PrecisionPlanOutput {
+                    windows: classic_podcast::plan_podcast_precision(input.options),
+                };
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                Ok(OperationSuccess::new(result))
+            }
+        },
+    )?;
+    let alignment_state = state.clone();
+    register::<PrecisionEstimateInput, classic_podcast::PodcastPrecisionEstimate, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.multicam.precision.estimate",
+        "Measure signed waveform sync lag",
+        "Shared Rust waveform precision kernel. Plans bounded windows, estimates signed PCM lag or resolves consistent multi-window evidence on the shared clock. Unverified and drifting sources are explicit. No media IO or state changes. Optimistic revision and cancellation checks. Browser invokes the same kernel in cancellable workers; commit via timeline.classic.multicam.create.",
+        "timeline",
+        AccessLevel::Read,
+        true,
+        false,
+        &["classic", "multicam", "sync", "audio"],
+        move |context, input| {
+            let state = alignment_state.clone();
+            async move {
+                {
+                    let store = state.read().map_err(|_| invalid("State lock poisoned"))?;
+                    if store.document.revision != input.expected_revision
+                        || store
+                            .document
+                            .project
+                            .as_ref()
+                            .is_none_or(|p| p.id != input.project_id || p.classic.is_none())
+                    {
+                        return Err(CapabilityError::Conflict(
+                            "Multicam synchronization target or revision changed".into(),
+                        ));
+                    }
+                }
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                let result = classic_podcast::estimate_podcast_precision(input.options);
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                Ok(OperationSuccess::new(result))
+            }
+        },
+    )?;
+    let alignment_state = state.clone();
+    register::<PrecisionResolveInput, classic_podcast::PodcastPrecisionResult, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.multicam.precision.resolve",
+        "Resolve verified shared-clock waveform offsets",
+        "Shared Rust waveform precision kernel. Plans bounded windows, estimates signed PCM lag or resolves consistent multi-window evidence on the shared clock. Unverified and drifting sources are explicit. No media IO or state changes. Optimistic revision and cancellation checks. Browser invokes the same kernel in cancellable workers; commit via timeline.classic.multicam.create.",
+        "timeline",
+        AccessLevel::Read,
+        true,
+        false,
+        &["classic", "multicam", "sync", "audio"],
+        move |context, input| {
+            let state = alignment_state.clone();
+            async move {
+                {
+                    let store = state.read().map_err(|_| invalid("State lock poisoned"))?;
+                    if store.document.revision != input.expected_revision
+                        || store
+                            .document
+                            .project
+                            .as_ref()
+                            .is_none_or(|p| p.id != input.project_id || p.classic.is_none())
+                    {
+                        return Err(CapabilityError::Conflict(
+                            "Multicam synchronization target or revision changed".into(),
+                        ));
+                    }
+                }
+                if context.cancellation.is_cancelled() {
+                    return Err(CapabilityError::Failed("operation was cancelled".into()));
+                }
+                let result = classic_podcast::resolve_podcast_precision(input.options);
                 if context.cancellation.is_cancelled() {
                     return Err(CapabilityError::Failed("operation was cancelled".into()));
                 }
@@ -273,7 +428,7 @@ pub(super) fn register_multicam(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.multicam.create",
         "Create a synchronized multicam sequence",
-        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets and continuous camera coverage; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
+        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets and continuous camera coverage; when external audio exists, camera audio requires explicit allowCameraAudio=true; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -293,6 +448,18 @@ pub(super) fn register_multicam(
                         input.plan.validate().map_err(|e| invalid(&e))?;
                         let classic = classic_target(document, &input.project_id)?;
                         let assets = classic.media_assets.clone();
+                        if !input.allow_camera_audio
+                            && assets.iter().any(|a| a["type"] == "audio")
+                            && input.plan.channels.iter().any(|c| {
+                                assets
+                                    .iter()
+                                    .any(|a| a["id"] == c.audio_id && a["type"] == "video")
+                            })
+                        {
+                            return Err(invalid(
+                                "External microphone recordings are available. Select them, or explicitly confirm camera audio with allowCameraAudio=true.",
+                            ));
+                        }
                         let rate = &classic.document["settings"]["fps"];
                         let fps = rate["numerator"].as_f64().unwrap_or(0.0)
                             / rate["denominator"].as_f64().unwrap_or(1.0);

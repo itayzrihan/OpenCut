@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5293ee8c120e174db2eabe1e8a05e6904b6990d40a1630d0fd169f4cd5d9f4d8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T01:06:27.905Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/branch-audit.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "58ca358d-43e6-466a-9f1a-d2db439d88f2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:06:27.907Z",
+  "parents": [],
+  "branch": "main"
+}

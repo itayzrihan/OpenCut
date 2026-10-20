@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c92374fe14c05e4bc12703cb7b46ccfe90b46e3aebae0160035d9f2c2c5f08e2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T17:13:51.814Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 .local/podcast-multicam-scope/source-check.log; cat .local/podcast-multicam-scope/metrics.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-b2e72607-eeb0-4f61-957b-3651da2b32a8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T17:13:52.759Z",
+  "parents": [],
+  "branch": "main"
+}

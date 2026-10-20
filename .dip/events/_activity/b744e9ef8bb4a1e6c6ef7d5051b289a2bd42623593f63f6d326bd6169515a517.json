@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b744e9ef8bb4a1e6c6ef7d5051b289a2bd42623593f63f6d326bd6169515a517",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T15:35:05.839Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_9b18f3274c286adae4605c74294c6202b2e0e834145939849e5d979da8db97a5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/podcast-sync/precision.integration.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport {expect,test} from \"bun:test\";\nimport {estimatePodcastPrecision,planPodcastPrecision,resolvePodcastPrecision} from \"opencut-wasm\";\nimport {readEnergyEnvelope} from \"./energy-reader\";\n\ntest(\"decoded bounded PCM and real WASM retain subframe offset including polarity\",async()=>{\n const frames=48000*10, bytes=new ArrayBuffer(44+frames*2),v=new DataView(bytes);\n const text=(at:number,s:string)=>{for(let i=0;i<s.length;i++)v.setUint8(at+i,s.charCodeAt(i));};\n text(0,\"RIFF\");v.setUint32(4,36+frames*2,true);text(8,\"WAVEfmt \");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,48000,true);v.setUint32(28,96000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);text(36,\"data\");v.setUint32(40,frames*2,true);\n let x=7123;for(let i=0;i<frames;i++){if(i%3===0){x^=x<<13;x^=x>>>17;x^=x<<5;}v.setInt16(44+i*2,(x%16000),true);}\n const asset={name:\"pcm.wav\",file:new Blob([bytes],{type:\"audio/wav\"})};\n const read=(startSeconds:number)=>readEnergyEnvelope({asset,windowSeconds:1/16000,startSeconds,durationSeconds:8,sampleMode:\"waveform\"});\n const [a,b]=await Promise.all([read(0.6),read(0.7733125)]);\n const r=estimatePodcastPrecision({reference:Array.from(a),target:Array.from(b,v=>-v*.2),sampleRate:16000});\n expect(Math.abs(r.offsetSeconds-.1733125)).toBeLessThan(.0002);expect(r.confidence).toBeGreaterThan(.85);\n const alignment={offsets:[0,10],confidence:[1,.8],referenceIndex:0,parents:[null,0]};\n const windows=planPodcastPrecision({alignment,durations:[100,100]});expect(windows.length).toBe(5);\n const refined=resolvePodcastPrecision({alignment,windows,estimates:windows.map(()=>r)});\n expect(Math.abs(refined.offsets[1]!-10.1733125)).toBeLessThan(.0002);expect(refined.unverified.length).toBe(0);\n});\nEOF\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/podcast-sync/engine.ts classic/apps/web/src/podcast-sync/ener",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-ec80b84f-ddd1-481e-93e5-d1e4a52e0591"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:35:06.258Z",
+  "parents": [],
+  "branch": "main"
+}

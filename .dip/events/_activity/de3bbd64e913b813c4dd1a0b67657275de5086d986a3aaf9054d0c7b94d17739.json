@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "de3bbd64e913b813c4dd1a0b67657275de5086d986a3aaf9054d0c7b94d17739",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:30:11.501Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/podcast.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast/reference.rs",
+          "crates/editor-api/tests/classic_podcast.rs",
+          ".local/seven-smart-2026-10-20/db-gain-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b38038bd-778a-472e-9e2d-f23593a37c8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:30:11.502Z",
+  "parents": [],
+  "branch": "main"
+}

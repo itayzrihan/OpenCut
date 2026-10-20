@@ -41,6 +41,7 @@ test("multicam uses shared Rust analysis and canonical scene/history in the brow
 	session.invokeControl({
 		capabilityId: "timeline.classic.multicam.create",
 		input: {
+			allowCameraAudio: true,
 			plan: {
 				settings,
 				duration: 60,
@@ -165,5 +166,85 @@ test("Unified sound synchronization survives the browser canonical archive and u
 	restored.redo();
 	expect(restored.read()).toEqual(synced);
 	restored.dispose();
+	session.dispose();
+});
+
+test("browser suggestions and finishing preserve WAV source identities", async () => {
+	const session = new CanonicalClassicSession({
+		runtime: await createCanonicalTestRuntime(),
+		projectId: "classic-project",
+	});
+	const original = JSON.parse(
+		readFileSync(
+			new URL(
+				"../../../../../../crates/editor-api/tests/fixtures/classic-project.json",
+				import.meta.url,
+			),
+			"utf8",
+		),
+	) as CanonicalClassicSnapshot;
+	original.mediaAssets[0].name = "C7453lior.MP4";
+	original.mediaAssets[0].duration = 80;
+	original.mediaAssets.push({
+		id: "lior-mic",
+		name: "240427_0144_1lior.wav",
+		type: "audio",
+		duration: 80,
+	});
+	session.attach({ classic: original });
+	const before = session.read();
+	const proposal = session.invokeControl({
+		capabilityId: "timeline.classic.multicam.sources.suggest",
+		input: { videoIds: ["video-asset"] },
+	}) as { suggestions: Array<{ audioId: string }> };
+	expect(proposal.suggestions[0].audioId).toBe("lior-mic");
+	expect(session.read()).toEqual(before);
+	const plan = {
+		settings: podcastMulticamDefaults({ quick: true }),
+		duration: 60,
+		cuts: [{ timestamp: 0, duration: 60, channelId: "a" }],
+		channels: [
+			{
+				id: "a",
+				name: "Lior",
+				videoId: "video-asset",
+				audioId: proposal.suggestions[0].audioId,
+				videoBindingRevision: 3,
+				audioBindingRevision: 0,
+				videoOffset: 0,
+				audioOffset: 2,
+				audioDelay: 0,
+			},
+		],
+	};
+	session.begin();
+	session.invokeControl({
+		capabilityId: "timeline.classic.multicam.create",
+		input: { plan, finishPodcast: true },
+	});
+	session.commit({ label: "Podcast WAV", hostContext: {} });
+	const scene = session.read().document.scenes.at(-1)!;
+	const microphone = scene.tracks.audio[0].elements[0];
+	expect(microphone).toMatchObject({
+		mediaId: "lior-mic",
+		trimStart: 240000,
+		params: {
+			noiseReduction: 100,
+			volume: 15,
+			gainDb: -1,
+			hardLimiterEnabled: true,
+		},
+	});
+	expect(
+		scene.tracks.overlay
+			.filter((t) => t.type === "video")
+			.every((t) => t.muted),
+	).toBe(true);
+	session.undo();
+	expect(session.read()).toEqual(before);
+	session.redo();
+	expect(
+		session.read().document.scenes.at(-1)?.tracks.audio[0].elements[0],
+	).toEqual(microphone);
 	session.dispose();
 });

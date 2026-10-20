@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ba2ed773f5d8fbbbd922884e3b4404d3ffeb9e470f60ecb48c7067f7da9dac6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:36:29.230Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "mcp__dip__task_update",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-9af2609d-5b77-4ba4-9a1f-4a6683bd5314"
+      },
+      {
+        "at": "2026-10-19T09:36:29.320Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "mcp__dip__task_update",
+        "branch": "main",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-9af2609d-5b77-4ba4-9a1f-4a6683bd5314"
+      },
+      {
+        "at": "2026-10-19T09:36:29.323Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_multicam_sources.rs <<'EOF'\n//! Canonical microphone suggestions. Filename evidence is a hint, never identity.\nuse super::*;\nuse serde_json::{Map, Value};\n\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct Input {\n    project_id: String,\n    expected_revision: u64,\n    #[schemars(length(min = 1, max = 32))]\n    video_ids: Vec<String>,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Candidate {\n    audio_id: String,\n    score: u32,\n    reason: String,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Suggestion {\n    video_id: String,\n    audio_id: Option<String>,\n    candidates: Vec<Candidate>,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Output {\n    revision: u64,\n    has_external_audio: bool,\n    suggestions: Vec<Suggestion>,\n}\nfn stem(name: &str) -> String {\n    name.rsplit_once('.').map_or(name, |(base, _)| base).to_lowercase()\n}\nfn tokens(name: &str) -> Vec<String> {\n    // Digits delimit recorder/camera prefixes (C7453lior, 0144_1lior).\n    // Unicode alphabetic characters keep Hebrew names intact.\n    stem(name).split(|c: char| !c.is_alphabetic())\n        .filter(|s| s.chars().count() >= 3)\n        .filter(|s| ![\"audio\", \"video\", \"camera\", \"mic\", \"microphone\", \"recording\", \"take\", \"wav\", \"mp4\"].contains(s))\n        .map(str::to_owned).collect()\n}\nfn score(video: &str, audio: &str) -> (u32, String) {\n    let a = stem(video); let b = stem(audio);\n    let compact = |s: &str| s.chars().filter(|c| c.is_alphanumeric()).collect::<String>();\n    if !compact(&a).is_empty() && compact(&a) == compact(&b) {\n        return (100, \"Matching filename\".into());\n    }\n    let shared: Vec<_> = tokens(video).into_iter().filter(|t| tokens(audio).contains(t)).collect();\n    if !shared.is_empty() {\n        return (80 + (shared.len().min(3) as u32 * 5), format!(\"Shared name: {}\", shared.join(\", \")));\n ",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-59602eaf-6130-4758-b91c-b360cdfd24b4"
+      },
+      {
+        "at": "2026-10-19T09:36:29.493Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_multicam_sources.rs <<'EOF'\n//! Canonical microphone suggestions. Filename evidence is a hint, never identity.\nuse super::*;\nuse serde_json::{Map, Value};\n\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct Input {\n    project_id: String,\n    expected_revision: u64,\n    #[schemars(length(min = 1, max = 32))]\n    video_ids: Vec<String>,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Candidate {\n    audio_id: String,\n    score: u32,\n    reason: String,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Suggestion {\n    video_id: String,\n    audio_id: Option<String>,\n    candidates: Vec<Candidate>,\n}\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nstruct Output {\n    revision: u64,\n    has_external_audio: bool,\n    suggestions: Vec<Suggestion>,\n}\nfn stem(name: &str) -> String {\n    name.rsplit_once('.').map_or(name, |(base, _)| base).to_lowercase()\n}\nfn tokens(name: &str) -> Vec<String> {\n    // Digits delimit recorder/camera prefixes (C7453lior, 0144_1lior).\n    // Unicode alphabetic characters keep Hebrew names intact.\n    stem(name).split(|c: char| !c.is_alphabetic())\n        .filter(|s| s.chars().count() >= 3)\n        .filter(|s| ![\"audio\", \"video\", \"camera\", \"mic\", \"microphone\", \"recording\", \"take\", \"wav\", \"mp4\"].contains(s))\n        .map(str::to_owned).collect()\n}\nfn score(video: &str, audio: &str) -> (u32, String) {\n    let a = stem(video); let b = stem(audio);\n    let compact = |s: &str| s.chars().filter(|c| c.is_alphanumeric()).collect::<String>();\n    if !compact(&a).is_empty() && compact(&a) == compact(&b) {\n        return (100, \"Matching filename\".into());\n    }\n    let shared: Vec<_> = tokens(video).into_iter().filter(|t| tokens(audio).contains(t)).collect();\n    if !shared.is_empty() {\n        return (80 + (shared.len().min(3) as u32 * 5), format!(\"Shared name: {}\", shared.join(\", \")));\n ",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-59602eaf-6130-4758-b91c-b360cdfd24b4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:36:29.558Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -157,6 +157,76 @@
         ".dip/tools/verify-brand-kits.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "podcast-sources": {
+      "command": [
+        "node",
+        ".dip/tools/verify-podcast-sources.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "episode4-intro-fade": {
+      "command": [
+        "python3",
+        "analysis/episode4-intro-fade-2026-10-19/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "episode4-lipsync": {
+      "command": [
+        "python3",
+        "analysis/episode4-lipsync-2026-10-19/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "source-resolution-export": {
+      "command": [
+        "node",
+        ".dip/tools/verify-source-export.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "episode4-4k-delivery": {
+      "command": [
+        "python3",
+        "analysis/episode4-4k-delivery-2026-10-19/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "podcast-sync-precision": {
+      "command": [
+        "node",
+        ".dip/tools/verify-podcast-precision.mjs"
+      ],
+      "timeoutMs": 600000
+    },
+    "itay-yarden-podcast": {
+      "command": [
+        "python3",
+        "analysis/itay-yarden-podcast-2026-10-19/verify.py"
+      ],
+      "timeoutMs": 120000
+    },
+    "podcast-editorial": {
+      "command": [
+        "node",
+        ".dip/tools/verify-podcast-editorial.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "podcast-reference": {
+      "command": [
+        "node",
+        ".dip/tools/verify-podcast-reference.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "seven-smart-mcp": {
+      "command": [
+        "node",
+        ".dip/tools/verify-seven-smart.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

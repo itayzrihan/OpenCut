@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6ee303a61d16bdbf1dc7470378c91be0524bdf7983d378a3a4a17774d742a9a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T16:08:21.181Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/podcast/editorial",
+          "crates/editor-api/src/operations/classic_takes/podcast/podcast-shorts-policy.md",
+          "crates/editor-api/src/operations/classic_takes/podcast/editorial/shorts.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast/editorial.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cd53f4e6-c57f-4ed9-b40c-17a1825ae47f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:08:21.185Z",
+  "parents": [],
+  "branch": "main"
+}

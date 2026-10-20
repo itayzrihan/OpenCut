@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28293431-1f86-43f8-b156-4c149e3782d4",
+  "taskId": "task_7b0a8795a582d88630c2dd91ebd91bdaf73ed9cc96c701e96c08f53c9b5e9420",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Implement canonical source-resolution/export plan and preferences.",
+          "status": "completed"
+        },
+        {
+          "step": "Connect UI, renderer, and codec capability checks.",
+          "status": "completed"
+        },
+        {
+          "step": "Verify regressions, actual 4K encoding, and updated local production UI.",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T11:17:37.270Z",
+  "parents": [
+    "2e121bf1-90c1-4878-ba88-2feb475128c3"
+  ],
+  "branch": "main"
+}

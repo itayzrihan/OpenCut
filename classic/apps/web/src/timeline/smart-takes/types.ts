@@ -64,7 +64,9 @@ export interface PreparedTakes {
 }
 export interface TakeAssembly {
 	selectionOnly?: boolean;
-	version: 1 | 2;
+	version: 1 | 2 | 3;
+	/** Canonical hard reference intervals for edited-timeline podcast archives. */
+	referenceRegions?: { id: string; start: number; end: number }[];
 	mode?: SmartTakeMode;
 	runMetrics?: TakeRunMetrics;
 	quality?: {

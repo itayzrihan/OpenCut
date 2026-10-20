@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "90a074c349387046df66144ba2456c4c2e46bca9a0759b0c7ee244a033c95a41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-19T15:31:57.110Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/podcast-sync/energy-reader.ts",
+          "classic/apps/web/src/podcast-sync/sync.worker.ts",
+          "classic/apps/web/src/podcast-sync/engine.ts",
+          "classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5ff5693e-d324-4dd3-84d2-d5f72a95fedd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T15:31:57.112Z",
+  "parents": [],
+  "branch": "main"
+}

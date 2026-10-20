@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "28371a47cec3852b9677a63037d954ce33c4e59a471b27ce62335b7463bf7ed1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:41:31.673Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/ai/podcast-task.ts';s=open(p).read();a=s.index('const videos = await requestPodcastPlan({');b=s.index('\\n\\t\\t\\t\\tonStage:',a);s=s[:b]+'''\\n\\t\\t\\t\\tonResume: () => this.update({ resumedAnalysis: true }),\n                onProviderRequest: () => this.update({ analysisRequests: (this.state.analysisRequests ?? 0) + 1 }),'''+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/ai/__tests__/podcast-plan.test.ts';s=open(p).read().replace('\\t\\tlet reviews = 0;','\\t\\tlet reviews = 0;\\n\\t\\tlet providerRequests=0;',1).replace('\\t\\t\\tsource: source(mode),','\\t\\t\\tonProviderRequest:()=>{providerRequests++;},\\n\\t\\t\\tsource: source(mode),',1).replace('\\t\\texpect(requests).toHaveLength(5);','\\t\\texpect(requests).toHaveLength(5);\\n\\t\\texpect(providerRequests).toBe(4);',1);open(p,'w').write(s)\np='classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts';s=open(p).read();a=s.index('test(\"a successful sibling');b=s.index('test(\"malformed JSON',a);t=s[a:b].replace('\\tlet fail = true;','\\tlet fail = true;\\n\\tconst resumed:number[]=[];',1).replace('\\t\\tcache: saved,','\\t\\tcache: saved,\\n\\t\\tonResume:(count:number)=>{resumed.push(count);},',1).replace('\\texpect(saved.data.has(`${saved.key}:editorial-v1:report`)).toBe(true);','\\texpect(saved.data.has(`${saved.key}:editorial-v1:report`)).toBe(true);\\n\\texpect(await runPodcastEditorial({...input,ask:async()=>{throw Error(\"Completed analysis was replayed\");}})).toEqual([video]);\\n\\texpect(resumed).toEqual([1,2]);');s=s[:a]+t+s[b:];open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/ai/podcast-task.ts classic/apps/web/src/ai/__tests__/podcast-plan.test.ts classic/apps/web/src/ai/__tests__/podcast-editorial.test.ts > .local/seven-smart-2026-10-20/format-observability.log 2>&1\nnode classic/scripts/test-web.mjs src/ai/__tests__/podcast-task.test.ts src/ai/__tests__/podcast-plan.test.ts src/ai/__tests__/podcast-editorial.test.ts src/ai/__tests__/timeline-tools.test.ts --j",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e85cdd99-57b0-4b28-a8a6-faad5dc3126d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:41:32.097Z",
+  "parents": [],
+  "branch": "main"
+}

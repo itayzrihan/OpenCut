@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "db8dec3fdadbe3fd6b7ae2b83c86d97f3c0a8722188e3ca8c68299052a3fba8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:02:07.507Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/ai/__tests__/podcast-plan.test.ts src/ai/__tests__/podcast-editorial.test.ts src/ai/podcast-plan-cache.test.ts src/timeline/smart-takes/audio-evidence.test.ts src/core/managers/__tests__/transcription-manager.test.ts src/podcast-sync/precision.integration.test.ts src/export/__tests__/video-encoding.test.ts src/services/renderer/__tests__/scale-frame-output.test.ts --jobs=1 --report=.local/seven-smart-2026-10-20/integration-tests > .local/seven-smart-2026-10-20/integration-tests.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ecaf7ccb-3fd9-4a22-83e7-ff7c758f0636"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:02:08.163Z",
+  "parents": [],
+  "branch": "main"
+}

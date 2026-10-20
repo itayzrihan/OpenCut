@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45a272b52c8959be5904aac2674bb5831a845a315f3400310f2063f8aa183489",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:31:47.170Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-editorial-upgrade/provider-checkpoints.json'))\nfor k,v in p.items():\n if k.endswith(':editorial-v1'):\n  q=json.loads(v);r=q.get('responses',{});print(k[:130],len(r),list(r)[-4:])\nPY\nnode .local/seven-smart-2026-10-20/mcp-call.mjs podcast.get_status; tail -8 .local/seven-smart-2026-10-20/db-gain-regressions.log; date -u",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-59f79adb-cdad-4750-ad1e-41da4bc21652"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:31:47.874Z",
+  "parents": [],
+  "branch": "main"
+}

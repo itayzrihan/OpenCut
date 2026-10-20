@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8299388433c279f72e20eacbae2e5fc464a39a378f5ef473627ffc7c601b2bcc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T01:08:47.040Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-seven-smart.mjs';s=open(p).read();needle=\"const deployment=JSON.parse\";s=s.replace(needle,\"const playback=JSON.parse(await readFile('analysis/seven-smart-2026-10-20/playback.json','utf8'));assert(playback.passed);assert.equal(playback.outputs.length,7);assert(playback.outputs.every(r=>r.playbackAdvanced&&r.muted===false));assert.equal(playback.projectSceneCount,9);\\n\"+needle);open(p,'w').write(s)\nPY\nnode .local/seven-smart-2026-10-20/mcp-call.mjs --refresh; node .local/seven-smart-2026-10-20/mcp-call.mjs app.get_state > .local/seven-smart-2026-10-20/reopened-state.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6b2d8db2-05ee-483b-a9b8-ec35e2001f93"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T01:08:47.114Z",
+  "parents": [],
+  "branch": "main"
+}

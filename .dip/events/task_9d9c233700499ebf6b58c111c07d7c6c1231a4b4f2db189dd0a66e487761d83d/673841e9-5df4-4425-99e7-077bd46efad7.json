@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "673841e9-5df4-4425-99e7-077bd46efad7",
+  "taskId": "task_9d9c233700499ebf6b58c111c07d7c6c1231a4b4f2db189dd0a66e487761d83d",
+  "type": "task.update",
+  "payload": {
+    "title": "Fix nested intro fade continuously revealing underlying episode",
+    "acceptance": [
+      "Intro fades continuously to transparency including blurred ending",
+      "Episode remains visible throughout overlap; existing edit preserved",
+      "Regression checks and live preview verification"
+    ],
+    "scope": [
+      "classic/apps/web/src/services/renderer",
+      "classic/rust/rendering",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+  "createdAt": "2026-10-19T10:19:11.074Z",
+  "parents": [
+    "d0c693d9-06fc-430e-8a5f-81316c1db582"
+  ],
+  "branch": "main"
+}

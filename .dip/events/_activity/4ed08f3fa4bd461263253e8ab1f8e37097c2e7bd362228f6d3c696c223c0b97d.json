@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ed08f3fa4bd461263253e8ab1f8e37097c2e7bd362228f6d3c696c223c0b97d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:12:24.448Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run .dip/tools/evaluate-podcast-shorts.ts > .local/podcast-editorial-upgrade/provider.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8d8b690b-1ce0-4da4-9b9a-210e72668dca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:12:24.982Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3af1dc0510107d601b898f0872e8303261e6d586a0ea9506a7c5bf8f8ea729bb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:11:38.433Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '795,870p' classic/apps/web/src/core/canonical-classic-session.ts; cat > .dip/tools/evaluate-podcast-shorts.ts <<'EOF'\n// Real-provider evaluation only when explicitly invoked; --replay never uses a provider.\n// Isolated canonical WASM + real browser adapter. Never mutates a live project.\nimport {readFile,writeFile,mkdir} from 'node:fs/promises';\nimport {writeFileSync,renameSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nimport {createCanonicalTestRuntime} from '../../classic/apps/web/src/core/__tests__/canonical-runtime-fixture';\nimport {CanonicalClassicSession} from '../../classic/apps/web/src/core/canonical-classic-session';\nimport {requestPodcastPlan} from '../../classic/apps/web/src/ai/podcast-plan';\nimport {podcastPlanCacheKey} from '../../classic/apps/web/src/ai/podcast-plan-cache';\nconst replay=process.argv.includes('--replay');\nconst root='.local/podcast-editorial-upgrade',reportRoot='analysis/podcast-editorial-upgrade-2026-10-19';\nawait mkdir(root,{recursive:true});await mkdir(reportRoot,{recursive:true});\nconst checkpointPath=`${root}/provider-checkpoints.json`;\nlet data:Record<string,string>={};try{data=JSON.parse(await readFile(checkpointPath,'utf8'));}catch{}\nfunction persist(){writeFileSync(`${checkpointPath}.tmp`,JSON.stringify(data));renameSync(`${checkpointPath}.tmp`,checkpointPath);}\nconst storage={getItem:(k:string)=>data[k]??null,setItem:(k:string,v:string)=>{data[k]=v;persist();},removeItem:(k:string)=>{delete data[k];persist();}};\nconst account={id:'4fec0688-9a78-4304-849c-9ea937873751',displayName:'',login:''};\nconst originalFetch=globalThis.fetch;let calls=0;let models:any[]=[];\nconst modelsSeen=new Set<string>();\nconst provider=replay?null:await import('../../classic/apps/web/src/editor-agent/server/chatgpt');\nconst accountServer=replay?null:await import('../../classic/apps/web/src/accounts/server');\nglobalThis.window=Object.assign(new EventTarget(),{__opencutAccountId:account.id}) as any;\nglobalThis.fetch=(async(input",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9f10a74a-1499-4782-adce-9a0e03eb1ad0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:11:38.475Z",
+  "parents": [],
+  "branch": "main"
+}

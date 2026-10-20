@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a244affa3030edf1e415ce2ea2dcee3b22460dc4fdc87c68880c6648216aebd4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:16:05.876Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 12 .local/podcast-editorial-upgrade/provider.log; cat .local/podcast-editorial-upgrade/deployment.json; git diff --check -- classic/apps/web/src/ai crates/editor-api/src/operations/classic_takes/podcast* crates/editor-api/tests/classic_podcast*; git diff -- crates/editor-api/src/operations/classic_takes/podcast/editorial.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e2ebcba1-03ad-4942-bd00-ee3197d60e5b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:16:05.944Z",
+  "parents": [],
+  "branch": "main"
+}

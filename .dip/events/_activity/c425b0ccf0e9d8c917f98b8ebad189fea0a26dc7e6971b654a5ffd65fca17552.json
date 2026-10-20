@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c425b0ccf0e9d8c917f98b8ebad189fea0a26dc7e6971b654a5ffd65fca17552",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:46:45.747Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nfor s in p['scenes']:\n print(s['id'])\n for k,v in s['tracks'].items():\n  print(k,type(v).__name__, list(v)[:5] if isinstance(v,dict) else str(v)[:120])\nprint('fonts',p['customFonts'])\nPY\nsed -n '1495,1535p' classic/apps/web/src/core/managers/project-manager.ts\nrg -n 'loadSharedFonts|shared-fonts' classic/apps/web/src/services/storage* classic/apps/web/src/accounts -g '*.ts' | head -25",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-a4141cb5-3a7f-4636-bff2-669d191adf2a"
+      },
+      {
+        "at": "2026-10-19T09:46:45.967Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/podcast-sources-2026-10-19/template/project.json'))\nfor s in p['scenes']:\n print(s['id'])\n for k,v in s['tracks'].items():\n  print(k,type(v).__name__, list(v)[:5] if isinstance(v,dict) else str(v)[:120])\nprint('fonts',p['customFonts'])\nPY\nsed -n '1495,1535p' classic/apps/web/src/core/managers/project-manager.ts\nrg -n 'loadSharedFonts|shared-fonts' classic/apps/web/src/services/storage* classic/apps/web/src/accounts -g '*.ts' | head -25",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-a4141cb5-3a7f-4636-bff2-669d191adf2a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:46:46.095Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c5f9c49844fe59df3909f9419ad11cfe6ab00232041aa3817b72a9ae0436171",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T11:21:15.390Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ae77acd765a6cbe7f285856f97b0cc7fc2b615d7f0854c329d93f9f5a6042866",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-b1055d40-c642-4bf5-83b2-f1639af18422"
+      },
+      {
+        "at": "2026-10-19T11:21:15.475Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_ae77acd765a6cbe7f285856f97b0cc7fc2b615d7f0854c329d93f9f5a6042866",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /Users/itayzrihan/.agents/skills/hyperframes/SKILL.md",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-b1055d40-c642-4bf5-83b2-f1639af18422"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T11:21:16.137Z",
+  "parents": [],
+  "branch": "main"
+}

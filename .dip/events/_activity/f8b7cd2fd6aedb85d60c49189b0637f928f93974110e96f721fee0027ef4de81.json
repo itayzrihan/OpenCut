@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f8b7cd2fd6aedb85d60c49189b0637f928f93974110e96f721fee0027ef4de81",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:40:03.289Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/verify-podcast-sources.mjs <<'EOF'\nimport { spawnSync } from 'node:child_process';\nconst checks = [\n ['cargo', ['test', '-p', 'opencut-editor-api', '--test', 'classic_multicam', '--test', 'classic_podcast']],\n ['node', ['classic/scripts/test-web.mjs', 'src/core/__tests__/canonical-multicam.test.ts', 'src/podcast-sync/__tests__/unified-engine.test.ts', '--jobs=1', '--timeout=240000', '--test-timeout=120000']],\n];\nfor (const [command, args] of checks) {\n const result = spawnSync(command, args, { stdio: 'inherit' });\n if (result.status !== 0) process.exit(result.status ?? 1);\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('.dip/config.json');d=json.loads(p.read_text());d['verification']['podcast-sources']={'command':['node','.dip/tools/verify-podcast-sources.mjs'],'timeoutMs':480000};p.write_text(json.dumps(d,indent=2)+'\\n')\np=Path('.local/podcast-sources-2026-10-19');p.mkdir(parents=True,exist_ok=True)\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/3bf1516d-a949-46a0-b631-39089691e736')\n(p/'before-project.json').write_bytes((root/'project.json').read_bytes())\n(p/'before-media.json').write_bytes((root/'media/index.json').read_bytes())\nPY\n./classic/node_modules/.bin/eslint classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx > /tmp/podcast-source-lint.log 2>&1\ncat /tmp/podcast-source-lint.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-74fc1ba4-6c70-438a-8f0c-62ba32a89fde"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:40:03.586Z",
+  "parents": [],
+  "branch": "main"
+}

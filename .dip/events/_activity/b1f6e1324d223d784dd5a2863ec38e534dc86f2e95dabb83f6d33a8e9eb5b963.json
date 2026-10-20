@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b1f6e1324d223d784dd5a2863ec38e534dc86f2e95dabb83f6d33a8e9eb5b963",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-20T00:40:58.975Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/seven-smart-2026-10-20/resume-tests/src__ai____tests____podcast-task.test.ts.log",
+          ".local/seven-smart-2026-10-20/resume-tests/src__ai____tests____podcast-plan.test.ts.log",
+          ".local/seven-smart-2026-10-20/resume-tests/src__ai____tests____podcast-editorial.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "167ebfd9-dd59-41c4-869b-77a1d353d9cd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:40:58.975Z",
+  "parents": [],
+  "branch": "main"
+}

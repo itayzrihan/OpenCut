@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c061bbc531c22155463117c40f03df3a169a4dd9f6adbeeaecf6a20e4f4d612b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:47:13.332Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat\nsed -n '1,245p' crates/editor-api/src/operations/classic_multicam_sources.rs\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-1191bbf5-924b-47cd-8030-8783351d2122"
+      },
+      {
+        "at": "2026-10-19T09:47:13.513Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat\nsed -n '1,245p' crates/editor-api/src/operations/classic_multicam_sources.rs\ntail -8 /tmp/podcast-source-release.log",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PostToolUse:exec-1191bbf5-924b-47cd-8030-8783351d2122"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:47:14.186Z",
+  "parents": [],
+  "branch": "main"
+}

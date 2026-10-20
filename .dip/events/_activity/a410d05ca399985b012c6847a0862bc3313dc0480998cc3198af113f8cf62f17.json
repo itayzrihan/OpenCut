@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a410d05ca399985b012c6847a0862bc3313dc0480998cc3198af113f8cf62f17",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:39:11.362Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '430,460p' crates/editor-api/src/operations/classic_takes.rs; rg -n 'Assembly \\{' crates/editor-api/src/operations/classic_takes*; rg -n 'source_tracks|current_tracks|source_hash|spans\\(' crates/editor-api/src/operations/classic_transcription.rs | tail -n 20; rg -n 'type.*Start|Start \\{' crates/editor-api/src/operations/classic_transcription.rs; sed -n '710,780p' crates/editor-api/src/operations/classic_transcription.rs; sed -n '855,930p' crates/editor-api/src/operations/classic_transcription.rs; rg -n 'EditTranscription|type: \"start\"|Start' classic/apps/web/src/transcription/job.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-de5fffa5-5073-4a9f-a464-a9cf7f1f30a7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:39:11.377Z",
+  "parents": [],
+  "branch": "main"
+}

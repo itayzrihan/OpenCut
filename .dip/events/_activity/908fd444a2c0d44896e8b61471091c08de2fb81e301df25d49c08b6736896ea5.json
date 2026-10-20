@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "908fd444a2c0d44896e8b61471091c08de2fb81e301df25d49c08b6736896ea5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+    "records": [
+      {
+        "at": "2026-10-19T09:52:49.680Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7",
+        "taskId": "task_00ee807f38d359c078a44e51e26958fc380f1f19ec3bce489153b877940c41a7",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'decode|concurrency|envelope' classic/apps/web/src/podcast-sync/engine.ts | head -35\nrg --files classic/apps/web/src | rg '(render|renderer)' | head -20\nrg -n 'positionX.*canvas|positionY.*canvas' classic/apps/web/src --glob '*render*.ts' | head -12",
+        "recordId": "codex:01a12ae2-5f0a-7bb2-80a6-0a103eb3efa7:PreToolUse:exec-0e364d67-1695-41cf-9340-1e21d380aa8d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T09:52:49.829Z",
+  "parents": [],
+  "branch": "main"
+}

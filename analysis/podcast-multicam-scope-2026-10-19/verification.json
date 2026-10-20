@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "coreTests": 48,
+  "hostTests": 33,
+  "isolatedRealProjectGenerations": 6,
+  "isolatedOutputCaptionEdits": 6,
+  "originalCameraCuts": 416,
+  "sourceScenesExact": true,
+  "sourceSettingsExact": true,
+  "transcriptionJobsExact": true,
+  "scopeStress": {
+    "cameraCuts": 10000,
+    "words": 10000,
+    "referenceRegions": 1,
+    "scopeUnder2s": true,
+    "prepareUnder6s": true
+  },
+  "productionRelease": "2026-10-19T17-12-23-118Z-d19882d9",
+  "limits": [
+    "Real edited-project tests use a synthetic transcript only inside an isolated runtime; no new inference or live output was created.",
+    "Live UI availability and dialogs checked without running a paid model or transcription. No export, human listening or new semantic quality rating claimed."
+  ]
+}

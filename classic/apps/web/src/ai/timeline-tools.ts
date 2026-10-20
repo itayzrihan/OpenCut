@@ -1,5 +1,6 @@
 import { hasExportOutput } from "@/export";
 import { z } from "zod";
+import { getPodcastTask } from "./podcast-task";
 import { getSmartTakesTask } from "./smart-takes-task";
 import { restoreSilence } from "opencut-wasm";
 import type { EditorCore } from "@/core";
@@ -654,6 +655,27 @@ export async function createTimelineToolRuntime({
 					editor.project.cancelExport();
 				}
 				return getSafeExportStatus({ editor });
+			case "podcast.start": {
+				const input = z
+					.object({
+						sceneId: z.string().min(1),
+						mode: z.enum(["teaser", "highlights", "chronological"]),
+						minSeconds: z.number().min(20).max(90),
+						maxSeconds: z.number().min(20).max(90),
+						maxOutputs: z.number().int().min(1).max(24),
+						elementIds: z.array(z.string().min(1)).max(100000),
+						requestId: z.string().min(1).max(200),
+					})
+					.strict()
+					.refine((x) => x.minSeconds <= x.maxSeconds)
+					.parse(toolCall.arguments);
+				return getPodcastTask(editor).startRemote(input);
+			}
+			case "podcast.get_status":
+				return getPodcastTask(editor).getSnapshot();
+			case "podcast.cancel":
+				getPodcastTask(editor).cancel();
+				return getPodcastTask(editor).getSnapshot();
 			case "smart_takes.start": {
 				const args = z
 					.object({
@@ -1415,6 +1437,60 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 			keywords: ["cancel export", "stop render"],
 			description:
 				"Request cancellation of the running export task. Idempotent and available only with App controls enabled.",
+			parameters: objectSchema({ properties: {} }),
+		},
+		{
+			type: "function",
+			name: "podcast.start",
+			deferLoading: true,
+			category: "podcast task",
+			keywords: ["teaser", "highlights", "chronological", "multicam", "shorts"],
+			description:
+				"Start the same reviewed podcast workflow as the editor buttons. Creates additional scenes without modifying source edits/captions. Explicit elementIds=[] references the entire active timeline; otherwise only their time ranges, with synchronized camera/audio routes. Reuses or resumes transcript and analysis. Sends allowed transcript to the connected provider. Returns immediately; poll podcast.get_status. Reuse requestId for an exact retry.",
+			parameters: objectSchema({
+				properties: {
+					sceneId: { type: "string" },
+					mode: {
+						type: "string",
+						enum: ["teaser", "highlights", "chronological"],
+					},
+					minSeconds: { type: "number", minimum: 20, maximum: 90 },
+					maxSeconds: { type: "number", minimum: 20, maximum: 90 },
+					maxOutputs: { type: "integer", minimum: 1, maximum: 24 },
+					elementIds: {
+						type: "array",
+						maxItems: 100000,
+						items: { type: "string" },
+					},
+					requestId: { type: "string", minLength: 1, maxLength: 200 },
+				},
+				required: [
+					"sceneId",
+					"mode",
+					"minSeconds",
+					"maxSeconds",
+					"maxOutputs",
+					"elementIds",
+					"requestId",
+				],
+			}),
+		},
+		{
+			type: "function",
+			name: "podcast.get_status",
+			deferLoading: true,
+			category: "podcast task",
+			description:
+				"Read podcast generation progress, source project/scene, output count or exact failure. No media bytes or full transcript.",
+			parameters: objectSchema({ properties: {} }),
+		},
+		{
+			type: "function",
+			name: "podcast.cancel",
+			deferLoading: true,
+			category: "app control",
+			description:
+				"Cancel podcast inference/decoding. Completed transcript and already-saved scenes remain; no later proposal applies.",
 			parameters: objectSchema({ properties: {} }),
 		},
 		{

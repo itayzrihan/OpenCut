@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d42637d8f00e43c978a41dcf52944f6ace17acb7537b5665f5d9247af2b7a4f8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T00:02:24.996Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_3886435176e39ef43c66b0e9216acf0b8e9bb4f7c112439a0ee623c47a21f7f6",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re,json,os\npaths=set(filter(None,subprocess.check_output(['git','ls-files','--others','--exclude-standard','-z']).decode().split('\\0')))|set(filter(None,subprocess.check_output(['git','diff','--name-only','-z']).decode().split('\\0')))\npatterns=[('provider-key',re.compile(rb'\\bsk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{32,}')),('github-key',re.compile(rb'\\b(?:ghp_|github_pat_)[A-Za-z0-9_]{35,}')),('private-key',re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')),('bearer-token',re.compile(rb'(?i)Bearer\\s+eyJ[A-Za-z0-9_-]{40,}'))]\nfindings=[]\nfor p in paths:\n if not os.path.isfile(p):continue\n b=open(p,'rb').read()\n for name,rx in patterns:\n  if rx.search(b):findings.append({'path':p,'type':name,'matches':len(rx.findall(b))})\njson.dump({'files':len(paths),'findings':findings},open('.local/seven-smart-2026-10-20/credential-scan.json','w'),indent=2)\nprint('scanned',len(paths),'files; findings',len(findings));print(json.dumps(findings[:12]))\nPY\ntail -12 .local/seven-smart-2026-10-20/build.log; tail -4 .local/seven-smart-2026-10-20/integration-tests.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-52a55c66-5d18-489f-8d0d-a257aebbf909"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T00:02:25.200Z",
+  "parents": [],
+  "branch": "main"
+}

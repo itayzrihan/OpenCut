@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50c564f1-8085-4ab2-b3e9-7e6b32bc07a1",
+  "taskId": "task_d0cf855494a120f23b4d2dd3ff2c538d29eff03b74d0c38617e4b1cb4be07dc2",
+  "type": "task.update",
+  "payload": {
+    "acceptance": [
+      "All three modes support edited multicam overlay video, separate audio, many cuts and already-derived scenes without flattening or changing the source.",
+      "Empty selection references all active timeline media; explicit selection is a hard temporal union. No unselected words, model context, decoder windows or output handles may cross its bounds.",
+      "Preserve original multicam cuts, enabled angles, source trims, retiming, sync and mix in additional scenes. Validate versioned scope archives, undo and reload through canonical app.state.read.",
+      "Use existing scoped transcription coverage or resume matching work; missing transcripts decode/transcribe only selected time, skip excluded sections and cannot impersonate a full-episode transcript.",
+      "Regression tests and real edited-project isolated checks verify both reference modes, all three creation paths, original scene/caption preservation and deployed UI availability."
+    ],
+    "scope": [
+      "crates/editor-api/src/operations/classic_takes*",
+      "crates/editor-api/src/operations/classic_transcription.rs",
+      "crates/editor-api/tests/classic_podcast*",
+      "classic/apps/web/src/ai",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/core/managers/transcription-manager.ts",
+      "classic/apps/web/src/core/canonical-classic-session.ts",
+      "classic/apps/web/src/timeline/smart-takes/audio-evidence*",
+      "classic/apps/web/src/transcription/job.ts",
+      ".dip",
+      "analysis/podcast-multicam-scope-2026-10-19"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-19T17:00:59.513Z",
+  "parents": [
+    "cb47d439-0629-4520-b68d-f3d4f82aecd2"
+  ],
+  "branch": "main"
+}

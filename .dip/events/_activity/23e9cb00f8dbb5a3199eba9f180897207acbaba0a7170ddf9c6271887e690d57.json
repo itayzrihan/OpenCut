@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "23e9cb00f8dbb5a3199eba9f180897207acbaba0a7170ddf9c6271887e690d57",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-19T16:10:57.359Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_a0dfcc1e70b4bc51744e6a4071f2648bfc237ed9961a9cf676b72dae7c5eefac",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'fingerprint|sourceDigest|sourceFingerprint' classic/scripts/local-production/*.mjs; sed -n '1,110p' .dip/tools/check-teaser-adapter.ts; tail -n 6 .local/podcast-editorial-upgrade/production-build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c30ded01-820d-48d2-a480-577e74b0cf2a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-19T16:10:57.575Z",
+  "parents": [],
+  "branch": "main"
+}

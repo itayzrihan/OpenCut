@@ -4,23 +4,23 @@ use super::*;
 #[derive(Clone, Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct AudioFrame {
-    start: f64,
-    end: f64,
-    rms: f64,
-    peak: f64,
-    zero_crossing_rate: f64,
+    pub(super) start: f64,
+    pub(super) end: f64,
+    pub(super) rms: f64,
+    pub(super) peak: f64,
+    pub(super) zero_crossing_rate: f64,
 }
 #[derive(Clone, Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct AudioEvidence {
-    clip_id: String,
+    pub(super) clip_id: String,
     #[schemars(length(max = 360000))]
-    frames: Vec<AudioFrame>,
+    pub(super) frames: Vec<AudioFrame>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct AudioGaps {
-    clip_id: String,
+    pub(super) clip_id: String,
     ranges: Vec<(i64, i64)>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     diagnostics: Option<AudioDiagnostics>,
@@ -28,7 +28,7 @@ pub(super) struct AudioGaps {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct AudioDiagnostics {
-    clip_id: String,
+    pub(super) clip_id: String,
     frames_analyzed: usize,
     covered_start: Option<f64>,
     covered_end: Option<f64>,
@@ -71,6 +71,26 @@ pub(super) fn source_words(
             .or_default()
             .push(i);
     }
+    let selected: HashSet<_> = ids.iter().map(String::as_str).collect();
+    let mut coverage = all(tracks)
+        .flat_map(|t| arr(&t["elements"]))
+        .filter(|e| selected.contains(e["id"].as_str().unwrap_or("")))
+        .map(|e| {
+            let a = tick(&e["startTime"])?;
+            Ok((a, a + tick(&e["duration"])?))
+        })
+        .collect::<Result<Vec<_>, CapabilityError>>()?;
+    coverage.sort_unstable();
+    let mut joined: Vec<(i64, i64)> = vec![];
+    for (a, b) in coverage {
+        if let Some(last) = joined.last_mut() {
+            if a <= last.1 {
+                last.1 = last.1.max(b);
+                continue;
+            }
+        }
+        joined.push((a, b));
+    }
     let mut replacements = vec![];
     let mut covered = vec![];
     let mut matched = HashSet::new();
@@ -93,12 +113,11 @@ pub(super) fn source_words(
         }
         let start = tick(&clip["startTime"])?;
         let duration = tick(&clip["duration"])?;
-        if !arr(&tracks["main"]["elements"]).iter().any(|c| {
-            ids.iter().any(|id| c["id"] == *id)
-                && c["startTime"].as_i64().is_some_and(|s| {
-                    start >= s && start + duration <= s + c["duration"].as_i64().unwrap_or(0)
-                })
-        }) {
+        let at = joined.partition_point(|(_, end)| *end <= start);
+        if !joined
+            .get(at)
+            .is_some_and(|(from, to)| start >= *from && start + duration <= *to)
+        {
             continue;
         }
         // Trimmed/manual clocks cannot be safely inferred here.
@@ -189,12 +208,9 @@ pub(super) fn analyze_audio(
                 "Audio evidence must identify distinct selected clips",
             ));
         }
-        let clip = arr(&tracks["main"]["elements"])
-            .iter()
-            .find(|c| c["id"] == e.clip_id)
-            .ok_or_else(|| invalid("Audio evidence clip missing"))?;
-        let start = tick(&clip["startTime"])? as f64 / TPS;
-        let duration = tick(&clip["duration"])? as f64 / TPS;
+        let (start, end) = clip_bounds(tracks, &e.clip_id)?;
+        let duration = (end - start) as f64 / TPS;
+        let start = start as f64 / TPS;
         let covered_start = e.frames.first().map(|f| f.start);
         let covered_end = e.frames.last().map(|f| f.end);
         let analysis = classic_timeline::analyze_smart_audio_silence(
@@ -365,12 +381,7 @@ pub(super) fn report(
         q.repeated_phrases += repeats(&a, words);
         for p in &a.parts {
             let (from, to) = bounds(p, words, tracks, gaps)?;
-            let clip = arr(&tracks["main"]["elements"])
-                .iter()
-                .find(|c| c["id"] == words[p.first_word].clip_id)
-                .unwrap();
-            let start = tick(&clip["startTime"])?;
-            let end = start + tick(&clip["duration"])?;
+            let (start, end) = clip_bounds(tracks, &words[p.first_word].clip_id)?;
             let quiet = gaps
                 .iter()
                 .find(|g| g.clip_id == words[p.first_word].clip_id);
@@ -405,12 +416,7 @@ pub(super) fn bounds(
         .map(|w| w.end)
         .max()
         .unwrap();
-    let clip = arr(&tracks["main"]["elements"])
-        .iter()
-        .find(|e| e["id"] == first.clip_id)
-        .ok_or_else(|| invalid("Take source clip missing"))?;
-    let clip_start = tick(&clip["startTime"])?;
-    let clip_end = clip_start + tick(&clip["duration"])?;
+    let (clip_start, clip_end) = clip_bounds(tracks, &first.clip_id)?;
     let before = words
         .iter()
         .take(p.first_word)
@@ -516,12 +522,7 @@ pub(super) fn validate_audio(
         if !ids.contains(&g.clip_id) || !seen.insert(&g.clip_id) {
             return Err("Invalid take audio source".into());
         }
-        let clip = arr(&tracks["main"]["elements"])
-            .iter()
-            .find(|e| e["id"] == g.clip_id)
-            .ok_or("Missing take audio source")?;
-        let start = tick(&clip["startTime"]).map_err(|e| e.to_string())?;
-        let end = start + tick(&clip["duration"]).map_err(|e| e.to_string())?;
+        let (start, end) = clip_bounds(tracks, &g.clip_id).map_err(|e| e.to_string())?;
         let mut previous = start;
         for (s, e) in &g.ranges {
             if *s < previous || *e <= *s || *e > end {
