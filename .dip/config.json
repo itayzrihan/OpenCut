@@ -276,6 +276,13 @@
         ".dip/tools/verify-background-three.mjs"
       ],
       "timeoutMs": 240000
+    },
+    "scale-preview": {
+      "command": [
+        "node",
+        ".dip/tools/verify-scale-preview.mjs"
+      ],
+      "timeoutMs": 180000
     }
   },
   "mode": "coordinate"

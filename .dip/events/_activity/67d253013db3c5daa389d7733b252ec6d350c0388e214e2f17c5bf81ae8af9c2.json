@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "67d253013db3c5daa389d7733b252ec6d350c0388e214e2f17c5bf81ae8af9c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T21:05:15.785Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/7.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/index.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/0.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/5.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/8.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/5.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/8.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/client-production/7.pack",
+          "classic/apps/web/.next-local-production/diagnostics/build-diagnostics.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "be244ce9-fe7a-40cb-aa25-5e6a5cc740e6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T21:05:15.786Z",
+  "parents": [],
+  "branch": "main"
+}

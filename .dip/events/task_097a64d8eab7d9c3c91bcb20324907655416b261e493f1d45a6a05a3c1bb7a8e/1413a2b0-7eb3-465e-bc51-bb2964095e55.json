@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1413a2b0-7eb3-465e-bc51-bb2964095e55",
+  "taskId": "task_097a64d8eab7d9c3c91bcb20324907655416b261e493f1d45a6a05a3c1bb7a8e",
+  "type": "task.update",
+  "payload": {
+    "title": "Fix scale changes not updating editor preview",
+    "description": "Diagnose live scale controls and canonical transform rendering; fix immediate paused preview refresh and deploy.",
+    "acceptance": [
+      "Scale edits update the canonical selected element and immediately change paused preview",
+      "Preserve source scenes and existing transforms/keyframes",
+      "Regression coverage and production build pass; deployed change verified in editor"
+    ],
+    "scope": [
+      "classic/apps/web/src",
+      "crates/editor-api",
+      ".dip",
+      "analysis/scale-preview-2026-10-23"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T20:58:12.525Z",
+  "parents": [
+    "14c9b598-6663-43cc-8aed-fcfb892f0029"
+  ],
+  "branch": "main"
+}

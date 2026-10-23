@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9bfcdca691cd539bd9f1ee4e2af0d984efd7bdbeb26fa6f5a14f8083e8c2f632",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T21:04:12.561Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_097a64d8eab7d9c3c91bcb20324907655416b261e493f1d45a6a05a3c1bb7a8e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short --untracked-files=all | python3 -c 'import sys; a=sys.stdin.read().splitlines(); print(\"\\n\".join(x for x in a if not x[3:].startswith(\".dip/events/\"))); print(\"entries\",len(a))'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e31a5ddb-ec83-4d76-ac1e-d688d644a37f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T21:04:13.138Z",
+  "parents": [],
+  "branch": "main"
+}

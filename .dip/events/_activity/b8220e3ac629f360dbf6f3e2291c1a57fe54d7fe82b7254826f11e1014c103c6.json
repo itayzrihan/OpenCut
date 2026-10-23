@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b8220e3ac629f360dbf6f3e2291c1a57fe54d7fe82b7254826f11e1014c103c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T21:09:29.200Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/scale-preview-2026-10-23/configured-tests",
+          ".local/scale-preview-2026-10-23/configured-tests/src__core__managers____tests____timeline-manager-preview.test.ts.log",
+          ".local/scale-preview-2026-10-23/configured-tests/src__components__editor__panels__properties____tests____element-param-playhead.test.ts.log",
+          ".local/scale-preview-2026-10-23/configured-tests/src__components__editor__panels__properties____tests____bulk-selection.test.ts.log",
+          ".local/scale-preview-2026-10-23/configured-tests/src__services__renderer____tests____visual-node-transform.test.ts.log",
+          ".local/scale-preview-2026-10-23/configured-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5b8119b8-98a2-4c25-8554-0d235af0e7cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T21:09:29.200Z",
+  "parents": [],
+  "branch": "main"
+}

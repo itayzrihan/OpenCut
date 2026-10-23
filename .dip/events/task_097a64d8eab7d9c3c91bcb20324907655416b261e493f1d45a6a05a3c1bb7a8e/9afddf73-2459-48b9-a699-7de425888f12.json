@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9afddf73-2459-48b9-a699-7de425888f12",
+  "taskId": "task_097a64d8eab7d9c3c91bcb20324907655416b261e493f1d45a6a05a3c1bb7a8e",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Reproduce selected-angle scale issue and verify active video paused preview",
+          "status": "completed"
+        },
+        {
+          "step": "Add inspector selection identity and inactive-clip notice; run checks and build",
+          "status": "in_progress"
+        },
+        {
+          "step": "Deploy, verify UI and preservation, save evidence and push",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T21:00:09.998Z",
+  "parents": [
+    "6fba21f3-a0b5-4e6f-9ff4-4154d47927cf"
+  ],
+  "branch": "main"
+}

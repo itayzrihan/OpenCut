@@ -204,6 +204,25 @@ export function PropertiesPanel() {
 				</div>
 			</TooltipProvider>
 			<ScrollArea className="flex-1 scrollbar-hidden">
+				<div className="border-b px-3 py-2 text-xs">
+					<p className="truncate font-medium" title={element.name}>
+						{element.name}
+					</p>
+					<p className="text-muted-foreground truncate" title={track.name}>
+						{track.name}
+					</p>
+					{(element.type === "video" || element.type === "image") &&
+						(element.enabled === false ||
+							("hidden" in track && track.hidden)) && (
+							<p role="status" className="mt-2 text-amber-500">
+								{element.enabled === false
+									? "This clip is disabled."
+									: "This track is hidden."}{" "}
+								Changes are saved but will not appear in the preview. Click the
+								visible video in the preview to edit it.
+							</p>
+						)}
+				</div>
 				{element.type === "text" && (
 					<TextScopeBar
 						element={element}
@@ -258,16 +277,13 @@ function buildTextScope({
 	return { type: "layer" };
 }
 
-function addSelectedTextWordIds({
+function addSelectedTextWordIds<T extends ElementWithTrackForParams>({
 	elementsWithTracks,
 	selectedTextWords,
 }: {
-	elementsWithTracks: Array<{
-		track: ElementWithTrackForParams["track"];
-		element: TimelineElement;
-	}>;
+	elementsWithTracks: T[];
 	selectedTextWords: SelectedTextWordRef[];
-}): ElementWithTrackForParams[] {
+}): Array<T & { textWordIds?: string[] }> {
 	if (selectedTextWords.length === 0) {
 		return elementsWithTracks;
 	}

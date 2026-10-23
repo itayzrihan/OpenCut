@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6fba21f3-a0b5-4e6f-9ff4-4154d47927cf",
+  "taskId": "task_097a64d8eab7d9c3c91bcb20324907655416b261e493f1d45a6a05a3c1bb7a8e",
+  "type": "task.update",
+  "payload": {
+    "description": "Live MCP proved the selected C7446 alternative is enabled:false with saved scale5.34, while main C7454 renders at scale1. Clicking visible preview and changing1→1.4 immediately works paused. Restore test via Undo. Add inspector selected clip/track identity and explicit disabled/hidden notice so unused multicam angles cannot silently look like broken scale. Existing canonical scale/render behavior retained.",
+    "scope": [
+      "classic/apps/web/src/components/editor/panels/properties",
+      ".dip",
+      "analysis/scale-preview-2026-10-23"
+    ],
+    "acceptance": [
+      "Inspector identifies selected clip and track and explains disabled/hidden selections do not affect preview",
+      "Active video scale verified immediately while paused; temporary test undone with source clips/captions/audio unchanged",
+      "Production types/build and existing transform checks pass; deploy and verify notice in editor"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T21:00:09.682Z",
+  "parents": [
+    "1413a2b0-7eb3-465e-bc51-bb2964095e55"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "60bfb244-5e08-44b8-81d5-f8097002e9ac",
+  "taskId": "task_097a64d8eab7d9c3c91bcb20324907655416b261e493f1d45a6a05a3c1bb7a8e",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Diagnosed wrong inactive multicam angle selection (saved scale5.34) while preview rendered a different enabled main clip. Verified1→1.4 changes paused preview in current and deployed versions; Undo restores1. Added selected clip/track identity and persistent disabled/hidden notice. Production build/types,15 transform/canonical tests and live12-scene/settings preservation verified. Deployed2026-10-23T21-06-02-966Z-f27ec66e, active video selected for user.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Visible scale update verified paused; browser automation CDP occasionally timed out during commits, recovered through native accessibility and canonical state read. This change fixes selection clarity and does not claim to eliminate unrelated commit latency."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T21:09:26.544Z",
+  "parents": [
+    "b19651cc-660c-405b-91fa-9aadba9c3037"
+  ],
+  "branch": "main"
+}

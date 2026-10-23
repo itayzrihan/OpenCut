@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e0265940177bcd80831b98a639bfbd998b4e35b8664dc49662bd95412d1ca008",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T20:36:01.788Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\nh=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()\nr=subprocess.check_output(['git','ls-remote','origin','refs/heads/main'],text=True).split()[0]\ns=subprocess.check_output(['git','status','--short','--untracked-files=all'],text=True).splitlines()\nprint({'head':h[:8],'remote_matches':h==r,'remaining_non_dip_files':[x for x in s if not x[3:].startswith('.dip/')], 'remaining_dip_events':len([x for x in s if x[3:].startswith('.dip/')])})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-fac2f7d9-78a8-4737-8208-de54a4753b29"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:36:02.618Z",
+  "parents": [],
+  "branch": "main"
+}
