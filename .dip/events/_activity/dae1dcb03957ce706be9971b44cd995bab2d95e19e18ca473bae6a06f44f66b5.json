@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dae1dcb03957ce706be9971b44cd995bab2d95e19e18ca473bae6a06f44f66b5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T22:22:52.354Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/timeline/Cargo.toml'\nb=open(p,'rb').read();needle=b'sha2 = \"0.10\"\\n';assert needle in b;b=b.replace(needle,needle+b'unicode-bidi = \"0.3.18\"\\n');open(p,'wb').write(b)\np='classic/scripts/verify-wasm-exports.mjs';b=open(p,'rb').read();needle=b'const requiredExports = [\\r\\n';assert needle in b;b=b.replace(needle,needle+b'\\t\"resolveTextDirection\",\\r\\n');open(p,'wb').write(b)\nPY\ncargo test -q -p timeline text_direction",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-c8e1a937-7a44-46b4-8317-bd811722c97e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:22:53.234Z",
+  "parents": [],
+  "branch": "main"
+}

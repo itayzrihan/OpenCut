@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ef17ca49bbcdcc8c7813faaf7fa9fa3c0993cff71ade8f5ff8889027eb778fe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:24:30.370Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/rtl-2020-2026-10-24/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3450e3b6-3a9e-42ce-8d9a-e8288ddd1a40"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:24:30.373Z",
+  "parents": [],
+  "branch": "main"
+}

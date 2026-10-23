@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8967de3e899e62606db7d9c0fec9b00d2e84c04cd51818c7fd89dc090b4f27c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:23:14.257Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/Cargo.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6cefebc3-8227-498d-88d9-30c469f41dc9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:23:14.258Z",
+  "parents": [],
+  "branch": "main"
+}

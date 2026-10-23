@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "76e5ac58e2a4def0ae7f6b71729bb053772ef905d7bbc1f252c9b6ecdb6dcbbb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T22:39:59.750Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit --quiet -m 'fix: inherit RTL direction for numeric caption punctuation' -m 'Resolve first-strong Unicode direction in shared Rust and inherit row direction for numeric and neutral word runs. Apply explicit canvas direction to plain text and auto direction in the text inspector. Verify existing Hebrew captions, background checkpoints, source preservation and a full native 2020 video export.' && git push origin main",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-31737e32-1bd5-4bff-8b8d-44b7173a93cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:39:59.890Z",
+  "parents": [],
+  "branch": "main"
+}

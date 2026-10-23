@@ -283,6 +283,13 @@
         ".dip/tools/verify-scale-preview.mjs"
       ],
       "timeoutMs": 180000
+    },
+    "rtl-2020": {
+      "command": [
+        "node",
+        ".dip/tools/verify-rtl-2020.mjs"
+      ],
+      "timeoutMs": 240000
     }
   },
   "mode": "coordinate"

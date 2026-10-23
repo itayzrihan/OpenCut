@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1350539b7a7d8c355584eed1d7586ff68cb1607d4cebe46167bbf8768fe513dc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:22:52.238Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/text/__tests__/measure-element.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cfa61d92-d052-43ab-8acd-9e543514a7f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:22:52.238Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -12,6 +12,8 @@ mod caption_presentation;
 pub use caption_presentation::*;
 mod caption_text;
 pub use caption_text::*;
+mod text_direction;
+pub use text_direction::*;
 mod caption_scene;
 pub use caption_scene::*;
 mod audio_sync;

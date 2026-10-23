@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed73cb9b2db701eb66f7b4a084466c134524e02c05260c60cfacff0b475d2323",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:22:13.134Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/timeline.rs",
+          "classic/rust/crates/timeline/src/text_direction.rs",
+          "classic/apps/web/src/text/direction.ts",
+          "classic/apps/web/src/text/measure-element.ts",
+          "classic/apps/web/src/text/primitives.ts",
+          "classic/apps/web/src/components/editor/panels/properties/components/property-param-field.tsx",
+          "classic/rust/crates/timeline/Cargo.toml",
+          "classic/scripts/verify-wasm-exports.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ce8eb4b3-73c8-4058-8c53-0bdde1a4745b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:22:13.137Z",
+  "parents": [],
+  "branch": "main"
+}

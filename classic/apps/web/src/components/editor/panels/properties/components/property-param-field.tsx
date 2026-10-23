@@ -229,6 +229,7 @@ function TextParamField({
 
 	return (
 		<Textarea
+			dir="auto"
 			value={isMixed ? "" : draft.displayValue}
 			placeholder={isMixed ? "Mixed values" : undefined}
 			onFocus={draft.onFocus}

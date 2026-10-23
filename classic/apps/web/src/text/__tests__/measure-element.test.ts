@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { describe, expect, test } from "bun:test";
 import { createCanvas } from "@napi-rs/canvas";
 import type { TextElement, TextWordRun } from "@/timeline";
@@ -11,8 +12,12 @@ import {
 	measureTextElement,
 	resolveAutoTextDirection,
 } from "@/text/measure-element";
-import { drawMeasuredTextLayout } from "@/text/primitives";
+import {
+	drawMeasuredTextLayout,
+	strokeMeasuredTextLayout,
+} from "@/text/primitives";
 import { mediaTime, TICKS_PER_SECOND, ZERO_MEDIA_TIME } from "@/wasm";
+import { resolveTextDirection } from "opencut-wasm";
 
 const ONE_SECOND = mediaTime({ ticks: TICKS_PER_SECOND });
 const HALF_SECOND = mediaTime({ ticks: TICKS_PER_SECOND / 2 });
@@ -159,6 +164,89 @@ describe("text word direction", () => {
 		expect(resolveAutoTextDirection("123 !?")).toBe("ltr");
 	});
 
+	test("plain text fill and outline use the direction of each row", () => {
+		const ctx = createCanvas(640, 240).getContext(
+			"2d",
+		) as unknown as CanvasRenderingContext2D;
+		const fills: CanvasDirection[] = [];
+		const strokes: CanvasDirection[] = [];
+		const fill = ctx.fillText.bind(ctx);
+		const stroke = ctx.strokeText.bind(ctx);
+		// eslint-disable-next-line opencut/prefer-object-params -- Canvas API signature.
+		ctx.fillText = (text, x, y) => {
+			fills.push(ctx.direction);
+			fill(text, x, y);
+		};
+		// eslint-disable-next-line opencut/prefer-object-params -- Canvas API signature.
+		ctx.strokeText = (text, x, y) => {
+			strokes.push(ctx.direction);
+			stroke(text, x, y);
+		};
+		const layout = measureTextElement({
+			element: createTextElement({
+				params: { content: "למה דווקא 2020?\nWhy 2020?" },
+			}),
+			canvasHeight: 240,
+			localTime: 0,
+			ctx,
+		});
+		drawMeasuredTextLayout({
+			ctx,
+			layout,
+			textColor: "#ffffff",
+			background: null,
+		});
+		strokeMeasuredTextLayout({
+			ctx,
+			layout,
+			strokeColor: "#000000",
+			strokeWidth: 1,
+		});
+		expect(fills).toEqual(["rtl", "ltr"]);
+		expect(strokes).toEqual(["rtl", "ltr"]);
+	});
+
+	test("numeric punctuation inherits an automatic Hebrew row's direction", () => {
+		const element = createTextElement({
+			captionWordDirection: "auto",
+			wordRuns: [
+				timedRun({ id: "why", text: "למה" }),
+				timedRun({ id: "specifically", text: "דווקא" }),
+				timedRun({ id: "year", text: "2020?" }),
+			],
+			params: { content: "למה דווקא 2020?" },
+		});
+		const year = measureWord({ element });
+		expect(year.id).toBe("year");
+		expect(year.text).toBe("2020?");
+		expect(year.direction).toBe("rtl");
+		expect(resolveTextDirection({ text: "2020?", fallback: "rtl" })).toBe(
+			"rtl",
+		);
+		expect(resolveAutoTextDirection("Why 2020? למה")).toBe("ltr");
+	});
+
+	test("numeric punctuation remains LTR in an English row and respects explicit overrides", () => {
+		const element = createTextElement({
+			captionWordDirection: "auto",
+			wordRuns: [
+				timedRun({ id: "why", text: "Why" }),
+				timedRun({ id: "year", text: "2020?" }),
+			],
+			params: { content: "Why 2020?" },
+		});
+		expect(measureWord({ element, wordIndex: 1 }).direction).toBe("ltr");
+		const hebrew = createTextElement({
+			captionWordDirection: "auto",
+			wordRuns: [
+				timedRun({ id: "why", text: "למה" }),
+				timedRun({ id: "year", text: "2020?", wordDirection: "ltr" }),
+			],
+			params: { content: "למה 2020?" },
+		});
+		expect(measureWord({ element: hebrew }).direction).toBe("ltr");
+	});
+
 	test("auto letter reveal marks Hebrew words as RTL and reveals logical prefixes", () => {
 		const word = measureWord({
 			element: createTextElement({
@@ -213,7 +301,11 @@ describe("Glower overlay", () => {
 			captionGlowerDirection: "auto",
 			wordRuns: [
 				timedRun({ id: "hebrew", text: "היי", style: { color: "#ff0000" } }),
-				timedRun({ id: "english", text: "OpenCut", style: { color: "#00ff00" } }),
+				timedRun({
+					id: "english",
+					text: "OpenCut",
+					style: { color: "#00ff00" },
+				}),
 			],
 			params: { content: "היי OpenCut" },
 		});

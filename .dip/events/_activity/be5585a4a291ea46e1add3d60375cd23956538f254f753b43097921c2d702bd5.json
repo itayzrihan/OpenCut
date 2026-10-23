@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be5585a4a291ea46e1add3d60375cd23956538f254f753b43097921c2d702bd5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:21:22.082Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/rtl-2020-2026-10-24",
+          ".local/rtl-2020-2026-10-24/project-before.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d7e7d405-1d21-4b5b-a3c1-a57d444d441b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:21:22.083Z",
+  "parents": [],
+  "branch": "main"
+}

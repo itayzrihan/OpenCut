@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aab88c5c51fe46c0ccd8f86be1abd2c5f2817e5309c2b1ec63a723bbb280cfec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:23:41.294Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/text/primitives.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e972fc6e-61e8-4d55-8480-47bd6fc84cbf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:23:41.296Z",
+  "parents": [],
+  "branch": "main"
+}

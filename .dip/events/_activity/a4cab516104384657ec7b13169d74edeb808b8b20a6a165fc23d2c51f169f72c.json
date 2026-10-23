@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a4cab516104384657ec7b13169d74edeb808b8b20a6a165fc23d2c51f169f72c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T22:27:49.059Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nfor p in (Path.home()/'Downloads').glob('*2020*'):\n print({'file':p.name,'bytes':p.stat().st_size})\nPY\nrg -n 'preparation|chunk|limit|window|checkpoint' classic/apps/web/src/export/audio-stream.ts | head -n 25",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8723cfcb-3e39-44ab-a902-61e3039eac85"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:27:49.750Z",
+  "parents": [],
+  "branch": "main"
+}

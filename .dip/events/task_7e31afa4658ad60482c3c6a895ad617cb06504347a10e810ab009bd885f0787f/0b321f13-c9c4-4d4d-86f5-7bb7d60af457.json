@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b321f13-c9c4-4d4d-86f5-7bb7d60af457",
+  "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Reproduce RTL error in current 2020 scene and inspect caption render policy",
+          "status": "completed"
+        },
+        {
+          "step": "Fix shared direction handling, add mixed-language regression coverage and check background resume protections",
+          "status": "completed"
+        },
+        {
+          "step": "Deploy and verify current scene punctuation without altering other scenes",
+          "status": "in_progress"
+        },
+        {
+          "step": "Export corrected video, validate file and deliver",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T22:26:49.848Z",
+  "parents": [
+    "10088de5-9a9d-429c-80f6-89faf079c543"
+  ],
+  "branch": "main"
+}

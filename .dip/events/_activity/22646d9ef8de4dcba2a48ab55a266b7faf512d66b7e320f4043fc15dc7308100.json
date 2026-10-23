@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "22646d9ef8de4dcba2a48ab55a266b7faf512d66b7e320f4043fc15dc7308100",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T22:23:56.298Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -n 70 classic/apps/web/src/text/__tests__/bottom-fade-out.test.ts; rg -n 'direction' classic/apps/web/src/text/__tests__/bottom-fade-out.test.ts; node classic/scripts/test-web.mjs src/text/__tests__/bottom-fade-out.test.ts src/text/__tests__/responsive-wrap.test.ts src/subtitles/__tests__/canonical-caption-text.test.ts --report=.local/rtl-2020-2026-10-24/caption-tests",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ea7ac2e3-8bec-4f50-a24a-6457ea6ce1ba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:23:56.317Z",
+  "parents": [],
+  "branch": "main"
+}

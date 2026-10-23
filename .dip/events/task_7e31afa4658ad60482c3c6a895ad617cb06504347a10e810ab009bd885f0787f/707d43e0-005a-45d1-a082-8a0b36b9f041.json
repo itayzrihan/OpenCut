@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "707d43e0-005a-45d1-a082-8a0b36b9f041",
+  "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+  "type": "task.update",
+  "payload": {
+    "title": "Fix Hebrew RTL punctuation around 2020 and export current video",
+    "description": "Inspect current browser scene; repair mixed Hebrew/numeric question-mark direction at renderer/caption generation boundary. Auto paragraph direction from first strong text. Verify background-edit regressions, preserve source, deploy and export corrected current video with 2020 in filename.",
+    "acceptance": [
+      "Hebrew-first text automatically uses RTL; punctuation around numeric runs appears in correct visual order in preview/export",
+      "Current video caption fixed through canonical editor flow without damaging other scenes/audio",
+      "Regression checks cover mixed Hebrew/numbers and existing background checkpoint protection",
+      "Deployed application and exported video verified; output file delivered"
+    ],
+    "scope": [
+      "classic/apps/web/src",
+      "classic/rust/crates",
+      "crates/editor-api",
+      ".dip",
+      "analysis/rtl-2020-2026-10-24"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T22:19:30.672Z",
+  "parents": [
+    "c4939831-d9b0-4c32-a72e-2550b8a56459"
+  ],
+  "branch": "main"
+}

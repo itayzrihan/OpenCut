@@ -14,6 +14,7 @@ import {
 	setCanvasLetterSpacing,
 } from "./layout";
 import { FONT_SIZE_SCALE_REFERENCE } from "./typography";
+import { resolveAutoTextDirection } from "./direction";
 
 export type TextAlign = "left" | "center" | "right";
 export type NumericTextFontWeight =
@@ -486,12 +487,14 @@ function drawPlainText({
 		for (let index = 0; index < layout.lines.length; index++) {
 			const lineY =
 				index * layout.lineHeightPx - layout.block.visualCenterOffset;
+			ctx.direction = resolveAutoTextDirection(layout.lines[index]);
 			ctx.strokeText(layout.lines[index], 0, lineY);
 		}
 	}
 
 	for (let index = 0; index < layout.lines.length; index++) {
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
+		ctx.direction = resolveAutoTextDirection(layout.lines[index]);
 		ctx.fillText(layout.lines[index], 0, lineY);
 		drawTextDecoration({
 			ctx,
@@ -1152,6 +1155,7 @@ export function strokeMeasuredTextLayout({
 
 	for (let index = 0; index < layout.lines.length; index++) {
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
+		ctx.direction = resolveAutoTextDirection(layout.lines[index]);
 		ctx.strokeText(layout.lines[index], 0, lineY);
 	}
 }

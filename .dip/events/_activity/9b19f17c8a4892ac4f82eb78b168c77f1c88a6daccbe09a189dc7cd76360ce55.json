@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b19f17c8a4892ac4f82eb78b168c77f1c88a6daccbe09a189dc7cd76360ce55",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T22:23:13.256Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/rtl-2020-2026-10-24/wasm.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "47a58b52-b552-4de3-8d48-8a12f9af45fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T22:23:13.258Z",
+  "parents": [],
+  "branch": "main"
+}

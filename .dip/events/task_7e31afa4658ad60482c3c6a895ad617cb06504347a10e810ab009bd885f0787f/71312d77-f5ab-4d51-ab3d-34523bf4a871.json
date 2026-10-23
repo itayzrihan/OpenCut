@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71312d77-f5ab-4d51-ab3d-34523bf4a871",
+  "taskId": "task_7e31afa4658ad60482c3c6a895ad617cb06504347a10e810ab009bd885f0787f",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed numeric punctuation inheriting RTL row direction via shared Rust Unicode bidi policy, explicit per-line canvas fill/outline and dir=auto inspector. Deployed2026-10-23T22-33-21-159Z-0789fd83. Reopened current 2020 scene and confirmed question placement in preview and exported MP4. Saved Downloads/החזר2020.mp4 (1216x2160 HEVC25fps,42.82s,56MB) using existing source/compact preferences. All9scenes/settings exact;3automationintents published;95checks plus full video/audio decode/non-silent audio validation.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Mixed-text regression and checkpoint/queue/isolation coverage passed; no absolute guarantee against every future browser crash or service overload. Full exported file decodes and contains audio; exhaustive human listening not claimed."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T22:38:46.824Z",
+  "parents": [
+    "50790d4a-de9e-4d73-a739-8edbf49a05ea"
+  ],
+  "branch": "main"
+}

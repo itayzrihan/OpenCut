@@ -25,6 +25,8 @@ import {
 import { getCaptionWordAnimation } from "./caption-presets";
 import { FONT_SIZE_SCALE_REFERENCE } from "./typography";
 import { reflowResponsiveTextElement } from "./responsive-wrap";
+import { resolveTextDirection } from "opencut-wasm";
+export { resolveAutoTextDirection } from "./direction";
 
 export interface ResolvedTextBackground extends TextBackground {
 	paddingX: number;
@@ -418,6 +420,7 @@ function measureWordRunsLayout({
 				element,
 				override: run.wordDirection ?? rowOverride?.wordDirection,
 				text: run.text,
+				fallbackDirection: lineDirection,
 			});
 			const style = resolveWordStyle({
 				base: text,
@@ -969,39 +972,25 @@ function resolveDrawText({
 	return characters.slice(0, visibleCount).join("");
 }
 
-const STRONG_RTL_CHARACTER_REGEX =
-	/[\u0590-\u05ff\u0600-\u08ff\ufb1d-\ufdff\ufe70-\ufeff\u{10800}-\u{10fff}\u{1e800}-\u{1e95f}]/u;
-const LETTER_CHARACTER_REGEX = /\p{Letter}/u;
-
-export function resolveAutoTextDirection(text: string): CanvasDirection {
-	for (const character of text) {
-		if (
-			STRONG_RTL_CHARACTER_REGEX.test(character) &&
-			LETTER_CHARACTER_REGEX.test(character)
-		) {
-			return "rtl";
-		}
-		if (LETTER_CHARACTER_REGEX.test(character)) {
-			return "ltr";
-		}
-	}
-	return "ltr";
-}
-
 function resolveWordDirection({
 	element,
 	override,
 	text,
+	fallbackDirection = "ltr",
 }: {
 	element: TextElement;
 	override?: TextElement["captionWordDirection"];
 	text?: string;
-}): CanvasDirection {
+	fallbackDirection?: "ltr" | "rtl";
+}): "ltr" | "rtl" {
 	if (override === "ltr" || override === "rtl") {
 		return override;
 	}
 	if (override === "auto") {
-		return resolveAutoTextDirection(text ?? getElementText(element));
+		return resolveTextDirection({
+			text: text ?? getElementText(element),
+			fallback: fallbackDirection,
+		});
 	}
 	if (
 		element.captionWordDirection === "ltr" ||
@@ -1009,7 +998,10 @@ function resolveWordDirection({
 	) {
 		return element.captionWordDirection;
 	}
-	return resolveAutoTextDirection(text ?? getElementText(element));
+	return resolveTextDirection({
+		text: text ?? getElementText(element),
+		fallback: fallbackDirection,
+	});
 }
 
 function getElementText(element: TextElement): string {
