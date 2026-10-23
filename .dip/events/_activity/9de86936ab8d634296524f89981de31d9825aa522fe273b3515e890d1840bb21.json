@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9de86936ab8d634296524f89981de31d9825aa522fe273b3515e890d1840bb21",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-20T20:52:34.773Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_90a0e13e3f33d5580e90d09959a66eaee8a195fe52d0d6a888605f34e7440d00",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git rev-parse --short HEAD\ngit rev-parse --short origin/main\ngit status --short\ncurl --silent --output /dev/null --write-out '%{http_code}\\n' http://localhost:3211",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-669e441a-4bf8-4c23-b1f5-d63d4ce526cd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-20T20:52:34.775Z",
+  "parents": [],
+  "branch": "main"
+}

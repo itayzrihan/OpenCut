@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54dd2369baa6529bbfe41a604d03fc3e2b0e0bba0292211fe8fef4b118f539a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:06:58.174Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/projects-page-2026-10-23/configured-tests/src__core____tests____canonical-scene-automation.test.ts.log",
+          ".local/projects-page-2026-10-23/configured-tests/src__services__storage____tests____project-source-roundtrip.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "22725521-b400-4c3e-8871-c021ab0ff68f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:06:58.175Z",
+  "parents": [],
+  "branch": "main"
+}

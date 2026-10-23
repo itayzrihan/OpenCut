@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "928f6899225baafa3628e910b9d3f98376fa7a359e5de2f38baaf5aaca35af79",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T18:59:05.098Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --silent --output /tmp/opencut-projects-health.html --write-out '%{http_code}\\n' http://localhost:3211/projects\nlsof -nP -iTCP:3211 -sTCP:LISTEN\nls -lt classic/.local/production | head -12\nrg --files classic/scripts/local-production classic/apps/web/src/app/projects | head -40",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-f3e4578c-9347-42d0-baa2-62452201c030"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T18:59:05.142Z",
+  "parents": [],
+  "branch": "main"
+}

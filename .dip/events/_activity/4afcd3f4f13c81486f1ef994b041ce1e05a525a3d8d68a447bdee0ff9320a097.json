@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4afcd3f4f13c81486f1ef994b041ce1e05a525a3d8d68a447bdee0ff9320a097",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:05:13.995Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --silent --output /dev/null --write-out '%{http_code}\\n' http://localhost:3211/projects\nnode classic/apps/web/node_modules/typescript/bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-4e4aaeec-0073-4f8f-baaa-2d49e5a80ece"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:05:14.772Z",
+  "parents": [],
+  "branch": "main"
+}

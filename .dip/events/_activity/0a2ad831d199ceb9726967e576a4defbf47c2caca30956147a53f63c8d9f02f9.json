@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0a2ad831d199ceb9726967e576a4defbf47c2caca30956147a53f63c8d9f02f9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:01:39.280Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/__tests__/project-session-lifecycle.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3d9dbce7-be49-4988-b834-f5d6d4fcc0eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:01:39.281Z",
+  "parents": [],
+  "branch": "main"
+}

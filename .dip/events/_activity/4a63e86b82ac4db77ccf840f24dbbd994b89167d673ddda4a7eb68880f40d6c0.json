@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a63e86b82ac4db77ccf840f24dbbd994b89167d673ddda4a7eb68880f40d6c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:01:55.256Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src | rg '(project.*test|snapshot.*test)' | head -30\ncat .dip/tools/verify-unified-audio.mjs 2>/dev/null | head -30\ntail -8 .local/projects-page-2026-10-23/build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-17157948-99de-4cca-a3c1-0a724530cacd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:01:55.325Z",
+  "parents": [],
+  "branch": "main"
+}

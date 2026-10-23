@@ -262,6 +262,13 @@
         ".dip/tools/verify-scene-ai-queue.mjs"
       ],
       "timeoutMs": 480000
+    },
+    "projects-page": {
+      "command": [
+        "node",
+        ".dip/tools/verify-projects-page.mjs"
+      ],
+      "timeoutMs": 180000
     }
   },
   "mode": "coordinate"

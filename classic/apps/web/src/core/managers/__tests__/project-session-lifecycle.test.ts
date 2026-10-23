@@ -9,7 +9,8 @@ import { beforeAll, expect, mock, spyOn, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import type { EditorCore } from "@/core";
 import type { CanonicalClassicSnapshot } from "@/core/canonical-classic-session";
-import type { TProject } from "@/project/types";
+import type { TProject, TProjectMetadata } from "@/project/types";
+import { isEditorSnapshotEqual } from "@/editor/snapshot";
 import type { SerializedProject } from "@/services/storage/types";
 import type { MediaAsset } from "@/media/types";
 import type { TScene } from "@/timeline/types";
@@ -35,6 +36,7 @@ mock.module("@/masks", () => ({
 	masksRegistry: { catalog: () => [], subscribe: () => () => {} },
 }));
 let record = "";
+let libraryMetadata: TProjectMetadata[] = [];
 let transition: typeof import("opencut-editor-runtime-wasm").sessionStoreTransition;
 function deserialize(serialized: SerializedProject): TProject {
 	return {
@@ -54,6 +56,7 @@ function deserialize(serialized: SerializedProject): TProject {
 mock.module("@/services/storage/service", () => ({
 	deserializeProject: deserialize,
 	storageService: {
+		loadAllProjectsMetadata: async () => libraryMetadata,
 		ensureBrowserDataMigrated: async () => {},
 		createDriveMigrationDependencies: () => ({}),
 		loadProject: async () => ({
@@ -217,6 +220,56 @@ function host() {
 		},
 	};
 }
+test("project-library snapshots stay stable while hiding automation working copies", async () => {
+	const instance = host();
+	try {
+		const empty = instance.project.getSavedProjects();
+		expect(instance.project.getSavedProjects()).toBe(empty);
+		const source: TProjectMetadata = {
+			id: "source",
+			name: "Source project",
+			duration: 0,
+			createdAt: new Date(0),
+			updatedAt: new Date(0),
+		};
+		libraryMetadata = [
+			source,
+			{ ...source, id: "worker", automationWorkingCopy: true },
+		];
+		await instance.project.refreshProjectMetadata();
+		const readPageSnapshot = () => [
+			instance.project.getIsLoading(),
+			instance.project.getIsInitialized(),
+			instance.project.getSavedProjects(),
+			instance.project.getLoadError(),
+			instance.project.getMigrationFailures(),
+		];
+		const before = readPageSnapshot();
+		expect(instance.project.getSavedProjects()).toEqual([source]);
+		for (let i = 0; i < 100; i++) {
+			expect(isEditorSnapshotEqual({ a: before, b: readPageSnapshot() })).toBe(
+				true,
+			);
+		}
+		// A real metadata replacement must invalidate the cached UI projection.
+		const renamed = { ...source, name: "Renamed project" };
+		libraryMetadata = [renamed];
+		await instance.project.refreshProjectMetadata();
+		expect(isEditorSnapshotEqual({ a: before, b: readPageSnapshot() })).toBe(
+			false,
+		);
+		expect(instance.project.getSavedProjects()).toEqual([renamed]);
+		libraryMetadata = [];
+		await instance.project.refreshProjectMetadata();
+		const removed = instance.project.getSavedProjects();
+		expect(removed).toEqual([]);
+		expect(instance.project.getSavedProjects()).toBe(removed);
+	} finally {
+		libraryMetadata = [];
+		instance.dispose();
+	}
+});
+
 test("opening, autosaving and reopening restores one project/history/run and preserves thumbnails", async () => {
 	const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
 	Object.defineProperty(globalThis, "window", {

@@ -136,6 +136,9 @@ export class ProjectManager {
 		this.activeValue = project;
 	}
 	private savedProjects: TProjectMetadata[] = [];
+	private visibleProjectsSnapshot:
+		| { source: TProjectMetadata[]; visible: TProjectMetadata[] }
+		| undefined;
 	private isLoading = true;
 	private projectLoad:
 		| { id: string; takeOver: boolean; promise: Promise<boolean> }
@@ -1480,9 +1483,17 @@ export class ProjectManager {
 	}
 
 	getSavedProjects(): TProjectMetadata[] {
-		return this.savedProjects.filter(
-			(project) => !project.automationWorkingCopy,
-		);
+		// React's external-store snapshot must retain its identity between
+		// metadata updates, including when a selector wraps this list in a tuple.
+		if (this.visibleProjectsSnapshot?.source !== this.savedProjects) {
+			this.visibleProjectsSnapshot = {
+				source: this.savedProjects,
+				visible: this.savedProjects.filter(
+					(project) => !project.automationWorkingCopy,
+				),
+			};
+		}
+		return this.visibleProjectsSnapshot.visible;
 	}
 
 	getIsLoading(): boolean {

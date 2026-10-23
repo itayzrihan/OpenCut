@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "685904f7-04b8-4d93-9484-8b3459427f81",
+  "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed /projects React 185 render loop caused by a new filtered metadata list on every external-store read. Stable UI projection invalidates on actual metadata replacement. Deployed production 2026-10-23T19-04-29-995Z-5f9638bf; existing browser shows 16 project links after direct reload with original account and zero new app errors. Configured check covers regression, lifecycle, selectors, scene automation, source roundtrip, production TypeScript, unchanged hashes of all 16 project documents and deployed source fingerprint.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Full test-inclusive TypeScript retains existing unrelated canonical-unified-audio.test.ts errors at lines 121–123. Production TypeScript, targeted regressions and lint pass."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Library metadata omits working-copy flag for some existing AI worker entries; those pre-existing entries remain visible. No metadata migration or deletion performed."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T19:06:54.705Z",
+  "parents": [
+    "8c40679d-8513-47fc-a8fa-b611cd3a59e9"
+  ],
+  "branch": "main"
+}

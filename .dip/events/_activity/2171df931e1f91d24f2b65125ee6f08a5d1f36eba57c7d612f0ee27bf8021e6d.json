@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2171df931e1f91d24f2b65125ee6f08a5d1f36eba57c7d612f0ee27bf8021e6d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:01:22.283Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/projects-page-2026-10-23/project-hashes-before.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f22a1e82-39a2-4564-9aaf-d08054b621a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:01:22.284Z",
+  "parents": [],
+  "branch": "main"
+}

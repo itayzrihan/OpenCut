@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e0436284d4b218e7feb5fc5bd06c72b8df70ac0071551732a95c9503cc7219d5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T18:51:33.909Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_46e9d93d2fc8fa0ae5a81eac3d8ba2fd90bf62b05fd70d75971a27225efcf74e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,re\nfor p in pathlib.Path('.dip/events/_activity').glob('*.json'):\n s=p.read_text()\n if 'temp-971314' not in s: continue\n v=json.loads(s)\n print(p.name)\n print('keys',list(v))\n for m in list(re.finditer('temp-971314',s))[:2]:\n  x=s[max(0,m.start()-140):m.end()+160]\n  x=re.sub(r'(?i)(password|token|secret)(.{0,6})[^,}\\\\\\n]{1,100}',r'\\1[REDACTED]',x)\n  print(x)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ff7e0097-df15-469d-8d43-4ed223781f1c"
+      },
+      {
+        "at": "2026-10-23T18:51:34.585Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_46e9d93d2fc8fa0ae5a81eac3d8ba2fd90bf62b05fd70d75971a27225efcf74e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,re\nfor p in pathlib.Path('.dip/events/_activity').glob('*.json'):\n s=p.read_text()\n if 'temp-971314' not in s: continue\n v=json.loads(s)\n print(p.name)\n print('keys',list(v))\n for m in list(re.finditer('temp-971314',s))[:2]:\n  x=s[max(0,m.start()-140):m.end()+160]\n  x=re.sub(r'(?i)(password|token|secret)(.{0,6})[^,}\\\\\\n]{1,100}',r'\\1[REDACTED]',x)\n  print(x)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ff7e0097-df15-469d-8d43-4ed223781f1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T18:51:34.654Z",
+  "parents": [],
+  "branch": "main"
+}

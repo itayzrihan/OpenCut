@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97edcf0d92dc5806767338ba270f3abf3beaea3fa589682dc34f2463d683abec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:06:08.323Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/projects-page-2026-10-23/repair.md');s=p.read_text().replace('Actual refreshes, renames, insertion and deletion invalidate the projection; working copies remain hidden.','Actual refreshes, renames, insertion and deletion invalidate the projection; the existing filter for metadata marked as a working copy is preserved.')\ns+='\\nThe live library currently returns 16 entries, including existing AI working projects because their library metadata does not carry the working-copy flag from their project document. This pre-existing metadata projection issue is outside the page-crash repair; this change does not delete or migrate those entries.\\n';p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cfa00302-cee8-4938-af6f-2327a28c295b"
+      },
+      {
+        "at": "2026-10-23T19:06:08.429Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --silent --output /dev/null --write-out '%{http_code}\\n' http://localhost:3211/projects\nnode classic/apps/web/node_modules/typescript/bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-4e4aaeec-0073-4f8f-baaa-2d49e5a80ece"
+      },
+      {
+        "at": "2026-10-23T19:06:08.431Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/projects-page-2026-10-23/repair.md');s=p.read_text().replace('Actual refreshes, renames, insertion and deletion invalidate the projection; working copies remain hidden.','Actual refreshes, renames, insertion and deletion invalidate the projection; the existing filter for metadata marked as a working copy is preserved.')\ns+='\\nThe live library currently returns 16 entries, including existing AI working projects because their library metadata does not carry the working-copy flag from their project document. This pre-existing metadata projection issue is outside the page-crash repair; this change does not delete or migrate those entries.\\n';p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-cfa00302-cee8-4938-af6f-2327a28c295b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:06:09.266Z",
+  "parents": [],
+  "branch": "main"
+}

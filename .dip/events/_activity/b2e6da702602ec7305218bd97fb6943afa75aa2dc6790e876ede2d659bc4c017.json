@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2e6da702602ec7305218bd97fb6943afa75aa2dc6790e876ede2d659bc4c017",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:02:02.812Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' .dip/tools/verify-scene-ai-queue.mjs\ngit status --porcelain | python3 -c 'import sys; s=list(sys.stdin); print(\"\\n\".join(x.rstrip() for x in s if not x.startswith(\"?? .dip/\")))'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-bd01cc42-dd5c-43f9-9fd7-6bdca3162cb9"
+      },
+      {
+        "at": "2026-10-23T19:02:03.020Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' .dip/tools/verify-scene-ai-queue.mjs\ngit status --porcelain | python3 -c 'import sys; s=list(sys.stdin); print(\"\\n\".join(x.rstrip() for x in s if not x.startswith(\"?? .dip/\")))'",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-bd01cc42-dd5c-43f9-9fd7-6bdca3162cb9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:02:03.332Z",
+  "parents": [],
+  "branch": "main"
+}

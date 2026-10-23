@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30f4d300a5a74998bb5cddc0c562c3ef1350fdff9c01b35898aa072ff518b39b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:02:56.633Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "classic/node_modules/.bin/eslint src/core/managers/project-manager.ts src/core/managers/__tests__/project-session-lifecycle.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ad450f49-926a-49bb-bfab-cf64c0095df4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:02:57.431Z",
+  "parents": [],
+  "branch": "main"
+}

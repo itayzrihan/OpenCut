@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "98ef136a-0d08-45aa-a98f-21f9f376d223",
+  "taskId": "task_1853ef119cc5824ddef7456d369b62c3e3642e8ee7001064a04507555634433b",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed actual /projects React 185 render loop caused by getSavedProjects allocating a new filtered list for every external-store read. Memoized presentation projection by immutable metadata-array identity, preserving actual metadata refresh. Deployed production 2026-10-23T19-04-29-995Z-5f9638bf. Existing browser now shows 16 project links after direct reload, correct original account and zero new app errors. Regression plus lifecycle/snapshot/source/scene tests pass; production types/lint pass; configured check compares all 16 existing project documents byte hashes and exact deployed source fingerprint.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Full test-inclusive TypeScript configuration still has existing unrelated canonical-unified-audio.test.ts type errors at lines 121–123. Production TypeScript and targeted runtime regressions pass."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Live library metadata omits working-copy flag for some existing AI worker projects, so those pre-existing entries remain visible. No metadata migration or deletion performed; this repair addresses the render crash."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T19:06:45.032Z",
+  "parents": [
+    "cf845e88-cfb9-4257-a017-7bb3f96c7ff2"
+  ],
+  "branch": "main"
+}

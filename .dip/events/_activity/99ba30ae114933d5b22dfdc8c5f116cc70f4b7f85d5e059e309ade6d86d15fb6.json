@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99ba30ae114933d5b22dfdc8c5f116cc70f4b7f85d5e059e309ade6d86d15fb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:03:36.457Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack_",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json",
+          "classic/apps/web/.next-local-production/cache/webpack/edge-server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/edge-server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/edge-server-production/0.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/edge-server-production/0.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/edge-server-production/index.pack_"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c074e810-772e-45de-8962-fae4b51a2de1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:03:36.459Z",
+  "parents": [],
+  "branch": "main"
+}
