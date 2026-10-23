@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3782dcad-87d4-4dd4-9bc4-22729122d60e",
+  "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Identify exact failure in the three stopped jobs and preserve source baseline",
+          "status": "completed"
+        },
+        {
+          "step": "Prepare isolated routed multicam scenes canonically and add regression coverage",
+          "status": "in_progress"
+        },
+        {
+          "step": "Deploy, resume three jobs and verify new results with sources preserved",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T19:36:25.609Z",
+  "parents": [
+    "43d88725-fd24-45fd-9eb5-3bbd1277a924"
+  ],
+  "branch": "main"
+}

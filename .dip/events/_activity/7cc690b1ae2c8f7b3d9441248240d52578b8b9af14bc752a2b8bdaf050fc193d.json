@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7cc690b1ae2c8f7b3d9441248240d52578b8b9af14bc752a2b8bdaf050fc193d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:39:55.488Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/background-three-2026-10-23/related-tests",
+          ".local/background-three-2026-10-23/related-tests/src__subtitles____tests____auto-texts.test.ts.log",
+          ".local/background-three-2026-10-23/related-tests/src__batch__scene-checkpoint.test.ts.log",
+          ".local/background-three-2026-10-23/related-tests/src__batch__server.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b403e40c-7a61-4e5d-a874-cbd839e3c684"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:39:55.489Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "773e402c659893ca34fd7f2a623a1f379846503740a6e2d05b59f9039e6cdbd9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T20:13:34.021Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.content-collections/cache/content-collection-config.mjs",
+          "classic/apps/web/.content-collections/cache/mapping.json",
+          "classic/apps/web/.content-collections/generated/index.d.ts",
+          "classic/apps/web/.content-collections/generated/index.js",
+          "classic/apps/web/.content-collections/generated/allChangelogs.js",
+          "classic/apps/web/.next-local-production/lock",
+          "classic/apps/web/.next-local-production/diagnostics/build-diagnostics.json",
+          "classic/apps/web/.next-local-production/diagnostics/framework.json",
+          "classic/apps/web/.next-local-production/package.json",
+          "classic/apps/web/.next-local-production/types/cache-life.d.ts",
+          "classic/apps/web/.next-local-production/types/routes.d.ts",
+          "classic/apps/web/.next-local-production/types/validator.ts",
+          "classic/apps/web/.next-local-production/diagnostics",
+          "classic/apps/web/.next-local-production/types"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "aed877e0-1175-4376-aeee-6d069d8057ed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:13:34.023Z",
+  "parents": [],
+  "branch": "main"
+}

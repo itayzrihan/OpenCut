@@ -269,6 +269,13 @@
         ".dip/tools/verify-projects-page.mjs"
       ],
       "timeoutMs": 180000
+    },
+    "background-three": {
+      "command": [
+        "node",
+        ".dip/tools/verify-background-three.mjs"
+      ],
+      "timeoutMs": 240000
     }
   },
   "mode": "coordinate"

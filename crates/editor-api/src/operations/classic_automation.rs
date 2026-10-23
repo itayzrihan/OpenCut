@@ -38,6 +38,10 @@ struct Job {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 enum Change {
+    Prepare {
+        #[serde(rename = "sceneId")]
+        scene_id: String,
+    },
     Enqueue {
         jobs: Vec<Job>,
     },
@@ -49,6 +53,109 @@ enum Change {
     Checkpoint {
         completed: u32,
     },
+}
+
+fn prepare_worker(
+    document: &mut serde_json::Map<String, Value>,
+    project_id: &str,
+    scene_id: &str,
+) -> Result<(), CapabilityError> {
+    let invalid = |message: &str| CapabilityError::InvalidInput(message.into());
+    let source = document.get("automationSource").unwrap_or(&Value::Null);
+    if document["metadata"]["automationWorkingCopy"] != true
+        || source["projectId"]
+            .as_str()
+            .is_none_or(|id| id.is_empty() || id == project_id)
+        || source["jobId"].as_str().is_none_or(str::is_empty)
+        || source["sceneId"] != scene_id
+        || document.get("automationCheckpoint").and_then(Value::as_u64) != Some(0)
+    {
+        return Err(invalid(
+            "Prepare Full Auto Edit only in its isolated worker before editing",
+        ));
+    }
+    let scene = document["scenes"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|s| s["id"] == scene_id)
+        .ok_or_else(|| invalid("Scene not found"))?;
+    let tracks = &mut scene["tracks"];
+    let mut clips = tracks["main"]["elements"].as_array().unwrap().clone();
+    let routed = clips.is_empty();
+    if tracks["main"]["locked"] == true {
+        return Err(invalid(
+            "Unlock the worker's main track before automatic editing",
+        ));
+    }
+    if routed {
+        for track in tracks["overlay"].as_array().unwrap() {
+            if track["type"] != "video" || track["hidden"] == true {
+                continue;
+            }
+            for clip in track["elements"].as_array().unwrap() {
+                if clip["enabled"] == false || clip["hidden"] == true {
+                    continue;
+                }
+                if track["locked"] == true {
+                    return Err(invalid(
+                        "Unlock routed camera tracks before automatic editing",
+                    ));
+                }
+                let mut selected = clip.clone();
+                if track["muted"] == true {
+                    selected["isSourceAudioEnabled"] = json!(false);
+                }
+                clips.push(selected);
+            }
+        }
+    }
+    clips.sort_by_key(|clip| clip["startTime"].as_i64().unwrap_or(0));
+    if clips.is_empty()
+        || clips
+            .iter()
+            .any(|clip| !classic_timeline::supports_full_auto_framing(clip))
+    {
+        return Err(invalid(
+            "Full Auto Edit needs selected video cuts without retiming or animated transforms",
+        ));
+    }
+    if clips.windows(2).any(|pair| {
+        pair[0]["startTime"].as_i64().unwrap_or(0) + pair[0]["duration"].as_i64().unwrap_or(0)
+            > pair[1]["startTime"].as_i64().unwrap_or(0)
+    }) {
+        return Err(invalid(
+            "Overlapping camera composition needs an explicit main video; no angle was discarded",
+        ));
+    }
+    if routed {
+        let moved: HashSet<String> = clips
+            .iter()
+            .filter_map(|clip| clip["id"].as_str().map(str::to_owned))
+            .collect();
+        tracks["main"]["elements"] = json!(clips);
+        for track in tracks["overlay"].as_array_mut().unwrap() {
+            track["elements"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|clip| !clip["id"].as_str().is_some_and(|id| moved.contains(id)));
+        }
+    }
+    // Freeze only this isolated edit. Original take choices and transcript remain
+    // in the source scene; the worker retains timed captions and all audio DSP.
+    for bucket in ["overlay", "audio"] {
+        for track in tracks[bucket].as_array_mut().unwrap() {
+            for clip in track["elements"].as_array_mut().unwrap() {
+                clip.as_object_mut().unwrap().remove("takeGroup");
+            }
+        }
+    }
+    for clip in tracks["main"]["elements"].as_array_mut().unwrap() {
+        clip.as_object_mut().unwrap().remove("takeGroup");
+    }
+    scene.as_object_mut().unwrap().remove("takeAssembly");
+    document.get_mut("metadata").unwrap()["updatedAt"] = json!(classic_scenes::timestamp()?);
+    Ok(())
 }
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -101,7 +208,7 @@ pub(super) fn register_classic_automation(
         crate::CapabilityExecution::Immediate,
         "project.classic.automation.edit",
         "Queue or publish isolated scene AI edits",
-        "Enqueue 1..100 scene jobs with explicit identities and immutable recipes; returns isolated worker project snapshots. Publish a validated worker as a NEW scene, with independent canvas settings, collision-safe identities and media bindings. Never replaces source scenes, captions, project settings or viewer navigation. Exact job publication is idempotent. Checkpoint stores a worker's durable completed-stage boundary. Host handles media IO and execution leases separately. Revision checked, cancellable, dry run, atomic and undoable; state is readable at app.state.read /project/classic/document/automationEdits.",
+        "Enqueue 1..100 scene jobs with explicit identities and immutable recipes; returns isolated worker project snapshots. Prepare only an isolated worker: expose its selected non-overlapping routed camera cuts on the main track without rendering, preserve captions/effects/microphone audio, and freeze take choices. Publish a validated worker as a NEW scene, with independent canvas settings, collision-safe identities and media bindings. Never replaces source scenes, captions, project settings or viewer navigation. Exact job publication is idempotent. Checkpoint stores a worker's durable completed-stage boundary. Host handles media IO and execution leases separately. Revision checked, cancellable, dry run, atomic and undoable; state is readable at app.state.read /project/classic/document/automationEdits.",
         "automation",
         AccessLevel::Write,
         false,
@@ -164,6 +271,15 @@ pub(super) fn register_classic_automation(
                             return Err(CapabilityError::Failed("operation was cancelled".into()));
                         }
                         match input.change {
+                            Change::Prepare { scene_id } => {
+                                let classic =
+                                    classic_scenes::classic_target(document, &input.project_id)?;
+                                prepare_worker(
+                                    &mut classic.document,
+                                    &input.project_id,
+                                    &scene_id,
+                                )?;
+                            }
                             Change::Enqueue { jobs } => {
                                 if jobs.is_empty() || jobs.len() > 100 {
                                     return Err(CapabilityError::InvalidInput(

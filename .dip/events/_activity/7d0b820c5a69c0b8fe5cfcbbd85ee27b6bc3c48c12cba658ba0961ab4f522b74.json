@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7d0b820c5a69c0b8fe5cfcbbd85ee27b6bc3c48c12cba658ba0961ab4f522b74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:51:14.607Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '307,345p' classic/apps/web/src/ai/timeline-document-v2.ts\nsed -n '245,285p' classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a03587d0-7fd8-4992-a5d6-d6079f844ff6"
+      },
+      {
+        "at": "2026-10-23T19:51:14.710Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '307,345p' classic/apps/web/src/ai/timeline-document-v2.ts\nsed -n '245,285p' classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-a03587d0-7fd8-4992-a5d6-d6079f844ff6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:51:15.194Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "878b0e8f019f6a0d2bb3fd50f19e2dbcdffa0fef41b5cffa2a202450e3109a28",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:51:55.246Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/timeline-document-v2.ts",
+          "classic/apps/web/src/ai/__tests__/timeline-document-v2.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "54e13a48-5753-4537-a4fd-71dc7815a4e0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:51:55.248Z",
+  "parents": [],
+  "branch": "main"
+}

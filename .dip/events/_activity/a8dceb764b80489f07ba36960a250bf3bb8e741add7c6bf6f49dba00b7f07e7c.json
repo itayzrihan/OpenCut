@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8dceb764b80489f07ba36960a250bf3bb8e741add7c6bf6f49dba00b7f07e7c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:52:18.859Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-background-three.mjs');s=p.read_text().replace(\"'src/ai/__tests__/full-auto-edit-routed.test.ts',\",\"'src/ai/__tests__/timeline-document-v2.test.ts','src/ai/__tests__/full-auto-edit-routed.test.ts',\");p.write_text(s)\np=Path('analysis/background-three-2026-10-23/repair.md');s=p.read_text();s+='\\nLive retry also exposed legacy caption parameter slots containing null. Rust accepts those stored defaults, while the typed Timeline Source adapter correctly rejects explicit null parameters. Serialization now omits only those null slots (the established default semantics), retaining zero, false and empty strings without mutating source state. A roundtrip regression covers this case. Jobs that reached the framing boundary resume at checkpoint one.\\n';p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8e5710b4-61b5-4a8f-a1d3-1e97fd1e04de"
+      },
+      {
+        "at": "2026-10-23T19:52:19.298Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-background-three.mjs');s=p.read_text().replace(\"'src/ai/__tests__/full-auto-edit-routed.test.ts',\",\"'src/ai/__tests__/timeline-document-v2.test.ts','src/ai/__tests__/full-auto-edit-routed.test.ts',\");p.write_text(s)\np=Path('analysis/background-three-2026-10-23/repair.md');s=p.read_text();s+='\\nLive retry also exposed legacy caption parameter slots containing null. Rust accepts those stored defaults, while the typed Timeline Source adapter correctly rejects explicit null parameters. Serialization now omits only those null slots (the established default semantics), retaining zero, false and empty strings without mutating source state. A roundtrip regression covers this case. Jobs that reached the framing boundary resume at checkpoint one.\\n';p.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-8e5710b4-61b5-4a8f-a1d3-1e97fd1e04de"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:52:19.658Z",
+  "parents": [],
+  "branch": "main"
+}

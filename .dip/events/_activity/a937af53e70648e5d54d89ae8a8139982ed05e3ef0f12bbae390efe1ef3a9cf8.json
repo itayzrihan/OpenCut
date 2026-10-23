@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a937af53e70648e5d54d89ae8a8139982ed05e3ef0f12bbae390efe1ef3a9cf8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:39:00.401Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_automation.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c7d3bc1f-8d73-4050-b12d-eeadab292128"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:39:00.403Z",
+  "parents": [],
+  "branch": "main"
+}

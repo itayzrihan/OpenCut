@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3c8e6d429c08e62f3b0387c26318de1af85d8c6e2960cc8c9874bf9a60312f4a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:40:19.645Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/background-three-2026-10-23/build.log",
+          "classic/apps/web/src/subtitles/__tests__/auto-texts.test.ts",
+          ".local/background-three-2026-10-23/caption-tests",
+          ".local/background-three-2026-10-23/caption-tests/src__subtitles____tests____auto-texts.test.ts.log",
+          ".local/background-three-2026-10-23/caption-tests/src__ai____tests____full-auto-edit-routed.test.ts.log",
+          ".local/background-three-2026-10-23/caption-tests/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "867b3b1c-9662-476f-94b6-f8e441c3b324"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:40:19.776Z",
+  "parents": [],
+  "branch": "main"
+}

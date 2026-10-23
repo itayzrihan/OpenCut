@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "234b6d3cf7a0fb8650962e9db5c220da27f4c332ab16c3f93799c0c23a225ee6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T20:20:44.396Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/background-three-2026-10-23/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-24737f95-2396-4f61-9b87-bb7f59b98c09"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:20:44.972Z",
+  "parents": [],
+  "branch": "main"
+}

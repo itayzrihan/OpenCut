@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97f38a67ba680c413cfbfe922445c94d0b4939b3cabbe36f32c1b9fa1f2d917b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:39:06.870Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'retry|Retry|All videos|Background edits' classic/apps/web/src/batch/provider.tsx | tail -30\nsed -n '1,140p' classic/apps/web/src/batch/standalone-worker.tsx\nsed -n '1,100p' classic/apps/web/src/subtitles/__tests__/auto-texts.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9e13e2cb-8522-4f79-a6c9-a1130843ad88"
+      },
+      {
+        "at": "2026-10-23T19:39:07.067Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'retry|Retry|All videos|Background edits' classic/apps/web/src/batch/provider.tsx | tail -30\nsed -n '1,140p' classic/apps/web/src/batch/standalone-worker.tsx\nsed -n '1,100p' classic/apps/web/src/subtitles/__tests__/auto-texts.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-9e13e2cb-8522-4f79-a6c9-a1130843ad88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:39:07.450Z",
+  "parents": [],
+  "branch": "main"
+}

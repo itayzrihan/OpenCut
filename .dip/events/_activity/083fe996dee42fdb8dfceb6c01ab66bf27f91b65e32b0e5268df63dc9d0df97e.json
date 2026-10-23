@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "083fe996dee42fdb8dfceb6c01ab66bf27f91b65e32b0e5268df63dc9d0df97e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:43:29.374Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/background-three-2026-10-23/test-types.log\ngit diff --check\nps -Ao pid,pcpu,comm | sort -k2 -rn | head -7",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ce39c7e6-fee6-424a-b66e-58370580dcf6"
+      },
+      {
+        "at": "2026-10-23T19:43:29.878Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/background-three-2026-10-23/test-types.log\ngit diff --check\nps -Ao pid,pcpu,comm | sort -k2 -rn | head -7",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-ce39c7e6-fee6-424a-b66e-58370580dcf6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:43:30.085Z",
+  "parents": [],
+  "branch": "main"
+}

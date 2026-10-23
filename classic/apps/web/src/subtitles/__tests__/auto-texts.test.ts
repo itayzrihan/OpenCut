@@ -69,6 +69,9 @@ function editor({ status = "succeeded" }: { status?: string } = {}) {
 			cancel: () => {},
 		},
 		project: {
+			getActiveForScene: () => ({
+				settings: { canvasSize: { width: 1080, height: 1920 } },
+			}),
 			getActive: () => ({
 				metadata: { id: "p" },
 				settings: { canvasSize: { width: 1080, height: 1920 } },

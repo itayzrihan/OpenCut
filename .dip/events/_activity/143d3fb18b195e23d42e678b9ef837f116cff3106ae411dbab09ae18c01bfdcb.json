@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "143d3fb18b195e23d42e678b9ef837f116cff3106ae411dbab09ae18c01bfdcb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T20:35:48.520Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re\ns=subprocess.check_output(['git','diff','--cached','--no-ext-diff'],text=True)\npats=[r'(?<![A-Za-z0-9_])sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{32,}',r'gh[pousr]_[A-Za-z0-9]{30,}',r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----']\ncounts=[len(re.findall(p,s)) for p in pats]\nprint({'secret_pattern_counts':counts})\nraise SystemExit(any(counts))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-172f16b9-4eaf-4105-a6e7-2c015226dc0a"
+      },
+      {
+        "at": "2026-10-23T20:35:48.869Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,re\ns=subprocess.check_output(['git','diff','--cached','--no-ext-diff'],text=True)\npats=[r'(?<![A-Za-z0-9_])sk-(?:proj-|or-v1-)?[A-Za-z0-9_-]{32,}',r'gh[pousr]_[A-Za-z0-9]{30,}',r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----']\ncounts=[len(re.findall(p,s)) for p in pats]\nprint({'secret_pattern_counts':counts})\nraise SystemExit(any(counts))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-172f16b9-4eaf-4105-a6e7-2c015226dc0a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:35:49.042Z",
+  "parents": [],
+  "branch": "main"
+}

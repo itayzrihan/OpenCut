@@ -79,8 +79,8 @@ class JsonSafetyError extends Error {
 
 /**
  * Build the full-fidelity Timeline Source v2 projection for one active scene.
- * The only timeline value intentionally omitted is AudioElement.buffer, which
- * is a runtime AudioBuffer cache and cannot be persisted as JSON.
+ * AudioElement.buffer is a runtime cache, and legacy null parameter slots mean
+ * "use the default"; neither is an explicit persisted parameter value.
  */
 export function buildTimelineDocumentV2({
 	project,
@@ -322,9 +322,18 @@ function serializeTrack({
 }
 
 function serializeElement(element: TimelineElement, path: string): JsonObject {
-	if (element.type !== "audio") return cloneJsonObject(element, path);
-	const { buffer: _runtimeBuffer, ...persistentElement } = element;
-	return cloneJsonObject(persistentElement, path);
+	const persistentElement = { ...element };
+	if ("buffer" in persistentElement && element.type === "audio")
+		delete persistentElement.buffer;
+	const serialized = cloneJsonObject(persistentElement, path);
+	if (isRecord(serialized.params)) {
+		// Older caption defaults serialize absent slots as null. The typed source
+		// contract represents defaults by omission; retain 0, false and empty strings.
+		serialized.params = Object.fromEntries(
+			Object.entries(serialized.params).filter(([, value]) => value !== null),
+		);
+	}
+	return serialized;
 }
 
 function serializeDate(value: Date, path: string): string {

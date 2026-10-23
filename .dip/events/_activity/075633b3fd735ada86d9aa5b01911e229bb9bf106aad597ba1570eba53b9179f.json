@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "075633b3fd735ada86d9aa5b01911e229bb9bf106aad597ba1570eba53b9179f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T20:26:28.540Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/9deb36b6-ef21-47bd-a830-9ad0ea784759/project.json');r=json.loads(json.loads(p.read_text())['__opencutEditorSession']);a=r['saved']['bundle']['archive'];print('archivekeys',list(a));print({k:v if not isinstance(v,(dict,list,str)) or (isinstance(v,str) and len(v)<100) else f'{type(v).__name__} {len(v)}' for k,v in a.items()});c=a.get('classic',{});print('classic keys',list(c));print('classic scenes',len(c.get('document',{}).get('scenes',[])))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8204f6fd-de1e-4299-b6c8-fe41a85b4c25"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:26:28.583Z",
+  "parents": [],
+  "branch": "main"
+}

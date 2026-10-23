@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "192740658c0beea0f5abc9b748e71a1e8efb5d9e8030d27cb7848a157a1ea2ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:54:25.937Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/background-three-2026-10-23/final-host-tests/src__core____tests____canonical-scene-automation.test.ts.log",
+          ".local/background-three-2026-10-23/final-host-tests/summary.json",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm-opt.wasm"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9c72ce98-c4b7-4156-8b02-49015d46142a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:54:25.938Z",
+  "parents": [],
+  "branch": "main"
+}

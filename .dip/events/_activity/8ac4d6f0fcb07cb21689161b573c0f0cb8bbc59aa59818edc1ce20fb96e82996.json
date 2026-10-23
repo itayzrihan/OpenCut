@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ac4d6f0fcb07cb21689161b573c0f0cb8bbc59aa59818edc1ce20fb96e82996",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:40:18.366Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,os,signal\np=pathlib.Path('/Users/itayzrihan/Library/Application Support/OpenCut Local/build.lock');v=json.loads(p.read_text());os.kill(v['pid'],signal.SIGTERM);print('Stopped this candidate build to include the caption regression fixture correction; active production stays unchanged.')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-084a96ac-5d46-4200-99ca-2fd9ea50d056"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:40:18.543Z",
+  "parents": [],
+  "branch": "main"
+}

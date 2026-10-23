@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "283affb239b57fb011701ffde49a85b9a68c7664a6cda0650899a9eafca8e227",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T20:09:07.661Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/music-duration-real.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f57ef9b5-baa1-4e4f-93ce-89e87bbb8c61"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T20:09:07.662Z",
+  "parents": [],
+  "branch": "main"
+}

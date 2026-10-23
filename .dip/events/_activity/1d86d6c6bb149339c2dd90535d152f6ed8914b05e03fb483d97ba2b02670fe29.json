@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d86d6c6bb149339c2dd90535d152f6ed8914b05e03fb483d97ba2b02670fe29",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:56:00.232Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/local-production/build.mjs --stage > .local/background-three-2026-10-23/build-caption.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-40da01d3-03d3-4aa1-83e6-f39058da0cf2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:56:01.001Z",
+  "parents": [],
+  "branch": "main"
+}

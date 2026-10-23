@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d4f2793a9066a569bc3ba593224c53cd97ffe5f270109d419e3b802cb49f027",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:46:14.920Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/background-three-2026-10-23/activate.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d2ba9dd8-2580-4723-aef9-4dc3914967f7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:46:14.922Z",
+  "parents": [],
+  "branch": "main"
+}

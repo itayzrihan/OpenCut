@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "39af2340d12a994834bdbc56dba34dc937850738cee515d1ae9790a306180842",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:37:48.332Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/full-auto-edit-routed.test.ts",
+          ".local/background-three-2026-10-23/native-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4b38eaf5-53b8-489b-9c72-d394def17b40"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:37:48.334Z",
+  "parents": [],
+  "branch": "main"
+}

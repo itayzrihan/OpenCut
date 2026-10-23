@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d6847e30eb2a786e816f439f3e3e36920bc136c297561721b1536f282b341de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:32:09.933Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/batch/queue.json');d=json.loads(p.read_text());print('keys',list(d))\nfor r in d.get('runs',[])[-8:]:\n print('run',r.get('id'),r.get('createdAt'),r.get('options'))\n for j in r.get('jobs',[]): print({k:j.get(k) for k in ['id','projectId','sceneId','sourceProjectId','sourceSceneId','status','error','message','stage','completedStages','totalStages','executor','ownerId','workerOwnerId']})\nPY\ngit status --short | rg -v '^\\?\\? .dip/' | head -20",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-909e7454-78b6-48eb-8ca6-b362bc371357"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:32:10.770Z",
+  "parents": [],
+  "branch": "main"
+}

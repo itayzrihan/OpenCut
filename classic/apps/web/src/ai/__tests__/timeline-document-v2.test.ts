@@ -90,6 +90,30 @@ beforeEach(() => {
 });
 
 describe("Timeline Source v2 web adapter", () => {
+	test("legacy null caption defaults round-trip without rejecting framing or mutating the source", () => {
+		const { project, scene } = createRichFixture();
+		const text = scene.tracks.overlay.find((t) => t.type === "text")
+			?.elements[0];
+		if (!text) throw new Error("Missing text fixture");
+		Object.assign(text.params, {
+			"background.color": null,
+			opacity: 0,
+			"background.enabled": false,
+			customLabel: "",
+		});
+		const built = buildTimelineDocumentV2({ project, scene });
+		const parsed = parseTimelineDocumentV2({ text: built.formattedText });
+		expect(parsed.valid).toBe(true);
+		const params = parsed.value?.tracks.overlay.find((t) => t.type === "text")
+			?.elements[0].params;
+		expect(params).not.toHaveProperty("background.color");
+		expect(params).toMatchObject({
+			opacity: 0,
+			"background.enabled": false,
+			customLabel: "",
+		});
+		expect(text.params["background.color"]).toBeNull();
+	});
 	test("scene canvas projects independently without changing project defaults", () => {
 		const { project, scene } = createRichFixture();
 		const original = structuredClone(project.settings);

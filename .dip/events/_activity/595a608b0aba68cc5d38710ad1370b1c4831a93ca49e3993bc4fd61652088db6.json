@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "595a608b0aba68cc5d38710ad1370b1c4831a93ca49e3993bc4fd61652088db6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-23T19:52:17.468Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/local-production/build.mjs --stage > .local/background-three-2026-10-23/build-caption.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-40da01d3-03d3-4aa1-83e6-f39058da0cf2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:52:17.742Z",
+  "parents": [],
+  "branch": "main"
+}

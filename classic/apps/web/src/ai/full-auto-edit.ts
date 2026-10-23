@@ -188,10 +188,11 @@ export async function runFullAutoEdit({
 					const scene = editor.scenes.getActiveScene();
 					const revision = editor.command.getStateRevision();
 					if (
-						!scene.tracks.main.elements.length ||
-						(!scene.takeAssembly &&
-							(scene.tracks.overlay.some((t) => t.elements.length > 0) ||
-								scene.tracks.audio.some((t) => t.elements.length > 0)))
+						!durableWorker &&
+						(!scene.tracks.main.elements.length ||
+							(!scene.takeAssembly &&
+								(scene.tracks.overlay.some((t) => t.elements.length > 0) ||
+									scene.tracks.audio.some((t) => t.elements.length > 0))))
 					)
 						throw new Error(
 							"Full Auto Edit starts with imported main-track video. This scene already contains edits; use a fresh project to avoid replacing them.",
@@ -203,7 +204,14 @@ export async function runFullAutoEdit({
 						throw new Error(
 							"Timeline changed during preflight; no preparation was applied",
 						);
-					if (scene.takeAssembly) {
+					if (durableWorker) {
+						progress(
+							"Preparing isolated scene · retaining camera cuts, transcript and microphone mix…",
+						);
+						const { automationControl } = await import("@/batch/scene-jobs");
+						automationControl({ editor, change: { type: "prepare", sceneId } });
+						await editor.save.flush();
+					} else if (scene.takeAssembly) {
 						progress(
 							"Preparing selected Smart Takes · clearing old text · no video render…",
 						);
@@ -227,6 +235,25 @@ export async function runFullAutoEdit({
 				case "silence": {
 					progress("Smart audio cut · protect speech…");
 					const scene = editor.scenes.getActiveScene();
+					if (
+						durableWorker &&
+						scene.tracks.main.elements.every(
+							(e) =>
+								e.type === "video" &&
+								(e.isSourceAudioEnabled === false || scene.tracks.main.muted),
+						) &&
+						scene.tracks.audio.some(
+							(t) => !t.muted && t.elements.some((e) => e.enabled !== false),
+						)
+					) {
+						notes.push(
+							"Smart audio cut: retained synchronized microphone mix; the source-camera-only silence pass does not apply to externally routed audio.",
+						);
+						progress(
+							"Keeping synchronized microphone audio and existing speech boundaries intact.",
+						);
+						break;
+					}
 					const previous = editor.selection.getSnapshot();
 					editor.selection.setSelectedElements({
 						elements: scene.tracks.main.elements.map((e) => ({
@@ -256,7 +283,7 @@ export async function runFullAutoEdit({
 				}
 				case "auto-texts":
 					await runAutoTexts({
-						resumeTranscript: resumeFromStage === index,
+						resumeTranscript: durableWorker || resumeFromStage === index,
 						editor,
 						signal,
 						onProgress: progress,

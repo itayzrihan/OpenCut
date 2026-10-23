@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8642d29d-74e8-4b51-bb7e-dc722955a13f",
+  "taskId": "task_99250a671fedb37b7d54770501c601cccf5efb5e5205261844cb0f4a0037c755",
+  "type": "task.update",
+  "payload": {
+    "title": "Allow source-safe full auto edit on cut multicam scenes and resume three stopped jobs",
+    "acceptance": [
+      "Full Auto Edit supports isolated edited multicam and podcast scene inputs with existing captions, overlays and routed audio",
+      "Preserve original project scenes and audio routing",
+      "Deploy and complete the three stopped jobs as additional scenes"
+    ],
+    "scope": [
+      "classic/apps/web/src/ai",
+      "classic/rust/crates/timeline/src",
+      "classic/apps/web/src/batch",
+      "crates/editor-api",
+      ".dip",
+      "analysis/background-three-2026-10-23"
+    ]
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-23T19:32:33.400Z",
+  "parents": [
+    "cbb54b97-f5a4-4878-b418-f934b8814886"
+  ],
+  "branch": "main"
+}

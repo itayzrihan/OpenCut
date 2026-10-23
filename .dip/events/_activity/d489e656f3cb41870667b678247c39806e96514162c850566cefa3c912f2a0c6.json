@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d489e656f3cb41870667b678247c39806e96514162c850566cefa3c912f2a0c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:52:35.669Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/wasm/pkg/.gitignore",
+          "classic/apps/web/tsconfig.build.tsbuildinfo"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b7873578-0336-4155-b284-f59f37e8af94"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:52:35.675Z",
+  "parents": [],
+  "branch": "main"
+}

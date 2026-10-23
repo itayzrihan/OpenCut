@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8aeb15f585dd30ff84dca86a87ac2087ab525c39cea93e4051356a3c5c9441c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-23T19:38:12.354Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_automation.rs",
+          "classic/apps/web/src/ai/__tests__/full-auto-edit-routed.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3605ac45-0773-4b49-85ca-c8fe7968943a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-23T19:38:12.501Z",
+  "parents": [],
+  "branch": "main"
+}

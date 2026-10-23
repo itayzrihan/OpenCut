@@ -138,6 +138,60 @@ async fn scene_automation_rejects_unknown_scenes_and_stale_revisions_atomically(
 }
 
 #[tokio::test]
+async fn isolated_multicam_preparation_keeps_selected_angles_microphones_and_transcript() {
+    for overlap in [false, true] {
+        let source = OpenCutRuntime::default();
+        let mut classic: Value = serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+        let scene = &mut classic["document"]["scenes"][0];
+        let mut a = scene["tracks"]["main"]["elements"][0].clone();
+        a.as_object_mut().unwrap().remove("retime");
+        a["id"] = json!("camera-a"); a["enabled"] = json!(true); a["duration"] = json!(600000);
+        a["isSourceAudioEnabled"] = json!(false);
+        let mut b = a.clone(); b["id"] = json!("camera-b");
+        b["startTime"] = json!(if overlap { 0 } else { 600000 });
+        b["trimStart"] = json!(1080000);
+        let mut alternative = a.clone(); alternative["id"] = json!("alternative"); alternative["enabled"] = json!(false);
+        scene["tracks"]["main"]["elements"] = json!([]);
+        scene["tracks"]["overlay"].as_array_mut().unwrap().extend([
+            json!({"id":"routed-a","type":"video","name":"Routed A","hidden":false,"muted":true,"elements":[a,alternative]}),
+            json!({"id":"routed-b","type":"video","name":"Routed B","hidden":false,"muted":true,"elements":[b]})
+        ]);
+        scene["tracks"]["audio"] = json!([{"id":"microphone","type":"audio","name":"Mic","muted":false,"elements":[{"id":"mic","type":"audio","mediaId":"video-asset","sourceType":"upload","startTime":0,"duration":1200000,"trimStart":30000,"trimEnd":0,"params":{"gainDb":-1,"volume":15,"noiseReduction":100,"hardLimiterEnabled":true}}]}]);
+        call(&source,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await;
+        let before = read(&source).await;
+        // The public source is never eligible for destructive preparation.
+        assert!(source.registry().invoke("project.classic.automation.edit",InvocationContext::default(),input(&before,json!({"type":"prepare","sceneId":"main-scene"}))).await.is_err());
+        let queued = call(&source,"project.classic.automation.edit",input(&before,json!({"type":"enqueue","jobs":[{"id":"job","sceneId":"main-scene","workerProjectId":"worker","outputSceneId":"output","action":"full-auto","options":{"zoom":true,"transitions":true,"wordAnimation":true,"music":true}}]}))).await;
+        let mut worker_classic = before["project"]["classic"].clone();
+        worker_classic["document"] = queued["workers"][0]["project"].clone();
+        let worker = OpenCutRuntime::default();
+        call(&worker,"project.classic.session.attach",json!({"projectId":"worker","expectedRevision":0,"classic":worker_classic})).await;
+        let initial = read(&worker).await;
+        let request = json!({"projectId":"worker","expectedRevision":initial["revision"],"change":{"type":"prepare","sceneId":"main-scene"}});
+        if overlap {
+            assert!(worker.registry().invoke("project.classic.automation.edit",InvocationContext::default(),request).await.is_err());
+            assert_eq!(read(&worker).await,initial);
+            continue;
+        }
+        worker.registry().invoke("project.classic.automation.edit",InvocationContext{dry_run:true,..Default::default()},request.clone()).await.unwrap();
+        assert_eq!(read(&worker).await,initial);
+        call(&worker,"project.classic.automation.edit",request).await;
+        let prepared = read(&worker).await;
+        let tracks = &prepared["project"]["classic"]["document"]["scenes"][0]["tracks"];
+        assert_eq!(tracks["main"]["elements"][0]["id"],"camera-a");
+        assert_eq!(tracks["main"]["elements"][1]["id"],"camera-b");
+        assert_eq!(tracks["main"]["elements"][1]["trimStart"],1080000);
+        assert_eq!(tracks["audio"],initial["project"]["classic"]["document"]["scenes"][0]["tracks"]["audio"]);
+        assert_eq!(tracks["overlay"][0],initial["project"]["classic"]["document"]["scenes"][0]["tracks"]["overlay"][0]);
+        assert_eq!(tracks["overlay"][1]["elements"][0]["id"],"alternative");
+        assert_eq!(tracks["overlay"][1]["elements"][0]["enabled"],false);
+        assert_eq!(read(&source).await["project"]["classic"]["document"]["scenes"],before["project"]["classic"]["document"]["scenes"]);
+        call(&worker,"history.undo",json!({})).await;
+        assert_eq!(read(&worker).await["project"],initial["project"]);
+    }
+}
+
+#[tokio::test]
 async fn scene_lifecycle_preserves_media_unknown_fields_and_restores_active_scene_through_history()
 {
     let runtime = attached().await;
