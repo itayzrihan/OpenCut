@@ -290,6 +290,13 @@
         ".dip/tools/verify-rtl-2020.mjs"
       ],
       "timeoutMs": 240000
+    },
+    "advanced-podcast": {
+      "command": [
+        "node",
+        ".dip/tools/verify-advanced-podcast.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

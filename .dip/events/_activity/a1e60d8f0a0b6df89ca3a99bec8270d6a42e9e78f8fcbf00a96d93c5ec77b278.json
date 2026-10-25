@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a1e60d8f0a0b6df89ca3a99bec8270d6a42e9e78f8fcbf00a96d93c5ec77b278",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:10:45.723Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .local/advanced-podcast/activate.mjs <<'JS'\nimport {execFileSync} from 'node:child_process';\nimport {readFile} from 'node:fs/promises';\nimport {createHash} from 'node:crypto';\nimport {join} from 'node:path';\nimport {deploymentRoot,repository,readJson,writeJson} from '../../classic/scripts/local-production/common.mjs';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));\nconst current=await readJson(join(deploymentRoot,'current.json'));\nconst files=execFileSync('git',['ls-files','-z','--cached','--others','--exclude-standard'],{cwd:repository,maxBuffer:64*1024**2}).toString().split('\\0').filter(Boolean).sort();\nconst hash=createHash('sha256');\nfor(const file of files){\n if(file.endsWith('/next-env.d.ts'))continue;\n if(!/^(classic\\/(apps\\/(web|electron\\/app)|rust|packages|patches)\\/|crates\\/|resources\\/|Cargo\\.(toml|lock)$|classic\\/(package\\.json|bun\\.lock)$)/.test(file))continue;\n hash.update(file);try{hash.update(await readFile(join(repository,file)));}catch(e){if(e.code==='ENOENT')hash.update('deleted');else throw e;}\n}\nif(hash.digest('hex')!==candidate.fingerprint)throw Error('Candidate source differs from the tested working tree');\nif((await readJson(join(deploymentRoot,'current.json'))).id!==current.id)throw Error('Production changed concurrently');\nawait writeJson(join(deploymentRoot,'previous.json'),current);\nawait writeJson(join(deploymentRoot,'current.json'),candidate);\nconsole.log(JSON.stringify({activated:candidate.id,rollback:current.id,fingerprint:candidate.fingerprint}));\nJS\nnode .local/advanced-podcast/activate.mjs > .local/advanced-podcast/activation.json\ncat .local/advanced-podcast/activation.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3b52d60d-bcee-4263-bd16-55511d2a76ca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:10:46.334Z",
+  "parents": [],
+  "branch": "main"
+}

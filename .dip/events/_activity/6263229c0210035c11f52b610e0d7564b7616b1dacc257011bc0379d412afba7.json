@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6263229c0210035c11f52b610e0d7564b7616b1dacc257011bc0379d412afba7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:22:41.608Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/advanced-podcast\ncat > analysis/advanced-podcast-2026-10-25/inspect.py <<'PY'\n\"\"\"Read-only, bounded inspection of a growing recorder folder. Requires numpy/ffmpeg.\nUsage: python3 inspect.py SOURCE_FOLDER [--camera]\nWrites small evidence JSON beside this script; derived envelopes stay in .local.\n\"\"\"\nimport argparse, json, struct, subprocess, re, hashlib\nfrom pathlib import Path\nimport numpy as np\nROOT=Path(__file__).resolve().parents[2]\nOUT=Path(__file__).resolve().parent\nCACHE=ROOT/'.local/advanced-podcast';CACHE.mkdir(parents=True,exist_ok=True)\np=argparse.ArgumentParser();p.add_argument('folder',type=Path);p.add_argument('--camera',action='store_true');args=p.parse_args()\nrecords=[];groups={};issues=[]\nfor path in sorted(args.folder.glob('*.wav')):\n before=path.stat();meta={};chunks=[];data_info=None\n with path.open('rb') as f:\n  if f.read(12)[:4]!=b'RIFF':raise ValueError(f'Unsupported WAV: {path}')\n  while h:=f.read(8):\n   if len(h)!=8:raise ValueError(f'Incomplete WAV header: {path}')\n   tag,n=struct.unpack('<4sI',h);at=f.tell();chunks.append(tag.decode(errors='replace'))\n   if at+n>before.st_size:raise ValueError(f'Still copying/truncated: {path.name}')\n   if tag==b'fmt ':fmt=struct.unpack('<HHIIHH',f.read(16))\n   if tag==b'data':data_info=(at,n)\n   if tag in [b'bext',b'iXML',b'LIST',b'axml']:meta[tag.decode()]=f.read(min(n,16384)).decode(errors='replace')\n   f.seek(at+n+(n%2))\n  f.seek(0);header_hash=hashlib.sha256(f.read(44)).hexdigest()\n if not data_info or fmt!=(3,1,48000,192000,4,32):raise ValueError(f'Unexpected audio format: {path.name}: {fmt}')\n at,n=data_info;data=np.memmap(path,dtype='<f4',mode='r',offset=at,shape=(n//4,));blocks=len(data)//480\n env=np.empty(blocks,dtype=np.float32);peak=0.\n for start in range(0,blocks,1000):\n  end=min(start+1000,blocks);a=np.asarray(data[start*480:end*480]).reshape(-1,480).astype(np.float64)\n  if not np.isfinite(a).all():raise ValueError(f'Non-finite samples: {path.name}')\n  peak=max(peak,float(np.ab",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-81a32a0c-c379-4873-a9f5-128cf851eeb9"
+      },
+      {
+        "at": "2026-10-25T15:22:41.761Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/tests/classic_advanced_podcast.rs';s=open(p).read().replace('.iter().enumerate().map(|(i,v)|','.iter().map(|v|');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true classic/rust/crates/podcast/src/advanced.rs classic/rust/crates/podcast/src/energy.rs crates/editor-api/src/operations/classic_advanced_podcast.rs crates/editor-api/src/operations/classic_multicam.rs crates/editor-api/tests/classic_advanced_podcast.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e379560d-a51f-42ad-8462-208677544e25"
+      },
+      {
+        "at": "2026-10-25T15:22:41.761Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/advanced-podcast\ncat > analysis/advanced-podcast-2026-10-25/inspect.py <<'PY'\n\"\"\"Read-only, bounded inspection of a growing recorder folder. Requires numpy/ffmpeg.\nUsage: python3 inspect.py SOURCE_FOLDER [--camera]\nWrites small evidence JSON beside this script; derived envelopes stay in .local.\n\"\"\"\nimport argparse, json, struct, subprocess, re, hashlib\nfrom pathlib import Path\nimport numpy as np\nROOT=Path(__file__).resolve().parents[2]\nOUT=Path(__file__).resolve().parent\nCACHE=ROOT/'.local/advanced-podcast';CACHE.mkdir(parents=True,exist_ok=True)\np=argparse.ArgumentParser();p.add_argument('folder',type=Path);p.add_argument('--camera',action='store_true');args=p.parse_args()\nrecords=[];groups={};issues=[]\nfor path in sorted(args.folder.glob('*.wav')):\n before=path.stat();meta={};chunks=[];data_info=None\n with path.open('rb') as f:\n  if f.read(12)[:4]!=b'RIFF':raise ValueError(f'Unsupported WAV: {path}')\n  while h:=f.read(8):\n   if len(h)!=8:raise ValueError(f'Incomplete WAV header: {path}')\n   tag,n=struct.unpack('<4sI',h);at=f.tell();chunks.append(tag.decode(errors='replace'))\n   if at+n>before.st_size:raise ValueError(f'Still copying/truncated: {path.name}')\n   if tag==b'fmt ':fmt=struct.unpack('<HHIIHH',f.read(16))\n   if tag==b'data':data_info=(at,n)\n   if tag in [b'bext',b'iXML',b'LIST',b'axml']:meta[tag.decode()]=f.read(min(n,16384)).decode(errors='replace')\n   f.seek(at+n+(n%2))\n  f.seek(0);header_hash=hashlib.sha256(f.read(44)).hexdigest()\n if not data_info or fmt!=(3,1,48000,192000,4,32):raise ValueError(f'Unexpected audio format: {path.name}: {fmt}')\n at,n=data_info;data=np.memmap(path,dtype='<f4',mode='r',offset=at,shape=(n//4,));blocks=len(data)//480\n env=np.empty(blocks,dtype=np.float32);peak=0.\n for start in range(0,blocks,1000):\n  end=min(start+1000,blocks);a=np.asarray(data[start*480:end*480]).reshape(-1,480).astype(np.float64)\n  if not np.isfinite(a).all():raise ValueError(f'Non-finite samples: {path.name}')\n  peak=max(peak,float(np.ab",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-81a32a0c-c379-4873-a9f5-128cf851eeb9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:22:41.867Z",
+  "parents": [],
+  "branch": "main"
+}

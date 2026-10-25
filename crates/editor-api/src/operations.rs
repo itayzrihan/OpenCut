@@ -53,6 +53,7 @@ fn collect_ids(value: &Value, ids: &mut HashSet<String>) {
 
 mod brand_kits;
 mod classic;
+mod classic_advanced_podcast;
 mod classic_animation_catalog;
 mod classic_background_removal;
 mod classic_bookmarks;

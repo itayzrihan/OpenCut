@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3fb2caa6c9f3572a5fdc9803e60cfcbd54fce05d2ce0b3e5dd776fb35c52e86f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:18:46.482Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\nfrom pathlib import Path\nkeep={'classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/podcast-sync/engine.ts','classic/apps/web/src/podcast-sync/sync.worker.ts','classic/rust/crates/podcast/src/energy.rs','classic/rust/crates/podcast/src/podcast.rs','crates/editor-api/src/operations.rs','crates/editor-api/src/operations/classic_multicam.rs'}\nfor p in subprocess.check_output(['git','diff','--name-only'],text=True).splitlines():\n if p in keep:continue\n # These files were clean at task start and touched by the all-workspace formatter only.\n if p.endswith('.rs'):\n  Path(p).write_bytes(subprocess.check_output(['git','show','HEAD:'+p]))\nprint('Removed unrelated workspace formatting')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-50f0690e-8604-43d5-b95a-0590b4c89d0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:18:46.631Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a012e10367be58b9579ba842d27a8c3770920cab5044e24c352e78ecd2dd273d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:22:52.877Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/BCZ9-rms-10ms.npy",
+          "analysis/advanced-podcast-2026-10-25/recordings.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1f024475-05cc-48d8-b234-0ad6e8749763"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:22:52.878Z",
+  "parents": [],
+  "branch": "main"
+}

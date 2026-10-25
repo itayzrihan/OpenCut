@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e1bafdd066feec6403433badeb6da8d45acd2cdcab8d6ec741817aeaa0cb772",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:27:44.050Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts <<'EOF'\n// @opencut-test-wasm: real\n/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- canonical runtime validates the fixture and persisted document. */\nimport {expect,test} from \"bun:test\";\nimport {readFileSync} from \"node:fs\";\nimport {podcastMulticamDefaults} from \"opencut-wasm\";\nimport {CanonicalClassicSession,type CanonicalClassicSnapshot} from \"../canonical-classic-session\";\nimport {createCanonicalTestRuntime} from \"./canonical-runtime-fixture\";\ntest(\"Advanced Podcast provenance survives browser archive, reload and undo\",async()=>{\n const session=new CanonicalClassicSession({runtime:await createCanonicalTestRuntime(),projectId:\"classic-project\"});\n const original=JSON.parse(readFileSync(new URL(\"../../../../../../crates/editor-api/tests/fixtures/classic-project.json\",import.meta.url),\"utf8\")) as CanonicalClassicSnapshot;\n original.document.settings.fps={numerator:25,denominator:1};\n const camera=original.mediaAssets.find(a=>a.id===\"video-asset\")!;camera.duration=2000;\n for (const [i,time] of [\"1635\",\"1705\"].entries()) original.mediaAssets.push({...camera,id:`mic-${i}`,type:\"audio\",name:`20260720_${time}_000${i+5}_32Float_9P8HShlishya1.wav`,duration:i?100:1800.15,bindingRevision:0});\n session.attach({classic:original});\n const grouped=session.invokeControl({capabilityId:\"timeline.classic.multicam.recordings.group\",input:{mediaIds:[\"mic-1\",\"mic-0\"]}}) as import(\"opencut-wasm\").PodcastRecordingGroups;\n expect(grouped.issues).toEqual([]);expect(grouped.microphones[0]!.segments[0]!.recording.mediaId).toBe(\"mic-0\");\n session.begin();session.invokeControl({capabilityId:\"timeline.classic.multicam.create\",input:{plan:{\n  settings:podcastMulticamDefaults({quick:true}),duration:1900.12,cuts:[{timestamp:0,duration:1900.12,channelId:\"wide\"}],\n  channels:[{id:\"wide\",name:\"Wide\",videoId:camera.id,audioId:\"mic-0\",videoBindingRevision:camera.bindingRevision??0,audioBindingRevision:0,vide",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-305b79a8-c8ee-422f-a3de-d8562187bae5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:27:44.125Z",
+  "parents": [],
+  "branch": "main"
+}

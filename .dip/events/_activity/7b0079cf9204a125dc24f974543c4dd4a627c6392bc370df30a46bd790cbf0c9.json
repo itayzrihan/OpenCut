@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7b0079cf9204a125dc24f974543c4dd4a627c6392bc370df30a46bd790cbf0c9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:05:01.183Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/types",
+          "classic/apps/web/.next-local-production/package.json",
+          "classic/apps/web/.next-local-production/diagnostics"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b1f320e4-c8cb-46ef-ae46-6341e7b2da1f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:05:01.183Z",
+  "parents": [],
+  "branch": "main"
+}

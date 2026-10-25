@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bc8cffb5222d818e8006b9485a11072cbdb0e79e18d37fbf829519f919b486fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:57:58.530Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read().replace('[editor, videoAssets, recordingGroups]','[editor, videoAssets, recordingIds]');open(p,'w').write(s)\np='classic/rust/crates/podcast/src/camera_groups.rs';s=open(p).read().replace('mod angle_routing_tests {\\n    use super::*;','mod angle_routing_tests {');open(p,'w').write(s)\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/advanced-podcast/types-followup.log 2>&1\nnode classic/scripts/test-web.mjs src/podcast-sync/__tests__/advanced-engine.test.ts src/podcast-sync/__tests__/advanced-worker.test.ts src/core/__tests__/canonical-advanced-podcast.test.ts src/core/__tests__/canonical-multicam.test.ts src/services/local-drive/__tests__/server.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b6501627-b7dc-40b8-a479-f62a937fc518"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:57:59.288Z",
+  "parents": [],
+  "branch": "main"
+}

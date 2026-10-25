@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ef52d04ff451b8c06549cc593accb993c27d784b1816c58ea29065cb3aa472a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:31:03.302Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-advanced-podcast/cache/.tsbuildinfo"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6d2aaf1a-536b-4ea2-bc9b-d0933f325340"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:31:03.302Z",
+  "parents": [],
+  "branch": "main"
+}

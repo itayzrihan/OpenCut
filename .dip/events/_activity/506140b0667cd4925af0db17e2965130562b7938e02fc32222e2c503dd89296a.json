@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "506140b0667cd4925af0db17e2965130562b7938e02fc32222e2c503dd89296a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:31:43.223Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/advanced-podcast-2026-10-25');r=json.loads((p/'recordings.json').read_text())['recordings'];g=json.loads((p/'detected-groups.json').read_text());prec=json.loads((p/'precision.json').read_text());summary=[]\nfor m in g['microphones']:\n i=prec['sources'].index(m['recorderToken']);start=prec['result']['offsets'][i]\n summary.append(dict(microphone=m['name'],recorderToken=[REDACTED],segments=[s['sequence'] for s in m['segments']],duration=m['duration'],cameraRelativeStart=start,sourceNames=[s['recording']['name'] for s in m['segments']]))\nprint(json.dumps(summary,indent=2));\nfor f in p.glob('*-rms-10ms.npy'):f.unlink()\n(p/'summary.json').write_text(json.dumps(dict(hardware='Hollyland LARK MAX 2 Combo (user confirmed)',migration='bridged: Classic UI calls shared Rust kernels through WASM and canonical OpenCutRuntime registry; no independent rewrite or UI project store',recordings=summary,synchronization=dict(referenceCamera='C7458Shlishiyaangle1.MP4',resolutionSeconds=.01,precisionWindows=len(prec['windows']),unverified=prec['result']['unverified'],drifting=prec['result']['drifting']),limits=['Filename recorder token is evidence, not independently verified hardware serial identity.','Source data currently verifies four microphones and one camera. Additional cameras and human speaker/camera ground truth have not been validated.','No final export or source-folder modification performed.','Gapless timeline source placement does not prove the recorder lost no samples at its hardware split. Repeated acoustic windows support continuity within 10ms RMS resolution.','Coarse and waveform offsets depend on acoustic travel/reflections; perfect lip sync and 100% speaker classification are not asserted.'],sources=['https://faq.hollyland.com/eec2e/17c09/caa31/2cf8b/9b595','https://faq.hollyland.com/faq/wireless-microphones/lark-max2/51f95']),indent=2)+'\\n')\nPY\ntail -8 .local/advanced-podcast/next-build.log\nls -1 '/Us",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-008dfe18-79a7-49af-a77b-021c1d840f49"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:31:43.335Z",
+  "parents": [],
+  "branch": "main"
+}

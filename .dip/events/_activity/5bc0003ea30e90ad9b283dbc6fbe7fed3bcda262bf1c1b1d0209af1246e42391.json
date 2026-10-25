@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5bc0003ea30e90ad9b283dbc6fbe7fed3bcda262bf1c1b1d0209af1246e42391",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:01:14.822Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_advanced_podcast.rs",
+          "crates/editor-api/src/operations/classic_multicam.rs",
+          "crates/editor-api/tests/classic_advanced_podcast.rs",
+          "classic/apps/web/src/services/local-drive/__tests__/server.test.ts",
+          ".local/advanced-podcast/production-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c1892744-3a8d-4551-b25f-40ab426c136e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:01:14.823Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2abb42883055524a2d2d06013ed1be52cc8610744bb707ef6ec225fb6942ad46",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:33:54.604Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .dip/tools/verify-advanced-podcast.mjs <<'EOF'\nimport { spawnSync } from 'node:child_process';\nimport { fileURLToPath } from 'node:url';\nconst root=fileURLToPath(new URL('../../',import.meta.url));\nfunction run(command,args,cwd=root) {\n const r=spawnSync(command,args,{cwd,stdio:'inherit'});\n if(r.error)throw r.error;\n if(r.status!==0)process.exit(r.status??1);\n}\nrun('bun',['run','--cwd','classic','build:wasm']);\nrun('cargo',['test','-p','podcast','--lib']);\nrun('cargo',['test','-p','opencut-editor-api','--test','classic_advanced_podcast','--test','classic_multicam']);\nrun('node',['classic/scripts/test-web.mjs',\n 'src/podcast-sync/__tests__/advanced-engine.test.ts',\n 'src/podcast-sync/__tests__/advanced-worker.test.ts',\n 'src/podcast-sync/__tests__/unified-engine.test.ts',\n 'src/podcast-sync/energy-reader.test.ts',\n 'src/podcast-sync/sync-jobs.test.ts',\n 'src/podcast-sync/precision.integration.test.ts',\n 'src/core/__tests__/canonical-advanced-podcast.test.ts',\n 'src/core/__tests__/canonical-multicam.test.ts',\n 'src/core/__tests__/canonical-podcast.test.ts']);\nrun('node',['classic/node_modules/typescript/bin/tsc','--noEmit','-p','classic/apps/web/tsconfig.build.json']);\nrun('bunx',['eslint','src/podcast-sync/engine.ts','src/podcast-sync/sync.worker.ts','src/podcast-sync/components/podcast-sync-dialog.tsx'],root+'classic/apps/web');\nEOF\npython3 - <<'PY'\nimport json\np='.dip/config.json';v=json.load(open(p));v['verification']['advanced-podcast']={'command':['node','.dip/tools/verify-advanced-podcast.mjs'],'timeoutMs':600000};open(p,'w').write(json.dumps(v,indent=2)+'\\n')\nPY\nnode classic/scripts/editor-architecture/check.mjs > .local/advanced-podcast/architecture.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7f240499-2b75-4b9f-b0db-8963e4dfb69a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:33:54.670Z",
+  "parents": [],
+  "branch": "main"
+}

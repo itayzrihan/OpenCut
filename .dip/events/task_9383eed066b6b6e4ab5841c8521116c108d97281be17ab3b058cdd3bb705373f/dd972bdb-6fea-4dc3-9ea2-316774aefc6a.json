@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dd972bdb-6fea-4dc3-9ea2-316774aefc6a",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented bridged Advanced Podcast with shared Rust identification and provenance for up to four Hollyland segmented microphone streams, exact-duration continuous clips, source/binding validation, staggered shared-clock synchronization and cross-segment waveform verification, high-bleed relative-dominance routing, many-to-many microphone/camera assignment, and automatic camera-only lead/tail cropping. Canonical create/history/dry-run/idempotency and browser archive roundtrip covered. Four real microphones (12 WAV files) synchronized to supplied camera with 32 RMS and 20 waveform windows; zero drifting/unverified results. Production WASM and isolated Next build pass, final configured check covers 66 focused tests, types and changed podcast lint.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Actual media snapshot contains four microphones and one camera. Additional cameras, human speaker/camera correctness, perceptually seamless final playback and live graphical UI/export have not been verified; perfect lip sync/100% classification not asserted."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Global architecture audit reports unchanged existing violations in MoveElementCommand, brand-kits/apply.ts and subtitles/auto-texts.ts. Full commands.ts lint also has two existing object-parameter errors outside this change; changed podcast code lint passes with an existing hook dependency warning."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Built locally without deployment, activation of a running production app, final export or modification of source recordings. Other recorder naming schemes and ambiguous/midnight/mixed sessions require an explicit supported adapter; current observed Hollyland names and appended user labels are supported."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T15:39:03.586Z",
+  "parents": [
+    "2b6f5ae6-0a6e-447d-ada3-e4c06c634707"
+  ],
+  "branch": "main"
+}

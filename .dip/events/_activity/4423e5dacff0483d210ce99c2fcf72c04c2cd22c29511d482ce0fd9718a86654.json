@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4423e5dacff0483d210ce99c2fcf72c04c2cd22c29511d482ce0fd9718a86654",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:47:14.948Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames/camera2-3240.png",
+          ".local/advanced-podcast/frames/camera2-3300.png",
+          "classic/rust/crates/podcast/src/camera_groups.rs",
+          "classic/rust/crates/podcast/src/podcast.rs",
+          "classic/rust/crates/podcast/src/advanced.rs",
+          "classic/rust/crates/podcast/src/energy.rs",
+          ".local/advanced-podcast/frames/camera2-3360.png"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d229174b-4cac-4522-8abf-ab13550ff51b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:47:14.949Z",
+  "parents": [],
+  "branch": "main"
+}

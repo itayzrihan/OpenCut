@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9d3af195d66a1e158123f2007e6f8fc3cad8f84f8433103e63deafb5d1d3385",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:20:39.861Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/tests/classic_advanced_podcast.rs <<'EOF'\nuse opencut_editor_api::{AccessLevel, InvocationContext, OpenCutRuntime};\nuse serde_json::{Value,json};\nconst GROUP:&str=\"timeline.classic.multicam.recordings.group\";\nconst CREATE:&str=\"timeline.classic.multicam.create\";\nasync fn call(r:&OpenCutRuntime,id:&str,input:Value)->Value {\n    r.registry().invoke(id,InvocationContext::default(),input).await.unwrap().result.data\n}\nasync fn read(r:&OpenCutRuntime)->Value {call(r,\"app.state.read\",json!({})).await[\"value\"].clone()}\nasync fn fixture()->(OpenCutRuntime,Value,Value) {\n    let r=OpenCutRuntime::default();\n    let mut classic:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n    classic[\"document\"][\"settings\"][\"fps\"]=json!({\"numerator\":25,\"denominator\":1});\n    let mut assets=vec![json!({\"id\":\"v1\",\"name\":\"Shared camera\",\"type\":\"video\",\"duration\":200.}),json!({\"id\":\"v2\",\"name\":\"Other camera\",\"type\":\"video\",\"duration\":200.})];\n    for (token,first) in [(\"9P8H\",5),(\"AHQC\",5),(\"AX5F\",3)] {\n        for (i,time,duration) in [(0,\"1635\",1800.15),(1,\"1705\",100.)] {\n            assets.push(json!({\"id\":format!(\"{token}-{i}\"),\"name\":format!(\"20260720_{time}_{:04}_32Float_{token}.wav\",first+i),\"type\":\"audio\",\"duration\":duration,\"bindingRevision\":2}));\n        }\n    }\n    classic[\"mediaAssets\"]=json!(assets);\n    call(&r,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await;\n    let state=read(&r).await;\n    let request=json!({\"projectId\":\"classic-project\",\"expectedRevision\":state[\"revision\"],\"mediaIds\":assets.iter().filter(|a|a[\"type\"]==\"audio\").map(|a|a[\"id\"].clone()).collect::<Vec<_>>()});\n    let groups=call(&r,GROUP,request).await;\n    assert_eq!(groups[\"issues\"],json!([]));\n    let ids:Vec<_>=groups[\"microphones\"].as_array().unwrap().iter().map(|m|m[\"id\"].clone()).collect();\n    let channels:Vec<_>=[\"v1\",\"v2\"].iter().enumerate().map(|(i,v)|json!({\"id\":v,\"name\":v,",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fe8b5e9a-bffe-4a8d-bd09-b9a3fae55f6c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:20:40.760Z",
+  "parents": [],
+  "branch": "main"
+}

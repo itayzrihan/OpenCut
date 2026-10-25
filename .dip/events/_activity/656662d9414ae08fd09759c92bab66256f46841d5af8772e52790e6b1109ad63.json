@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "656662d9414ae08fd09759c92bab66256f46841d5af8772e52790e6b1109ad63",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:48:30.094Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '302,365p' classic/apps/web/src/mcp/classic-mcp-bridge.tsx; rg -n 'canonical|invoke' classic/apps/web/src/ai/timeline-tools.ts | head -20; sed -n '1,150p' classic/apps/web/src/core/agent-control.ts; sed -n '1,80p' .local/track-controls/activate.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ab704196-e90a-4a1a-9f68-25425e21635f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:48:31.079Z",
+  "parents": [],
+  "branch": "main"
+}

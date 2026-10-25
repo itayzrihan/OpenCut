@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a54f54b5-4e30-4cff-b54d-5f0c98d97657",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented and deployed Classic Advanced Podcast: exact segmented4-mic provenance/shared sync/high-bleed owner routing, inline fuzzy camera groups/Main variation and linked source import. Ran full70:14.28 Avihay native Auto Edit with3 cameras+12 WAVs. Preserved user-confirmed5:46.08 opening trim and framing. Saved/reopened64:28.20 scene with1,510 native color effects,3 transition curves, standard sound finishing andSharpen15. Full canonical scene hash after reopening matches prepared grade document exactly; all8audio joins/source bounds/505one-camera coverage intervals verified; representative native playback acrosslight andboth recorder seams. Source light onset timestamps measured at25fps, all3within1frame aftersync.77configured tests pass.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Native25fps gives40ms illumination timing precision. Global grade matches exposure/white balance but cannot reconstruct direction of missing light. Representative playback and all boundary samples verified; no exhaustive human listening or100% speaker-classification guarantee."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Delivered saved editable project with card media linked in place; no MP4 export requested or produced."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T16:52:03.160Z",
+  "parents": [
+    "08f2de28-2fe1-4377-bc92-aa043e4a3005"
+  ],
+  "branch": "main"
+}

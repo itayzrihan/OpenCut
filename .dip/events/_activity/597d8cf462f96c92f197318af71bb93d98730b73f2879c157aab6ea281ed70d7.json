@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "597d8cf462f96c92f197318af71bb93d98730b73f2879c157aab6ea281ed70d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:52:04.392Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/src/camera_groups.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4892cd24-7c8c-4cc0-a1ee-9248e81811bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:52:04.393Z",
+  "parents": [],
+  "branch": "main"
+}

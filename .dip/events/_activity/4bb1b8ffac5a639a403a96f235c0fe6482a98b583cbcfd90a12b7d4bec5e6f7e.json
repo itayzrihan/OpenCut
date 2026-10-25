@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4bb1b8ffac5a639a403a96f235c0fe6482a98b583cbcfd90a12b7d4bec5e6f7e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:38:45.523Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-advanced-podcast.mjs';s=open(p).read().replace(\"run('bun',['run','--cwd','classic','build:wasm']);\",\"// Use the production WASM packages built by classic's normal build:wasm/prebuild.\\nrun('node',['classic/scripts/verify-wasm-exports.mjs']);\");open(p,'w').write(s)\nimport json\np='analysis/advanced-podcast-2026-10-25/summary.json';v=json.load(open(p));v['validation']={'focusedTests':66,'podcastRustTests':31,'canonicalApiTests':17,'webBridgeAndWorkerTests':18,'productionWasmBuild':'passed','isolatedNextProductionBuild':'passed (.next-advanced-podcast; no deployment)','typescriptBuildConfig':'passed','changedPodcastFilesLint':'passed with existing assets-hook dependency warning','globalArchitectureAudit':'fails on unchanged baseline sites: MoveElementCommand, brand-kits/apply.ts, subtitles/auto-texts.ts; no Advanced Podcast entry reported','browserTestEnvironment':'Bun hosting actual production Rust WASM; no live graphical editor run or final export'};v['limits'].append('Grouping currently accepts observed Hollyland-style names (including appended person labels), requires consecutive segment counters and rejects ambiguous/mixed sessions. Other recorder naming conventions require an explicit adapter.');open(p,'w').write(json.dumps(v,indent=2)+'\\n')\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json\n git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4ad1147d-a0cf-4471-9774-255a82766118"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:38:46.133Z",
+  "parents": [],
+  "branch": "main"
+}

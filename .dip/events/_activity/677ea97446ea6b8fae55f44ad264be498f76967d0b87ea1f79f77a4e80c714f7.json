@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "677ea97446ea6b8fae55f44ad264be498f76967d0b87ea1f79f77a4e80c714f7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:24:27.953Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/9P8H-rms-10ms.npy",
+          ".local/advanced-podcast/AX5F-rms-10ms.npy",
+          ".local/advanced-podcast/BCZ9-rms-10ms.npy",
+          ".local/advanced-podcast/AHQC-rms-10ms.npy",
+          "analysis/advanced-podcast-2026-10-25/recordings.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "aa629f0f-4cc2-4fc0-a933-58102fb11380"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:24:27.954Z",
+  "parents": [],
+  "branch": "main"
+}

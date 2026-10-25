@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc36bdef0f8d328a8adb7d89e550e71cd751619e077bb22d6da4f680258668c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:27:45.126Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts",
+          "classic/rust/crates/podcast/src/advanced.rs",
+          "crates/editor-api/src/operations/classic_multicam.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c153b7b2-c090-4d98-aa20-ec5ff00abbaf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:27:45.129Z",
+  "parents": [],
+  "branch": "main"
+}

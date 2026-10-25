@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed7600cc0f8a0672334cd96422efd87b5ab5227a1600acaf5fc30f699da39daa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:24:23.813Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/podcast/src/advanced.rs';s=open(p).read();s=s.replace('let p: Vec<_> = stem.split(\\'_\\').collect();','let p: Vec<_> = stem.splitn(5, \\'_\\').collect();');s=s.replace('|| p[4].len() != 4\\n        || !p[4].bytes().all(|b| b.is_ascii_alphanumeric())','|| p[4].len() < 4\\n        || p[4].len() > 100\\n        || !p[4].as_bytes()[..4].iter().all(|b| b.is_ascii_alphanumeric())\\n        || !p[4][4..].chars().all(|c| c.is_alphanumeric() || matches!(c, \\'_\\' | \\'-\\' | \\' \\'))');s=s.replace('p[4].to_ascii_uppercase(),','p[4][..4].to_ascii_uppercase(),');s=s.replace('    #[test]\\n    fn invalid_dates_and_unrecognized_names_are_not_guessed()', '''    #[test]\n    fn appended_person_labels_do_not_change_recorder_identity() {\n        for suffix in [\"Shlishya1\", \"Avihay\", \"_אביחי\", \"-Host\"] {\n            let mut r=rec(\"BCZ9\",3,\"1635\",1800.15);\n            r.name=r.name.replace(\"BCZ9.wav\", &format!(\"BCZ9{suffix}.wav\"));\n            let result=group_podcast_recordings(GroupPodcastRecordingsOptions{recordings:vec![r]});\n            assert!(result.issues.is_empty());assert_eq!(result.microphones[0].recorder_token,\"BCZ9\");\n        }\n    }\n    #[test]\n    fn invalid_dates_and_unrecognized_names_are_not_guessed()''');open(p,'w').write(s)\np='analysis/advanced-podcast-2026-10-25/audit_recordings.py';s=open(p).read().replace('inspect.py SOURCE_FOLDER','audit_recordings.py SOURCE_FOLDER').replace('([A-Za-z0-9]{4})\\\\.wav','([A-Za-z0-9]{4})[\\\\w -]*\\\\.wav');open(p,'w').write(s)\np='crates/editor-api/src/operations/classic_multicam.rs';s=open(p).read().replace('        let ids: Vec<_> = self.microphones','''        if self.microphones.is_empty() || self.microphones.len()>4 || self.starts.len()>4\n            || self.microphones.iter().map(|m|m.segments.len()).sum::<usize>()>512 {\n            return Err(\"Choose up to four microphone streams and 512 segments\".into());\n        }\n        let ids: Vec<_> = self.microphones''',1);open(p,'w').write(s)\nPY\npython3 analys",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4535d64d-6743-4a8a-8c5e-84df4959b239"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:24:23.959Z",
+  "parents": [],
+  "branch": "main"
+}

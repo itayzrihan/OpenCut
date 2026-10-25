@@ -163,13 +163,15 @@ export async function pickLocalMedia({
 export async function registerLocalMediaPaths({
 	projectId,
 	paths,
+	preserveLink = false,
 }: {
 	projectId: string;
 	paths: string[];
+	preserveLink?: boolean;
 }): Promise<LocalDriveMediaRecord[]> {
 	return localDriveRequest({
 		operation: "media.registerPaths",
-		payload: { projectId, paths },
+		payload: { projectId, paths, preserveLink },
 	});
 }
 

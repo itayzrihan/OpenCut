@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2ae5422451bdf537212b13489fdead75e7cb8ba3785528a3c6e21489c6ace18e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:03:47.062Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames/camera2-grade-comparison.jpg",
+          "analysis/advanced-podcast-2026-10-25/color-plan.json",
+          ".local/advanced-podcast/color-plan.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "381d760d-1a2a-453d-8d11-0a926741ef2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:03:47.063Z",
+  "parents": [],
+  "branch": "main"
+}

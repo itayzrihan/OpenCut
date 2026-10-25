@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fec67863535c2817cce4bf1bf1950cb191e1a518fd3098a99081a59aa64ae359",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:46:29.896Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames/camera0-4020.png",
+          ".local/advanced-podcast/frames/camera0-4080.png",
+          ".local/advanced-podcast/frames/camera0-4140.png"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "118bf264-51b5-4070-a4bc-a0fe9ba4adc7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:46:29.896Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6419ea86dc2e748aea3b05d13d7f020f354d83f9e1aa3d4271ea44acd03b847",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:30:22.330Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/sync.worker.ts';s=open(p).read();a=s.index('\\t\\t\\tconst read = async (');b=s.index('\\n\\t\\t\\t\\tif (segments)',a);s=s[:a]+'''            const read = async ({asset,startSeconds,segments}:{asset:BrowserMediaSource & {name:string};startSeconds:number;segments?:Segment[]}) => {'''+s[b:];s=s.replace('''read(\n\\t\\t\\t\\t\\tmessage.reference,\n\\t\\t\\t\\t\\tmessage.window.referenceStart,\n\\t\\t\\t\\t\\tmessage.referenceSegments,\n\\t\\t\\t\\t)''','''read({asset:message.reference,startSeconds:message.window.referenceStart,segments:message.referenceSegments})''').replace('''read(\n\\t\\t\\t\\t\\tmessage.target,\n\\t\\t\\t\\t\\tmessage.window.targetStart,\n\\t\\t\\t\\t\\tmessage.targetSegments,\n\\t\\t\\t\\t)''','''read({asset:message.target,startSeconds:message.window.targetStart,segments:message.targetSegments})''');open(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read().replace('onMapping={(id, microphoneIds) =>','onMapping={({id, microphoneIds}) =>').replace('onMapping: (id: string, microphones: string[]) => void;','onMapping: (mapping:{id: string; microphoneIds: string[]}) => void;').replace(\"Select this session's WAV files.\",\"Select this session&apos;s WAV files.\");start=s.index('function AdvancedMicrophoneFields(');t=s[start:];a=t.index('onMapping(');b=t.index('\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t)',a) if '\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t)' in t[a:] else -1;print(t[a:a+330]);open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0d3e6565-fb7e-4d6f-b8b7-8b15621501dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:30:23.266Z",
+  "parents": [],
+  "branch": "main"
+}

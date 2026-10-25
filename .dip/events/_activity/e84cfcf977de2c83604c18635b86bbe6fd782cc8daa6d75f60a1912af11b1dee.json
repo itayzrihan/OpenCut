@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e84cfcf977de2c83604c18635b86bbe6fd782cc8daa6d75f60a1912af11b1dee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:48:15.741Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src | rg '(bridge.*mcp|mcp.*bridge|browser-control|local-drive/client)' | head -22; sed -n '152,183p' classic/apps/web/src/services/local-drive/client.ts; sed -n '195,270p' classic/apps/web/src/media/processing.ts; sed -n '210,240p' classic/apps/web/src/app/api/local-drive/route.ts; sed -n '1,95p' classic/apps/web/src/core/agent-control.ts 2>/dev/null",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8ca457fc-613a-4042-8ee7-e5587bf2882a"
+      },
+      {
+        "at": "2026-10-25T15:48:15.834Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src | rg '(bridge.*mcp|mcp.*bridge|browser-control|local-drive/client)' | head -22; sed -n '152,183p' classic/apps/web/src/services/local-drive/client.ts; sed -n '195,270p' classic/apps/web/src/media/processing.ts; sed -n '210,240p' classic/apps/web/src/app/api/local-drive/route.ts; sed -n '1,95p' classic/apps/web/src/core/agent-control.ts 2>/dev/null",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8ca457fc-613a-4042-8ee7-e5587bf2882a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:48:16.040Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fb6043b59baf51a37016c4a8e88029cf1b0bd368f2b35eac57d637c42fe11862",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:15:09.249Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/src/advanced.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c2daf920-8ae0-45be-829c-91f0ab13e0b2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:15:09.250Z",
+  "parents": [],
+  "branch": "main"
+}

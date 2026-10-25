@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "92a00193eb34c113f7d76e2a6df9f72d19b5208f47e714cf1cac64a24b3b7147",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:59:27.442Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792943966727",
+          ".local/classic-web-tests/1792943966727/src__services__local-drive____tests____server.test.ts.log",
+          ".local/classic-web-tests/1792943966727/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f09721dc-dc7c-4558-8b36-f4dc080c66e6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:59:27.443Z",
+  "parents": [],
+  "branch": "main"
+}

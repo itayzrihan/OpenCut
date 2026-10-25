@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "57ca5a61a2b33fa50a94ef1479f93c61cafbc44a8d2a8b6cab95624c5fd0b683",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:36:31.965Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'useEffect|setChannels|setMode' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx | head -20; cat classic/apps/web/tsconfig.build.json; git diff --check; tail -3 .local/advanced-podcast/next-build.log; ls -lh analysis/advanced-podcast-2026-10-25",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e522851c-b46b-4c9c-80fd-5e4d420dd101"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:36:32.921Z",
+  "parents": [],
+  "branch": "main"
+}

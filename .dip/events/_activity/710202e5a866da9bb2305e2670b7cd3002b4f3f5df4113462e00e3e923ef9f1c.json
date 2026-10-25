@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "710202e5a866da9bb2305e2670b7cd3002b4f3f5df4113462e00e3e923ef9f1c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:57:59.286Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx",
+          "classic/rust/crates/podcast/src/camera_groups.rs",
+          ".local/advanced-podcast/types-followup.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5fadcb57-171c-4485-9cc9-57fc2ebd7133"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:57:59.289Z",
+  "parents": [],
+  "branch": "main"
+}

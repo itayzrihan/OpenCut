@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bba0c97d7bd26a430237e240f7bbfb89ba6a28bcb471220cd8da0ffd83b766c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:51:41.356Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/advanced-podcast-2026-10-25/refine_lighting.py",
+          ".local/advanced-podcast/lighting-refine.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "eb4c1464-56d2-4dff-adc2-ea136d1bd170"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:51:41.358Z",
+  "parents": [],
+  "branch": "main"
+}

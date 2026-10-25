@@ -12,6 +12,7 @@ import { describe, expect, mock, test as runTest } from "bun:test";
 import {
 	mkdtemp,
 	readFile,
+	realpath,
 	rm,
 	stat,
 	utimes,
@@ -22,13 +23,41 @@ import { join } from "node:path";
 
 mock.module("opencut-wasm", () => ({
 	mediaLinkThresholdBytes: () => 0,
-	mediaStorageDisposition: () => "copy",
+	mediaStorageDisposition: ({ preserveLink }: { preserveLink?: boolean }) =>
+		preserveLink ? "link" : "copy",
 	batchEditIsLocked: () => false,
 	batchEditTransition: () => "",
 	fullAutoEditStages: () => [],
 }));
 
 describe("local-drive shared collections", () => {
+	test("explicit linked path imports keep original card files in place", async () => {
+		const { registerPickedMediaPaths, getMediaFile } =
+			await import("../server");
+		const directory = await mkdtemp(join(tmpdir(), "opencut-linked-podcast-"));
+		const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+		process.env.OPENCUT_ACCOUNTS_DIR = join(directory, "accounts");
+		try {
+			const source = join(directory, "recording.wav");
+			await writeFile(source, "unchanged-source");
+			const [record] = await registerPickedMediaPaths(
+				"project",
+				[source],
+				true,
+			);
+			expect(record.storageKind).toBe("linked");
+			expect(record.sourcePath).toBe(await realpath(source));
+			expect((await getMediaFile("project", record.id))!.path).toBe(
+				await realpath(source),
+			);
+			expect(await readFile(source, "utf8")).toBe("unchanged-source");
+		} finally {
+			if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR;
+			else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+			await rm(directory, { recursive: true, force: true });
+		}
+	});
+
 	test("native imports and older records expose integer modification times to the canonical editor", async () => {
 		const { registerPickedMediaPaths, listMedia, putMediaMetadata } =
 			await import("../server");

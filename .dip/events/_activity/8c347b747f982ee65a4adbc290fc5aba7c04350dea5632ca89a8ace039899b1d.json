@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8c347b747f982ee65a4adbc290fc5aba7c04350dea5632ca89a8ace039899b1d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:44:49.145Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,20p' classic/apps/web/src/ai/components/timeline-code-view.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f862db28-0695-41d6-9318-7452231a947f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:44:49.222Z",
+  "parents": [],
+  "branch": "main"
+}

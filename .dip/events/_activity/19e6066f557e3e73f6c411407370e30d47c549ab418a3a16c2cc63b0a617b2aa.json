@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19e6066f557e3e73f6c411407370e30d47c549ab418a3a16c2cc63b0a617b2aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:53:31.689Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();needle='\\tgroupPodcastRecordings(';s=s.replace(needle,'''    suggestPodcastCameras(input:{videoIds:string[];recordingIds:string[]}):import(\"opencut-wasm\").PodcastCameraSuggestions {\n        if (!this.canonical) throw new Error(\"Open the editor before matching camera angles\");\n        return this.canonical.invokeControl({capabilityId:\"timeline.classic.multicam.cameras.suggest\",input}) as import(\"opencut-wasm\").PodcastCameraSuggestions;\n    }\n\n'''+needle,1);open(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();s=s.replace('import { Input } from \"@/components/ui/input\";','''import { Input } from \"@/components/ui/input\";\nimport { Textarea } from \"@/components/ui/textarea\";\nimport { registerLocalMediaPaths } from \"@/services/local-drive/client\";\nimport { processLocalDriveMedia } from \"@/media/processing\";''');needle='\\tconst videoAssets = useMemo(() => {';s=s.replace(needle,'''    const [linkedIds,setLinkedIds]=useState<string[]>([]);\n    const [sourcePaths,setSourcePaths]=useState(\"\");\n    const [isImporting,setIsImporting]=useState(false);\n    type AngleDraft={cameraIds:string[];preferredCameraId:string};\n    const [angleOverrides,setAngleOverrides]=useState<AngleDraft[]|null>(null);\n\\tconst videoAssets = useMemo(() => {''',1);s=s.replace('''\\t\\treturn assets.filter(\n\\t\\t\\t(asset) => asset.type === \"video\" && !grouped.has(asset.id),\n\\t\\t);\n\\t}, [assets]);''','''        const selected=[...assets,...editor.media.getAssets().filter(a=>linkedIds.includes(a.id))];\n        return [...new Map(selected.filter(a=>a.type===\"video\" && !grouped.has(a.id)).map(a=>[a.id,a])).values()];\n    },[assets,editor,linkedIds]);''',1);s=s.replace('''\\t\\t[assets, editor],\n\\t);''','''\\t\\t[assets, editor, linkedIds],\n\\t);''',1);needle='\\tconst suggestions = sourceSuggestions.suggestions;';s=s.replace(needle,'''    const cameraSuggestions=useMemo(()=>{\n    ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-db501c8a-9696-4264-a877-f321b8a2fea4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:53:31.785Z",
+  "parents": [],
+  "branch": "main"
+}

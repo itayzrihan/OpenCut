@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "723ef7fa3233d35cde8a7d2cbfc804191b70bc450c45c13d44a51407fbd3e6c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:50:33.894Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/advanced-podcast-2026-10-25/sync_all_cameras.py <<'PY'\n\"\"\"Bounded audio-only decode of cameras referenced in place; shared production Rust clock.\"\"\"\nfrom pathlib import Path\nimport json,subprocess,numpy as np\nROOT=Path(__file__).resolve().parents[2];OUT=Path(__file__).resolve().parent;CACHE=ROOT/'.local/advanced-podcast'\nitems=json.loads((OUT/'all-cameras.json').read_text())\nfor item in items:\n path=Path(item['path']);cache=CACHE/(path.stem+'-rms-10ms.npy')\n if cache.exists():continue\n before=path.stat();print('Reading '+path.name,flush=True)\n proc=subprocess.Popen(['ffmpeg','-v','error','-i',str(path),'-map','0:a:0','-vn','-ac','1','-ar','48000','-f','f32le','-'],stdout=subprocess.PIPE);blocks=[];pending=b''\n while raw:=proc.stdout.read(1920*1000):\n  pending+=raw;n=len(pending)//1920*1920\n  if n:\n   a=np.frombuffer(pending[:n],dtype='<f4').reshape(-1,480).astype(np.float64);blocks.append(np.sqrt(np.mean(a*a,axis=1)).astype(np.float32));pending=pending[n:]\n if proc.wait():raise RuntimeError('Camera audio failed')\n after=path.stat();assert(before.st_size,before.st_mtime_ns)==(after.st_size,after.st_mtime_ns)\n np.save(cache,np.concatenate(blocks))\n# Reference order begins with the longest camera, not its preferred editorial angle.\nnames=[Path(item['path']).stem for item in items[::-1]]+['9P8H','AHQC','AX5F','BCZ9']\npayload=dict(envelopes=[np.load(CACHE/(n+'-rms-10ms.npy')).tolist() for n in names],resolutionSeconds=.01,maxLagSeconds=1200)\nr=subprocess.run(['cargo','run','-q','-p','podcast','--example','analyze','--','group-align'],cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True)\ng=json.loads(r.stdout);g['sources']=names;(OUT/'all-shared-clock.json').write_text(json.dumps(g,indent=2)+'\\n');print(json.dumps(g,indent=2),flush=True)\nPY\npython3 analysis/advanced-podcast-2026-10-25/sync_all_cameras.py > .local/advanced-podcast/all-sync.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-38f6cc86-ebb6-4bf6-8523-e9e9a3fa8bef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:50:34.262Z",
+  "parents": [],
+  "branch": "main"
+}

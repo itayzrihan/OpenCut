@@ -5,6 +5,7 @@ import {
 import type { MediaAsset } from "@/media/types";
 import {
 	podcastCameraClock,
+	advancedPodcastCameraClock,
 	planPodcastPrecision,
 	resolvePodcastPrecision,
 	type PodcastPrecisionEstimate,
@@ -19,6 +20,14 @@ import type { PodcastSyncCut } from "@/podcast-sync/router";
 const PODCAST_SYNC_RESOLUTION_SECONDS = 0.01;
 
 const DEFAULT_MAX_LAG_SECONDS = 1200;
+export interface AdvancedPodcastPlan {
+	microphones: import("opencut-wasm").PodcastMicrophone[];
+	starts: Record<string, number>;
+	routing: import("opencut-wasm").AdvancedPodcastRouting;
+}
+export type AdvancedPodcastSources = Omit<AdvancedPodcastPlan, "starts"> & {
+	assets: MediaAsset[];
+};
 
 export interface PodcastSyncChannel {
 	id: string;
@@ -32,6 +41,7 @@ export interface PodcastSyncChannel {
 export type PodcastSyncSettings = PodcastMulticamSettings;
 
 export interface PodcastSyncAlignment {
+	advanced?: AdvancedPodcastPlan;
 	duration: number;
 	precisionWarnings?: string[];
 	videoOffsets: Record<string, number>;
@@ -50,6 +60,7 @@ const alignmentEnvelopes = new WeakMap<
 >();
 
 export interface PodcastSyncResult {
+	advanced?: AdvancedPodcastPlan;
 	cuts: PodcastSyncCut[];
 	duration: PodcastSyncAlignment["duration"];
 	videoOffsets: PodcastSyncAlignment["videoOffsets"];
@@ -98,11 +109,13 @@ function validatePodcastChannels({
 
 export async function runPodcastAlignment({
 	channels,
+	advanced,
 	settings,
 	onProgress,
 	signal,
 }: {
 	channels: PodcastSyncChannel[];
+	advanced?: AdvancedPodcastSources;
 	settings: PodcastSyncSettings;
 	onProgress?: ProgressCallback;
 	signal?: AbortSignal;
@@ -112,25 +125,80 @@ export async function runPodcastAlignment({
 
 	// One job and one clock for all unique camera/microphone sources. Decode
 	// each asset once; bounded Workers keep IO and sample processing off the UI.
-	const assets = [
+	const physicalAssets = [
 		...new Map(
 			channels
-				.flatMap((c) => [...(c.angles ?? [c.video]), c.audio])
+				.flatMap((c) => [
+					...(c.angles ?? [c.video]),
+					...(advanced ? [] : [c.audio]),
+				])
+				.concat(
+					advanced?.microphones.flatMap((m) =>
+						m.segments.map((s) => {
+							const a = advanced.assets.find(
+								(a) => a.id === s.recording.mediaId,
+							);
+							if (
+								!a ||
+								a.missing ||
+								a.duration !== s.recording.duration ||
+								(a.bindingRevision ?? 0) !== s.recording.bindingRevision
+							)
+								throw new Error("Microphone recording changed; regroup files");
+							return a;
+						}),
+					) ?? [],
+				)
 				.map((a) => [a.id, a]),
 		).values(),
 	];
+	const segments = new Map<
+		string,
+		Array<{ asset: MediaAsset; start: number; duration: number }>
+	>();
+	for (const a of physicalAssets)
+		segments.set(a.id, [{ asset: a, start: 0, duration: a.duration ?? 0 }]);
+	for (const m of advanced?.microphones ?? [])
+		segments.set(
+			m.id,
+			m.segments.map((s) => ({
+				asset: physicalAssets.find((a) => a.id === s.recording.mediaId)!,
+				start: s.start,
+				duration: s.recording.duration,
+			})),
+		);
+	const assets: MediaAsset[] = advanced
+		? [
+				...physicalAssets.filter((a) => a.type === "video"),
+				...advanced.microphones.map((m) => ({
+					...segments.get(m.id)![0]!.asset,
+					id: m.id,
+					duration: m.duration,
+				})),
+			]
+		: physicalAssets;
 	if (assets.length > 64)
 		throw new Error(
 			"Choose at most 64 camera and microphone sources in one synchronization job",
 		);
+	if (
+		physicalAssets.reduce(
+			(sum, a) =>
+				sum + Math.ceil((a.duration ?? 0) / PODCAST_SYNC_RESOLUTION_SECONDS),
+			0,
+		) > 32_000_000
+	)
+		throw new Error(
+			"Combined source recordings exceed synchronization memory limit",
+		);
 	let completed = 0;
 	report({
 		onProgress,
-		step: `Reading all sources (0/${assets.length})`,
+		step: `Reading all sources (0/${physicalAssets.length})`,
 		progress: 0.02,
 	});
-	const envelopes = await mapConcurrent({
-		items: assets,
+	const physicalEnvelopes = await mapConcurrent({
+		items: physicalAssets,
 		concurrency: Math.min(
 			4,
 			Math.max(2, Math.floor((navigator.hardwareConcurrency || 4) / 2)),
@@ -146,12 +214,30 @@ export async function runPodcastAlignment({
 			completed++;
 			report({
 				onProgress,
-				step: `Reading all sources (${completed}/${assets.length})`,
-				progress: 0.02 + (0.78 * completed) / assets.length,
+				step: `Reading all sources (${completed}/${physicalAssets.length})`,
+				progress: 0.02 + (0.78 * completed) / physicalAssets.length,
 			});
 			return envelope;
 		},
 		signal,
+	});
+	const physicalMap = new Map(
+		physicalAssets.map((a, i) => [a.id, physicalEnvelopes[i]!]),
+	);
+	const envelopes = assets.map((a) => {
+		if (!advanced || a.type === "video") return physicalMap.get(a.id)!;
+		const stitched = new Float32Array(
+			Math.ceil((a.duration ?? 0) / PODCAST_SYNC_RESOLUTION_SECONDS),
+		);
+		for (const segment of segments.get(a.id)!) {
+			const e = physicalMap.get(segment.asset.id)!;
+			const start = Math.round(segment.start / PODCAST_SYNC_RESOLUTION_SECONDS);
+			stitched.set(
+				e.subarray(0, Math.min(e.length, stitched.length - start)),
+				start,
+			);
+		}
+		return stitched;
 	});
 	if (envelopes.reduce((sum, e) => sum + e.length, 0) > 32_000_000) {
 		throw new Error(
@@ -209,6 +295,12 @@ export async function runPodcastAlignment({
 					type: "precision",
 					reference: source(window.referenceIndex),
 					target: source(window.targetIndex),
+					referenceSegments: advanced
+						? segments.get(assets[window.referenceIndex]!.id)
+						: undefined,
+					targetSegments: advanced
+						? segments.get(assets[window.targetIndex]!.id)
+						: undefined,
 					window,
 				},
 				signal: jobSignal,
@@ -250,14 +342,23 @@ export async function runPodcastAlignment({
 		if (!clock) throw new Error("Camera duration is missing");
 		return c.angles.find((a) => a.id === clock.referenceId)!;
 	});
-	const clock = podcastCameraClock({
-		sources: baseVideos.map((a) => ({
-			id: a.id,
-			duration: a.duration ?? 0,
-			start: offsets.get(a.id)!,
-			bindingRevision: a.bindingRevision ?? 0,
-		})),
-	});
+	const cameraSources = baseVideos.map((a) => ({
+		id: a.id,
+		duration: a.duration ?? 0,
+		start: offsets.get(a.id)!,
+		bindingRevision: a.bindingRevision ?? 0,
+	}));
+	const clock = advanced
+		? advancedPodcastCameraClock({
+				sources: cameraSources,
+				microphones: advanced.microphones.map((m) => ({
+					id: m.id,
+					duration: m.duration,
+					start: offsets.get(m.id)!,
+					bindingRevision: 0,
+				})),
+			})
+		: podcastCameraClock({ sources: cameraSources });
 	if (!clock) throw new Error("Cannot determine the longest camera recording");
 	const { origin, duration } = clock;
 	const videoOffsets: Record<string, number> = {};
@@ -276,7 +377,11 @@ export async function runPodcastAlignment({
 		if (end <= start)
 			throw new Error(`${channel.name} has no footage on the main recording`);
 		cameraWindows.push({ channelId: channel.id, start, end });
-		const audioAtZero = origin - offsets.get(channel.audio.id)!;
+		const micId =
+			advanced?.microphones.find((m) =>
+				m.segments.some((s) => s.recording.mediaId === channel.audio.id),
+			)?.id ?? channel.audio.id;
+		const audioAtZero = origin - offsets.get(micId)!;
 		audioOffsets[channel.id] = Math.max(0, audioAtZero);
 		audioDelays[channel.id] = Math.max(0, -audioAtZero);
 		if (channel.angles)
@@ -284,7 +389,8 @@ export async function runPodcastAlignment({
 				mediaId: channel.video.id,
 				sources: [
 					...channel.angles,
-					...(channel.video.unifiedAngles?.audioFinishingVersion === 1
+					...(!advanced &&
+					channel.video.unifiedAngles?.audioFinishingVersion === 1
 						? [channel.audio]
 						: []),
 				].map((a) => ({
@@ -296,10 +402,22 @@ export async function runPodcastAlignment({
 			});
 	}
 	const bindings = Object.fromEntries(
-		assets.map((a) => [a.id, a.bindingRevision ?? 0]),
+		physicalAssets.map((a) => [a.id, a.bindingRevision ?? 0]),
 	);
 	report({ onProgress, step: "Synchronization complete", progress: 1 });
-	const alignment = {
+	const alignment: PodcastSyncAlignment = {
+		advanced: advanced
+			? {
+					microphones: advanced.microphones,
+					routing: advanced.routing,
+					starts: Object.fromEntries(
+						advanced.microphones.map((m) => [
+							m.id,
+							offsets.get(m.id)! - origin,
+						]),
+					),
+				}
+			: undefined,
 		precisionWarnings,
 		duration,
 		videoOffsets,
@@ -343,12 +461,33 @@ export async function runPodcastMulticam({
 	const channelEnergies: Record<string, Float32Array> = {};
 
 	report({ onProgress, step: "Analyzing speech", progress: 0.05 });
-	for (let i = 0; i < channels.length; i++) {
-		const channel = channels[i]!;
-		const delay = audioDelays[channel.id] ?? 0;
-		const startSeconds = delay > 0 ? 0 : (audioOffsets[channel.id] ?? 0);
+	const audioSources = alignment.advanced
+		? alignment.advanced.microphones.map((m) => ({
+				id: m.id,
+				audio: channels[0]!.audio,
+			}))
+		: channels;
+	for (let i = 0; i < audioSources.length; i++) {
+		const channel = audioSources[i]!;
+		const micStart = alignment.advanced?.starts[channel.id];
+		const delay =
+			micStart !== undefined
+				? Math.max(0, micStart)
+				: (audioDelays[channel.id] ?? 0);
+		const startSeconds =
+			micStart !== undefined
+				? Math.max(0, -micStart)
+				: delay > 0
+					? 0
+					: (audioOffsets[channel.id] ?? 0);
 		const decodeDuration = Math.max(0, duration - delay);
-		const cached = alignmentEnvelopes.get(alignment)?.get(channel.audio.id);
+		const cached = alignmentEnvelopes
+			.get(alignment)
+			?.get(alignment.advanced ? channel.id : channel.audio.id);
+		if (alignment.advanced && !cached)
+			throw new Error(
+				"Wireless microphone analysis expired; synchronize again",
+			);
 		const envelope = cached
 			? cached.subarray(
 					Math.round(startSeconds / PODCAST_SYNC_RESOLUTION_SECONDS),
@@ -385,7 +524,8 @@ export async function runPodcastMulticam({
 	const cuts = await runSyncWorker<PodcastSyncCut[]>({
 		message: {
 			type: "route",
-			envelopes: channelIds.map((id) => channelEnergies[id]!),
+			envelopes: audioSources.map((c) => channelEnergies[c.id]!),
+			advanced: alignment.advanced?.routing,
 			channelIds,
 			cameraWindows: alignment.cameraWindows,
 			duration,
@@ -405,6 +545,7 @@ export async function runPodcastMulticam({
 
 	report({ onProgress, step: "Building sequence", progress: 1 });
 	return {
+		advanced: alignment.advanced,
 		cuts,
 		duration,
 		videoOffsets,

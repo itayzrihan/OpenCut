@@ -1,3 +1,7 @@
+mod camera_groups;
+pub use camera_groups::*;
+mod advanced;
+pub use advanced::*;
 mod precision;
 pub use precision::*;
 mod coverage;
@@ -151,6 +155,27 @@ pub fn route_podcast_multicam(
         settings,
     }: RoutePodcastMulticamOptions,
 ) -> Vec<PodcastMulticamCut> {
+    route_podcast_multicam_grouped(
+        RoutePodcastMulticamOptions {
+            timeline,
+            channel_ids,
+            duration,
+            settings,
+        },
+        &[],
+    )
+}
+
+pub(crate) fn route_podcast_multicam_grouped(
+    o: RoutePodcastMulticamOptions,
+    groups: &[PodcastAngleGroup],
+) -> Vec<PodcastMulticamCut> {
+    let RoutePodcastMulticamOptions {
+        timeline,
+        channel_ids,
+        duration,
+        settings,
+    } = o;
     let settings = settings.normalized();
     if channel_ids.is_empty()
         || channel_ids.len() > MAX_PODCAST_CHANNELS
@@ -180,7 +205,7 @@ pub fn route_podcast_multicam(
         settings.pre_roll,
     );
     let smoothed = smooth_cuts(cuts, settings.min_cut_duration);
-    insert_reaction_shots(smoothed, &channel_ids, &settings, &timeline)
+    insert_reaction_shots(smoothed, &channel_ids, &settings, &timeline, groups)
 }
 
 fn argmax(row: &[f32], num_channels: usize) -> usize {
@@ -440,6 +465,7 @@ fn insert_reaction_shots(
     channel_ids: &[String],
     settings: &PodcastMulticamSettings,
     timeline: &[Vec<f32>],
+    groups: &[PodcastAngleGroup],
 ) -> Vec<PodcastMulticamCut> {
     if settings.max_cut_duration <= 0.0 || channel_ids.len() < 2 || cuts.is_empty() {
         return cuts;
@@ -477,7 +503,12 @@ fn insert_reaction_shots(
             .is_some_and(|row| row.iter().any(|v| *v >= ACTIVITY_FLOOR));
         if elapsed >= maximum && next == visual && audible {
             let index = channel_ids.iter().position(|id| id == &visual).unwrap_or(0);
-            next = channel_ids[(index + 1) % channel_ids.len()].clone();
+            next = groups
+                .iter()
+                .find(|g| g.channel_ids.contains(&visual))
+                .and_then(|g| g.channel_ids.iter().find(|id| **id != visual))
+                .cloned()
+                .unwrap_or_else(|| channel_ids[(index + 1) % channel_ids.len()].clone());
             reaction = Some((speaker.clone(), frame + reaction_length));
         }
         if next != visual {

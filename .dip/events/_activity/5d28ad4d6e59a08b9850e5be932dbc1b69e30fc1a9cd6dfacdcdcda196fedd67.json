@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d28ad4d6e59a08b9850e5be932dbc1b69e30fc1a9cd6dfacdcdcda196fedd67",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:29:45.496Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bunx eslint src/podcast-sync/engine.ts src/podcast-sync/sync.worker.ts src/podcast-sync/components/podcast-sync-dialog.tsx src/core/managers/commands.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-99c86c5f-ea92-4eea-a227-57e1aea9686f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:29:46.238Z",
+  "parents": [],
+  "branch": "main"
+}

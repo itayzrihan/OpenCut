@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd8ee9316428bcebedbe9e25120fdd030b4d6d3513126c9cb00cfb8a06576c71",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:27:46.158Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "09f5403a-73ee-45e9-a11f-e6f73870fec5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:27:46.159Z",
+  "parents": [],
+  "branch": "main"
+}

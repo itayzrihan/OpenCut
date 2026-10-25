@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "79462e44657f0b50aa2f8dab0c9553881966fdfe6b9025e8eed8cef64068bc06",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:20:57.350Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/podcast-sync/engine.ts classic/apps/web/src/podcast-sync/sync.worker.ts classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; node classic/scripts/test-web.mjs src/podcast-sync/__tests__/unified-engine.test.ts src/podcast-sync/energy-reader.test.ts src/podcast-sync/sync-jobs.test.ts src/podcast-sync/precision.integration.test.ts src/core/__tests__/canonical-podcast.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2a64e197-99e4-4a50-bbf8-30c137814150"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:20:57.766Z",
+  "parents": [],
+  "branch": "main"
+}

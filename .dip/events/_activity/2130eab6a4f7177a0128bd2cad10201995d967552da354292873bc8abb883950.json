@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2130eab6a4f7177a0128bd2cad10201995d967552da354292873bc8abb883950",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:58:45.860Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read().replace('[editor, videoAssets, recordingGroups]','[editor, videoAssets, recordingIds]');open(p,'w').write(s)\np='classic/rust/crates/podcast/src/camera_groups.rs';s=open(p).read().replace('mod angle_routing_tests {\\n    use super::*;','mod angle_routing_tests {');open(p,'w').write(s)\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json > .local/advanced-podcast/types-followup.log 2>&1\nnode classic/scripts/test-web.mjs src/podcast-sync/__tests__/advanced-engine.test.ts src/podcast-sync/__tests__/advanced-worker.test.ts src/core/__tests__/canonical-advanced-podcast.test.ts src/core/__tests__/canonical-multicam.test.ts src/services/local-drive/__tests__/server.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b6501627-b7dc-40b8-a479-f62a937fc518"
+      },
+      {
+        "at": "2026-10-25T15:58:45.862Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> crates/editor-api/tests/classic_advanced_podcast.rs <<'EOF'\n\n#[tokio::test]\nasync fn inline_camera_suggestions_read_registered_names_without_creating_virtual_assets() {\n    let r=OpenCutRuntime::default();\n    let mut classic:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n    classic[\"mediaAssets\"]=json!([\n        {\"id\":\"alt\",\"name\":\"C7458Shlishiyaangle1.MP4\",\"type\":\"video\",\"duration\":4445.28},\n        {\"id\":\"main\",\"name\":\"C7458Shlishya Main Angle.MP4\",\"type\":\"video\",\"duration\":4428.48},\n        {\"id\":\"single\",\"name\":\"C7460Avihay.MP4\",\"type\":\"video\",\"duration\":4360.8},\n        {\"id\":\"mic1\",\"name\":\"20260720_1634_0005_32Float_9P8HShlishya1.wav\",\"type\":\"audio\",\"duration\":1800.15},\n        {\"id\":\"mic4\",\"name\":\"20260720_1635_0003_32Float_BCZ9Avihay.wav\",\"type\":\"audio\",\"duration\":1800.15}\n    ]);\n    call(&r,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await;\n    let before=read(&r).await;\n    let input=json!({\"projectId\":\"classic-project\",\"expectedRevision\":before[\"revision\"],\"videoIds\":[\"alt\",\"main\",\"single\"],\"recordingIds\":[\"mic1\",\"mic4\"]});\n    let out=call(&r,\"timeline.classic.multicam.cameras.suggest\",input.clone()).await;\n    assert_eq!(out[\"groups\"].as_array().unwrap().len(),2);\n    assert_eq!(out[\"groups\"][0][\"preferredCameraId\"],\"main\");\n    assert_eq!(out[\"groups\"][0][\"microphoneIds\"],json!([\"20260720-9P8H\"]));\n    assert_eq!(out[\"groups\"][1][\"microphoneIds\"],json!([\"20260720-BCZ9\"]));\n    assert_eq!(read(&r).await,before);\n    let mut stale=input;stale[\"expectedRevision\"]=json!(0);\n    assert!(r.registry().invoke(\"timeline.classic.multicam.cameras.suggest\",InvocationContext::default(),stale).await.is_err());\n}\nEOF\npython3 - <<'PY'\np='classic/apps/web/src/services/local-drive/__tests__/server.test.ts';s=open(p).read().replace('mediaStorageDisposition: () => \"copy\",','mediaStorageDisposition: ({preserveLink}:{preserveLink?:boolean}) => preserveLink ? \"l",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-4d7a1d62-bcb7-4cea-b0f0-d9896e577455"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:58:46.368Z",
+  "parents": [],
+  "branch": "main"
+}

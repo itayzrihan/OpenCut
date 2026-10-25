@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee16f63607be762f49080a5d929e18ed2d3d1de9cd31618c1fa885c0cb3dda9c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:30:28.916Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();a=s.index('onMapping(\\n',s.index('function AdvancedMicrophoneFields'));b=s.index('\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t)',a)+len('\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t)');s=s[:a]+'''onMapping({id:c.id,microphoneIds:e.target.checked ? [...(c.microphoneIds??[]),m.id] : (c.microphoneIds??[]).filter(id=>id!==m.id)})'''+s[b:];open(p,'w').write(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx classic/apps/web/src/podcast-sync/sync.worker.ts\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b2b6c640-d915-476f-9246-c55535714a1d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:30:29.271Z",
+  "parents": [],
+  "branch": "main"
+}

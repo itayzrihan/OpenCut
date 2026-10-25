@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "878144eff7764aeabfb6faa55a9a07d46d4725ca54b3d3fc33e63d8b5d2a1bf8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:27:01.310Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,120p' classic/apps/web/src/podcast-sync/sync.worker.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6225922c-c263-4756-bad4-00c25c0c1be5"
+      },
+      {
+        "at": "2026-10-25T16:27:01.420Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,120p' classic/apps/web/src/podcast-sync/sync.worker.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6225922c-c263-4756-bad4-00c25c0c1be5"
+      },
+      {
+        "at": "2026-10-25T16:27:01.451Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,pcpu,pmem,etime,comm -r | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f7693c43-bbe4-48bf-b817-6a25abd3f35d"
+      },
+      {
+        "at": "2026-10-25T16:27:01.590Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,pcpu,pmem,etime,comm -r | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f7693c43-bbe4-48bf-b817-6a25abd3f35d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:27:01.951Z",
+  "parents": [],
+  "branch": "main"
+}

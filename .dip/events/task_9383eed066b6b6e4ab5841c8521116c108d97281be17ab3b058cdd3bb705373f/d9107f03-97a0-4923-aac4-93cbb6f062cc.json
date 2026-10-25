@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9107f03-97a0-4923-aac4-93cbb6f062cc",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect real recorder identity, exact segmentation and acoustic offsets; record implementation requirements.",
+          "status": "in_progress"
+        },
+        {
+          "step": "Implement and test shared grouping/provenance and Advanced Podcast integration.",
+          "status": "pending"
+        },
+        {
+          "step": "Validate regular podcast regressions and document real-data verification limits.",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T15:12:53.524Z",
+  "parents": [
+    "9422c5cb-fcaf-460a-a9de-c5be75a088fd"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a609d19db68b6c3fbcf27aef709257b0c58b3857baefedf284e1c0ed45b97ef2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:58:50.372Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames/camera2-native-light.npy",
+          ".local/advanced-podcast/frames/camera2-light-boundary.jpg",
+          "analysis/advanced-podcast-2026-10-25/light-boundaries.json",
+          ".local/advanced-podcast/light-boundaries.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "29784c52-836c-4ee5-84d9-5ce540d6516c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:58:50.372Z",
+  "parents": [],
+  "branch": "main"
+}

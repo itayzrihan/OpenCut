@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f573ecb2d9ee8a00e73dedf8eda28a9865d46d256a113b1285fd3a3985fcb2e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:17:37.878Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();needle='\\tcreateMulticam({';insert='''\\tgroupPodcastRecordings(mediaIds: string[]): import(\"opencut-wasm\").PodcastRecordingGroups {\n        if (!this.canonical) throw new Error(\"Open the editor before grouping microphones\");\n        return this.canonical.invokeControl({capabilityId:\"timeline.classic.multicam.recordings.group\", input:{mediaIds}}) as import(\"opencut-wasm\").PodcastRecordingGroups;\n    }\n\n''';s=s.replace(needle,insert+needle,1);s=s.replace('\\t\\tplan: {\\n\\t\\t\\tsettings: import(\"@/podcast-sync/engine\").PodcastSyncSettings;', '\\t\\tplan: {\\n            advanced?: import(\"@/podcast-sync/engine\").AdvancedPodcastPlan;\\n\\t\\t\\tsettings: import(\"@/podcast-sync/engine\").PodcastSyncSettings;',1);open(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read();s=s.replace('const DEFAULT_MAX_LAG_SECONDS = 1200;','''const DEFAULT_MAX_LAG_SECONDS = 1200;\nexport interface AdvancedPodcastPlan {\n    microphones: import(\"opencut-wasm\").PodcastMicrophone[];\n    starts: Record<string, number>;\n    routing: import(\"opencut-wasm\").AdvancedPodcastRouting;\n}\nexport type AdvancedPodcastSources = Omit<AdvancedPodcastPlan, \"starts\"> & { assets: MediaAsset[] };\n''');s=s.replace('export interface PodcastSyncAlignment {','export interface PodcastSyncAlignment {\\n    advanced?: AdvancedPodcastPlan;');s=s.replace('export interface PodcastSyncResult {','export interface PodcastSyncResult {\\n    advanced?: AdvancedPodcastPlan;');s=s.replace('export async function runPodcastAlignment({\\n\\tchannels,','export async function runPodcastAlignment({\\n\\tchannels,\\n    advanced,');start=s.index('export async function runPodcastAlignment');idx=s.index('\\tchannels: PodcastSyncChannel[];',start);s=s[:idx]+s[idx:].replace('\\tchannels: PodcastSyncChannel[];','\\tchannels: PodcastSyncChannel[];\\n    advanced?: AdvancedPodcastSources;',1);s=s.replace('const assets = [\\n','const physicalAssets = [\\n',1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f10bcdd8-9206-4459-8423-1a88578f0c7a"
+      },
+      {
+        "at": "2026-10-25T15:17:37.976Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();needle='\\tcreateMulticam({';insert='''\\tgroupPodcastRecordings(mediaIds: string[]): import(\"opencut-wasm\").PodcastRecordingGroups {\n        if (!this.canonical) throw new Error(\"Open the editor before grouping microphones\");\n        return this.canonical.invokeControl({capabilityId:\"timeline.classic.multicam.recordings.group\", input:{mediaIds}}) as import(\"opencut-wasm\").PodcastRecordingGroups;\n    }\n\n''';s=s.replace(needle,insert+needle,1);s=s.replace('\\t\\tplan: {\\n\\t\\t\\tsettings: import(\"@/podcast-sync/engine\").PodcastSyncSettings;', '\\t\\tplan: {\\n            advanced?: import(\"@/podcast-sync/engine\").AdvancedPodcastPlan;\\n\\t\\t\\tsettings: import(\"@/podcast-sync/engine\").PodcastSyncSettings;',1);open(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read();s=s.replace('const DEFAULT_MAX_LAG_SECONDS = 1200;','''const DEFAULT_MAX_LAG_SECONDS = 1200;\nexport interface AdvancedPodcastPlan {\n    microphones: import(\"opencut-wasm\").PodcastMicrophone[];\n    starts: Record<string, number>;\n    routing: import(\"opencut-wasm\").AdvancedPodcastRouting;\n}\nexport type AdvancedPodcastSources = Omit<AdvancedPodcastPlan, \"starts\"> & { assets: MediaAsset[] };\n''');s=s.replace('export interface PodcastSyncAlignment {','export interface PodcastSyncAlignment {\\n    advanced?: AdvancedPodcastPlan;');s=s.replace('export interface PodcastSyncResult {','export interface PodcastSyncResult {\\n    advanced?: AdvancedPodcastPlan;');s=s.replace('export async function runPodcastAlignment({\\n\\tchannels,','export async function runPodcastAlignment({\\n\\tchannels,\\n    advanced,');start=s.index('export async function runPodcastAlignment');idx=s.index('\\tchannels: PodcastSyncChannel[];',start);s=s[:idx]+s[idx:].replace('\\tchannels: PodcastSyncChannel[];','\\tchannels: PodcastSyncChannel[];\\n    advanced?: AdvancedPodcastSources;',1);s=s.replace('const assets = [\\n','const physicalAssets = [\\n',1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f10bcdd8-9206-4459-8423-1a88578f0c7a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:17:38.491Z",
+  "parents": [],
+  "branch": "main"
+}

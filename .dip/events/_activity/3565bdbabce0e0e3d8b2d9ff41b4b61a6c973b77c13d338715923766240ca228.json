@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3565bdbabce0e0e3d8b2d9ff41b4b61a6c973b77c13d338715923766240ca228",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:22:46.868Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/advanced-podcast-2026-10-25/inspect.py",
+          "analysis/advanced-podcast-2026-10-25/audit_recordings.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8817a5ca-f708-4225-bb7e-c6529cdf3dcf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:22:46.874Z",
+  "parents": [],
+  "branch": "main"
+}

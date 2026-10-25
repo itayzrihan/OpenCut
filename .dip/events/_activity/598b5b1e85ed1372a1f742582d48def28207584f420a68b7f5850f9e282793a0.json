@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "598b5b1e85ed1372a1f742582d48def28207584f420a68b7f5850f9e282793a0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:10:47.337Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/activation.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7b19876a-995c-487e-be35-6b158bec58d3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:10:47.338Z",
+  "parents": [],
+  "branch": "main"
+}

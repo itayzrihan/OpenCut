@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "edc07bbb35ff39a440d9ee18ed34a29a89e0b885814a4aff886f4001c999c365",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:03:17.016Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm-opt.wasm",
+          "analysis/advanced-podcast-2026-10-25/plan_color.py",
+          ".local/advanced-podcast/color-plan.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "02a7a8dd-b6ec-4ba2-b948-7e719633b63d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:03:17.017Z",
+  "parents": [],
+  "branch": "main"
+}

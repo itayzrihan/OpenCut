@@ -28,6 +28,9 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { registerLocalMediaPaths } from "@/services/local-drive/client";
+import { processLocalDriveMedia } from "@/media/processing";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -59,9 +62,10 @@ interface ChannelDraft {
 	audioAssetId: string;
 	/** Only a manual selection may opt into camera audio when external mics exist. */
 	audioExplicit: boolean;
+	microphoneIds?: string[];
 }
 
-type WizardMode = "quick" | "guided";
+type WizardMode = "quick" | "guided" | "advanced";
 type WizardStep = "media" | "sync" | "multicam" | "sequence";
 
 const NONE_VALUE = "none";
@@ -115,14 +119,29 @@ export function PodcastSyncDialog({
 }) {
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActive());
+	const [linkedIds, setLinkedIds] = useState<string[]>([]);
+	const [sourcePaths, setSourcePaths] = useState("");
+	const [isImporting, setIsImporting] = useState(false);
+	type AngleDraft = { cameraIds: string[]; preferredCameraId: string };
+	const [angleOverrides, setAngleOverrides] = useState<AngleDraft[] | null>(
+		null,
+	);
 	const videoAssets = useMemo(() => {
 		const grouped = new Set(
 			assets.flatMap((asset) => asset.unifiedAngles?.angleAssetIds ?? []),
 		);
-		return assets.filter(
-			(asset) => asset.type === "video" && !grouped.has(asset.id),
-		);
-	}, [assets]);
+		const selected = [
+			...assets,
+			...editor.media.getAssets().filter((a) => linkedIds.includes(a.id)),
+		];
+		return [
+			...new Map(
+				selected
+					.filter((a) => a.type === "video" && !grouped.has(a.id))
+					.map((a) => [a.id, a]),
+			).values(),
+		];
+	}, [assets, editor, linkedIds]);
 	const audioAssets = useMemo(
 		() =>
 			editor.media
@@ -132,7 +151,7 @@ export function PodcastSyncDialog({
 						asset.type === "audio" ||
 						(asset.type === "video" && asset.hasAudio),
 				),
-		[assets, editor],
+		[assets, editor, linkedIds],
 	);
 	const sourceSuggestions = useMemo(
 		() =>
@@ -143,6 +162,60 @@ export function PodcastSyncDialog({
 				: { hasExternalAudio: false, suggestions: [] },
 		[editor, videoAssets],
 	);
+	const [recordingSelection, setRecordingSelection] = useState<string[] | null>(
+		null,
+	);
+	const recordingIds =
+		recordingSelection ??
+		audioAssets.filter((a) => a.type === "audio").map((a) => a.id);
+	const recordingGroups = useMemo(() => {
+		const ids =
+			recordingSelection ??
+			audioAssets.filter((a) => a.type === "audio").map((a) => a.id);
+		if (!ids.length)
+			return {
+				microphones: [],
+				issues: ["Import microphone WAV recordings into Assets"],
+			};
+		try {
+			return editor.command.groupPodcastRecordings(ids);
+		} catch (error) {
+			return {
+				microphones: [],
+				issues: [
+					error instanceof Error
+						? error.message
+						: "Cannot group microphone recordings",
+				],
+			};
+		}
+	}, [editor, audioAssets, recordingSelection]);
+	const cameraSuggestions = useMemo(() => {
+		const videoIds = videoAssets
+			.filter((a) => !a.unifiedAngles)
+			.map((a) => a.id);
+		if (!videoIds.length) return { groups: [], issues: [] };
+		try {
+			return editor.command.suggestPodcastCameras({ videoIds, recordingIds });
+		} catch (error) {
+			return {
+				groups: [],
+				issues: [
+					error instanceof Error
+						? error.message
+						: "Cannot suggest camera groups",
+				],
+			};
+		}
+	}, [editor, videoAssets, recordingIds]);
+	const angleDrafts =
+		angleOverrides ??
+		cameraSuggestions.groups
+			.filter((g) => g.cameraIds.length > 1)
+			.map((g) => ({
+				cameraIds: g.cameraIds,
+				preferredCameraId: g.preferredCameraId,
+			}));
 	const suggestions = sourceSuggestions.suggestions;
 	const suggestedName = activeProject?.metadata.name
 		? `${activeProject.metadata.name} Podcast Multicam`
@@ -174,6 +247,87 @@ export function PodcastSyncDialog({
 	);
 	const currentStepIndex = STEPS.findIndex((item) => item.id === step);
 
+	const applySourceSuggestions = ({
+		videos = videoAssets,
+		recordings = recordingIds,
+	}: { videos?: MediaAsset[]; recordings?: string[] } = {}) => {
+		const suggested = editor.command.suggestPodcastCameras({
+			videoIds: videos.filter((a) => !a.unifiedAngles).map((a) => a.id),
+			recordingIds: recordings,
+		});
+		setChannels(
+			buildInitialDrafts({
+				videoAssets: videos,
+				suggestions: [],
+				count: Math.max(1, videos.length),
+			}).map((c) => ({
+				...c,
+				microphoneIds:
+					suggested.groups.find((g) => g.cameraIds.includes(c.videoAssetId))
+						?.microphoneIds ?? [],
+			})),
+		);
+		setAngleOverrides(
+			suggested.groups
+				.filter((g) => g.cameraIds.length > 1)
+				.map((g) => ({
+					cameraIds: g.cameraIds,
+					preferredCameraId: g.preferredCameraId,
+				})),
+		);
+		setAlignment(null);
+		setResult(null);
+		setSequenceCreated(false);
+	};
+	const importLinkedSources = async () => {
+		if (!activeProject) return;
+		const projectId = activeProject.metadata.id;
+		const paths = sourcePaths
+			.split(/\r?\n/)
+			.map((p) => p.trim().replace(/^['"]|['"]$/g, ""))
+			.filter(Boolean);
+		if (!paths.length) return;
+		setIsImporting(true);
+		try {
+			const records = await registerLocalMediaPaths({
+				projectId,
+				paths,
+				preserveLink: true,
+			});
+			const processed = await processLocalDriveMedia({ projectId, records });
+			const added: string[] = [];
+			for (const asset of processed) {
+				const result = await editor.media.addMediaAsset({ projectId, asset });
+				if (!result) throw new Error(`Could not register ${asset.name}`);
+				added.push(result.id);
+			}
+			if (editor.project.getActiveOrNull()?.metadata.id !== projectId)
+				throw new Error("Project changed during import");
+			const ids = [...linkedIds, ...added];
+			setLinkedIds(ids);
+			setSourcePaths("");
+			const all = editor.media.getAssets();
+			const videos = all.filter(
+				(a) =>
+					a.type === "video" &&
+					[...assets.map((a) => a.id), ...ids].includes(a.id),
+			);
+			const recordings = all.filter((a) => a.type === "audio").map((a) => a.id);
+			setRecordingSelection(recordings);
+			if (videos.length) {
+				setMode("advanced");
+				applySourceSuggestions({ videos, recordings });
+			}
+			await editor.save.flush();
+			toast.success("Linked sources added without copying recording files");
+		} catch (error) {
+			toast.error("Source import failed", {
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsImporting(false);
+		}
+	};
 	const setChannelCount = (nextCount: number) => {
 		setAlignment(null);
 		setResult(null);
@@ -226,12 +380,45 @@ export function PodcastSyncDialog({
 		const assetById = new Map(
 			editor.media.getAssets().map((asset) => [asset.id, asset]),
 		);
+		if (
+			mode === "advanced" &&
+			(recordingGroups.issues.length ||
+				channels.some((c) => !c.microphoneIds?.length) ||
+				recordingGroups.microphones.some(
+					(m) => !channels.some((c) => c.microphoneIds?.includes(m.id)),
+				))
+		) {
+			toast.error(
+				recordingGroups.issues[0] ??
+					"Assign every microphone to at least one camera, and microphones to every camera",
+			);
+			return null;
+		}
+		if (
+			mode === "advanced" &&
+			angleDrafts.some((g) =>
+				g.cameraIds.some((id) => !channels.some((c) => c.videoAssetId === id)),
+			)
+		) {
+			toast.error(
+				"Select every camera in the multi angle group, or remove that group",
+			);
+			return null;
+		}
 		const resolved: PodcastSyncChannel[] = [];
 		const usedVideoIds = new Set<string>();
 		const usedAudioIds = new Set<string>();
 		for (const draft of channels) {
 			const video = assetById.get(draft.videoAssetId);
-			const audio = assetById.get(draft.audioAssetId);
+			const selectedMic =
+				mode === "advanced"
+					? recordingGroups.microphones.find((m) =>
+							draft.microphoneIds?.includes(m.id),
+						)
+					: undefined;
+			const audio = assetById.get(
+				selectedMic?.segments[0]?.recording.mediaId ?? draft.audioAssetId,
+			);
 			if (!video || video.type !== "video") {
 				toast.error(`${draft.name} needs a camera video`);
 				return null;
@@ -254,7 +441,7 @@ export function PodcastSyncDialog({
 				toast.error(`${video.name} is used by more than one channel`);
 				return null;
 			}
-			if (usedAudioIds.has(audio.id)) {
+			if (mode !== "advanced" && usedAudioIds.has(audio.id)) {
 				toast.error(`${audio.name} is used by more than one channel`);
 				return null;
 			}
@@ -318,6 +505,7 @@ export function PodcastSyncDialog({
 		editor.command.createMulticam({
 			plan: {
 				settings: resolvedSettings,
+				advanced: resolvedResult.advanced,
 				channels: resolvedChannels.map((channel) => ({
 					id: channel.id,
 					name: channel.name,
@@ -342,7 +530,7 @@ export function PodcastSyncDialog({
 	const handleRunAlignment = async () => {
 		const resolvedChannels = resolveChannels();
 		if (!resolvedChannels) return null;
-		const resolvedSettings = normalizedSettings(mode === "quick");
+		const resolvedSettings = normalizedSettings(mode !== "guided");
 		setSettings(resolvedSettings);
 		setIsRunning(true);
 		setProgress({ step: "Starting synchronization", value: 0 });
@@ -351,6 +539,29 @@ export function PodcastSyncDialog({
 		analysisProject.current = activeProject?.metadata.id ?? null;
 		try {
 			const nextAlignment = await runPodcastAlignment({
+				advanced:
+					mode === "advanced"
+						? {
+								microphones: recordingGroups.microphones,
+								routing: {
+									microphoneIds: recordingGroups.microphones.map((m) => m.id),
+									angleGroups: angleDrafts.map((g, i) => ({
+										id: `angles-${i + 1}`,
+										channelIds: g.cameraIds.map(
+											(id) => channels.find((c) => c.videoAssetId === id)!.id,
+										),
+										preferredChannelId: channels.find(
+											(c) => c.videoAssetId === g.preferredCameraId,
+										)!.id,
+									})),
+									cameras: channels.map((c) => ({
+										channelId: c.id,
+										microphoneIds: c.microphoneIds ?? [],
+									})),
+								},
+								assets: editor.media.getAssets(),
+							}
+						: undefined,
 				channels: resolvedChannels,
 				settings: resolvedSettings,
 				signal: analysisAbort.current.signal,
@@ -491,7 +702,7 @@ export function PodcastSyncDialog({
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={(next) => !isRunning && onOpenChange(next)}
+			onOpenChange={(next) => !isRunning && !isImporting && onOpenChange(next)}
 		>
 			<DialogContent className="max-h-[92vh] max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
 				<DialogHeader>
@@ -507,9 +718,47 @@ export function PodcastSyncDialog({
 				<DialogBody className="min-h-0 overflow-y-auto">
 					{step === "media" ? <PodcastFinishPanel /> : null}
 					{step === "media" ? (
+						<details className="mb-4 rounded-lg border p-3">
+							<summary className="cursor-pointer text-sm font-medium">
+								Add linked camera / microphone paths
+							</summary>
+							<p className="my-2 text-xs text-muted-foreground">
+								One absolute file path per line. Recordings stay on their
+								original disk or memory card.
+							</p>
+							<Textarea
+								aria-label="Linked source paths"
+								value={sourcePaths}
+								onChange={(e) => setSourcePaths(e.target.value)}
+								disabled={isImporting}
+							/>
+							<Button
+								className="mt-2"
+								variant="outline"
+								disabled={isImporting || !sourcePaths.trim()}
+								onClick={() => void importLinkedSources()}
+							>
+								{isImporting
+									? "Linking sources…"
+									: "Link sources without copying"}
+							</Button>
+						</details>
+					) : null}
+					{step === "media" ? (
 						<MediaStep
 							mode={mode}
-							onModeChange={setMode}
+							onModeChange={(next) => {
+								if (
+									next === "advanced" &&
+									videoAssets.length &&
+									channels.every((c) => !c.microphoneIds?.length)
+								)
+									applySourceSuggestions();
+								setMode(next);
+								setAlignment(null);
+								setResult(null);
+								setSequenceCreated(false);
+							}}
 							channels={channels}
 							settings={settings}
 							videoAssets={videoAssets}
@@ -525,14 +774,48 @@ export function PodcastSyncDialog({
 							}
 						/>
 					) : null}
+					{step === "media" && mode === "advanced" ? (
+						<PodcastAngleFields
+							videos={videoAssets.filter((a) => !a.unifiedAngles)}
+							groups={angleDrafts}
+							suggestions={cameraSuggestions.groups}
+							onSuggest={() => applySourceSuggestions()}
+							onChange={(groups) => {
+								setAngleOverrides(groups);
+								setAlignment(null);
+								setResult(null);
+								setSequenceCreated(false);
+							}}
+						/>
+					) : null}
+					{step === "media" && mode === "advanced" ? (
+						<AdvancedMicrophoneFields
+							assets={audioAssets}
+							selected={recordingIds}
+							groups={recordingGroups}
+							channels={channels}
+							onSelection={(ids) => {
+								setRecordingSelection(ids);
+								setAlignment(null);
+								setResult(null);
+								setSequenceCreated(false);
+							}}
+							onMapping={({ id, microphoneIds }) =>
+								updateChannel({ channelId: id, patch: { microphoneIds } })
+							}
+						/>
+					) : null}
 					{step === "sync" ? (
 						<SyncStep
+							microphones={
+								mode === "advanced" ? recordingGroups.microphones : undefined
+							}
 							channels={channels}
 							assetById={assetById}
 							alignment={alignment}
 							isRunning={isRunning}
 							progress={progress}
-							auto={mode === "quick"}
+							auto={mode !== "guided"}
 							onRun={handleRunAlignment}
 						/>
 					) : null}
@@ -543,7 +826,7 @@ export function PodcastSyncDialog({
 							channels={channels}
 							isRunning={isRunning}
 							progress={progress}
-							auto={mode === "quick"}
+							auto={mode !== "guided"}
 							onSettingsChange={setSettings}
 							onRun={() => handleRunMulticam()}
 						/>
@@ -580,11 +863,11 @@ export function PodcastSyncDialog({
 							<Button
 								onClick={() => {
 									if (!resolveChannels()) return;
-									if (mode === "quick") void handleAutoEdit();
+									if (mode !== "guided") void handleAutoEdit();
 									else setStep("sync");
 								}}
 							>
-								{mode === "quick" ? (
+								{mode !== "guided" ? (
 									<>
 										<WandSparkles className="size-4" /> Auto Edit
 									</>
@@ -762,13 +1045,20 @@ function MediaStep({
 				</div>
 			</div>
 
-			<div className="grid gap-3 md:grid-cols-2">
+			<div className="grid gap-3 md:grid-cols-3">
 				<ModeCard
 					selected={mode === "quick"}
 					icon={<WandSparkles className="size-5" />}
 					title="Quick Auto Edit"
 					description="One click syncs the cameras and microphones, mutes camera audio, and cuts between speakers with 1–20 second shots."
 					onClick={() => onModeChange("quick")}
+				/>
+				<ModeCard
+					selected={mode === "advanced"}
+					icon={<Mic2 className="size-5" />}
+					title="Advanced Podcast"
+					description="Join segmented wireless mics, sync different start times and route up to four microphones to shared cameras automatically."
+					onClick={() => onModeChange("advanced")}
 				/>
 				<ModeCard
 					selected={mode === "guided"}
@@ -783,8 +1073,9 @@ function MediaStep({
 				<div>
 					<h3 className="text-sm font-medium">Channel media</h3>
 					<p className="text-muted-foreground text-xs">
-						Choose one camera video and its professional microphone for every
-						channel.
+						{mode === "advanced"
+							? "Choose cameras, then assign their wireless microphones below."
+							: "Choose one camera video and its professional microphone for every channel."}
 					</p>
 				</div>
 				{channels.map((channel, index) => (
@@ -830,7 +1121,7 @@ function MediaStep({
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="space-y-1.5">
+						<div className={cn("space-y-1.5", mode === "advanced" && "hidden")}>
 							<Label className="flex items-center gap-1.5">
 								<Mic2 className="size-3.5" /> Professional mic
 							</Label>
@@ -950,6 +1241,7 @@ function ModeCard({
 }
 
 function SyncStep({
+	microphones,
 	channels,
 	assetById,
 	alignment,
@@ -959,6 +1251,7 @@ function SyncStep({
 	onRun,
 }: {
 	channels: ChannelDraft[];
+	microphones?: import("opencut-wasm").PodcastMicrophone[];
 	assetById: Map<string, MediaAsset>;
 	alignment: PodcastSyncAlignment | null;
 	isRunning: boolean;
@@ -992,7 +1285,12 @@ function SyncStep({
 							{assetById.get(channel.videoAssetId)?.name}
 						</span>
 						<span className="truncate">
-							{assetById.get(channel.audioAssetId)?.name}
+							{microphones
+								? microphones
+										.filter((m) => channel.microphoneIds?.includes(m.id))
+										.map((m) => m.name)
+										.join(", ")
+								: assetById.get(channel.audioAssetId)?.name}
 						</span>
 					</div>
 				))}
@@ -1000,6 +1298,28 @@ function SyncStep({
 			{alignment ? (
 				<div className="space-y-2">
 					<h4 className="text-sm font-medium">Sync results</h4>
+					{alignment.advanced ? (
+						<div className="space-y-1 rounded border p-3">
+							{alignment.advanced.microphones.map((m) => {
+								const start = alignment.advanced!.starts[m.id]!;
+								return (
+									<div
+										key={m.id}
+										className="flex justify-between gap-3 text-xs"
+									>
+										<span>
+											{m.name} · {m.segments.length} clips
+										</span>
+										<span>
+											{start >= 0
+												? `Starts at ${start.toFixed(3)}s`
+												: `Trim ${(-start).toFixed(3)}s`}
+										</span>
+									</div>
+								);
+							})}
+						</div>
+					) : null}
 					{alignment.precisionWarnings?.map((warning) => (
 						<p key={warning} role="status" className="text-sm text-amber-600">
 							{warning}
@@ -1009,7 +1329,11 @@ function SyncStep({
 						<div className="grid grid-cols-3 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
 							<span>Channel</span>
 							<span>Video trim</span>
-							<span>Audio trim / delay</span>
+							<span>
+								{alignment.advanced
+									? "Assigned microphones"
+									: "Audio trim / delay"}
+							</span>
 						</div>
 						{channels.map((channel) => (
 							<div
@@ -1023,8 +1347,12 @@ function SyncStep({
 										: `Trim ${(alignment.videoOffsets[channel.id] ?? 0).toFixed(2)}s`}
 								</span>
 								<span>
-									{(alignment.audioOffsets[channel.id] ?? 0).toFixed(2)}s /{" "}
-									{(alignment.audioDelays[channel.id] ?? 0).toFixed(2)}s
+									{alignment.advanced
+										? alignment.advanced.microphones
+												.filter((m) => channel.microphoneIds?.includes(m.id))
+												.map((m) => m.name)
+												.join(", ")
+										: `${(alignment.audioOffsets[channel.id] ?? 0).toFixed(2)}s / ${(alignment.audioDelays[channel.id] ?? 0).toFixed(2)}s`}
 								</span>
 							</div>
 						))}
@@ -1302,6 +1630,241 @@ function NumberSetting({
 				disabled={disabled}
 				onChange={(event) => onChange(Number(event.target.value))}
 			/>
+		</div>
+	);
+}
+
+function AdvancedMicrophoneFields({
+	assets,
+	selected,
+	groups,
+	channels,
+	onSelection,
+	onMapping,
+}: {
+	assets: MediaAsset[];
+	selected: string[];
+	groups: import("opencut-wasm").PodcastRecordingGroups;
+	channels: ChannelDraft[];
+	onSelection: (ids: string[]) => void;
+	onMapping: (mapping: { id: string; microphoneIds: string[] }) => void;
+}) {
+	return (
+		<div className="space-y-4 mt-4 rounded-lg border p-4">
+			<h3 className="font-medium">Wireless microphone recordings</h3>
+			<p className="text-muted-foreground text-xs">
+				Select this session&apos;s WAV files. Recorder tokens keep the segments
+				separate. Each stream is synchronized from its own start.
+			</p>
+			<div className="space-y-1 max-h-40 overflow-auto">
+				{assets
+					.filter((a) => a.type === "audio")
+					.map((a) => (
+						<label key={a.id} className="flex items-center gap-2 text-xs">
+							<input
+								type="checkbox"
+								checked={selected.includes(a.id)}
+								onChange={(e) =>
+									onSelection(
+										e.target.checked
+											? [...selected, a.id]
+											: selected.filter((id) => id !== a.id),
+									)
+								}
+							/>
+							{a.name}
+						</label>
+					))}
+			</div>
+			{groups.microphones.map((m) => (
+				<div key={m.id} className="rounded border p-2 text-xs">
+					<strong>{m.name}</strong> · {m.segments.length} clips ·{" "}
+					{(m.duration / 60).toFixed(2)} min
+					<div className="text-muted-foreground break-all">
+						{m.segments.map((s) => s.recording.name).join(" → ")}
+					</div>
+				</div>
+			))}
+			{groups.issues.map((issue, i) => (
+				<p key={i} role="alert" className="text-destructive text-xs">
+					{issue}
+				</p>
+			))}
+			<h4 className="text-sm font-medium">
+				Microphones visible in each camera
+			</h4>
+			{channels.map((c) => (
+				<div key={c.id} className="space-y-1">
+					<Label>{c.name}</Label>
+					<div className="flex flex-wrap gap-4">
+						{groups.microphones.map((m) => (
+							<label key={m.id} className="flex items-center gap-2 text-xs">
+								<input
+									type="checkbox"
+									checked={c.microphoneIds?.includes(m.id) ?? false}
+									onChange={(e) =>
+										onMapping({
+											id: c.id,
+											microphoneIds: e.target.checked
+												? [...(c.microphoneIds ?? []), m.id]
+												: (c.microphoneIds ?? []).filter((id) => id !== m.id),
+										})
+									}
+								/>
+								{m.name}
+							</label>
+						))}
+					</div>
+				</div>
+			))}
+		</div>
+	);
+}
+
+function PodcastAngleFields({
+	videos,
+	groups,
+	suggestions,
+	onSuggest,
+	onChange,
+}: {
+	videos: MediaAsset[];
+	groups: Array<{ cameraIds: string[]; preferredCameraId: string }>;
+	suggestions: import("opencut-wasm").PodcastCameraSuggestion[];
+	onSuggest: () => void;
+	onChange: (
+		groups: Array<{ cameraIds: string[]; preferredCameraId: string }>,
+	) => void;
+}) {
+	const [selected, setSelected] = useState<string[]>([]);
+	const [preferred, setPreferred] = useState("");
+	return (
+		<div className="mt-4 space-y-3 rounded-lg border p-4">
+			<div className="flex items-center justify-between gap-3">
+				<h3 className="font-medium">Multi angle cameras</h3>
+				<Button variant="outline" size="sm" onClick={onSuggest}>
+					Use camera and mic suggestions
+				</Button>
+			</div>
+			<p className="text-muted-foreground text-xs">
+				Related camera names suggest an angle group. Main is preferred; the
+				alternate provides a brief change after long 15–20 second shots. No
+				Assets merge needed.
+			</p>
+			{groups.map((g, i) => (
+				<div
+					key={g.cameraIds.join(":")}
+					className="space-y-2 rounded border p-3"
+				>
+					<div className="flex justify-between text-xs">
+						<span>
+							{g.cameraIds
+								.map((id) => videos.find((a) => a.id === id)?.name ?? id)
+								.join(" + ")}
+						</span>
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={() => onChange(groups.filter((_, j) => j !== i))}
+						>
+							Ungroup
+						</Button>
+					</div>
+					<p className="text-muted-foreground text-xs">
+						{suggestions.find((s) =>
+							s.cameraIds.every((id) => g.cameraIds.includes(id)),
+						)?.evidence ?? "Custom angle group"}
+					</p>
+					<Label>Preferred main camera</Label>
+					<Select
+						value={g.preferredCameraId}
+						onValueChange={(id) =>
+							onChange(
+								groups.map((old, j) =>
+									j === i ? { ...old, preferredCameraId: id } : old,
+								),
+							)
+						}
+					>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{g.cameraIds.map((id) => (
+								<SelectItem key={id} value={id}>
+									{videos.find((a) => a.id === id)?.name ?? id}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			))}
+			<details>
+				<summary className="cursor-pointer text-xs">
+					Choose a custom multi angle group
+				</summary>
+				<div className="my-2 space-y-1">
+					{videos.map((a) => (
+						<label key={a.id} className="flex gap-2 text-xs">
+							<input
+								type="checkbox"
+								checked={selected.includes(a.id)}
+								onChange={(e) =>
+									setSelected(
+										e.target.checked
+											? [...selected, a.id]
+											: selected.filter((id) => id !== a.id),
+									)
+								}
+							/>
+							{a.name}
+						</label>
+					))}
+				</div>
+				<Select
+					value={
+						selected.includes(preferred) ? preferred : (selected[0] ?? "none")
+					}
+					onValueChange={setPreferred}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Main camera" />
+					</SelectTrigger>
+					<SelectContent>
+						{selected.length ? (
+							selected.map((id) => (
+								<SelectItem key={id} value={id}>
+									{videos.find((a) => a.id === id)?.name ?? id}
+								</SelectItem>
+							))
+						) : (
+							<SelectItem value="none">Choose cameras first</SelectItem>
+						)}
+					</SelectContent>
+				</Select>
+				<Button
+					className="mt-2"
+					variant="outline"
+					size="sm"
+					disabled={selected.length < 2}
+					onClick={() => {
+						onChange([
+							...groups.filter(
+								(g) => !g.cameraIds.some((id) => selected.includes(id)),
+							),
+							{
+								cameraIds: selected,
+								preferredCameraId: selected.includes(preferred)
+									? preferred
+									: selected[0]!,
+							},
+						]);
+						setSelected([]);
+					}}
+				>
+					Add multi angle group
+				</Button>
+			</details>
 		</div>
 	);
 }

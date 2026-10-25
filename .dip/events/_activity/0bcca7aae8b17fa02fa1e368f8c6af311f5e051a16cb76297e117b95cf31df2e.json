@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bcca7aae8b17fa02fa1e368f8c6af311f5e051a16cb76297e117b95cf31df2e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:11:47.291Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '407,439p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; sed -n '625,688p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; sed -n '846,864p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7d6023c1-8803-488e-9342-b58f776bd987"
+      },
+      {
+        "at": "2026-10-25T16:11:47.371Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '407,439p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; sed -n '625,688p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx; sed -n '846,864p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7d6023c1-8803-488e-9342-b58f776bd987"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:11:47.665Z",
+  "parents": [],
+  "branch": "main"
+}

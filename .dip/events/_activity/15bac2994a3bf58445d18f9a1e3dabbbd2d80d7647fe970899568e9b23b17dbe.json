@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "15bac2994a3bf58445d18f9a1e3dabbbd2d80d7647fe970899568e9b23b17dbe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:19:11.893Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();s=s.replace('audioExplicit: boolean;','audioExplicit: boolean;\\n    microphoneIds?: string[];');s=s.replace('type WizardMode = \"quick\" | \"guided\";','type WizardMode = \"quick\" | \"guided\" | \"advanced\";');needle='\\tconst suggestions = sourceSuggestions.suggestions;';insert='''    const [recordingSelection,setRecordingSelection]=useState<string[]|null>(null);\n    const recordingIds=recordingSelection??audioAssets.filter(a=>a.type===\"audio\").map(a=>a.id);\n    const recordingGroups=useMemo(()=>{\n        const ids=recordingSelection??audioAssets.filter(a=>a.type===\"audio\").map(a=>a.id);\n        if (!ids.length) return {microphones:[],issues:[\"Import microphone WAV recordings into Assets\"]};\n        try { return editor.command.groupPodcastRecordings(ids); }\n        catch(error) {return {microphones:[],issues:[error instanceof Error?error.message:\"Cannot group microphone recordings\"]};}\n    },[editor,audioAssets,recordingSelection]);\n''';s=s.replace(needle,insert+needle);s=s.replace('const audio = assetById.get(draft.audioAssetId);','''const selectedMic=mode===\"advanced\" ? recordingGroups.microphones.find(m=>draft.microphoneIds?.includes(m.id)) : undefined;\n            const audio = assetById.get(selectedMic?.segments[0]?.recording.mediaId ?? draft.audioAssetId);''');s=s.replace('\\t\\tconst resolved: PodcastSyncChannel[] = [];','''        if (mode===\"advanced\" && (recordingGroups.issues.length || channels.some(c=>!c.microphoneIds?.length)\n            || recordingGroups.microphones.some(m=>!channels.some(c=>c.microphoneIds?.includes(m.id))))) {\n            toast.error(recordingGroups.issues[0]??\"Assign every microphone to at least one camera, and microphones to every camera\");return null;\n        }\n\\t\\tconst resolved: PodcastSyncChannel[] = [];''',1);s=s.replace('if (usedAudioIds.has(audio.id))','if (mode!==\"advanced\" && usedAudioIds.has(audio.id))');s=s.replace('\\t\\t\\t\\t",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0f3ebcb7-7db6-4c31-af44-b97bb38556ff"
+      },
+      {
+        "at": "2026-10-25T15:19:12.031Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();s=s.replace('audioExplicit: boolean;','audioExplicit: boolean;\\n    microphoneIds?: string[];');s=s.replace('type WizardMode = \"quick\" | \"guided\";','type WizardMode = \"quick\" | \"guided\" | \"advanced\";');needle='\\tconst suggestions = sourceSuggestions.suggestions;';insert='''    const [recordingSelection,setRecordingSelection]=useState<string[]|null>(null);\n    const recordingIds=recordingSelection??audioAssets.filter(a=>a.type===\"audio\").map(a=>a.id);\n    const recordingGroups=useMemo(()=>{\n        const ids=recordingSelection??audioAssets.filter(a=>a.type===\"audio\").map(a=>a.id);\n        if (!ids.length) return {microphones:[],issues:[\"Import microphone WAV recordings into Assets\"]};\n        try { return editor.command.groupPodcastRecordings(ids); }\n        catch(error) {return {microphones:[],issues:[error instanceof Error?error.message:\"Cannot group microphone recordings\"]};}\n    },[editor,audioAssets,recordingSelection]);\n''';s=s.replace(needle,insert+needle);s=s.replace('const audio = assetById.get(draft.audioAssetId);','''const selectedMic=mode===\"advanced\" ? recordingGroups.microphones.find(m=>draft.microphoneIds?.includes(m.id)) : undefined;\n            const audio = assetById.get(selectedMic?.segments[0]?.recording.mediaId ?? draft.audioAssetId);''');s=s.replace('\\t\\tconst resolved: PodcastSyncChannel[] = [];','''        if (mode===\"advanced\" && (recordingGroups.issues.length || channels.some(c=>!c.microphoneIds?.length)\n            || recordingGroups.microphones.some(m=>!channels.some(c=>c.microphoneIds?.includes(m.id))))) {\n            toast.error(recordingGroups.issues[0]??\"Assign every microphone to at least one camera, and microphones to every camera\");return null;\n        }\n\\t\\tconst resolved: PodcastSyncChannel[] = [];''',1);s=s.replace('if (usedAudioIds.has(audio.id))','if (mode!==\"advanced\" && usedAudioIds.has(audio.id))');s=s.replace('\\t\\t\\t\\t",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0f3ebcb7-7db6-4c31-af44-b97bb38556ff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:19:12.666Z",
+  "parents": [],
+  "branch": "main"
+}

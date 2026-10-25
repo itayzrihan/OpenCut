@@ -3,6 +3,7 @@ use super::classic_scenes::{classic_target, timestamp};
 use super::*;
 use classic_podcast::{PodcastMulticamCut, PodcastMulticamSettings};
 use serde_json::json;
+use std::collections::BTreeMap;
 
 #[derive(Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -21,7 +22,112 @@ struct Channel {
 }
 #[derive(Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AdvancedPlan {
+    microphones: Vec<classic_podcast::PodcastMicrophone>,
+    /// Stream start relative to sequence origin; negative means already recording.
+    starts: BTreeMap<String, f64>,
+    routing: classic_podcast::AdvancedPodcastRouting,
+}
+impl AdvancedPlan {
+    fn validate(&self, channels: &[Channel]) -> Result<(), String> {
+        if self.microphones.is_empty()
+            || self.microphones.len() > 4
+            || self.starts.len() > 4
+            || self
+                .microphones
+                .iter()
+                .map(|m| m.segments.len())
+                .sum::<usize>()
+                > 512
+        {
+            return Err("Choose up to four microphone streams and 512 segments".into());
+        }
+        let ids: Vec<_> = self.microphones.iter().map(|m| m.id.clone()).collect();
+        if !self
+            .routing
+            .validate(&channels.iter().map(|c| c.id.clone()).collect::<Vec<_>>())
+            || ids != self.routing.microphone_ids
+            || self.starts.len() != ids.len()
+            || ids.iter().any(|id| {
+                !self
+                    .starts
+                    .get(id)
+                    .is_some_and(|v| v.is_finite() && v.abs() <= 36000.0)
+            })
+        {
+            return Err("Invalid Advanced Podcast microphone/camera routing".into());
+        }
+        if channels.iter().any(|c| {
+            !self
+                .routing
+                .cameras
+                .iter()
+                .find(|camera| camera.channel_id == c.id)
+                .is_some_and(|camera| {
+                    self.microphones.iter().any(|m| {
+                        camera.microphone_ids.contains(&m.id)
+                            && m.segments
+                                .first()
+                                .is_some_and(|s| s.recording.media_id == c.audio_id)
+                    })
+                })
+        }) {
+            return Err(
+                "A camera's representative audio must belong to an assigned microphone".into(),
+            );
+        }
+        let detected = classic_podcast::group_podcast_recordings(
+            classic_podcast::GroupPodcastRecordingsOptions {
+                recordings: self
+                    .microphones
+                    .iter()
+                    .flat_map(|m| m.segments.iter().map(|s| s.recording.clone()))
+                    .collect(),
+            },
+        );
+        if !detected.issues.is_empty() || detected.microphones != self.microphones {
+            return Err(
+                "Microphone provenance or segment continuity changed; regroup recordings".into(),
+            );
+        }
+        Ok(())
+    }
+    fn validate_assets(
+        &self,
+        assets: &[serde_json::Map<String, Value>],
+    ) -> Result<(), CapabilityError> {
+        for m in &self.microphones {
+            for segment in &m.segments {
+                let r = &segment.recording;
+                let a = assets
+                    .iter()
+                    .find(|a| {
+                        a["id"] == r.media_id
+                            && a["type"] == "audio"
+                            && a.get("missing") != Some(&Value::Bool(true))
+                    })
+                    .ok_or_else(|| invalid("Advanced Podcast recording unavailable"))?;
+                if a["name"].as_str() != Some(&r.name)
+                    || a["duration"].as_f64() != Some(r.duration)
+                    || a.get("bindingRevision")
+                        .and_then(Value::as_u64)
+                        .unwrap_or(0)
+                        != r.binding_revision
+                {
+                    return Err(CapabilityError::Conflict(
+                        "Microphone file changed since analysis; regroup and resynchronize".into(),
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+}
+#[derive(Clone, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Plan {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    advanced: Option<AdvancedPlan>,
     settings: PodcastMulticamSettings,
     #[schemars(length(min = 1, max = 32))]
     channels: Vec<Channel>,
@@ -71,7 +177,7 @@ impl Plan {
                 || c.name.trim().is_empty()
                 || !ids.insert(&c.id)
                 || !videos.insert(&c.video_id)
-                || !audio.insert(&c.audio_id)
+                || (self.advanced.is_none() && !audio.insert(&c.audio_id))
                 || !nonnegative(c.video_delay)
                 || c.video_delay >= self.duration
                 || (c.video_offset > 0.0 && c.video_delay > 0.0)
@@ -82,6 +188,9 @@ impl Plan {
             {
                 return Err("Invalid or duplicate multicam channel/alignment".into());
             }
+        }
+        if let Some(a) = &self.advanced {
+            a.validate(&self.channels)?;
         }
         let mut end = 0.0;
         for cut in &self.cuts {
@@ -107,6 +216,15 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
     if let Some(value) = scene.get("multicam") {
         let plan: Plan = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
         plan.validate()?;
+        if let Some(a) = &plan.advanced {
+            for m in &a.microphones {
+                for s in &m.segments {
+                    if !asset_ids.contains(s.recording.media_id.as_str()) {
+                        return Err("Unbound Advanced Podcast segment".into());
+                    }
+                }
+            }
+        }
         for c in &plan.channels {
             if !asset_ids.contains(c.video_id.as_str()) || !asset_ids.contains(c.audio_id.as_str())
             {
@@ -208,6 +326,7 @@ pub(super) fn register_multicam(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    super::classic_advanced_podcast::register_groups(registry, state.clone())?;
     super::classic_multicam_sources::register_sources(registry, state.clone())?;
     let alignment_state = state.clone();
     register::<AlignInput, classic_podcast::PodcastGroupAlignment, _, _>(
@@ -448,6 +567,9 @@ pub(super) fn register_multicam(
                         input.plan.validate().map_err(|e| invalid(&e))?;
                         let classic = classic_target(document, &input.project_id)?;
                         let assets = classic.media_assets.clone();
+                        if let Some(a) = &input.plan.advanced {
+                            a.validate_assets(&assets)?;
+                        }
                         if !input.allow_camera_audio
                             && assets.iter().any(|a| a["type"] == "audio")
                             && input.plan.channels.iter().any(|c| {
@@ -634,6 +756,9 @@ pub(super) fn register_multicam(
                                 routed.push(e);
                             }
                             overlay.push(json!({"id":fresh("multicam-track"),"type":"video","name":format!("Routed {} - {}",index+1,c.name),"hidden":false,"muted":!plan.settings.keep_camera_mics,"elements":routed}));
+                            if plan.advanced.is_some() {
+                                continue;
+                            }
                             let duration = (plan.duration - c.audio_delay).min(ad - c.audio_offset);
                             if duration <= 0.0 {
                                 continue;
@@ -641,6 +766,33 @@ pub(super) fn register_multicam(
                             audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":format!("Podcast audio {} - {}",index+1,c.name),"muted":false,"elements":[{
                         "id":fresh("multicam-audio"),"type":"audio","sourceType":"upload","mediaId":c.audio_id,"name":mic["name"],
                         "startTime":ticks(c.audio_delay),"duration":ticks(c.audio_delay+duration)-ticks(c.audio_delay),"trimStart":ticks(c.audio_offset),"trimEnd":ticks((ad-c.audio_offset-duration).max(0.0)),"sourceDuration":ticks(ad),"params":{"volume":1}}]}));
+                        }
+                        if let Some(advanced) = &plan.advanced {
+                            for m in &advanced.microphones {
+                                let mut elements = Vec::new();
+                                for segment in &m.segments {
+                                    let position = advanced.starts[&m.id] + segment.start;
+                                    let start = position.max(0.0);
+                                    let end =
+                                        (position + segment.recording.duration).min(plan.duration);
+                                    if end <= start {
+                                        continue;
+                                    }
+                                    let trim = (start - position).max(0.0);
+                                    elements.push(json!({"id":fresh("multicam-audio"),"type":"audio","sourceType":"upload",
+                                        "mediaId":segment.recording.media_id,"name":segment.recording.name,
+                                        "startTime":ticks(start),"duration":ticks(end)-ticks(start),"trimStart":ticks(trim),
+                                        "trimEnd":ticks((segment.recording.duration-trim-(end-start)).max(0.0)),
+                                        "sourceDuration":ticks(segment.recording.duration),"params":{"volume":1},
+                                        "podcastMicrophoneId":m.id,"podcastRecorderToken":m.recorder_token,"podcastSequence":segment.sequence}));
+                                }
+                                if elements.is_empty() {
+                                    return Err(invalid(
+                                        "A microphone has no audio on the camera timeline",
+                                    ));
+                                }
+                                audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":m.name,"muted":false,"elements":elements}));
+                            }
                         }
                         let order: Vec<Value> = overlay
                             .iter()

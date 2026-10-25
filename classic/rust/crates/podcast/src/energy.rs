@@ -14,6 +14,8 @@ pub struct AnalyzePodcastOptions {
     pub settings: PodcastMulticamSettings,
     #[serde(default)]
     pub camera_windows: Vec<PodcastCameraWindow>,
+    #[serde(default)]
+    pub advanced: Option<AdvancedPodcastRouting>,
 }
 fn percentile(values: &[f32], p: f64) -> f32 {
     if values.is_empty() {
@@ -109,7 +111,10 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
             .collect::<std::collections::HashSet<_>>()
             .len()
             != o.camera_windows.len()
-        || o.envelopes.len() != n
+        || o.envelopes.len() != o.advanced.as_ref().map_or(n, |a| a.microphone_ids.len())
+        || o.advanced
+            .as_ref()
+            .is_some_and(|a| !a.validate(&o.channel_ids))
         || !o.duration.is_finite()
         || !(0.0..=36000.0).contains(&o.duration)
     {
@@ -122,6 +127,24 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
         })
     {
         return vec![];
+    }
+    if let Some(mapping) = &o.advanced {
+        let timeline = crate::advanced::advanced_camera_timeline(
+            &o.envelopes,
+            mapping,
+            &o.channel_ids,
+            frames,
+        );
+        let cuts = crate::route_podcast_multicam_grouped(
+            RoutePodcastMulticamOptions {
+                timeline,
+                channel_ids: o.channel_ids,
+                duration: o.duration,
+                settings: o.settings,
+            },
+            &mapping.angle_groups,
+        );
+        return constrain_camera_cuts(cuts, &o.camera_windows, o.duration);
     }
     let mut channels: Vec<_> = o
         .envelopes

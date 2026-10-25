@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "647caec7da69042515f9758f18e8f479cbd9cb9720d6b7f07113341c60313d75",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:26:57.969Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess\np=Path('classic/rust/crates/podcast/src/coverage.rs');p.write_bytes(subprocess.check_output(['git','show','HEAD:'+str(p)]))\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read().replace('\\tpodcastCameraClock,','\\tpodcastCameraClock,\\n    advancedPodcastCameraClock,');old='''\\tconst clock = podcastCameraClock({\n        microphones:advanced?.microphones.map(m=>({id:m.id,duration:m.duration,start:offsets.get(m.id)!,bindingRevision:0})),\n\\t\\tsources: baseVideos.map((a) => ({\n\\t\\t\\tid: a.id,\n\\t\\t\\tduration: a.duration ?? 0,\n\\t\\t\\tstart: offsets.get(a.id)!,\n\\t\\t\\tbindingRevision: a.bindingRevision ?? 0,\n\\t\\t})),\n\\t});''';new='''    const cameraSources=baseVideos.map(a=>({id:a.id,duration:a.duration??0,start:offsets.get(a.id)!,bindingRevision:a.bindingRevision??0}));\n    const clock=advanced ? advancedPodcastCameraClock({sources:cameraSources,microphones:advanced.microphones.map(m=>({id:m.id,duration:m.duration,start:offsets.get(m.id)!,bindingRevision:0}))}) : podcastCameraClock({sources:cameraSources});''';assert old in s;s=s.replace(old,new);open(p,'w').write(s)\nPY\ncat >> classic/rust/crates/podcast/src/advanced.rs <<'EOF'\n\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi))]\n#[derive(Deserialize)]\npub struct AdvancedPodcastCameraClockOptions {\n    pub sources: Vec<crate::CameraSource>,\n    pub microphones: Vec<crate::CameraSource>,\n}\n/// Omit camera-only leader/tail; keep early/later participants on a shared clock.\n#[export]\npub fn advanced_podcast_camera_clock(o:AdvancedPodcastCameraClockOptions)->Option<crate::CameraClock> {\n    let mut clock=crate::podcast_camera_clock(crate::CameraClockOptions{sources:o.sources})?;\n    if o.microphones.is_empty() || o.microphones.len()>4 || o.microphones.iter().any(|s|s.id.is_empty() || !s.start.is_finite() || !s.duration.is_finite() || s.duration<=0.0 || s.duration>36000.0 || s.start.abs()>36000.0) {return ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d34d7ef6-b1cb-4ac1-b9d3-a4fe5582e94f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:26:58.086Z",
+  "parents": [],
+  "branch": "main"
+}

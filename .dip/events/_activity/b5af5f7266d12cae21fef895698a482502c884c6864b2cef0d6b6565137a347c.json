@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5af5f7266d12cae21fef895698a482502c884c6864b2cef0d6b6565137a347c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:10:46.334Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/activate.mjs",
+          ".local/advanced-podcast/activation.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5db0c0b8-b867-45b8-afda-97595f366954"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:10:46.335Z",
+  "parents": [],
+  "branch": "main"
+}

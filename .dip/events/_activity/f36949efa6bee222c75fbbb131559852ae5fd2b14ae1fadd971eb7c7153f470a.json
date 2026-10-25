@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f36949efa6bee222c75fbbb131559852ae5fd2b14ae1fadd971eb7c7153f470a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:52:04.024Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/podcast/src/camera_groups.rs';s=open(p).read();old='''for (at,_) in word.char_indices().skip(3) {let suffix=&word[at..];if (4..=6).contains(&suffix.len()) && distance(suffix,\"angle\")<=2 {w=word[..at].into();break;}}''';new='''if let Some((at,_))=word.char_indices().skip(3).filter_map(|(at,_)|{let suffix=&word[at..];let d=distance(suffix,\"angle\");((4..=6).contains(&suffix.len()) && d<=2).then_some((at,d))}).min_by_key(|(_,d)|*d) {w=word[..at].into();}''';assert old in s;s=s.replace(old,new);open(p,'w').write(s)\nPY\ncargo test -p podcast --lib --quiet",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-183006e3-5888-40d2-b0d0-69129f9b2d22"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:52:04.393Z",
+  "parents": [],
+  "branch": "main"
+}

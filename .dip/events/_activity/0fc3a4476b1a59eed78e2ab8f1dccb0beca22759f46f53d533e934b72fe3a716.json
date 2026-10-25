@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fc3a4476b1a59eed78e2ab8f1dccb0beca22759f46f53d533e934b72fe3a716",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:30:47.513Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/podcast-sync/__tests__/advanced-engine.test.ts src/podcast-sync/__tests__/advanced-worker.test.ts src/podcast-sync/__tests__/unified-engine.test.ts src/podcast-sync/energy-reader.test.ts src/podcast-sync/sync-jobs.test.ts src/podcast-sync/precision.integration.test.ts src/core/__tests__/canonical-advanced-podcast.test.ts src/core/__tests__/canonical-multicam.test.ts src/core/__tests__/canonical-podcast.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fceea451-ecec-4e65-863b-356e29d17b45"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:30:48.318Z",
+  "parents": [],
+  "branch": "main"
+}

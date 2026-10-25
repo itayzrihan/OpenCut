@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1347b2b9ae4dc3485051d3b13e960fbce248e229077dac4aa066454d5d747fd7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:26:34.848Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/podcast/src/coverage.rs';s=open(p).read().replace('pub struct CameraClockOptions {\\n    pub sources: Vec<CameraSource>,','pub struct CameraClockOptions {\\n    pub sources: Vec<CameraSource>,\\n    /// Advanced mode trims camera-only lead/tail to external microphone coverage.\\n    #[serde(default)]\\n    pub microphones: Vec<CameraSource>,');s=s.replace('    Some(CameraClock {\\n        reference_id: longest.id.clone(),\\n        origin: longest.start,\\n        duration: longest.duration,\\n    })','''    let (origin,duration)=if o.microphones.is_empty() {\n        (longest.start,longest.duration)\n    } else {\n        if o.microphones.len()>4 || o.microphones.iter().any(|s|s.id.is_empty() || !s.start.is_finite() || !s.duration.is_finite() || s.duration<=0.0 || s.duration>36000.0 || s.start.abs()>36000.0) {return None;}\n        let start=o.microphones.iter().map(|s|s.start).min_by(f64::total_cmp).unwrap().max(longest.start);\n        let end=o.microphones.iter().map(|s|s.start+s.duration).max_by(f64::total_cmp).unwrap().min(longest.start+longest.duration);\n        if end<=start {return None;}\n        (start,end-start)\n    };\n    Some(CameraClock {reference_id:longest.id.clone(),origin,duration})''');# rust struct literal currenttests need optionalfield\n# print instances before writing separately\nopen(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read();needle='\\tconst clock = podcastCameraClock({\\n\\t\\tsources: baseVideos.map';repl='''\\tconst clock = podcastCameraClock({\n        microphones:advanced?.microphones.map(m=>({id:m.id,duration:m.duration,start:offsets.get(m.id)!,bindingRevision:0})),\n\\t\\tsources: baseVideos.map''';s=s.replace(needle,repl,1);open(p,'w').write(s)\nPY\nrg -n 'CameraClockOptions \\{' --glob '*.rs'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4e4f509c-8649-44a5-bb24-a643d53a6f6c"
+      },
+      {
+        "at": "2026-10-25T15:26:35.017Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/podcast/src/coverage.rs';s=open(p).read().replace('pub struct CameraClockOptions {\\n    pub sources: Vec<CameraSource>,','pub struct CameraClockOptions {\\n    pub sources: Vec<CameraSource>,\\n    /// Advanced mode trims camera-only lead/tail to external microphone coverage.\\n    #[serde(default)]\\n    pub microphones: Vec<CameraSource>,');s=s.replace('    Some(CameraClock {\\n        reference_id: longest.id.clone(),\\n        origin: longest.start,\\n        duration: longest.duration,\\n    })','''    let (origin,duration)=if o.microphones.is_empty() {\n        (longest.start,longest.duration)\n    } else {\n        if o.microphones.len()>4 || o.microphones.iter().any(|s|s.id.is_empty() || !s.start.is_finite() || !s.duration.is_finite() || s.duration<=0.0 || s.duration>36000.0 || s.start.abs()>36000.0) {return None;}\n        let start=o.microphones.iter().map(|s|s.start).min_by(f64::total_cmp).unwrap().max(longest.start);\n        let end=o.microphones.iter().map(|s|s.start+s.duration).max_by(f64::total_cmp).unwrap().min(longest.start+longest.duration);\n        if end<=start {return None;}\n        (start,end-start)\n    };\n    Some(CameraClock {reference_id:longest.id.clone(),origin,duration})''');# rust struct literal currenttests need optionalfield\n# print instances before writing separately\nopen(p,'w').write(s)\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read();needle='\\tconst clock = podcastCameraClock({\\n\\t\\tsources: baseVideos.map';repl='''\\tconst clock = podcastCameraClock({\n        microphones:advanced?.microphones.map(m=>({id:m.id,duration:m.duration,start:offsets.get(m.id)!,bindingRevision:0})),\n\\t\\tsources: baseVideos.map''';s=s.replace(needle,repl,1);open(p,'w').write(s)\nPY\nrg -n 'CameraClockOptions \\{' --glob '*.rs'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-4e4f509c-8649-44a5-bb24-a643d53a6f6c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:26:35.073Z",
+  "parents": [],
+  "branch": "main"
+}

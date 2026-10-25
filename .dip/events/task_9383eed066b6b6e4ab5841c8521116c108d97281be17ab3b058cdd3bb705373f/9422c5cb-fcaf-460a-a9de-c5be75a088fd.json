@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9422c5cb-fcaf-460a-a9de-c5be75a088fd",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.update",
+  "payload": {
+    "title": "Advanced Podcast: identify segmented wireless microphones, synchronize staggered recordings and route microphone groups to cameras",
+    "description": "Study growing /Users/itayzrihan/Desktop/Avihay recordings first; implement additive Advanced Podcast mode preserving simple flow. Up to four microphones with 30-minute sequential files, provenance validation, continuous placement, staggered starts and camera synchronization; relative loudness owner detection for Spatial/Hollyland bleed and many-to-many camera mapping.",
+    "acceptance": [
+      "Identify actual microphone and segment metadata from supplied files with evidence and ambiguity handling.",
+      "Preserve regular podcast flow and canonical OpenCutRuntime actions.",
+      "Support up to four segmented microphone streams, source provenance, staggered synchronization and flexible microphone-camera groups.",
+      "Test grouping, misassignment, continuity, bleed routing and canonical capability roundtrip."
+    ],
+    "scope": [
+      "classic/apps/web/src/podcast-sync",
+      "classic/rust/crates/podcast",
+      "crates/editor-api",
+      "analysis/advanced-podcast-2026-10-25"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T15:11:20.135Z",
+  "parents": [
+    "fd640890-2eaa-47ef-95c0-ff11c63cfce1"
+  ],
+  "branch": "main"
+}

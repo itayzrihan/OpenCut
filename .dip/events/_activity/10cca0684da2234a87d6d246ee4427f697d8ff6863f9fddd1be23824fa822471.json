@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "10cca0684da2234a87d6d246ee4427f697d8ff6863f9fddd1be23824fa822471",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:31:14.352Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.html",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.meta",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/blog.segment.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/_index.segment.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/_head.segment.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/_full.segment.rsc",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/blog",
+          "classic/apps/web/.next-advanced-podcast/server/app/blog.segments/blog/__PAGE__.segment.rsc"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "dfecf391-96d3-4f9e-bad8-cc244ce545a7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:31:14.352Z",
+  "parents": [],
+  "branch": "main"
+}

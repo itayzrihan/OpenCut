@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff33f9b59bc3c5bd5a4a012f92874c215dd5881282fb40232ee7fd7a150761ea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:56:45.410Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/rust/crates/podcast/src/camera_groups.rs <<'EOF'\n\n#[cfg(test)]mod angle_routing_tests {\n use super::*;\n #[test]fn main_dominates_but_a_shared_alternate_breaks_a_long_turn(){\n  let options=serde_json::json!({\"envelopes\":[vec![0.8;6500],vec![0.0;6500]],\"channelIds\":[\"alt\",\"single\",\"main\"],\"duration\":65.,\"settings\":crate::podcast_multicam_defaults(crate::PodcastMulticamDefaultsOptions{quick:true}),\"advanced\":{\"microphoneIds\":[\"trio\",\"host\"],\"cameras\":[{\"channelId\":\"alt\",\"microphoneIds\":[\"trio\"]},{\"channelId\":\"main\",\"microphoneIds\":[\"trio\"]},{\"channelId\":\"single\",\"microphoneIds\":[\"host\"]}],\"angleGroups\":[{\"id\":\"trio-angles\",\"channelIds\":[\"main\",\"alt\"],\"preferredChannelId\":\"main\"}]}});\n  let cuts=crate::analyze_podcast_multicam(serde_json::from_value(options).unwrap());\n  assert_eq!(cuts.iter().map(|c|c.channel_id.as_str()).collect::<Vec<_>>(),vec![\"main\",\"alt\",\"main\",\"alt\",\"main\"]);\n  assert_eq!(cuts[0].duration,20.);assert_eq!(cuts[1].duration,5.);\n }\n}\nEOF\npython3 - <<'PY'\np='crates/editor-api/src/operations/classic_advanced_podcast.rs';s=open(p).read().replace('!a.contains_key(\"unifiedAngles\")','a.get(\"unifiedAngles\").is_none_or(Value::is_null)');open(p,'w').write(s)\nPY\nrustfmt --edition 2024 --config skip_children=true classic/rust/crates/podcast/src/camera_groups.rs classic/rust/crates/podcast/src/advanced.rs classic/rust/crates/podcast/src/podcast.rs classic/rust/crates/podcast/src/energy.rs crates/editor-api/src/operations/classic_advanced_podcast.rs\ncargo test -p podcast --lib --quiet\nbun run --cwd classic build:wasm > .local/advanced-podcast/wasm-build.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-044b8e76-fa7b-43bf-8b72-5c7acb57b0d1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:56:46.099Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b7d34c706b4c232fb5324aa4c67aec7c5e7e753114f8d9ad8bf4478f2c8c82f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:35:14.751Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1060,1205p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; sed -n '1255,1400p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; sed -n '30,90p' classic/apps/web/src/podcast-sync/engine.ts; git diff -- classic/apps/web/src/core/managers/commands.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2a22625e-7574-4c5d-9fa9-fbd2d068dc7a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:35:14.807Z",
+  "parents": [],
+  "branch": "main"
+}

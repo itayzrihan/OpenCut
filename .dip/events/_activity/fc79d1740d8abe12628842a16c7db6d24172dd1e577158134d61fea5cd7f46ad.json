@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc79d1740d8abe12628842a16c7db6d24172dd1e577158134d61fea5cd7f46ad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:51:41.679Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_advanced_podcast.rs';s=open(p).read();needle='''    register::<Input, classic_podcast::PodcastRecordingGroups, _, _>(''';s=s.replace(needle,'''    register_camera_suggestions(registry,state.clone())?;\n'''+needle,1);s+='''\n#[derive(Deserialize,JsonSchema)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\nstruct CameraInput {project_id:String,expected_revision:u64,#[schemars(length(min=1,max=32))]video_ids:Vec<String>,#[serde(default)]recording_ids:Vec<String>}\nfn register_camera_suggestions(registry:&CapabilityRegistry,state:Arc<RwLock<EditorStore>>)->Result<(),RegistryError> {\n    register::<CameraInput,classic_podcast::PodcastCameraSuggestions,_,_>(registry,DocumentSupport::Classic,crate::CapabilityExecution::Immediate,\n        \"timeline.classic.multicam.cameras.suggest\",\"Suggest podcast camera angle groups\",\n        \"Suggest physical camera groups from shared person/group filename tokens, ignoring camera counters, Main labels and approximate angle suffix spellings. Fuzzy subject evidence is conservative and never proves synchronization. Prefers a unique Main-labelled view, leaves unrelated cameras separate, and suggests microphone bindings only from unambiguous appended recorder labels. Does not create Unified assets; physical cameras remain individually editable. Read-only, explicit project/revision; no file IO. Shared Rust policy used in Podcast dialog and MCP.\",\"timeline\",AccessLevel::Read,true,false,&[\"classic\",\"podcast\",\"multicam\",\"angles\",\"main\",\"sources\"],move|context,input|{let state=state.clone();async move{\n            let store=state.read().map_err(|_|CapabilityError::Failed(\"State lock poisoned\".into()))?;\n            if store.document.revision!=input.expected_revision{return Err(CapabilityError::Conflict(\"Podcast project revision changed\".into()));}\n            let classic=store.document.project.as_ref().filter(|p|p.id==input.project_id).and_then(|p|p.classic.as_ref()).ok_or_else(||Capab",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b49d8245-3d51-44d2-b929-32884c6f762e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:51:42.358Z",
+  "parents": [],
+  "branch": "main"
+}

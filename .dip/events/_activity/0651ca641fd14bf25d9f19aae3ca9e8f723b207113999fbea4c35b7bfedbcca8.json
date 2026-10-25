@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0651ca641fd14bf25d9f19aae3ca9e8f723b207113999fbea4c35b7bfedbcca8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:20:47.194Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'podcast-sync|managers/commands.ts|advanced|Advanced' /tmp/advanced-podcast-tsc.txt | head -50; cat classic/scripts/test-web.mjs | head -80; cat classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts | head -60; ls classic/apps/web/tsconfig*; rg -n 'typecheck|types' classic/apps/web/package.json | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4478a30b-ceaf-4b2f-90bb-c0ee985bc59f"
+      },
+      {
+        "at": "2026-10-25T15:20:47.293Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'podcast-sync|managers/commands.ts|advanced|Advanced' /tmp/advanced-podcast-tsc.txt | head -50; cat classic/scripts/test-web.mjs | head -80; cat classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts | head -60; ls classic/apps/web/tsconfig*; rg -n 'typecheck|types' classic/apps/web/package.json | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-4478a30b-ceaf-4b2f-90bb-c0ee985bc59f"
+      },
+      {
+        "at": "2026-10-25T15:20:47.297Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();s=s.replace('audioExplicit: boolean;','audioExplicit: boolean;\\n    microphoneIds?: string[];');s=s.replace('type WizardMode = \"quick\" | \"guided\";','type WizardMode = \"quick\" | \"guided\" | \"advanced\";');needle='\\tconst suggestions = sourceSuggestions.suggestions;';insert='''    const [recordingSelection,setRecordingSelection]=useState<string[]|null>(null);\n    const recordingIds=recordingSelection??audioAssets.filter(a=>a.type===\"audio\").map(a=>a.id);\n    const recordingGroups=useMemo(()=>{\n        if (!recordingIds.length) return {microphones:[],issues:[\"Import microphone WAV recordings into Assets\"]};\n        try { return editor.command.groupPodcastRecordings(recordingIds); }\n        catch(error) {return {microphones:[],issues:[error instanceof Error?error.message:\"Cannot group microphone recordings\"]};}\n    // The source list and selection determine this read-only canonical suggestion.\n    },[editor,assets,recordingSelection]);\n''';s=s.replace(needle,insert+needle);s=s.replace('const audio = assetById.get(draft.audioAssetId);','''const selectedMic=mode===\"advanced\" ? recordingGroups.microphones.find(m=>draft.microphoneIds?.includes(m.id)) : undefined;\n            const audio = assetById.get(selectedMic?.segments[0]?.recording.mediaId ?? draft.audioAssetId);''');s=s.replace('\\t\\tconst resolved: PodcastSyncChannel[] = [];','''        if (mode===\"advanced\" && (recordingGroups.issues.length || channels.some(c=>!c.microphoneIds?.length)\n            || recordingGroups.microphones.some(m=>!channels.some(c=>c.microphoneIds?.includes(m.id))))) {\n            toast.error(recordingGroups.issues[0]??\"Assign every microphone to at least one camera, and microphones to every camera\");return null;\n        }\n\\t\\tconst resolved: PodcastSyncChannel[] = [];''',1);s=s.replace('if (usedAudioIds.has(audio.id))','if (mode!==\"advanced\" && usedAudioIds.has(audio.id))');s=s.replace('\\t\\",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-adfbc299-578c-4b0c-aff2-6c57a6daf0b9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:20:47.763Z",
+  "parents": [],
+  "branch": "main"
+}

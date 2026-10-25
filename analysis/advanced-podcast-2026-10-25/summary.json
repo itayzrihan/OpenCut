@@ -1,0 +1,101 @@
+{
+  "hardware": "Hollyland LARK MAX 2 Combo (user confirmed)",
+  "migration": "bridged: Classic UI calls shared Rust kernels through WASM and canonical OpenCutRuntime registry; no independent rewrite or UI project store",
+  "recordings": [
+    {
+      "microphone": "Microphone 1 \u00b7 9P8H",
+      "recorderToken": "9P8H",
+      "segments": [
+        5,
+        6,
+        7
+      ],
+      "duration": 4225.54,
+      "cameraRelativeStart": 230.95759258961607,
+      "sourceNames": [
+        "20260720_1634_0005_32Float_9P8HShlishya1.wav",
+        "20260720_1704_0006_32Float_9P8HShlishya1.wav",
+        "20260720_1734_0007_32Float_9P8HShlishya1.wav"
+      ]
+    },
+    {
+      "microphone": "Microphone 2 \u00b7 AHQC",
+      "recorderToken": "AHQC",
+      "segments": [
+        5,
+        6,
+        7
+      ],
+      "duration": 4181.76,
+      "cameraRelativeStart": 274.2272885532538,
+      "sourceNames": [
+        "20260720_1635_0005_32Float_AHQCShlishya2.wav",
+        "20260720_1705_0006_32Float_AHQCShlishya2.wav",
+        "20260720_1735_0007_32Float_AHQCShlishya2.wav"
+      ]
+    },
+    {
+      "microphone": "Microphone 3 \u00b7 AX5F",
+      "recorderToken": "AX5F",
+      "segments": [
+        3,
+        4,
+        5
+      ],
+      "duration": 4180.99,
+      "cameraRelativeStart": 268.16515857641497,
+      "sourceNames": [
+        "20260720_1635_0003_32Float_AX5FShlishya3.wav",
+        "20260720_1705_0004_32Float_AX5FShlishya3.wav",
+        "20260720_1735_0005_32Float_AX5FShlishya3.wav"
+      ]
+    },
+    {
+      "microphone": "Microphone 4 \u00b7 BCZ9",
+      "recorderToken": "BCZ9",
+      "segments": [
+        3,
+        4,
+        5
+      ],
+      "duration": 4176.04,
+      "cameraRelativeStart": 248.09703473467832,
+      "sourceNames": [
+        "20260720_1635_0003_32Float_BCZ9Avihay.wav",
+        "20260720_1705_0004_32Float_BCZ9Avihay.wav",
+        "20260720_1735_0005_32Float_BCZ9Avihay.wav"
+      ]
+    }
+  ],
+  "synchronization": {
+    "referenceCamera": "C7458Shlishiyaangle1.MP4",
+    "resolutionSeconds": 0.01,
+    "precisionWindows": 20,
+    "unverified": [],
+    "drifting": []
+  },
+  "limits": [
+    "Filename recorder token is evidence, not independently verified hardware serial identity.",
+    "Source data currently verifies four microphones and one camera. Additional cameras and human speaker/camera ground truth have not been validated.",
+    "No final export or source-folder modification performed.",
+    "Gapless timeline source placement does not prove the recorder lost no samples at its hardware split. Repeated acoustic windows support continuity within 10ms RMS resolution.",
+    "Coarse and waveform offsets depend on acoustic travel/reflections; perfect lip sync and 100% speaker classification are not asserted.",
+    "Grouping currently accepts observed Hollyland-style names (including appended person labels), requires consecutive segment counters and rejects ambiguous/mixed sessions. Other recorder naming conventions require an explicit adapter."
+  ],
+  "sources": [
+    "https://faq.hollyland.com/eec2e/17c09/caa31/2cf8b/9b595",
+    "https://faq.hollyland.com/faq/wireless-microphones/lark-max2/51f95"
+  ],
+  "validation": {
+    "focusedTests": 66,
+    "podcastRustTests": 31,
+    "canonicalApiTests": 17,
+    "webBridgeAndWorkerTests": 18,
+    "productionWasmBuild": "passed",
+    "isolatedNextProductionBuild": "passed (.next-advanced-podcast; no deployment)",
+    "typescriptBuildConfig": "passed",
+    "changedPodcastFilesLint": "passed with existing assets-hook dependency warning",
+    "globalArchitectureAudit": "fails on unchanged baseline sites: MoveElementCommand, brand-kits/apply.ts, subtitles/auto-texts.ts; no Advanced Podcast entry reported",
+    "browserTestEnvironment": "Bun hosting actual production Rust WASM; no live graphical editor run or final export"
+  }
+}

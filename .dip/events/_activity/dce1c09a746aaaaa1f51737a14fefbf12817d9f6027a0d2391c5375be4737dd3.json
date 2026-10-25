@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dce1c09a746aaaaa1f51737a14fefbf12817d9f6027a0d2391c5375be4737dd3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:12:52.314Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/advanced-podcast-2026-10-25; python3 - <<'PY'\nfrom pathlib import Path\nimport numpy as np,json,hashlib\np=Path('/Users/itayzrihan/Desktop/Avihay'); out=Path('analysis/advanced-podcast-2026-10-25'); records=[]; envelopes={}\nfor f in sorted(p.glob('*.wav')):\n data=np.memmap(f,dtype='<f4',mode='r',offset=44); n=len(data); blocks=n//480\n # Bounded 10-second chunks; no full recording PCM allocation.\n env=np.empty(blocks,dtype=np.float32)\n for start in range(0,blocks,1000):\n  end=min(start+1000,blocks); a=np.asarray(data[start*480:end*480]).reshape(-1,480)\n  env[start:end]=np.sqrt(np.mean(a.astype(np.float64)**2,axis=1))\n key=f.stem.rsplit('_',1)[1]; envelopes.setdefault(key,[]).append(env)\n records.append({'name':f.name,'bytes':f.stat().st_size,'samples':n,'sampleRate':48000,'channels':1,'format':'IEEE float32','durationSeconds':n/48000,'recorderToken':key,'sequence':int(f.stem.split('_')[2]),'metadataChunks':['fmt ','data'],'headerSha256':hashlib.sha256(f.read_bytes()[:44]).hexdigest()})\n(out/'recordings.json').write_text(json.dumps(records,indent=2)+'\\n')\nfor key,es in envelopes.items():np.save(out/(key+'-rms-10ms.npy'),np.concatenate(es))\nprint(json.dumps(records,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4c278ac4-54a4-4675-b110-99a5764b9dba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:12:53.137Z",
+  "parents": [],
+  "branch": "main"
+}

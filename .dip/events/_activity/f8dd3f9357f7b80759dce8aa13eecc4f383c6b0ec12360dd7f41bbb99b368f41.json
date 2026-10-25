@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f8dd3f9357f7b80759dce8aa13eecc4f383c6b0ec12360dd7f41bbb99b368f41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:46:55.918Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames/camera1-4260.png",
+          ".local/advanced-podcast/frames/camera1-4320.png",
+          ".local/advanced-podcast/frames/camera1-4380.png",
+          "analysis/advanced-podcast-2026-10-25/lighting-coarse.json",
+          ".local/advanced-podcast/frames/camera1-contact.jpg"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fc16927c-f1c4-4303-9dd5-3c732edfc706"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:46:55.919Z",
+  "parents": [],
+  "branch": "main"
+}

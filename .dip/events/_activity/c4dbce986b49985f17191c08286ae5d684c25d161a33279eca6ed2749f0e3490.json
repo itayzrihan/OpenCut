@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c4dbce986b49985f17191c08286ae5d684c25d161a33279eca6ed2749f0e3490",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:29:51.236Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/podcast-sync/engine.ts",
+          "classic/apps/web/src/podcast-sync/__tests__/advanced-engine.test.ts",
+          "classic/apps/web/src/podcast-sync/__tests__/advanced-worker.test.ts",
+          "classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "66f72ad8-ca46-447c-854c-07ef1930ab2e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:29:51.238Z",
+  "parents": [],
+  "branch": "main"
+}

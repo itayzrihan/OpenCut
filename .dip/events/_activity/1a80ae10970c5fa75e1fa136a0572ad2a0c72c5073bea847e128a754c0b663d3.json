@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a80ae10970c5fa75e1fa136a0572ad2a0c72c5073bea847e128a754c0b663d3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:33:55.804Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/rust/crates/podcast/src/advanced.rs <<'EOF'\n\n#[cfg(test)]\nmod routing_tests {\n    use super::*;\n    #[test]\n    fn four_high_bleed_mics_can_share_two_cameras_and_use_a_third() {\n        let microphone_ids:Vec<String>=(1..=4).map(|i|format!(\"mic{i}\")).collect();\n        let cameras=vec![\n            PodcastCameraMicrophones{channel_id:\"wide1\".into(),microphone_ids:microphone_ids[..3].to_vec()},\n            PodcastCameraMicrophones{channel_id:\"wide2\".into(),microphone_ids:microphone_ids[..3].to_vec()},\n            PodcastCameraMicrophones{channel_id:\"single\".into(),microphone_ids:vec![\"mic4\".into()]},\n        ];\n        let mut envelopes=vec![vec![0.65;1600];4];\n        for mic in 0..4 {for v in &mut envelopes[mic][mic*400..(mic+1)*400] {*v=0.8;}}\n        // Different recorder gain must not become a permanent speaker bias.\n        for v in &mut envelopes[1] {*v*=4.0;}\n        let cuts=crate::analyze_podcast_multicam(crate::AnalyzePodcastOptions{\n            envelopes,channel_ids:vec![\"wide1\".into(),\"wide2\".into(),\"single\".into()],duration:16.,\n            settings:crate::podcast_multicam_defaults(crate::PodcastMulticamDefaultsOptions{quick:true}),\n            camera_windows:vec![],advanced:Some(AdvancedPodcastRouting{microphone_ids,cameras}),\n        });\n        assert_eq!(cuts.len(),2,\"Shared microphones should not force extra camera switches\");\n        assert_eq!(cuts[0].channel_id,\"wide1\");assert_eq!(cuts[1].channel_id,\"single\");\n        assert!((cuts.iter().map(|c|c.duration).sum::<f64>()-16.).abs()<1e-6);\n    }\n}\nEOF\npython3 - <<'PY'\np='crates/editor-api/src/operations/classic_multicam.rs';s=open(p).read();needle='''        let detected = classic_podcast::group_podcast_recordings(''';s=s.replace(needle,'''        if channels.iter().any(|c|!self.routing.cameras.iter().find(|camera|camera.channel_id==c.id).is_some_and(|camera|{\n            self.microphones.iter().any(|m|camera.microphone_ids.contains(&m.id) && m.segments.first().is_some_and(|s|s.reco",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a5d19486-7442-4560-b42b-83f8cb720c94"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:33:56.721Z",
+  "parents": [],
+  "branch": "main"
+}

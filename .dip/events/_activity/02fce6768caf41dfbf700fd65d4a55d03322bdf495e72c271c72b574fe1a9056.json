@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "02fce6768caf41dfbf700fd65d4a55d03322bdf495e72c271c72b574fe1a9056",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:52:02.388Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/advanced-podcast-2026-10-25/lighting-refined.json",
+          ".local/advanced-podcast/frames/lighting-native.npy",
+          ".local/advanced-podcast/frames/lighting-transition.jpg",
+          ".local/advanced-podcast/lighting-refine.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2f0fb4f9-a87d-40c5-9f99-76d6b7d77466"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:52:02.389Z",
+  "parents": [],
+  "branch": "main"
+}

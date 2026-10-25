@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e81a5c784f6dbbf4780c2050c055a5506279b49a5277a19247eeb8319f7e0ca9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:01:14.358Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rustfmt --edition 2024 --config skip_children=true classic/rust/crates/podcast/src/camera_groups.rs crates/editor-api/src/operations/classic_advanced_podcast.rs crates/editor-api/src/operations/classic_multicam.rs crates/editor-api/tests/classic_advanced_podcast.rs\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx classic/apps/web/src/services/local-drive/__tests__/server.test.ts\nnode classic/scripts/local-production/build.mjs --stage > .local/advanced-podcast/production-build.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-09b5c9e5-d9dc-4ecd-9b63-7daf507b9517"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:01:14.823Z",
+  "parents": [],
+  "branch": "main"
+}

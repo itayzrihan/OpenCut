@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4521530b8112b67c6920e7b6c2fb7b68d5ddd999f8d51b0172a00942e58ce8e4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:13:51.099Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ls -lh analysis/advanced-podcast-2026-10-25; python3 - <<'PY'\nimport numpy as np,json\nfrom pathlib import Path\np=Path('analysis/advanced-podcast-2026-10-25')\nif (p/'recordings.json').exists(): print((p/'recordings.json').read_text())\nif (p/'9P8H-rms-10ms.npy').exists() and (p/'AHQC-rms-10ms.npy').exists():\n a=np.load(p/'9P8H-rms-10ms.npy');b=np.load(p/'AHQC-rms-10ms.npy')\n # Pearson correlation for fixed windows, lag sign = B recording start relative to A.\n results=[]\n for start in [30,300,900,1700,1900,3000,3500,3700,4000]:\n  scores=[]\n  n=3000; x=a[int(start*100):int(start*100)+n].astype(float); x=(x-x.mean())/x.std()\n  for lag in range(-12000,12001):\n   bi=int(start*100)-lag\n   if bi<0 or bi+n>len(b):continue\n   y=b[bi:bi+n].astype(float); d=y.std()\n   if d>1e-10:scores.append((float(np.dot(x,y-y.mean())/n/d),lag))\n  scores.sort(reverse=True)\n  results.append({'windowStartSeconds':start,'windowDurationSeconds':30,'bStartRelativeToASeconds':scores[0][1]/100,'correlation':scores[0][0]})\n (p/'sync-windows.json').write_text(json.dumps(results,indent=2)+'\\n');print(json.dumps(results,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8c73b0f0-657b-43a1-94c5-d87ecb1cbeb7"
+      },
+      {
+        "at": "2026-10-25T15:13:51.100Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'target-dir|members' .cargo/config.toml classic/rust/.cargo/config.toml Cargo.toml classic/rust/Cargo.toml; ls target/debug/examples/analyze classic/rust/target/debug/examples/analyze; rg -n 'fn read|WAV|wav|float' classic/apps/web/src/podcast-sync/energy-reader.ts | head -40",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b17bdfb7-6454-4d33-aedc-54995aaedda5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:13:51.184Z",
+  "parents": [],
+  "branch": "main"
+}

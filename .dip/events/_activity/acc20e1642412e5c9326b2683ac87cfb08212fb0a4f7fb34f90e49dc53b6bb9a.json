@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "acc20e1642412e5c9326b2683ac87cfb08212fb0a4f7fb34f90e49dc53b6bb9a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:50:35.259Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/services/local-drive/client.ts",
+          "classic/apps/web/src/services/local-drive/server.ts",
+          "classic/apps/web/src/app/api/local-drive/route.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3e538e3f-5e83-4993-a24b-d09db9699823"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:50:35.260Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b000fe839c31a873e3ab45c83279086b5751a6ff2145a02f2ae2c0a0200af43b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:18:27.634Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_duplicate.rs",
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_multicam.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b2915918-a3e3-4b74-815d-0c0bf1ec43e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:18:27.635Z",
+  "parents": [],
+  "branch": "main"
+}

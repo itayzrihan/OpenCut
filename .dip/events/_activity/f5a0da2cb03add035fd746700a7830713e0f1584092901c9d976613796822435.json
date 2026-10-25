@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5a0da2cb03add035fd746700a7830713e0f1584092901c9d976613796822435",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:27:58.180Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,numpy as np\np=Path('analysis/advanced-podcast-2026-10-25');g=json.loads((p/'shared-clock.json').read_text());base=Path('.local/advanced-podcast');a=np.load(base/(g['sources'][0]+'-rms-10ms.npy'));out=[]\nfor name,offset in zip(g['sources'][1:],g['offsets'][1:]):\n b=np.load(base/(name+'-rms-10ms.npy'));rows=[]\n for t in [300,900,1700,1900,3000,3500,3700,4000]:\n  local=t-offset\n  if local<2 or local+30>len(b)/100:continue\n  x=a[t*100:t*100+3000].astype(float);x-=x.mean();xd=np.linalg.norm(x);scores=[]\n  for delta in range(-100,101):\n   start=round(local*100)-delta;y=b[start:start+3000].astype(float);y-=y.mean();yd=np.linalg.norm(y)\n   if xd*yd>1e-12:scores.append((float(np.dot(x,y)/xd/yd),delta))\n  best=max(scores);rows.append(dict(cameraWindowStart=t,windowDurationSeconds=30,startRelativeToCameraSeconds=offset+best[1]/100,correlation=best[0]))\n out.append(dict(recorderToken=[REDACTED],windows=rows))\n(p/'verified-windows.json').write_text(json.dumps(out,indent=2)+'\\n');print(json.dumps([dict(token=[REDACTED],offsets=[r['startRelativeToCameraSeconds'] for r in e['windows']],correlationRange=[min(r['correlation'] for r in e['windows']),max(r['correlation'] for r in e['windows'])]) for e in out],indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2a11cc35-ff8c-4a1c-879e-9f5b23e91de7"
+      },
+      {
+        "at": "2026-10-25T15:27:58.423Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,numpy as np\np=Path('analysis/advanced-podcast-2026-10-25');g=json.loads((p/'shared-clock.json').read_text());base=Path('.local/advanced-podcast');a=np.load(base/(g['sources'][0]+'-rms-10ms.npy'));out=[]\nfor name,offset in zip(g['sources'][1:],g['offsets'][1:]):\n b=np.load(base/(name+'-rms-10ms.npy'));rows=[]\n for t in [300,900,1700,1900,3000,3500,3700,4000]:\n  local=t-offset\n  if local<2 or local+30>len(b)/100:continue\n  x=a[t*100:t*100+3000].astype(float);x-=x.mean();xd=np.linalg.norm(x);scores=[]\n  for delta in range(-100,101):\n   start=round(local*100)-delta;y=b[start:start+3000].astype(float);y-=y.mean();yd=np.linalg.norm(y)\n   if xd*yd>1e-12:scores.append((float(np.dot(x,y)/xd/yd),delta))\n  best=max(scores);rows.append(dict(cameraWindowStart=t,windowDurationSeconds=30,startRelativeToCameraSeconds=offset+best[1]/100,correlation=best[0]))\n out.append(dict(recorderToken=[REDACTED],windows=rows))\n(p/'verified-windows.json').write_text(json.dumps(out,indent=2)+'\\n');print(json.dumps([dict(token=[REDACTED],offsets=[r['startRelativeToCameraSeconds'] for r in e['windows']],correlationRange=[min(r['correlation'] for r in e['windows']),max(r['correlation'] for r in e['windows'])]) for e in out],indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2a11cc35-ff8c-4a1c-879e-9f5b23e91de7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:27:59.197Z",
+  "parents": [],
+  "branch": "main"
+}

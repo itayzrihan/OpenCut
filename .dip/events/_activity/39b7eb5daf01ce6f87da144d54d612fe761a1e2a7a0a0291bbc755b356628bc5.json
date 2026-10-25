@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "39b7eb5daf01ce6f87da144d54d612fe761a1e2a7a0a0291bbc755b356628bc5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:29:50.589Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/podcast-sync/engine.ts classic/apps/web/src/podcast-sync/__tests__/advanced-engine.test.ts classic/apps/web/src/podcast-sync/__tests__/advanced-worker.test.ts classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts; cargo test -q -p podcast --lib; cargo test -q -p opencut-editor-api --test classic_advanced_podcast --test classic_multicam",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2f77e630-48f6-49f2-9928-0d3b832da4f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:29:51.238Z",
+  "parents": [],
+  "branch": "main"
+}

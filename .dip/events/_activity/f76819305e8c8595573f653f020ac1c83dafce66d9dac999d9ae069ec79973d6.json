@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f76819305e8c8595573f653f020ac1c83dafce66d9dac999d9ae069ec79973d6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T16:25:57.129Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_6d1e9593e18b0bc16b6688b27f73036577684c265ad68fcb33cb8033f842e01f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2d81eb36-f829-4ec9-ab14-a83bc853e773"
+      },
+      {
+        "at": "2026-10-25T16:25:57.461Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_6d1e9593e18b0bc16b6688b27f73036577684c265ad68fcb33cb8033f842e01f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2d81eb36-f829-4ec9-ab14-a83bc853e773"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:25:58.023Z",
+  "parents": [],
+  "branch": "main"
+}

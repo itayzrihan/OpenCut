@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "86f5d21fb574c5beec8b9e323c66174181ec966195eae2179a09390db7f03ace",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:33:26.638Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/src/advanced.rs",
+          "crates/editor-api/src/operations/classic_multicam.rs",
+          "classic/rust/crates/podcast/examples/advanced_probe.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "76c9e107-ba98-4900-b47c-6b2788842a17"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:33:26.639Z",
+  "parents": [],
+  "branch": "main"
+}

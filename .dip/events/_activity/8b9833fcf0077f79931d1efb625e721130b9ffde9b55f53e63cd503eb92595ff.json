@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b9833fcf0077f79931d1efb625e721130b9ffde9b55f53e63cd503eb92595ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:18:26.624Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/agent/src/agent.rs",
+          "classic/rust/crates/podcast/src/advanced.rs",
+          "classic/rust/crates/podcast/src/energy.rs",
+          "classic/rust/crates/podcast/src/hard_limiter.rs",
+          "classic/rust/crates/storage/src/storage.rs",
+          "classic/rust/crates/timeline/src/batch_edit.rs",
+          "classic/rust/crates/timeline/src/caption_text.rs",
+          "classic/rust/crates/timeline/src/full_auto_edit.rs",
+          "classic/rust/editor-runtime-wasm/src/agent.rs",
+          "classic/rust/editor-runtime-wasm/src/knowledge.rs",
+          "classic/rust/editor-runtime-wasm/src/lib.rs",
+          "crates/account-core/src/lib.rs",
+          "crates/account-core/src/media.rs",
+          "crates/account-core/src/snapshot.rs",
+          "crates/editor-agent/src/conversation.rs",
+          "crates/editor-agent/src/lib.rs",
+          "crates/editor-agent/src/session_store.rs",
+          "crates/editor-agent/tests/runtime.rs",
+          "crates/editor-agent/tests/session_store.rs",
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_advanced_podcast.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "17454a54-7069-461e-a4f3-463f0c8b421e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:18:26.626Z",
+  "parents": [],
+  "branch": "main"
+}

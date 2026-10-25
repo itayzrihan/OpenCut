@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7f64e7bf5cfa41ba5f853e7673b870a35d662401e6a0f367c46d6297833751b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:19:58.226Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read().replace('Reading all sources (0/${assets.length})','Reading all sources (0/${physicalAssets.length})').replace('Reading all sources (${completed}/${assets.length})','Reading all sources (${completed}/${physicalAssets.length})').replace('(0.78 * completed) / assets.length','(0.78 * completed) / physicalAssets.length');s=s.replace('\\tlet completed = 0;','''    if (physicalAssets.reduce((sum,a)=>sum+Math.ceil((a.duration??0)/PODCAST_SYNC_RESOLUTION_SECONDS),0)>32_000_000)\n        throw new Error(\"Combined source recordings exceed synchronization memory limit\");\n\\tlet completed = 0;''',1);s=s.replace('\\t\\tconst envelope = cached\\n', '\\t\\tif (alignment.advanced && !cached) throw new Error(\"Wireless microphone analysis expired; synchronize again\");\\n\\t\\tconst envelope = cached\\n',1);open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8f973308-7311-4f35-85c7-14d3af019c5b"
+      },
+      {
+        "at": "2026-10-25T15:19:58.399Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/engine.ts';s=open(p).read().replace('Reading all sources (0/${assets.length})','Reading all sources (0/${physicalAssets.length})').replace('Reading all sources (${completed}/${assets.length})','Reading all sources (${completed}/${physicalAssets.length})').replace('(0.78 * completed) / assets.length','(0.78 * completed) / physicalAssets.length');s=s.replace('\\tlet completed = 0;','''    if (physicalAssets.reduce((sum,a)=>sum+Math.ceil((a.duration??0)/PODCAST_SYNC_RESOLUTION_SECONDS),0)>32_000_000)\n        throw new Error(\"Combined source recordings exceed synchronization memory limit\");\n\\tlet completed = 0;''',1);s=s.replace('\\t\\tconst envelope = cached\\n', '\\t\\tif (alignment.advanced && !cached) throw new Error(\"Wireless microphone analysis expired; synchronize again\");\\n\\t\\tconst envelope = cached\\n',1);open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8f973308-7311-4f35-85c7-14d3af019c5b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:19:58.749Z",
+  "parents": [],
+  "branch": "main"
+}

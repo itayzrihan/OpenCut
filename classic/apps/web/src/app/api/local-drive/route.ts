@@ -116,7 +116,10 @@ async function dispatchPost(request: Request) {
 		assertLocalDriveRequest(request);
 		const body = JSON.parse(
 			new TextDecoder().decode(
-				await readBoundedBody({ request: request, maximumBytes: 128 * 1024 * 1024 }),
+				await readBoundedBody({
+					request: request,
+					maximumBytes: 128 * 1024 * 1024,
+				}),
 			),
 		) as Record<string, unknown>;
 		const operation = readString(
@@ -170,8 +173,15 @@ async function dispatchPost(request: Request) {
 				return NextResponse.json(await getProject(projectId()));
 			case "project.recoverBrowser":
 				return NextResponse.json(
-					await prepareBrowserProjectRecovery({ sourceId: projectId(), destinationId: readString(body.destinationId, "destinationId"), project: body.project, history: body.history, media: body.media, fonts: body.fonts, projection: browserRecoveryProject }
-					),
+					await prepareBrowserProjectRecovery({
+						sourceId: projectId(),
+						destinationId: readString(body.destinationId, "destinationId"),
+						project: body.project,
+						history: body.history,
+						media: body.media,
+						fonts: body.fonts,
+						projection: browserRecoveryProject,
+					}),
 				);
 			case "project.put":
 				await withBatchProjectWrite({
@@ -233,6 +243,7 @@ async function dispatchPost(request: Request) {
 					await registerPickedMediaPaths(
 						projectId(),
 						readStringArray(body.paths, "paths"),
+						body.preserveLink === true,
 					),
 				);
 			case "media.delete":

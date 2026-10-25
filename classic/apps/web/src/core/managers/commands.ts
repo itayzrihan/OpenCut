@@ -889,11 +889,35 @@ export class CommandManager {
 		}) as ReturnType<CommandManager["suggestPodcastSources"]>;
 	}
 
+	suggestPodcastCameras(input: {
+		videoIds: string[];
+		recordingIds: string[];
+	}): import("opencut-wasm").PodcastCameraSuggestions {
+		if (!this.canonical)
+			throw new Error("Open the editor before matching camera angles");
+		return this.canonical.invokeControl({
+			capabilityId: "timeline.classic.multicam.cameras.suggest",
+			input,
+		}) as import("opencut-wasm").PodcastCameraSuggestions;
+	}
+
+	groupPodcastRecordings(
+		mediaIds: string[],
+	): import("opencut-wasm").PodcastRecordingGroups {
+		if (!this.canonical)
+			throw new Error("Open the editor before grouping microphones");
+		return this.canonical.invokeControl({
+			capabilityId: "timeline.classic.multicam.recordings.group",
+			input: { mediaIds },
+		}) as import("opencut-wasm").PodcastRecordingGroups;
+	}
+
 	createMulticam({
 		plan,
 		allowCameraAudio = false,
 	}: {
 		plan: {
+			advanced?: import("@/podcast-sync/engine").AdvancedPodcastPlan;
 			settings: import("@/podcast-sync/engine").PodcastSyncSettings;
 			channels: Array<{
 				id: string;

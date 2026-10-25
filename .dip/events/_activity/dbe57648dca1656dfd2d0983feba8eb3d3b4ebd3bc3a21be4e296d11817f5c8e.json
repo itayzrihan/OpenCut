@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dbe57648dca1656dfd2d0983feba8eb3d3b4ebd3bc3a21be4e296d11817f5c8e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:16:30.521Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Plan \\{' crates/editor-api/src/operations/classic_multicam.rs; command -v wasm-pack; command -v bun; sed -n '120,235p' classic/rust/crates/podcast/src/precision.rs; sed -n '55,110p' classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bb06d428-7c47-46ec-92a6-208d5eadbeb6"
+      },
+      {
+        "at": "2026-10-25T15:16:30.612Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Plan \\{' crates/editor-api/src/operations/classic_multicam.rs; command -v wasm-pack; command -v bun; sed -n '120,235p' classic/rust/crates/podcast/src/precision.rs; sed -n '55,110p' classic/apps/web/src/podcast-sync/__tests__/unified-engine.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-bb06d428-7c47-46ec-92a6-208d5eadbeb6"
+      },
+      {
+        "at": "2026-10-25T15:16:30.617Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/rust/crates/podcast/src/advanced.rs <<'EOF'\n\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\npub struct PodcastCameraMicrophones {\n    pub channel_id: String,\n    pub microphone_ids: Vec<String>,\n}\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\npub struct AdvancedPodcastRouting {\n    pub microphone_ids: Vec<String>,\n    pub cameras: Vec<PodcastCameraMicrophones>,\n}\nimpl AdvancedPodcastRouting {\n    pub fn validate(&self, camera_ids: &[String]) -> bool {\n        let unique:HashSet<_>=self.microphone_ids.iter().collect();\n        !unique.is_empty() && unique.len()<=4 && unique.len()==self.microphone_ids.len()\n            && !self.microphone_ids.iter().any(|id| id.trim().is_empty())\n            && self.cameras.len()==camera_ids.len()\n            && self.cameras.iter().map(|c|&c.channel_id).collect::<HashSet<_>>().len()==camera_ids.len()\n            && self.cameras.iter().all(|c| camera_ids.contains(&c.channel_id) && !c.microphone_ids.is_empty()\n                && c.microphone_ids.iter().collect::<HashSet<_>>().len()==c.microphone_ids.len()\n                && c.microphone_ids.iter().all(|id|self.microphone_ids.contains(id)))\n            && self.microphone_ids.iter().all(|id|self.cameras.iter().any(|c|c.microphone_ids.contains(id)))\n    }\n}\n// Preserve relative local dominance instead of interpreting strong room bleed as\n// simultaneous speakers. A robust per-recorder peak reference compensates gain;\n// close energy ties retain the current owner. This is acoustic evidence, not diarization.\npub(crate) fn advanced_camera_timeline(envelopes:&[Vec<f32>], mapping:&AdvancedPodcastRouting, camera_",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-51fce535-34d5-419d-8cfc-72385745266d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:16:31.332Z",
+  "parents": [],
+  "branch": "main"
+}

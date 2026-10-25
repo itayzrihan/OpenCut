@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45134e49-e932-4001-8c79-2110251df0e2",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Follow-up implementation complete enough for staged production build. Added canonical cameras.suggest, shared camera grouping/Main/alternate policy (34 Rust kernel tests), UI camera groups/custom selection, automatic mic labels, and linked path import UI using existing canonical host import preserveLink=true. API 4 advanced +14 regular tests pass; linked server tests7 pass; production types pass. Three native illumination boundaries measured: Avihay1058.32s/frame26458, Main1123.32s/frame28083, alternate1136.08s/frame28402. First fully changed frame +.04s. Source clock 3cams+4mics saved all-shared-clock.json. User original project clean/untouched; new Chrome tab1417494724 on projects page. Staged production build running .local/advanced-podcast/production-build.log; freeze classic/crates source until complete. Next create Avihay UI project, activate candidate via panel3210 stop/start, import 15 absolute paths linked in Podcast dialog, use suggestions, Auto Edit. Apply native color-correction with per-camera source lighting boundaries, preserve standard sound+Sharpen, verify live saved result. Main desired look natural warm restrained. Frame evidence in .local/advanced-podcast/frames, raw originals never modified.",
+    "next": "",
+    "head": "dd491d54e21ec564efde501154ab18560134c515"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T16:01:16.046Z",
+  "parents": [
+    "6f50a5fb-7daa-45e5-97fa-5515df7f3ca1"
+  ],
+  "branch": "main"
+}

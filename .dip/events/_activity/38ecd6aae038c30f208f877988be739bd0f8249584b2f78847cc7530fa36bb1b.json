@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "38ecd6aae038c30f208f877988be739bd0f8249584b2f78847cc7530fa36bb1b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:05:49.891Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/production-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0d739617-3257-4674-b9cc-f4f7139861e6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:05:49.892Z",
+  "parents": [],
+  "branch": "main"
+}

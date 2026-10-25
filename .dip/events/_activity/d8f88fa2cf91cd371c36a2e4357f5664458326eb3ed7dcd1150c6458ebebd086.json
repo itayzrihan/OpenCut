@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d8f88fa2cf91cd371c36a2e4357f5664458326eb3ed7dcd1150c6458ebebd086",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:28:47.180Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/podcast/examples/advanced_probe.rs",
+          "analysis/advanced-podcast-2026-10-25/verify_acoustics.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e1f39097-328d-461c-9090-de1f033df0ec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:28:47.182Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f947de79bb92188c5ca7e161cb85104102519dcc04fe74008b4734305f330095",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:18:49.666Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm-opt.wasm",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7aecc842-a3de-4ace-9f8a-805f493272cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:18:49.667Z",
+  "parents": [],
+  "branch": "main"
+}

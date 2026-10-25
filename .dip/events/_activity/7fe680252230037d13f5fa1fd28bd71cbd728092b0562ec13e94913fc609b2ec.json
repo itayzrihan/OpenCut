@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fe680252230037d13f5fa1fd28bd71cbd728092b0562ec13e94913fc609b2ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:20:41.784Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_advanced_podcast.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e80b725d-09ef-481d-b9d5-babd6e8d73f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:20:41.785Z",
+  "parents": [],
+  "branch": "main"
+}

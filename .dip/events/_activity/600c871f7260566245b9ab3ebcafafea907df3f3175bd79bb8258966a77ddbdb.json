@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "600c871f7260566245b9ab3ebcafafea907df3f3175bd79bb8258966a77ddbdb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:50:35.110Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/services/local-drive/client.ts';s=open(p).read();s=s.replace('''export async function registerLocalMediaPaths({\n\\tprojectId,\n\\tpaths,\n}: {\\n\\tprojectId: string;\\n\\tpaths: string[];''','''export async function registerLocalMediaPaths({\n\\tprojectId,\n\\tpaths,\n    preserveLink=false,\n}: {\\n\\tprojectId: string;\\n\\tpaths: string[];\n    preserveLink?:boolean;''');s=s.replace('payload: { projectId, paths },','payload: { projectId, paths, preserveLink },',1);open(p,'w').write(s)\np='classic/apps/web/src/services/local-drive/server.ts';s=open(p).read().replace('''export async function registerPickedMediaPaths(\n\\tprojectId: string,\n\\tpaths: string[],\n)''','''export async function registerPickedMediaPaths(\n\\tprojectId: string,\n\\tpaths: string[],\n    preserveLink=false,\n)''');needle='''await registerMediaPath({\n\\t\\t\\t\\tprojectId,\n\\t\\t\\t\\trecord: {''';assert needle in s;s=s.replace(needle,'''await registerMediaPath({\n\\t\\t\\t\\tprojectId,\n                preserveLink,\n\\t\\t\\t\\trecord: {''',1);open(p,'w').write(s)\np='classic/apps/web/src/app/api/local-drive/route.ts';s=open(p).read().replace('''readStringArray(body.paths, \"paths\"),\n\\t\\t\\t\\t\\t),''','''readStringArray(body.paths, \"paths\"),\n                        body.preserveLink===true,\n\\t\\t\\t\\t\\t),''',1);open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5f2a9d55-4a27-4378-a264-6c5130110573"
+      },
+      {
+        "at": "2026-10-25T15:50:35.213Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/services/local-drive/client.ts';s=open(p).read();s=s.replace('''export async function registerLocalMediaPaths({\n\\tprojectId,\n\\tpaths,\n}: {\\n\\tprojectId: string;\\n\\tpaths: string[];''','''export async function registerLocalMediaPaths({\n\\tprojectId,\n\\tpaths,\n    preserveLink=false,\n}: {\\n\\tprojectId: string;\\n\\tpaths: string[];\n    preserveLink?:boolean;''');s=s.replace('payload: { projectId, paths },','payload: { projectId, paths, preserveLink },',1);open(p,'w').write(s)\np='classic/apps/web/src/services/local-drive/server.ts';s=open(p).read().replace('''export async function registerPickedMediaPaths(\n\\tprojectId: string,\n\\tpaths: string[],\n)''','''export async function registerPickedMediaPaths(\n\\tprojectId: string,\n\\tpaths: string[],\n    preserveLink=false,\n)''');needle='''await registerMediaPath({\n\\t\\t\\t\\tprojectId,\n\\t\\t\\t\\trecord: {''';assert needle in s;s=s.replace(needle,'''await registerMediaPath({\n\\t\\t\\t\\tprojectId,\n                preserveLink,\n\\t\\t\\t\\trecord: {''',1);open(p,'w').write(s)\np='classic/apps/web/src/app/api/local-drive/route.ts';s=open(p).read().replace('''readStringArray(body.paths, \"paths\"),\n\\t\\t\\t\\t\\t),''','''readStringArray(body.paths, \"paths\"),\n                        body.preserveLink===true,\n\\t\\t\\t\\t\\t),''',1);open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5f2a9d55-4a27-4378-a264-6c5130110573"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:50:35.259Z",
+  "parents": [],
+  "branch": "main"
+}

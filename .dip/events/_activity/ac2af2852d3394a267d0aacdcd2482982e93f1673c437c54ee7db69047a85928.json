@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac2af2852d3394a267d0aacdcd2482982e93f1673c437c54ee7db69047a85928",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:52:21.424Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/advanced-podcast-2026-10-25/all-shared-clock.json",
+          ".local/advanced-podcast/all-sync.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8d6a4279-259e-468a-8fb7-7908b9eb96a8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:52:21.425Z",
+  "parents": [],
+  "branch": "main"
+}

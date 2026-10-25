@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "29e1054635ffba6263961db8fa65aabd8ba87a1a10222b43806553620c473ea4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:35:49.524Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx';s=open(p).read();s=s.replace('<SyncStep\\n\\t\\t\\t\\t\\t\\t\\tchannels={channels}','<SyncStep\\n                            microphones={mode===\"advanced\" ? recordingGroups.microphones : undefined}\\n\\t\\t\\t\\t\\t\\t\\tchannels={channels}',1);a=s.index('function SyncStep({');b=s.index('\\nfunction MulticamStep',a);t=s[a:b];t=t.replace('function SyncStep({\\n','function SyncStep({\\n    microphones,\\n',1).replace('channels: ChannelDraft[];','channels: ChannelDraft[];\\n    microphones?: import(\"opencut-wasm\").PodcastMicrophone[];',1);t=t.replace('{assetById.get(channel.audioAssetId)?.name}','{microphones ? microphones.filter(m=>channel.microphoneIds?.includes(m.id)).map(m=>m.name).join(\", \") : assetById.get(channel.audioAssetId)?.name}');t=t.replace('<span>Audio trim / delay</span>','<span>{alignment.advanced ? \"Assigned microphones\" : \"Audio trim / delay\"}</span>');old='''{(alignment.audioOffsets[channel.id] ?? 0).toFixed(2)}s /{\" \"}\n\\t\\t\\t\\t\\t\\t\\t\\t\\t{(alignment.audioDelays[channel.id] ?? 0).toFixed(2)}s''';new='''{alignment.advanced ? alignment.advanced.microphones.filter(m=>channel.microphoneIds?.includes(m.id)).map(m=>m.name).join(\", \") : `${(alignment.audioOffsets[channel.id]??0).toFixed(2)}s / ${(alignment.audioDelays[channel.id]??0).toFixed(2)}s`}''';assert old in t;t=t.replace(old,new);needle='''\\t\\t\\t\\t\\t<h4 className=\"text-sm font-medium\">Sync results</h4>''';t=t.replace(needle,needle+'''\n                    {alignment.advanced ? <div className=\"space-y-1 rounded border p-3\">{alignment.advanced.microphones.map(m=>{\n                        const start=alignment.advanced!.starts[m.id]!;\n                        return <div key={m.id} className=\"flex justify-between gap-3 text-xs\"><span>{m.name} · {m.segments.length} clips</span><span>{start>=0 ? `Starts at ${start.toFixed(3)}s` : `Trim ${(-start).toFixed(3)}s`}</span></div>;\n                    })}</div> : null}''');s=s[:a]+t+s[b:];open(p",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4a729be4-6e5c-4306-b1b2-6433fb6f099c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:35:49.917Z",
+  "parents": [],
+  "branch": "main"
+}

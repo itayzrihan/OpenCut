@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "31be056cf8f200680b602466a85908b771661a07c0de378cd23270781b0dbe0f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:31:10.302Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-advanced-podcast/required-server-files.json",
+          "classic/apps/web/.next-advanced-podcast/required-server-files.js",
+          "classic/apps/web/.next-advanced-podcast/app-path-routes-manifest.json",
+          "classic/apps/web/.next-advanced-podcast/trace"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "294d5b94-f422-4280-ac67-045c3f06660d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:31:10.304Z",
+  "parents": [],
+  "branch": "main"
+}

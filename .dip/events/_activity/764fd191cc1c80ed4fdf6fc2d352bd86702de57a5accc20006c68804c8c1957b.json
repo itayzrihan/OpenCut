@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "764fd191cc1c80ed4fdf6fc2d352bd86702de57a5accc20006c68804c8c1957b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:52:12.394Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792947131220/src__podcast-sync____tests____advanced-worker.test.ts.log",
+          ".local/classic-web-tests/1792947131220/src__podcast-sync____tests____advanced-engine.test.ts.log",
+          ".local/classic-web-tests/1792947131220/src__podcast-sync____tests____unified-engine.test.ts.log",
+          ".local/classic-web-tests/1792947131220/src__podcast-sync__sync-jobs.test.ts.log",
+          ".local/classic-web-tests/1792947131220/src__podcast-sync__energy-reader.test.ts.log",
+          ".local/classic-web-tests/1792947131220/src__podcast-sync__precision.integration.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "80757c30-775c-499b-8146-99407ac796c0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:52:12.396Z",
+  "parents": [],
+  "branch": "main"
+}

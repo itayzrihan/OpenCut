@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad8d56b7fe18b541540276a328b61a4e2e7bac92f391db78f0b41ed92f07b72a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:45:41.850Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/frames",
+          "analysis/advanced-podcast-2026-10-25/scan_lighting.py",
+          ".local/advanced-podcast/lighting-scan.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b9a48d44-4273-4218-8884-0cfdfbf96efe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:45:41.853Z",
+  "parents": [],
+  "branch": "main"
+}

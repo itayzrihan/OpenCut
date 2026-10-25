@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "04b5efdf0dc536fb3f20bc63694914cc3b8014ed37b371eddebc59faf700ef74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T16:07:09.998Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/advanced-podcast/lighting-coarse-full.json",
+          "analysis/advanced-podcast-2026-10-25/lighting-coarse.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ec1cb218-7829-40cf-91f0-632756c4a812"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T16:07:09.999Z",
+  "parents": [],
+  "branch": "main"
+}

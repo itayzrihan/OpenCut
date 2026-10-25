@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11333a74-323a-4bf0-a169-f32f038a8f51",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.update",
+  "payload": {
+    "description": "Hollyland LARK MAX 2 Combo (user confirmed). Snapshot now has 12 renamed/annotated WAV files grouped into 4 streams (9P8H/AHQC/AX5F/BCZ9) and camera C7458Shlishiyaangle1.MP4. 1800.15s splits; no BWF/iXML. Implemented additive Advanced Podcast: shared Rust grouping/provenance, high-bleed relative-dominance profile, many-to-many camera mapping, stitched logical-source alignment/fine waveform reads across split boundaries, canonical atomic scene creation with continuous tagged clips, and camera-only leader/tail trimming. Actual common clock established for all 4 microphones and camera, checked in 32 RMS windows plus 20 waveform windows with no unverified/drifting results. Preserve regular podcast. Additional cameras, human speaker classification and live UI/editor export remain verification limits.",
+    "scope": [
+      "classic/apps/web/src/podcast-sync",
+      "classic/apps/web/src/core/managers/commands.ts",
+      "classic/apps/web/src/core/__tests__/canonical-advanced-podcast.test.ts",
+      "classic/rust/crates/podcast",
+      "crates/editor-api/src/operations",
+      "crates/editor-api/tests/classic_advanced_podcast.rs",
+      "analysis/advanced-podcast-2026-10-25",
+      ".dip/config.json",
+      ".dip/tools/verify-advanced-podcast.mjs"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T15:34:43.882Z",
+  "parents": [
+    "5c0860f2-7fe5-459e-9dc9-4a2abbc81ef0"
+  ],
+  "branch": "main"
+}

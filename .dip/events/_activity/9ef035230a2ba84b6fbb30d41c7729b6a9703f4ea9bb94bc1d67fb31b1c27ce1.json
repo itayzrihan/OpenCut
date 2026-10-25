@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9ef035230a2ba84b6fbb30d41c7729b6a9703f4ea9bb94bc1d67fb31b1c27ce1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:18:33.019Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat; sed -n '735,778p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; sed -n '95,170p' classic/apps/web/src/podcast-sync/engine.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ba91ca02-daf8-4601-9c51-716505808cfb"
+      },
+      {
+        "at": "2026-10-25T15:18:33.257Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_multicam.rs';s=open(p).read();marker='#[derive(Clone, Deserialize, Serialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\\nstruct Plan {';insert='''#[derive(Clone, Deserialize, Serialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct AdvancedPlan {\n    microphones: Vec<classic_podcast::PodcastMicrophone>,\n    /// Stream start relative to sequence origin; negative means already recording.\n    starts: BTreeMap<String, f64>,\n    routing: classic_podcast::AdvancedPodcastRouting,\n}\nimpl AdvancedPlan {\n    fn validate(&self, channels: &[Channel]) -> Result<(), String> {\n        let ids: Vec<_> = self.microphones.iter().map(|m|m.id.clone()).collect();\n        if !self.routing.validate(&channels.iter().map(|c|c.id.clone()).collect::<Vec<_>>())\n            || ids != self.routing.microphone_ids || self.starts.len()!=ids.len()\n            || ids.iter().any(|id|!self.starts.get(id).is_some_and(|v|v.is_finite() && v.abs()<=36000.0)) {\n            return Err(\"Invalid Advanced Podcast microphone/camera routing\".into());\n        }\n        let detected=classic_podcast::group_podcast_recordings(classic_podcast::GroupPodcastRecordingsOptions{\n            recordings:self.microphones.iter().flat_map(|m|m.segments.iter().map(|s|s.recording.clone())).collect()\n        });\n        if !detected.issues.is_empty() || detected.microphones!=self.microphones {\n            return Err(\"Microphone provenance or segment continuity changed; regroup recordings\".into());\n        }\n        Ok(())\n    }\n    fn validate_assets(&self, assets:&[serde_json::Map<String,Value>]) -> Result<(),CapabilityError> {\n        for m in &self.microphones { for segment in &m.segments {\n            let r=&segment.recording;\n            let a=assets.iter().find(|a|a[\"id\"]==r.media_id && a[\"type\"]==\"audio\" && a.get(\"missing\")!=Some(&Value::Bool(true)))\n                .ok_or_else(||invalid(\"Advanced Podcast r",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3aad3c5e-8d03-4e2c-8698-c7aa3c22307b"
+      },
+      {
+        "at": "2026-10-25T15:18:33.261Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat; sed -n '735,778p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx; sed -n '95,170p' classic/apps/web/src/podcast-sync/engine.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ba91ca02-daf8-4601-9c51-716505808cfb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:18:33.635Z",
+  "parents": [],
+  "branch": "main"
+}

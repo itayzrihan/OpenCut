@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bdf3c4e10fecfdf7282086914376dc6a0029cd4ab57c5dbf492cfe3248c0b388",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T15:47:14.607Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/rust/crates/podcast/src/camera_groups.rs <<'EOF'\n//! Conservative camera/person filename evidence; synchronization always uses sound.\nuse bridge::export;\nuse serde::{Deserialize,Serialize};\nuse std::collections::HashSet;\n#[cfg_attr(feature=\"wasm\",derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"schema\",derive(schemars::JsonSchema))]\n#[derive(Clone,Debug,Serialize,Deserialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct NamedPodcastSource {pub id:String,pub name:String}\n#[cfg_attr(feature=\"wasm\",derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"wasm\",tsify(from_wasm_abi))]\n#[cfg_attr(feature=\"schema\",derive(schemars::JsonSchema))]\n#[derive(Deserialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct PodcastCameraSuggestionsOptions {pub cameras:Vec<NamedPodcastSource>,#[serde(default)]pub microphone_labels:Vec<NamedPodcastSource>}\n#[cfg_attr(feature=\"wasm\",derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"schema\",derive(schemars::JsonSchema))]\n#[derive(Clone,Debug,Serialize,Deserialize,PartialEq)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\npub struct PodcastAngleGroup {pub id:String,pub channel_ids:Vec<String>,pub preferred_channel_id:String}\n#[cfg_attr(feature=\"wasm\",derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"schema\",derive(schemars::JsonSchema))]\n#[derive(Clone,Debug,Serialize,Deserialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct PodcastCameraSuggestion {\n    pub camera_ids:Vec<String>,pub preferred_camera_id:String,pub microphone_ids:Vec<String>,pub evidence:String,\n}\n#[cfg_attr(feature=\"wasm\",derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"wasm\",tsify(into_wasm_abi))]\n#[cfg_attr(feature=\"schema\",derive(schemars::JsonSchema))]\n#[derive(Serialize,Deserialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct PodcastCameraSuggestions {pub groups:Vec<PodcastCameraSuggestion>,pub issues:Vec<String>}\nfn distance(a:&str,b:&str)->usize {\n    let b:Vec<_>=b.chars().collect();let mut row:Vec<_>=(0..=b.len()).collect();\n    for (i,x) in a.chars().enumera",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1c43a486-da27-44b6-8545-f45f6af90a38"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:47:14.949Z",
+  "parents": [],
+  "branch": "main"
+}

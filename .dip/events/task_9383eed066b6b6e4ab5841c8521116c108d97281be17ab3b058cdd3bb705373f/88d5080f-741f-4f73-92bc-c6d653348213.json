@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "88d5080f-741f-4f73-92bc-c6d653348213",
+  "taskId": "task_9383eed066b6b6e4ab5841c8521116c108d97281be17ab3b058cdd3bb705373f",
+  "type": "task.update",
+  "payload": {
+    "description": "Extend verified Advanced Podcast base. Inside Podcast dialog, suggest camera groups from shared approximate person/group filename names (ignore numeric camera prefixes and misspelled angle labels), allow selecting physical cameras directly without prerequisite Assets merge, identify Main as preferred view and use alternate angles for occasional/15–20s long-turn variation. Use three user camera paths in-place (two mounted SD cards) and four segmented Hollyland microphones. Activate current build and execute full native podcast with original sound finishing and Sharpen. Detect light-off transition at source frame precision, report centisecond timestamp with fps bound, and apply conservative editable before/after color matching plus podcast polish. Save/reopen/preview actual result without modifying originals or copying large card video files.",
+    "acceptance": [
+      "Preserve previously verified four-stream segmentation, synchronization, high-bleed routing and provenance behavior.",
+      "Suggest camera angle groups by fuzzy shared group/person filename evidence, with explicit selection and Main preference in the podcast dialog.",
+      "Route longer speaking turns to alternate available angles at 15–20s without unnecessarily preferring alternate over Main.",
+      "Execute and save actual full podcast in OpenCut using 3 camera paths in place, all 4 microphones, original podcast sound processing and Sharpen.",
+      "Detect illumination transition(s) from actual frames at native frame precision; persist editable matching/correction and inspect before/after and synchronized playback."
+    ],
+    "scope": [
+      "classic/apps/web/src/podcast-sync",
+      "classic/apps/web/src/core",
+      "classic/rust/crates/podcast",
+      "crates/editor-api",
+      "analysis/advanced-podcast-2026-10-25",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T15:41:15.038Z",
+  "parents": [
+    "ecf5dd28-fd89-4747-a894-8724eb900458"
+  ],
+  "branch": "main"
+}

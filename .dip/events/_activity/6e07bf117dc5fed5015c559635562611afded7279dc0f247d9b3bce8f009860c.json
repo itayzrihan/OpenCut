@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e07bf117dc5fed5015c559635562611afded7279dc0f247d9b3bce8f009860c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:30:48.318Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792942247575",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync____tests____advanced-worker.test.ts.log",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync____tests____advanced-engine.test.ts.log",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync____tests____unified-engine.test.ts.log",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync__sync-jobs.test.ts.log",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync__energy-reader.test.ts.log",
+          ".local/classic-web-tests/1792942247575/src__podcast-sync__precision.integration.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6324e337-1f15-4d9e-bb49-a7b8f99339e6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:30:48.319Z",
+  "parents": [],
+  "branch": "main"
+}

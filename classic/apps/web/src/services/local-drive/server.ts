@@ -1617,6 +1617,7 @@ export async function chooseFiles(): Promise<string[]> {
 export async function registerPickedMediaPaths(
 	projectId: string,
 	paths: string[],
+	preserveLink = false,
 ): Promise<LocalDriveMediaRecord[]> {
 	const results: LocalDriveMediaRecord[] = [];
 	for (const sourcePath of paths) {
@@ -1635,6 +1636,7 @@ export async function registerPickedMediaPaths(
 		results.push(
 			await registerMediaPath({
 				projectId,
+				preserveLink,
 				record: {
 					id,
 					name: basename(sourcePath),

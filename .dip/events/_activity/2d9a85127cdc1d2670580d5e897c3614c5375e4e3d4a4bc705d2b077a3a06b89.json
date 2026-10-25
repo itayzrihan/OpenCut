@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2d9a85127cdc1d2670580d5e897c3614c5375e4e3d4a4bc705d2b077a3a06b89",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T15:21:00.774Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792941657851/src__core____tests____canonical-podcast.test.ts.log",
+          ".local/classic-web-tests/1792941657851/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cbcd0c16-a8d0-48dd-a917-306472deb344"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T15:21:00.774Z",
+  "parents": [],
+  "branch": "main"
+}
