@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e05337fbfc0b39c4d20b1e07f0d04c9f8f6a9f3d02e0b8e4a0c1c27c3019168",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:07.064Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/__tests__/streaming-fixture.ts",
+          "classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+          ".local/classic-web-tests/1792948506127",
+          ".local/classic-web-tests/1792948506127/src__export____tests____scratch.test.ts.log",
+          ".local/classic-web-tests/1792948506127/src__export____tests____audio-scratch.test.ts.log",
+          ".local/classic-web-tests/1792948506127/src__export____tests____disk-target.test.ts.log",
+          ".local/classic-web-tests/1792948506127/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1bd36876-d795-4726-8028-58fbf22dd9a9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:07.067Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "262b936a70f3675b39bd67a5d8711fea719ea5c759fb025c810ee7a49725ebe5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:16:23.150Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/__tests__/streaming-fixture.ts",
+          "classic/apps/web/src/export/scratch.ts",
+          "classic/apps/web/src/export/__tests__/scratch.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bcdd1d26-7f53-41b0-bff7-d0463f0f7e4a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:16:23.153Z",
+  "parents": [],
+  "branch": "main"
+}

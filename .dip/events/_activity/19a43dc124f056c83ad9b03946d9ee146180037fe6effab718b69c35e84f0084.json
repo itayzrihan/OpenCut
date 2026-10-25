@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19a43dc124f056c83ad9b03946d9ee146180037fe6effab718b69c35e84f0084",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:20:19.909Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/export-storage-activation.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "463c9945-d1d5-442e-945c-69b602d851ae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:20:19.912Z",
+  "parents": [],
+  "branch": "main"
+}

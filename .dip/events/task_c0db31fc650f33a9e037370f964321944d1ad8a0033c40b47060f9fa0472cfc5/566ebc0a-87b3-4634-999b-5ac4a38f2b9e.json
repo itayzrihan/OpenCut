@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "566ebc0a-87b3-4634-999b-5ac4a38f2b9e",
+  "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+  "type": "task.update",
+  "payload": {
+    "title": "Fix export scratch storage check that reports disk full despite 35GB host space",
+    "acceptance": [
+      "Distinguish browser origin storage quota from actual host free disk; avoid false generic disk-space rejection.",
+      "Permit the long Avihay export with available storage without deleting user project/media or weakening actual write failures.",
+      "Run relevant export regressions and deploy the tested local fix."
+    ],
+    "scope": [
+      "classic/apps/web/src/export",
+      "classic/apps/web/src/core/managers/renderer-manager.ts",
+      "classic/apps/web/src/app/api",
+      "classic/apps/web/src/services",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T17:11:05.570Z",
+  "parents": [
+    "cefe72e8-8ae4-4884-8f9d-89d7b80fe970"
+  ],
+  "branch": "main"
+}

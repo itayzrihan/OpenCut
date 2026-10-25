@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f4058bd250988a066dd6c6d738fb6f96d3d67ce67569f17cdf6939e3dd9e6be7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:17:02.365Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';const p='.dip/config.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));d.verification['export-storage']={command:['node','.dip/tools/verify-export-storage.mjs'],timeoutMs:360000};fs.writeFileSync(p,JSON.stringify(d,null,2)+'\\n');\nJS",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f4f40d28-bbee-4dcf-97f7-4d12c2ebdca7"
+      },
+      {
+        "at": "2026-10-25T17:17:02.608Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';const p='.dip/config.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));d.verification['export-storage']={command:['node','.dip/tools/verify-export-storage.mjs'],timeoutMs:360000};fs.writeFileSync(p,JSON.stringify(d,null,2)+'\\n');\nJS",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f4f40d28-bbee-4dcf-97f7-4d12c2ebdca7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:17:03.179Z",
+  "parents": [],
+  "branch": "main"
+}

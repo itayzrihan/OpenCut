@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a3e3985586bb23b5ef19c8fff820d2784213c333dcff248a5126a94b0684f09c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:14:19.023Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/audio-stream.ts",
+          "classic/apps/web/src/export/scratch.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c6fecb96-cebd-411c-95f1-c7c04cf2079b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:14:19.026Z",
+  "parents": [],
+  "branch": "main"
+}

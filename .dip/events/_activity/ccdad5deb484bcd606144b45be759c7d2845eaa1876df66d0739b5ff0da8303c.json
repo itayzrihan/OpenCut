@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccdad5deb484bcd606144b45be759c7d2845eaa1876df66d0739b5ff0da8303c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:16:52.168Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/export-storage-verification.log",
+          ".local/classic-web-tests/1792948611801",
+          ".local/classic-web-tests/1792948611801/src__export____tests____scratch.test.ts.log",
+          ".local/classic-web-tests/1792948611801/src__export____tests____audio-scratch.test.ts.log",
+          ".local/classic-web-tests/1792948611801/src__export____tests____disk-target.test.ts.log",
+          ".local/classic-web-tests/1792948611801/src__export____tests____audio-source-windows.test.ts.log",
+          ".local/classic-web-tests/1792948611801/src__export____tests____audio-quality.test.ts.log",
+          ".local/classic-web-tests/1792948611801/src__export____tests____pcm-file.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b8d6eb89-11dd-4ef5-86b8-f6cfcf85fcf6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:16:52.172Z",
+  "parents": [],
+  "branch": "main"
+}

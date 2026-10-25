@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f99690a904b76919468a8f370cf1f71bec23d3f79d931ec097bcd84b3a4980eb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:17:07.573Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .dip/tools/verify-export-storage.mjs > .local/export-storage-verification.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7057b493-ee94-4bd2-8437-70ebf1fb7f5e"
+      },
+      {
+        "at": "2026-10-25T17:17:07.581Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/export-storage-production-build.log; cat .local/advanced-podcast/activate.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-45cf38b5-9f04-4490-8dac-e2ee5284decc"
+      },
+      {
+        "at": "2026-10-25T17:17:07.809Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 .local/export-storage-production-build.log; cat .local/advanced-podcast/activate.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-45cf38b5-9f04-4490-8dac-e2ee5284decc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:17:08.190Z",
+  "parents": [],
+  "branch": "main"
+}

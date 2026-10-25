@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a730c844d71cf60c4792729ca956b27563f9e2d9cc9f6fbd92b264dda16076c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:06.057Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/__tests__/scratch.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7f5dee5c-ce83-43ee-b995-01d69056bf28"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:06.060Z",
+  "parents": [],
+  "branch": "main"
+}

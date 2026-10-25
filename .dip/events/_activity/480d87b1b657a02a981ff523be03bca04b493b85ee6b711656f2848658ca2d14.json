@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "480d87b1b657a02a981ff523be03bca04b493b85ee6b711656f2848658ca2d14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:18:20.269Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792948699676",
+          ".local/classic-web-tests/1792948699676/src__export____tests____scratch.test.ts.log",
+          ".local/classic-web-tests/1792948699676/src__export____tests____audio-scratch.test.ts.log",
+          ".local/classic-web-tests/1792948699676/src__export____tests____disk-target.test.ts.log",
+          ".local/classic-web-tests/1792948699676/src__export____tests____audio-source-windows.test.ts.log",
+          ".local/classic-web-tests/1792948699676/src__export____tests____audio-quality.test.ts.log",
+          ".local/classic-web-tests/1792948699676/src__export____tests____pcm-file.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fd999332-a72d-4fed-8e2c-b057e23d3510"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:18:20.269Z",
+  "parents": [],
+  "branch": "main"
+}

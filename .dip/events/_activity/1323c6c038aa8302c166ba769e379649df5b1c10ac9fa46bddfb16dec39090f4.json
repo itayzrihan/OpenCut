@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1323c6c038aa8302c166ba769e379649df5b1c10ac9fa46bddfb16dec39090f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:13.461Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/package.json | rg 'prettier|format|typecheck'; cat classic/scripts/local-production/build.mjs | head -25",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a2a9542a-8f73-44bb-8b57-7a674bb4f075"
+      },
+      {
+        "at": "2026-10-25T17:15:13.575Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/package.json | rg 'prettier|format|typecheck'; cat classic/scripts/local-production/build.mjs | head -25",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a2a9542a-8f73-44bb-8b57-7a674bb4f075"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:14.083Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Platform handle doubles. */
 import { test, expect } from "bun:test";
-import { ExportScratch } from "../scratch";
+import { ExportScratch, checkExportDiskSpace } from "../scratch";
 
 async function fixture({ brokenIterator = false } = {}) {
 	const descriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
@@ -74,3 +74,56 @@ test("snapshots expired scratch names before deletion and protects another tab l
 	fixture());
 test("a stale OPFS directory iterator never prevents a new audio job", () =>
 	fixture({ brokenIterator: true }));
+
+test("storage failures identify browser allowance and report remaining capacity", async () => {
+	const descriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+	Object.defineProperty(globalThis, "navigator", {
+		configurable: true,
+		value: {
+			storage: {
+				estimate: async () => ({
+					quota: 30 * 1024 ** 3,
+					usage: 20 * 1024 ** 3,
+				}),
+			},
+		},
+	});
+	try {
+		await checkExportDiskSpace(9 * 1024 ** 3);
+		await expect(checkExportDiskSpace(12 * 1024 ** 3)).rejects.toThrow(
+			"browser reports 10.00 GiB available",
+		);
+		await expect(checkExportDiskSpace(12 * 1024 ** 3)).rejects.toThrow(
+			"separate from your Mac's free disk space",
+		);
+	} finally {
+		if (descriptor) Object.defineProperty(globalThis, "navigator", descriptor);
+		else Reflect.deleteProperty(globalThis, "navigator");
+	}
+});
+
+test("unavailable or invalid advisory estimates leave real write checks in charge", async () => {
+	const descriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+	try {
+		for (const storage of [
+			undefined,
+			{},
+			{
+				estimate: async () => {
+					throw new Error("Estimate unavailable");
+				},
+			},
+			{ estimate: async () => ({ quota: NaN, usage: 10 }) },
+			{ estimate: async () => ({ quota: -1, usage: 0 }) },
+		]) {
+			Object.defineProperty(globalThis, "navigator", {
+				configurable: true,
+				value: { storage },
+			});
+			await checkExportDiskSpace(12 * 1024 ** 3);
+		}
+	} finally {
+		if (descriptor) Object.defineProperty(globalThis, "navigator", descriptor);
+		else Reflect.deleteProperty(globalThis, "navigator");
+	}
+});

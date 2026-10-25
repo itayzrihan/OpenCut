@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "41795c470656b0765677087599920a879d07c9da585eaf9789a736c5251fec7e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:19:20.693Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/export",
+          "classic/apps/web/.next-local-production/export/_next",
+          "classic/apps/web/.next-local-production/export/_next/-tKlMyekkDy45DLEY-xLz",
+          "classic/apps/web/.next-local-production/export-detail.json",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments",
+          "classic/apps/web/.next-local-production/server/app/account.segments",
+          "classic/apps/web/.next-local-production/server/app/_not-found.segments",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments/_full.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments/_global-error.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments/_index.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/_global-error.segments/_head.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/account.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/account.segments/account.segment.rsc"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a0ed667a-697d-4ed9-92e9-9d376416ff8a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:19:20.694Z",
+  "parents": [],
+  "branch": "main"
+}

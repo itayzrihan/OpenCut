@@ -100,6 +100,47 @@ function clip(
 		},
 	};
 }
+/** Regression: available quota fits the real stage peak, not raw + edited +
+ * mix simultaneously. Use actual OPFS files and the actual mono WAV decoder. */
+export async function stagedStorageQuota() {
+	const scratch = await ExportScratch.create();
+	const storage = navigator.storage;
+	const original = Object.getOwnPropertyDescriptor(storage, "estimate");
+	const quota = 64 * 1024 ** 2 + (8 + 6.731) * 44100 * 8 + 512 * 1024;
+	const usages: number[] = [];
+	Object.defineProperty(storage, "estimate", {
+		configurable: true,
+		value: async () => {
+			let usage = 0;
+			for await (const entry of scratch.directory.values())
+				if (entry.kind === "file") {
+					const handle = await scratch.directory.getFileHandle(entry.name);
+					usage += (await handle.getFile()).size;
+				}
+			usages.push(usage);
+			return { quota, usage };
+		},
+	});
+	try {
+		const stream = await prepareExportAudio({
+			tracks,
+			mediaAssets: [],
+			duration: 8 * 120000,
+			additionalClips: [clip(wav(48000), {})],
+			scratch,
+			signal: new AbortController().signal,
+			onProgress: () => undefined,
+		});
+		let frames = 0;
+		for await (const buffer of stream!.buffers) frames += buffer.length;
+		return { frames, usages, quota };
+	} finally {
+		if (original) Object.defineProperty(storage, "estimate", original);
+		else Reflect.deleteProperty(storage, "estimate");
+		await scratch.dispose();
+	}
+}
+
 export async function audioParity() {
 	const rows = [];
 	for (const rate of [44100, 48000])

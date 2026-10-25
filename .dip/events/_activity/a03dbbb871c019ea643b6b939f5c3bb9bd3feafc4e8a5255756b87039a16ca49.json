@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a03dbbb871c019ea643b6b939f5c3bb9bd3feafc4e8a5255756b87039a16ca49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:56.136Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1792948554456/src__export____tests____streaming-browser.test.ts.log",
+          ".local/classic-web-tests/1792948554456/summary.json",
+          ".local/export-storage-before-regression.log",
+          "classic/apps/web/src/export/audio-stream.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "eaec9bff-410e-48bc-8425-15ec5d43335b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:56.137Z",
+  "parents": [],
+  "branch": "main"
+}

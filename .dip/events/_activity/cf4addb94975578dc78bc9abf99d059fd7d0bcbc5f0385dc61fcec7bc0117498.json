@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cf4addb94975578dc78bc9abf99d059fd7d0bcbc5f0385dc61fcec7bc0117498",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:11:20.850Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sourcePcm|temporary.delete|scratch.remove|clipPcm' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7b3a60d9-92cc-4361-9f81-46b23cb05d23"
+      },
+      {
+        "at": "2026-10-25T17:11:20.937Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'sourcePcm|temporary.delete|scratch.remove|clipPcm' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7b3a60d9-92cc-4361-9f81-46b23cb05d23"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:11:21.868Z",
+  "parents": [],
+  "branch": "main"
+}

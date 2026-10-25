@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a045d50a4e5900007d7e855e6513f8718a69a487792b5461eef4973c70116c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:16:01.250Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import cp from 'node:child_process';\nconst p='classic/apps/web/src/export/audio-stream.ts';const current=fs.readFileSync(p);let result;\ntry {fs.writeFileSync(p,cp.execFileSync('git',['show','HEAD:'+p]));result=cp.spawnSync('node',['classic/scripts/test-web.mjs','src/export/__tests__/streaming-browser.test.ts','--jobs=1','--timeout=300000','--test-timeout=240000'],{env:{...process.env,OPENCUT_STREAM_EXPORT_TEST:'1'},encoding:'utf8'});fs.writeFileSync('.local/export-storage-before-regression.log',result.stdout+result.stderr);}finally{fs.writeFileSync(p,current);}\nif(result.status===0)throw Error('Regression unexpectedly passes before fix');console.log({baselineFails:result.status,restoredFixedSource:true,log:'.local/export-storage-before-regression.log'});\nJS",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9fa2fadb-1d03-4852-b22c-33bf37cd392a"
+      },
+      {
+        "at": "2026-10-25T17:16:01.249Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 .local/classic-web-tests/1792948512278/src__export____tests____streaming-browser.test.ts.log; classic/apps/web/node_modules/.bin/tsc --noEmit -p classic/apps/web/tsconfig.json > .local/export-storage-types.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7034d186-28a2-4e44-950d-712a3b0ae528"
+      },
+      {
+        "at": "2026-10-25T17:16:01.254Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Chrome temporary|temporary disk|stages have' classic/apps/web/src/export/audio-stream.ts classic/apps/web/src/export/scratch.ts; cat .local/export-storage-before-regression.log | tail -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e905ddad-9543-4061-8ce9-14b68fe9b74c"
+      },
+      {
+        "at": "2026-10-25T17:16:01.357Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Chrome temporary|temporary disk|stages have' classic/apps/web/src/export/audio-stream.ts classic/apps/web/src/export/scratch.ts; cat .local/export-storage-before-regression.log | tail -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e905ddad-9543-4061-8ce9-14b68fe9b74c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:16:02.105Z",
+  "parents": [],
+  "branch": "main"
+}

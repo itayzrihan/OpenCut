@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ba3f613fb549b06b4e030d60135b87fa5fd5c63e1e161913c245e3d40e7137cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:54.278Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import cp from 'node:child_process';\nconst p='classic/apps/web/src/export/audio-stream.ts';const current=fs.readFileSync(p);let result;\ntry {fs.writeFileSync(p,cp.execFileSync('git',['show','HEAD:'+p]));result=cp.spawnSync('node',['classic/scripts/test-web.mjs','src/export/__tests__/streaming-browser.test.ts','--jobs=1','--timeout=300000','--test-timeout=240000'],{env:{...process.env,OPENCUT_STREAM_EXPORT_TEST:'1'},encoding:'utf8'});fs.writeFileSync('.local/export-storage-before-regression.log',result.stdout+result.stderr);}finally{fs.writeFileSync(p,current);}\nif(result.status===0)throw Error('Regression unexpectedly passes before fix');console.log({baselineFails:result.status,restoredFixedSource:true,log:'.local/export-storage-before-regression.log'});\nJS",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9fa2fadb-1d03-4852-b22c-33bf37cd392a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:55.119Z",
+  "parents": [],
+  "branch": "main"
+}

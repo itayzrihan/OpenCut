@@ -111,6 +111,11 @@ export async function prepareExportAudio({
 			),
 		]),
 	);
+	const processedBytes = clips.reduce(
+		(n, clip) => n + clip.duration * EXPORT_AUDIO_RATE * 2 * 4,
+		0,
+	);
+	const mixBytes = seconds * EXPORT_AUDIO_RATE * 2 * 4;
 	const estimate =
 		sources.reduce(
 			(n, clip) =>
@@ -123,17 +128,18 @@ export async function prepareExportAudio({
 					4,
 			0,
 		) +
-		clips.reduce(
-			(n, clip) => n + clip.duration * EXPORT_AUDIO_RATE * 2 * 4,
-			0,
-		) +
-		seconds * EXPORT_AUDIO_RATE * 2 * 4;
+		processedBytes +
+		mixBytes;
 	if (scratch.capacityBytes !== undefined) {
 		if (estimate > scratch.capacityBytes)
 			throw new Error(
 				"This audio mix exceeds the bounded memory fallback. Restore browser temporary storage and resume this saved edit.",
 			);
-	} else await checkExportDiskSpace(estimate + 64 * 1024 ** 2);
+	}
+	// Disk stages have different lifetimes: decoded sources are removed before
+	// the final mix is written. Check additional allocations at each stage,
+	// against the usage already present, rather than requiring all three copies
+	// simultaneously. The bounded-memory fallback keeps its conservative budget.
 	const sourcePcm = new Map<
 		string,
 		Array<{ pcm: PcmFile; origin: number; end: number }>
@@ -188,6 +194,14 @@ export async function prepareExportAudio({
 						(sum, range) => sum + range.end - range.start,
 						0,
 					);
+					if (scratch.capacityBytes === undefined)
+						await checkExportDiskSpace(
+							totalSeconds *
+								track.sampleRate *
+								Math.min(2, track.numberOfChannels) *
+								4 +
+								64 * 1024 ** 2,
+						);
 					let completedSeconds = 0;
 					const decoded: Array<{ pcm: PcmFile; origin: number; end: number }> =
 						[];
@@ -250,6 +264,8 @@ export async function prepareExportAudio({
 			stopJobs,
 		);
 
+		if (scratch.capacityBytes === undefined)
+			await checkExportDiskSpace(processedBytes + 64 * 1024 ** 2);
 		const rendered = new Map<AudioClipSource, PcmFile>();
 		await inPairs(
 			clips,
@@ -413,6 +429,8 @@ export async function prepareExportAudio({
 		for (const name of temporary)
 			if (name.startsWith("source-")) await scratch.remove(name);
 		sourcePcm.clear();
+		if (scratch.capacityBytes === undefined)
+			await checkExportDiskSpace(mixBytes + 64 * 1024 ** 2);
 
 		const mix = new PcmFile(
 			await scratch.file("mix.pcm"),

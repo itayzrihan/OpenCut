@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a1b18c64bed707a7532df5c2f3831a9bc6f8f26e85a53df2339d3cf08958b80",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:15:21.132Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "classic/apps/web/node_modules/.bin/prettier --write classic/apps/web/src/export/audio-stream.ts classic/apps/web/src/export/scratch.ts classic/apps/web/src/export/__tests__/scratch.test.ts classic/apps/web/src/export/__tests__/streaming-fixture.ts classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-4c33bf4d-eae8-4dd1-a27a-e3848e11c8bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:15:22.074Z",
+  "parents": [],
+  "branch": "main"
+}

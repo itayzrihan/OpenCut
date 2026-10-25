@@ -297,6 +297,13 @@
         ".dip/tools/verify-advanced-podcast.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "export-storage": {
+      "command": [
+        "node",
+        ".dip/tools/verify-export-storage.mjs"
+      ],
+      "timeoutMs": 360000
     }
   },
   "mode": "coordinate"

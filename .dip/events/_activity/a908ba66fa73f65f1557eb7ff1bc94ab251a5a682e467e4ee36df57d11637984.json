@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a908ba66fa73f65f1557eb7ff1bc94ab251a5a682e467e4ee36df57d11637984",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:21:13.933Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'showSaveFilePicker|destination|onExport' classic/apps/web/src/components/editor -g '*export*' classic/apps/web/src -g '*export-dialog*' | head -25; rg -n 'showSaveFilePicker' classic/apps/web/src",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e539f14f-cf21-45fd-a07a-1ad856401f19"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:21:13.997Z",
+  "parents": [],
+  "branch": "main"
+}

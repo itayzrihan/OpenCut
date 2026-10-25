@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad673628-162a-46a3-95db-7cbc5f7cf764",
+  "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed false export storage rejection: check each real allocation stage, use decoded source channel count/rate, release sources before mix as existing pipeline does; distinguish browser allowance from Mac free disk and tolerate unsupported advisory estimates while preserving write errors. Real constrained-quota regression fails on previous code and passes fixed code;19 tests and production types pass. Deployed local candidate2026-10-25T17-19-42-181Z-297d3e9e. Saved59:58.92 Avihay scene full hash unchanged across reload. Retried original4K25fpsHEVC/very-high/audio settings to new Episode1/Avihay · Advanced Podcast - 4K.mp4; actual live export passed original check and decoded all sources, now Processing audio (~7.5% total).",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "The full59:58.92 live4K export remains running in Chrome after passing the former storage rejection and entering audio processing; completed MP4 output has not yet been validated. Keep its tab open. Real isolated completed disk export/audio parity/10-hour mux tests pass."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-25T17:23:30.742Z",
+  "parents": [
+    "5630054a-ddbc-4ef9-b0ba-78e2f76eb216"
+  ],
+  "branch": "main"
+}

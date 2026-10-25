@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97472f53363c19da609a5a47677c233f5e27c9324108fc90eca16854fe4628ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-25T17:18:52.670Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "dfc8b978-3968-4225-b3eb-ae4cd8cf0072"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:18:52.671Z",
+  "parents": [],
+  "branch": "main"
+}

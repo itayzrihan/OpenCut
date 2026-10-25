@@ -80,6 +80,14 @@ test.skipIf(process.env.OPENCUT_STREAM_EXPORT_TEST !== "1")(
 			page.on("pageerror", (error) => console.error("browser error:", error));
 			await page.goto(`http://127.0.0.1:${server.port}`);
 			await page.evaluate(`(async () => { ${boot} })()`);
+			const quota = await page.evaluate(async () =>
+				(await import(`${location.origin}/fixture.js`)).stagedStorageQuota(),
+			);
+			expect(quota.frames).toBe(8 * 44100);
+			expect(quota.usages.length).toBe(3);
+			expect(quota.usages[0]).toBe(0);
+			expect(quota.usages[1]).toBeGreaterThan(0);
+			expect(quota.usages[2]).toBeGreaterThan(quota.usages[1]);
 			const pitch = await page.evaluate(async () =>
 				(await import(`${location.origin}/fixture.js`)).pitchParity(),
 			);

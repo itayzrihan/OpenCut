@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "66ef5b66e4f7e74c72f9be1927d55e47145cea9aa4581dca1e17594742889a45",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-25T17:14:48.450Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_c0db31fc650f33a9e037370f964321944d1ad8a0033c40b47060f9fa0472cfc5",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/__tests__/scratch.test.ts",
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/__tests__/streaming-fixture.ts"
+        ],
+        "changeHash": "cc1c6c8456bbf60fbd89b538d5187313d3050944aa3f21c0d264e58444622742",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3476bd9b-763a-438a-85b2-adcf3401efe1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-25T17:14:49.051Z",
+  "parents": [],
+  "branch": "main"
+}

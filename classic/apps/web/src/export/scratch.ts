@@ -95,9 +95,26 @@ export class ExportScratch {
 
 /** Early estimate only; every actual write still propagates quota/disk errors. */
 export async function checkExportDiskSpace(bytes: number): Promise<void> {
-	const { quota, usage } = await navigator.storage.estimate();
-	if (quota !== undefined && usage !== undefined && quota - usage < bytes)
+	let estimate: StorageEstimate;
+	try {
+		if (!navigator.storage?.estimate) return;
+		estimate = await navigator.storage.estimate();
+	} catch {
+		// Estimates are advisory; unsupported/private-mode estimates must not
+		// prevent an export. Actual filesystem writes still enforce capacity.
+		return;
+	}
+	const { quota, usage } = estimate;
+	if (
+		quota !== undefined &&
+		usage !== undefined &&
+		Number.isFinite(quota) &&
+		Number.isFinite(usage) &&
+		quota >= 0 &&
+		usage >= 0 &&
+		quota - usage < bytes
+	)
 		throw new Error(
-			`Not enough temporary disk space for export (at least ${Math.ceil(bytes / 1024 ** 3)} GB needed). Free disk space and retry.`,
+			`Browser temporary storage limit: this export stage needs about ${(bytes / 1024 ** 3).toFixed(2)} GiB more, but the browser reports ${(Math.max(0, quota - usage) / 1024 ** 3).toFixed(2)} GiB available. This browser allowance is separate from your Mac's free disk space. Your project is saved.`,
 		);
 }
