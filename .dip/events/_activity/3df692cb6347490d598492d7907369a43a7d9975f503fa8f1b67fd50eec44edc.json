@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3df692cb6347490d598492d7907369a43a7d9975f503fa8f1b67fd50eec44edc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:47:40.613Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_3b2059cc4d9a655f8e878f05ae494f0560bd03739eef0ce9f7266ab12fd9a00f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh api 'repos/vxu-labs/dip/issues/3/comments?per_page=100' --jq '.[] | {user:.user.login,body,html_url}'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e3be3cdc-9f65-4680-b0b3-17b8abb4196a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:47:41.319Z",
+  "parents": [],
+  "branch": "main"
+}

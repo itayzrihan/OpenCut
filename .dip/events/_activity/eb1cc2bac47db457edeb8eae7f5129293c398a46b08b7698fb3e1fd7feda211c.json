@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eb1cc2bac47db457edeb8eae7f5129293c398a46b08b7698fb3e1fd7feda211c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:49:00.765Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .local/card-podcasts-2026-10-28/check160.py <<'PY'\nexec(open('analysis/card-podcasts-2026-10-28/speech_frames.py').read().split('for session,clip in')[0])\na,b=[np.load(C/f'240504_0160_{i}.npy') for i in [1,2]];n=min(len(a),len(b))//500*500;a=a[:n].reshape(-1,500).mean(1);b=b[:n].reshape(-1,500).mean(1);r=a/(b+1e-7);r[:20]=0;r[-20:]=0;times=[]\nfor i in np.argsort(-r):\n if all(abs(i*5-t)>120 for t in times): times.append(int(i*5))\n if len(times)==3:break\nsheet=Image.new('RGB',(1200,1200),'#202020');d=ImageDraw.Draw(sheet)\nfor ti,t in enumerate(times):\n for ci,card in enumerate(['A3','A4']):\n  row=next(r for r in rows if f'/{card}/' in r['camera'] and 'C7471.' in r['camera']);base=t+row['matches'][0]['audioStartMinusCameraStart'];y=ti*400+ci*200;d.text((5,y),f'mic1 dominant | {card} | mic {t}s',fill='white')\n  for fi in range(6):\n   target=C/f'160-check-{ti}-{card}-{fi}.jpg';subprocess.run(['ffmpeg','-v','error','-ss',str(base+fi*.7),'-i',row['camera'],'-frames:v','1','-vf','scale=640:360','-y',str(target)],check=True);sheet.paste(Image.open(target).crop((240,30,440,210)),(fi*200,y+20))\nsheet.save(C/'speech-160-confirm.jpg');print(times)\nPY\n/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 .local/card-podcasts-2026-10-28/check160.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f4ce179b-8946-466a-9bdb-288ee31396c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:49:00.789Z",
+  "parents": [],
+  "branch": "main"
+}

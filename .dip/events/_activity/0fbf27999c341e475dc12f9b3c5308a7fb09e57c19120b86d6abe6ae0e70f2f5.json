@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fbf27999c341e475dc12f9b3c5308a7fb09e57c19120b86d6abe6ae0e70f2f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:57:14.984Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');r=json.loads((p/'editor-receipts.json').read_text())\nfor n in ['0160','0159']:\n j=json.loads((p/f'project-{n}.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();print(n,h,r[n]['timeline.read_full_source']['baseRevision']);print('durations',[max((e['startTime']+e['duration'] for e in t['elements']),default=0)/120000 for t in j['scene']['tracks']])\n if n=='0160':assert j==json.loads((p/'project-0160-reopened.json').read_text())\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0238c9d5-7153-47ed-8146-636cf250f500"
+      },
+      {
+        "at": "2026-10-28T01:57:15.306Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');r=json.loads((p/'editor-receipts.json').read_text())\nfor n in ['0160','0159']:\n j=json.loads((p/f'project-{n}.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();print(n,h,r[n]['timeline.read_full_source']['baseRevision']);print('durations',[max((e['startTime']+e['duration'] for e in t['elements']),default=0)/120000 for t in j['scene']['tracks']])\n if n=='0160':assert j==json.loads((p/'project-0160-reopened.json').read_text())\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0238c9d5-7153-47ed-8146-636cf250f500"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:57:15.426Z",
+  "parents": [],
+  "branch": "main"
+}

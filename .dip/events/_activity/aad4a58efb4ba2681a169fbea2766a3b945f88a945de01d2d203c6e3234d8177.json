@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aad4a58efb4ba2681a169fbea2766a3b945f88a945de01d2d203c6e3234d8177",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:49:04.264Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.local/card-podcasts-2026-10-28/check160.py'\ns=open(p).read();s=s.replace(\"exec(open\", \"__file__='analysis/card-podcasts-2026-10-28/speech_frames.py'\\nexec(open\",1);open(p,'w').write(s)\nPY\n/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 .local/card-podcasts-2026-10-28/check160.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-aec8cd48-695d-49f7-a27d-e72ec7cecc4f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:49:04.792Z",
+  "parents": [],
+  "branch": "main"
+}

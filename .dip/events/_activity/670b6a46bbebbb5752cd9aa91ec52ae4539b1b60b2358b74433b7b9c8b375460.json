@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "670b6a46bbebbb5752cd9aa91ec52ae4539b1b60b2358b74433b7b9c8b375460",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:04:57.885Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/dip-auto-suite-final.txt; tail -15 /tmp/dip-auto-package.txt; sed -n '1,95p' scripts/browser-smoke.mjs; sed -n '137,178p' src/util.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-dacb49b2-eae4-4517-9fff-59f3a10051ce"
+      },
+      {
+        "at": "2026-10-28T02:04:58.013Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/dip-auto-suite-final.txt; tail -15 /tmp/dip-auto-package.txt; sed -n '1,95p' scripts/browser-smoke.mjs; sed -n '137,178p' src/util.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-dacb49b2-eae4-4517-9fff-59f3a10051ce"
+      },
+      {
+        "at": "2026-10-28T02:04:58.018Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib,tarfile,os\nroot=Path('.dip-local/rollback-20261028');root.mkdir(parents=True,exist_ok=True,mode=0o700)\ninstalled=Path('/opt/homebrew/lib/node_modules/@vxu-labs/dip')\narchive=root/'dip-0.3.12-installed.tar.gz'\nwith tarfile.open(archive,'w:gz') as tar:tar.add(installed,arcname='dip')\nos.chmod(archive,0o600)\nmanifest={'package':archive.name,'packageSha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'settings':[]}\nfor i,p in enumerate([Path.home()/'.codex/config.toml',Path.home()/'.codex/hooks.json',Path.home()/'.dip/install.json',Path.home()/'.gitconfig',Path.home()/'.claude/settings.json',Path.home()/'.claude.json']):\n if p.is_file():\n  target=root/f'settings-{i}{p.suffix}';target.write_bytes(p.read_bytes());os.chmod(target,0o600)\n  manifest['settings'].append({'source':str(p),'backup':target.name,'sha256':hashlib.sha256(target.read_bytes()).hexdigest(),'mode':oct(p.stat().st_mode&0o777)})\n(root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\\n');os.chmod(root/'manifest.json',0o600)\nprint(json.dumps({'privateBackup':str(root.resolve()),'packageBytes':archive.stat().st_size,'settingsFiles':len(manifest['settings'])}))\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f3e63193-ae30-4a4e-92f7-4ae7ecd1ce4a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:04:58.870Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d85fdecb2ca90963d00c8e2322150659e43dd6f1d89b8bb4e1c6b31b3ec00000",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:11:06.135Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "npm_config_cache=/private/tmp/dip-auto-npm-cache npm pack --json --ignore-scripts --pack-destination .dip-local/releases > /tmp/dip-auto-pack-manifest.json\nnode --input-type=module - <<'JS'\nimport fs from 'node:fs';const p=JSON.parse(fs.readFileSync('/tmp/dip-auto-pack-manifest.json'))[0];console.log({filename:p.filename,version:p.version,bytes:p.size,shasum:p.shasum,privateFilesIncluded:p.files.filter(f=>f.path.includes('.dip-local')||f.path.includes('auth.json')).length});\nJS\ngit diff --check",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e5541214-febc-4f48-9ddf-d2d8fbe7985e"
+      },
+      {
+        "at": "2026-10-28T02:11:06.924Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "npm_config_cache=/private/tmp/dip-auto-npm-cache npm pack --json --ignore-scripts --pack-destination .dip-local/releases > /tmp/dip-auto-pack-manifest.json\nnode --input-type=module - <<'JS'\nimport fs from 'node:fs';const p=JSON.parse(fs.readFileSync('/tmp/dip-auto-pack-manifest.json'))[0];console.log({filename:p.filename,version:p.version,bytes:p.size,shasum:p.shasum,privateFilesIncluded:p.files.filter(f=>f.path.includes('.dip-local')||f.path.includes('auth.json')).length});\nJS\ngit diff --check",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-e5541214-febc-4f48-9ddf-d2d8fbe7985e"
+      },
+      {
+        "at": "2026-10-28T02:11:06.927Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "main",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-5c6b7932-e0f4-487a-96a3-16a8af398750"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:11:07.127Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "73d85a32bd4cca471c98f68242f441a893c5629391f50a369529a04ea25fe4bd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:05:45.431Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "npm run test:browser -- --no-screenshots > /tmp/dip-auto-browser.txt 2>&1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-b94395a9-9055-435e-840b-4bb3bffc8f2d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:05:45.937Z",
+  "parents": [],
+  "branch": "main"
+}

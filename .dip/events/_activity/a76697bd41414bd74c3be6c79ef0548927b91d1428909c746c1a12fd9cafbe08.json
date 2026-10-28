@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a76697bd41414bd74c3be6c79ef0548927b91d1428909c746c1a12fd9cafbe08",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T01:47:35.339Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/card-podcasts-2026-10-28/verify_sources.py",
+          ".local/card-podcasts-2026-10-28/precision.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4ec484e5-4aed-4c80-9574-6165fb97b03f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:47:35.340Z",
+  "parents": [],
+  "branch": "main"
+}

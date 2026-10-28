@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2402a6c0cb9e75abfb2d512b79dc4a008cfec3e5c01177042d4e9ad7c16c2f02",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:51:31.526Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat AGENTS.md; cat package.json; rg --files docs scripts src test | rg 'benchmark|overhead|capture|hook|runtime|workflow|context|performance|latency'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-de932e9b-0b8b-4dfe-a669-c0f029687ede"
+      },
+      {
+        "at": "2026-10-28T01:51:31.671Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat AGENTS.md; cat package.json; rg --files docs scripts src test | rg 'benchmark|overhead|capture|hook|runtime|workflow|context|performance|latency'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-de932e9b-0b8b-4dfe-a669-c0f029687ede"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:51:32.285Z",
+  "parents": [],
+  "branch": "main"
+}

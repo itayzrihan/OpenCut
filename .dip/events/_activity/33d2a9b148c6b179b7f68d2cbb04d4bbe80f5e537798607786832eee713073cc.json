@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "33d2a9b148c6b179b7f68d2cbb04d4bbe80f5e537798607786832eee713073cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:47:34.374Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/verify_sources.py <<'PY'\n\"\"\"Independent waveform and visible speech evidence; reads cards without altering them.\"\"\"\nimport json,subprocess,concurrent.futures\nfrom pathlib import Path\nimport numpy as np\nROOT=Path(__file__).resolve().parents[2];OUT=Path(__file__).resolve().parent;CACHE=ROOT/'.local/card-podcasts-2026-10-28'\nrows=json.loads((OUT/'acoustic-matches.json').read_text())\ndef pcm(p,t):\n return np.frombuffer(subprocess.check_output(['ffmpeg','-v','error','-ss',str(t),'-i',p,'-t','8','-vn','-ac','1','-ar','16000','-f','f32le','-']),dtype='<f4')\ndef verify(row):\n match=row['matches'][0]; offset=match['audioStartMinusCameraStart']; estimates=[]\n for t in [120,700,1400]:\n  a=pcm(row['camera'],t);b=pcm(match['path'],t-offset);n=min(len(a),len(b))\n  result=json.loads(subprocess.check_output([str(ROOT/'target/debug/examples/precision_probe')],input=json.dumps({'reference':a[:n].tolist(),'target':b[:n].tolist(),'sampleRate':16000}).encode()))\n  estimates.append(dict(cameraTime=t,microphoneTime=t-offset,**result))\n result=dict(camera=row['camera'],audio=match['path'],coarseOffset=offset,estimates=estimates)\n print(json.dumps(result),flush=True);return result\nwith concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool: results=list(pool.map(verify,rows))\n(OUT/'precision-evidence.json').write_text(json.dumps(results,indent=2))\nPY\npython3 analysis/card-podcasts-2026-10-28/verify_sources.py > .local/card-podcasts-2026-10-28/precision.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-08ec74ec-c482-473e-808a-3ee05a4db0d8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:47:35.340Z",
+  "parents": [],
+  "branch": "main"
+}

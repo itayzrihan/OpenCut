@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f70accef0e64d977f37b5b216990de276f38fefe65b1421a41c66e492ee1a060",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:07:38.131Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('docs/benchmarks/2026-10-28-automatic-runtime.json'));for(const [arm,v]of Object.entries(r.arms))console.log(arm,Object.fromEntries(Object.entries(v).map(([k,x])=>[k,{median:x.median,p95:x.p95,bytes:x.bytes}])));for(const[name,v]of Object.entries(r.realContexts))console.log(name,v.reviewed.bytes,v.automatic.bytes,100*(1-v.automatic.bytes/v.reviewed.bytes));\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-55ada5b0-6aa4-4cf9-9771-daf1fe841fc8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:07:38.223Z",
+  "parents": [],
+  "branch": "main"
+}

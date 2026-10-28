@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7ac32d80aaae236101f4ef5f6cf7264aa61ed6781725b06fbe40402e17da8f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:40:57.905Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/card-podcasts-2026-10-28 .local/card-podcasts-2026-10-28; python3 - <<'PY'\nimport os,json,subprocess,concurrent.futures,re\nfrom pathlib import Path\nfiles=[]\nfor root in ['/Volumes/A3','/Volumes/A4','/Volumes/MicroSD']:\n for p,ds,fs in os.walk(root):\n  ds[:]=[d for d in ds if not d.startswith('.')]\n  for f in fs:\n   if f.startswith('.'):continue\n   camera=f.lower().endswith(('.mp4','.mov'))\n   audio=f.lower().endswith('.wav') and bool(re.search(r'_[12](?:[^0-9]*)\\.wav$',f,re.I))\n   if camera or audio:files.append((str(Path(p)/f),'camera' if camera else 'microphone'))\ndef probe(x):\n p,kind=x;s=Path(p).stat()\n r=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',p]))\n return dict(path=p,kind=kind,bytes=s.st_size,mtimeNs=s.st_mtime_ns,probe=r)\nwith concurrent.futures.ThreadPoolExecutor(max_workers=4) as e:out=list(e.map(probe,files))\nPath('analysis/card-podcasts-2026-10-28/inventory.json').write_text(json.dumps(out,indent=2,ensure_ascii=False)+'\\n')\nfor x in out:\n f=x['probe']['format'];ss=x['probe']['streams'];print(json.dumps({'path':x['path'],'duration':f['duration'],'tags':f.get('tags'), 'streams':[{k:s.get(k) for k in ['codec_type','codec_name','sample_rate','channels','width','height','r_frame_rate']} for s in ss]},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6bbf74ff-31d0-406b-9632-fa54d3a317b3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:40:57.962Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6486caa704a4ba19f2c77cb15f7a64e4414b2ede85d18bf9d750857174f8fb3b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:10:22.973Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('docs/benchmarks');r=json.loads((root/'2026-10-28-automatic-runtime.json').read_text());a=r['arms']['automatic'];b=r['arms']['reviewed'];f=lambda n:f'{n:.2f}'\nrows=[]\nfor key,label in [('warmHookMs','Post-tool hook, warm'),('warmPreWriteMs','Pre-write hook, 1,001-event task'),('coldHookMs','Post-tool hook, new process'),('runtimeOpenRegisterMs','Runtime open + register'),('taskReadMs','Read a task with deep history'),('contendedRuntimeMs','Runtime open/register with a 100 ms competing lock')]:\n rows.append(f\"| {label} | {f(b[key]['median'])} / {f(b[key]['p95'])} | {f(a[key]['median'])} / {f(a[key]['p95'])} |\")\nreport='''# Automatic workflow: implementation and acceptance report\n\nThe candidate is **0.3.13-automatic.0**, branch `codex/automatic-workflow`, based on upstream `3f2aebc9611bf98ee76ecadb1f8697baca02bd77`. The code and isolated regression checks are complete. **Global rollout has not been authorized by the acceptance gate:** the native 12-turn model experiment and real-workflow pilot are pending human review of the isolated hook definitions. No model turns have started. The existing machine installation remains 0.3.12/reviewed.\n\n## Exact baseline\n\nThe original local clone and globally installed package both report 0.3.12 but have different source fingerprints. The comparison uses a frozen copy of the **installed** package, not a version-number assumption. [File-level source manifest](2026-10-28-source-manifest.json), [frozen model protocol](2026-10-28-model-protocol.json), and [runtime samples](2026-10-28-automatic-runtime.json) record the exact inputs. Runtime and model candidate fingerprints match.\n\n## Delivered behavior\n\nAutomatic requests enter a separate inbox. Supported writes acquire ownership and promote the request without model management calls; known reads do not. Development ends with one finish call, including an explicit paused outcome that keeps remaining work open. Native plans r",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-afb171ec-161d-4c0c-aa70-54f4affb2964"
+      },
+      {
+        "at": "2026-10-28T02:10:23.099Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('docs/benchmarks');r=json.loads((root/'2026-10-28-automatic-runtime.json').read_text());a=r['arms']['automatic'];b=r['arms']['reviewed'];f=lambda n:f'{n:.2f}'\nrows=[]\nfor key,label in [('warmHookMs','Post-tool hook, warm'),('warmPreWriteMs','Pre-write hook, 1,001-event task'),('coldHookMs','Post-tool hook, new process'),('runtimeOpenRegisterMs','Runtime open + register'),('taskReadMs','Read a task with deep history'),('contendedRuntimeMs','Runtime open/register with a 100 ms competing lock')]:\n rows.append(f\"| {label} | {f(b[key]['median'])} / {f(b[key]['p95'])} | {f(a[key]['median'])} / {f(a[key]['p95'])} |\")\nreport='''# Automatic workflow: implementation and acceptance report\n\nThe candidate is **0.3.13-automatic.0**, branch `codex/automatic-workflow`, based on upstream `3f2aebc9611bf98ee76ecadb1f8697baca02bd77`. The code and isolated regression checks are complete. **Global rollout has not been authorized by the acceptance gate:** the native 12-turn model experiment and real-workflow pilot are pending human review of the isolated hook definitions. No model turns have started. The existing machine installation remains 0.3.12/reviewed.\n\n## Exact baseline\n\nThe original local clone and globally installed package both report 0.3.12 but have different source fingerprints. The comparison uses a frozen copy of the **installed** package, not a version-number assumption. [File-level source manifest](2026-10-28-source-manifest.json), [frozen model protocol](2026-10-28-model-protocol.json), and [runtime samples](2026-10-28-automatic-runtime.json) record the exact inputs. Runtime and model candidate fingerprints match.\n\n## Delivered behavior\n\nAutomatic requests enter a separate inbox. Supported writes acquire ownership and promote the request without model management calls; known reads do not. Development ends with one finish call, including an explicit paused outcome that keeps remaining work open. Native plans r",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-afb171ec-161d-4c0c-aa70-54f4affb2964"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:10:23.360Z",
+  "parents": [],
+  "branch": "main"
+}

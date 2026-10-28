@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2878979b3af64a6f40f0b0568f95dff8451c59ea1b37bd76743864eb0b3a9b69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:10:18.801Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat; du -sh analysis/card-podcasts-2026-10-28; python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');c=Path('.local/card-podcasts-2026-10-28')\nfor pattern in ['preroll-edits-*.json','project-*-expected.json','tail-edits-*.json']:\n for f in p.glob(pattern):f.rename(c/f.name)\nf=p/'trim_preroll.py';s=f.read_text().replace(\"raw=(P/f'project-{n}-final.json').read_text()\",\"raw=(P/f'project-{n}-before-preroll.json').read_text()\");s=s.replace(\"P/f'preroll-edits-{n}.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'preroll-edits-{n}.json'\").replace(\"P/f'project-{n}-expected.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'project-{n}-expected.json'\");f.write_text(s)\nf=p/'complete_camera_tails.py';s=f.read_text().replace(\"P/f'tail-edits-{n}.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'tail-edits-{n}.json'\");f.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-487607d0-de71-48f1-a54d-b24d66fabb41"
+      },
+      {
+        "at": "2026-10-28T02:10:18.973Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat; du -sh analysis/card-podcasts-2026-10-28; python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');c=Path('.local/card-podcasts-2026-10-28')\nfor pattern in ['preroll-edits-*.json','project-*-expected.json','tail-edits-*.json']:\n for f in p.glob(pattern):f.rename(c/f.name)\nf=p/'trim_preroll.py';s=f.read_text().replace(\"raw=(P/f'project-{n}-final.json').read_text()\",\"raw=(P/f'project-{n}-before-preroll.json').read_text()\");s=s.replace(\"P/f'preroll-edits-{n}.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'preroll-edits-{n}.json'\").replace(\"P/f'project-{n}-expected.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'project-{n}-expected.json'\");f.write_text(s)\nf=p/'complete_camera_tails.py';s=f.read_text().replace(\"P/f'tail-edits-{n}.json'\",\"P.parents[1]/'.local/card-podcasts-2026-10-28'/f'tail-edits-{n}.json'\");f.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-487607d0-de71-48f1-a54d-b24d66fabb41"
+      },
+      {
+        "at": "2026-10-28T02:10:18.974Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5ba5083a-d9f9-4596-9998-55fa844edf63"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:10:19.329Z",
+  "parents": [],
+  "branch": "main"
+}

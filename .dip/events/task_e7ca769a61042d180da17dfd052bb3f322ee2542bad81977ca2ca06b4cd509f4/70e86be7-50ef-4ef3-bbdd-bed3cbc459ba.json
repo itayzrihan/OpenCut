@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70e86be7-50ef-4ef3-bbdd-bed3cbc459ba",
+  "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inventory A3/A4 and permitted MicroSD tracks, acoustically match all four camera sessions newest first.",
+          "status": "in_progress"
+        },
+        {
+          "step": "Inspect representative speech/lip-sync frames and establish camera-to-microphone participant mapping.",
+          "status": "pending"
+        },
+        {
+          "step": "Create four linked-source regular Podcast projects in OpenCut and run automatic sync/cuts/finishing.",
+          "status": "pending"
+        },
+        {
+          "step": "Verify saved projects and playback, publish complete source mapping, leave prepared projects open.",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T01:42:14.176Z",
+  "parents": [
+    "ed77cee0-7ceb-44bf-b2ce-c9dd2a91acd1"
+  ],
+  "branch": "main"
+}

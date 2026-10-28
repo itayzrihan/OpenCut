@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c435502feffb0c7c178227e2caef0361a4c360ea914b03f3f4e3c78d9165100c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:09:25.642Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');r=json.loads((p/'editor-receipts.json').read_text())\nfor n in r:\n j=json.loads((p/f'project-{n}-final.json').read_text());assert j==json.loads((p/f'project-{n}-reopened.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+h==r[n]['timeline.read_full_source']['baseRevision']\nprint('All four final documents match live canonical hashes and reopened snapshots.')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-90fda56a-c592-44ac-bd42-de41c2624d57"
+      },
+      {
+        "at": "2026-10-28T02:09:25.785Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');r=json.loads((p/'editor-receipts.json').read_text())\nfor n in r:\n j=json.loads((p/f'project-{n}-final.json').read_text());assert j==json.loads((p/f'project-{n}-reopened.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+h==r[n]['timeline.read_full_source']['baseRevision']\nprint('All four final documents match live canonical hashes and reopened snapshots.')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-90fda56a-c592-44ac-bd42-de41c2624d57"
+      },
+      {
+        "at": "2026-10-28T02:09:25.786Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ed01473f-f453-4a09-a842-48339d8a33ed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:09:26.268Z",
+  "parents": [],
+  "branch": "main"
+}

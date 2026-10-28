@@ -304,6 +304,13 @@
         ".dip/tools/verify-export-storage.mjs"
       ],
       "timeoutMs": 360000
+    },
+    "card-podcasts-2026-10-28": {
+      "command": [
+        "python3",
+        "analysis/card-podcasts-2026-10-28/verify_delivery.py"
+      ],
+      "timeoutMs": 120000
     }
   },
   "mode": "coordinate"

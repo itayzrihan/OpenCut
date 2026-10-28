@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b27451c30e2f454bc2cfc14e77556a60b0a375f32ca8aeca27957edf6d1281a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:04:06.337Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/src/core.js",
+          "/private/tmp/dip-automatic-20261028/bin/dip.js",
+          "/private/tmp/dip-automatic-20261028/src/automation.js"
+        ],
+        "changeHash": "8bb7e85a115872d5107c702177de966ae9f797ff6c76ea2268d316d513f65599",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-78952a51-9efb-4421-bf19-e22693b5b12a"
+      },
+      {
+        "at": "2026-10-28T02:04:06.473Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor name in ['package.json','package-lock.json']:\n p=Path(name);o=json.loads(p.read_text());o['version']='0.3.13-automatic.0'\n if 'packages' in o:o['packages']['']['version']=o['version']\n p.write_text(json.dumps(o,indent=2)+'\\n')\np=Path('README.md');s=p.read_text();s=s.replace('Use the MCP tools for meaningful transitions only:', '''The opt-in `automatic` workflow captures unsorted requests in an inbox, promotes them to work and acquires ownership before supported writes. Questions and known reads need no management calls. For development, call `task_finish` once with the hook actor/session: `implemented` with a configured check and remaining-work review, or `paused` with unfinished items. Explicit adoption, changed requirements, future ideas and conflicts still need intent tools. Native plans need no second copy. See [automatic workflow, rollout gates and rollback](docs/automatic-workflow.md).\n\nEnable it for an isolated project with `dip init --workflow automatic`. Machine installation accepts `dip install --workflow automatic`; the default remains `reviewed` pending acceptance. Workflow is separate from `observe`, `coordinate` and `strict` ownership modes.\n\nThe existing `reviewed` workflow retains these tools for meaningful transitions:''')\np.write_text(s)\nPY\ncat > docs/automatic-workflow.md <<'EOF'\n# Automatic workflow (pilot)\n\nAutomatic keeps persistent intent and coordination while removing routine model bookkeeping. It is opt-in; `reviewed` remains the default until the acceptance gate passes. No additional model runs for logging or classification.\n\n## Contract\n\n- Trusted prompt hooks save every request verbatim under the existing capture/redaction policy. Initially it is a `discussion` with additive `requestState: captured`, displayed in the captured-request inbox rather than the development backlog. No heuristic decides semantic task identity or completion.\n- Before a supported write (or unknown command ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-ada84cef-c80d-4a51-a022-352573d5c1c5"
+      },
+      {
+        "at": "2026-10-28T02:04:06.483Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/src/core.js",
+          "/private/tmp/dip-automatic-20261028/bin/dip.js",
+          "/private/tmp/dip-automatic-20261028/src/automation.js"
+        ],
+        "changeHash": "8bb7e85a115872d5107c702177de966ae9f797ff6c76ea2268d316d513f65599",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-78952a51-9efb-4421-bf19-e22693b5b12a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:04:06.796Z",
+  "parents": [],
+  "branch": "main"
+}

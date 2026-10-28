@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "31c7efa66763a687c50f49acae9e75b7e941069c86cf3918e97d058e5eb34b96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:01:52.758Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > scripts/automatic-benchmark.mjs <<'EOF'\n// Read-only real-project context sampling and identical disposable hook fixtures.\nimport fs from 'node:fs';import os from 'node:os';import path from 'node:path';\nimport {execFileSync,spawn} from 'node:child_process';import {pathToFileURL,fileURLToPath} from 'node:url';\nconst source=path.resolve(fileURLToPath(new URL('..',import.meta.url)));\nconst percentile=(xs,p)=>[...xs].sort((a,b)=>a-b)[Math.min(xs.length-1,Math.floor(xs.length*p))];\nconst summary=xs=>({n:xs.length,median:percentile(xs,.5),p95:percentile(xs,.95),min:Math.min(...xs),max:Math.max(...xs)});\nif(process.argv[2]==='worker'){\n const [product,root,mode,action]=process.argv.slice(3);\n const core=await import(pathToFileURL(path.join(product,'src/core.js'))),util=await import(pathToFileURL(path.join(product,'src/util.js')));\n const repo={...util.repoAt(root),dir:path.join(root,'.dip'),config:{...JSON.parse(fs.readFileSync(path.join(root,'.dip/config.json'))),workflow:mode}};\n if(action==='context'){\n  const samples=[];let result;for(let i=0;i<5;i++){const s=performance.now();result=core.compactContext(repo,null);samples.push(performance.now()-s)}\n  console.log(JSON.stringify({ms:summary(samples),bytes:Buffer.byteLength(JSON.stringify(result)),recentBytes:Buffer.byteLength(JSON.stringify(result.recent||[])),truncated:result.truncated}));\n }else if(action==='hook'){\n  const {handleHook}=await import(pathToFileURL(path.join(product,'src/automation.js')));\n  const samples=[],db=[],reads=[];\n  const task=process.env.DIP_BENCH_TASK;\n  for(let i=0;i<30;i++){\n   let s=performance.now();const rt=new core.Runtime();rt.register(repo);rt.close();db.push(performance.now()-s);\n   s=performance.now();core.taskRead(repo,task);reads.push(performance.now()-s);\n   s=performance.now();handleHook({cwd:root,session_id:'bench',tool_use_id:'p'+i,hook_event_name:'PostToolUse',tool_name:'Bash',tool_input:{command:'rg -n TODO src'}},'fixture');samples.push(performance.now()-s);\n  }\n  con",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-2a5d7e0d-16ce-4226-a82b-7e93b0de6d3f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:01:53.133Z",
+  "parents": [],
+  "branch": "main"
+}

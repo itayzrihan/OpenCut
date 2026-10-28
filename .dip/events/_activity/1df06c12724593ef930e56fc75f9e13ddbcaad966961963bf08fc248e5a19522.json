@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1df06c12724593ef930e56fc75f9e13ddbcaad966961963bf08fc248e5a19522",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:05:51.911Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/trim_preroll.py <<'PY'\n\"\"\"Prepare an undoable canonical trim of video before both external mics began.\"\"\"\nimport copy,json,math\nfrom pathlib import Path\nP=Path(__file__).resolve().parent;ledger=[]\nfor n in ['0160','0159','0158','0157']:\n raw=(P/f'project-{n}-final.json').read_text();j=json.loads(raw);original=copy.deepcopy(j);aud=[t for t in j['scene']['tracks'] if t['type']=='audio'];cut=math.ceil(max(t['elements'][0]['startTime'] for t in aud)/4800)*4800\n assert 0<cut<60*120000\n for t in j['scene']['tracks']:\n  kept=[]\n  for e in t['elements']:\n   start=e['startTime'];end=start+e['duration']\n   if end<=cut:continue\n   if start<cut:\n    amount=cut-start;e['duration']-=amount\n    if e['type'] in ['video','audio']:e['trimStart']+=amount\n   e['startTime']=max(0,start-cut);kept.append(e)\n  t['elements']=kept\n for t in aud:assert t['elements'][0]['startTime']==0\n new=json.dumps(j,ensure_ascii=False,sort_keys=True,indent=2)\n (P/f'preroll-edits-{n}.json').write_text(json.dumps({'edits':[{'oldText':raw,'newText':new}]},ensure_ascii=False))\n (P/f'project-{n}-expected.json').write_text(new);ledger.append({'session':n,'removedVideoOnlyPrerollSeconds':cut/120000,'method':'First25fps frame after both external mic recordings begin; no external-mic speech discarded before that frame.'})\n print(n,cut/120000)\n(P/'preroll-ledger.json').write_text(json.dumps(ledger,indent=2))\nPY\npython3 analysis/card-podcasts-2026-10-28/trim_preroll.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0193ee55-6d9e-40e0-8ad6-cab7f6e3745c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:05:51.945Z",
+  "parents": [],
+  "branch": "main"
+}

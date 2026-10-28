@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bf619659984ce297bbf432f416c34bc513a7a46150559332ae4df78bf876fd06",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:06:58.699Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import {execFileSync} from 'node:child_process';import {ensure,taskRead} from './src/core.js';import {handleHook} from './src/automation.js';import {execute} from './src/actions.js';\nconst base=fs.mkdtempSync('/private/tmp/dip-old-reader-');Object.assign(process.env,{DIP_HOME:path.join(base,'runtime'),DIP_USER_HOME:path.join(base,'user'),DIP_GIT_CONFIG:path.join(base,'gitconfig'),GIT_CONFIG_GLOBAL:path.join(base,'gitconfig'),GIT_TRACE2_EVENT:'0'});const root=path.join(base,'project');fs.mkdirSync(root);execFileSync('git',['-c','core.hooksPath=/dev/null','init','-b','main',root],{stdio:'pipe'});const repo=ensure(root,{workflow:'automatic'});const hook=e=>handleHook({cwd:root,session_id:'legacy',...e},'fixture');const c=JSON.parse(hook({hook_event_name:'UserPromptSubmit',prompt:'Build first half; preserve second half'}).hookSpecificOutput.additionalContext);hook({hook_event_name:'PreToolUse',tool_name:'Write',tool_input:{file_path:path.join(root,'app.js')}});await execute('finish',{id:c.task_id,actor:c.actor,session:c.session_id,outcome:'paused',summary:'First half done',remaining:[{disposition:'required',summary:'Second half remains'}]},root);hook({hook_event_name:'Stop'});\nconst legacy='/private/tmp/dip-automatic-pilot-20261028/reviewed/bin/dip.js';const view=JSON.parse(execFileSync(process.execPath,[legacy,'task','get','--root',root,'--id',c.task_id],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));if(view.status!=='in_progress'||view.checkpoint.remaining[0].summary!=='Second half remains')throw new Error('Legacy read lost pause');const result={baseline:'installed 0.3.12 frozen copy',newHistoryReadable:true,status:view.status,remainingVisible:true,resolution:view.resolution,requestStateVisible:view.requestState!==undefined};fs.mkdirSync('docs/benchmarks',{recursive:true});fs.writeFileSync('docs/benchmarks/2026-10-28-legacy-read.json',JSON.stringify(result,null,2)+'\\n');console",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-6bd45b82-eb62-4d6c-a33c-b52da3b59d0c"
+      },
+      {
+        "at": "2026-10-28T02:06:58.905Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import {execFileSync} from 'node:child_process';import {ensure,taskRead} from './src/core.js';import {handleHook} from './src/automation.js';import {execute} from './src/actions.js';\nconst base=fs.mkdtempSync('/private/tmp/dip-old-reader-');Object.assign(process.env,{DIP_HOME:path.join(base,'runtime'),DIP_USER_HOME:path.join(base,'user'),DIP_GIT_CONFIG:path.join(base,'gitconfig'),GIT_CONFIG_GLOBAL:path.join(base,'gitconfig'),GIT_TRACE2_EVENT:'0'});const root=path.join(base,'project');fs.mkdirSync(root);execFileSync('git',['-c','core.hooksPath=/dev/null','init','-b','main',root],{stdio:'pipe'});const repo=ensure(root,{workflow:'automatic'});const hook=e=>handleHook({cwd:root,session_id:'legacy',...e},'fixture');const c=JSON.parse(hook({hook_event_name:'UserPromptSubmit',prompt:'Build first half; preserve second half'}).hookSpecificOutput.additionalContext);hook({hook_event_name:'PreToolUse',tool_name:'Write',tool_input:{file_path:path.join(root,'app.js')}});await execute('finish',{id:c.task_id,actor:c.actor,session:c.session_id,outcome:'paused',summary:'First half done',remaining:[{disposition:'required',summary:'Second half remains'}]},root);hook({hook_event_name:'Stop'});\nconst legacy='/private/tmp/dip-automatic-pilot-20261028/reviewed/bin/dip.js';const view=JSON.parse(execFileSync(process.execPath,[legacy,'task','get','--root',root,'--id',c.task_id],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));if(view.status!=='in_progress'||view.checkpoint.remaining[0].summary!=='Second half remains')throw new Error('Legacy read lost pause');const result={baseline:'installed 0.3.12 frozen copy',newHistoryReadable:true,status:view.status,remainingVisible:true,resolution:view.resolution,requestStateVisible:view.requestState!==undefined};fs.mkdirSync('docs/benchmarks',{recursive:true});fs.writeFileSync('docs/benchmarks/2026-10-28-legacy-read.json',JSON.stringify(result,null,2)+'\\n');console",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-6bd45b82-eb62-4d6c-a33c-b52da3b59d0c"
+      },
+      {
+        "at": "2026-10-28T02:06:58.906Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 /tmp/dip-auto-measure-final.txt; git diff --check; rg -n '^##' docs/protocol.md | head",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-dbfa6860-bf14-40fb-b88c-b4126253ad09"
+      },
+      {
+        "at": "2026-10-28T02:06:59.035Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 /tmp/dip-auto-measure-final.txt; git diff --check; rg -n '^##' docs/protocol.md | head",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-dbfa6860-bf14-40fb-b88c-b4126253ad09"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:06:59.162Z",
+  "parents": [],
+  "branch": "main"
+}

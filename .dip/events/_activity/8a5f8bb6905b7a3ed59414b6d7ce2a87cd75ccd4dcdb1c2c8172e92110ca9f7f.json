@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a5f8bb6905b7a3ed59414b6d7ce2a87cd75ccd4dcdb1c2c8172e92110ca9f7f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:52:47.283Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/scale-benchmark.mjs /tmp/dip-scale-plan-20261028.json --label planning-baseline",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-7d0745ba-0238-4770-8001-f7c23d924eac"
+      },
+      {
+        "at": "2026-10-28T01:52:47.283Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport fs from 'node:fs';import path from 'node:path';import {performance} from 'node:perf_hooks';\nimport {compactContext,taskRead} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/core.js';\nimport {repoAt} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/util.js';\nfor(const root of ['/Users/itayzrihan/Documents/dip','/Users/itayzrihan/Documents/PoCut']){\n const repo={...repoAt(root),dir:path.join(root,'.dip'),config:JSON.parse(fs.readFileSync(path.join(root,'.dip/config.json')))};\n const times=[];let c;\n for(let i=0;i<6;i++){let t=performance.now();c=compactContext(repo,null);times.push(Math.round((performance.now()-t)*10)/10);}\n const txt=JSON.stringify(c);const sizes=Object.fromEntries(Object.entries(c).map(([k,v])=>[k,Buffer.byteLength(JSON.stringify(v))]));\n console.log(JSON.stringify({project:path.basename(root),contextMs:times,contextBytes:Buffer.byteLength(txt),fieldBytes:sizes}));\n}\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-f37b1ba8-f37d-4fd8-a3ba-93e3d7aab583"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:52:47.448Z",
+  "parents": [],
+  "branch": "main"
+}

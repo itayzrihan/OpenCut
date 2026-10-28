@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3522e42428b2a7b7d97d7c1b6430e6a355467726377cdf92653d97f9f0c6a591",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:59:29.657Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/verify_delivery.py <<'PY'\n\"\"\"Verify native saved podcast documents, evidence receipts and read-only source guards.\"\"\"\nimport hashlib,json,math\nfrom pathlib import Path\nP=Path(__file__).resolve().parent;T=120000\nreceipts=json.loads((P/'editor-receipts.json').read_text());mapping=json.loads((P/'verified-mapping.json').read_text());playback=json.loads((P/'playback-evidence.json').read_text())\nfor row in mapping:\n n=f\"{row['session']:04}\";j=json.loads((P/f'project-{n}-final.json').read_text());reopened=json.loads((P/f'project-{n}-reopened.json').read_text());assert j==reopened,f'{n}: save/reopen mismatch'\n r=receipts[n];state=r['app.get_state']['output'];assert state['project']['id']==r['projectId'] and state['project']['dirty'] is False\n assert state['export']['status']=='idle' and not state['export']['downloadReady'];assert not state['diagnostics']\n assert j['projectSettings']['fps']==dict(denominator=1,numerator=25)\n digest=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+digest==r['timeline.read_full_source']['baseRevision']\n media=r['timeline.list_media']['output']['mediaAssets'];assert len(media)==4;byid={a['id']:a for a in media};assert sum(a['type']=='video' for a in media)==2\n audios=[a for a in media if a['type']=='audio'];assert sorted(a['name'] for a in audios)==[f'240504_{n}_1.wav',f'240504_{n}_2.wav']\n tracks=j['scene']['tracks'];aud=[t for t in tracks if t['type']=='audio'];assert len(aud)==2\n for mic,camera in [(2,'A3'),(1,'A4')]:\n  track=next(t for t in aud if camera in t['name']);assert not track['muted'];assert len(track['elements'])==1;e=track['elements'][0];assert byid[e['mediaId']]['name']==f'240504_{n}_{mic}.wav';p=e['params'];assert p['volume']==15 and p['gainDb']==-1 and p['hardLimiterEnabled'] and p['hardLimiterCeilingDb']==-1 and p['noiseReduction']==100 and e['podcastFinishingVersion']==1\n sharp=next(t for t in tracks if t['type']",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2936c31c-c7ee-4055-821e-3f918595ce4b"
+      },
+      {
+        "at": "2026-10-28T01:59:29.960Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/verify_delivery.py <<'PY'\n\"\"\"Verify native saved podcast documents, evidence receipts and read-only source guards.\"\"\"\nimport hashlib,json,math\nfrom pathlib import Path\nP=Path(__file__).resolve().parent;T=120000\nreceipts=json.loads((P/'editor-receipts.json').read_text());mapping=json.loads((P/'verified-mapping.json').read_text());playback=json.loads((P/'playback-evidence.json').read_text())\nfor row in mapping:\n n=f\"{row['session']:04}\";j=json.loads((P/f'project-{n}-final.json').read_text());reopened=json.loads((P/f'project-{n}-reopened.json').read_text());assert j==reopened,f'{n}: save/reopen mismatch'\n r=receipts[n];state=r['app.get_state']['output'];assert state['project']['id']==r['projectId'] and state['project']['dirty'] is False\n assert state['export']['status']=='idle' and not state['export']['downloadReady'];assert not state['diagnostics']\n assert j['projectSettings']['fps']==dict(denominator=1,numerator=25)\n digest=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+digest==r['timeline.read_full_source']['baseRevision']\n media=r['timeline.list_media']['output']['mediaAssets'];assert len(media)==4;byid={a['id']:a for a in media};assert sum(a['type']=='video' for a in media)==2\n audios=[a for a in media if a['type']=='audio'];assert sorted(a['name'] for a in audios)==[f'240504_{n}_1.wav',f'240504_{n}_2.wav']\n tracks=j['scene']['tracks'];aud=[t for t in tracks if t['type']=='audio'];assert len(aud)==2\n for mic,camera in [(2,'A3'),(1,'A4')]:\n  track=next(t for t in aud if camera in t['name']);assert not track['muted'];assert len(track['elements'])==1;e=track['elements'][0];assert byid[e['mediaId']]['name']==f'240504_{n}_{mic}.wav';p=e['params'];assert p['volume']==15 and p['gainDb']==-1 and p['hardLimiterEnabled'] and p['hardLimiterCeilingDb']==-1 and p['noiseReduction']==100 and e['podcastFinishingVersion']==1\n sharp=next(t for t in tracks if t['type']",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2936c31c-c7ee-4055-821e-3f918595ce4b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:59:30.490Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "57398c8a269102abab990f51b9eec46303057416e9a060bfbe8f9ce9f58e678b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:55:56.144Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nj=json.load(open('analysis/card-podcasts-2026-10-28/inventory.json'))\nsel=[r for r in j if r['kind']=='camera' or any(f'_{n:04}_' in r['path'] for n in [157,158,159,160])]\nfor r in sel:\n s=Path(r['path']).stat();assert s.st_size==r['bytes'] and s.st_mtime_ns==r['mtimeNs'],r['path']\nprint(f'{len(sel)} selected source files unchanged')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6367d8c3-0324-4080-888b-e04d202ba196"
+      },
+      {
+        "at": "2026-10-28T01:55:56.325Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nj=json.load(open('analysis/card-podcasts-2026-10-28/inventory.json'))\nsel=[r for r in j if r['kind']=='camera' or any(f'_{n:04}_' in r['path'] for n in [157,158,159,160])]\nfor r in sel:\n s=Path(r['path']).stat();assert s.st_size==r['bytes'] and s.st_mtime_ns==r['mtimeNs'],r['path']\nprint(f'{len(sel)} selected source files unchanged')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6367d8c3-0324-4080-888b-e04d202ba196"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:55:56.897Z",
+  "parents": [],
+  "branch": "main"
+}

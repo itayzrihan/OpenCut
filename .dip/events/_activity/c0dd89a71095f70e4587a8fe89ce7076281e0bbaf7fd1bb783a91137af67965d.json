@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c0dd89a71095f70e4587a8fe89ce7076281e0bbaf7fd1bb783a91137af67965d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:47:42.797Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_3b2059cc4d9a655f8e878f05ae494f0560bd03739eef0ce9f7266ab12fd9a00f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh api 'repos/vxu-labs/dip/issues/3/comments?per_page=100' --jq '.[] | {user:.user.login,body,html_url}'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-e3be3cdc-9f65-4680-b0b3-17b8abb4196a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:47:43.347Z",
+  "parents": [],
+  "branch": "main"
+}

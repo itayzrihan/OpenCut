@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f519392a57447502bf8746ce58e32996de01b13c2037267c05ae53ed72dc7bc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:45:29.218Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a633fded146b67faf805f220bd946ed842f5726fd1aa82750d867d6233e405e5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh pr list --repo vxu-labs/dip --state open --json number,title,url,headRefName,baseRefName",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-4985b7be-ddd8-493e-9fa0-8cd4587fbfc4"
+      },
+      {
+        "at": "2026-10-28T01:45:29.367Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a633fded146b67faf805f220bd946ed842f5726fd1aa82750d867d6233e405e5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh pr list --repo vxu-labs/dip --state open --json number,title,url,headRefName,baseRefName",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-4985b7be-ddd8-493e-9fa0-8cd4587fbfc4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:45:30.205Z",
+  "parents": [],
+  "branch": "main"
+}

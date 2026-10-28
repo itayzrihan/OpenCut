@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e85fbe0427154b32940e4e4d324b39540cde55324919fb19db67547bdd26a3e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:54:32.106Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short; git log -1 --format='%H %s'; cat .dip/config.json | head -35; sed -n '1,100p' test/workflow.test.js; sed -n '1,90p' src/actions.js; sed -n '175,220p' src/util.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-1b21e8c7-b3a0-403c-920f-a6ff01ab52ab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:54:32.170Z",
+  "parents": [],
+  "branch": "main"
+}

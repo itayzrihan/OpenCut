@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e7408d2d06c1dfc622e7195aa37d1ea0ffd777ee530000614f69ad33776d5e2b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:50:11.297Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6310d84f-db61-4773-82c7-8806745a1c72"
+      },
+      {
+        "at": "2026-10-28T01:50:11.301Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nrows=[]\nfor n,clip,left,right in [(160,7471,'חולצה שחורה מכופתרת','חולצה מכופתרת תכלת'),(159,7470,'חולצת טי לבנה','חולצת טי שחורה עם כיתוב'),(158,7469,'ז׳קט בז׳','חולצה מכופתרת תכלת'),(157,7468,'חולצת פולו בהירה','חולצת טי שחורה עם כיתוב')]:\n rows.append(dict(session=n,clip=f'C{clip}',A3=dict(mic=2,description=left,camera=f'/Volumes/A3/PRIVATE/M4ROOT/CLIP/C{clip}.MP4',audio=f'/Volumes/MicroSD/SOUND/240504_{n:04}_2.wav'),A4=dict(mic=1,description=right,camera=f'/Volumes/A4/PRIVATE/M4ROOT/CLIP/C{clip}.MP4',audio=f'/Volumes/MicroSD/SOUND/240504_{n:04}_1.wav')))\n(p/'verified-mapping.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-cded7098-e36b-42e4-a44e-af19c2e06da7"
+      },
+      {
+        "at": "2026-10-28T01:50:11.443Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nrows=[]\nfor n,clip,left,right in [(160,7471,'חולצה שחורה מכופתרת','חולצה מכופתרת תכלת'),(159,7470,'חולצת טי לבנה','חולצת טי שחורה עם כיתוב'),(158,7469,'ז׳קט בז׳','חולצה מכופתרת תכלת'),(157,7468,'חולצת פולו בהירה','חולצת טי שחורה עם כיתוב')]:\n rows.append(dict(session=n,clip=f'C{clip}',A3=dict(mic=2,description=left,camera=f'/Volumes/A3/PRIVATE/M4ROOT/CLIP/C{clip}.MP4',audio=f'/Volumes/MicroSD/SOUND/240504_{n:04}_2.wav'),A4=dict(mic=1,description=right,camera=f'/Volumes/A4/PRIVATE/M4ROOT/CLIP/C{clip}.MP4',audio=f'/Volumes/MicroSD/SOUND/240504_{n:04}_1.wav')))\n(p/'verified-mapping.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-cded7098-e36b-42e4-a44e-af19c2e06da7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:50:11.849Z",
+  "parents": [],
+  "branch": "main"
+}

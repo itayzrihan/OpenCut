@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "593bf2549ffd629eb28a4121791b2388efa3c096d82c0eba3ceb643364624ca9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:09:46.720Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> analysis/card-podcasts-2026-10-28/mapping.he.md <<'MD'\n\n## הפרויקטים המוכנים\n\n| סשן | פרויקט OpenCut | אורך סופי |\n|---|---|---|\n| 0160 · C7471 | [פתח פרויקט](http://localhost:3211/editor/3f9dd2ef-dad6-4a1e-b2a2-cea14a13e8ca) | 30:56.68 |\n| 0159 · C7470 | [פתח פרויקט](http://localhost:3211/editor/e030433b-8f73-47aa-b913-6197b5a1a88b) | 28:29.44 |\n| 0158 · C7469 | [פתח פרויקט](http://localhost:3211/editor/28ebada6-fafa-4e97-902a-3044ee4f1ce7) | 31:16.64 |\n| 0157 · C7468 | [פתח פרויקט](http://localhost:3211/editor/94aa94c6-0cc1-4921-9351-4701d8b619c7) | 34:38.04 |\n\nנוצרו באמצעות Quick Auto Edit הרגיל, בשני ערוצים, 25fps, עם החלפת מצלמות אוטומטית, מיקרופוני מצלמה מושתקים, Volume +15dB, Gain −1dB, Hard Limiter −1dB, Noise Reduction 100% ו־Sharpen 15%. הפרויקטים נפתחו מחדש והמסמכים שנשמרו הושוו ל־hash הקנוני של העורך.\n\nבסשנים 0160 ו־0159 נשמרו גם 8.6 ו־4.8 השניות שבהן A4 המשיכה אחרי A3. הוסרה רק פתיחת הווידאו שלפני התחלת שני המיקרופונים החיצוניים: 5.68, 47.84, 16.48 ו־54.6 שניות בהתאמה, בעיגול לפריים הראשון ב־25fps. אין איבוד דיבור מכוון; עיגול תחילת ההקלטה הוא פחות מפריים אחד. כל עריכת השלמה נעשתה בעסקה קנונית עם Undo.\n\nלא בוצעו ייצוא או חילוץ קטעים. המקורות מקושרים לכרטיסי הזיכרון ולכן צריך להשאיר את שלושת הכרטיסים מחוברים בזמן העבודה.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7909ed42-414e-4296-a100-5f2b2a1992bf"
+      },
+      {
+        "at": "2026-10-28T02:09:46.826Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> analysis/card-podcasts-2026-10-28/mapping.he.md <<'MD'\n\n## הפרויקטים המוכנים\n\n| סשן | פרויקט OpenCut | אורך סופי |\n|---|---|---|\n| 0160 · C7471 | [פתח פרויקט](http://localhost:3211/editor/3f9dd2ef-dad6-4a1e-b2a2-cea14a13e8ca) | 30:56.68 |\n| 0159 · C7470 | [פתח פרויקט](http://localhost:3211/editor/e030433b-8f73-47aa-b913-6197b5a1a88b) | 28:29.44 |\n| 0158 · C7469 | [פתח פרויקט](http://localhost:3211/editor/28ebada6-fafa-4e97-902a-3044ee4f1ce7) | 31:16.64 |\n| 0157 · C7468 | [פתח פרויקט](http://localhost:3211/editor/94aa94c6-0cc1-4921-9351-4701d8b619c7) | 34:38.04 |\n\nנוצרו באמצעות Quick Auto Edit הרגיל, בשני ערוצים, 25fps, עם החלפת מצלמות אוטומטית, מיקרופוני מצלמה מושתקים, Volume +15dB, Gain −1dB, Hard Limiter −1dB, Noise Reduction 100% ו־Sharpen 15%. הפרויקטים נפתחו מחדש והמסמכים שנשמרו הושוו ל־hash הקנוני של העורך.\n\nבסשנים 0160 ו־0159 נשמרו גם 8.6 ו־4.8 השניות שבהן A4 המשיכה אחרי A3. הוסרה רק פתיחת הווידאו שלפני התחלת שני המיקרופונים החיצוניים: 5.68, 47.84, 16.48 ו־54.6 שניות בהתאמה, בעיגול לפריים הראשון ב־25fps. אין איבוד דיבור מכוון; עיגול תחילת ההקלטה הוא פחות מפריים אחד. כל עריכת השלמה נעשתה בעסקה קנונית עם Undo.\n\nלא בוצעו ייצוא או חילוץ קטעים. המקורות מקושרים לכרטיסי הזיכרון ולכן צריך להשאיר את שלושת הכרטיסים מחוברים בזמן העבודה.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7909ed42-414e-4296-a100-5f2b2a1992bf"
+      },
+      {
+        "at": "2026-10-28T02:09:46.831Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4c29f49b-ded0-4566-9f62-41a29cb555e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:09:47.281Z",
+  "parents": [],
+  "branch": "main"
+}

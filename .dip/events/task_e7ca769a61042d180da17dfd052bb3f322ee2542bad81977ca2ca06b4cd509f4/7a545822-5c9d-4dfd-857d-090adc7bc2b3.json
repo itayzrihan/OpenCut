@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a545822-5c9d-4dfd-857d-090adc7bc2b3",
+  "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inventory and acoustic matching newest first",
+          "status": "completed"
+        },
+        {
+          "step": "Verify speech/lip movement and mic-camera mapping",
+          "status": "completed"
+        },
+        {
+          "step": "Create four native regular Auto Podcast projects with linked sources",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify saved projects, playback and source ledger; leave ready projects open",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T01:50:11.242Z",
+  "parents": [
+    "30bac03c-6911-4deb-84cf-a0275e0aa5f6"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "eventId": "156afca1cb93e482223054217873143a5f509ac8c10c7c540e4e61cd691225af",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:08:05.565Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/scripts/automatic-benchmark.mjs"
+        ],
+        "changeHash": "e4aaa48876b83c4eceaf5ab9307d2b7b8ff972c3222b23109c9d19621c7d9a79",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-35e00a60-0016-40f1-9488-cc15e7ce1b47"
+      },
+      {
+        "at": "2026-10-28T02:08:05.647Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/scripts/automatic-benchmark.mjs"
+        ],
+        "changeHash": "e4aaa48876b83c4eceaf5ab9307d2b7b8ff972c3222b23109c9d19621c7d9a79",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-35e00a60-0016-40f1-9488-cc15e7ce1b47"
+      },
+      {
+        "at": "2026-10-28T02:08:05.649Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import {execFileSync} from 'node:child_process';import {commonInstructions} from './scripts/model-benchmark-fixtures.mjs';\nconst base='/private/tmp/dip-automatic-pilot-20261028',source=process.cwd();if(fs.existsSync(path.join(base,'results.json')))throw new Error('Scored runs already started');\nconst file=path.join(base,'protocol.json'),p=JSON.parse(fs.readFileSync(file));fs.copyFileSync(file,path.join(base,'protocol.before-final-freeze.json'));\nfor(const f of ['src','bin','skills','public','package.json'])fs.cpSync(path.join(source,f),path.join(base,'automatic',f),{recursive:true});\nconst hash=data=>createHash('sha256').update(data).digest('hex');const fingerprint=root=>hash(JSON.stringify(['package.json',...['src','bin','skills'].flatMap(d=>fs.readdirSync(path.join(root,d),{recursive:true}).filter(f=>fs.statSync(path.join(root,d,f)).isFile()).map(f=>d+'/'+f))].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))])));\np.sourceFingerprints.automatic=fingerprint(path.join(base,'automatic'));p.frozenAt=new Date().toISOString();p.harnessHash=hash(fs.readFileSync('scripts/automatic-model-pilot.mjs'));p.freezeNote='Candidate finalized after regression and compatibility checks, before any model call. Scoring, prompts, order, model and time limits unchanged. Original preparation protocol retained.';\nfor(const t of p.trials.filter(t=>t.arm==='automatic')){\n if(fs.readdirSync(path.join(t.root,'.dip/events')).length)throw new Error('Fixture not pristine');\n fs.writeFileSync(path.join(t.root,'AGENTS.md'),commonInstructions+'\\n');fs.writeFileSync(path.join(t.root,'CLAUDE.md'),'');\n execFileSync(process.execPath,[path.join(base,'automatic/bin/dip.js'),'init','--root',t.root,'--workflow','automatic'],{env:{...process.env,DIP_HOME:path.join(t.dir,'runtime'),DIP_USER_HOME:path.join(base,'user'),DIP_WORKFLOW:'automatic',DIP_GIT_CONFIG:path.join(base,'gi",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e24682a8-249b-45a6-9634-6a5b9a8c6f3b"
+      },
+      {
+        "at": "2026-10-28T02:08:05.888Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import {execFileSync} from 'node:child_process';import {commonInstructions} from './scripts/model-benchmark-fixtures.mjs';\nconst base='/private/tmp/dip-automatic-pilot-20261028',source=process.cwd();if(fs.existsSync(path.join(base,'results.json')))throw new Error('Scored runs already started');\nconst file=path.join(base,'protocol.json'),p=JSON.parse(fs.readFileSync(file));fs.copyFileSync(file,path.join(base,'protocol.before-final-freeze.json'));\nfor(const f of ['src','bin','skills','public','package.json'])fs.cpSync(path.join(source,f),path.join(base,'automatic',f),{recursive:true});\nconst hash=data=>createHash('sha256').update(data).digest('hex');const fingerprint=root=>hash(JSON.stringify(['package.json',...['src','bin','skills'].flatMap(d=>fs.readdirSync(path.join(root,d),{recursive:true}).filter(f=>fs.statSync(path.join(root,d,f)).isFile()).map(f=>d+'/'+f))].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))])));\np.sourceFingerprints.automatic=fingerprint(path.join(base,'automatic'));p.frozenAt=new Date().toISOString();p.harnessHash=hash(fs.readFileSync('scripts/automatic-model-pilot.mjs'));p.freezeNote='Candidate finalized after regression and compatibility checks, before any model call. Scoring, prompts, order, model and time limits unchanged. Original preparation protocol retained.';\nfor(const t of p.trials.filter(t=>t.arm==='automatic')){\n if(fs.readdirSync(path.join(t.root,'.dip/events')).length)throw new Error('Fixture not pristine');\n fs.writeFileSync(path.join(t.root,'AGENTS.md'),commonInstructions+'\\n');fs.writeFileSync(path.join(t.root,'CLAUDE.md'),'');\n execFileSync(process.execPath,[path.join(base,'automatic/bin/dip.js'),'init','--root',t.root,'--workflow','automatic'],{env:{...process.env,DIP_HOME:path.join(t.dir,'runtime'),DIP_USER_HOME:path.join(base,'user'),DIP_WORKFLOW:'automatic',DIP_GIT_CONFIG:path.join(base,'gi",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-e24682a8-249b-45a6-9634-6a5b9a8c6f3b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:08:06.278Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "367f13ab2693876606d21e222a14446c1cc4d9e3e848664c4932a5efd5f13d28",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:01:20.825Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > scripts/automatic-model-pilot.mjs <<'EOF'\n// Twelve authorized turns only. Native hooks require human trust in /hooks.\nimport fs from 'node:fs';\nimport path from 'node:path';\nimport os from 'node:os';\nimport {spawn,execFileSync} from 'node:child_process';\nimport {fileURLToPath} from 'node:url';\nimport {createHash} from 'node:crypto';\nimport {parse,stringify} from 'smol-toml';\nimport {fixture,score,commonInstructions,recoveryPrompt} from './model-benchmark-fixtures.mjs';\nconst source=path.resolve(fileURLToPath(new URL('..',import.meta.url)));\nconst base=path.resolve(process.env.DIP_PILOT_DIR || '/private/tmp/dip-automatic-pilot-20261028');\nconst codex=process.env.DIP_BENCH_CODEX || '/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex';\nconst hostHome=process.env.CODEX_HOME || path.join(os.homedir(),'.codex');\nconst installed='/opt/homebrew/lib/node_modules/@vxu-labs/dip';\nconst pilotHome=path.join(base,'user','.codex');\nconst write=(file,data)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,typeof data==='string'?data:JSON.stringify(data,null,2)+'\\n');};\nconst hash=data=>createHash('sha256').update(data).digest('hex');\nfunction fingerprint(root){return hash(JSON.stringify(['package.json',...['src','bin','skills'].flatMap(d=>fs.readdirSync(path.join(root,d),{recursive:true}).filter(f=>fs.statSync(path.join(root,d,f)).isFile()).map(f=>d+'/'+f))].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))])));}\nconst env={...process.env};\nfor(const k of Object.keys(env))if(/^CODEX_(THREAD|SESSION|TURN|APP|INTERNAL|SHELL)|^DIP_|^GIT_CONFIG_(COUNT|KEY_|VALUE_)/.test(k))delete env[k];\nObject.assign(env,{CODEX_HOME:pilotHome,DIP_USER_HOME:path.join(base,'user'),GIT_CONFIG_GLOBAL:path.join(base,'gitconfig'),GIT_CONFIG_NOSYSTEM:'1',GIT_TRACE2_EVENT:'0'});\nconst protocolFile=path.join(base,'protocol.json');\nif(process.argv.includes('--prepare')){\n if(fs.existsSync(protocolFile))throw new Error('Pilot already pr",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f35dcbea-8708-41f2-92da-100d81e98d57"
+      },
+      {
+        "at": "2026-10-28T02:01:20.961Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > scripts/automatic-model-pilot.mjs <<'EOF'\n// Twelve authorized turns only. Native hooks require human trust in /hooks.\nimport fs from 'node:fs';\nimport path from 'node:path';\nimport os from 'node:os';\nimport {spawn,execFileSync} from 'node:child_process';\nimport {fileURLToPath} from 'node:url';\nimport {createHash} from 'node:crypto';\nimport {parse,stringify} from 'smol-toml';\nimport {fixture,score,commonInstructions,recoveryPrompt} from './model-benchmark-fixtures.mjs';\nconst source=path.resolve(fileURLToPath(new URL('..',import.meta.url)));\nconst base=path.resolve(process.env.DIP_PILOT_DIR || '/private/tmp/dip-automatic-pilot-20261028');\nconst codex=process.env.DIP_BENCH_CODEX || '/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex';\nconst hostHome=process.env.CODEX_HOME || path.join(os.homedir(),'.codex');\nconst installed='/opt/homebrew/lib/node_modules/@vxu-labs/dip';\nconst pilotHome=path.join(base,'user','.codex');\nconst write=(file,data)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,typeof data==='string'?data:JSON.stringify(data,null,2)+'\\n');};\nconst hash=data=>createHash('sha256').update(data).digest('hex');\nfunction fingerprint(root){return hash(JSON.stringify(['package.json',...['src','bin','skills'].flatMap(d=>fs.readdirSync(path.join(root,d),{recursive:true}).filter(f=>fs.statSync(path.join(root,d,f)).isFile()).map(f=>d+'/'+f))].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))])));}\nconst env={...process.env};\nfor(const k of Object.keys(env))if(/^CODEX_(THREAD|SESSION|TURN|APP|INTERNAL|SHELL)|^DIP_|^GIT_CONFIG_(COUNT|KEY_|VALUE_)/.test(k))delete env[k];\nObject.assign(env,{CODEX_HOME:pilotHome,DIP_USER_HOME:path.join(base,'user'),GIT_CONFIG_GLOBAL:path.join(base,'gitconfig'),GIT_CONFIG_NOSYSTEM:'1',GIT_TRACE2_EVENT:'0'});\nconst protocolFile=path.join(base,'protocol.json');\nif(process.argv.includes('--prepare')){\n if(fs.existsSync(protocolFile))throw new Error('Pilot already pr",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-f35dcbea-8708-41f2-92da-100d81e98d57"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:01:21.100Z",
+  "parents": [],
+  "branch": "main"
+}

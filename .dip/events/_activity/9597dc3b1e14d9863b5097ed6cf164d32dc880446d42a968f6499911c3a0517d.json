@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9597dc3b1e14d9863b5097ed6cf164d32dc880446d42a968f6499911c3a0517d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:00:33.696Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '300,400p' scripts/model-benchmark.mjs; sed -n '260,300p' scripts/model-benchmark-fixtures.mjs; rg -n 'function score|export async' scripts/model-benchmark-fixtures.mjs; sed -n '1,120p' test/completion.test.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-21054589-2e86-4b09-a395-0991b76b86f1"
+      },
+      {
+        "at": "2026-10-28T02:00:33.822Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '300,400p' scripts/model-benchmark.mjs; sed -n '260,300p' scripts/model-benchmark-fixtures.mjs; rg -n 'function score|export async' scripts/model-benchmark-fixtures.mjs; sed -n '1,120p' test/completion.test.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-21054589-2e86-4b09-a395-0991b76b86f1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:00:34.352Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6c9552a10d079b1a7be69f5f971f3bfad42a81bc675eefb2c127076606bd93b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:00:28.944Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nfor n in ['0160','0159','0158','0157']:\n j=json.loads((p/f'project-{n}-final.json').read_text());print(n,[(t['name'],len(t['elements']),max([e['duration']+e['startTime'] for e in t['elements']],default=0)/120000) for t in j['scene']['tracks']]);\nfor r in json.loads((p/'precision-evidence.json').read_text()):print(r['camera'].split('/')[2],r['camera'].split('/')[-1],[(round(x['offsetSeconds'],4),round(x['confidence'],2)) for x in r['estimates']])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f9f199e0-2e6f-4269-b1cf-fda81da2504d"
+      },
+      {
+        "at": "2026-10-28T02:00:29.073Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nfor n in ['0160','0159','0158','0157']:\n j=json.loads((p/f'project-{n}-final.json').read_text());print(n,[(t['name'],len(t['elements']),max([e['duration']+e['startTime'] for e in t['elements']],default=0)/120000) for t in j['scene']['tracks']]);\nfor r in json.loads((p/'precision-evidence.json').read_text()):print(r['camera'].split('/')[2],r['camera'].split('/')[-1],[(round(x['offsetSeconds'],4),round(x['confidence'],2)) for x in r['estimates']])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f9f199e0-2e6f-4269-b1cf-fda81da2504d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:00:29.346Z",
+  "parents": [],
+  "branch": "main"
+}

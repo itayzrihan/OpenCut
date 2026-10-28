@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "74ff2442c5b549b098cfe4a8d9c711a63c6b595751f00cc5993999085f75d455",
+  "taskId": "task_1291dbe3d86fa418f5180f6ea8b79c7c3dc795c3e89615d1df72be48d32fa8cc",
+  "type": "task.create",
+  "payload": {
+    "title": "This is an app-generated request for a suggested next user message. The user did not write this message.\n\nYour suggestion will appear in the user's empty messag",
+    "description": "This is an app-generated request for a suggested next user message. The user did not write this message.\n\nYour suggestion will appear in the user's empty message composer. They can accept it, edit it, or ignore it; it will not be sent automatically.\n\nPredict the single message this user is most likely to type next from the visible conversation. Use the whole conversation to understand their current intent and the latest exchange. Choose the action and specific object that best continue that intent, rather than a generally useful follow-up. Express its core naturally in the user's voice, keeping the requirements needed to retain its meaning. Choose the strongest grounded move even if several continuations are possible; uncertainty about exact wording or incidental details is not a reason to return null. Use null only when the conversation offers no grounded next move at all.\n\nSet suggestion to exactly one natural user message, one line, at most 240 characters, or null. No alternatives or explanation.\n\nReturn only JSON matching this schema: {\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"properties\":{\"suggestion\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"suggestion\"],\"additionalProperties\":false}.",
+    "kind": "work",
+    "status": "backlog",
+    "source": "prompt"
+  },
+  "actor": "codex:01a1802f-9470-7323-b276-32c402c03d53",
+  "createdAt": "2026-10-28T01:46:07.035Z",
+  "parents": [],
+  "branch": "main"
+}

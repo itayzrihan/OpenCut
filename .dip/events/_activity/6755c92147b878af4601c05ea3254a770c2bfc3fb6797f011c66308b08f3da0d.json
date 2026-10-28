@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6755c92147b878af4601c05ea3254a770c2bfc3fb6797f011c66308b08f3da0d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:04:14.581Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');rr=json.loads((p/'editor-receipts.json').read_text())\nfor n in ['0160','0159','0158','0157']:\n j=json.loads((p/f'project-{n}-final.json').read_text());assert j==json.loads((p/f'project-{n}-reopened.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+h==rr[n]['timeline.read_full_source']['baseRevision'];print(n,'saved document exact')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-60e3dc7f-1e66-464d-8316-4cb1890efc9c"
+      },
+      {
+        "at": "2026-10-28T02:04:14.734Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,hashlib\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28');rr=json.loads((p/'editor-receipts.json').read_text())\nfor n in ['0160','0159','0158','0157']:\n j=json.loads((p/f'project-{n}-final.json').read_text());assert j==json.loads((p/f'project-{n}-reopened.json').read_text());h=hashlib.sha256(json.dumps(j,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();assert 'sha256:'+h==rr[n]['timeline.read_full_source']['baseRevision'];print(n,'saved document exact')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-60e3dc7f-1e66-464d-8316-4cb1890efc9c"
+      },
+      {
+        "at": "2026-10-28T02:04:14.736Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-87d50722-d2c7-41f7-9ff6-eac1b38c3445"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:04:14.811Z",
+  "parents": [],
+  "branch": "main"
+}

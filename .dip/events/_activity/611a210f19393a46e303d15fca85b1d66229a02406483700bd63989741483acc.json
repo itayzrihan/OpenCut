@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "611a210f19393a46e303d15fca85b1d66229a02406483700bd63989741483acc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:58:01.788Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/complete_camera_tails.py <<'PY'\n\"\"\"Prepare canonical source edits retaining footage after the longest raw camera ends.\"\"\"\nimport copy,json,math\nfrom pathlib import Path\nP=Path(__file__).resolve().parent\nfor n in ['0160','0159']:\n raw=(P/f'project-{n}.json').read_text();j=json.loads(raw);tracks=j['scene']['tracks'];video=next(t for t in tracks if t['name'].startswith('Routed 2'));last=video['elements'][-1];end=last['startTime']+last['duration'];remaining=last['trimEnd'];tail=math.floor(remaining/4800)*4800\n assert 0<tail<12*120000\n edits=[]\n def change(old,new):\n  assert raw.count(old)==1,(n,old[:100],raw.count(old));edits.append(dict(oldText=old,newText=new))\n def itemtext(e):return json.dumps(e,ensure_ascii=False,sort_keys=True,indent=2).replace('\\n','\\n        ')\n new=copy.deepcopy(last);new.update(id=f'card-completion-tail-{n}-A4',enabled=True,startTime=end,duration=tail,trimStart=last['trimStart']+last['duration'],trimEnd=remaining-tail)\n change(itemtext(last),itemtext(last)+',\\n        '+itemtext(new))\n for track in tracks:\n  if track['type'] not in ['audio','effect']:continue\n  assert len(track['elements'])==1;e=track['elements'][0];new=copy.deepcopy(e);new['duration']+=tail\n  if track['type']=='audio':\n   assert new['trimEnd']>=tail;new['trimEnd']-=tail\n  change(itemtext(e),itemtext(new))\n out=raw\n for e in edits:out=out.replace(e['oldText'],e['newText'])\n obj=json.loads(out);assert obj['scene']['id']==j['scene']['id']\n (P/f'tail-edits-{n}.json').write_text(json.dumps({'edits':edits},ensure_ascii=False,indent=2));print(n,'tail',tail/120000,'newduration',(end+tail)/120000)\nPY\npython3 analysis/card-podcasts-2026-10-28/complete_camera_tails.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ea26f8fa-9f0e-4506-9263-7fa3ef43b124"
+      },
+      {
+        "at": "2026-10-28T01:58:01.968Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/complete_camera_tails.py <<'PY'\n\"\"\"Prepare canonical source edits retaining footage after the longest raw camera ends.\"\"\"\nimport copy,json,math\nfrom pathlib import Path\nP=Path(__file__).resolve().parent\nfor n in ['0160','0159']:\n raw=(P/f'project-{n}.json').read_text();j=json.loads(raw);tracks=j['scene']['tracks'];video=next(t for t in tracks if t['name'].startswith('Routed 2'));last=video['elements'][-1];end=last['startTime']+last['duration'];remaining=last['trimEnd'];tail=math.floor(remaining/4800)*4800\n assert 0<tail<12*120000\n edits=[]\n def change(old,new):\n  assert raw.count(old)==1,(n,old[:100],raw.count(old));edits.append(dict(oldText=old,newText=new))\n def itemtext(e):return json.dumps(e,ensure_ascii=False,sort_keys=True,indent=2).replace('\\n','\\n        ')\n new=copy.deepcopy(last);new.update(id=f'card-completion-tail-{n}-A4',enabled=True,startTime=end,duration=tail,trimStart=last['trimStart']+last['duration'],trimEnd=remaining-tail)\n change(itemtext(last),itemtext(last)+',\\n        '+itemtext(new))\n for track in tracks:\n  if track['type'] not in ['audio','effect']:continue\n  assert len(track['elements'])==1;e=track['elements'][0];new=copy.deepcopy(e);new['duration']+=tail\n  if track['type']=='audio':\n   assert new['trimEnd']>=tail;new['trimEnd']-=tail\n  change(itemtext(e),itemtext(new))\n out=raw\n for e in edits:out=out.replace(e['oldText'],e['newText'])\n obj=json.loads(out);assert obj['scene']['id']==j['scene']['id']\n (P/f'tail-edits-{n}.json').write_text(json.dumps({'edits':edits},ensure_ascii=False,indent=2));print(n,'tail',tail/120000,'newduration',(end+tail)/120000)\nPY\npython3 analysis/card-podcasts-2026-10-28/complete_camera_tails.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ea26f8fa-9f0e-4506-9263-7fa3ef43b124"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:58:02.510Z",
+  "parents": [],
+  "branch": "main"
+}

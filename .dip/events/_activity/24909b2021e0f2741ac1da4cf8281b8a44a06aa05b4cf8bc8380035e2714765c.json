@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24909b2021e0f2741ac1da4cf8281b8a44a06aa05b4cf8bc8380035e2714765c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:02:24.503Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/src/automatic.js"
+        ],
+        "changeHash": "05ac1bc72417d1096fdded9d6de7df382de59642bbb14220b9e912927f58c6f1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-adc334c3-2237-4983-a39d-c2bad9203cfa"
+      },
+      {
+        "at": "2026-10-28T02:02:24.583Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/private/tmp/dip-automatic-20261028/src/automatic.js"
+        ],
+        "changeHash": "05ac1bc72417d1096fdded9d6de7df382de59642bbb14220b9e912927f58c6f1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-adc334c3-2237-4983-a39d-c2bad9203cfa"
+      },
+      {
+        "at": "2026-10-28T02:02:24.585Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> test/automatic.test.js <<'EOF'\n\ntest('request pagination and explicit triage do not leave answered duplicates in the inbox', async()=>{\n const f=fixture();let first;\n for(let i=0;i<13;i++){\n  const r=JSON.parse(f.hook({hook_event_name:'UserPromptSubmit',turn_id:'request-'+i,prompt:'Question '+i}).hookSpecificOutput.additionalContext);first ||= r;\n }\n let page=await execute('requests',{limit:10},f.root);assert.equal(page.total,13);assert.equal(page.nextOffset,10);\n assert.equal((await execute('requests',{limit:10,offset:10},f.root)).requests.length,3);\n await execute('finish',{id:first.task_id,actor:first.actor,outcome:'answered',summary:'Explicit answer'},f.root);\n page=await execute('requests',{},f.root);assert.equal(page.total,12);assert.ok(!page.requests.some(r=>r.id===first.task_id));\n});\ntest('a pause keeps its remaining review visible after automatic Stop and in the current context',async()=>{\n const f=fixture(),c=f.prompt();await execute('finish',{id:c.task_id,actor:c.actor,outcome:'paused',summary:'Parser implemented',remaining:[{disposition:'required',summary:'Implement exporter'}]},f.root);\n f.hook({hook_event_name:'Stop'});const view=await execute('get',{id:c.task_id},f.root);assert.equal(view.checkpoint.remaining[0].summary,'Implement exporter');\n const context=compactContext(f.repo,null,c);assert.equal(context.current.remaining[0].summary,'Implement exporter');assert.ok(Buffer.byteLength(JSON.stringify(context))<=4096);\n});\ntest('changed requirements invalidate reusable evidence, and failed finish retains ownership',async()=>{\n const f=fixture('strict'),c=f.prompt();f.hook({hook_event_name:'PreToolUse',tool_name:'Write',tool_input:{file_path:path.join(f.root,'same.js')}});\n const rt=new Runtime();const lease=rt.db.prepare('SELECT * FROM leases WHERE repo=? AND task=?').get(f.repo.key,c.task_id);rt.close();\n await execute('verify',{id:c.task_id,actor:c.actor,token:[REDACTED],check:'unit'},f.root);\n await execute('update',{id:c.task_id,actor:c.acto",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-aa8a669f-e6da-485d-9fff-3f49ad7d4cb8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:02:25.146Z",
+  "parents": [],
+  "branch": "main"
+}

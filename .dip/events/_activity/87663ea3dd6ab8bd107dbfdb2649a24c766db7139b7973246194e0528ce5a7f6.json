@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "87663ea3dd6ab8bd107dbfdb2649a24c766db7139b7973246194e0528ce5a7f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:57:06.439Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/core.js');s=p.read_text();old='''  if (instructions)\n    for (const name of [\"AGENTS.md\", \"CLAUDE.md\"])\n      managed(path.join(repo.root, name), workflowMode(config) === \"automatic\" ? AUTOMATIC_INSTRUCTIONS : INSTRUCTIONS);''';new='''  const preservedInstructions=[];\n  if (instructions)\n    for (const name of [\"AGENTS.md\", \"CLAUDE.md\"]) {\n      const file=path.join(repo.root,name);\n      const old=fs.existsSync(file)?fs.readFileSync(file,'utf8'):'';\n      const block=old.match(/<!-- dip:start -->\\\\n([\\\\s\\\\S]*?)\\\\n<!-- dip:end -->/);\n      if(block && ![INSTRUCTIONS,AUTOMATIC_INSTRUCTIONS].includes(block[1])) {preservedInstructions.push(name);continue;}\n      managed(file, workflowMode(config) === \"automatic\" ? AUTOMATIC_INSTRUCTIONS : INSTRUCTIONS);\n    }''';assert old in s;s=s.replace(old,new).replace('return { ...repo, dir, config };','return { ...repo, dir, config, preservedInstructions };',1);p.write_text(s)\np=Path('src/actions.js');s=p.read_text().replace('...(task.resolution?.remaining !== undefined','...(task.resolution?.remaining?.length');p.write_text(s)\np=Path('src/views.js');s=p.read_text().replace('    kind: task.kind,','    kind: task.kind,\\n    requestState: task.requestState,',1);p.write_text(s)\np=Path('skills/dip/SKILL.md');s=p.read_text();i=s.index('\\n',s.index('---',4))+1;s=s[:i]+'''\\nFollow the project's selected DIP workflow. In automatic mode, trusted hooks capture prompts, actions, native plans and file changes; they coordinate ownership before supported writes. Do not make management calls for questions or read-only investigation. For development, use task_finish once at the end (implemented with remaining-work review and a configured check, or paused with remaining items). Native plans need no second copy. Explicit adoption, future ideas, meaningful scope changes and conflict resolution remain available. Stop never proves completion. If hooks are disabled or untrusted, persist intent expl",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-ffde506b-b90e-4c99-9275-01cde876ec93"
+      },
+      {
+        "at": "2026-10-28T01:57:07.207Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/core.js');s=p.read_text();old='''  if (instructions)\n    for (const name of [\"AGENTS.md\", \"CLAUDE.md\"])\n      managed(path.join(repo.root, name), workflowMode(config) === \"automatic\" ? AUTOMATIC_INSTRUCTIONS : INSTRUCTIONS);''';new='''  const preservedInstructions=[];\n  if (instructions)\n    for (const name of [\"AGENTS.md\", \"CLAUDE.md\"]) {\n      const file=path.join(repo.root,name);\n      const old=fs.existsSync(file)?fs.readFileSync(file,'utf8'):'';\n      const block=old.match(/<!-- dip:start -->\\\\n([\\\\s\\\\S]*?)\\\\n<!-- dip:end -->/);\n      if(block && ![INSTRUCTIONS,AUTOMATIC_INSTRUCTIONS].includes(block[1])) {preservedInstructions.push(name);continue;}\n      managed(file, workflowMode(config) === \"automatic\" ? AUTOMATIC_INSTRUCTIONS : INSTRUCTIONS);\n    }''';assert old in s;s=s.replace(old,new).replace('return { ...repo, dir, config };','return { ...repo, dir, config, preservedInstructions };',1);p.write_text(s)\np=Path('src/actions.js');s=p.read_text().replace('...(task.resolution?.remaining !== undefined','...(task.resolution?.remaining?.length');p.write_text(s)\np=Path('src/views.js');s=p.read_text().replace('    kind: task.kind,','    kind: task.kind,\\n    requestState: task.requestState,',1);p.write_text(s)\np=Path('skills/dip/SKILL.md');s=p.read_text();i=s.index('\\n',s.index('---',4))+1;s=s[:i]+'''\\nFollow the project's selected DIP workflow. In automatic mode, trusted hooks capture prompts, actions, native plans and file changes; they coordinate ownership before supported writes. Do not make management calls for questions or read-only investigation. For development, use task_finish once at the end (implemented with remaining-work review and a configured check, or paused with remaining items). Native plans need no second copy. Explicit adoption, future ideas, meaningful scope changes and conflict resolution remain available. Stop never proves completion. If hooks are disabled or untrusted, persist intent expl",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-ffde506b-b90e-4c99-9275-01cde876ec93"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:57:07.395Z",
+  "parents": [],
+  "branch": "main"
+}

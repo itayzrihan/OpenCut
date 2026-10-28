@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cf3d53e92fba904d56df751fa76b808b733d74f9f138f938df23aab506ee962c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:47:49.287Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-2026-10-28/speech_frames.py <<'PY'\nimport json,subprocess\nfrom pathlib import Path\nimport numpy as np\nfrom PIL import Image,ImageDraw\nROOT=Path(__file__).resolve().parents[2];OUT=Path(__file__).resolve().parent;C=ROOT/'.local/card-podcasts-2026-10-28';rows=json.loads((OUT/'acoustic-matches.json').read_text());evidence=[]\nfor session,clip in [(160,7471),(159,7470),(158,7469),(157,7468)]:\n a,b=[np.load(C/f'240504_{session:04}_{i}.npy') for i in [1,2]];n=min(len(a),len(b))//100*100;a=a[:n].reshape(-1,100).mean(1);b=b[:n].reshape(-1,100).mean(1);ratio=np.log((a+1e-7)/(b+1e-7));valid=(np.arange(len(a))>90)&(np.arange(len(a))<len(a)-90)&(np.maximum(a,b)>np.percentile(np.maximum(a,b),65));ratio[~valid]=np.nan\n times=[int(np.nanargmax(ratio)),int(np.nanargmin(ratio))];sheet=Image.new('RGB',(1200,800),'#202020');d=ImageDraw.Draw(sheet);rec={'session':session,'clip':clip,'moments':[]}\n for mi,t in enumerate(times):\n  rec['moments'].append({'dominantMic':mi+1,'microphoneTime':t,'rawRmsRatio':float(np.exp(ratio[t]))})\n  for ci,card in enumerate(['A3','A4']):\n   row=next(r for r in rows if f'/{card}/' in r['camera'] and f'C{clip}.' in r['camera']);offset=row['matches'][0]['audioStartMinusCameraStart'];base=t+offset\n   y=mi*400+ci*200;d.text((4,y+2),f'{session} mic {mi+1} dominant | {card} | mic {t}s camera {base:.2f}s',fill='white')\n   for fi,dt in enumerate([0,.2,.4,.6,.8,1.0]):\n    target=C/f'{session}-mic{mi+1}-{card}-{fi}.jpg'\n    subprocess.run(['ffmpeg','-v','error','-ss',str(base+dt),'-i',row['camera'],'-frames:v','1','-vf','scale=640:360','-y',str(target)],check=True)\n    im=Image.open(target);im=im.crop((240,30,440,210));sheet.paste(im,(fi*200,y+20))\n sheet.save(C/f'speech-{session}.jpg');evidence.append(rec);print(rec,flush=True)\n(OUT/'speech-moments.json').write_text(json.dumps(evidence,indent=2))\nPY\n/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 analysis/card-podcasts-2026-10-28/speech_frames",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d05a24f7-c602-4f6d-9c65-a62917248e67"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:47:49.360Z",
+  "parents": [],
+  "branch": "main"
+}

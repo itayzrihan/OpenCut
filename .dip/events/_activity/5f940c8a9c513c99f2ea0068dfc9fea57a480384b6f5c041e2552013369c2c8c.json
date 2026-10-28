@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f940c8a9c513c99f2ea0068dfc9fea57a480384b6f5c041e2552013369c2c8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:53:36.528Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {performance} from 'node:perf_hooks';import {taskRead} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/core.js';import {readingCommand} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/workflow.js';\nconst tmp=fs.mkdtempSync(path.join(os.tmpdir(),'dip-history-plan-'));try{\n const repo={root:tmp,dir:path.join(tmp,'.dip'),branch:'main',config:{}};\n for(const n of [10,100,500,1000]){const id='task_'+n;const dir=path.join(repo.dir,'events',id);fs.mkdirSync(dir,{recursive:true});\n for(let i=0;i<n;i++)fs.writeFileSync(path.join(dir,`e${i}.json`),JSON.stringify({schemaVersion:1,eventId:'e'+i,taskId:id,type:i?'task.checkpoint':'task.create',actor:'fixture',createdAt:'2026-10-28T00:00:00Z',parents:i?['e'+(i-1)]:[],payload:i?{summary:'Synthetic checkpoint'}:{title:'Synthetic task',status:'backlog'}}));\n const times=[];for(let i=0;i<4;i++){const t=performance.now();taskRead(repo,id);times.push(Number((performance.now()-t).toFixed(2)));}console.log(JSON.stringify({eventsPerTask:n,readMs:times}));}\n console.log(JSON.stringify({readClassification:Object.fromEntries(['cat README.md','rg -n TODO src','git status --short','cat README.md; cat package.json','rg --files | head -20'].map(cmd=>[cmd,readingCommand({cmd})]))}));\n}finally{fs.rmSync(tmp,{recursive:true,force:true});}\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-3ce142b3-975f-474f-b2b6-e523fd87d7aa"
+      },
+      {
+        "at": "2026-10-28T01:53:36.953Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_f5a0cf91518834faafa6bafa3688fc6518d018fdcb3567631a589bfaf601a4e0",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {performance} from 'node:perf_hooks';import {taskRead} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/core.js';import {readingCommand} from '/opt/homebrew/lib/node_modules/@vxu-labs/dip/src/workflow.js';\nconst tmp=fs.mkdtempSync(path.join(os.tmpdir(),'dip-history-plan-'));try{\n const repo={root:tmp,dir:path.join(tmp,'.dip'),branch:'main',config:{}};\n for(const n of [10,100,500,1000]){const id='task_'+n;const dir=path.join(repo.dir,'events',id);fs.mkdirSync(dir,{recursive:true});\n for(let i=0;i<n;i++)fs.writeFileSync(path.join(dir,`e${i}.json`),JSON.stringify({schemaVersion:1,eventId:'e'+i,taskId:id,type:i?'task.checkpoint':'task.create',actor:'fixture',createdAt:'2026-10-28T00:00:00Z',parents:i?['e'+(i-1)]:[],payload:i?{summary:'Synthetic checkpoint'}:{title:'Synthetic task',status:'backlog'}}));\n const times=[];for(let i=0;i<4;i++){const t=performance.now();taskRead(repo,id);times.push(Number((performance.now()-t).toFixed(2)));}console.log(JSON.stringify({eventsPerTask:n,readMs:times}));}\n console.log(JSON.stringify({readClassification:Object.fromEntries(['cat README.md','rg -n TODO src','git status --short','cat README.md; cat package.json','rg --files | head -20'].map(cmd=>[cmd,readingCommand({cmd})]))}));\n}finally{fs.rmSync(tmp,{recursive:true,force:true});}\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-3ce142b3-975f-474f-b2b6-e523fd87d7aa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:53:37.374Z",
+  "parents": [],
+  "branch": "main"
+}

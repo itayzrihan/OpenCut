@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "77b295e7f1c8592b66569cf457cacc6b1d6da149adc5d6816933ac0a5ce274a5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:07:19.700Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,shutil\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nfor n in ['0160','0159','0158','0157']:\n shutil.copyfile(p/f'project-{n}-final.json',p/f'project-{n}-before-preroll.json');shutil.copyfile(p/f'project-{n}-expected.json',p/f'project-{n}-final.json')\n j=json.loads((p/f'project-{n}-final.json').read_text());print(n, max(e['startTime']+e['duration'] for t in j['scene']['tracks'] for e in t['elements'])/120000)\nledger=json.loads((p/'preroll-ledger.json').read_text())\nfor x in ledger:x['method']='First 25fps frame after both external recordings begin; recording-start rounding is less than40ms.'\n(p/'preroll-ledger.json').write_text(json.dumps(ledger,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d8abe58f-9037-4cfd-bb3f-6fbc028bba30"
+      },
+      {
+        "at": "2026-10-28T02:07:19.841Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,shutil\nfrom pathlib import Path\np=Path('analysis/card-podcasts-2026-10-28')\nfor n in ['0160','0159','0158','0157']:\n shutil.copyfile(p/f'project-{n}-final.json',p/f'project-{n}-before-preroll.json');shutil.copyfile(p/f'project-{n}-expected.json',p/f'project-{n}-final.json')\n j=json.loads((p/f'project-{n}-final.json').read_text());print(n, max(e['startTime']+e['duration'] for t in j['scene']['tracks'] for e in t['elements'])/120000)\nledger=json.loads((p/'preroll-ledger.json').read_text())\nfor x in ledger:x['method']='First 25fps frame after both external recordings begin; recording-start rounding is less than40ms.'\n(p/'preroll-ledger.json').write_text(json.dumps(ledger,indent=2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d8abe58f-9037-4cfd-bb3f-6fbc028bba30"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:07:20.206Z",
+  "parents": [],
+  "branch": "main"
+}

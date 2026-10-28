@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "36263872853f138d7c6e19ad315d5d78395c89089432663c1f046c8124c80cad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:59:30.664Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '95,220p' src/core.js; sed -n '25,51p' test/host-qa.test.js; git show HEAD:src/workflow.js | sed -n '78,130p'; rg -n 'async function install|export function install|workflow|install.json|scan\\(' src/automation.js | head -40; sed -n '260,345p' src/automation.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-85a7b341-2cf3-46e5-90f8-689429358991"
+      },
+      {
+        "at": "2026-10-28T01:59:30.913Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '95,220p' src/core.js; sed -n '25,51p' test/host-qa.test.js; git show HEAD:src/workflow.js | sed -n '78,130p'; rg -n 'async function install|export function install|workflow|install.json|scan\\(' src/automation.js | head -40; sed -n '260,345p' src/automation.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-85a7b341-2cf3-46e5-90f8-689429358991"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:59:31.493Z",
+  "parents": [],
+  "branch": "main"
+}

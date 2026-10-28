@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "930bb5002f18417557bcc53afa6262b01a9ee385e3e97220994a2fb6a18af874",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:45:31.286Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a633fded146b67faf805f220bd946ed842f5726fd1aa82750d867d6233e405e5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh pr list --repo vxu-labs/dip --state open --json number,title,url,headRefName,baseRefName",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-136bf9f1-c86a-4913-bf36-2fd776771107"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:45:32.216Z",
+  "parents": [],
+  "branch": "main"
+}

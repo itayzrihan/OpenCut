@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "edffe1a7bf78abaf30ec9c8c48989e8dd37d675bc898993f16aca99f7bdb538d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T01:49:51.444Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat analysis/card-podcasts-2026-10-28/precision-evidence.json | head -36; cat analysis/card-podcasts-2026-10-28/speech-moments.json | head -24",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1bfaff18-4db7-48eb-82af-e014fb9db17e"
+      },
+      {
+        "at": "2026-10-28T01:49:51.549Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat analysis/card-podcasts-2026-10-28/precision-evidence.json | head -36; cat analysis/card-podcasts-2026-10-28/speech-moments.json | head -24",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1bfaff18-4db7-48eb-82af-e014fb9db17e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:49:51.867Z",
+  "parents": [],
+  "branch": "main"
+}

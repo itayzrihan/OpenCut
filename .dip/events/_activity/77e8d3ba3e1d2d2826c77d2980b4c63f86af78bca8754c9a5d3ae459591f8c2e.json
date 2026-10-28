@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "77e8d3ba3e1d2d2826c77d2980b4c63f86af78bca8754c9a5d3ae459591f8c2e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:45:47.374Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a633fded146b67faf805f220bd946ed842f5726fd1aa82750d867d6233e405e5",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh pr diff 4 --repo vxu-labs/dip | python3 -c 'import sys; s=sys.stdin.read(); print(\"\".join(\"diff --git \"+p for p in s.split(\"diff --git \")[1:] if not p.startswith(\"a/.dip/events/\")))'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-158c25f2-3d98-4e48-8e9e-052d7f0e9670"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:45:48.224Z",
+  "parents": [],
+  "branch": "main"
+}

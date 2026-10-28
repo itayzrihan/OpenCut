@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99d64ae9-a490-4c1c-9760-8418d39bbf10",
+  "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+  "type": "task.update",
+  "payload": {
+    "title": "Implement automatic DIP workflow with one completion call and measured rollout",
+    "acceptance": [
+      "Automatic request capture, promotion, safe ownership and partial completion; reviewed mode preserved.",
+      "Bound context/receipts and avoid per-hook integration work; preserve evidence correctness.",
+      "Run regressions and 12 bounded paired agent turns; gate global rollout on acceptance and retain rollback."
+    ],
+    "scope": [
+      "analysis/dip-automatic-20261028"
+    ]
+  },
+  "actor": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4",
+  "createdAt": "2026-10-28T01:54:49.420Z",
+  "parents": [
+    "a2e13191-c327-4d4b-bc82-f0e382273ee7"
+  ],
+  "branch": "main"
+}

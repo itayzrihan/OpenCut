@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "003b8d8062304d60ab9f755314a36c5d51b915e3480e27a2b0737428b0b2a537",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:57:29.484Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'hook' /Users/itayzrihan/.codex/config.toml | tail -12; rg -n 'trusted|trust' /Users/itayzrihan/.codex/hooks.json; sed -n '260,320p' src/automation.js; sed -n '1,40p' test/core.test.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-91a25906-5e5b-4461-9749-35df1408e6fa"
+      },
+      {
+        "at": "2026-10-28T01:57:29.495Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "",
+        "branch": "main",
+        "recordId": "8821a4a7-f063-40d7-8d08-8aa08eb254c5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:57:29.501Z",
+  "parents": [],
+  "branch": "main"
+}

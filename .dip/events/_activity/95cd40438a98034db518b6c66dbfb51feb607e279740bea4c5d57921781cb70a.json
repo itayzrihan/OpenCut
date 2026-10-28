@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95cd40438a98034db518b6c66dbfb51feb607e279740bea4c5d57921781cb70a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T01:48:33.827Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/card-podcasts-2026-10-28/157-mic2-A4-4.jpg",
+          ".local/card-podcasts-2026-10-28/157-mic2-A4-5.jpg",
+          ".local/card-podcasts-2026-10-28/speech-157.jpg",
+          "analysis/card-podcasts-2026-10-28/speech-moments.json",
+          ".local/card-podcasts-2026-10-28/speech.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ba1f1ff6-6b0c-4543-bd65-04849e4c7c20"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:48:33.827Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30e30673668e9a506131953e53672a0bcb0ba27706b175fe395fb9706febcf58",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:56:15.428Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/workflow.js');s=p.read_text();start=s.index('export function readingCommand');end=s.index('\\nexport function intentCommand',start);s=s[:start]+'''// Conservative single-command grammar. Metacharacters, expansion, escapes and\n// executable options (rg --pre, git -c, external diff) never enter this path.\nexport function readingCommand(input) {\n  const command=String(input.command||input.cmd||'').trim();\n  if(!command || /[;&|\\\\n\\\\r`<>$(){}\\\\\\\\]/.test(command))return false;\n  const tokens=command.match(/\"[^\"\\\\r\\\\n]*\"|'[^'\\\\r\\\\n]*'|[^\\\\s\"']+/g)||[];\n  if(tokens.join(' ')!==command.replace(/\\\\s+/g,' '))return false;\n  const args=tokens.map(s=>/^['\"]/.test(s)?s.slice(1,-1):s);\n  const name=args.shift();\n  const allowed={cat:new Set(['-n','-b','-s','--']),head:new Set(['-n','-c','--']),tail:new Set(['-n','-c','--']),rg:new Set(['--files','-n','--line-number','-l','--files-with-matches','-i','--ignore-case','-F','--fixed-strings','-g','--glob','--hidden','--no-ignore','--count','-c','--','-e','--regexp','-m','--max-count']),ls:new Set(['-l','-a','-la','-al','-lh','-lah','-1','--']),pwd:new Set(['-L','-P'])};\n  if(name==='git')return ['status','ls-files','rev-parse'].includes(args[0]) && args.slice(1).every(a=>!a.startsWith('-')||['--short','--porcelain','--porcelain=v1','--porcelain=v2','--branch','--untracked-files=no','--cached','--others','--exclude-standard','--show-toplevel','--show-prefix','--git-dir','--abbrev-ref','--verify','--','-z'].includes(a));\n  if(!allowed[name])return false;\n  return args.every(a=>!a.startsWith('-')||allowed[name].has(a)||/^-[0-9]+$/.test(a));\n}\n''' +s[end:];p.write_text(s)\np=Path('src/actions.js');s=p.read_text();s=\"import {workflowMode, mutationReceipt, isRequest} from './automatic.js';\\nimport {openProject} from './core.js';\\n\"+s\nstart=s.index('  const repo = ensure(cwd, {',s.index('export async function execute'));end=s.index('    rt = new Runtime();',start)+len('    rt = new Runtime(",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-3cfe598e-c43c-4e9e-880f-71cc465685fc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:56:15.943Z",
+  "parents": [],
+  "branch": "main"
+}

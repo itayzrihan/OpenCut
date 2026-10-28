@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a2e104d69be452eb9533e21ff7e5b1602e4e7e5d9ecc2bf667576bc5a1d783e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:03:17.264Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('public/app.js');s=p.read_text().replace('t.requestState === \"captured\" && t.kind !== \"work\"','t.requestState === \"captured\" && t.kind !== \"work\" && ![\"implemented\", \"verified\", \"cancelled\", \"superseded\"].includes(t.status)')\ns=s.replace('escape(t.checkpoints.at(-1)?.summary || \"No checkpoint\")','escape(([...t.checkpoints].reverse().find(c => !c.automatic) || t.checkpoints.at(-1))?.summary || \"No checkpoint\")')\nneedle='  renderDocuments(t).catch((e) => notify(e.message));'\ns=s.replace(needle,needle+'''\\n  const paused = [...t.checkpoints].reverse().find(c => !c.automatic && c.remaining);\\n  if (paused && !t.resolution) $(\"#detail\").insertAdjacentHTML(\"afterbegin\", `<div class=\"detail-section\"><h3>Remaining work</h3>${paused.remaining.map(r => `<p>${escape(r.disposition)}: ${escape(r.summary)}</p>`).join(\"\")}</div>`);''')\np.write_text(s)\np=Path('scripts/automatic-benchmark.mjs');s=p.read_text().replace('const samples=[],db=[],reads=[];','const samples=[],db=[],reads=[],writes=[];').replace(\"const task=process.env.DIP_BENCH_TASK;\",\"const task=process.env.DIP_BENCH_TASK;const setup=new core.Runtime();setup.setSession(repo,'bench',task,'fixture:bench');setup.close();\")\ns=s.replace('samples.push(performance.now()-s);','samples.push(performance.now()-s);\\n   s=performance.now();handleHook({cwd:root,session_id:\"bench\",hook_event_name:\"PreToolUse\",tool_name:\"Write\",tool_input:{file_path:path.join(root,\"src.js\")}},\"fixture\");writes.push(performance.now()-s);')\ns=s.replace('warmHookMs:summary(samples),','warmHookMs:summary(samples),warmPreWriteMs:summary(writes),').replace(\"summary:'Long completed history '.repeat(110),remaining:[]\",\"summary:'Long completed history '.repeat(75),replacedBy:[],remaining:[]\")\ns=s.replace('console.log(JSON.stringify({ms:summary(samples)', \"if(result.errors?.length)throw new Error('Invalid benchmark fixture: '+JSON.stringify(result.errors));\\n  console.log(JSON.stringify({ms:summary(samples)\")\n# Fre",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-4936eadb-aa57-4c88-be26-db8ce985957e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:03:18.203Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46a1cf0ec1906793079bc9e338532b6d6204d220bd4e465913799ea914ac88bb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T01:55:46.393Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > src/automatic.js <<'EOF'\nimport fs from 'node:fs';\nimport path from 'node:path';\nimport {home, json} from './util.js';\n\nexport const AUTOMATIC_INSTRUCTIONS = `DIP automatic workflow: prompts, tool activity, files and native plans are recorded by trusted hooks. Do not duplicate them with management calls. Questions and read-only investigation require no DIP calls. Before supported writes, hooks associate the request and coordinate ownership automatically. Use the supplied task_id, actor and session_id.\nFor development, call task_finish once at the end with outcome implemented, summary, remaining and a configured check; use outcome paused with remaining work if unfinished. A Stop event or passing partial check never asserts completion. Never claim verification without current check evidence.\nUse explicit intent tools only for an existing requirement that must be adopted, a material scope change, a distinct future idea, or a conflict. Plans written through native plan tools need no second copy. Keep long prose in linked Markdown. Read task_requirements or task_get only when relevant context is missing. If hooks are disabled or untrusted, persist intent explicitly. Do not call another model for tracking.`;\n\nexport function workflowMode(config = {}) {\n  const mode = process.env.DIP_WORKFLOW || config.workflow || json(path.join(home(),'install.json'),{}).workflow || 'reviewed';\n  if (!['automatic','reviewed'].includes(mode)) throw new Error('Unknown DIP workflow; choose automatic or reviewed');\n  return mode;\n}\nexport function isRequest(task) { return task.requestState === 'captured' && task.kind !== 'work'; }\nconst bytes = value => Buffer.byteLength(JSON.stringify(value));\n// Budget serialized UTF-8 JSON, never cut a serialized document or a fencing token.\nexport function boundedContext(context, identity = {}, budget = 4096) {\n  const out = {...identity,branch:context.branch,workflow:'automatic',current:null,workers:[],resume:[],ready:[],errors:[],truncated:false,d",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-1da21613-8212-4fdd-b660-e3545507a467"
+      },
+      {
+        "at": "2026-10-28T01:55:46.576Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > src/automatic.js <<'EOF'\nimport fs from 'node:fs';\nimport path from 'node:path';\nimport {home, json} from './util.js';\n\nexport const AUTOMATIC_INSTRUCTIONS = `DIP automatic workflow: prompts, tool activity, files and native plans are recorded by trusted hooks. Do not duplicate them with management calls. Questions and read-only investigation require no DIP calls. Before supported writes, hooks associate the request and coordinate ownership automatically. Use the supplied task_id, actor and session_id.\nFor development, call task_finish once at the end with outcome implemented, summary, remaining and a configured check; use outcome paused with remaining work if unfinished. A Stop event or passing partial check never asserts completion. Never claim verification without current check evidence.\nUse explicit intent tools only for an existing requirement that must be adopted, a material scope change, a distinct future idea, or a conflict. Plans written through native plan tools need no second copy. Keep long prose in linked Markdown. Read task_requirements or task_get only when relevant context is missing. If hooks are disabled or untrusted, persist intent explicitly. Do not call another model for tracking.`;\n\nexport function workflowMode(config = {}) {\n  const mode = process.env.DIP_WORKFLOW || config.workflow || json(path.join(home(),'install.json'),{}).workflow || 'reviewed';\n  if (!['automatic','reviewed'].includes(mode)) throw new Error('Unknown DIP workflow; choose automatic or reviewed');\n  return mode;\n}\nexport function isRequest(task) { return task.requestState === 'captured' && task.kind !== 'work'; }\nconst bytes = value => Buffer.byteLength(JSON.stringify(value));\n// Budget serialized UTF-8 JSON, never cut a serialized document or a fencing token.\nexport function boundedContext(context, identity = {}, budget = 4096) {\n  const out = {...identity,branch:context.branch,workflow:'automatic',current:null,workers:[],resume:[],ready:[],errors:[],truncated:false,d",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-1da21613-8212-4fdd-b660-e3545507a467"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T01:55:46.704Z",
+  "parents": [],
+  "branch": "main"
+}
