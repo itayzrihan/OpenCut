@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a3b8b0f4dc488637835a936d42f508b543b41cd53a56b545d0c3c4c871808a6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:15.240Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DIPS-wal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DIPS",
+          ".local/render-queue-recovery-2026-10-28/fixture/worker.log",
+          "classic/apps/web/src/export/queue/worker-auth.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e7c928d3-e0df-4128-b8e4-4fdc98b53ae4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:15.246Z",
+  "parents": [],
+  "branch": "main"
+}

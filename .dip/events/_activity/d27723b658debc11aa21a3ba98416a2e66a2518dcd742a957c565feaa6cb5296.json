@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d27723b658debc11aa21a3ba98416a2e66a2518dcd742a957c565feaa6cb5296",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:04:37.118Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat analysis/render-queue-recovery-2026-10-28/delivered.json; head -30 analysis/render-queue-recovery-2026-10-28/jobs-before.json; cat .dip/tools/verify-render-queue.mjs; sed -n '78,120p' classic/scripts/local-production/server.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7483d3c4-cc8a-4a7c-870b-39df4383ba31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:04:37.817Z",
+  "parents": [],
+  "branch": "main"
+}

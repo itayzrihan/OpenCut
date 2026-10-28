@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8361b9e86b87be18b5b1cab424559289239d5ca36e38b8a7faf1bf21172aab6f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:23.000Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/export/queue/worker.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ef47d486-345e-42c0-965c-3e9889f5d721"
+      },
+      {
+        "at": "2026-10-28T11:03:22.970Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/AGENTS.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-96bbe254-97f6-4bf8-b24f-9d72bdb81af9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:23.700Z",
+  "parents": [],
+  "branch": "main"
+}

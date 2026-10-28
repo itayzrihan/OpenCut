@@ -353,6 +353,13 @@
         "analysis/card-podcasts-early-2026-10-28/verify_delivery.py"
       ],
       "timeoutMs": 120000
+    },
+    "render-queue-recovery": {
+      "command": [
+        "python3",
+        "analysis/render-queue-recovery-2026-10-28/verify.py"
+      ],
+      "timeoutMs": 180000
     }
   },
   "mode": "coordinate"

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "523399de781044242be7c6ff0067c5afeaf63ae27ff941bb13a42785af05be9e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:51.842Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000003",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000002",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000004",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000005",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000006",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000007",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/e1821e6fab2282de_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/todelete_e1821e6fab2282de_0_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_2"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f90892db-370f-4884-bd93-ef12ca2efda9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:51.846Z",
+  "parents": [],
+  "branch": "main"
+}

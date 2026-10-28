@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b07b8d916e4f469f186b05ec05555a24e315d7ff367c641f94da626330338ce1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:59.578Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000008",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000009",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-eedf9efa-02a0-4781-9f8f-5dade059119d.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/18a9ab4c68f0eae6_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/todelete_18a9ab4c68f0eae6_0_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000010",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-fec08a03-9d47-4da5-a61e-24c36e481185.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000011",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000012",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000013",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000014",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000015"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a7f8a5fb-8005-4a4d-ae3a-ce251f52ebca"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:59.584Z",
+  "parents": [],
+  "branch": "main"
+}

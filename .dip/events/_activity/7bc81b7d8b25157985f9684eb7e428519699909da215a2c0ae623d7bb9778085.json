@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7bc81b7d8b25157985f9684eb7e428519699909da215a2c0ae623d7bb9778085",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:14:32.839Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat AGENTS.md\ncat classic/AGENTS.md\ncat .agents/skills/dip/SKILL.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c718165f-4c06-4275-8af8-bdbea8307dac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:14:37.878Z",
+  "parents": [],
+  "branch": "main"
+}

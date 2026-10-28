@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc40acf4113c84c6c07408dd19bcb4cc3d737ae592a608d64cfcc7ad899ea0c9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:51.086Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/80c99c7045332688_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/80d4c60fef3b8571_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/LOCK",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/MANIFEST-000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/000001.dbtmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/CURRENT",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/.usage",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/LOCK",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/MANIFEST-000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/000001.dbtmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/CURRENT",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/Paths/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000000",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/e1821e6fab2282de_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-b3589531-5873-4739-8103-deebcf254f11.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/todelete_e1821e6fab2282de_0_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000002",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000003"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e9180230-0d24-42da-8753-81032f0ecd07"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:51.090Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bc916f6c1c6851996c1bf6c40351ba3270a0487d8b55326db8d40d28d139d293",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:09:28.275Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path.home()/'Library/Application Support/OpenCut Local/config.json';c=json.load(open(p));print({'panelPort':c.get('panelPort'),'appPort':c.get('appPort')})\nPY\n tail -6 .local/render-queue-recovery-2026-10-28/build-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-81d7c5b6-900f-47fa-ac17-9e2f129ddb2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:09:28.542Z",
+  "parents": [],
+  "branch": "main"
+}

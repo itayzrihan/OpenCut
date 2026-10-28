@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f35e683cc353902d767ae2f10ac3efdda52fa87d5d27643cce8da48e1a933f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:41.116Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-5d4eda24-5aa2-4fd5-92a2-6c99373b798f.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/0b72a95bd07a6291_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/todelete_0b72a95bd07a6291_0_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/fb955d595817f820_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/36f84ba378029d08_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/f6c4a9c387408ab9_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/a8806fb47c2baa91_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/cf5570a13148fda7_0"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "92dec599-4e91-4df8-866b-df61e93251b6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:41.123Z",
+  "parents": [],
+  "branch": "main"
+}

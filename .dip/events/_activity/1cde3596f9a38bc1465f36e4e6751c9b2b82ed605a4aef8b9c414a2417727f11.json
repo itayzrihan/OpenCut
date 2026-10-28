@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1cde3596f9a38bc1465f36e4e6751c9b2b82ed605a4aef8b9c414a2417727f11",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:09:59.244Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/render-queue-recovery-2026-10-28/check_media.py <<'PY'\n\"\"\"Decode representative video/audio windows from each delivered export.\"\"\"\nimport json,pathlib,subprocess\nfrom PIL import Image,ImageDraw\nbase=pathlib.Path(__file__).parent\nrows=json.loads((base/'delivered.json').read_text())\nframes=base/'frames';frames.mkdir(exist_ok=True)\nchecks=[]\nfor row in rows:\n duration=float(row['probe']['format']['duration']); images=[]\n for label,second in [('start',1),('middle',duration/2),('end',max(1,duration-3))]:\n  name=row['projectName'].split('סשן ')[1][:4];dest=frames/f'{name}-{label}.jpg'\n  subprocess.run(['ffmpeg','-v','error','-nostdin','-ss',str(second),'-i',row['path'],'-frames:v','1','-vf','scale=480:-2','-y',str(dest)],check=True)\n  subprocess.run(['ffmpeg','-v','error','-nostdin','-ss',str(second),'-i',row['path'],'-t','1','-map','0:a:0','-f','null','-'],check=True)\n  images.append(Image.open(dest).convert('RGB'))\n canvas=Image.new('RGB',(1440,300),'#181818');draw=ImageDraw.Draw(canvas)\n for i,im in enumerate(images):canvas.paste(im,(i*480,30));draw.text((i*480+8,8),f'{name} - {(\"start\",\"middle\",\"end\")[i]}',fill='white')\n canvas.save(frames/f'{name}-contact.jpg')\n checks.append({'jobId':row['jobId'],'decodedStartMiddleEnd':True,'duration':duration})\n(base/'media-checks.json').write_text(json.dumps(checks,indent=2)+'\\n')\nprint(f'PASS: representative video/audio decoded for {len(checks)} exports')\nPY\npython3 analysis/render-queue-recovery-2026-10-28/check_media.py > .local/render-queue-recovery-2026-10-28/media-checks.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8dabcf59-5908-4509-b043-c5c8fb941bac"
+      },
+      {
+        "at": "2026-10-28T11:09:59.552Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/render-queue-recovery-2026-10-28/check_media.py <<'PY'\n\"\"\"Decode representative video/audio windows from each delivered export.\"\"\"\nimport json,pathlib,subprocess\nfrom PIL import Image,ImageDraw\nbase=pathlib.Path(__file__).parent\nrows=json.loads((base/'delivered.json').read_text())\nframes=base/'frames';frames.mkdir(exist_ok=True)\nchecks=[]\nfor row in rows:\n duration=float(row['probe']['format']['duration']); images=[]\n for label,second in [('start',1),('middle',duration/2),('end',max(1,duration-3))]:\n  name=row['projectName'].split('סשן ')[1][:4];dest=frames/f'{name}-{label}.jpg'\n  subprocess.run(['ffmpeg','-v','error','-nostdin','-ss',str(second),'-i',row['path'],'-frames:v','1','-vf','scale=480:-2','-y',str(dest)],check=True)\n  subprocess.run(['ffmpeg','-v','error','-nostdin','-ss',str(second),'-i',row['path'],'-t','1','-map','0:a:0','-f','null','-'],check=True)\n  images.append(Image.open(dest).convert('RGB'))\n canvas=Image.new('RGB',(1440,300),'#181818');draw=ImageDraw.Draw(canvas)\n for i,im in enumerate(images):canvas.paste(im,(i*480,30));draw.text((i*480+8,8),f'{name} - {(\"start\",\"middle\",\"end\")[i]}',fill='white')\n canvas.save(frames/f'{name}-contact.jpg')\n checks.append({'jobId':row['jobId'],'decodedStartMiddleEnd':True,'duration':duration})\n(base/'media-checks.json').write_text(json.dumps(checks,indent=2)+'\\n')\nprint(f'PASS: representative video/audio decoded for {len(checks)} exports')\nPY\npython3 analysis/render-queue-recovery-2026-10-28/check_media.py > .local/render-queue-recovery-2026-10-28/media-checks.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8dabcf59-5908-4509-b043-c5c8fb941bac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:09:59.794Z",
+  "parents": [],
+  "branch": "main"
+}

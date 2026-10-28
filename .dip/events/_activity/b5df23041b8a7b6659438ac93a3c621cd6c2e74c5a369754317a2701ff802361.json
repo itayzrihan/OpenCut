@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5df23041b8a7b6659438ac93a3c621cd6c2e74c5a369754317a2701ff802361",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:22:01.858Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check; tail -5 .local/render-queue-recovery-2026-10-28/fixture-final.log; cat .local/render-queue-recovery-2026-10-28/media-checks.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-cf472bab-2027-44e1-86db-be7bf8c11398"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:22:02.312Z",
+  "parents": [],
+  "branch": "main"
+}

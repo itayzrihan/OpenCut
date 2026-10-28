@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee4117485fc3f28b471909f237b27a3c59da1737c29f8dafce171c8e1e45fae6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:04:58.255Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,150p' classic/apps/web/src/export/queue/view.tsx; cat classic/apps/web/src/app/api/render-queue/route.ts; tail -5 .local/render-queue-recovery-2026-10-28/build-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-417650e5-ad4b-4835-ad89-35f4eea998d3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:04:58.589Z",
+  "parents": [],
+  "branch": "main"
+}

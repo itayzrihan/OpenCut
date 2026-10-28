@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "afebd3494b57f63a5a89fc2a8080f621f78d2362ee8c3d028a73baf0eac7f88d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:02.072Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts --report=.local/render-queue-recovery-2026-10-28/tests --timeout=120000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1991d204-33e2-458e-8112-59d3757bee15"
+      },
+      {
+        "at": "2026-10-28T10:34:02.086Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/queue/client.ts classic/apps/web/src/export/queue/view.tsx classic/apps/web/src/export/queue/root.tsx classic/apps/web/src/export/queue/actions.ts classic/apps/web/src/export/queue/actions.test.ts classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/worker-auth.ts classic/apps/web/src/export/queue/worker-auth.test.ts classic/apps/web/src/export/queue/types.ts classic/apps/web/src/export/queue/server.ts classic/apps/web/src/app/render-worker/page.tsx classic/apps/web/src/app/render-queue/page.tsx classic/apps/web/src/app/api/render-queue/route.ts classic/apps/web/src/app/api/render-queue/file/route.ts classic/apps/web/src/app/layout.tsx classic/apps/web/src/accounts/server.ts classic/apps/electron/app/render-worker.cjs classic/apps/electron/app/render-worker-preload.cjs\nnode classic/node_modules/typescript/bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json > .local/render-queue-recovery-2026-10-28/typecheck.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-30c9fc4b-eb54-4fa4-8ea4-55a019c7c962"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:02.386Z",
+  "parents": [],
+  "branch": "main"
+}

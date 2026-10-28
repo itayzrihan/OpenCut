@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a891fa92bdb30eedec0fa4a8482cb4f8da37f5d080e014e5b38dd86bea3f3c3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:05:33.934Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/render-queue-recovery-2026-10-28/verify.py <<'PY'\n\"\"\"Verify recovered frozen exports and real detached-worker evidence.\"\"\"\nimport json, pathlib, subprocess\nbase=pathlib.Path(__file__).parent\nbaseline=json.loads((base/'jobs-before.json').read_text())\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\njobs={j['id']:j for j in json.loads((root/'runtime.json').read_text())['active']['document']['renderQueue']}\ndelivered={j['jobId']:j for j in json.loads((base/'delivered.json').read_text())}\nassert len(baseline)==len(delivered)==7\nfor before in baseline:\n job=jobs[before['id']]\n for field in ('projectId','sceneId','sourceRevision','snapshotHash','options'):\n  assert job[field]==before[field],(before['id'],field)\n assert job['status']=='completed',job['projectName']\n receipt=delivered[job['id']]\n path=pathlib.Path(receipt['path'])\n assert path.stat().st_size==receipt['size']>100000\n assert receipt['snapshotHash']==job['snapshotHash']\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))\n video=next(s for s in probe['streams'] if s['codec_type']=='video')\n audio=next(s for s in probe['streams'] if s['codec_type']=='audio')\n assert video['codec_name']=='hevc' and audio['codec_name']=='aac'\n assert (video['width'],video['height'],video['avg_frame_rate'])==(3840,2160,'25/1')\n scene=next(s for s in job['snapshot']['document']['scenes'] if s['id']==job['sceneId'])\n tracks=scene['tracks']; elements=[e for t in [tracks['main'],*tracks['overlay'],*tracks['audio']] for e in t['elements']]\n expected=max(e['startTime']+e['duration'] for e in elements)/120000\n assert abs(float(probe['format']['duration'])-expected)<.2,(job['projectName'],expected,probe['format']['duration'])\n assert (root/job['id']/'output.mp4').resolve()==path.resolve()\nfixture=json.loads((base/'background-fixture.json').read_text())\nassert fixture['passed'] and fixture['noQueueWi",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fe152390-4ada-4849-a609-09529d5a0c73"
+      },
+      {
+        "at": "2026-10-28T11:05:34.313Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/render-queue-recovery-2026-10-28/verify.py <<'PY'\n\"\"\"Verify recovered frozen exports and real detached-worker evidence.\"\"\"\nimport json, pathlib, subprocess\nbase=pathlib.Path(__file__).parent\nbaseline=json.loads((base/'jobs-before.json').read_text())\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\njobs={j['id']:j for j in json.loads((root/'runtime.json').read_text())['active']['document']['renderQueue']}\ndelivered={j['jobId']:j for j in json.loads((base/'delivered.json').read_text())}\nassert len(baseline)==len(delivered)==7\nfor before in baseline:\n job=jobs[before['id']]\n for field in ('projectId','sceneId','sourceRevision','snapshotHash','options'):\n  assert job[field]==before[field],(before['id'],field)\n assert job['status']=='completed',job['projectName']\n receipt=delivered[job['id']]\n path=pathlib.Path(receipt['path'])\n assert path.stat().st_size==receipt['size']>100000\n assert receipt['snapshotHash']==job['snapshotHash']\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))\n video=next(s for s in probe['streams'] if s['codec_type']=='video')\n audio=next(s for s in probe['streams'] if s['codec_type']=='audio')\n assert video['codec_name']=='hevc' and audio['codec_name']=='aac'\n assert (video['width'],video['height'],video['avg_frame_rate'])==(3840,2160,'25/1')\n scene=next(s for s in job['snapshot']['document']['scenes'] if s['id']==job['sceneId'])\n tracks=scene['tracks']; elements=[e for t in [tracks['main'],*tracks['overlay'],*tracks['audio']] for e in t['elements']]\n expected=max(e['startTime']+e['duration'] for e in elements)/120000\n assert abs(float(probe['format']['duration'])-expected)<.2,(job['projectName'],expected,probe['format']['duration'])\n assert (root/job['id']/'output.mp4').resolve()==path.resolve()\nfixture=json.loads((base/'background-fixture.json').read_text())\nassert fixture['passed'] and fixture['noQueueWi",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-fe152390-4ada-4849-a609-09529d5a0c73"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:05:34.352Z",
+  "parents": [],
+  "branch": "main"
+}

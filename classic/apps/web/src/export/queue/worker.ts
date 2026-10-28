@@ -25,15 +25,27 @@ export async function executeQueuedRender(
 	) => {
 		const currentProgress = progress;
 		const task = reporting.then(async () => {
-			const state = await renderQueueRequest<{ cancelRequested: boolean }>({
-				action: "report",
-				id: job.id,
-				projectId: job.projectId,
-				attempt,
-				progress: currentProgress,
-				message: detail.slice(0, 4000),
-				status,
-			});
+			let state: { cancelRequested: boolean } | undefined;
+			for (let retry = 0; retry < 5; retry++) {
+				try {
+					state = await renderQueueRequest<{ cancelRequested: boolean }>({
+						action: "report",
+						id: job.id,
+						projectId: job.projectId,
+						attempt,
+						progress: currentProgress,
+						message: detail.slice(0, 4000),
+						status,
+					});
+					break;
+				} catch (error) {
+					const status = (error as { status?: number }).status;
+					if (retry === 4 || (status !== undefined && status < 500))
+						throw error;
+					await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** retry));
+				}
+			}
+			if (!state) throw Error("Render heartbeat was not acknowledged");
 			if (state.cancelRequested) {
 				cancelled = true;
 				editor.project.cancelExport();

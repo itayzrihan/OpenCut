@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b45ff3dda19cf5854c972c60c2293db65ffa100c1dadaec1ea4109ea5254124c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:15:11.626Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/blog.segments",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_full.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_head.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.html",
+          "classic/apps/web/.next-local-production/server/app/blog.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.meta",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/_index.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/blog.segments/blog/__PAGE__.segment.rsc"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fb14b2d6-7737-470d-aa72-4078c079ccad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:15:11.678Z",
+  "parents": [],
+  "branch": "main"
+}

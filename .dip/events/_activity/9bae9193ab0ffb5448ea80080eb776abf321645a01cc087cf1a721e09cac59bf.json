@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9bae9193ab0ffb5448ea80080eb776abf321645a01cc087cf1a721e09cac59bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:57:40.544Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/.com.github.Electron.IWdwE9",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local State",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/.com.github.Electron.eoOBUc",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Preferences"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "67fe6d35-f2d0-49dc-adf5-9d407efcb5d2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:57:40.558Z",
+  "parents": [],
+  "branch": "main"
+}

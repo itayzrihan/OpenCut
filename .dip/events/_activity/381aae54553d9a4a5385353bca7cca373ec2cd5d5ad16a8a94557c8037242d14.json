@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "381aae54553d9a4a5385353bca7cca373ec2cd5d5ad16a8a94557c8037242d14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:33:11.959Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files analysis/render-queue-2026-10-28 analysis/projects-export-2026-10-28 | head -35\nsed -n '1,95p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts\nsed -n '1,110p' classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-193de722-a229-4a8e-a3a6-5cc6ed5c630e"
+      },
+      {
+        "at": "2026-10-28T10:33:12.184Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files analysis/render-queue-2026-10-28 analysis/projects-export-2026-10-28 | head -35\nsed -n '1,95p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts\nsed -n '1,110p' classic/apps/web/src/export/__tests__/streaming-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-193de722-a229-4a8e-a3a6-5cc6ed5c630e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:33:12.291Z",
+  "parents": [],
+  "branch": "main"
+}

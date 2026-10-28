@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e9cdca5c28856f48d2aa20370dd62e2c11f707a17e90b92f19abd93e2849cb2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:54:18.423Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/brand/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/projects/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/editor/[project_id]/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/transcription-check/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/blog/[slug]/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/changelog/[version]/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/blog/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/changelog/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/roadmap/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/contributors/page.js.nft.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "6ab322c5-92b5-4843-99cc-5f33e69d451f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:54:18.509Z",
+  "parents": [],
+  "branch": "main"
+}

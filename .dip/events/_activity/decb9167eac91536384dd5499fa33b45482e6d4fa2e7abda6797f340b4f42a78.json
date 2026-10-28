@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "decb9167eac91536384dd5499fa33b45482e6d4fa2e7abda6797f340b4f42a78",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:20.667Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/export/queue/worker.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ef47d486-345e-42c0-965c-3e9889f5d721"
+      },
+      {
+        "at": "2026-10-28T11:03:20.681Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/export/queue/worker-auth.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-cd051ffe-f72d-4a51-b5dd-6670f1959bd5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:21.350Z",
+  "parents": [],
+  "branch": "main"
+}

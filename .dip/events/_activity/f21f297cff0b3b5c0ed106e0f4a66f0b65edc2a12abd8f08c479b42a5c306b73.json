@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f21f297cff0b3b5c0ed106e0f4a66f0b65edc2a12abd8f08c479b42a5c306b73",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:29:35.351Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/scripts/local-production/prune-releases.mjs | head -100\nls -lh '/Users/itayzrihan/Movies/OpenCut Exports/Event sessions 0157-0160'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-66b00134-8f3a-42fc-9534-9ba0fc0198bb"
+      },
+      {
+        "at": "2026-10-28T10:29:35.467Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/scripts/local-production/prune-releases.mjs | head -100\nls -lh '/Users/itayzrihan/Movies/OpenCut Exports/Event sessions 0157-0160'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-66b00134-8f3a-42fc-9534-9ba0fc0198bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:29:36.332Z",
+  "parents": [],
+  "branch": "main"
+}

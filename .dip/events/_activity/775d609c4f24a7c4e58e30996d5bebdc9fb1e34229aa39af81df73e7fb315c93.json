@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "775d609c4f24a7c4e58e30996d5bebdc9fb1e34229aa39af81df73e7fb315c93",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:36:25.577Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,%cpu,%mem,etime,command | rg '(typescript/bin/tsc|test-web|render-worker|next-server)' | cut -c1-220\nwc -c .local/render-queue-recovery-2026-10-28/typecheck.log\nsysctl -n hw.memsize",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0c2f363c-1471-430f-a296-9d3e3794684b"
+      },
+      {
+        "at": "2026-10-28T10:36:25.601Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/export/queue/client.ts');s=p.read_text().replace('if (!response.ok) throw Error(result.error ?? \"Render queue request failed\");','if (!response.ok) throw Object.assign(Error(result.error ?? \"Render queue request failed\"),{status:response.status});');p.write_text(s)\np=Path('classic/apps/web/src/export/queue/worker.ts');s=p.read_text();a=s.index('\\t\\t\\tconst state = await renderQueueRequest');b=s.index('\\n\\t\\t\\tif (state.cancelRequested)',a);part=s[a:b].replace('const state = await','state = await');s=s[:a]+'''            let state: {cancelRequested:boolean}|undefined;\n            for(let retry=0;retry<5;retry++){\n              try {\n'''+part+'''\n                break;\n              } catch(error) {\n                const status=(error as {status?:number}).status;\n                if(retry===4||(status!==undefined&&status<500))throw error;\n                await new Promise(resolve=>setTimeout(resolve,250*2**retry));\n              }\n            }\n            if(!state)throw Error(\"Render heartbeat was not acknowledged\");'''+s[b:];p.write_text(s)\np=Path('classic/apps/web/src/app/api/render-queue/file/route.ts');s=p.read_text().replace('export const PUT = withAccount(put);','// Each upload owns an exclusive attempt file and commits via the canonical queue.\\n// Keep long output IO from blocking editor saves or cancellation heartbeats.\\nexport const PUT = withAccount(put,{concurrent:true});');p.write_text(s)\nPY\nnode classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts --report=.local/render-queue-recovery-2026-10-28/tests-final --timeout=120000 --test-timeout=30000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-573c3a61-244a-4458-8ba3-47a5d4df5530"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:36:25.819Z",
+  "parents": [],
+  "branch": "main"
+}

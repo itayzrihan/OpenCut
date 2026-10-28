@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ae890ea0845cfa9cd12a09d1863d96cd3f5b3903516ee8d8ac3e6966acf86891",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:43:25.133Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture",
+          ".local/render-queue-recovery-2026-10-28/fixture/inputs",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs",
+          ".local/render-queue-recovery-2026-10-28/fixture/inputs/a463f076-0358-4c93-8069-033c804f0fc6",
+          ".local/render-queue-recovery-2026-10-28/fixture/inputs/intro-arial-bold",
+          ".local/render-queue-recovery-2026-10-28/fixture/inputs/intro-arial",
+          ".local/render-queue-recovery-2026-10-28/fixture/inputs/intro-myriad"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0fda2648-6f01-4702-b094-2ffdd09a2053"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:43:25.136Z",
+  "parents": [],
+  "branch": "main"
+}

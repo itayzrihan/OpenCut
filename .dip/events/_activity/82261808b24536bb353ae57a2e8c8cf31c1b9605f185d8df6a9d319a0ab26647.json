@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "82261808b24536bb353ae57a2e8c8cf31c1b9605f185d8df6a9d319a0ab26647",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:00:01.720Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-4a5bd620-804b-4753-868a-988e4b64257f.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/18a9ab4c68f0eae6_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/todelete_18a9ab4c68f0eae6_0_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-1516635b-25eb-4056-a004-cf625b013678.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-632631f3-b4c9-403c-a7a5-9962fda0f7a0.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d98fc22b-76e2-476b-840b-32d57299d3a3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:00:01.723Z",
+  "parents": [],
+  "branch": "main"
+}

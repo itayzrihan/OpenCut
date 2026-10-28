@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c1b85ec0965d39f74557595990abd15e9f7c763d890a2e6edb5c5647d21fac4f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:23:10.296Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-19a9e240-56d9-4086-acfd-5d89c350c6ee.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2115ef27-0182-4318-9b4f-25f0cc5984da"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:23:10.298Z",
+  "parents": [],
+  "branch": "main"
+}

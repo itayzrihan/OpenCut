@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d54b518f4ad34725ee8bd194d8ba174b670a47856efe6a35daa20f1a1d1b8f83",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:45:14.969Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run analysis/render-queue-recovery-2026-10-28/seed-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-697b8e96-28b9-4ded-86a3-42bf63f137c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:45:15.147Z",
+  "parents": [],
+  "branch": "main"
+}

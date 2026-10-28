@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5f8b342e7015a3c699ea28c55fa7ff491774cce46329711e228ce562b7bfe02d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:20.446Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/queue/server.test.ts"
+        ],
+        "changeHash": "920a90d486c7b835a0c40438614703ccd55f2e0aa46764b5033a1102c1d93ea0",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5b92cf2a-6ae4-47fd-9f61-08fdc72abafe"
+      },
+      {
+        "at": "2026-10-28T10:34:20.479Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/export/queue/server.test.ts <<'EOF'\n\ntest(\"external output disk keeps frozen inputs and existing output downloads intact\",async()=>{\n const old=process.env.OPENCUT_RENDER_OUTPUTS_DIR;\n const external=await mkdtemp(join(tmpdir(),\"render-output-\"));\n try {\n  process.env.OPENCUT_RENDER_OUTPUTS_DIR=external;\n  const output=await renderOutputDirectory(\"external-job\");\n  expect(output).toBe(join(external,\"fixture-account\",\"external-job\"));\n  await writeFile(join(output,\"output.mp4\"),\"completed fixture\");\n  expect(await renderOutputPath(\"external-job\",\"mp4\")).toBe(join(output,\"output.mp4\"));\n  expect(await renderOutputPath(\"old-internal-job\",\"mp4\")).toBe(join(accountRoot,\"render-queue\",\"old-internal-job\",\"output.mp4\"));\n  process.env.OPENCUT_RENDER_OUTPUTS_DIR=join(external,\"disconnected-disk\");\n  await expect(renderOutputDirectory(\"new-job\")).rejects.toThrow();\n }finally{\n  if(old===undefined)delete process.env.OPENCUT_RENDER_OUTPUTS_DIR;else process.env.OPENCUT_RENDER_OUTPUTS_DIR=old;\n  await rm(external,{recursive:true,force:true});\n }\n});\nEOF\nnode classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts --report=.local/render-queue-recovery-2026-10-28/tests-fixed --timeout=120000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6cefcde8-b56f-4ff4-b924-c6bb1b2c9a9a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:20.609Z",
+  "parents": [],
+  "branch": "main"
+}

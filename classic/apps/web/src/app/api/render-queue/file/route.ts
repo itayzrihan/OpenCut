@@ -5,6 +5,8 @@ import {
 	readRenderJob,
 	renderSource,
 	renderJobDirectory,
+	renderOutputDirectory,
+	renderOutputPath,
 	reportRender,
 } from "@/export/queue/server";
 import { open, rename, unlink, stat } from "node:fs/promises";
@@ -29,7 +31,7 @@ async function serve(request: Request, head = false) {
 			const job = await readRenderJob(id);
 			if (job.status !== "completed" || !job.outputId)
 				throw Error("Render is not complete");
-			path = join(renderJobDirectory(id), `output.${job.options.format}`);
+			path = await renderOutputPath(id, job.options.format);
 			size = (await stat(path)).size;
 			mimeType = job.options.format === "mp4" ? "video/mp4" : "video/webm";
 			filename = `${job.snapshot.document.metadata.name}-${job.sceneId}.${job.options.format}`;
@@ -97,8 +99,9 @@ async function put(request: Request) {
 			expected > 250 * 1024 ** 3
 		)
 			throw Error("Invalid render output size");
-		const final = join(renderJobDirectory(id), `output.${job.options.format}`);
-		temp = join(renderJobDirectory(id), `output-${attempt}.part`);
+		const directory = await renderOutputDirectory(id);
+		const final = join(directory, `output.${job.options.format}`);
+		temp = join(directory, `output-${attempt}.part`);
 		const file = await open(temp, "wx", 0o600);
 		let size = 0;
 		try {
@@ -149,4 +152,6 @@ async function put(request: Request) {
 }
 export const GET = withAccount((request) => serve(request));
 export const HEAD = withAccount((request) => serve(request, true));
-export const PUT = withAccount(put);
+// Each upload owns an exclusive attempt file and commits via the canonical queue.
+// Keep long output IO from blocking editor saves or cancellation heartbeats.
+export const PUT = withAccount(put,{concurrent:true});

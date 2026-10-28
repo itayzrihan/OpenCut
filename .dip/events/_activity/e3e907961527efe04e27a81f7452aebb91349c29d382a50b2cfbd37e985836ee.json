@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e3e907961527efe04e27a81f7452aebb91349c29d382a50b2cfbd37e985836ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:45.155Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/worker-auth.ts'\ns=open(p).read().replace('const actual=new URL','const actualOrigin=new URL').replace('[url,actual]','[url,actualOrigin]').replace('actual.origin !== lease.origin','actualOrigin.origin !== lease.origin');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/worker-auth.test.ts'\ns=open(p).read();s+='''\ntest(\"uses actual Host when Next normalizes a loopback alias\", async () => {\n const request=new Request(\"http://127.0.0.1:3211/api/render-queue\",{headers:{host:\"localhost:3211\",\"x-opencut-account\":id,\"x-opencut-render-worker\":token}});\n expect((await authenticateRenderWorker(request,root)).id).toBe(id);\n const hostile=new Request(origin+\"/api/render-queue\",{headers:{host:\"example.com:3211\",\"x-opencut-account\":id,\"x-opencut-render-worker\":token}});\n await expect(authenticateRenderWorker(hostile,root)).rejects.toThrow(\"origin\");\n});\n''';open(p,'w').write(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/host.test.ts classic/apps/web/src/export/queue/worker-auth.ts classic/apps/web/src/export/queue/worker-auth.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d86097f7-d9c1-4397-8623-7734049368b2"
+      },
+      {
+        "at": "2026-10-28T11:03:49.567Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts src/export/queue/host.test.ts --report=.local/render-queue-recovery-2026-10-28/final-tests --timeout=120000 --test-timeout=30000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d8b72084-32a2-4bbb-9d33-33c010648653"
+      },
+      {
+        "at": "2026-10-28T11:03:49.568Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/worker-auth.ts'\ns=open(p).read().replace('const actual=new URL','const actualOrigin=new URL').replace('[url,actual]','[url,actualOrigin]').replace('actual.origin !== lease.origin','actualOrigin.origin !== lease.origin');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/worker-auth.test.ts'\ns=open(p).read();s+='''\ntest(\"uses actual Host when Next normalizes a loopback alias\", async () => {\n const request=new Request(\"http://127.0.0.1:3211/api/render-queue\",{headers:{host:\"localhost:3211\",\"x-opencut-account\":id,\"x-opencut-render-worker\":token}});\n expect((await authenticateRenderWorker(request,root)).id).toBe(id);\n const hostile=new Request(origin+\"/api/render-queue\",{headers:{host:\"example.com:3211\",\"x-opencut-account\":id,\"x-opencut-render-worker\":token}});\n await expect(authenticateRenderWorker(hostile,root)).rejects.toThrow(\"origin\");\n});\n''';open(p,'w').write(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/host.test.ts classic/apps/web/src/export/queue/worker-auth.ts classic/apps/web/src/export/queue/worker-auth.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d86097f7-d9c1-4397-8623-7734049368b2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:49.623Z",
+  "parents": [],
+  "branch": "main"
+}

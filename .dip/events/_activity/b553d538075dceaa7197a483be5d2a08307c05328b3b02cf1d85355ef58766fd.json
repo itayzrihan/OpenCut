@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b553d538075dceaa7197a483be5d2a08307c05328b3b02cf1d85355ef58766fd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:16:04.326Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/fixture.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e38666cf-a47e-4f13-a373-7f677a14c65c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:16:04.377Z",
+  "parents": [],
+  "branch": "main"
+}

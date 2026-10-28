@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "594a2bf17e15ae7aa27db7250cbdf6cf606a7b2e79aaba0943d955be69575c48",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:57:06.397Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node analysis/render-queue-recovery-2026-10-28/run-fixture.mjs > .local/render-queue-recovery-2026-10-28/fixture.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-72cf1a50-e935-43e1-87e6-462a06c1606f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:57:08.028Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4aec23b8c5044aa8deb8c7aa22cf6d63129eaf0be67ef8c925bfdb0ee46a4b4e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:43:35.469Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/aaaaaaaa-1111-4111-8111-111111111111",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/aaaaaaaa-1111-4111-8111-111111111111/sources.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/bbbbbbbb-2222-4222-8222-222222222222",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/bbbbbbbb-2222-4222-8222-222222222222/sources.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/fixture.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b70ba837-e6ed-4975-89fe-b0653ee75f7c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:43:35.472Z",
+  "parents": [],
+  "branch": "main"
+}

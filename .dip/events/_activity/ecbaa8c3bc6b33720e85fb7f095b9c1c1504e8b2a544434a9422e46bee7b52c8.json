@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ecbaa8c3bc6b33720e85fb7f095b9c1c1504e8b2a544434a9422e46bee7b52c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:26:37.422Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/queue/worker-auth.ts",
+          "classic/apps/web/src/export/queue/host.ts",
+          "classic/apps/electron/app/render-worker.cjs",
+          "classic/apps/electron/app/render-worker-preload.cjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "888ff2de-1ba4-4e7b-b061-b2467c5fbd1f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:26:37.426Z",
+  "parents": [],
+  "branch": "main"
+}

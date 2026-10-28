@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddf68fceb30b0d799ed6bedb12f2295b0e13c70d01730ad4640f380a166496a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:10.043Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -6 .local/render-queue-recovery-2026-10-28/collect.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-60e44f4c-d3b9-4bb8-8683-55d5994bfbd1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:10.900Z",
+  "parents": [],
+  "branch": "main"
+}

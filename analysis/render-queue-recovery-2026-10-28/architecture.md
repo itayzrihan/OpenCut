@@ -1,0 +1,9 @@
+# Background render queue recovery
+
+Migration status: **bridged**. The queue model, frozen snapshots, optimistic revisions, attempt fencing, cancellation and lifecycle transitions remain in `OpenCutRuntime` / `render.queue.edit`. No second project or queue store was introduced. The classic browser compositor is reused in a dedicated hidden Electron renderer. Electron process launch, scoped renderer authentication and output storage are classic host adapters; the rewrite does not gain a duplicate compositor.
+
+The queue UI is now a singleton dialog in the app shell. It polls canonical job state and can close without stopping rendering. A detached host process consumes queued snapshots sequentially, reloads between jobs to release compositor resources and exits after idle. Its scoped token permits frozen inputs, progress and output only; it cannot edit projects, enqueue jobs or manage accounts. Only a token hash is persisted. The host lease and OS process check reuse the same worker across views.
+
+Retry rebases heartbeat-only revision conflicts while checking the target snapshot identity. Render heartbeat retries transient failures; definitive authorization/attempt failures still stop the attempt. Long output uploads do not lock project saves. An optional host output directory supports an external render cache while retaining downloads for earlier internal outputs.
+
+Recovery uses the seven existing queued snapshots and preserves every source revision, hash and export setting. Generated files are delivered to the external HDD and verified by SHA256 when copied. Internal cache aliases preserve native download links. No project edits or camera/audio originals are moved or rewritten.

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e5f9d548ed8a95a6f153a6c631407948dcc9af0554244ce4b1aa0b7956e66ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:43:24.089Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/render-queue-recovery-2026-10-28/seed-fixture.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d7aec1d7-adca-46f8-a0c7-5a69f12ee114"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:43:24.097Z",
+  "parents": [],
+  "branch": "main"
+}

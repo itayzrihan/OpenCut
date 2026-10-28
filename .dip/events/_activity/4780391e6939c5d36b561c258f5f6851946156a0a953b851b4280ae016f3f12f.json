@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4780391e6939c5d36b561c258f5f6851946156a0a953b851b4280ae016f3f12f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:57:33.770Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DIPS",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/No_Vary_Search/snapshot-new.baf",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/electron-preload",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DIPS-journal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/electron-preload/4999944406F36B3F94784231ED1B8F8EAC180261947BDBAC3E3B5D00BAA14261.cache"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4b17b7d3-fda3-4cbd-933e-d16437bda633"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:57:33.772Z",
+  "parents": [],
+  "branch": "main"
+}

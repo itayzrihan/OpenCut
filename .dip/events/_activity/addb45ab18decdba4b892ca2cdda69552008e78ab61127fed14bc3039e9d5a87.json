@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "eventId": "addb45ab18decdba4b892ca2cdda69552008e78ab61127fed14bc3039e9d5a87",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:22:28.154Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/63c3ac7592540686_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/dd8cb2db0ef3310a_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/Origins/LOG.old",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/.usage",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/LOCK",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/MANIFEST-000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/000001.dbtmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/CURRENT",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/Paths/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00/00000000",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00/00000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/6adcd38774a6eae5_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "52652024-d604-4e42-830c-b063b1a9f7e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:22:28.161Z",
+  "parents": [],
+  "branch": "main"
+}

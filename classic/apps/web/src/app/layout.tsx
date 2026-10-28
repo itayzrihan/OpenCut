@@ -1,5 +1,4 @@
-import { BatchEditRoot } from "@/batch/root";
-import { AccountGate } from "@/accounts/gate";
+import { RenderQueueRoot } from "@/export/queue/root";
 import { ThemeProvider } from "next-themes";
 import Script from "next/script";
 import "./globals.css";
@@ -57,9 +56,7 @@ export default function RootLayout({
 								data-track-sessions={false}
 							/>
 						)}
-						<AccountGate>
-							<BatchEditRoot>{children}</BatchEditRoot>
-						</AccountGate>
+						<RenderQueueRoot>{children}</RenderQueueRoot>
 					</TooltipProvider>
 				</ThemeProvider>
 			</body>

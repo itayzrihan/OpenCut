@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e0b8a82439681bc92fd5cd5f49ef8ae46576d8b05004dcac6b8c622627b38bce",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:18:56.922Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/feedback",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/feedback/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets/[...path]",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets/[...path]/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/health",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/health/route_client-reference-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c70492a1-92d1-433f-a956-d3b6875248b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:18:56.963Z",
+  "parents": [],
+  "branch": "main"
+}

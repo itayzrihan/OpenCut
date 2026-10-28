@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "335bffec-e028-483e-8027-97f11235887b",
+  "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src",
+      "classic/rust",
+      "crates/editor-api",
+      "analysis/render-queue-recovery-2026-10-28",
+      "classic/apps/web/src/export/queue/actions.ts",
+      "classic/apps/web/src/export/queue/root.tsx",
+      "classic/apps/web/src/export/queue/worker-auth.ts",
+      "classic/apps/web/src/export/queue/host.ts",
+      "classic/apps/electron/app/render-worker.cjs",
+      "classic/apps/electron/app/render-worker-preload.cjs",
+      "classic/apps/web/src/app/render-worker/page.tsx",
+      "classic/apps/web/src/export/queue/server.ts",
+      "classic/apps/web/src/export/queue/worker-auth.test.ts",
+      "classic/apps/web/src/export/queue/actions.test.ts",
+      "classic/apps/web/src/export/queue/server.test.ts"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T10:34:18.962Z",
+  "parents": [
+    "8cc603d4-ac45-40f1-9333-3f53b481a4a2"
+  ],
+  "branch": "main"
+}

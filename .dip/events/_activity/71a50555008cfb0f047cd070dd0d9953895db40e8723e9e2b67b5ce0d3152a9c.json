@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71a50555008cfb0f047cd070dd0d9953895db40e8723e9e2b67b5ce0d3152a9c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:00.527Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,ppid,command | rg '(run-fixture.mjs|next-server)' | cut -c1-190\ntail -4 .local/render-queue-recovery-2026-10-28/fixture/server.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ceaa9704-cfda-4d77-9289-79f72cf40435"
+      },
+      {
+        "at": "2026-10-28T10:59:00.622Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/export/queue/host.test.ts --report=.local/render-queue-recovery-2026-10-28/host-lifecycle --timeout=60000 --test-timeout=30000\ntail -10 .local/render-queue-recovery-2026-10-28/fixture.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-29b41141-e2ad-4cfb-9ae2-7525e1e0eab9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:01.473Z",
+  "parents": [],
+  "branch": "main"
+}

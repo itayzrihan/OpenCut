@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "181f89b90630dcccc23da387e0d40d2073d73b67d92e8cebb9e9ba81d7bf9ff0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:04.399Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/electron/app/render-worker.cjs",
+          "classic/apps/electron/app/render-worker-preload.cjs",
+          ".local/render-queue-recovery-2026-10-28/typecheck.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d8616436-2743-494f-ba59-9bb62e9f681a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:04.401Z",
+  "parents": [],
+  "branch": "main"
+}

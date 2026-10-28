@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a7312a5b762ff7841484ea4265c154023716d023b0b794b72b62f1ecf8f6d56c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:17:33.331Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '35,90p' classic/apps/web/src/components/ui/dialog.tsx; tail -5 .local/render-queue-recovery-2026-10-28/build-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0a319677-d1cf-4b4d-b9e9-cd13270ff0c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:17:33.765Z",
+  "parents": [],
+  "branch": "main"
+}

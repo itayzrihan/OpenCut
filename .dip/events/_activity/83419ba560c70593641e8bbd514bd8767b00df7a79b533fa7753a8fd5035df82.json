@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83419ba560c70593641e8bbd514bd8767b00df7a79b533fa7753a8fd5035df82",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:13:48.190Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -7 .local/render-queue-recovery-2026-10-28/build-final.log; tail -3 .local/render-queue-recovery-2026-10-28/collect.log; cat .local/render-queue-recovery-2026-10-28/media-checks.log; ps -axo pid,etime,pcpu,command | rg 'check_media.py|ffmpeg -v error -nostdin'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f38185fe-a58f-4294-bcdb-8f3449140cb1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:13:48.560Z",
+  "parents": [],
+  "branch": "main"
+}

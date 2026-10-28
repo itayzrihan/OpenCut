@@ -13,7 +13,7 @@ import {
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import lockfile from "proper-lockfile";
-import { accountDataRoot } from "@/accounts/server";
+import { accountDataRoot, requireAccount } from "@/accounts/server";
 import {
 	getMediaFile,
 	getFontFile,
@@ -39,6 +39,37 @@ const valid = (s: string) => {
 	return s;
 };
 export const renderJobDirectory = (id: string) => join(root(), valid(id));
+/** Output bytes may live on a host-configured export disk. Frozen source
+ * manifests and canonical queue state remain in the account's data root. */
+export async function renderOutputDirectory(id: string) {
+	const external = process.env.OPENCUT_RENDER_OUTPUTS_DIR;
+	if (!external) return renderJobDirectory(id);
+	if (!external.startsWith("/") || !(await stat(external)).isDirectory())
+		throw Error("The render output disk is unavailable");
+	const directory = join(external, requireAccountId(), valid(id));
+	await mkdir(directory, { recursive: true, mode: 0o700 });
+	return directory;
+}
+function requireAccountId() {
+	return requireAccount().id;
+}
+export async function renderOutputPath(id: string, format: "mp4" | "webm") {
+	if (process.env.OPENCUT_RENDER_OUTPUTS_DIR) {
+		const external = join(
+			process.env.OPENCUT_RENDER_OUTPUTS_DIR,
+			requireAccountId(),
+			valid(id),
+			`output.${format}`,
+		);
+		try {
+			await stat(external);
+			return external;
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+		}
+	}
+	return join(renderJobDirectory(id), `output.${format}`);
+}
 // Registry construction is expensive. Reuse one canonical runtime per host
 // module, restoring the locked account bytes before every transaction. A local
 // gate prevents cross-account interleaving while the filesystem lock fences
@@ -265,7 +296,7 @@ export async function claimRender(
 	jobId?: string,
 ): Promise<RenderJob | null> {
 	valid(attempt);
-	return transaction((r, s) => {
+	return transaction(async (r, s) => {
 		const active = s.renderQueue.find((j) => j.status === "rendering");
 		if (active && Date.now() - active.updatedAtMs <= 120000) return null;
 		if (active) {
@@ -291,6 +322,7 @@ export async function claimRender(
 					(j) => j.status === "queued" && j.delivery !== "direct",
 				);
 		if (!next) return null;
+		if (next.delivery !== "direct") await renderOutputDirectory(next.id);
 		return edit(r, s, next.id, next.projectId, { type: "claim", attempt });
 	});
 }

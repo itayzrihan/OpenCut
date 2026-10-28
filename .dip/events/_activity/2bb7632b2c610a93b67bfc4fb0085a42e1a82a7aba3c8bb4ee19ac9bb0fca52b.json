@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2bb7632b2c610a93b67bfc4fb0085a42e1a82a7aba3c8bb4ee19ac9bb0fca52b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:22:02.309Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/LOCK",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/MANIFEST-000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/000001.dbtmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/CURRENT",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_62660.indexeddb.leveldb/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/031a5ba75dd4d78d_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/electron-preload/5DA4E6861725F84C73B3A96FB5F01149EE3B336064450BE3AFAB5AB1685D8C27.cache",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/No_Vary_Search/journal.baj"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "36065c4f-2d51-41e1-bc61-bbe29624548a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:22:02.313Z",
+  "parents": [],
+  "branch": "main"
+}

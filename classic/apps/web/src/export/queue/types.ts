@@ -23,4 +23,11 @@ export type RenderJobView = Omit<RenderJob, "snapshot" | "attempt"> & {
 	projectName: string;
 	sceneName: string;
 };
-export type RenderQueueView = { revision: number; jobs: RenderJobView[] };
+export type RenderQueueView = {
+	revision: number;
+	jobs: RenderJobView[];
+	worker?: {
+		status: "running" | "starting" | "unavailable" | "idle";
+		message: string;
+	};
+};

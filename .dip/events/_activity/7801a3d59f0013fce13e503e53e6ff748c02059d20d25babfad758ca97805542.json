@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7801a3d59f0013fce13e503e53e6ff748c02059d20d25babfad758ca97805542",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:07:03.159Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue/runtime.json';q=json.load(open(r))['active']['document']['renderQueue'];ids={j['id'] for j in json.load(open('analysis/render-queue-recovery-2026-10-28/jobs-before.json'))}\nfor j in q:\n if j['id'] not in ids:continue\n scene=next(s for s in j['snapshot']['document']['scenes'] if s['id']==j['sceneId']); t=scene['tracks']; sec=max(e['startTime']+e['duration'] for tr in [t['main'],*t['overlay'],*t['audio']] for e in tr['elements'])/120000\n print(j['projectName'],j['status'],round(j['progress']*100),round(sec,2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3069c9a3-5da2-491e-b61b-0be101b7fcd3"
+      },
+      {
+        "at": "2026-10-28T11:07:03.765Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue/runtime.json';q=json.load(open(r))['active']['document']['renderQueue'];ids={j['id'] for j in json.load(open('analysis/render-queue-recovery-2026-10-28/jobs-before.json'))}\nfor j in q:\n if j['id'] not in ids:continue\n scene=next(s for s in j['snapshot']['document']['scenes'] if s['id']==j['sceneId']); t=scene['tracks']; sec=max(e['startTime']+e['duration'] for tr in [t['main'],*t['overlay'],*t['audio']] for e in tr['elements'])/120000\n print(j['projectName'],j['status'],round(j['progress']*100),round(sec,2))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3069c9a3-5da2-491e-b61b-0be101b7fcd3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:07:03.913Z",
+  "parents": [],
+  "branch": "main"
+}

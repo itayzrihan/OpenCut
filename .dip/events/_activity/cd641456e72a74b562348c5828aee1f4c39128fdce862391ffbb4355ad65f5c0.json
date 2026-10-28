@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd641456e72a74b562348c5828aee1f4c39128fdce862391ffbb4355ad65f5c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:15.048Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/export/queue/worker-auth.ts"
+        ],
+        "changeHash": "d5555d4cfe697b2f1792429517843645043be29d9113e567dde81affdd202523",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0d76b184-33cc-418f-8797-7affd492a8d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:15.243Z",
+  "parents": [],
+  "branch": "main"
+}

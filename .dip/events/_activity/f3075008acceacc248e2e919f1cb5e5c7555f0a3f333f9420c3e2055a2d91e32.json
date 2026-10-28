@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f3075008acceacc248e2e919f1cb5e5c7555f0a3f333f9420c3e2055a2d91e32",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:16:04.657Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/run-fixture.mjs';s=open(p).read().replace(\"const evidence={passed:true\", \"if(worker.exitCode!==0)throw Error('Renderer did not shut down after idle');\\n const evidence={passed:true\");open(p,'w').write(s)\nPY\n tail -5 .local/render-queue-recovery-2026-10-28/build-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-397c7345-72cd-4ef5-9e95-8fcf86d092f3"
+      },
+      {
+        "at": "2026-10-28T11:16:05.077Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/run-fixture.mjs';s=open(p).read().replace(\"const evidence={passed:true\", \"if(worker.exitCode!==0)throw Error('Renderer did not shut down after idle');\\n const evidence={passed:true\");open(p,'w').write(s)\nPY\n tail -5 .local/render-queue-recovery-2026-10-28/build-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-397c7345-72cd-4ef5-9e95-8fcf86d092f3"
+      },
+      {
+        "at": "2026-10-28T11:16:05.078Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun --tsconfig-override classic/apps/web/tsconfig.json analysis/render-queue-recovery-2026-10-28/seed-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a0b3784c-d616-4c9a-bb78-aae85000fbfb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:16:05.743Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abad45028b42daf88b5015a6136de015d94a9ef74fe16c46429e153bc9f5cfd4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:09:17.715Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs src/accounts/server.test.ts src/accounts/public-origin.test.ts --report=.local/render-queue-recovery-2026-10-28/account-tests --timeout=120000 --test-timeout=30000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f11e13b6-888f-47ae-ba01-a8706cdaf77c"
+      },
+      {
+        "at": "2026-10-28T11:09:17.725Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/scripts/local-production/paths.mjs | head -100; rg -n 'activate|candidate|current.json' classic/scripts/local-production/*.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-65d9e379-7f9b-4398-8519-3246dd2a3c60"
+      },
+      {
+        "at": "2026-10-28T11:09:17.921Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/scripts/local-production/paths.mjs | head -100; rg -n 'activate|candidate|current.json' classic/scripts/local-production/*.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-65d9e379-7f9b-4398-8519-3246dd2a3c60"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:09:18.506Z",
+  "parents": [],
+  "branch": "main"
+}

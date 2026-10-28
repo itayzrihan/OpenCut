@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b587d56ecdd2f630ddb1ab36dde2597e427bc1fb7a60499a10cbae4f5760705c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:44.839Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -18 .local/render-queue-recovery-2026-10-28/typecheck.log\nsed -n '560,600p' classic/apps/web/src/accounts/server.ts\nsed -n '1,45p' classic/apps/web/src/export/queue/view.tsx\nrg -n 'openRenderQueue' classic/apps/web/src/components/editor/export-button.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d9a19b03-d92f-493c-a023-f706979dcc9c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:45.488Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b34966a6c77c60ebcf50a4ee0b4c0d6b09f603ac80ad5c1f02a92a874cfd594",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:57:47.609Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/.com.github.Electron.wYY3Ly",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Network Persistent State"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8648b772-e769-4a69-9efb-e99f824515d8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:57:47.612Z",
+  "parents": [],
+  "branch": "main"
+}

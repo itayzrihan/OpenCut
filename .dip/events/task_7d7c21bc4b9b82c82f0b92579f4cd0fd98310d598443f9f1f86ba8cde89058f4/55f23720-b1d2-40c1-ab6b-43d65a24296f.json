@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "55f23720-b1d2-40c1-ab6b-43d65a24296f",
+  "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+  "type": "task.update",
+  "payload": {
+    "scope": [
+      "classic/apps/web/src",
+      "classic/rust",
+      "crates/editor-api",
+      "analysis/render-queue-recovery-2026-10-28",
+      "classic/apps/web/src/export/queue/actions.ts",
+      "classic/apps/web/src/export/queue/root.tsx",
+      "classic/apps/web/src/export/queue/worker-auth.ts",
+      "classic/apps/web/src/export/queue/host.ts",
+      "classic/apps/electron/app/render-worker.cjs",
+      "classic/apps/electron/app/render-worker-preload.cjs",
+      "classic/apps/web/src/app/render-worker/page.tsx",
+      "classic/apps/web/src/export/queue/server.ts",
+      "classic/apps/web/src/export/queue/worker-auth.test.ts",
+      "classic/apps/web/src/export/queue/actions.test.ts",
+      "classic/apps/web/src/export/queue/server.test.ts",
+      "analysis/render-queue-recovery-2026-10-28/seed-fixture.ts",
+      "analysis/render-queue-recovery-2026-10-28/run-fixture.mjs",
+      "analysis/render-queue-recovery-2026-10-28/collect_outputs.py"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T10:51:07.172Z",
+  "parents": [
+    "ec312170-b9db-4b79-adcc-86df08a92dc3"
+  ],
+  "branch": "main"
+}

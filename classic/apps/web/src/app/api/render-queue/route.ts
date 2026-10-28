@@ -1,4 +1,5 @@
-import { withAccount } from "@/accounts/server";
+import { withAccount, localRequestOrigin } from "@/accounts/server";
+import { ensureRenderWorker } from "@/export/queue/host";
 import { assertLocalDriveRequest } from "@/services/local-drive/server";
 import { readBoundedBody } from "@/accounts/request-body";
 import { NextResponse } from "next/server";
@@ -69,7 +70,10 @@ const requestSchema = z.discriminatedUnion("action", [
 async function get(request: Request) {
 	try {
 		assertLocalDriveRequest(request);
-		return NextResponse.json(await readRenderQueue());
+		const worker = request.headers.has("x-opencut-render-worker")
+			? undefined
+			: await ensureRenderWorker(localRequestOrigin(request));
+		return NextResponse.json({ ...(await readRenderQueue()), worker });
 	} catch (e) {
 		return NextResponse.json({ error: String(e) }, { status: 400 });
 	}
@@ -84,10 +88,13 @@ async function post(request: Request) {
 				),
 			),
 		);
-		if (body.action === "enqueue")
-			return NextResponse.json(
-				await enqueueRender(body as Parameters<typeof enqueueRender>[0]),
+		if (body.action === "enqueue") {
+			const state = await enqueueRender(
+				body as Parameters<typeof enqueueRender>[0],
 			);
+			const worker = await ensureRenderWorker(localRequestOrigin(request));
+			return NextResponse.json({ ...state, worker });
+		}
 		if (body.action === "claim")
 			return NextResponse.json(await claimRender(body.attempt, body.jobId));
 		if (body.action === "report") {
@@ -101,11 +108,12 @@ async function post(request: Request) {
 			}
 			return NextResponse.json(await reportRender(body));
 		}
-		return NextResponse.json(
-			await changeRender({ ...body, type: body.action } as Parameters<
-				typeof changeRender
-			>[0]),
-		);
+		const state = await changeRender({
+			...body,
+			type: body.action,
+		} as Parameters<typeof changeRender>[0]);
+		const worker = await ensureRenderWorker(localRequestOrigin(request));
+		return NextResponse.json({ ...state, worker });
 	} catch (e) {
 		return NextResponse.json(
 			{ error: e instanceof Error ? e.message : String(e) },

@@ -16,18 +16,15 @@ export async function renderQueueRequest<T = RenderQueueView>(
 			: { cache: "no-store" },
 	);
 	const result = await response.json();
-	if (!response.ok) throw Error(result.error ?? "Render queue request failed");
+	if (!response.ok)
+		throw Object.assign(Error(result.error ?? "Render queue request failed"), {
+			status: response.status,
+		});
 	return result;
 }
-/** A separate browsing realm owns the compositor, audio scratch and GPU caches. */
+/** The shared queue is a view, never the owner of a render process. */
 export function openRenderQueue() {
-	// No opener means a separate browsing context group: the encoder must not
-	// share the editor's synchronous JavaScript event loop or project singleton.
-	window.open(
-		accountAssetUrl("/render-queue"),
-		"_blank",
-		"noopener,popup,width=1050,height=720",
-	);
+	window.dispatchEvent(new Event("opencut:open-render-queue"));
 }
 
 export async function enqueueCurrentRender({

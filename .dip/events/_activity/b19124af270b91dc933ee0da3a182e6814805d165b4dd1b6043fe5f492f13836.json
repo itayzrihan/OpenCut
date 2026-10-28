@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b19124af270b91dc933ee0da3a182e6814805d165b4dd1b6043fe5f492f13836",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:27:39.557Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue');j=json.loads((root/'runtime.json').read_text());d=j['active']['document'];print('document keys',list(d)[:10]);q=d['renderQueue'];p=Path('analysis/render-queue-recovery-2026-10-28');p.mkdir(parents=True,exist_ok=True);rows=[]\nfor x in q:\n name=x['snapshot']['document']['metadata']['name']\n if any('סשן 0'+str(n) in name for n in [149,150,151,152,153,155,156]):\n  r={k:x[k] for k in ['id','projectId','sceneId','sourceRevision','snapshotHash','options','status','progress']};r['projectName']=name;rows.append(r);print(r['id'],name,x['status'],x['progress'])\n(p/'jobs-before.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\\n');print('count',len(rows))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0419f891-9bae-431f-8b39-879ff88a9491"
+      },
+      {
+        "at": "2026-10-28T10:27:39.693Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nroot=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue');j=json.loads((root/'runtime.json').read_text());d=j['active']['document'];print('document keys',list(d)[:10]);q=d['renderQueue'];p=Path('analysis/render-queue-recovery-2026-10-28');p.mkdir(parents=True,exist_ok=True);rows=[]\nfor x in q:\n name=x['snapshot']['document']['metadata']['name']\n if any('סשן 0'+str(n) in name for n in [149,150,151,152,153,155,156]):\n  r={k:x[k] for k in ['id','projectId','sceneId','sourceRevision','snapshotHash','options','status','progress']};r['projectName']=name;rows.append(r);print(r['id'],name,x['status'],x['progress'])\n(p/'jobs-before.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\\n');print('count',len(rows))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0419f891-9bae-431f-8b39-879ff88a9491"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:27:39.699Z",
+  "parents": [],
+  "branch": "main"
+}

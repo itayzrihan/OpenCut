@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25e0644be7340fd986477a0c1ac17b42edf2eeb2f77e2815dd13547286e594f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:58:01.181Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ab51142b-9dc6-4b19-a65d-b948d8f04fb5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:58:01.184Z",
+  "parents": [],
+  "branch": "main"
+}

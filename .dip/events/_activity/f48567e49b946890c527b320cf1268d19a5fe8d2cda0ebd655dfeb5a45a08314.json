@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f48567e49b946890c527b320cf1268d19a5fe8d2cda0ebd655dfeb5a45a08314",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:15:49.116Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun --tsconfig-override classic/apps/web/tsconfig.json analysis/render-queue-recovery-2026-10-28/seed-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a0b3784c-d616-4c9a-bb78-aae85000fbfb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:15:50.854Z",
+  "parents": [],
+  "branch": "main"
+}

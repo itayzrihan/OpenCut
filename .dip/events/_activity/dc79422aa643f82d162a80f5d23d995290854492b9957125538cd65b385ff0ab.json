@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc79422aa643f82d162a80f5d23d995290854492b9957125538cd65b385ff0ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:19.525Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/export/queue/worker-auth.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-cd051ffe-f72d-4a51-b5dd-6670f1959bd5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:19.818Z",
+  "parents": [],
+  "branch": "main"
+}

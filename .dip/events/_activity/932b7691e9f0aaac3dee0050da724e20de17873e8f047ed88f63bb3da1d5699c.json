@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "932b7691e9f0aaac3dee0050da724e20de17873e8f047ed88f63bb3da1d5699c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:46.829Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -18 .local/render-queue-recovery-2026-10-28/typecheck.log\nsed -n '560,600p' classic/apps/web/src/accounts/server.ts\nsed -n '1,45p' classic/apps/web/src/export/queue/view.tsx\nrg -n 'openRenderQueue' classic/apps/web/src/components/editor/export-button.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d9a19b03-d92f-493c-a023-f706979dcc9c"
+      },
+      {
+        "at": "2026-10-28T10:34:46.830Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/export/queue/server.test.ts <<'EOF'\n\ntest(\"external output disk keeps frozen inputs and existing output downloads intact\",async()=>{\n const old=process.env.OPENCUT_RENDER_OUTPUTS_DIR;\n const external=await mkdtemp(join(tmpdir(),\"render-output-\"));\n try {\n  process.env.OPENCUT_RENDER_OUTPUTS_DIR=external;\n  const output=await renderOutputDirectory(\"external-job\");\n  expect(output).toBe(join(external,\"fixture-account\",\"external-job\"));\n  await writeFile(join(output,\"output.mp4\"),\"completed fixture\");\n  expect(await renderOutputPath(\"external-job\",\"mp4\")).toBe(join(output,\"output.mp4\"));\n  expect(await renderOutputPath(\"old-internal-job\",\"mp4\")).toBe(join(accountRoot,\"render-queue\",\"old-internal-job\",\"output.mp4\"));\n  process.env.OPENCUT_RENDER_OUTPUTS_DIR=join(external,\"disconnected-disk\");\n  await expect(renderOutputDirectory(\"new-job\")).rejects.toThrow();\n }finally{\n  if(old===undefined)delete process.env.OPENCUT_RENDER_OUTPUTS_DIR;else process.env.OPENCUT_RENDER_OUTPUTS_DIR=old;\n  await rm(external,{recursive:true,force:true});\n }\n});\nEOF\nnode classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts --report=.local/render-queue-recovery-2026-10-28/tests-fixed --timeout=120000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6cefcde8-b56f-4ff4-b924-c6bb1b2c9a9a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:47.585Z",
+  "parents": [],
+  "branch": "main"
+}

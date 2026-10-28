@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a81865c1f5ff707f4d6734157ca5848de2adb7d4fb99d054261b336405501df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:12:06.906Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/11.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/11.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/14.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/14.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/1.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/1.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/16.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/16.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack_",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "658249eb-967f-4a5e-8a8b-197f3e5eca02"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:12:06.908Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a507b549ddd694413e6d082abcff61a5ff8c8b488996c840a0b71ee345cdeda7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:04:14.726Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "CIRCLE_NODE_TOTAL=3 nice -n 10 node classic/scripts/local-production/build.mjs --stage > .local/render-queue-recovery-2026-10-28/build-final.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-cb479906-298e-4ef0-903c-122f050728c9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:04:15.627Z",
+  "parents": [],
+  "branch": "main"
+}

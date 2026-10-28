@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0c3de5b9320d0bf8250b1cd6778b7247a93cd61e324d11d4c8c379a536214247",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:34:03.549Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/queue/client.ts",
+          "classic/apps/web/src/export/queue/view.tsx",
+          "classic/apps/web/src/export/queue/root.tsx",
+          "classic/apps/web/src/export/queue/actions.ts",
+          "classic/apps/web/src/export/queue/actions.test.ts",
+          "classic/apps/web/src/export/queue/host.ts",
+          "classic/apps/web/src/export/queue/worker-auth.ts",
+          "classic/apps/web/src/export/queue/worker-auth.test.ts",
+          "classic/apps/web/src/export/queue/types.ts",
+          "classic/apps/web/src/export/queue/server.ts",
+          "classic/apps/web/src/app/render-worker/page.tsx",
+          "classic/apps/web/src/app/api/render-queue/route.ts",
+          "classic/apps/web/src/app/api/render-queue/file/route.ts",
+          "classic/apps/web/src/accounts/server.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5e902d8a-9587-4bf9-802f-a64fb28928e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:34:03.558Z",
+  "parents": [],
+  "branch": "main"
+}

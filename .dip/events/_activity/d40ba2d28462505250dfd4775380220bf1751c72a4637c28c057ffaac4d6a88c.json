@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d40ba2d28462505250dfd4775380220bf1751c72a4637c28c057ffaac4d6a88c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:10:03.386Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/render-queue-recovery-2026-10-28/media-checks.log; tail -3 .local/render-queue-recovery-2026-10-28/build-final.log; tail -4 .local/render-queue-recovery-2026-10-28/collect.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d7594333-2bfd-4ee5-935e-cb7a128f1770"
+      },
+      {
+        "at": "2026-10-28T11:10:03.594Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/render-queue-recovery-2026-10-28/media-checks.log; tail -3 .local/render-queue-recovery-2026-10-28/build-final.log; tail -4 .local/render-queue-recovery-2026-10-28/collect.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d7594333-2bfd-4ee5-935e-cb7a128f1770"
+      },
+      {
+        "at": "2026-10-28T11:10:03.603Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "mcp__codex_app__load_workspace_dependencies",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9b433e4d-ff29-45f9-b861-6627c5ad9797"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:10:03.797Z",
+  "parents": [],
+  "branch": "main"
+}

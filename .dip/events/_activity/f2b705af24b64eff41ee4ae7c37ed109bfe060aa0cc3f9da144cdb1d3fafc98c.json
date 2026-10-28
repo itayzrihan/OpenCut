@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f2b705af24b64eff41ee4ae7c37ed109bfe060aa0cc3f9da144cdb1d3fafc98c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:14.492Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/server.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Session Storage/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Session Storage/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_60288.indexeddb.leveldb/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_127.0.0.1_60288.indexeddb.leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Trust Tokens-journal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Trust Tokens",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Shared Dictionary/db",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cookies",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/.com.github.Electron.ZrNw7a",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Network Persistent State",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/No_Vary_Search/journal.baj",
+          "analysis/render-queue-recovery-2026-10-28/run-fixture.mjs",
+          ".local/render-queue-recovery-2026-10-28/fixture-localhost.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b300b515-7623-4ae6-b8eb-a089a38235b8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:14.563Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95af46633444189f03878b501e1997c9c4c24833694f806b01b2e17297674be5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:54:17.620Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/api/render-queue/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/transcription/external/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/transcription/settings/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/shared-library/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/shared-library/[...path]/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/account/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/transcription/whisper-cpp/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/global-assets/[...path]/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/brand-kits/page.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/editor/[project_id]/examples/page.js.nft.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "450bc323-dcdd-4cf0-9f02-056feade3852"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:54:17.662Z",
+  "parents": [],
+  "branch": "main"
+}

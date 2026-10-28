@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "341992feac66a39cb0b8f71c69b2fe3cf591fcbb9f24fe30f2019147c7f9ed52",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:00:02.979Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000009",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000008",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/000/t/00/00000015",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-d8854580-ea6e-478e-957e-b1f107d786fc.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/11111111-2222-4333-8444-555555555555/bbbbbbbb-2222-4222-8222-222222222222/output-49a49d7e-831f-46e0-a9de-97ff8947fc36.part",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/11111111-2222-4333-8444-555555555555/bbbbbbbb-2222-4222-8222-222222222222/output.mp4",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-e477854d-5db1-4837-9a5c-bf696c862e86.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/65117e6000b34a7f_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/6bb793a11109e754_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/32a128106bf50860_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-e6827e63-9174-4539-a466-55fecbfeaf24.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-3c0717f0-b60c-4f04-98b8-a5f25e59847b.tmp"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bc182d38-690c-4af1-9ba8-28a1536eeb2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:00:03.015Z",
+  "parents": [],
+  "branch": "main"
+}

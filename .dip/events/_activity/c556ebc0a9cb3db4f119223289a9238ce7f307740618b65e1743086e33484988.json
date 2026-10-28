@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c556ebc0a9cb3db4f119223289a9238ce7f307740618b65e1743086e33484988",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:17:12.893Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/apps/web/src/export/queue\ncat classic/apps/web/package.json\nrg -n 'headless|CHROME|chromium|puppeteer|playwright' classic/apps/web/src classic/scripts scripts | head -80\nrg --files classic/apps/web/src -g AGENTS.md\nsed -n '1,160p' classic/apps/web/src/accounts/server.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1447f07d-7bf2-4f16-80b0-624311b0f15e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:17:14.867Z",
+  "parents": [],
+  "branch": "main"
+}

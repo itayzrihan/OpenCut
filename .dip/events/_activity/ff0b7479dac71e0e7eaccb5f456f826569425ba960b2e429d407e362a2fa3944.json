@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff0b7479dac71e0e7eaccb5f456f826569425ba960b2e429d407e362a2fa3944",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:38:30.440Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/queue/server.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e28368cb-27a4-439b-b4cf-6239c37eedb0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:38:30.447Z",
+  "parents": [],
+  "branch": "main"
+}

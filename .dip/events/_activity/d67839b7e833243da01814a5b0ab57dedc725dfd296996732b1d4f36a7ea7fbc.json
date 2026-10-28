@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d67839b7e833243da01814a5b0ab57dedc725dfd296996732b1d4f36a7ea7fbc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:13:57.983Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfor j in json.load(open('analysis/render-queue-recovery-2026-10-28/delivered.json')): print(j['projectName'],round(j['size']/1024**3,2),'GiB',j['sha256'][:12])\nPY\nps -axo pid,etime,pcpu,command | rg 'next-server|typescript|type-check|typecheck' | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-234e8610-d9a7-4bda-b75a-24c340defacc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:13:58.858Z",
+  "parents": [],
+  "branch": "main"
+}

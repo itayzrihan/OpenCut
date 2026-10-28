@@ -18,6 +18,7 @@ const source = join(root, "original.mp4");
 await writeFile(source, "frozen media fixture");
 mock.module("@/accounts/server", () => ({
 	accountDataRoot: () => accountRoot,
+	requireAccount: () => ({ id: "fixture-account" }),
 }));
 let currentSource = source;
 let storageKind: "linked" | "copied" = "linked";
@@ -44,6 +45,8 @@ const {
 	changeRender,
 	readRenderJob,
 	renderSource,
+	renderOutputDirectory,
+	renderOutputPath,
 } = await import("./server");
 const fixture = JSON.parse(
 	await readFile(
@@ -256,4 +259,30 @@ test("reused canonical runtime restores each account independently, including a 
 	]);
 	accountRoot = root;
 	expect((await readRenderQueue()).jobs).toEqual(original.jobs);
+});
+
+test("external output disk keeps frozen inputs and existing output downloads intact", async () => {
+	const old = process.env.OPENCUT_RENDER_OUTPUTS_DIR;
+	const external = await mkdtemp(join(tmpdir(), "render-output-"));
+	try {
+		process.env.OPENCUT_RENDER_OUTPUTS_DIR = external;
+		const output = await renderOutputDirectory("external-job");
+		expect(output).toBe(join(external, "fixture-account", "external-job"));
+		await writeFile(join(output, "output.mp4"), "completed fixture");
+		expect(await renderOutputPath("external-job", "mp4")).toBe(
+			join(output, "output.mp4"),
+		);
+		expect(await renderOutputPath("old-internal-job", "mp4")).toBe(
+			join(accountRoot, "render-queue", "old-internal-job", "output.mp4"),
+		);
+		process.env.OPENCUT_RENDER_OUTPUTS_DIR = join(
+			external,
+			"disconnected-disk",
+		);
+		await expect(renderOutputDirectory("new-job")).rejects.toThrow();
+	} finally {
+		if (old === undefined) delete process.env.OPENCUT_RENDER_OUTPUTS_DIR;
+		else process.env.OPENCUT_RENDER_OUTPUTS_DIR = old;
+		await rm(external, { recursive: true, force: true });
+	}
 });

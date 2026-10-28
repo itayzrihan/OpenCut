@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e995d7be31089f690ebd0228dcf71b1abcd135ba1ee51fd65fa764ce87eb661",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:22:50.660Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00/00000009",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00/00000008",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/File System/001/t/00/00000015",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-fbdbfd53-c156-41ac-bbb9-2dea6944e2a5.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-01e2ca69-3f09-48df-94fb-9b7778714390.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/11111111-2222-4333-8444-555555555555/bbbbbbbb-2222-4222-8222-222222222222/output-4ed70b00-84a3-4a96-b74b-5a022953b281.part",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/11111111-2222-4333-8444-555555555555/bbbbbbbb-2222-4222-8222-222222222222/output.mp4",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-06a5d996-0e7c-4903-924a-51990ef48bab.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/a251eb5d5cd54a88_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data/8d26e093d3449057_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/bcbb0b7a927c84f4_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-60415380-3c20-43be-8ec9-7ab9c688468b.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-003a745b-d22f-497d-886e-841e639f5d53.tmp"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "20029f67-8467-444e-bad8-7405b8dffbaf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:22:50.667Z",
+  "parents": [],
+  "branch": "main"
+}

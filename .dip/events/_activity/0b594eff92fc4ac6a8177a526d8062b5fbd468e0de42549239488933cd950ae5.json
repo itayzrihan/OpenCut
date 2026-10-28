@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b594eff92fc4ac6a8177a526d8062b5fbd468e0de42549239488933cd950ae5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:03:49.619Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/queue/worker-auth.ts",
+          "classic/apps/web/src/export/queue/worker-auth.test.ts",
+          "classic/apps/web/src/export/queue/host.ts",
+          "classic/apps/web/src/export/queue/host.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "534c21d7-66e8-4817-9af9-40d3bee43002"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:03:49.628Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e843b1af5cc3a7a6dc0a3299ebce4311da0f7bcfa7d883627b2663acb72aadd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:27:25.494Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/render-worker",
+          "classic/apps/web/src/app/render-worker/page.tsx",
+          "classic/apps/web/src/accounts/server.ts",
+          "classic/apps/web/src/app/api/render-queue/route.ts",
+          "classic/apps/web/src/export/queue/host.ts",
+          "classic/apps/electron/app/render-worker.cjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c664b228-ffe0-4ee2-a717-375bd33103fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:27:25.496Z",
+  "parents": [],
+  "branch": "main"
+}

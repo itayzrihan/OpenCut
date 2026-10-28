@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7d7284a6-49b4-489f-8caa-2b1a1721908b",
+  "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+  "type": "task.update",
+  "payload": {
+    "title": "Recover seven event exports and make render queue window-independent",
+    "acceptance": [
+      "Preserve active session0151 render and identify seven current jobs without duplicating completed outputs.",
+      "Fix Add to Render Queue to reuse one queue window, and make render ownership independent from closing its UI or implement a robust persistent worker.",
+      "Resume/retry remaining six jobs with captured settings/snapshots and verify all seven output files.",
+      "Add meaningful regression coverage and verify canonical queue state and UI behavior."
+    ],
+    "scope": [
+      "classic/apps/web/src",
+      "classic/rust",
+      "crates/editor-api",
+      "analysis/render-queue-recovery-2026-10-28"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T10:15:40.391Z",
+  "parents": [
+    "a0086fcb-a0f9-4a52-947d-1f7db0269cec"
+  ],
+  "branch": "main"
+}

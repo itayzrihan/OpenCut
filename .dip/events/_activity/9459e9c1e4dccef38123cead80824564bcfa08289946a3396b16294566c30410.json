@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9459e9c1e4dccef38123cead80824564bcfa08289946a3396b16294566c30410",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:35:35.876Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/tests-final/src__export__queue__worker-auth.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "82befd56-8fcc-4608-a27b-d347db79eaed"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:35:35.936Z",
+  "parents": [],
+  "branch": "main"
+}

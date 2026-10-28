@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d96292601cfcadd76857d0f5a8d1f9af27dd0451a1f13885a2e6b4ecd1744787",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:48:52.910Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add -- analysis/card-podcasts-early-2026-10-28 .dip/config.json .dip/events/task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89\ngit commit --only -m \"Prepare eight early event podcasts with verified local audio\" -- analysis/card-podcasts-early-2026-10-28 .dip/config.json .dip/events/task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-776c5008-b989-433f-855f-1b9b558a3b0b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:48:53.251Z",
+  "parents": [],
+  "branch": "main"
+}

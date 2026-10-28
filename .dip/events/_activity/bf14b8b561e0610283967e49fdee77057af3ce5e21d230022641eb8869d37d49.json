@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bf14b8b561e0610283967e49fdee77057af3ce5e21d230022641eb8869d37d49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:15:06.474Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/render-queue-recovery-2026-10-28/frames/0150-contact.jpg",
+          "analysis/render-queue-recovery-2026-10-28/media-checks.json",
+          ".local/render-queue-recovery-2026-10-28/media-checks.log",
+          "classic/apps/web/.next-local-production/export-detail.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d2deda7f-a5bb-4746-bfad-38b70253d3c0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:15:06.484Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c149cbc03b729a7947a8665098dcc456d419d774b50b48cfa133b6a3eacf29f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:17:23.732Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '160,270p' classic/apps/web/src/accounts/server.ts\ncat classic/apps/web/src/export/queue/types.ts\nsed -n '1,90p' classic/apps/web/src/export/queue/server.test.ts\nls scripts/*deploy* classic/scripts/*deploy* 2>/dev/null",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bbcb4198-5826-4db3-9a86-e50e69fbfccd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:17:23.975Z",
+  "parents": [],
+  "branch": "main"
+}

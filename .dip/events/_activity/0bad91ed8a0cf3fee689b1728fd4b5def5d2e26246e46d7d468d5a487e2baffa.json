@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bad91ed8a0cf3fee689b1728fd4b5def5d2e26246e46d7d468d5a487e2baffa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:00:34.107Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime-b8ec7a7a-01fa-4319-9097-6a9d2b1d5916.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/11111111-2222-4333-8444-555555555555/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/GPUCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnWebGPUCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_3",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_2",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_1",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/data_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/DawnGraphiteCache/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Session Storage/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Session Storage/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_localhost_60521.indexeddb.leveldb/000003.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/IndexedDB/http_localhost_60521.indexeddb.leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Trust Tokens",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Shared Dictionary/db",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cookies",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager-journal",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/WebStorage/QuotaManager",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/No_Vary_Search/journal.baj"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2497d65b-7f0b-48ee-90a7-d309bc678211"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:00:34.111Z",
+  "parents": [],
+  "branch": "main"
+}

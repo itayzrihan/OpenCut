@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f98536a8ee3bea7b559dc57782158725072bf52f677e66be6d9e2757e8fd2db3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:39:47.418Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,os,signal\nfrom pathlib import Path\np=Path('/Users/itayzrihan/Library/Application Support/OpenCut Local/build.lock')\nif p.exists():\n d=json.loads(p.read_text());os.kill(d['pid'],signal.SIGTERM);print('Stopped candidate build for one startup correction.')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3360e30d-242c-4404-9d41-24dedc835438"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:39:47.703Z",
+  "parents": [],
+  "branch": "main"
+}

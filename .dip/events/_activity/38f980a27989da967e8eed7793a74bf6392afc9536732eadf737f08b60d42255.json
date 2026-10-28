@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "38f980a27989da967e8eed7793a74bf6392afc9536732eadf737f08b60d42255",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:59:13.389Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "kill -TERM 42529 42506 42504\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/render-queue-recovery-2026-10-28/run-fixture.mjs');s=p.read_text().replace('const origin=`http://127.0.0.1:${port}`;','const origin=`http://${process.env.OPENCUT_FIXTURE_HOST||\"localhost\"}:${port}`;');s=s.replace('let worker;const sleep=', 'let worker;process.on(\"SIGTERM\",()=>{worker?.kill(\"SIGTERM\");server.kill(\"SIGTERM\");process.exit(1);});const sleep=');p.write_text(s)\nPY\nnode analysis/render-queue-recovery-2026-10-28/run-fixture.mjs > .local/render-queue-recovery-2026-10-28/fixture-localhost.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3cf97076-218e-4e44-b6af-936b7854903e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:59:13.429Z",
+  "parents": [],
+  "branch": "main"
+}

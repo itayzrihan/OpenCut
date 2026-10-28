@@ -469,6 +469,12 @@ export async function authenticateAccount(
 	request: Request,
 ): Promise<LocalAccount> {
 	assertLocalOrigin(request);
+	if (request.headers.has("x-opencut-render-worker")) {
+		const { authenticateRenderWorker } =
+			await import("@/export/queue/worker-auth");
+		return authenticateRenderWorker(request, accountsRoot());
+	}
+
 	const token = readToken(request);
 	if (!token) throw new Error("Sign in to an OpenCut account first");
 	const session = await readFile(sessionPath(token), "utf8").then(

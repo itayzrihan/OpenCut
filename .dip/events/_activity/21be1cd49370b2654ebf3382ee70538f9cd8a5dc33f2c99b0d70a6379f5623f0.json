@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "eventId": "21be1cd49370b2654ebf3382ee70538f9cd8a5dc33f2c99b0d70a6379f5623f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T10:57:28.735Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/profile",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/blob_storage",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/blob_storage/3875136b-9cf8-4936-9b73-4df31672fe5c",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/Cache_Data",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/LOG",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Cache/No_Vary_Search",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/LOCK",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Shared Dictionary",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/index-dir",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/index-dir",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/index-dir/temp-index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/js/index-dir/the-real-index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/index-dir/temp-index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Code Cache/wasm/index-dir/the-real-index",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/MANIFEST-000001",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/000001.dbtmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/CURRENT",
+          ".local/render-queue-recovery-2026-10-28/fixture/profile/Local Storage/leveldb/000003.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c39a25c3-d4ec-488c-9787-5fbe3eee184f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:57:28.739Z",
+  "parents": [],
+  "branch": "main"
+}

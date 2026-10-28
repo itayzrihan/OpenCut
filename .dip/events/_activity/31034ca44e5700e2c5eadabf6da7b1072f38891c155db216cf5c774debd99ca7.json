@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "31034ca44e5700e2c5eadabf6da7b1072f38891c155db216cf5c774debd99ca7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:18:34.283Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/api/accounts/browser-archive/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/models/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/callback/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/device/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/logout/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/complete/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/status/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/auth/[...all]/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/ai/oauth/start/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/brand-kits/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/batch-edit/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/editor-agent/hyperframes-embedding/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/editor-agent/connection/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/editor-agent/knowledge/route.js.nft.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f3e2d049-539d-40f0-8b5a-8336c1f4233d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:18:34.307Z",
+  "parents": [],
+  "branch": "main"
+}

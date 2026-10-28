@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ede93a4d92af12f8fff863487a04e5e2740abec9f3eebd8c48777c2dece7bab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T10:39:58.823Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'headers|origin ===|old\\?\\.origin|app.whenReady' classic/apps/electron/app/render-worker.cjs classic/apps/web/src/export/queue/host.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9b0f47bf-e892-4ade-a306-588df2f53998"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T10:39:58.832Z",
+  "parents": [],
+  "branch": "main"
+}
