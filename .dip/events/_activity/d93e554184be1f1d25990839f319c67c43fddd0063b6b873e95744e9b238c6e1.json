@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d93e554184be1f1d25990839f319c67c43fddd0063b6b873e95744e9b238c6e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T08:55:29.076Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/card-podcasts-early-2026-10-28/acoustic-matches.json",
+          ".local/card-podcasts-early-2026-10-28/match.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cc22e8eb-52a9-4674-b855-35dc2f434fb7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:55:29.079Z",
+  "parents": [],
+  "branch": "main"
+}

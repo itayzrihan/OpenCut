@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d928097497347ad95daa3e063cbca7e7032f0860fef1b3cba6002b89ba0b2cdb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:51:24.278Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,140p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx\nrg -n 'podcast|quick|sync' classic/apps/web/src/editor-agent/*.ts | head -35",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b64d6748-a968-4cc0-a010-f6a6d9ace950"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:51:24.413Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24f97e6f53e34c20f2a59fbddded84d126e6ce56e1d0d6f5bd5041df23362169",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:40:20.565Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nr=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects');rows=json.loads(Path('analysis/card-podcasts-early-2026-10-28/projects.json').read_text());mapping=json.loads(Path('analysis/card-podcasts-early-2026-10-28/verified-mapping.json').read_text())\nfor row in rows:\n j=json.loads((r/row['projectId']/'project.json').read_text());s=next((s for s in j['scenes'] if s['id']=='multicam-scene-1'),None)\n if not s:continue\n t=s['tracks'];tracks=t['overlay']+[t['main']]+t['audio'];sharp=next(t for t in tracks if t['type']=='effect')['elements'][0];vis=sorted((e['startTime'],e['startTime']+e['duration']) for t in tracks if t['type']=='video' for e in t['elements'] if e.get('enabled',True));assert vis[0][0]==0 and vis[-1][1]==sharp['duration'];assert all(a[1]==b[0] for a,b in zip(vis,vis[1:]));print(row['session'],'continuous video',round(sharp['duration']/120000,2),'shots',len(vis))\n for t in tracks:\n  for e in t['elements']:\n   if e['type'] in ['audio','video']:assert abs(e['duration']+e['trimStart']+e['trimEnd']-e['sourceDuration'])<=2\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-60434078-0cef-4bac-a65f-d1f9979d2187"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:40:20.959Z",
+  "parents": [],
+  "branch": "main"
+}

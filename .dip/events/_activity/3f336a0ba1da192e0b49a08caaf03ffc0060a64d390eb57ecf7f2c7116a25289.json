@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f336a0ba1da192e0b49a08caaf03ffc0060a64d390eb57ecf7f2c7116a25289",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:38:34.628Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-early-2026-10-28/qa-0156.json');j=json.loads(p.read_text());j.update(reopened=True,reopenedDurationSeconds=2068.64);p.write_text(json.dumps(j,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e322a70b-da05-4e1c-b65e-f24ed659d50f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:38:35.320Z",
+  "parents": [],
+  "branch": "main"
+}

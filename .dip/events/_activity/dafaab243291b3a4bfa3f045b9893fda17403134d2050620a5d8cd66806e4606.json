@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dafaab243291b3a4bfa3f045b9893fda17403134d2050620a5d8cd66806e4606",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:48:30.131Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff -- .dip/config.json\nrg --files analysis/card-podcasts-early-2026-10-28",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b506608b-41b4-4795-8c3b-4c01200404f8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:48:30.939Z",
+  "parents": [],
+  "branch": "main"
+}

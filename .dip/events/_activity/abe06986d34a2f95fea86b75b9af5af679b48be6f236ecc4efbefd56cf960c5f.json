@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abe06986d34a2f95fea86b75b9af5af679b48be6f236ecc4efbefd56cf960c5f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:59:44.753Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 analysis/card-podcasts-early-2026-10-28/speech_frames.py > .local/card-podcasts-early-2026-10-28/speech.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ab10f6ad-6f8d-45c2-b7d8-1f2904b3534d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:59:45.590Z",
+  "parents": [],
+  "branch": "main"
+}

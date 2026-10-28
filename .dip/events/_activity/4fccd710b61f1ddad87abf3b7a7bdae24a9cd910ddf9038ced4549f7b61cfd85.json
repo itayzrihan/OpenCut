@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4fccd710b61f1ddad87abf3b7a7bdae24a9cd910ddf9038ced4549f7b61cfd85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:07:03.409Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '280,380p' classic/apps/web/src/podcast-sync/engine.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-185fd656-c4c1-4bdb-86d8-3069466b4832"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:07:03.611Z",
+  "parents": [],
+  "branch": "main"
+}

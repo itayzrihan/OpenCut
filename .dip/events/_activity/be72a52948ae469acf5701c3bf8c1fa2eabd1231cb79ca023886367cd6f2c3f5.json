@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be72a52948ae469acf5701c3bf8c1fa2eabd1231cb79ca023886367cd6f2c3f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:04:20.087Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ba177624-4a5e-4e9a-b592-a189d0dd16fc"
+      },
+      {
+        "at": "2026-10-28T09:04:20.317Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -1 .local/card-podcasts-early-2026-10-28/speech.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-96463a73-0092-4fa7-87c5-7c0190aab5bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:04:20.333Z",
+  "parents": [],
+  "branch": "main"
+}

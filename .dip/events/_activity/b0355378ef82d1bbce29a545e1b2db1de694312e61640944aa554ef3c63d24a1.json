@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b0355378ef82d1bbce29a545e1b2db1de694312e61640944aa554ef3c63d24a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:45:43.875Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-early-2026-10-28');r=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects');rows=json.loads((p/'projects.json').read_text());mapping=json.loads((p/'verified-mapping.json').read_text());lines=['# פודקאסטים מוקדמים — מוכנים ל־Start/End','', 'כל שמונת הפרויקטים נוצרו באמצעות Quick Auto Edit הרגיל. המצלמות מסונכרנות, האודיו של המצלמות מושתק, והאודיו החיצוני כולל Volume +15 dB, Gain −1 dB, Hard Limiter −1 dB ו־Noise Reduction 100%. Sharpen 15% מכסה את כל הפרק. קצב הפרויקט 25fps.','', 'האודיו המקומי: `/Users/itayzrihan/Movies/OpenCut Media/Event sessions 0149-0160/Audio`. כל 24 קובצי מיקרופון 1/2 של סשנים 0149–0160 הועתקו ואומתו ב־SHA-256. גם ארבעת הפרויקטים הקודמים מקושרים לעותקים המקומיים, ללא שינוי בעריכות Start/End שלהם. אין צורך ב־MicroSD להמשך העבודה על הפרקים האלה. כרטיסי המצלמות A1 ו־Untitled עדיין דרושים.','', '| סשן | קובץ מצלמה | משך הטיימליין לפני Start/End | פרויקט |','|---|---|---|---|']\nfor row in rows:\n j=json.loads((r/row['projectId']/'project.json').read_text());s=next(s for s in j['scenes'] if s['id']=='multicam-scene-1');ts=s['tracks'];tracks=ts['overlay']+[ts['main']]+ts['audio'];end=next(t for t in tracks if t['type']=='effect')['elements'][0]['duration']/120000;row['durationSeconds']=end;row['name']=j['metadata']['name'];row['sceneId']=s['id'];n=row['session'];clip=next(m['clip'] for m in mapping if m['session']==n);lines.append(f\"| {n:04} | {clip} | {int(end//60):02}:{end%60:05.2f} | [פתיחה](http://localhost:3211/editor/{row['projectId']}) |\")\n linesCount=sum(1 for t in tracks if t['type']=='video' for e in t['elements'] if e.get('enabled',True));print(n,end,linesCount)\nlines+=['','A1 משויך למיקרופון 1; Untitled למיקרופון 2. השיוך אומת אקוסטית ובדגימות של תנועת שפתיים לאורך כל שמונת הסשנים. אין זיהוי שמות אישיים מתמונות.','', 'סשן 0154 קצר במקור: כ־3:24 אודיו; נשמר בנפרד. ב־0150, 0155 ו־0156 נשמר גם זנב המצלמה שממשיך לא",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f1c9d1d4-a5c0-4422-9e2b-f5b05103d2b2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:45:44.532Z",
+  "parents": [],
+  "branch": "main"
+}

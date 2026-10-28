@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "869e80f4b1a8b36f530d061882d99ec5a8a09de0f6ef590aff2cd29e8e5f5595",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:14:52.375Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil,hashlib,json,time,os\nsrc=Path('/Volumes/MicroSD/SOUND');dst=Path('/Users/itayzrihan/Movies/OpenCut Media/Event sessions 0149-0160/Audio');dst.mkdir(parents=True,exist_ok=True)\nfiles=[src/f'240504_{n:04}_{m}.wav' for n in range(149,161) for m in (1,2)]\nprint('Copying',len(files),'files',round(sum(p.stat().st_size for p in files)/1e9,3),'GB',flush=True)\ndef sha(p):\n h=hashlib.sha256()\n with p.open('rb') as f:\n  for b in iter(lambda:f.read(8*1024*1024),b''):h.update(b)\n return h.hexdigest()\nrows=[]\nfor p in files:\n q=dst/p.name\n if not q.exists():\n  tmp=q.with_suffix('.wav.partial');shutil.copy2(p,tmp);os.rename(tmp,q)\n a=sha(p);b=sha(q)\n if a!=b:raise RuntimeError('Hash mismatch '+p.name)\n rows.append(dict(source=str(p),local=str(q),size=p.stat().st_size,sha256=a,verified=True))\n print('Verified',p.name,flush=True)\nout=Path('analysis/card-podcasts-early-2026-10-28/local-audio-copy.json');out.write_text(json.dumps(dict(destination=str(dst),files=rows),indent=2)+'\\n')\nprint('DONE',dst,flush=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4f0d4865-a501-4bc8-a9ed-f73be390ce18"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:14:52.463Z",
+  "parents": [],
+  "branch": "main"
+}

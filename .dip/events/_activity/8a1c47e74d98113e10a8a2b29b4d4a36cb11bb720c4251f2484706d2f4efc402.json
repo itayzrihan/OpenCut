@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a1c47e74d98113e10a8a2b29b4d4a36cb11bb720c4251f2484706d2f4efc402",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:31:17.777Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,%cpu,%mem,comm | sort -k2 -nr | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e31ca5ac-c09a-4c20-8a74-247ec23f5904"
+      },
+      {
+        "at": "2026-10-28T09:31:18.219Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,%cpu,%mem,comm | sort -k2 -nr | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e31ca5ac-c09a-4c20-8a74-247ec23f5904"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:31:18.308Z",
+  "parents": [],
+  "branch": "main"
+}

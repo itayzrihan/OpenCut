@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ac4fac43a6e9ab490cbd2b2b7cadcc4ab2ef8375361b42aeae43567897af4ae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:54:10.982Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,130p' analysis/card-podcasts-2026-10-28/trim_preroll.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-341e10ae-b8bc-4998-847d-0e245d36b28c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:54:11.860Z",
+  "parents": [],
+  "branch": "main"
+}

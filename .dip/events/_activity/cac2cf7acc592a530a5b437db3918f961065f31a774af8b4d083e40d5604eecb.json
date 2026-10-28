@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cac2cf7acc592a530a5b437db3918f961065f31a774af8b4d083e40d5604eecb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:59:09.720Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nP=pathlib.Path('analysis/card-podcasts-early-2026-10-28');rows=json.loads((P/'acoustic-matches.json').read_text());late=json.loads((P/'first-session-windows.json').read_text())\nfor r in rows:\n if 'C7460.' in r['camera']:\n  candidates=[x for x in late if x['camera']==r['camera']];best=max(candidates,key=lambda x:x['matches'][0]['score']);r['matches']=best['matches'];r['verifiedWindowStart']=best['start']\n(P/'session-matches.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))\ns=pathlib.Path('analysis/card-podcasts-2026-10-28/verify_sources.py').read_text().replace(\"CACHE=ROOT/'.local/card-podcasts-2026-10-28'\",\"CACHE=ROOT/'.local/card-podcasts-early-2026-10-28'\").replace(\"OUT/'acoustic-matches.json'\",\"OUT/'session-matches.json'\").replace(\"for t in [120,700,1400]:\",\"duration=next(float(x['probe']['format']['duration']) for x in json.loads((OUT/'inventory.json').read_text()) if x['path']==row['camera'])\\n for t in [max(90,round(duration*.2)),round(duration*.5),round(duration*.8)]:\")\n(P/'verify_sources.py').write_text(s)\nPY\npython3 analysis/card-podcasts-early-2026-10-28/verify_sources.py > .local/card-podcasts-early-2026-10-28/precision.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e7212350-b624-4080-8681-4d922a4cbc65"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:59:10.340Z",
+  "parents": [],
+  "branch": "main"
+}

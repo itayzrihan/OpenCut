@@ -346,6 +346,13 @@
         "analysis/event-exports-2026-10-28/verify.py"
       ],
       "timeoutMs": 180000
+    },
+    "card-podcasts-early-20261028": {
+      "command": [
+        "python3",
+        "analysis/card-podcasts-early-2026-10-28/verify_delivery.py"
+      ],
+      "timeoutMs": 120000
     }
   },
   "mode": "coordinate"

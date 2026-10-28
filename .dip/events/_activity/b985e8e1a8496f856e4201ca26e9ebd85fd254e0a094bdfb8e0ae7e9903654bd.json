@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b985e8e1a8496f856e4201ca26e9ebd85fd254e0a094bdfb8e0ae7e9903654bd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:02:25.702Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '338,390p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx\nsed -n '1180,1240p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5030ece3-ad4b-4369-90f2-e7de26a2c5cf"
+      },
+      {
+        "at": "2026-10-28T09:02:25.912Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '338,390p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx\nsed -n '1180,1240p' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5030ece3-ad4b-4369-90f2-e7de26a2c5cf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:02:26.460Z",
+  "parents": [],
+  "branch": "main"
+}

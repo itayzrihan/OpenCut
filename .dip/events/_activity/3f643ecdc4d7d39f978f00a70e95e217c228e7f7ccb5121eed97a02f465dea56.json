@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f643ecdc4d7d39f978f00a70e95e217c228e7f7ccb5121eed97a02f465dea56",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:52:08.842Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\ns=Path('analysis/card-podcasts-2026-10-28/match_audio.py').read_text().replace(\"CACHE=ROOT/'.local/card-podcasts-2026-10-28'\",\"CACHE=ROOT/'.local/card-podcasts-early-2026-10-28'\").replace(\"selected=[x for x in items if x['kind']=='camera' or int(Path(x['path']).name.split('_')[1])>=157]\",\"selected=items\")\nPath('analysis/card-podcasts-early-2026-10-28/match_audio.py').write_text(s)\nPY\npython3 analysis/card-podcasts-early-2026-10-28/match_audio.py > .local/card-podcasts-early-2026-10-28/match.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7d05081c-7626-4a8f-84a2-bf6d607d000d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:52:09.590Z",
+  "parents": [],
+  "branch": "main"
+}

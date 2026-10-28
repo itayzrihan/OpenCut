@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccfb125793168d1807aaf527fc7efa53d89c8595897528eb26c8dfe16b84b0b6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:16:40.689Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short | head -30\nsed -n '1,100p' analysis/card-podcasts-2026-10-28/complete_camera_tails.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c4182745-3f57-430f-a770-8da940ebd626"
+      },
+      {
+        "at": "2026-10-28T09:16:41.603Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short | head -30\nsed -n '1,100p' analysis/card-podcasts-2026-10-28/complete_camera_tails.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c4182745-3f57-430f-a770-8da940ebd626"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:16:41.632Z",
+  "parents": [],
+  "branch": "main"
+}

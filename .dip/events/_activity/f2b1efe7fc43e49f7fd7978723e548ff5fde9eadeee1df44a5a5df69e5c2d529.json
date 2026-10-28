@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f2b1efe7fc43e49f7fd7978723e548ff5fde9eadeee1df44a5a5df69e5c2d529",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:38:59.340Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add -- .dip/config.json analysis/event-exports-2026-10-28 .dip/events/task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46\ngit commit --only -m 'Record verified trimmed event podcast exports' -- .dip/config.json analysis/event-exports-2026-10-28 .dip/events/task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46 > /tmp/event-exports-commit.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-986a1b11-e11c-4896-b279-ac6f1afb01a0"
+      },
+      {
+        "at": "2026-10-28T07:38:59.404Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 /tmp/event-exports-commit.log; git status --short -- analysis/event-exports-2026-10-28 .dip/config.json; git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-162a6a4e-97b0-4af0-b684-41593329dc54"
+      },
+      {
+        "at": "2026-10-28T07:38:59.842Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 /tmp/event-exports-commit.log; git status --short -- analysis/event-exports-2026-10-28 .dip/config.json; git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-162a6a4e-97b0-4af0-b684-41593329dc54"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:39:00.055Z",
+  "parents": [],
+  "branch": "main"
+}

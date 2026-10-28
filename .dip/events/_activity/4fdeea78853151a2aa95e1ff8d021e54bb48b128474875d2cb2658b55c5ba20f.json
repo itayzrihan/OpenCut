@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4fdeea78853151a2aa95e1ff8d021e54bb48b128474875d2cb2658b55c5ba20f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:30:24.503Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5ac5603e-af29-4c3e-a196-7e08ad23086a"
+      },
+      {
+        "at": "2026-10-28T09:30:24.523Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nr=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\nfor id in ['52b1cd17-bd02-41d0-819e-122e3ca07e20','2e783e6d-7535-4759-a978-ae4f397ef7f0','3ef16bbd-6c60-4c04-b6df-5e934b329eed']:\n j=json.loads((r/id/'project.json').read_text());s=next(s for s in j['scenes'] if s['id']=='multicam-scene-1');t=s['tracks'];print(id,'sceneactive',j['currentSceneId'],'tracks',list(t),'fps',j['settings']['fps'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-18700012-ee96-42ce-9d98-d70a7e30cca8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:30:24.840Z",
+  "parents": [],
+  "branch": "main"
+}

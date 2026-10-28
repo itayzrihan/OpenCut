@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "39703adacaad19c33539b0218cdadc4468c057b94456bc5cb0beda89d16bd052",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:47:09.244Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nj=json.loads(Path('analysis/card-podcasts-early-2026-10-28/inventory.json').read_text());print(list(j[0].keys()));print({k:v for k,v in j[0].items() if k!='probe'})\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f3196b9b-43f9-4e4a-b669-31ba0a30b4a3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:47:09.982Z",
+  "parents": [],
+  "branch": "main"
+}

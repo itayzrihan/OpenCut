@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "49ab20c66479cd26e0084739e129f7d3983d47fc7aa3cbd73598d52dd235aa30",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T08:51:23.408Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/card-podcasts-early-2026-10-28",
+          ".local/card-podcasts-early-2026-10-28",
+          "analysis/card-podcasts-early-2026-10-28/inventory.py",
+          ".local/card-podcasts-early-2026-10-28/inventory.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7f0b7a7d-c198-4144-afb1-00c5badbad87"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:51:23.412Z",
+  "parents": [],
+  "branch": "main"
+}

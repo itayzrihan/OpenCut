@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f4f7fb38dba035002bf90039f65d0cdd350d13f4d1593d1f0c0590a3dfd93a89",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:41:08.903Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('analysis/card-podcasts-early-2026-10-28/verified-mapping.json');j=json.loads(p.read_text())\nfor s in j:\n for c in s['cameras']:c['localAudioPath']='/Users/itayzrihan/Movies/OpenCut Media/Event sessions 0149-0160/Audio/'+Path(c['audioPath']).name\np.write_text(json.dumps(j,ensure_ascii=False,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d8a3b1f7-baaa-40ef-8a54-30f7c10e39e3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:41:09.251Z",
+  "parents": [],
+  "branch": "main"
+}

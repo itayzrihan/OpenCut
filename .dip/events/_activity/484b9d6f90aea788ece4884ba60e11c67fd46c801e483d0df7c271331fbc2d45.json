@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "484b9d6f90aea788ece4884ba60e11c67fd46c801e483d0df7c271331fbc2d45",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:56:04.833Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -3 .local/card-podcasts-early-2026-10-28/match.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8a2564b2-60cf-4cfe-a123-f1da50ab681e"
+      },
+      {
+        "at": "2026-10-28T08:56:05.036Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -3 .local/card-podcasts-early-2026-10-28/match.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8a2564b2-60cf-4cfe-a123-f1da50ab681e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:56:05.774Z",
+  "parents": [],
+  "branch": "main"
+}

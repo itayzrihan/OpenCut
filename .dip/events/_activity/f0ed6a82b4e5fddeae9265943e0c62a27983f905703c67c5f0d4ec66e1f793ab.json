@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0ed6a82b4e5fddeae9265943e0c62a27983f905703c67c5f0d4ec66e1f793ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T08:57:01.385Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/card-podcasts-early-2026-10-28/first-session-windows.json",
+          ".local/card-podcasts-early-2026-10-28/refine-first.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8cc3f50a-8760-4b8b-aeb8-6d67cea00785"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:57:01.386Z",
+  "parents": [],
+  "branch": "main"
+}

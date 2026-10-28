@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7d5b71b550019e1870f99a14764178f265383e06f29179189eaf6838943a1789",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T08:52:09.588Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/card-podcasts-early-2026-10-28/match_audio.py",
+          ".local/card-podcasts-early-2026-10-28/match.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1c846ef6-16ef-4dc8-96ff-1e0203b73a82"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:52:09.591Z",
+  "parents": [],
+  "branch": "main"
+}

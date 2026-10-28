@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ff972d40af4260b62c1f40ddcd18e1aedc9ab1fa7aa28e768a98995b15fc3ed",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:58:14.713Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' analysis/card-podcasts-2026-10-28/verify_sources.py\nrg --files analysis .local/card-podcasts-2026-10-28 | rg '(precision|wave.*match|verify.*sync).*\\.py$' | head -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0b4c13cd-7f54-443c-990f-cca6f6e621f9"
+      },
+      {
+        "at": "2026-10-28T08:58:14.949Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' analysis/card-podcasts-2026-10-28/verify_sources.py\nrg --files analysis .local/card-podcasts-2026-10-28 | rg '(precision|wave.*match|verify.*sync).*\\.py$' | head -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0b4c13cd-7f54-443c-990f-cca6f6e621f9"
+      },
+      {
+        "at": "2026-10-28T08:58:14.951Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-early-2026-10-28/refine_first.py <<'PY'\nimport json,pathlib,subprocess,numpy as np\nP=pathlib.Path(__file__).parent;C=P.parents[1]/'.local/card-podcasts-early-2026-10-28';items=json.load(open(P/'inventory.json'));results=[]\ndef correlate(ref,target,start):\n m=len(ref);n=len(target);size=1<<(n+m-1).bit_length();r=ref.astype(float)-np.mean(ref)\n dot=np.fft.irfft(np.fft.rfft(target,size)*np.fft.rfft(r[::-1],size),size)[m-1:n]\n a=np.r_[0,np.cumsum(target,dtype=float)];b=np.r_[0,np.cumsum(target.astype(float)**2)];var=np.maximum(0,b[m:]-b[:-m]-(a[m:]-a[:-m])**2/m)\n score=dot/np.maximum(np.sqrt(var*np.sum(r*r)),1e-20);at=int(np.argmax(score));return dict(score=float(score[at]),audioStartMinusCameraStart=start-at*.01)\nfor camera in [x for x in items if x['kind']=='camera' and 'C7460.' in x['path']]:\n for start in [300,900,1500]:\n  raw=subprocess.check_output(['ffmpeg','-v','error','-ss',str(start),'-i',camera['path'],'-t','60','-map','0:a:0','-vn','-ac','1','-ar','48000','-f','f32le','-']);a=np.frombuffer(raw,dtype='<f4');n=len(a)//480*480;ref=np.sqrt(np.mean(a[:n].reshape(-1,480).astype(float)**2,axis=1)).astype(np.float32)\n  matches=[dict(path=x['path'],**correlate(ref,np.load(C/(pathlib.Path(x['path']).stem+'.npy')),start)) for x in items if x['kind']=='microphone'];matches.sort(key=lambda x:x['score'],reverse=True);r=dict(camera=camera['path'],start=start,matches=matches);results.append(r);print(json.dumps(dict(camera=camera['path'],start=start,matches=matches[:3])),flush=True)\n(P/'first-session-windows.json').write_text(json.dumps(results,indent=2))\nPY\npython3 analysis/card-podcasts-early-2026-10-28/refine_first.py > .local/card-podcasts-early-2026-10-28/refine-first.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c4ad6ebb-c542-44b0-8b84-40378d1b217a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:58:15.389Z",
+  "parents": [],
+  "branch": "main"
+}

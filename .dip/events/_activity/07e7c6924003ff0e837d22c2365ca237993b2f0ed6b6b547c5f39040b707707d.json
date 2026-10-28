@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07e7c6924003ff0e837d22c2365ca237993b2f0ed6b6b547c5f39040b707707d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:53:09.618Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '395,440p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nsed -n '475,540p' classic/apps/web/src/components/editor/panels/assets/views/assets.tsx\nrg -n 'sourcePaths|Link.*path|Link.*[Ff]ile|textarea' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx | head -25\ncat .local/card-podcasts-2026-10-28/check160.py | head -70",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1f85b796-35e2-4c7c-8f05-abb49f29439d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:53:09.739Z",
+  "parents": [],
+  "branch": "main"
+}

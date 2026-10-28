@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e0d7cbf3755e79935a331fb6d8a9888c2e453a2c727c5266bdcaf2a3ed16d96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:51:32.346Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/card-podcasts-early-2026-10-28 .local/card-podcasts-early-2026-10-28\ncat > analysis/card-podcasts-early-2026-10-28/inventory.py <<'PY'\nimport concurrent.futures,json,pathlib,subprocess,re\nout=pathlib.Path(__file__).parent\npaths=[p for volume in ['A1','Untitled'] for p in sorted(pathlib.Path('/Volumes',volume,'PRIVATE/M4ROOT/CLIP').glob('*.MP4'))]\npaths += [p for p in sorted(pathlib.Path('/Volumes/MicroSD/SOUND').glob('*.wav')) if re.search(r'_0(148|149|15[0-6])_[12]\\.wav$',p.name)]\ndef probe(p):\n s=p.stat();d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(p)]));return dict(path=str(p),kind='camera' if p.suffix=='.MP4' else 'microphone',size=s.st_size,mtimeNs=s.st_mtime_ns,probe=d)\nwith concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:items=list(pool.map(probe,paths))\n(out/'inventory.json').write_text(json.dumps(items,ensure_ascii=False,indent=2))\nfor x in items:print(x['path'],x['probe']['format']['duration'],[(s['codec_type'],s.get('width'),s.get('height'),s.get('sample_rate')) for s in x['probe']['streams']])\nPY\npython3 analysis/card-podcasts-early-2026-10-28/inventory.py > .local/card-podcasts-early-2026-10-28/inventory.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-58313b07-4f96-4367-bed4-24e95fbdfe3a"
+      },
+      {
+        "at": "2026-10-28T08:51:32.353Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -18 .local/card-podcasts-early-2026-10-28/inventory.log\nrg -n 'quick|Quick|runPodcast|createPodcast' classic/apps/web/src/podcast-sync/components/podcast-sync-dialog.tsx | head -25\nsed -n '1,120p' analysis/card-podcasts-2026-10-28/speech_frames.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c0cdc812-d0dc-47f3-bf9e-fcd29811ed41"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:51:32.560Z",
+  "parents": [],
+  "branch": "main"
+}

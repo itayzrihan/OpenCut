@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75263882d69bed5ab5eccff62d577ea1abbfbbbd0be8541bf484b93151ee7107",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:05:42.371Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/card-podcasts-early-2026-10-28/confirm_routes.py <<'PY'\nimport json,subprocess,pathlib,numpy as np\nfrom PIL import Image,ImageDraw\nP=pathlib.Path(__file__).parent;C=P.parents[1]/'.local/card-podcasts-early-2026-10-28';rows=json.load(open(P/'session-matches.json'));evidence=[]\nfor session,lo,hi in [(153,100,1350),(154,70,155)]:\n a,b=[np.load(C/f'240504_{session:04}_{i}.npy') for i in [1,2]];n=min(len(a),len(b))//100*100;a=a[:n].reshape(-1,100).mean(1);b=b[:n].reshape(-1,100).mean(1);a=np.convolve(a,np.ones(5)/5,mode='same');b=np.convolve(b,np.ones(5)/5,mode='same');ratio=np.log((a+1e-7)/(b+1e-7));valid=(np.arange(len(a))>=lo)&(np.arange(len(a))<=hi)&(np.maximum(a,b)>np.percentile(np.maximum(a,b),40));ratio[~valid]=np.nan;times=[int(np.nanargmax(ratio)),int(np.nanargmin(ratio))];sheet=Image.new('RGB',(1200,800),'#202020');draw=ImageDraw.Draw(sheet)\n for mi,t in enumerate(times):\n  evidence.append(dict(session=session,mic=mi+1,time=t,ratio=float(np.exp(ratio[t]))))\n  for ci,card in enumerate(['A1','Untitled']):\n   row=next(r for r in rows if f'/{card}/' in r['camera'] and f'C{7460+session-149}.' in r['camera']);base=t+row['matches'][0]['audioStartMinusCameraStart'];y=mi*400+ci*200;draw.text((4,y+2),f'{session} mic{mi+1} {card} mic {t}s camera {base:.2f}s',fill='white');pat=str(C/f'confirm-{session}-{mi}-{ci}-%02d.jpg');subprocess.run(['ffmpeg','-v','error','-ss',str(base),'-i',row['camera'],'-t','2.4','-vf','fps=2.5,scale=640:360','-frames:v','6','-y',pat],check=True)\n   for fi in range(6):sheet.paste(Image.open(C/f'confirm-{session}-{mi}-{ci}-{fi+1:02d}.jpg').crop((160,0,480,288)).resize((200,180)),(fi*200,y+20))\n sheet.save(C/f'confirm-{session}.jpg');print(session,times,flush=True)\n(P/'route-confirmation-moments.json').write_text(json.dumps(evidence,indent=2))\nPY\n/Users/itayzrihan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 analysis/card-podcasts-early-2026-10-28/confirm_routes.py > .local/card-podcasts-early-2026-10-28",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-08a405a5-8160-4506-a96c-71f4ed9f6887"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:05:42.657Z",
+  "parents": [],
+  "branch": "main"
+}

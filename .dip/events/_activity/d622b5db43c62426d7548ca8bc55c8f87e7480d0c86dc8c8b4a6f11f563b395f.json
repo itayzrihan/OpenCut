@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d622b5db43c62426d7548ca8bc55c8f87e7480d0c86dc8c8b4a6f11f563b395f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T08:59:32.736Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/card-podcasts-early-2026-10-28/speech.log\ntail -2 .local/card-podcasts-early-2026-10-28/precision.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e745ae8d-c99c-4f7d-9765-64048296e802"
+      },
+      {
+        "at": "2026-10-28T08:59:32.959Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/card-podcasts-early-2026-10-28/speech.log\ntail -2 .local/card-podcasts-early-2026-10-28/precision.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e745ae8d-c99c-4f7d-9765-64048296e802"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T08:59:33.578Z",
+  "parents": [],
+  "branch": "main"
+}

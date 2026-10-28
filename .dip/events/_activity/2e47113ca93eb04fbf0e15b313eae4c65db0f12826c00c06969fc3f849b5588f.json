@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2e47113ca93eb04fbf0e15b313eae4c65db0f12826c00c06969fc3f849b5588f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T09:09:58.754Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nP=pathlib.Path('analysis/card-podcasts-early-2026-10-28');rows=json.loads((P/'session-matches.json').read_text());out=[]\na1=['חולצה מכופתרת תכלת','חולצה שחורה מכופתרת ומכנסיים בהירים','ז׳קט שחור וחולצה לבנה','חולצה מכופתרת תכלת','ז׳קט תכלת וחולצה לבנה','חולצת טי שחורה עם כיתוב','חולצת טי שחורה עם כיתוב','חולצה מכופתרת תכלת'];other=['חולצת פולו כחולה כהה','חולצת טי שחורה עם כיתוב','חולצת טי שחורה עם כיתוב','ז׳קט כתום','חולצת טי שחורה עם כיתוב','חולצה שחורה ושיער מתולתל','חולצה שחורה ושיער מתולתל','חולצת פסים']\nfor i,session in enumerate(range(149,157)):\n clip=7460+i; cams=[r for r in rows if f'C{clip}.' in r['camera']];assert len(cams)==2\n assert all(pathlib.Path(r['matches'][0]['path']).stem.split('_')[1]==f'{session:04}' for r in cams)\n out.append(dict(session=session,clip=f'C{clip}.MP4',cameras=[dict(path=r['camera'],microphone=1 if '/A1/' in r['camera'] else 2,audioPath=f\"/Volumes/MicroSD/SOUND/240504_{session:04}_{1 if '/A1/' in r['camera'] else 2}.wav\",coarseOffset=r['matches'][0]['audioStartMinusCameraStart']) for r in cams],appearanceA1=a1[i],appearanceUntitled=other[i],shortRecording=session==154))\n(P/'verified-mapping.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))\nlines=['# מיפוי שמונת הסשנים המוקדמים','', 'השיוך מבוסס על התאמת סאונד ובדיקות מדגמיות של דיבור בשתי המצלמות. A1 שייך למיקרופון 1; Untitled למיקרופון 2. שמות אישיים לא הוסקו מהפנים.','','| סשן | קובץ בשני הכרטיסים | A1 · מיקרופון 1 | Untitled · מיקרופון 2 |','|---|---|---|---|']\nfor r in out:lines.append(f\"| {r['session']:04} | {r['clip']} | {r['appearanceA1']} | {r['appearanceUntitled']} |\")\nlines+=['','קבצי האודיו הם `240504_<session>_1.wav` ו־`240504_<session>_2.wav`. קבצי 3/4/MIX לא בשימוש. סשן 0154 קצר: כ־3:24 אודיו וכ־3:36–3:57 במצלמות. נשמר בנפרד.','','ב־C7460 חלון הפתיחה האקוסטי אינו חד משמעי; חלונות 300/900/1500 שניות מראים בבירור את סשן 0149. בסשנים 0153 ו־0154 נבדקו רגעי דיבור נוספים, כדי להימנע מהסתמכות על טיפול במיקרופון או כיסאות ר",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f7ae25d4-65d7-48e9-ab4a-fa3ed9d8eb31"
+      },
+      {
+        "at": "2026-10-28T09:09:59.054Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-015ea392-503f-4a3c-a394-360e53ddac5c"
+      },
+      {
+        "at": "2026-10-28T09:09:59.055Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nP=pathlib.Path('analysis/card-podcasts-early-2026-10-28');rows=json.loads((P/'session-matches.json').read_text());out=[]\na1=['חולצה מכופתרת תכלת','חולצה שחורה מכופתרת ומכנסיים בהירים','ז׳קט שחור וחולצה לבנה','חולצה מכופתרת תכלת','ז׳קט תכלת וחולצה לבנה','חולצת טי שחורה עם כיתוב','חולצת טי שחורה עם כיתוב','חולצה מכופתרת תכלת'];other=['חולצת פולו כחולה כהה','חולצת טי שחורה עם כיתוב','חולצת טי שחורה עם כיתוב','ז׳קט כתום','חולצת טי שחורה עם כיתוב','חולצה שחורה ושיער מתולתל','חולצה שחורה ושיער מתולתל','חולצת פסים']\nfor i,session in enumerate(range(149,157)):\n clip=7460+i; cams=[r for r in rows if f'C{clip}.' in r['camera']];assert len(cams)==2\n assert all(pathlib.Path(r['matches'][0]['path']).stem.split('_')[1]==f'{session:04}' for r in cams)\n out.append(dict(session=session,clip=f'C{clip}.MP4',cameras=[dict(path=r['camera'],microphone=1 if '/A1/' in r['camera'] else 2,audioPath=f\"/Volumes/MicroSD/SOUND/240504_{session:04}_{1 if '/A1/' in r['camera'] else 2}.wav\",coarseOffset=r['matches'][0]['audioStartMinusCameraStart']) for r in cams],appearanceA1=a1[i],appearanceUntitled=other[i],shortRecording=session==154))\n(P/'verified-mapping.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))\nlines=['# מיפוי שמונת הסשנים המוקדמים','', 'השיוך מבוסס על התאמת סאונד ובדיקות מדגמיות של דיבור בשתי המצלמות. A1 שייך למיקרופון 1; Untitled למיקרופון 2. שמות אישיים לא הוסקו מהפנים.','','| סשן | קובץ בשני הכרטיסים | A1 · מיקרופון 1 | Untitled · מיקרופון 2 |','|---|---|---|---|']\nfor r in out:lines.append(f\"| {r['session']:04} | {r['clip']} | {r['appearanceA1']} | {r['appearanceUntitled']} |\")\nlines+=['','קבצי האודיו הם `240504_<session>_1.wav` ו־`240504_<session>_2.wav`. קבצי 3/4/MIX לא בשימוש. סשן 0154 קצר: כ־3:24 אודיו וכ־3:36–3:57 במצלמות. נשמר בנפרד.','','ב־C7460 חלון הפתיחה האקוסטי אינו חד משמעי; חלונות 300/900/1500 שניות מראים בבירור את סשן 0149. בסשנים 0153 ו־0154 נבדקו רגעי דיבור נוספים, כדי להימנע מהסתמכות על טיפול במיקרופון או כיסאות ר",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f7ae25d4-65d7-48e9-ab4a-fa3ed9d8eb31"
+      },
+      {
+        "at": "2026-10-28T09:09:59.244Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_02b30e59a742267dc75de69ddb55cb70cb8afa7ed148bea2b13be3dfe334da89",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-015ea392-503f-4a3c-a394-360e53ddac5c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T09:09:59.426Z",
+  "parents": [],
+  "branch": "main"
+}
