@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "52ce6db1e9956e9e8a0eceb544098222cb2a6a8dc0a739ee282e096e4920a49c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T07:27:21.023Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/event-exports-2026-10-28/verify.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d521d561-6e72-46d7-b548-db3e5440c7c4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:27:21.033Z",
+  "parents": [],
+  "branch": "main"
+}

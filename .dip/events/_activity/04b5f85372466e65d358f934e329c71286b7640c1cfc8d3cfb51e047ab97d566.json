@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "04b5f85372466e65d358f934e329c71286b7640c1cfc8d3cfb51e047ab97d566",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:57:27.642Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\njobs=json.load(open('.local/event-exports-2026-10-28/jobs.json'));root=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects')\nfor j in jobs:\n p=json.loads(json.loads((root/j['projectId']/'project.json').read_text())['__opencutEditorSession'])['saved']['project']\n print(j['projectId'],p==j['snapshot']['document']);s=next(s for s in p['scenes'] if s['id']==j['sceneId']);tracks=s['tracks'];els=[e for t in [tracks['main'],*tracks['audio'],*tracks['overlay']] for e in t['elements']];print(max(e['startTime']+e['duration'] for e in els)/120000)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d3b2b77b-9915-4fbd-b06d-8abad298d352"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:57:27.942Z",
+  "parents": [],
+  "branch": "main"
+}

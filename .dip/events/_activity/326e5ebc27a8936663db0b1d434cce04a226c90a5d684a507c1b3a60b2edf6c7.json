@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "326e5ebc27a8936663db0b1d434cce04a226c90a5d684a507c1b3a60b2edf6c7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:37:16.638Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,pathlib\nr=json.load(open('analysis/event-exports-2026-10-28/manifest.json'))[3]\nsubprocess.run(['ffmpeg','-v','error','-ss',str(r['seconds']/2),'-i',r['path'],'-frames:v','1','-vf','scale=640:-1','.local/event-exports-2026-10-28/fourth-middle.jpg'],check=True)\npathlib.Path('analysis/event-exports-2026-10-28/verification.log').write_text(pathlib.Path('.local/event-exports-2026-10-28/verification.log').read_text())\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-30706ffc-d841-4088-810a-1a4092f5a306"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:37:16.686Z",
+  "parents": [],
+  "branch": "main"
+}

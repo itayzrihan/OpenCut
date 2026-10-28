@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "51d0e0ed0a3c5304152105b2966022721857602bd09566d37af5c017b7c2b4e5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:57:57.654Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/event-exports-2026-10-28/verify.py <<'PY'\nimport hashlib,json,pathlib,subprocess\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751')\nrows=json.loads(pathlib.Path(__file__).with_name('manifest.json').read_text())\nqueue=json.loads((root/'render-queue/runtime.json').read_text())['active']['document']['renderQueue']\ndef digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()\nassert len(rows)==4\nresults=[]\nfor row in rows:\n job=next(j for j in queue if j['id']==row['jobId'])\n assert job['status']=='completed',(row['name'],job['status'],job['message'])\n assert job['sourceRevision']==row['sourceRevision']\n assert digest(job['snapshot']['document'])==row['snapshotSha256']\n saved=json.loads(json.loads((root/'projects'/row['projectId']/'project.json').read_text())['__opencutEditorSession'])['saved']\n assert saved['editorRevision']>=row['sourceRevision']\n if saved['editorRevision']==row['sourceRevision']:assert digest(saved['project'])==row['snapshotSha256']\n path=pathlib.Path(row['path']);assert path.stat().st_size>1000000\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))\n video=next(s for s in probe['streams'] if s['codec_type']=='video');audio=next(s for s in probe['streams'] if s['codec_type']=='audio')\n assert video['codec_name']=='h264'\n assert (video['width'],video['height'])==(3840,2160)\n assert audio['codec_name']=='aac'\n assert abs(float(probe['format']['duration'])-row['seconds'])<.2\n # Decode actual video/audio packets at the beginning, middle and end.\n for at in [0,row['seconds']/2,row['seconds']-1]:\n  subprocess.run(['ffmpeg','-v','error','-ss',str(at),'-i',str(path),'-t','.3','-map','0:v:0','-map','0:a:0','-f','null','-'],check=True,stdout=subprocess.DEVNULL)\n results.append(dict(name=row['name'],path=str(path),bytes=path.stat().st_size,seconds=float",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-19ec8d72-e4da-476e-8127-1a7aee921f3b"
+      },
+      {
+        "at": "2026-10-28T05:57:58.058Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/event-exports-2026-10-28/verify.py <<'PY'\nimport hashlib,json,pathlib,subprocess\nroot=pathlib.Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751')\nrows=json.loads(pathlib.Path(__file__).with_name('manifest.json').read_text())\nqueue=json.loads((root/'render-queue/runtime.json').read_text())['active']['document']['renderQueue']\ndef digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()\nassert len(rows)==4\nresults=[]\nfor row in rows:\n job=next(j for j in queue if j['id']==row['jobId'])\n assert job['status']=='completed',(row['name'],job['status'],job['message'])\n assert job['sourceRevision']==row['sourceRevision']\n assert digest(job['snapshot']['document'])==row['snapshotSha256']\n saved=json.loads(json.loads((root/'projects'/row['projectId']/'project.json').read_text())['__opencutEditorSession'])['saved']\n assert saved['editorRevision']>=row['sourceRevision']\n if saved['editorRevision']==row['sourceRevision']:assert digest(saved['project'])==row['snapshotSha256']\n path=pathlib.Path(row['path']);assert path.stat().st_size>1000000\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))\n video=next(s for s in probe['streams'] if s['codec_type']=='video');audio=next(s for s in probe['streams'] if s['codec_type']=='audio')\n assert video['codec_name']=='h264'\n assert (video['width'],video['height'])==(3840,2160)\n assert audio['codec_name']=='aac'\n assert abs(float(probe['format']['duration'])-row['seconds'])<.2\n # Decode actual video/audio packets at the beginning, middle and end.\n for at in [0,row['seconds']/2,row['seconds']-1]:\n  subprocess.run(['ffmpeg','-v','error','-ss',str(at),'-i',str(path),'-t','.3','-map','0:v:0','-map','0:a:0','-f','null','-'],check=True,stdout=subprocess.DEVNULL)\n results.append(dict(name=row['name'],path=str(path),bytes=path.stat().st_size,seconds=float",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-19ec8d72-e4da-476e-8127-1a7aee921f3b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:57:58.088Z",
+  "parents": [],
+  "branch": "main"
+}

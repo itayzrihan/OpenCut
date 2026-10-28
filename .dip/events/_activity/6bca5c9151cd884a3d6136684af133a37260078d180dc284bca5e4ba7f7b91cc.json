@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6bca5c9151cd884a3d6136684af133a37260078d180dc284bca5e4ba7f7b91cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:58:40.998Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nq=json.load(open('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue/runtime.json'))['active']['document']['renderQueue'];ids={x['jobId'] for x in json.load(open('analysis/event-exports-2026-10-28/manifest.json'))}\nfor j in q:\n if j['id'] in ids:print(j['snapshot']['document']['metadata']['name'],j['status'],round(j['progress']*100,1),j['message'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0110d746-9ba0-48bf-a4f1-4deff53a4c30"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:58:41.104Z",
+  "parents": [],
+  "branch": "main"
+}

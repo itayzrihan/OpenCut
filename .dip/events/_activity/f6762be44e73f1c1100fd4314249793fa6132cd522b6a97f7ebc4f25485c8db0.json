@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f6762be44e73f1c1100fd4314249793fa6132cd522b6a97f7ebc4f25485c8db0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:58:52.129Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/event-exports-2026-10-28/status.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "87a2c262-f96f-44e4-a82b-827146bd44bb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:58:52.135Z",
+  "parents": [],
+  "branch": "main"
+}

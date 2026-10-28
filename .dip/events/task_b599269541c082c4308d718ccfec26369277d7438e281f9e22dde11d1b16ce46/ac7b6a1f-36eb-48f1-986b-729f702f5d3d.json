@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac7b6a1f-36eb-48f1-986b-729f702f5d3d",
+  "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Four event sessions 0158/0159/0160/0157 submitted via native All projects direct batch export. Frozen saved revisions 30/33/43/33 match user Start/End trims exactly; durations 1766.8/1507.12/1759.24/1841.68 seconds. MP4 H264 3840x2160 very_high with audio, output folder /Users/itayzrihan/Movies/OpenCut Exports/Event sessions 0157-0160. Job IDs/expected outputs stored in analysis/event-exports-2026-10-28/manifest.json; first job rendering video after completed audio preprocessing. No source edits. Keep own library tab 1417495022 open until all direct jobs finish.",
+    "next": "Monitor native jobs until all four complete, verify each output duration and H264/AAC decoding at start/middle/end with configured event-exports-2026-10-28 check, save UI proof and report folder.",
+    "head": "dfa0982f2f2cc2899b4f0b5a982c3185f795144d"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T06:04:20.832Z",
+  "parents": [
+    "08595dc8-c7ac-499f-bcd4-5575189cc464"
+  ],
+  "branch": "main"
+}

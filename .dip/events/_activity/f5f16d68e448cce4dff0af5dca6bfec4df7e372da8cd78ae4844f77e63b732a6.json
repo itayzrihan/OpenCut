@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5f16d68e448cce4dff0af5dca6bfec4df7e372da8cd78ae4844f77e63b732a6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:32:13.816Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff -- .dip/config.json; git diff --check; sed -n '1,100p' analysis/event-exports-2026-10-28/verify.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7b04ee30-5317-43b2-a191-d5524862ea3f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:32:15.499Z",
+  "parents": [],
+  "branch": "main"
+}

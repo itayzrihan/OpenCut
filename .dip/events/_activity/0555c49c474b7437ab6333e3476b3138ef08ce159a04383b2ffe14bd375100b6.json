@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0555c49c474b7437ab6333e3476b3138ef08ce159a04383b2ffe14bd375100b6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T06:22:38.809Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,pathlib\nr=json.load(open('analysis/event-exports-2026-10-28/manifest.json'))[0]\nd=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,width,height,sample_rate,channels:format=duration,size','-of','json',r['path']]))\npathlib.Path('.local/event-exports-2026-10-28/first-probe.json').write_text(json.dumps(d,indent=2));print(d)\nsubprocess.run(['ffmpeg','-v','error','-ss',str(r['seconds']/2),'-i',r['path'],'-frames:v','1','-vf','scale=640:-1','.local/event-exports-2026-10-28/first-middle.jpg'],check=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7f42ee58-0d20-4f61-ab51-72234fc524c1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T06:22:39.252Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be8182fa798113d444e22a17cdd1ef8adf16b40c9d8caf7458f97e1785fa98bc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:36:17.629Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 analysis/event-exports-2026-10-28/verify.py > .local/event-exports-2026-10-28/verification.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bac1c324-7444-45bc-89be-b5de66df0924"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:36:17.984Z",
+  "parents": [],
+  "branch": "main"
+}

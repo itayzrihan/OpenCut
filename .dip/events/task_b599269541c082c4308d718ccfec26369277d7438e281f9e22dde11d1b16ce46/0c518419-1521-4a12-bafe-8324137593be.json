@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0c518419-1521-4a12-bafe-8324137593be",
+  "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Three native MP4 exports completed and individually ffprobe checked with visually valid sampled middle frames. 0158:1766.876009s, 0159:1507.207256s, 0160:1759.329524s; each H264 3840x2160 with stereo AAC. Final session 0157 is preparing on same direct-export library tab 1417495022. Destination contains the first three completed files. Configured verification event-exports-2026-10-28 checks all four against frozen source hashes/revisions and decodes start/middle/end.",
+    "next": "Wait for session 0157, then run configured verification, save UI evidence, finish task and report four output files.",
+    "head": "dfa0982f2f2cc2899b4f0b5a982c3185f795144d"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T07:06:45.361Z",
+  "parents": [
+    "4be7324c-7ce2-438b-8b2e-b742842b481d"
+  ],
+  "branch": "main"
+}

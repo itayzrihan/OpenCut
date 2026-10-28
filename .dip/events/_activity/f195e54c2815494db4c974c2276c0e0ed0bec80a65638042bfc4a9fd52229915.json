@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f195e54c2815494db4c974c2276c0e0ed0bec80a65638042bfc4a9fd52229915",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:27:19.014Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/event-exports-2026-10-28/verify.py';s=open(p).read().replace(\"'-t','.3'\",\"'-t','0.3'\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-05bf0044-5d47-456f-b58a-f861a414e115"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:27:19.025Z",
+  "parents": [],
+  "branch": "main"
+}

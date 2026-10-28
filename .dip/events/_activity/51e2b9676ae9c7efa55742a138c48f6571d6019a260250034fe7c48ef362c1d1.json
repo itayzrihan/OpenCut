@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "51e2b9676ae9c7efa55742a138c48f6571d6019a260250034fe7c48ef362c1d1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T07:06:16.116Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/event-exports-2026-10-28/third-middle.jpg"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "9195b106-876f-4e41-924c-dadd29d5c0ef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:06:16.119Z",
+  "parents": [],
+  "branch": "main"
+}

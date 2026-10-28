@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7cfc44ced3caa71bf3fb7ffe69d4a1d57e4566f9e7691af8b8a36a34eecb6f19",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:57:08.384Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "mcp__dip__task_prepare",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1f321c50-7ef0-4b30-9cd4-6cbda4c1b667"
+      },
+      {
+        "at": "2026-10-28T05:57:08.389Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nj=json.loads(pathlib.Path('.local/event-exports-2026-10-28/jobs.json').read_text())[0]\ns=next(s for s in j['snapshot']['document']['scenes'] if s['id']==j['sceneId'])\nprint(s.keys());print(s['tracks'].keys() if isinstance(s['tracks'],dict) else type(s['tracks'])); print(str(s['tracks'])[:1000])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b0d4eb18-80fc-4a75-9318-6188dd426155"
+      },
+      {
+        "at": "2026-10-28T05:57:08.705Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nj=json.loads(pathlib.Path('.local/event-exports-2026-10-28/jobs.json').read_text())[0]\ns=next(s for s in j['snapshot']['document']['scenes'] if s['id']==j['sceneId'])\nprint(s.keys());print(s['tracks'].keys() if isinstance(s['tracks'],dict) else type(s['tracks'])); print(str(s['tracks'])[:1000])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b0d4eb18-80fc-4a75-9318-6188dd426155"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:57:08.928Z",
+  "parents": [],
+  "branch": "main"
+}

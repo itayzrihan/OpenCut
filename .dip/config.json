@@ -339,6 +339,13 @@
         ".dip/tools/verify-projects-export.mjs"
       ],
       "timeoutMs": 360000
+    },
+    "event-exports-2026-10-28": {
+      "command": [
+        "python3",
+        "analysis/event-exports-2026-10-28/verify.py"
+      ],
+      "timeoutMs": 180000
     }
   },
   "mode": "coordinate"

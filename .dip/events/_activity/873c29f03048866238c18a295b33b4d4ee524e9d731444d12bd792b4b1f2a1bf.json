@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "873c29f03048866238c18a295b33b4d4ee524e9d731444d12bd792b4b1f2a1bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:56:30.951Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib,tarfile,io\nroot=Path('/private/tmp/dip-automatic-pilot-20261028/rounds/02')\nout=Path('docs/benchmarks')\nfiles=[p for p in root.iterdir() if p.is_file() and p.suffix in ('.json','.mjs')]\nfiles+=list((root/'trials').glob('*/*.json'))+list((root/'trials').glob('*/*.jsonl'))+list((root/'trials').glob('*/*.txt'))\nitems={str(p.relative_to(root)):p.read_bytes() for p in files}\nitems['summarize-used.mjs']=Path('scripts/summarize-automatic-pilot.mjs').read_bytes()\nname='2026-10-28-round2-raw.tar.gz'\nwith tarfile.open(out/name,'w:gz') as tar:\n for name_,data in sorted(items.items()):\n  info=tarfile.TarInfo(name_); info.size=len(data); info.mode=0o644\n  tar.addfile(info,io.BytesIO(data))\nmanifest={'archive':name,'sha256':hashlib.sha256((out/name).read_bytes()).hexdigest(),'files':[{'path':n,'bytes':len(d),'sha256':hashlib.sha256(d).hexdigest()} for n,d in sorted(items.items())]}\n(out/'2026-10-28-round2-raw-manifest.json').write_text(json.dumps(manifest,indent=2)+'\\n')\np=out/'2026-10-28-post-pilot-candidate.json'; d=json.loads(p.read_text()); d.update(modelMeasured=True,modelRound=2,modelSummary='2026-10-28-round2-summary.json'); p.write_text(json.dumps(d,indent=2)+'\\n')\np=out/'2026-10-28-acceptance.json'; old=json.loads(p.read_text()); (out/'2026-10-28-round1-acceptance.json').write_text(json.dumps(old,indent=2)+'\\n')\ns=json.loads((out/'2026-10-28-round2-summary.json').read_text()); a=s['arms']['automatic']; r=s['arms']['reviewed']\nreduction=lambda key:100*(1-a[key]/r[key])\nd={'round':2,'measuredCandidate':'0.3.13-automatic.1','workingCandidate':'0.3.13-automatic.1','globalRollout':False,'installedVersion':'0.3.12','nativeHookTrust':'8 definitions trusted by human; unchanged','nativeHookEvents':sum(t['hookCount'] for t in s['turns']),'nativeHookFailures':0,'codeRegression':old['codeRegression'],'modelTurnsStarted':12,'modelTurnsCompleted':12,'totalAuthorizedStartsConsumed':24,'infrastructureAffectedTurns':0,'retries",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-4fc7557d-6b36-4d86-8fb6-b2605586ac3d"
+      },
+      {
+        "at": "2026-10-28T05:56:31.462Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib,tarfile,io\nroot=Path('/private/tmp/dip-automatic-pilot-20261028/rounds/02')\nout=Path('docs/benchmarks')\nfiles=[p for p in root.iterdir() if p.is_file() and p.suffix in ('.json','.mjs')]\nfiles+=list((root/'trials').glob('*/*.json'))+list((root/'trials').glob('*/*.jsonl'))+list((root/'trials').glob('*/*.txt'))\nitems={str(p.relative_to(root)):p.read_bytes() for p in files}\nitems['summarize-used.mjs']=Path('scripts/summarize-automatic-pilot.mjs').read_bytes()\nname='2026-10-28-round2-raw.tar.gz'\nwith tarfile.open(out/name,'w:gz') as tar:\n for name_,data in sorted(items.items()):\n  info=tarfile.TarInfo(name_); info.size=len(data); info.mode=0o644\n  tar.addfile(info,io.BytesIO(data))\nmanifest={'archive':name,'sha256':hashlib.sha256((out/name).read_bytes()).hexdigest(),'files':[{'path':n,'bytes':len(d),'sha256':hashlib.sha256(d).hexdigest()} for n,d in sorted(items.items())]}\n(out/'2026-10-28-round2-raw-manifest.json').write_text(json.dumps(manifest,indent=2)+'\\n')\np=out/'2026-10-28-post-pilot-candidate.json'; d=json.loads(p.read_text()); d.update(modelMeasured=True,modelRound=2,modelSummary='2026-10-28-round2-summary.json'); p.write_text(json.dumps(d,indent=2)+'\\n')\np=out/'2026-10-28-acceptance.json'; old=json.loads(p.read_text()); (out/'2026-10-28-round1-acceptance.json').write_text(json.dumps(old,indent=2)+'\\n')\ns=json.loads((out/'2026-10-28-round2-summary.json').read_text()); a=s['arms']['automatic']; r=s['arms']['reviewed']\nreduction=lambda key:100*(1-a[key]/r[key])\nd={'round':2,'measuredCandidate':'0.3.13-automatic.1','workingCandidate':'0.3.13-automatic.1','globalRollout':False,'installedVersion':'0.3.12','nativeHookTrust':'8 definitions trusted by human; unchanged','nativeHookEvents':sum(t['hookCount'] for t in s['turns']),'nativeHookFailures':0,'codeRegression':old['codeRegression'],'modelTurnsStarted':12,'modelTurnsCompleted':12,'totalAuthorizedStartsConsumed':24,'infrastructureAffectedTurns':0,'retries",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-4fc7557d-6b36-4d86-8fb6-b2605586ac3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:56:31.596Z",
+  "parents": [],
+  "branch": "main"
+}

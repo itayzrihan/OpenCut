@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "925e811a477991b0ab8cbe18d6fa4e4efe77bdc6faaf0c65fbd60fa77c011382",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:23:55.783Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 .local/event-exports-2026-10-28/status.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-576a0a92-b130-4fcc-9d3c-c11945705ceb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:23:55.849Z",
+  "parents": [],
+  "branch": "main"
+}

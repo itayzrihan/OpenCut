@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6cc5a180ae9cef96222d957af54af37544dad139a59180519c915bacc77ce65f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T06:22:42.045Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "view_image",
+        "branch": "main",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/event-exports-2026-10-28/first-middle.jpg",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-95893bfa-45e6-4d4d-81b3-3605db118e08"
+      },
+      {
+        "at": "2026-10-28T06:22:42.468Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "view_image",
+        "branch": "main",
+        "path": "/Users/itayzrihan/Documents/PoCut/.local/event-exports-2026-10-28/first-middle.jpg",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-95893bfa-45e6-4d4d-81b3-3605db118e08"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T06:22:42.550Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2b598f721360899df583f8cdba34362c28b4f1b13df0db4be75e05e9a7d3b634",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T07:27:21.864Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/event-exports-2026-10-28/verify.py';s=open(p).read().replace(\"'-t','.3'\",\"'-t','0.3'\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-05bf0044-5d47-456f-b58a-f861a414e115"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T07:27:22.083Z",
+  "parents": [],
+  "branch": "main"
+}

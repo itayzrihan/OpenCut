@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08595dc8-c7ac-499f-bcd4-5575189cc464",
+  "taskId": "task_b599269541c082c4308d718ccfec26369277d7438e281f9e22dde11d1b16ce46",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Identify latest saved trimmed scenes and select all four event sessions.",
+          "status": "completed"
+        },
+        {
+          "step": "Export four native MP4/H264 files with audio at source resolution to Movies/OpenCut Exports.",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify all four file durations, video/audio decoding and frozen revisions; report folder.",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T05:58:56.474Z",
+  "parents": [
+    "80a458da-8247-421d-abf2-e286e6d87ac2"
+  ],
+  "branch": "main"
+}
