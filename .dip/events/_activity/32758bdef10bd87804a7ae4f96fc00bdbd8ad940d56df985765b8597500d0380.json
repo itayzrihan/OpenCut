@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "32758bdef10bd87804a7ae4f96fc00bdbd8ad940d56df985765b8597500d0380",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:56:39.907Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/host.test.ts analysis/render-queue-recovery-2026-10-28/architecture.md\ngit commit --only -m 'fix: isolate renderer host lock from canonical queue transactions' -- classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/host.test.ts analysis/render-queue-recovery-2026-10-28/architecture.md > .local/render-queue-recovery-2026-10-28/lock-fix-commit.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-00b46307-c3b6-41ba-85ea-c9e04b47dcbb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:56:40.112Z",
+  "parents": [],
+  "branch": "main"
+}

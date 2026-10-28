@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "58014e3934c9b56b04b6460319a30ade8bec7127fc23ddec8be78ce5191b18f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:40:35.873Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> analysis/render-queue-recovery-2026-10-28/architecture.md <<'MD'\n\nA live host-launch check exposed a library-specific locking collision: `proper-lockfile` indexes ownership by target path, even when `lockfilePath` differs. The host lease now uses a separate target (`render-queue/worker-host`), so startup/reuse cannot overwrite or release the canonical queue transaction's lock. The regression test acquires a real canonical lock while the spawned host is starting and verifies that it remains independently releasable. This was not observable in the isolated renderer-only fixture, so final live host launch is also required before completion.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-21d4afee-f574-4a4e-8171-8990aa0dd523"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:40:36.115Z",
+  "parents": [],
+  "branch": "main"
+}

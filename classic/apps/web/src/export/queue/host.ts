@@ -68,7 +68,9 @@ export function ensureRenderWorker(
 			};
 		const root = join(accountDataRoot(), "render-queue");
 		await mkdir(root, { recursive: true, mode: 0o700 });
-		const release = await lockfile.lock(root, {
+		// proper-lockfile keys ownership by target, even with a custom lockfilePath.
+		// Never share the canonical queue transaction target with the host lease.
+		const release = await lockfile.lock(join(root, "worker-host"), {
 			realpath: false,
 			lockfilePath: join(root, "worker-host.lock"),
 			retries: { retries: 20, minTimeout: 25, maxTimeout: 100 },

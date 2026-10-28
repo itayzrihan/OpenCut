@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2a2162dedac943b8d3613e5d4d7ff9bc26c8e2afd646395b859037ff0d4843b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:29:50.448Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'Not enough temporary|temporary disk|disk space' classic/apps/web/src/export classic/apps/web/src | head -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-12b7a671-9d6d-448e-983f-ac3eb0f679d7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:29:51.106Z",
+  "parents": [],
+  "branch": "main"
+}

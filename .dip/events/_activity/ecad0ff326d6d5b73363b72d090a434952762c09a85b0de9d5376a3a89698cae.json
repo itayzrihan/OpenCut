@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ecad0ff326d6d5b73363b72d090a434952762c09a85b0de9d5376a3a89698cae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:37:47.264Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/build-lock-fix.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3dd982c1-d33c-4c8c-b792-1c2bb60640a6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:37:47.268Z",
+  "parents": [],
+  "branch": "main"
+}

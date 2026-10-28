@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "31e35f931c9e26a7d3109356d285b1a75ab3afb6d53dda07f39c5611798d9eca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:51:17.372Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 .local/render-queue-recovery-2026-10-28/collect.log; tail -5 .local/render-queue-recovery-2026-10-28/build-lock-fix.log; df -h /",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-be2910de-332a-4918-8dfa-d53bc2c5ca58"
+      },
+      {
+        "at": "2026-10-28T11:51:17.568Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 .local/render-queue-recovery-2026-10-28/collect.log; tail -5 .local/render-queue-recovery-2026-10-28/build-lock-fix.log; df -h /",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-be2910de-332a-4918-8dfa-d53bc2c5ca58"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:51:17.755Z",
+  "parents": [],
+  "branch": "main"
+}

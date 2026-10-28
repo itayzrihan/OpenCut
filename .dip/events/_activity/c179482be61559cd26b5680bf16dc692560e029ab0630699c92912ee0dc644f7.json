@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c179482be61559cd26b5680bf16dc692560e029ab0630699c92912ee0dc644f7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:55:56.919Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-083dac2e-027c-4365-88da-be1a44ee5488.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-d471449c-33f8-4923-92d5-b7c3bc9c1d94.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-profile/File System/000/t/.usage",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-138f3c8e-b269-4150-b950-1004ff6c31da.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-fb308a0f-542f-4694-a721-0499bbd9bf06.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-78efc17c-f13a-4282-86b7-1283a4f548a3.tmp"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "30dbcc52-b237-4815-9fcc-5449793a5b26"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:55:56.922Z",
+  "parents": [],
+  "branch": "main"
+}

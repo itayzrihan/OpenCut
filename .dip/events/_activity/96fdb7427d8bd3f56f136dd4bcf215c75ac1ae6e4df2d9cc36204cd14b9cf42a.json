@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "96fdb7427d8bd3f56f136dd4bcf215c75ac1ae6e4df2d9cc36204cd14b9cf42a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:56:41.466Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\np=pathlib.Path.home()/'Library/Application Support/OpenCut Local/candidate.json';print(json.load(open(p))['id'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4bc75265-76a9-4a0d-9336-4804f0990509"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:56:42.133Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ee17576633e2b64614da400ffc69b58208701e50ecfbb76dd65adbbf187c17d3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:37:48.526Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\np=pathlib.Path('analysis/render-queue-recovery-2026-10-28/live-ui.json');d=json.load(open(p));root=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\nj=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']=='469842ec-eead-456e-8d32-95c1c462853b');d.update({'progressAfterClosingView':j['status']=='rendering' and j['progress']>0 and j['updatedAtMs']>d['queueClosedAtMs'],'continuedJobId':j['id'],'continuedProgress':j['progress'],'continuedUpdatedAtMs':j['updatedAtMs'],'editorPlaybackDuringBackground':True});p.write_text(json.dumps(d,indent=2)+'\\n');print(d['progressAfterClosingView'],j['progress'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e6785e3e-26d8-41ca-9d00-b74bcd5a9413"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:37:49.826Z",
+  "parents": [],
+  "branch": "main"
+}

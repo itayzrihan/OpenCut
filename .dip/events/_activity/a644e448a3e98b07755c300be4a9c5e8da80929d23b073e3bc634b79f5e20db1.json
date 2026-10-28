@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a644e448a3e98b07755c300be4a9c5e8da80929d23b073e3bc634b79f5e20db1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:55:17.709Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-profile/Cache/Cache_Data/7b92ae2dd228b0dd_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-97174f10-cb9a-49f8-ab46-b5c2a3272f25.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-host.lock",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/6167fe48-8eab-46af-bea7-1553b2fd79af",
+          ".local/render-queue-recovery-2026-10-28/fixture/outputs/6167fe48-8eab-46af-bea7-1553b2fd79af/aaaaaaaa-1111-4111-8111-111111111111",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-9dd90a91-e71f-4444-aed6-f57c645e8328.tmp",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime-fa74167b-913f-466c-bb13-1e8d202dac9d.tmp"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f34d78de-c92c-4285-879d-703a5292ea1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:55:17.754Z",
+  "parents": [],
+  "branch": "main"
+}

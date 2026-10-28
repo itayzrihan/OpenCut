@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "428b449771ae4c4c534fd6c02e6a309fbcd69edf1171a0000936451867550ff4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:36:57.707Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 .local/render-queue-recovery-2026-10-28/collect.log; df -h /",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-be052398-f5dc-499c-a724-1e472fca13b4"
+      },
+      {
+        "at": "2026-10-28T11:36:57.708Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/host.ts';s=open(p).read().replace('const release = await lockfile.lock(root, {','// proper-lockfile keys ownership by target, even with a custom lockfilePath.\\n\\t\\t// Never share the canonical queue transaction target with the host lease.\\n\\t\\tconst release = await lockfile.lock(join(root, \"worker-host\"), {');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/host.test.ts';s=open(p).read().replace('import { createHash } from \"node:crypto\";','import { createHash } from \"node:crypto\";\\nimport lockfile from \"proper-lockfile\";\\nlet releaseCanonical: (()=>Promise<void>) | undefined;');s=s.replace('process.nextTick(() => child.emit(\"spawn\"));','process.nextTick(async () => {\\n releaseCanonical=await lockfile.lock(join(root,\"render-queue\"),{realpath:false});\\n child.emit(\"spawn\");\\n });');s=s.replace('expect(count).toBe(1);\\n\\texpect(results.every','expect(count).toBe(1);\\n // Starting a renderer must not release or overwrite a simultaneous canonical queue lock.\\n await releaseCanonical!();\\n\\texpect(results.every');open(p,'w').write(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/export/queue/host.ts classic/apps/web/src/export/queue/host.test.ts\nnode classic/scripts/test-web.mjs src/export/queue/server.test.ts src/export/queue/worker-auth.test.ts src/export/queue/actions.test.ts src/export/queue/host.test.ts src/accounts/server.test.ts src/accounts/public-origin.test.ts --report=.local/render-queue-recovery-2026-10-28/lock-fix-tests --timeout=120000 --test-timeout=30000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c118d733-9c18-461a-acb8-ab609ac3b169"
+      },
+      {
+        "at": "2026-10-28T11:36:57.926Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 .local/render-queue-recovery-2026-10-28/collect.log; df -h /",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-be052398-f5dc-499c-a724-1e472fca13b4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:36:58.184Z",
+  "parents": [],
+  "branch": "main"
+}

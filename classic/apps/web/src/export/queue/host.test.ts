@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import lockfile from "proper-lockfile";
+let releaseCanonical: (() => Promise<void>) | undefined;
 const root = await mkdtemp(join(tmpdir(), "render-host-"));
 const account = {
 	id: "11111111-2222-4333-8444-555555555555",
@@ -36,7 +38,12 @@ mock.module("node:child_process", () => ({
 		child.unref = () => {};
 		child.kill = () => {};
 		// Emit before any filesystem close callback: launch must register immediately.
-		process.nextTick(() => child.emit("spawn"));
+		process.nextTick(async () => {
+			releaseCanonical = await lockfile.lock(join(root, "render-queue"), {
+				realpath: false,
+			});
+			child.emit("spawn");
+		});
 		return child;
 	},
 }));
@@ -60,6 +67,8 @@ test("one host process serves concurrent queue opens and survives viewer closure
 		ensureRenderWorker("http://localhost:3211"),
 	]);
 	expect(count).toBe(1);
+	// Starting a renderer must not release or overwrite a simultaneous canonical queue lock.
+	await releaseCanonical!();
 	expect(results.every((r) => r?.status === "starting")).toBe(true);
 	const lease = JSON.parse(
 		await readFile(join(root, "render-queue/worker.json"), "utf8"),

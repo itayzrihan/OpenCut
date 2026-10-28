@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fae3159f6f60fec1f78fd6e02fb3e717f4b54e0e88048efa36fc87c7b52435ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:56:31.430Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -9 .local/render-queue-recovery-2026-10-28/host-fixture-final.log; tail -3 .local/render-queue-recovery-2026-10-28/collect.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a5b2e06f-48c8-4b4b-9de2-dead608c18f4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:56:31.463Z",
+  "parents": [],
+  "branch": "main"
+}

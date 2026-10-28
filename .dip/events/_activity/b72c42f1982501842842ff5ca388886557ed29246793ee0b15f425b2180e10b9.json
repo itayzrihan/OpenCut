@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b72c42f1982501842842ff5ca388886557ed29246793ee0b15f425b2180e10b9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:27:57.630Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,shutil\nroot=pathlib.Path('classic/apps/web/.next')\nfor name in ('cache','dev'):\n path=root/name\n if path.is_symlink():raise RuntimeError('Unexpected cache symlink')\n if path.is_dir():shutil.rmtree(path)\n print('Removed reproducible Next cache:',name)\nPY\ndf -h /",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5a04cd3f-55e8-4ae9-b871-7e295faeae3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:27:58.932Z",
+  "parents": [],
+  "branch": "main"
+}

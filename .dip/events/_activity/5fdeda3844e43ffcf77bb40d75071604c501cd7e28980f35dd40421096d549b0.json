@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5fdeda3844e43ffcf77bb40d75071604c501cd7e28980f35dd40421096d549b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:31:59.226Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue/runtime.json'\nq=json.load(open(r))['active']['document']['renderQueue'];b=json.load(open('analysis/render-queue-recovery-2026-10-28/jobs-before.json'));by={j['id']:j for j in q}\nfor x in b:\n j=by[x['id']]\n assert all(j[k]==x[k] for k in ('snapshotHash','sourceRevision','options'))\n print(x['projectName'],j['status'],round(j['progress']*100),j.get('message'))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b5f2834c-09ee-41c0-82ab-37dc36d48805"
+      },
+      {
+        "at": "2026-10-28T11:31:59.392Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue/runtime.json'\nq=json.load(open(r))['active']['document']['renderQueue'];b=json.load(open('analysis/render-queue-recovery-2026-10-28/jobs-before.json'));by={j['id']:j for j in q}\nfor x in b:\n j=by[x['id']]\n assert all(j[k]==x[k] for k in ('snapshotHash','sourceRevision','options'))\n print(x['projectName'],j['status'],round(j['progress']*100),j.get('message'))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b5f2834c-09ee-41c0-82ab-37dc36d48805"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:31:59.834Z",
+  "parents": [],
+  "branch": "main"
+}

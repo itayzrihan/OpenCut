@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cdab5dc3-8982-4bab-a145-c4d5d30b46d8",
+  "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Activated11-19candidate after155completed. Shared queue modal opened in existing QAeditor,14Chrome tabs unchanged. Resumed156/153/152/151. Closed modal;153advancedto14% and QAeditorplaybackworked with nativegesture.156firstattemptfailednetwork: diagnosed proper-lockfile ownership keyedby target;host customlockfilePath stillshared queue-root target and could release canonical lock. Fixed hosttargetroot/worker-host; real overlapping canonical lock regressionpasses,16testsallpass. Newbuild46973 inprogress sourcefrozen. Keepmodalclosed untilfixdeployed so hostlocknotreentered.153rendering,152/151queued,156failed awaitingretry.0155HDDcopycollector9298 ongoing.",
+    "next": "Stage/testlatestcandidate; letcurrent153/152/151run (nohostensurecallswhilemodalclosed). Whenidle activate latestfix and retry156,prove realhostlaunch+closeview andall7complete. RerunmediaQA/verify,finishDIPandcommitfollowup.",
+    "head": "fb20b580d816f0fe08e3a953b860c3a3f63370fa"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T11:38:27.794Z",
+  "parents": [
+    "9e09a408-3e81-4f1e-8291-cbd8baaea77e"
+  ],
+  "branch": "main"
+}

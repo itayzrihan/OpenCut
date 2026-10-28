@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "caab7329d2d66d9cf6e649840908712f8a88297f652b4628524edb8aecc276bc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:47:36.111Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' analysis/render-queue-recovery-2026-10-28/collect_outputs.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-59c832a8-c671-4b19-aebf-5cacb3facbd1"
+      },
+      {
+        "at": "2026-10-28T11:47:36.359Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' analysis/render-queue-recovery-2026-10-28/collect_outputs.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-59c832a8-c671-4b19-aebf-5cacb3facbd1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:47:36.922Z",
+  "parents": [],
+  "branch": "main"
+}

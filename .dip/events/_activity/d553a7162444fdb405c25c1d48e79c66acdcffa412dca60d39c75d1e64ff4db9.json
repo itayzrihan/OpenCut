@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d553a7162444fdb405c25c1d48e79c66acdcffa412dca60d39c75d1e64ff4db9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:38:40.404Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg 'Verified and delivered' .local/render-queue-recovery-2026-10-28/collect.log; df -h / '/Volumes/HDD 2TB'; ps -axo pid,etime,pcpu,command | rg '[c]ollect_outputs.py'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1b7665a9-c642-4e7f-a61b-a7dfb500003a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:38:40.605Z",
+  "parents": [],
+  "branch": "main"
+}

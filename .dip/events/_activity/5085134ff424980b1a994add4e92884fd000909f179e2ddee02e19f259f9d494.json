@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5085134ff424980b1a994add4e92884fd000909f179e2ddee02e19f259f9d494",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:32:35.321Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Library/Application Support/OpenCut Local'\nc=json.loads((root/'candidate.json').read_text());e=json.load(open('analysis/render-queue-recovery-2026-10-28/background-fixture.json'))\nassert c['id']==e['release'] and e['passed'] and e['workerExitedIdle']\nfor target,data in [('previous.json',(root/'current.json').read_bytes()),('current.json',(root/'candidate.json').read_bytes())]:\n p=root/(target+'.new');p.write_bytes(data);os.replace(p,root/target)\nprint('Activated verified candidate',c['id'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3af59e87-808f-41db-9bae-19cf9c4bf85d"
+      },
+      {
+        "at": "2026-10-28T11:32:35.460Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Library/Application Support/OpenCut Local'\nc=json.loads((root/'candidate.json').read_text());e=json.load(open('analysis/render-queue-recovery-2026-10-28/background-fixture.json'))\nassert c['id']==e['release'] and e['passed'] and e['workerExitedIdle']\nfor target,data in [('previous.json',(root/'current.json').read_bytes()),('current.json',(root/'candidate.json').read_bytes())]:\n p=root/(target+'.new');p.write_bytes(data);os.replace(p,root/target)\nprint('Activated verified candidate',c['id'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3af59e87-808f-41db-9bae-19cf9c4bf85d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:32:35.905Z",
+  "parents": [],
+  "branch": "main"
+}

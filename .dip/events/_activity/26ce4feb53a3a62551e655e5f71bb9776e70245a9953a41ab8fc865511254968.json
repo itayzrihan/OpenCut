@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "26ce4feb53a3a62551e655e5f71bb9776e70245a9953a41ab8fc865511254968",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:54:47.443Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/host-fixture-final.log",
+          ".local/render-queue-recovery-2026-10-28/fixture/host-server.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "19642352-883a-4c74-be2d-f5e415a1a9a2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:54:47.478Z",
+  "parents": [],
+  "branch": "main"
+}

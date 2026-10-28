@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42a43adeb1c8c6de78bb346851cf7739948f574b21117bf6eef2aa6dca21b601",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:26:02.864Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"fixture=json.loads\", \"checks=json.loads((base/'media-checks.json').read_text())\\nassert {c['jobId'] for c in checks if c['decodedStartMiddleEnd']}==set(delivered)\\nfixture=json.loads\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9d041ac3-7726-4b76-8589-5e687d064450"
+      },
+      {
+        "at": "2026-10-28T11:26:02.872Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-284d9af0-b75e-47cf-93b7-07806d79e89a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:26:04.690Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b12908baf1bdf4d5c9df2e7fcc7bddd6b932706c581a1558048d282e2c6095d2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:55:10.506Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert len(fixture['outputs'])==2\", \"assert len(fixture['outputs'])==2\\nassert fixture['normalAuthenticatedHostLaunch'] and fixture['concurrentViewerRequests']\");open(p,'w').write(s)\nPY\ntail -8 .local/render-queue-recovery-2026-10-28/host-fixture-final.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-85a85eb0-f22d-475e-9383-525823b7fc08"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:55:11.424Z",
+  "parents": [],
+  "branch": "main"
+}

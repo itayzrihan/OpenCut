@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "67f2ec922567a3ed5c88e20660ccda1dbfed46a42ed72d4f58bbd192e2ac6ae1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:55:00.526Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/identity",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/identity/5930431c1d85b789178a26ad413fb5641a88ccfc0c4e9b5e2f612332f0079c41.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/legacy-owner.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/sessions",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/sessions/d182bf4a0c269509f20971b0d614a5996eb9ac44891e9d77c2521e913ad4719f.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/runtime.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker.json",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/bbbbbbbb-2222-4222-8222-222222222222",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/bbbbbbbb-2222-4222-8222-222222222222/sources.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7f0a3235-6555-4c02-a4ea-9398a47e96b8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:55:00.611Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78a599b820c320f6627b694ff38657b258f919ea1e9e56cae9ed5901bd9edeaf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T11:55:22.319Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-profile/Cache/Cache_Data/c01e09354473673d_0",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-profile/.com.github.Electron.3TYmcy",
+          ".local/render-queue-recovery-2026-10-28/fixture/accounts/data/6167fe48-8eab-46af-bea7-1553b2fd79af/render-queue/worker-profile/Local State"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e735c701-6575-414b-a583-5f32371e833b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:55:22.365Z",
+  "parents": [],
+  "branch": "main"
+}

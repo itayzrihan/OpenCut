@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "edd3445fce74d3379e11b9c0d313d022967cc63f4db9040bf6a967f6aefbf566",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:43:46.324Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert ui['release']==fixture['release']\", \"assert ui['release']==fixture['release']\\nassert ui['continuedUpdatedAtMs']>ui['queueClosedAtMs']\\nassert 0<ui['continuedProgress']<1\\nassert ui['editorPlaybackDuringBackground']\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-12e753d5-afcf-40bd-b594-43f779b57ce4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:43:46.972Z",
+  "parents": [],
+  "branch": "main"
+}
