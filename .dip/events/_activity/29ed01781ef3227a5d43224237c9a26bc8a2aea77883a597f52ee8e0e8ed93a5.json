@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "29ed01781ef3227a5d43224237c9a26bc8a2aea77883a597f52ee8e0e8ed93a5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:07:00.915Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport ast,pathlib\nfor name in ['verify.py','check_media.py','collect_outputs.py']:ast.parse((pathlib.Path('analysis/render-queue-recovery-2026-10-28')/name).read_text())\nprint('Delivery verification scripts parsed successfully')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3c46edcb-c97c-4375-9b7a-9f1cc0940a48"
+      },
+      {
+        "at": "2026-10-28T12:07:01.222Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport ast,pathlib\nfor name in ['verify.py','check_media.py','collect_outputs.py']:ast.parse((pathlib.Path('analysis/render-queue-recovery-2026-10-28')/name).read_text())\nprint('Delivery verification scripts parsed successfully')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3c46edcb-c97c-4375-9b7a-9f1cc0940a48"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:07:01.405Z",
+  "parents": [],
+  "branch": "main"
+}

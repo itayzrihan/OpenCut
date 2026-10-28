@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75073031f4507f29537f9f6f17cfbafc3bdfafa02c2357da29d1c338ad6bf6b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:09:32.343Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add -- analysis/render-queue-recovery-2026-10-28 .dip/config.json\ngit commit --only -m 'verify: deliver seven recovered event exports and background queue proof' -- analysis/render-queue-recovery-2026-10-28 .dip/config.json > .local/render-queue-recovery-2026-10-28/delivery-commit.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1fdcc5f2-fa99-4900-b1cc-41eb283fa6a1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:09:33.009Z",
+  "parents": [],
+  "branch": "main"
+}

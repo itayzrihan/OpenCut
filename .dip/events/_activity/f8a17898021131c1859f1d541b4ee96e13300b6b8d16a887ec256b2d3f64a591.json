@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f8a17898021131c1859f1d541b4ee96e13300b6b8d16a887ec256b2d3f64a591",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:02:58.261Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n -A45 'fingerprint|sourceSnapshot' classic/scripts/local-production/common.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-848ae613-3931-4a89-9f08-8acc4be52553"
+      },
+      {
+        "at": "2026-10-28T12:02:59.466Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n -A45 'fingerprint|sourceSnapshot' classic/scripts/local-production/common.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-848ae613-3931-4a89-9f08-8acc4be52553"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:02:59.593Z",
+  "parents": [],
+  "branch": "main"
+}

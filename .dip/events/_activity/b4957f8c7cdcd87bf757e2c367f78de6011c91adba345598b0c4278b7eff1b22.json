@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b4957f8c7cdcd87bf757e2c367f78de6011c91adba345598b0c4278b7eff1b22",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:55:23.623Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,pcpu,command | rg '[c]ollect_outputs.py|[f]fprobe -v error|[w]atch_media.py'; python3 - <<'PY'\nfrom pathlib import Path\nimport time\np=Path('/Volumes/HDD 2TB/OpenCut Exports/Event sessions 0149-0156/אירוע · סשן 0156 · C7467.mp4');s=Path('/Volumes/HDD 2TB/OpenCut Render Outputs/4fec0688-9a78-4304-849c-9ea937873751/83f10789-30ea-4c5f-85a3-7acdb98b5cdd/output.mp4');print('Human export name ready:',p.exists(),'source cache present:',s.exists());q=p if p.exists() else s;print('Seconds since completed upload',round(time.time()-q.stat().st_mtime))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0b01db0c-b02e-4d2d-bb9c-f71751835860"
+      },
+      {
+        "at": "2026-10-28T12:55:23.783Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,pcpu,command | rg '[c]ollect_outputs.py|[f]fprobe -v error|[w]atch_media.py'; python3 - <<'PY'\nfrom pathlib import Path\nimport time\np=Path('/Volumes/HDD 2TB/OpenCut Exports/Event sessions 0149-0156/אירוע · סשן 0156 · C7467.mp4');s=Path('/Volumes/HDD 2TB/OpenCut Render Outputs/4fec0688-9a78-4304-849c-9ea937873751/83f10789-30ea-4c5f-85a3-7acdb98b5cdd/output.mp4');print('Human export name ready:',p.exists(),'source cache present:',s.exists());q=p if p.exists() else s;print('Seconds since completed upload',round(time.time()-q.stat().st_mtime))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0b01db0c-b02e-4d2d-bb9c-f71751835860"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:55:24.020Z",
+  "parents": [],
+  "branch": "main"
+}

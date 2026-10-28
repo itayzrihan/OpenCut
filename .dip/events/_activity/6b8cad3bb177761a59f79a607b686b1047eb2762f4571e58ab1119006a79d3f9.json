@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6b8cad3bb177761a59f79a607b686b1047eb2762f4571e58ab1119006a79d3f9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:26:41.119Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';job=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']=='83f10789-30ea-4c5f-85a3-7acdb98b5cdd');r={'release':json.load(open(pathlib.Path.home()/'Library/Application Support/OpenCut Local/current.json'))['id'],'sharedDialog':True,'noAdditionalTabs':True,'sameTabIds':True,'repeatedOpenClose':True,'tabsBefore':14,'tabsAfter':14,'queueClosedAtMs':int(time.time()*1000),'jobId':job['id'],'initialStatus':job['status'],'initialProgress':job['progress'],'initialUpdatedAtMs':job['updatedAtMs'],'workerPid':json.load(open(root/'worker.json'))['pid']};pathlib.Path('analysis/render-queue-recovery-2026-10-28/live-ui.json').write_text(json.dumps(r,indent=2)+'\\n');print(job['status'],job['progress'],r['workerPid'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6c35e3e7-ddc5-4f05-9ab0-ce4105380f27"
+      },
+      {
+        "at": "2026-10-28T12:26:41.478Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';job=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']=='83f10789-30ea-4c5f-85a3-7acdb98b5cdd');r={'release':json.load(open(pathlib.Path.home()/'Library/Application Support/OpenCut Local/current.json'))['id'],'sharedDialog':True,'noAdditionalTabs':True,'sameTabIds':True,'repeatedOpenClose':True,'tabsBefore':14,'tabsAfter':14,'queueClosedAtMs':int(time.time()*1000),'jobId':job['id'],'initialStatus':job['status'],'initialProgress':job['progress'],'initialUpdatedAtMs':job['updatedAtMs'],'workerPid':json.load(open(root/'worker.json'))['pid']};pathlib.Path('analysis/render-queue-recovery-2026-10-28/live-ui.json').write_text(json.dumps(r,indent=2)+'\\n');print(job['status'],job['progress'],r['workerPid'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6c35e3e7-ddc5-4f05-9ab0-ce4105380f27"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:26:41.766Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d995591c32e4a551e9976463f5bb48bf68d4513317ad1b7e4b0160d608caec7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T13:09:33.008Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/render-queue-recovery-2026-10-28/delivery-commit.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cbf47c7d-f36f-49b7-9083-0864cdc43313"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:09:33.009Z",
+  "parents": [],
+  "branch": "main"
+}

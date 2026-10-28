@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d1d3ae6e4899c04dd753357aac759379d5e2c461c292b1587ed5ac8a4297346",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:54:05.104Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nb=pathlib.Path('analysis/render-queue-recovery-2026-10-28');r=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects'\nfor g in json.load(open(b/'project-guards.json')):\n d=r/g['projectId'];doc=json.load(open(d/'project.json'));payload={k:doc.get(k) for k in ['scenes','settings','currentSceneId','customFonts']};assert hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()==g['editsSha256'];assert hashlib.sha256((d/'media/index.json').read_bytes()).hexdigest()==g['mediaSha256']\nprint('All seven project edit/settings/media guards still match after reopening session0151')\nPY\n tail -4 .local/render-queue-recovery-2026-10-28/collect.log; tail -2 .local/render-queue-recovery-2026-10-28/watch-media.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5ed12bc5-97c7-4f17-b462-f0be09fda74d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:54:05.888Z",
+  "parents": [],
+  "branch": "main"
+}

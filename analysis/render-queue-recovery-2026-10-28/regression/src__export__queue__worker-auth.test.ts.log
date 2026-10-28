@@ -1,0 +1,11 @@
+bun test v1.3.14 (0d9b296a)
+
+src/export/queue/worker-auth.test.ts:
+(pass) renderer can consume frozen queue inputs and report an attempt [9.65ms]
+(pass) renderer token cannot edit projects, manage identity, enqueue or cancel work [2.15ms]
+(pass) uses actual Host when Next normalizes a loopback alias [0.47ms]
+
+ 3 pass
+ 0 fail
+ 10 expect() calls
+Ran 3 tests across 1 file. [184.00ms]

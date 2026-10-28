@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d22e80a46d2fd4d38bb2a13bb68bd50020634a11a27bd901618d15921411f734",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:00:14.837Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert job['status']=='completed',before['projectName']\", \"assert job['status']=='completed',before['projectName']\\n assert job.get('outputId'),before['projectName']\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9857273a-c409-4c35-8d26-28fe89b044c3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:00:16.075Z",
+  "parents": [],
+  "branch": "main"
+}

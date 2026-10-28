@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "62f3761394a3613f6e12b73a76c538d9b75a4d17c6ed27da21c5ab151d8abef5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:11:04.847Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,shutil\nsource=pathlib.Path('.local/render-queue-recovery-2026-10-28/lock-fix-tests');dest=pathlib.Path('analysis/render-queue-recovery-2026-10-28/regression');dest.mkdir(exist_ok=True)\nfor path in source.iterdir():\n if path.suffix in ('.json','.log'):shutil.copy2(path,dest/path.name)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-521a5418-03e0-4937-a9f9-8e9645428378"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:11:05.146Z",
+  "parents": [],
+  "branch": "main"
+}

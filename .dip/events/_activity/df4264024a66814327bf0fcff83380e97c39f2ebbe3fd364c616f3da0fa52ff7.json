@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "df4264024a66814327bf0fcff83380e97c39f2ebbe3fd364c616f3da0fa52ff7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:06:15.223Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "view_image",
+        "branch": "main",
+        "path": "/Users/itayzrihan/Documents/PoCut/analysis/render-queue-recovery-2026-10-28/frames/0156-contact.jpg",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6764a31e-dab9-456e-81dd-239619b10b76"
+      },
+      {
+        "at": "2026-10-28T13:06:15.303Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "view_image",
+        "branch": "main",
+        "path": "/Users/itayzrihan/Documents/PoCut/analysis/render-queue-recovery-2026-10-28/frames/0156-contact.jpg",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6764a31e-dab9-456e-81dd-239619b10b76"
+      },
+      {
+        "at": "2026-10-28T13:06:15.310Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check; python3 - <<'PY'\nimport json,pathlib\nb=pathlib.Path('analysis/render-queue-recovery-2026-10-28');rows=json.load(open(b/'delivered.json'));print('Delivered',len(rows),'exports,',round(sum(r['size'] for r in rows)/1024**3,2),'GiB');assert len(rows)==7;assert all(r['sha256'] for r in rows);print('All seven have full SHA256 receipts')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bdfa5818-238d-46b2-8e75-bc81654a5d87"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:06:15.416Z",
+  "parents": [],
+  "branch": "main"
+}

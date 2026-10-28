@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2bac146d2e650a9f57677b5722d62d6c2a4b494127fc194711081d4f6e9e26b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T12:11:05.094Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/render-queue-recovery-2026-10-28/regression",
+          "analysis/render-queue-recovery-2026-10-28/regression/summary.json",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__export__queue__server.test.ts.log",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__export__queue__worker-auth.test.ts.log",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__export__queue__host.test.ts.log",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__accounts__public-origin.test.ts.log",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__accounts__server.test.ts.log",
+          "analysis/render-queue-recovery-2026-10-28/regression/src__export__queue__actions.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ff06b9b6-d223-40ce-b6fd-cc90ce2a5d61"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:11:05.210Z",
+  "parents": [],
+  "branch": "main"
+}

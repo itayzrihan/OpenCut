@@ -1,0 +1,14 @@
+bun test v1.3.14 (0d9b296a)
+
+src/export/queue/server.test.ts:
+(pass) durable canonical host queue deduplicates concurrent submissions and isolates source relinks [1265.98ms]
+(pass) per-job settings update only while queued and stale revisions cannot cancel jobs [20.37ms]
+(pass) direct destinations are claimed explicitly and never consumed by a background queue window [36.40ms]
+(pass) copied media uses resolved path binding and pins source bytes without a linked sourcePath [16.79ms]
+(pass) reused canonical runtime restores each account independently, including a new empty account [17.31ms]
+(pass) external output disk keeps frozen inputs and existing output downloads intact [3.20ms]
+
+ 6 pass
+ 0 fail
+ 28 expect() calls
+Ran 6 tests across 1 file. [3.02s]

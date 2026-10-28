@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "39cab3c8ac6e78bf16253b2d452caa028b66b1d241f7b5cde14aed5cb10d1720",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:02:28.605Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/collect_outputs.py';s=open(p).read();s=s.replace('  assert digest(target)==source_hash\\n  if source==internal', '  # Publish the native download alias as soon as the same-volume rename (or\\n  # already byte-verified copy) is complete; the final audit may read slowly.\\n  if source==internal').replace('  probe=json.loads', '  assert digest(target)==source_hash\\n  probe=json.loads');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-df259c1e-6f13-4bc4-ba9d-ed5d5b0a6483"
+      },
+      {
+        "at": "2026-10-28T13:02:28.739Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/collect_outputs.py';s=open(p).read();s=s.replace('  assert digest(target)==source_hash\\n  if source==internal', '  # Publish the native download alias as soon as the same-volume rename (or\\n  # already byte-verified copy) is complete; the final audit may read slowly.\\n  if source==internal').replace('  probe=json.loads', '  assert digest(target)==source_hash\\n  probe=json.loads');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-df259c1e-6f13-4bc4-ba9d-ed5d5b0a6483"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:02:29.021Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1579d0045cc9b6ce52a0d87e54b6629765155879ef03b1c55e2b94e8a2e80f74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:25:16.789Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -4 .local/render-queue-recovery-2026-10-28/collect.log; python3 - <<'PY'\nimport pathlib,json,os\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';q=json.load(open(r/'runtime.json'))['active']['document']['renderQueue'];print('Active',[(j['status'],j['message']) for j in q if j['id']=='7dc81ff6-637a-4c00-960c-3fc6c33f6813']);p=json.load(open(r/'worker.json'))['pid'];\ntry:os.kill(p,0);print('Old background worker still alive',p)\nexcept ProcessLookupError:print('Old background worker exited idle')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c3913676-1363-4f4c-aa66-fa90bb06a101"
+      },
+      {
+        "at": "2026-10-28T12:25:17.173Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -4 .local/render-queue-recovery-2026-10-28/collect.log; python3 - <<'PY'\nimport pathlib,json,os\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';q=json.load(open(r/'runtime.json'))['active']['document']['renderQueue'];print('Active',[(j['status'],j['message']) for j in q if j['id']=='7dc81ff6-637a-4c00-960c-3fc6c33f6813']);p=json.load(open(r/'worker.json'))['pid'];\ntry:os.kill(p,0);print('Old background worker still alive',p)\nexcept ProcessLookupError:print('Old background worker exited idle')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c3913676-1363-4f4c-aa66-fa90bb06a101"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:25:17.303Z",
+  "parents": [],
+  "branch": "main"
+}

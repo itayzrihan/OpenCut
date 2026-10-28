@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e2e76206ee69599955c896666c42b6ab46b530bdbc2a4b4e11c37c702acf186f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:28:06.091Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,subprocess\nbase=pathlib.Path('analysis/render-queue-recovery-2026-10-28');deployment=pathlib.Path.home()/'Library/Application Support/OpenCut Local';release=json.load(open(deployment/'current.json'));release['sourceCommit']=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();log=(deployment/'logs/production.log').read_bytes();release['productionLogOffset']=log.rfind('▲ Next.js'.encode());assert release['productionLogOffset']>=0;(base/'deployment.json').write_text(json.dumps(release,indent=2)+'\\n');print('Deployed candidate and regression receipt recorded')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7bdcab43-ee35-46bc-82a9-d588009cfaa2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:28:06.846Z",
+  "parents": [],
+  "branch": "main"
+}

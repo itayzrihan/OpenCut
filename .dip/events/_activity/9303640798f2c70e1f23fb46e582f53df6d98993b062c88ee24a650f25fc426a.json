@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9303640798f2c70e1f23fb46e582f53df6d98993b062c88ee24a650f25fc426a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:02:00.615Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';id='83f10789-30ea-4c5f-85a3-7acdb98b5cdd';job=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']==id);assert job['status']=='completed' and job['outputId'];target=pathlib.Path('/Volumes/HDD 2TB/OpenCut Exports/Event sessions 0149-0156/אירוע · סשן 0156 · C7467.mp4');assert target.stat().st_size>0\nalias=root/id/'output.mp4'\nif not alias.exists():\n tmp=alias.with_suffix('.mp4.present-alias');tmp.symlink_to(target);os.replace(tmp,alias)\nelse:assert alias.is_symlink() and alias.resolve()==target.resolve()\nprint('Native queue download resolves to the complete HDD file while byte verification finishes')\nPY\n tail -4 .local/render-queue-recovery-2026-10-28/collect.log; tail -2 .local/render-queue-recovery-2026-10-28/watch-media.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ea82dfcc-48e3-47c1-a544-a7c706908b66"
+      },
+      {
+        "at": "2026-10-28T13:02:00.776Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';id='83f10789-30ea-4c5f-85a3-7acdb98b5cdd';job=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']==id);assert job['status']=='completed' and job['outputId'];target=pathlib.Path('/Volumes/HDD 2TB/OpenCut Exports/Event sessions 0149-0156/אירוע · סשן 0156 · C7467.mp4');assert target.stat().st_size>0\nalias=root/id/'output.mp4'\nif not alias.exists():\n tmp=alias.with_suffix('.mp4.present-alias');tmp.symlink_to(target);os.replace(tmp,alias)\nelse:assert alias.is_symlink() and alias.resolve()==target.resolve()\nprint('Native queue download resolves to the complete HDD file while byte verification finishes')\nPY\n tail -4 .local/render-queue-recovery-2026-10-28/collect.log; tail -2 .local/render-queue-recovery-2026-10-28/watch-media.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ea82dfcc-48e3-47c1-a544-a7c706908b66"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:02:00.968Z",
+  "parents": [],
+  "branch": "main"
+}

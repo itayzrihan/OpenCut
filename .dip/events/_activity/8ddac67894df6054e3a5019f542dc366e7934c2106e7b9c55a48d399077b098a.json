@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ddac67894df6054e3a5019f542dc366e7934c2106e7b9c55a48d399077b098a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T12:00:14.748Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/render-queue-recovery-2026-10-28/verify.py"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "158ec0f1-cc9e-4615-808f-5b50b25ca368"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:00:14.750Z",
+  "parents": [],
+  "branch": "main"
+}

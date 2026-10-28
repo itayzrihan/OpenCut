@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4d6b8d43b2535d4ba55749a2e595d03a8c8ffdfcd73cece5becb154b7fdc7e4a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:56:38.118Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "lsof -o -p 41798 | rg 'output.mp4|0156|COMMAND'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ab916d7b-eb9a-4bc9-a9ed-1187fc9f56a9"
+      },
+      {
+        "at": "2026-10-28T12:56:38.247Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "lsof -o -p 41798 | rg 'output.mp4|0156|COMMAND'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ab916d7b-eb9a-4bc9-a9ed-1187fc9f56a9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:56:38.383Z",
+  "parents": [],
+  "branch": "main"
+}

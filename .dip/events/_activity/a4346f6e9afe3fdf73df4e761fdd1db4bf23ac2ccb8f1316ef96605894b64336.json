@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a4346f6e9afe3fdf73df4e761fdd1db4bf23ac2ccb8f1316ef96605894b64336",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:03:34.716Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace('import json, pathlib, subprocess','import json, pathlib, subprocess, hashlib, re');s+='''\nrelease=json.loads((pathlib.Path.home()/\"Library/Application Support/OpenCut Local/current.json\").read_text())\nassert release['id']==ui['release']\nfiles=sorted(p for p in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard']).decode().split('\\\\0') if p)\nhash=hashlib.sha256()\nfor file in files:\n if file.endswith('/next-env.d.ts'):continue\n if not re.match(r'^(classic/(apps/(web|electron/app)|rust|packages|patches)/|crates/|resources/|Cargo\\\\.(toml|lock)$|classic/(package\\\\.json|bun\\\\.lock)$)',file):continue\n hash.update(file.encode())\n path=pathlib.Path(file);hash.update(path.read_bytes() if path.exists() else b'deleted')\nassert hash.hexdigest()==release['fingerprint'],'Deployed release must match current canonical product source'\n''';s=s.replace(\"print('PASS: seven original frozen 4K HEVC/AAC snapshots delivered, detached renderer and shared closable queue verified.')\\n\",'');s+=\"print('PASS: seven original frozen 4K HEVC/AAC snapshots delivered, detached renderer, shared closable queue and deployed source verified.')\\n\";open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3389a39b-485b-4645-ac0f-62eb5bcba727"
+      },
+      {
+        "at": "2026-10-28T12:03:35.531Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace('import json, pathlib, subprocess','import json, pathlib, subprocess, hashlib, re');s+='''\nrelease=json.loads((pathlib.Path.home()/\"Library/Application Support/OpenCut Local/current.json\").read_text())\nassert release['id']==ui['release']\nfiles=sorted(p for p in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard']).decode().split('\\\\0') if p)\nhash=hashlib.sha256()\nfor file in files:\n if file.endswith('/next-env.d.ts'):continue\n if not re.match(r'^(classic/(apps/(web|electron/app)|rust|packages|patches)/|crates/|resources/|Cargo\\\\.(toml|lock)$|classic/(package\\\\.json|bun\\\\.lock)$)',file):continue\n hash.update(file.encode())\n path=pathlib.Path(file);hash.update(path.read_bytes() if path.exists() else b'deleted')\nassert hash.hexdigest()==release['fingerprint'],'Deployed release must match current canonical product source'\n''';s=s.replace(\"print('PASS: seven original frozen 4K HEVC/AAC snapshots delivered, detached renderer and shared closable queue verified.')\\n\",'');s+=\"print('PASS: seven original frozen 4K HEVC/AAC snapshots delivered, detached renderer, shared closable queue and deployed source verified.')\\n\";open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3389a39b-485b-4645-ac0f-62eb5bcba727"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:03:35.551Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5c8d10b15080377f7094b2549051203567444b24241bf08dc8b0512cf750a465",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:28:33.486Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\nb=pathlib.Path('analysis/render-queue-recovery-2026-10-28');p=b/'live-ui.json';d=json.load(open(p));root=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';j=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']==d['jobId']);pid=json.load(open(root/'worker.json'))['pid'];assert pid==d['workerPid'];d.update({'reopenedDuringActiveRender':True,'workerReusedDuringActiveView':True,'secondClosedAtMs':int(time.time()*1000),'secondInitialProgress':j['progress']});p.write_text(json.dumps(d,indent=2)+'\\n');deploy=json.load(open(b/'deployment.json'));raw=(pathlib.Path.home()/'Library/Application Support/OpenCut Local/logs/production.log').read_bytes()[deploy['productionLogOffset']:];assert b'updateTimeout' not in raw;print('Same host PID',pid,'and no lock errors after repeated active queue opens')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6587590a-1245-4d3f-a5c5-0b9c6ce69405"
+      },
+      {
+        "at": "2026-10-28T12:28:33.789Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,time\nb=pathlib.Path('analysis/render-queue-recovery-2026-10-28');p=b/'live-ui.json';d=json.load(open(p));root=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';j=next(j for j in json.load(open(root/'runtime.json'))['active']['document']['renderQueue'] if j['id']==d['jobId']);pid=json.load(open(root/'worker.json'))['pid'];assert pid==d['workerPid'];d.update({'reopenedDuringActiveRender':True,'workerReusedDuringActiveView':True,'secondClosedAtMs':int(time.time()*1000),'secondInitialProgress':j['progress']});p.write_text(json.dumps(d,indent=2)+'\\n');deploy=json.load(open(b/'deployment.json'));raw=(pathlib.Path.home()/'Library/Application Support/OpenCut Local/logs/production.log').read_bytes()[deploy['productionLogOffset']:];assert b'updateTimeout' not in raw;print('Same host PID',pid,'and no lock errors after repeated active queue opens')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6587590a-1245-4d3f-a5c5-0b9c6ce69405"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:28:33.901Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a655df1fe0914d083df378881adedb4c15024bcc38da2279047d6f522ff8c4e8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:14:14.986Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -29 analysis/card-podcasts-early-2026-10-28/verify_delivery.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c9697683-b0c0-413b-bfdf-4ac640b5a059"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:14:15.092Z",
+  "parents": [],
+  "branch": "main"
+}

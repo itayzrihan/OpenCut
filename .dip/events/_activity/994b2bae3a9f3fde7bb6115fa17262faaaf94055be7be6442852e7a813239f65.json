@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "994b2bae3a9f3fde7bb6115fa17262faaaf94055be7be6442852e7a813239f65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:32:28.083Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,hashlib,re,subprocess,json\nfiles=sorted(p for p in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard']).decode().split('\\0') if p);h=hashlib.sha256()\nfor f in files:\n if f.endswith('/next-env.d.ts') or not re.match(r'^(classic/(apps/(web|electron/app)|rust|packages|patches)/|crates/|resources/|Cargo\\.(toml|lock)$|classic/(package\\.json|bun\\.lock)$)',f):continue\n h.update(f.encode());p=pathlib.Path(f);h.update(p.read_bytes() if p.exists() else b'deleted')\nrelease=json.load(open(pathlib.Path.home()/'Library/Application Support/OpenCut Local/current.json'));assert h.hexdigest()==release['fingerprint'];print('Current deployed release matches the canonical product source fingerprint')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-703cb1a5-4308-49aa-8411-6f7a8708ccfe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:32:28.818Z",
+  "parents": [],
+  "branch": "main"
+}

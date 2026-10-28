@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6230d3ba3e3aed4f299120ffc7527a6a43f57e1aeecab52e42400962224ab465",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:36:17.653Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np='.dip/config.json';d=json.load(open(p));d['verification']['render-queue-recovery']['timeoutMs']=600000;open(p,'w').write(json.dumps(d,indent=2)+'\\n')\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert (root/job['id']/'output.mp4').resolve()==path.resolve()\", \"assert (root/job['id']/'output.mp4').resolve()==path.resolve()\\n print('Verified export:',before['projectName'],flush=True)\");open(p,'w').write(s)\nPY\n tail -3 .local/render-queue-recovery-2026-10-28/collect.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-d908fa43-992a-43a5-afd2-b859ed411c3e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:36:18.336Z",
+  "parents": [],
+  "branch": "main"
+}

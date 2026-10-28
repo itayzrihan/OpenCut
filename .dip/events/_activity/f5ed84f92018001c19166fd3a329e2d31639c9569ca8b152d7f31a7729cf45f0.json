@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5ed84f92018001c19166fd3a329e2d31639c9569ca8b152d7f31a7729cf45f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:24:21.596Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -4 .local/render-queue-recovery-2026-10-28/collect.log; python3 - <<'PY'\nimport json,pathlib,os\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\nq=json.load(open(r/'runtime.json'))['active']['document']['renderQueue'];print('Active',[(j['id'],round(j['progress']*100),j['message']) for j in q if j['status']=='rendering'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-57a4aa60-fdf0-4efb-8881-0011ef03bdb6"
+      },
+      {
+        "at": "2026-10-28T12:24:21.884Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -4 .local/render-queue-recovery-2026-10-28/collect.log; python3 - <<'PY'\nimport json,pathlib,os\nr=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\nq=json.load(open(r/'runtime.json'))['active']['document']['renderQueue'];print('Active',[(j['id'],round(j['progress']*100),j['message']) for j in q if j['status']=='rendering'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-57a4aa60-fdf0-4efb-8881-0011ef03bdb6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:24:21.939Z",
+  "parents": [],
+  "branch": "main"
+}

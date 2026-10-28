@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a450c6569acf71d084853d936b00c6b6c3cc5215f5de209cc85335efa297b695",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:07:11.632Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert len(baseline)==len(delivered)==7\", \"assert len(baseline)==len(delivered)==7\\nassert all(re.fullmatch(r'[0-9a-f]{64}',d['sha256']) for d in delivered.values())\\nassert (base/'completed-queue-view.txt').read_text().count('\\\\nCompleted\\\\n')==7\\nassert (base/'completed-queue.png').stat().st_size>0\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e49e4b3a-d33e-464b-92f6-0dbaea96ca4c"
+      },
+      {
+        "at": "2026-10-28T13:07:11.739Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read().replace(\"assert len(baseline)==len(delivered)==7\", \"assert len(baseline)==len(delivered)==7\\nassert all(re.fullmatch(r'[0-9a-f]{64}',d['sha256']) for d in delivered.values())\\nassert (base/'completed-queue-view.txt').read_text().count('\\\\nCompleted\\\\n')==7\\nassert (base/'completed-queue.png').stat().st_size>0\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e49e4b3a-d33e-464b-92f6-0dbaea96ca4c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:07:12.520Z",
+  "parents": [],
+  "branch": "main"
+}

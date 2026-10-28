@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ee703eb30c058c35bd73e9220531293d1130ce03dcbe3741f87cf1fedf5c6cf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:10:50.080Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/render-queue-recovery-2026-10-28/lock-fix-tests/summary.json | head -35; tail -4 .local/render-queue-recovery-2026-10-28/collect.log; cat .local/render-queue-recovery-2026-10-28/watch-media.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-55507e66-4763-42cc-84e2-50aa38f28a5b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:10:50.979Z",
+  "parents": [],
+  "branch": "main"
+}

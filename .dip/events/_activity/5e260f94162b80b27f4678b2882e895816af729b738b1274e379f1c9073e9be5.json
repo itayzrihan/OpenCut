@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5e260f94162b80b27f4678b2882e895816af729b738b1274e379f1c9073e9be5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:14:41.905Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib\nbase=pathlib.Path('analysis/render-queue-recovery-2026-10-28');root=pathlib.Path.home()/'Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects';guards=[]\nfor j in json.load(open(base/'jobs-before.json')):\n p=root/j['projectId'];doc=json.load(open(p/'project.json'));payload={k:doc.get(k) for k in ['scenes','settings','currentSceneId','customFonts']};guards.append({'projectId':j['projectId'],'editsSha256':hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest(),'mediaSha256':hashlib.sha256((p/'media/index.json').read_bytes()).hexdigest()})\n(base/'project-guards.json').write_text(json.dumps(guards,indent=2)+'\\n')\np=base/'verify.py';s=p.read_text();s=s.replace(\"fixture=json.loads\", \"projectRoot=root.parent/'projects'\\nfor guard in json.loads((base/'project-guards.json').read_text()):\\n folder=projectRoot/guard['projectId'];doc=json.loads((folder/'project.json').read_text());payload={k:doc.get(k) for k in ['scenes','settings','currentSceneId','customFonts']}\\n assert hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()==guard['editsSha256'],'User edits must remain unchanged'\\n assert hashlib.sha256((folder/'media/index.json').read_bytes()).hexdigest()==guard['mediaSha256']\\nfixture=json.loads\");p.write_text(s)\nprint('Captured read-only scene/settings and media guards for all seven projects')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9bdf1df9-0a37-4892-a513-e6328fd9778d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:14:43.190Z",
+  "parents": [],
+  "branch": "main"
+}

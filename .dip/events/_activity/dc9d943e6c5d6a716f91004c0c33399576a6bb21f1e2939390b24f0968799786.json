@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dc9d943e6c5d6a716f91004c0c33399576a6bb21f1e2939390b24f0968799786",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:28:42.513Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read();s=s.replace(\"assert ui['editorPlaybackDuringBackground']\", \"assert ui['editorPlaybackDuringBackground']\\nassert ui['sameTabIds'] and ui['reopenedDuringActiveRender'] and ui['workerReusedDuringActiveView']\\nassert ui['secondContinuedAtMs']>ui['secondClosedAtMs']\\nassert ui['secondContinuedProgress']>ui['secondInitialProgress']\\ndeploy=json.loads((base/'deployment.json').read_text())\\nlog=(pathlib.Path.home()/'Library/Application Support/OpenCut Local/logs/production.log').read_bytes()[deploy['productionLogOffset']:]\\nassert b'updateTimeout' not in log\\nregression=json.loads((base/'regression/summary.json').read_text())\\nassert regression['passed']==16 and regression['failedSuites']==0 and regression['failed']==0\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e7d2155f-e2ad-407c-b722-978f0f896965"
+      },
+      {
+        "at": "2026-10-28T12:28:42.768Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='analysis/render-queue-recovery-2026-10-28/verify.py';s=open(p).read();s=s.replace(\"assert ui['editorPlaybackDuringBackground']\", \"assert ui['editorPlaybackDuringBackground']\\nassert ui['sameTabIds'] and ui['reopenedDuringActiveRender'] and ui['workerReusedDuringActiveView']\\nassert ui['secondContinuedAtMs']>ui['secondClosedAtMs']\\nassert ui['secondContinuedProgress']>ui['secondInitialProgress']\\ndeploy=json.loads((base/'deployment.json').read_text())\\nlog=(pathlib.Path.home()/'Library/Application Support/OpenCut Local/logs/production.log').read_bytes()[deploy['productionLogOffset']:]\\nassert b'updateTimeout' not in log\\nregression=json.loads((base/'regression/summary.json').read_text())\\nassert regression['passed']==16 and regression['failedSuites']==0 and regression['failed']==0\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e7d2155f-e2ad-407c-b722-978f0f896965"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:28:42.917Z",
+  "parents": [],
+  "branch": "main"
+}

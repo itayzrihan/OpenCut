@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a58bf23c60bbb3207b87d1593014d1ca8ae4cf25544f42bfd486fa8d2b507106",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T11:58:23.887Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -3 .local/render-queue-recovery-2026-10-28/collect.log; head -2 .local/render-queue-recovery-2026-10-28/lock-fix-commit.log; tail -3 .local/render-queue-recovery-2026-10-28/fixture/host-server.log | cut -c1-300",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-805c1db3-feba-484b-86c6-aeeff5cf0914"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T11:58:24.885Z",
+  "parents": [],
+  "branch": "main"
+}

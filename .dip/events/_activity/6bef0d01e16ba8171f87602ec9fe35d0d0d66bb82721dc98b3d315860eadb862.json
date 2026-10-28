@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6bef0d01e16ba8171f87602ec9fe35d0d0d66bb82721dc98b3d315860eadb862",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T12:25:31.876Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Library/Application Support/OpenCut Local';c=json.load(open(root/'candidate.json'));e=json.load(open('analysis/render-queue-recovery-2026-10-28/background-fixture.json'))\nassert c['id']==e['release'] and e['normalAuthenticatedHostLaunch'] and e['workerExitedIdle']\nfor name,data in [('previous.json',(root/'current.json').read_bytes()),('current.json',(root/'candidate.json').read_bytes())]:\n p=root/(name+'.new');p.write_bytes(data);os.replace(p,root/name)\nprint('Activated tested host-lock fix:',c['id'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a2bb489e-e53b-4e38-a041-b286aabd05e1"
+      },
+      {
+        "at": "2026-10-28T12:25:32.016Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,json,os\nroot=pathlib.Path.home()/'Library/Application Support/OpenCut Local';c=json.load(open(root/'candidate.json'));e=json.load(open('analysis/render-queue-recovery-2026-10-28/background-fixture.json'))\nassert c['id']==e['release'] and e['normalAuthenticatedHostLaunch'] and e['workerExitedIdle']\nfor name,data in [('previous.json',(root/'current.json').read_bytes()),('current.json',(root/'candidate.json').read_bytes())]:\n p=root/(name+'.new');p.write_bytes(data);os.replace(p,root/name)\nprint('Activated tested host-lock fix:',c['id'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a2bb489e-e53b-4e38-a041-b286aabd05e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T12:25:32.326Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84eab1ea-59d1-4708-9f3e-a54327b184a1",
+  "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Lock isolation followup committed161748b9. Staged finalcandidate2026-10-28T11-52-20-664Z-fb20b580 passes16tests/fullbuild and NEW truehost integration: normal authenticated GETs launch one real detachedElectron, concurrent viewerpolling during canonical claim/report/upload,2HEVC/AAC12soutputs,idleexit. background-fixture.json records finalcandidate. Currentproduction11-19oldhosttargetbug; keepmodalclosed untilidle, noexistingrender interruptions.153completed andSHA-delivered;4/7deliveredandstart/mid/enddecoded.152~50%background,151queued,156failedawaitsretry. livesharedmodal/progressclosed/editorplayback evidenceexists butmustrefreshlive-ui.jsonreleaseafterfinalactivation.",
+    "next": "Wait152/151finish,activateverified11-52candidatewhenqueueidle/oldworkerexited. Retry156throughnewsharedmodal,close/reopenwithoutnewtabs,recordprogressaftercloseonnewrelease. Finish7deliveryandmediaQA,configuredrender-queue-recoverycheck,finishDIP,commitevidence.",
+    "head": "161748b95f65554788b902d1634294652ed1f653"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T12:00:39.770Z",
+  "parents": [
+    "cdab5dc3-8982-4bab-a145-c4d5d30b46d8"
+  ],
+  "branch": "main"
+}
