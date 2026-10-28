@@ -32,6 +32,8 @@ mod hyperframes_source_edits;
 mod hyperframes_variables;
 mod job;
 mod model;
+mod render_queue;
+pub use render_queue::*;
 mod studio;
 mod operations;
 mod policy;

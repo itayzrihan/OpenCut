@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78d9cf52b0217708dca0ab1f48ede9b13c874e87e4a5098c7b7af35e930e244e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:50:45.422Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run --cwd classic/apps/web test --test-timeout=30000 src/export/queue/server.test.ts > /tmp/render-queue-host-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b856f6ab-cd16-4b6f-beac-2617c419eab2"
+      },
+      {
+        "at": "2026-10-28T03:50:45.429Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/classic-web-tests/1793159398627/src__export__queue__server.test.ts.log; cat /tmp/render-queue-host-tests.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c332b4d6-d264-4fcd-b16b-db1dc93c0cfb"
+      },
+      {
+        "at": "2026-10-28T03:50:45.637Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/classic-web-tests/1793159398627/src__export__queue__server.test.ts.log; cat /tmp/render-queue-host-tests.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c332b4d6-d264-4fcd-b16b-db1dc93c0cfb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:50:45.774Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,13 @@
+   Compiling opencut-editor-api v0.1.0 (/Users/itayzrihan/Documents/PoCut/crates/editor-api)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.18s
+     Running tests/render_queue.rs (target/debug/deps/render_queue-cc6dfefac27bd4d5)
+
+running 5 tests
+test dry_run_revision_idempotency_validation_and_undo ... ok
+test disconnect_is_a_failed_boundary_and_late_completion_is_rejected ... ok
+test serial_fifo_and_worker_attempt_fences ... ok
+test cancellation_acknowledgment_and_retry_keep_exact_snapshot ... ok
+test frozen_scene_recipe_dependency_graph_survive_edits_and_serialization ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+

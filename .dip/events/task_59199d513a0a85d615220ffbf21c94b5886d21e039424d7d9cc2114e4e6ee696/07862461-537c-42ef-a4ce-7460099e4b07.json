@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07862461-537c-42ef-a4ce-7460099e4b07",
+  "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+  "type": "task.update",
+  "payload": {
+    "title": "Add persistent background Render Queue with immutable scene snapshots",
+    "acceptance": [
+      "Queue freezes selected scene, media references and export settings at enqueue; later edits cannot affect output.",
+      "Durable queue exposes pending/running/completed/failed status and job settings with cancellation/retry.",
+      "Rendering runs independently of active editor so playback/editing remain available.",
+      "Canonical runtime owns queue state/actions; tests cover snapshot isolation and queue lifecycle.",
+      "Build, deploy and verify short background render while editing a separate live scene."
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src",
+      "classic/scripts/local-production",
+      "analysis/render-queue-2026-10-28"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:33:37.863Z",
+  "parents": [
+    "0255c307-8325-45b2-b1a1-17f20d5e50b6"
+  ],
+  "branch": "main"
+}

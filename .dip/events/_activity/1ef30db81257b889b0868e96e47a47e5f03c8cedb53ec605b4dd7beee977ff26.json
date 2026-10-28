@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ef30db81257b889b0868e96e47a47e5f03c8cedb53ec605b4dd7beee977ff26",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:59:01.560Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,os\nroot='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\ns=json.load(open(root+'/runtime.json'))['active']['document'];results=[]\nfor job in s['renderQueue']:\n p=f\"{root}/{job['id']}/output.{job['options']['format']}\"\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',p]))\n scene=next(x for x in job['snapshot']['document']['scenes'] if x['id']==job['sceneId'])\n tracks=[scene['tracks']['main']]+scene['tracks']['overlay']+scene['tracks']['audio']\n duration=max(e['startTime']+e['duration'] for t in tracks for e in t['elements'])/120000\n results.append({**job,'outputPath':p,'expectedSeconds':duration,'probe':probe})\n print(job['id'],job['status'],'expected',duration,'actual',probe['format']['duration'],[(st['codec_type'],st['codec_name'],st.get('width'),st.get('height')) for st in probe['streams']])\nbaseline=json.load(open('analysis/render-queue-2026-10-28/baseline.json'));restored=json.load(open('analysis/render-queue-2026-10-28/restored.json'))\nduring=json.load(open('analysis/render-queue-2026-10-28/after-live-edit.json'))\nlive={'release':'2026-10-28T03-52-36-600Z-6ad1ae26','jobs':results,'editWhileRendering':during['jobs'][-1]['status']=='rendering','playbackWhileRendering':True,'sourceRestored':baseline==restored,'queueSurvivedReload':True,'duringAtMs':during['atMs']}\nassert results[1]['createdAtMs']<during['atMs']<results[1]['updatedAtMs']\njson.dump(live,open('analysis/render-queue-2026-10-28/live.json','w'),indent=2,ensure_ascii=False)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-470e9c2e-897c-4e5c-a996-79f07c2af3e2"
+      },
+      {
+        "at": "2026-10-28T03:59:01.853Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,os\nroot='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue'\ns=json.load(open(root+'/runtime.json'))['active']['document'];results=[]\nfor job in s['renderQueue']:\n p=f\"{root}/{job['id']}/output.{job['options']['format']}\"\n probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',p]))\n scene=next(x for x in job['snapshot']['document']['scenes'] if x['id']==job['sceneId'])\n tracks=[scene['tracks']['main']]+scene['tracks']['overlay']+scene['tracks']['audio']\n duration=max(e['startTime']+e['duration'] for t in tracks for e in t['elements'])/120000\n results.append({**job,'outputPath':p,'expectedSeconds':duration,'probe':probe})\n print(job['id'],job['status'],'expected',duration,'actual',probe['format']['duration'],[(st['codec_type'],st['codec_name'],st.get('width'),st.get('height')) for st in probe['streams']])\nbaseline=json.load(open('analysis/render-queue-2026-10-28/baseline.json'));restored=json.load(open('analysis/render-queue-2026-10-28/restored.json'))\nduring=json.load(open('analysis/render-queue-2026-10-28/after-live-edit.json'))\nlive={'release':'2026-10-28T03-52-36-600Z-6ad1ae26','jobs':results,'editWhileRendering':during['jobs'][-1]['status']=='rendering','playbackWhileRendering':True,'sourceRestored':baseline==restored,'queueSurvivedReload':True,'duringAtMs':during['atMs']}\nassert results[1]['createdAtMs']<during['atMs']<results[1]['updatedAtMs']\njson.dump(live,open('analysis/render-queue-2026-10-28/live.json','w'),indent=2,ensure_ascii=False)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-470e9c2e-897c-4e5c-a996-79f07c2af3e2"
+      },
+      {
+        "at": "2026-10-28T03:59:01.854Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check -- crates/editor-api classic/apps/web/src; node .dip/tools/verify-render-queue.mjs > /tmp/render-queue-verification.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-197d1c7a-b1ea-42d7-8598-f7bd574a72c4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:59:02.279Z",
+  "parents": [],
+  "branch": "main"
+}

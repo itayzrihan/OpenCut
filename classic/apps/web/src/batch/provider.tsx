@@ -68,7 +68,7 @@ const Context = createContext<{
 export const useBatchEdit = () => useContext(Context);
 export function BatchEditProvider({ children }: { children: ReactNode }) {
 	const path = usePathname();
-	if (path === "/batch-worker") return children;
+	if (path === "/batch-worker" || path === "/render-queue") return children;
 	return <BatchEditHost>{children}</BatchEditHost>;
 }
 function BatchEditHost({ children }: { children: ReactNode }) {

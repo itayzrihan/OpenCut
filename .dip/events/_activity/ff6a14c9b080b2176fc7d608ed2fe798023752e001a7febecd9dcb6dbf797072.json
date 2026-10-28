@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff6a14c9b080b2176fc7d608ed2fe798023752e001a7febecd9dcb6dbf797072",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:40:28.041Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/server.ts';s=open(p).read().replace('getMediaFile, getFontFile, getProject','getMediaFile, getFontFile, getSharedFile, getProject').replace('const file=await getFontFile(projectId,font.id);','const file=await getFontFile(projectId,font.id) ?? await getSharedFile(\"fonts\",font.id);');open(p,'w').write(s)\np='classic/apps/web/src/components/editor/export-button.tsx';s=open(p).read().replace('useEffect, useState','useEffect, useState, useRef').replace('Check, Copy, Download, RotateCcw','Check, Copy, Download, RotateCcw, ListVideo, ListPlus');s=s.replace('import { DEFAULT_EXPORT_OPTIONS }','import { enqueueCurrentRender, openRenderQueue } from \"@/export/queue/client\";\\nimport { DEFAULT_EXPORT_OPTIONS }');s=s.replace('\\t\\t<Popover\\n','\\t\\t<div className=\"flex items-center gap-1\">\\n\\t\\t<Button variant=\"ghost\" size=\"icon\" aria-label=\"Open Render Queue\" title=\"Render Queue\" onClick={openRenderQueue}><ListVideo /></Button>\\n\\t\\t<Popover\\n',1).replace('\\t\\t</Popover>','\\t\\t</Popover></div>',1)\nneedle='\\tconst hasReadyExport = hasExportOutput(exportResult);';s=s.replace(needle,needle+'''\n\tconst [isQueueing, setIsQueueing] = useState(false);\n\tconst submissionId = useRef<string | null>(null);\n\tconst handleEnqueue = async () => {\n\t\tif (!plan || isQueueing || checkingEncoder || encoderError || planError) return;\n\t\tconst queueWindow=openRenderQueue();\n\t\tif (!queueWindow) { toast.error(\"Allow the Render Queue window to open, then try again.\"); return; }\n\t\tsetIsQueueing(true);\n\t\ttry {\n\t\t\tsubmissionId.current ??= crypto.randomUUID();\n\t\t\tawait enqueueCurrentRender({editor,id:submissionId.current,options:{preferences,format,quality,fps:activeProject.settings.fps,includeAudio:shouldIncludeAudio}});\n\t\t\tsubmissionId.current=null;\n\t\t\ttoast.success(\"Scene snapshot added to Render Queue\");\n\t\t\tonOpenChange(false);\n\t\t} catch (error) { toast.error(error instanceof Error ? error.message : \"Could not add render job\"); }\n\t\tfinally { setIsQueueing(",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4fe4530b-e4a1-45bc-abb5-c3af503d7809"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:40:28.221Z",
+  "parents": [],
+  "branch": "main"
+}

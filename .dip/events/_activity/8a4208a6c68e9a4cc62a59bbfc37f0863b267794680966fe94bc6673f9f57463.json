@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a4208a6c68e9a4cc62a59bbfc37f0863b267794680966fe94bc6673f9f57463",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:36:54.263Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/render_queue.rs <<'EOF'\nuse super::*;\nuse crate::{ClassicProject, QueueExportOptions, QueueStatus, QueuedRender, snapshot_hash};\nuse serde_json::json;\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\", deny_unknown_fields)]\nstruct Capture { project_id:String, expected_revision:u64, scene_id:String }\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\")]\nstruct Captured { snapshot:ClassicProject, source_revision:u64 }\n#[derive(Deserialize, JsonSchema)]\n#[serde(tag=\"type\", rename_all=\"camelCase\", deny_unknown_fields)]\nenum Change {\n    Enqueue { snapshot:ClassicProject, #[serde(rename=\"sceneId\")] scene_id:String, #[serde(rename=\"sourceRevision\")] source_revision:u64, options:QueueExportOptions },\n    Claim { attempt:String },\n    Report { attempt:String, progress:f64, message:String, status:QueueStatus },\n    Cancel,\n    Retry,\n}\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\nstruct Edit { project_id:String, expected_revision:u64, id:String, now_ms:u64, change:Change }\n#[derive(Serialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\")]\nstruct Output { mutation:MutationOutput, job:QueuedRender }\npub(super) fn register_queue(registry:&CapabilityRegistry,state:Arc<RwLock<EditorStore>>,events:broadcast::Sender<u64>) -> Result<(),RegistryError> {\n    let capture_state=state.clone();\n    register::<Capture,Captured,_,_>(registry,DocumentSupport::Classic,crate::CapabilityExecution::Immediate,\n        \"project.classic.export.capture\",\"Capture immutable render snapshot\",\n        \"Capture the complete Classic scene dependency graph, project settings, media bindings and HyperFrames at an explicit project revision, without modifying the editor. Host submits these frozen bytes to render.queue.edit. No IO. Classic-only compositor bridge.\",\n        \"export\",AccessLevel::Read,true,false,&[\"classic\",\"export\",\"snapshot\"],move |ctx,input| { let state=capture_state.clone(); async move",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-092a684f-4ee4-44d3-9adc-b0dfae370b59"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:36:54.516Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6c7e67eec73d3abac68eb8f9c330cfe45f5ba38e92d56d95eb313d7e9845bcc6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:49:03.093Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/render-queue-2026-10-28\ncp /tmp/render-queue-tests.log analysis/render-queue-2026-10-28/rust-tests.log\ncp /tmp/render-queue-regression.log analysis/render-queue-2026-10-28/regression.log\ncat > .dip/tools/verify-render-queue.mjs <<'EOF'\nimport {spawnSync} from 'node:child_process';\nimport {readFileSync,statSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nfor(const [cmd,args] of [\n ['cargo',['test','-p','opencut-editor-api','--test','render_queue']],\n ['bun',['run','--cwd','classic/apps/web','test','src/export/queue/server.test.ts']],\n ['node',['classic/apps/web/node_modules/typescript/bin/tsc','--noEmit','--project','classic/apps/web/tsconfig.build.json']]\n]){const result=spawnSync(cmd,args,{stdio:'inherit'});assert.equal(result.status,0,`${cmd} failed`);}\nconst evidence=JSON.parse(readFileSync('analysis/render-queue-2026-10-28/live.json','utf8'));\nassert(evidence.jobs.length>=2);\nassert.equal(evidence.editWhileRendering,true);\nassert.equal(evidence.playbackWhileRendering,true);\nassert.equal(evidence.sourceRestored,true);\nassert.equal(evidence.queueSurvivedReload,true);\nfor(const job of evidence.jobs){\n assert.equal(job.status,'completed');\n assert(statSync(job.outputPath).size>0);\n const probe=spawnSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',job.outputPath],{encoding:'utf8'});\n assert.equal(probe.status,0);\n const data=JSON.parse(probe.stdout);\n assert(Math.abs(Number(data.format.duration)-job.expectedSeconds)<0.15);\n const video=data.streams.find(s=>s.codec_type==='video');\n const audio=data.streams.find(s=>s.codec_type==='audio');\n assert(video && audio,'composited video and processed audio are required');\n assert(video.width>=640 && video.height>=360);\n const snapshot=job.snapshot.document.scenes.find(s=>s.id===job.sceneId);\n const tracks=[snapshot.tracks.main,...snapshot.tracks.overlay,...snapshot.tracks.audio];\n const end=Math.max(...tracks.flatMap(t=>t.elements.map(e=>e.startTime+e.duration)))/120000",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0ad7144e-ed11-4afe-bd5c-d54eb9056ae9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:49:04.028Z",
+  "parents": [],
+  "branch": "main"
+}

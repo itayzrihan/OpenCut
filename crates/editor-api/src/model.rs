@@ -84,6 +84,8 @@ pub struct EditorDocument {
     pub next_id: u64,
     pub application: ApplicationState,
     pub project: Option<Project>,
+    #[serde(default)]
+    pub render_queue: Vec<crate::QueuedRender>,
     pub selection: SelectionState,
     pub playback: PlaybackState,
     pub workspace: WorkspaceState,
@@ -103,6 +105,7 @@ impl Default for EditorDocument {
                 version: env!("CARGO_PKG_VERSION").into(),
             },
             project: None,
+            render_queue: Vec::new(),
             selection: SelectionState::default(),
             playback: PlaybackState::default(),
             workspace: WorkspaceState::default(),
@@ -148,6 +151,12 @@ impl EditorDocument {
             return Err(ModelError::Invalid(
                 "nextId must be greater than zero".into(),
             ));
+        }
+        if self.render_queue.len() > 200 { return Err(ModelError::Invalid("Render queue is full (200 jobs)".into())); }
+        let mut render_ids = HashSet::new();
+        for job in &self.render_queue {
+            job.validate()?;
+            if !render_ids.insert(&job.id) { return Err(ModelError::Invalid("Duplicate render job".into())); }
         }
         self.playback.validate()?;
         self.workspace.validate()?;

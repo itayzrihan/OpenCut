@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53278b27-50f2-4efc-9b83-0f9e1171119c",
+  "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented and deployed OpenCut Render Queue with canonical immutable scene/media/recipe snapshots, typed capture/edit registry, durable account-scoped host runtime persistence, serial fenced compositor windows, progress/cancel/retry/pending settings and authenticated downloads. Production release2026-10-28T03-52-36-600Z-6ad1ae26. Native5+realWASMhost2 tests, production TS/build, StartEnd regression and three live1080pHEVC/AAC exports passed. Cropped/played source while72sjobrendered, queued68srecipe then restoredsource12s; outputs remained72s/68s. Refreshedqueue/download verified, source exactlyrestored/saved.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Live test covers12s/72s/68s HEVC/AAC, effects/text and external media on thisMac; no multi-hour stress run or exhaustive codec/platform matrix."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Classic-only delivery. Encoding requires the separate renderer window open/minimized and frozen linked media available; shares machine resources. Queue retains up to200jobs. Rewrite parity and a daemon running after all renderer windows close are not claimed."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T04:02:09.602Z",
+  "parents": [
+    "81a207ca-7dbb-4cc0-9308-54e40d7a18e7"
+  ],
+  "branch": "main"
+}

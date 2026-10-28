@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "afc8991b-f777-4c1e-b37f-adc972fe09cb",
+  "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Implemented canonical EditorDocument.renderQueue, capture/edit typed capabilities, validated snapshot+recipe hash, serial fenced lifecycle with cancel/retry/configure; authenticated durable WASM host storage and frozen source manifest, output streaming; independent opener-free compositor window and queue UI wired into Export. Five native lifecycle/isolation tests and Start End regression pass; production TS passes. Staged production build running (/tmp/render-queue-build.log, exec session94981). Host tests need latest WASM rebuild; rerun with --test-timeout=30000 because real canonical instances + interprocess concurrency exceed Bun5s default under build load.",
+    "next": "Finish host tests against newWASM, stage/deploy verified build via3210panel/current.json, reload scratchb54fef34 only. Enqueue12s scene then crop/edit/play duringrender, enqueue8s version, undo source; verify completed12s/8s audio/video outputs and durable queue, save live.json+screenshot, run configuredrender-queue check and finish/commit.",
+    "head": "6ad1ae2617043319e5a7a029b9df379154d3b0bd"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:50:33.713Z",
+  "parents": [
+    "adc1b725-b95a-4fc8-a7e2-b9a433930332"
+  ],
+  "branch": "main"
+}

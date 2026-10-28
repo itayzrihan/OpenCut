@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6455e1d1e20254f195152c56e213f29be091b323b955b7f46063931d7394da0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:01:49.841Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-df354788-e471-4667-96d6-e52ed248c7ea"
+      },
+      {
+        "at": "2026-10-28T04:01:50.092Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__opencut__opencut_classic_tool_invoke",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-df354788-e471-4667-96d6-e52ed248c7ea"
+      },
+      {
+        "at": "2026-10-28T04:01:50.095Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6abdb91b-be49-4a89-b6dd-3b430d875ed9"
+      },
+      {
+        "at": "2026-10-28T04:01:50.160Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__opencut__opencut_classic_session_read",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6abdb91b-be49-4a89-b6dd-3b430d875ed9"
+      },
+      {
+        "at": "2026-10-28T04:01:50.162Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp /tmp/render-queue-verification.log analysis/render-queue-2026-10-28/verification.log\ncat > analysis/render-queue-2026-10-28/delivery.md <<'EOF'\n# Delivery\n\nDeployed release `2026-10-28T03-52-36-600Z-6ad1ae26` (canonical runtime and production UI).\n\nExport now offers **Add to Render Queue** and an adjacent header queue icon. Direct export is retained. The account-scoped queue displays project/scene, frozen revision/time, recipe, pending/rendering/completed/failed/cancelled status, progress, cancellation, retry, pending recipe edits and authenticated downloads. Each renderer window is opener-free and uses the existing compositor/audio pipeline. Keep a renderer window open or minimized; closing all renderer windows interrupts encoding and retains retryable snapshots.\n\nVerification:\n- Five native registry tests: scene/recipe snapshot isolation after an editor crop, app.state.read visibility, serialized restore, dry run, idempotency, revision conflicts, atomic validation/undo, FIFO claims, monotonic progress, fencing, cancellation, retry and disconnection.\n- Two real-WASM host suites: concurrent submissions/claims under the durable file lock, deduplication, original binding survives source relink, changed media rejection, pending recipe configuration and stale revision rejection.\n- Production TypeScript and optimized build passed. Existing Start End regression passed.\n- Three real 1920×1080 HEVC/AAC exports: 12s, 72s and 68s snapshots, with sharpen/text/opacity animation and separate processed audio. AAC container durations differ by about 0.075s of priming; video duration follows the snapshot.\n- At `after-live-edit.json` timestamp, 72s job was rendering at 70.8% while source had been cropped to 68s and played to 6.12s (`playback.json`). That job produced the original 72s output.\n- Enqueued the 68s scene with medium quality, then undid both the crop and long fixture in the editor. Source returned exactly to its original 12s JSON. The queued job still produced 68s with",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-32c8a85c-4897-44f2-8279-e05bd616a698"
+      },
+      {
+        "at": "2026-10-28T04:01:50.248Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3d38bf55-35fe-4452-9ad7-b517b78ab692"
+      },
+      {
+        "at": "2026-10-28T04:01:50.250Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp /tmp/render-queue-verification.log analysis/render-queue-2026-10-28/verification.log\ncat > analysis/render-queue-2026-10-28/delivery.md <<'EOF'\n# Delivery\n\nDeployed release `2026-10-28T03-52-36-600Z-6ad1ae26` (canonical runtime and production UI).\n\nExport now offers **Add to Render Queue** and an adjacent header queue icon. Direct export is retained. The account-scoped queue displays project/scene, frozen revision/time, recipe, pending/rendering/completed/failed/cancelled status, progress, cancellation, retry, pending recipe edits and authenticated downloads. Each renderer window is opener-free and uses the existing compositor/audio pipeline. Keep a renderer window open or minimized; closing all renderer windows interrupts encoding and retains retryable snapshots.\n\nVerification:\n- Five native registry tests: scene/recipe snapshot isolation after an editor crop, app.state.read visibility, serialized restore, dry run, idempotency, revision conflicts, atomic validation/undo, FIFO claims, monotonic progress, fencing, cancellation, retry and disconnection.\n- Two real-WASM host suites: concurrent submissions/claims under the durable file lock, deduplication, original binding survives source relink, changed media rejection, pending recipe configuration and stale revision rejection.\n- Production TypeScript and optimized build passed. Existing Start End regression passed.\n- Three real 1920×1080 HEVC/AAC exports: 12s, 72s and 68s snapshots, with sharpen/text/opacity animation and separate processed audio. AAC container durations differ by about 0.075s of priming; video duration follows the snapshot.\n- At `after-live-edit.json` timestamp, 72s job was rendering at 70.8% while source had been cropped to 68s and played to 6.12s (`playback.json`). That job produced the original 72s output.\n- Enqueued the 68s scene with medium quality, then undid both the crop and long fixture in the editor. Source returned exactly to its original 12s JSON. The queued job still produced 68s with",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-32c8a85c-4897-44f2-8279-e05bd616a698"
+      },
+      {
+        "at": "2026-10-28T04:01:50.299Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "mcp__dip__task_plan",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3d38bf55-35fe-4452-9ad7-b517b78ab692"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:01:50.481Z",
+  "parents": [],
+  "branch": "main"
+}

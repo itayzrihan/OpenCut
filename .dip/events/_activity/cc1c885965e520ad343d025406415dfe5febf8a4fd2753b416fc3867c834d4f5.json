@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cc1c885965e520ad343d025406415dfe5febf8a4fd2753b416fc3867c834d4f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:43:48.153Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/client.ts';s=open(p).read();start=s.index('export function openRenderQueue()');end=s.index('\\nexport async function enqueueCurrentRender',start);s=s[:start]+'''export function openRenderQueue() {\n const name=`opencut-render-queue-${window.__opencutAccountId ?? \"local\"}`;\n const queue=window.open(\"\",name,\"popup,width=1050,height=720\");\n if(queue){\n  if(queue.location.href === \"about:blank\")queue.location.replace(accountAssetUrl(\"/render-queue\"));\n  queue.focus();\n }\n return queue;\n}\n''' +s[end:];open(p,'w').write(s)\nPY\ncat > classic/apps/web/src/export/queue/server.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport { test,expect,mock,afterAll } from \"bun:test\";\nimport { mkdtemp,writeFile,readFile,stat,rm } from \"node:fs/promises\";\nimport { join } from \"node:path\";\nimport { tmpdir } from \"node:os\";\nimport { createCanonicalTestRuntime } from \"@/core/__tests__/canonical-runtime-fixture\";\nimport type { CanonicalClassicSnapshot } from \"@/core/canonical-classic-session\";\nimport type { ExportOptions } from \"@/export\";\nconst initial=await createCanonicalTestRuntime();const Runtime=initial.constructor;initial.free();\nmock.module(\"opencut-editor-runtime-wasm\",()=>({CanonicalEditorRuntime:Runtime}));\nconst root=await mkdtemp(join(tmpdir(),\"opencut-render-queue-\"));\nconst source=join(root,\"original.mp4\");await writeFile(source,\"frozen media fixture\");\nmock.module(\"@/accounts/server\",()=>({accountDataRoot:()=>root}));\nlet currentSource=source;\nmock.module(\"@/services/local-drive/server\",()=>({\n getProject:async()=>({metadata:{id:\"classic-project\"}}),\n getMediaFile:async(_project:string,id:string)=>({path:currentSource,stat:await stat(currentSource),record:{id,storageKind:\"linked\",sourcePath:currentSource,mimeType:\"video/mp4\"}}),\n getFontFile:async()=>null,getSharedFile:async()=>null,\n}));\nconst {enqueueRender,readRenderQueue,claimRender,reportRender,changeRender,readRenderJob,renderSource}=await import(\"./server\");\nconst fixtu",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5c6df294-932c-406a-be0b-81f4a5263b4e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:43:48.541Z",
+  "parents": [],
+  "branch": "main"
+}

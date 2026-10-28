@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f7a324ca1f07a44c0f983ceb1860e25d4ff57e417d7eccd91065f74b0f5948f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:49:59.697Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-render-queue.mjs';s=open(p).read().replace(\"'test','src/export/queue/server.test.ts'\",\"'test','--test-timeout=30000','src/export/queue/server.test.ts'\");open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0a1c140a-1a24-41f3-8105-8fd78ae4a9a9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:49:59.726Z",
+  "parents": [],
+  "branch": "main"
+}

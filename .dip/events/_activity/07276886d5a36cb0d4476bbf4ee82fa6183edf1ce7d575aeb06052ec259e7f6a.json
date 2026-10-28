@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "07276886d5a36cb0d4476bbf4ee82fa6183edf1ce7d575aeb06052ec259e7f6a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:59:56.599Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,re\ns=json.load(open('analysis/render-queue-2026-10-28/live.json')); metrics=[]\nfor j in s['jobs']:\n r=subprocess.run(['ffmpeg','-hide_banner','-i',j['outputPath'],'-t','6','-af','astats=metadata=1:reset=0','-f','null','-'],capture_output=True,text=True)\n rms=re.findall(r'RMS level dB: ([\\-\\d.]+)',r.stderr);peak=re.findall(r'Peak level dB: ([\\-\\d.]+)',r.stderr)\n metrics.append({'id':j['id'],'rmsDb':float(rms[-1]),'peakDb':float(peak[-1])})\n assert float(rms[-1])>-80\nfor index,second,name in [(1,5,'before-frame'),(2,1,'after-frame')]:\n subprocess.run(['ffmpeg','-v','error','-ss',str(second),'-i',s['jobs'][index]['outputPath'],'-frames:v','1','-vf','scale=640:360','-y','analysis/render-queue-2026-10-28/'+name+'.png'],check=True)\njson.dump(metrics,open('analysis/render-queue-2026-10-28/audio.json','w'),indent=2)\nprint(metrics)\nPY\ntail -15 /tmp/render-queue-verification.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d248fbee-ceb5-4625-9a51-20a19fa7834f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:59:57.323Z",
+  "parents": [],
+  "branch": "main"
+}

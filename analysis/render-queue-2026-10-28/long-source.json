@@ -1,0 +1,421 @@
+{
+  "projectSettings": {
+    "background": {
+      "color": "#000000",
+      "type": "color"
+    },
+    "canvasSize": {
+      "height": 1080,
+      "width": 1920
+    },
+    "canvasSizeMode": "preset",
+    "fps": {
+      "denominator": 1,
+      "numerator": 25
+    },
+    "lastCustomCanvasSize": null,
+    "originalCanvasSize": null
+  },
+  "scene": {
+    "bookmarks": [
+      {
+        "note": "Before",
+        "time": 120000
+      },
+      {
+        "note": "After",
+        "time": 1080000
+      }
+    ],
+    "createdAt": "2026-10-28T03:01:22.754Z",
+    "id": "ea3de683-ca19-48d0-8e93-e095c4b1fe9f",
+    "isMain": true,
+    "name": "Main scene",
+    "tracks": [
+      {
+        "area": "overlay",
+        "elements": [
+          {
+            "duration": 8640000,
+            "effectType": "sharpen",
+            "id": "start-end-effect",
+            "name": "Sharpen",
+            "params": {
+              "intensity": 15
+            },
+            "startTime": 0,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "effect"
+          }
+        ],
+        "hidden": false,
+        "id": "start-end-sharpen",
+        "name": "Sharpen",
+        "type": "effect"
+      },
+      {
+        "area": "overlay",
+        "elements": [
+          {
+            "duration": 960000,
+            "id": "start-end-title",
+            "name": "Start End",
+            "params": {
+              "color": "#ffffff",
+              "content": "Start End",
+              "fontFamily": "Arial",
+              "fontSize": 72,
+              "opacity": 1
+            },
+            "startTime": 240000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "text",
+            "wordRuns": [
+              {
+                "endTime": 360000,
+                "id": "test-word-a",
+                "lineIndex": 0,
+                "startTime": 0,
+                "text": "Start"
+              },
+              {
+                "endTime": 960000,
+                "id": "test-word-b",
+                "lineIndex": 0,
+                "startTime": 480000,
+                "text": "End"
+              }
+            ]
+          }
+        ],
+        "hidden": false,
+        "id": "start-end-text",
+        "name": "Text",
+        "type": "text"
+      },
+      {
+        "area": "main",
+        "elements": [
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-0",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-0",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-0",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 0,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          },
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-1",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-1",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-1",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 1440000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          },
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-2",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-2",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-2",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 2880000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          },
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-3",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-3",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-3",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 4320000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          },
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-4",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-4",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-4",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 5760000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          },
+          {
+            "animations": {
+              "opacity": {
+                "keys": [
+                  {
+                    "id": "test-a-render-5",
+                    "segmentToNext": "linear",
+                    "time": 0,
+                    "value": 0.5
+                  },
+                  {
+                    "id": "test-b-render-5",
+                    "segmentToNext": "linear",
+                    "time": 1440000,
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "duration": 1440000,
+            "id": "start-end-video-render-5",
+            "isSourceAudioEnabled": false,
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Start End test video",
+            "params": {
+              "opacity": 1,
+              "transform.scaleX": 1,
+              "transform.scaleY": 1
+            },
+            "sourceDuration": 1440000,
+            "startTime": 7200000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "video"
+          }
+        ],
+        "hidden": false,
+        "id": "bce945d5-81e2-47ae-a51a-b40df157ecc3",
+        "muted": false,
+        "name": "Main Track",
+        "type": "video"
+      },
+      {
+        "area": "audio",
+        "elements": [
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-0",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 0,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          },
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-1",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 1440000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          },
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-2",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 2880000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          },
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-3",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 4320000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          },
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-4",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 5760000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          },
+          {
+            "duration": 1440000,
+            "id": "start-end-wave-render-5",
+            "mediaId": "9074541b-1fc5-4845-b277-0febf4026193",
+            "name": "Audio test",
+            "params": {
+              "volume": -25
+            },
+            "sourceDuration": 1440000,
+            "sourceType": "upload",
+            "startTime": 7200000,
+            "trimEnd": 0,
+            "trimStart": 0,
+            "type": "audio"
+          }
+        ],
+        "id": "start-end-audio",
+        "muted": false,
+        "name": "Audio",
+        "type": "audio"
+      }
+    ],
+    "updatedAt": "2026-10-28T03:01:22.754Z"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5b1d71fb1990f1d10b365546b022d523d051da9e4b6f1a0d8507d67d4ba23eb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:41:50.916Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '715,735p' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '1792,1835p' classic/apps/web/src/core/canonical-classic-session.ts; head -95 classic/apps/web/src/batch/server.test.ts; sed -n '1,85p' classic/scripts/test-web.mjs; bun run --cwd classic build:wasm > /tmp/render-queue-wasm.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-323c7aa4-bfac-463f-bece-95b37b989f72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:41:51.303Z",
+  "parents": [],
+  "branch": "main"
+}

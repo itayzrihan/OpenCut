@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9cb4368c6151f51c6a2e5556e8e9369e1def3b1c4212a77eb875bdb09e99997a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:42:49.929Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/app/api/render-queue/route.ts';s=open(p).read().replace('z.object({ action: z.literal(\"claim\"), attempt: identity }).strict(),','z.object({ action: z.literal(\"configure\"),id:identity,projectId:identity,expectedRevision:z.number().int().nonnegative(),options:z.unknown() }).strict(),\\n z.object({ action: z.literal(\"claim\"), attempt: identity }).strict(),');s=s.replace('await changeRender({ ...body, type: body.action })','await changeRender({ ...body, type: body.action } as Parameters<typeof changeRender>[0])');open(p,'w').write(s)\np='classic/apps/web/src/app/render-queue/page.tsx';s=open(p).read().replace('import type { RenderJob, RenderQueueView }','import type { ExportOptions } from \"@/export\";\\nimport type { RenderJobView, RenderJob, RenderQueueView }')\nneedle='<details className=\"text-xs text-muted-foreground\">';s=s.replace(needle,'{job.status === \"queued\" && <JobSettings job={job} revision={state.revision} onSave={setState} onError={setError} />}\\n'+needle,1)\ns+='''\nfunction JobSettings({job,revision,onSave,onError}:{job:RenderJobView;revision:number;onSave:(state:RenderQueueView)=>void;onError:(error:string)=>void}) {\n const [draft,setDraft]=useState(job.options);\n const [saving,setSaving]=useState(false);\n const selectClass=\"bg-background border rounded p-1.5 text-xs\";\n return <details className=\"text-sm\"><summary>Edit export settings</summary><form className=\"mt-3 flex flex-wrap items-end gap-3\" onSubmit={async e=>{e.preventDefault();setSaving(true);try{onSave(await renderQueueRequest({action:\"configure\",id:job.id,projectId:job.projectId,expectedRevision:revision,options:draft}));}catch(error){onError(String(error));}finally{setSaving(false);}}}>\n <label className=\"grid gap-1\">Format<select className={selectClass} value={draft.format} onChange={e=>setDraft({...draft,format:e.target.value as \"mp4\"|\"webm\"})}><option value=\"mp4\">MP4</option><option value=\"webm\">WebM</option></select></label>\n <label className=\"grid gap-1\">",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-33ecaca5-7ae0-40ca-8523-3e28e1b34610"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:42:50.388Z",
+  "parents": [],
+  "branch": "main"
+}

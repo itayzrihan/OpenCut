@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a8f647ae4ef6161f13888b49b48299f472256a2e3f24bd5053c2a924fbbf4afb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:38:02.442Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p classic/apps/web/src/export/queue classic/apps/web/src/app/api/render-queue/file classic/apps/web/src/app/render-queue\ncat > classic/apps/web/src/export/queue/types.ts <<'EOF'\nimport type { CanonicalClassicSnapshot } from \"@/core/canonical-classic-session\";\nimport type { ExportOptions } from \"@/export\";\nexport type RenderJob = {\n id: string; projectId: string; sceneId: string; sourceRevision: number;\n snapshot: CanonicalClassicSnapshot; snapshotHash: string;\n options: Required<ExportOptions>; status: \"queued\"|\"rendering\"|\"completed\"|\"failed\"|\"cancelled\";\n createdAtMs: number; updatedAtMs: number; progress: number; message: string;\n attempt: string|null; cancelRequested: boolean; outputId: string|null;\n};\nexport type RenderJobView = Omit<RenderJob,\"snapshot\"|\"attempt\"> & {projectName:string;sceneName:string};\nexport type RenderQueueView = { revision:number; jobs:RenderJobView[] };\nEOF\ncat > classic/apps/web/src/export/queue/server.ts <<'EOF'\n/** Host IO only. Every queue transition is executed by OpenCutRuntime. */\nimport { mkdir, readFile, writeFile, rename, unlink, stat, link, copyFile, open } from \"node:fs/promises\";\nimport { join } from \"node:path\";\nimport { randomUUID } from \"node:crypto\";\nimport lockfile from \"proper-lockfile\";\nimport { accountDataRoot } from \"@/accounts/server\";\nimport { getMediaFile, getFontFile, getProject } from \"@/services/local-drive/server\";\nimport type { CanonicalEditorRuntime } from \"opencut-editor-runtime-wasm\";\nimport type { RenderJob, RenderQueueView } from \"./types\";\nimport type { CanonicalClassicSnapshot } from \"@/core/canonical-classic-session\";\nimport type { ExportOptions } from \"@/export\";\ntype State = {revision:number;renderQueue:RenderJob[]};\ntype Source = {id:string;path:string;size:number;mtimeMs:number;mimeType:string;kind:\"media\"|\"font\"};\nconst root = () => join(accountDataRoot(),\"render-queue\");\nconst valid = (s:string) => {if(!/^[a-zA-Z0-9_-]{1,160}$/.test(s)) throw Error(\"Invalid render identity\");return s;};\n",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-86eb9def-bea3-4a42-b14c-dd6f8273cdbb"
+      },
+      {
+        "at": "2026-10-28T03:38:02.533Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p classic/apps/web/src/export/queue classic/apps/web/src/app/api/render-queue/file classic/apps/web/src/app/render-queue\ncat > classic/apps/web/src/export/queue/types.ts <<'EOF'\nimport type { CanonicalClassicSnapshot } from \"@/core/canonical-classic-session\";\nimport type { ExportOptions } from \"@/export\";\nexport type RenderJob = {\n id: string; projectId: string; sceneId: string; sourceRevision: number;\n snapshot: CanonicalClassicSnapshot; snapshotHash: string;\n options: Required<ExportOptions>; status: \"queued\"|\"rendering\"|\"completed\"|\"failed\"|\"cancelled\";\n createdAtMs: number; updatedAtMs: number; progress: number; message: string;\n attempt: string|null; cancelRequested: boolean; outputId: string|null;\n};\nexport type RenderJobView = Omit<RenderJob,\"snapshot\"|\"attempt\"> & {projectName:string;sceneName:string};\nexport type RenderQueueView = { revision:number; jobs:RenderJobView[] };\nEOF\ncat > classic/apps/web/src/export/queue/server.ts <<'EOF'\n/** Host IO only. Every queue transition is executed by OpenCutRuntime. */\nimport { mkdir, readFile, writeFile, rename, unlink, stat, link, copyFile, open } from \"node:fs/promises\";\nimport { join } from \"node:path\";\nimport { randomUUID } from \"node:crypto\";\nimport lockfile from \"proper-lockfile\";\nimport { accountDataRoot } from \"@/accounts/server\";\nimport { getMediaFile, getFontFile, getProject } from \"@/services/local-drive/server\";\nimport type { CanonicalEditorRuntime } from \"opencut-editor-runtime-wasm\";\nimport type { RenderJob, RenderQueueView } from \"./types\";\nimport type { CanonicalClassicSnapshot } from \"@/core/canonical-classic-session\";\nimport type { ExportOptions } from \"@/export\";\ntype State = {revision:number;renderQueue:RenderJob[]};\ntype Source = {id:string;path:string;size:number;mtimeMs:number;mimeType:string;kind:\"media\"|\"font\"};\nconst root = () => join(accountDataRoot(),\"render-queue\");\nconst valid = (s:string) => {if(!/^[a-zA-Z0-9_-]{1,160}$/.test(s)) throw Error(\"Invalid render identity\");return s;};\n",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-86eb9def-bea3-4a42-b14c-dd6f8273cdbb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:38:03.012Z",
+  "parents": [],
+  "branch": "main"
+}

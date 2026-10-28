@@ -1516,6 +1516,44 @@ export class ProjectManager {
 		return this.migrationState;
 	}
 
+	/** Hydrate a validated, read-only render snapshot in an isolated browsing realm.
+	 * No editor ownership is acquired and no source project/history is written. */
+	async loadRenderSnapshot({
+		snapshot,
+		sceneId,
+		assets,
+	}: {
+		snapshot: import("@/core/canonical-classic-session").CanonicalClassicSnapshot;
+		sceneId: string;
+		assets: import("@/media/types").MediaAsset[];
+	}): Promise<void> {
+		if (this.active || this.editorSession)
+			throw new Error("Render snapshots require a fresh isolated editor");
+		this.editor.save.stop();
+		this.editor.save.pause();
+		const project = deserializeProject({
+			...snapshot.document,
+			currentSceneId: sceneId,
+		});
+		this.active = project;
+		this.editor.media.setAssets({ assets });
+		this.editor.scenes.initializeScenes({
+			scenes: project.scenes,
+			currentSceneId: sceneId,
+		});
+		await this.editor.command.enableCanonical({ persistInitial: false });
+		await loadFonts({
+			families: [
+				...new Set(
+					project.scenes.flatMap((s) =>
+						getElementFontFamilies({ tracks: s.tracks }),
+					),
+				),
+			],
+		});
+		this.notify();
+	}
+
 	setActiveProject({ project }: { project: TProject }): void {
 		this.active = project;
 		this.notify();

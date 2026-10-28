@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d44156f4-f22f-4fb3-b1a3-e478f007f527",
+  "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect renderer and host lifecycle; design canonical queue and isolated rendering",
+          "status": "in_progress"
+        },
+        {
+          "step": "Implement immutable jobs, durable worker and queue UI",
+          "status": "pending"
+        },
+        {
+          "step": "Test queue lifecycle and snapshot isolation; deploy and verify live output",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:33:44.264Z",
+  "parents": [
+    "07862461-537c-42ef-a4ce-7460099e4b07"
+  ],
+  "branch": "main"
+}

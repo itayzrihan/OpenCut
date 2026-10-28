@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "15d3918fac009b201fa5285a36fdb3fd59dc62eee6deecafe9b80409e4d9c2e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:41:13.061Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /tmp/render-queue-ts.log; git diff --stat -- classic/apps/web/src crates/editor-api/src; cat > crates/editor-api/tests/render_queue.rs <<'EOF'\nuse opencut_editor_api::{OpenCutRuntime,InvocationContext,AccessLevel};\nuse serde_json::{json,Value};\nconst EDIT:&str=\"render.queue.edit\";\nasync fn call(r:&OpenCutRuntime,id:&str,input:Value)->Value {r.registry().invoke(id,InvocationContext::default(),input).await.unwrap().result.data}\nfn revision(r:&OpenCutRuntime)->u64 {r.snapshot().unwrap().revision}\nasync fn setup()->OpenCutRuntime {\n let r=OpenCutRuntime::default();let snapshot:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n call(&r,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":snapshot})).await;r\n}\nfn options()->Value {json!({\"format\":\"mp4\",\"quality\":\"high\",\"preferences\":{\"resolution\":\"source\",\"encoding\":\"compatible\"},\"fps\":{\"numerator\":25,\"denominator\":1},\"includeAudio\":true})}\nfn request(r:&OpenCutRuntime,id:&str,change:Value,time:u64)->Value {json!({\"projectId\":\"classic-project\",\"id\":id,\"expectedRevision\":revision(r),\"nowMs\":time,\"change\":change})}\nasync fn enqueue(r:&OpenCutRuntime,id:&str)->Value {\n let captured=call(r,\"project.classic.export.capture\",json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"expectedRevision\":revision(r)})).await;\n call(r,EDIT,request(r,id,json!({\"type\":\"enqueue\",\"snapshot\":captured[\"snapshot\"],\"sourceRevision\":captured[\"sourceRevision\"],\"sceneId\":\"main-scene\",\"options\":options()}),1000)).await\n}\n#[tokio::test]\nasync fn frozen_scene_recipe_dependency_graph_survive_edits_and_serialization(){\n let r=setup().await;let original=r.snapshot().unwrap().project.unwrap().classic.unwrap();\n let queued=enqueue(&r,\"job-1\").await;let hash=queued[\"job\"][\"snapshotHash\"].clone();\n call(&r,\"timeline.classic.crop\",json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"expectedRevision\":revision(&r),\"edge\":\"start\",\"time\":120000})).await;\n let stat",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d52439e0-1eb8-4da1-9503-a13647101c63"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:41:13.254Z",
+  "parents": [],
+  "branch": "main"
+}

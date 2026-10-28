@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6d94b082119fb53ffae2290d4114179950508c71eb32176b7e67ab8b13448b91",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:40:29.221Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/queue/server.ts",
+          "classic/apps/web/src/export/queue/types.ts",
+          "classic/apps/web/src/export/queue/worker.ts",
+          "classic/apps/web/src/app/api/render-queue/route.ts",
+          "classic/apps/web/src/app/api/render-queue/file/route.ts",
+          "classic/apps/web/src/app/render-queue/layout.tsx",
+          "classic/apps/web/src/app/render-queue/page.tsx",
+          "classic/apps/web/src/components/editor/export-button.tsx",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/project-manager.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "62560925-f075-44d6-8177-56190721507d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:40:29.222Z",
+  "parents": [],
+  "branch": "main"
+}

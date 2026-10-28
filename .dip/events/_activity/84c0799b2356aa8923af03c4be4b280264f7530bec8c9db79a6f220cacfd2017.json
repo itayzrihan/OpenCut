@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84c0799b2356aa8923af03c4be4b280264f7530bec8c9db79a6f220cacfd2017",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:45:13.095Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/client.ts';s=open(p).read();a=s.index('export function openRenderQueue()');b=s.index('\\nexport async function enqueueCurrentRender',a);s=s[:a]+'''export function openRenderQueue() {\n // No opener means a separate browsing context group: the encoder must not\n // share the editor's synchronous JavaScript event loop or project singleton.\n window.open(accountAssetUrl(\"/render-queue\"),\"_blank\",\"noopener,popup,width=1050,height=720\");\n}\n''' +s[b:];open(p,'w').write(s)\np='classic/apps/web/src/components/editor/export-button.tsx';s=open(p).read().replace('const queueWindow = openRenderQueue();\\n\\t\\tif (!queueWindow) {\\n\\t\\t\\ttoast.error(\\n\\t\\t\\t\\t\"Allow the Render Queue window to open, then try again.\",\\n\\t\\t\\t);\\n\\t\\t\\treturn;\\n\\t\\t}', 'openRenderQueue();');open(p,'w').write(s)\nPY\nrg -n 'queueWindow|openRenderQueue' classic/apps/web/src/components/editor/export-button.tsx; tail -8 /tmp/render-queue-wasm.log\nbun run --cwd classic/apps/web test src/export/queue/server.test.ts > /tmp/render-queue-host-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2881a980-41e4-47a5-becb-d3a6a222f1fa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:45:13.442Z",
+  "parents": [],
+  "branch": "main"
+}

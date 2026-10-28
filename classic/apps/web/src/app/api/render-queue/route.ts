@@ -1,0 +1,97 @@
+import { withAccount } from "@/accounts/server";
+import { assertLocalDriveRequest } from "@/services/local-drive/server";
+import { readBoundedBody } from "@/accounts/request-body";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import {
+	readRenderQueue,
+	enqueueRender,
+	changeRender,
+	claimRender,
+	reportRender,
+} from "@/export/queue/server";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+const identity = z.string().uuid();
+const requestSchema = z.discriminatedUnion("action", [
+	z
+		.object({
+			action: z.literal("enqueue"),
+			id: identity,
+			projectId: identity,
+			sceneId: identity,
+			sourceRevision: z.number().int().nonnegative(),
+			snapshot: z.unknown(),
+			options: z.unknown(),
+		})
+		.strict(),
+	z
+		.object({
+			action: z.enum(["cancel", "retry"]),
+			id: identity,
+			projectId: identity,
+			expectedRevision: z.number().int().nonnegative(),
+		})
+		.strict(),
+	z
+		.object({
+			action: z.literal("configure"),
+			id: identity,
+			projectId: identity,
+			expectedRevision: z.number().int().nonnegative(),
+			options: z.unknown(),
+		})
+		.strict(),
+	z.object({ action: z.literal("claim"), attempt: identity }).strict(),
+	z
+		.object({
+			action: z.literal("report"),
+			id: identity,
+			projectId: identity,
+			attempt: identity,
+			progress: z.number().min(0).max(1),
+			message: z.string().max(4000),
+			status: z.enum(["rendering", "failed", "cancelled"]),
+		})
+		.strict(),
+]);
+async function get(request: Request) {
+	try {
+		assertLocalDriveRequest(request);
+		return NextResponse.json(await readRenderQueue());
+	} catch (e) {
+		return NextResponse.json({ error: String(e) }, { status: 400 });
+	}
+}
+async function post(request: Request) {
+	try {
+		assertLocalDriveRequest(request);
+		const body = requestSchema.parse(
+			JSON.parse(
+				new TextDecoder().decode(
+					await readBoundedBody({ request, maximumBytes: 32 * 1024 * 1024 }),
+				),
+			),
+		);
+		if (body.action === "enqueue")
+			return NextResponse.json(
+				await enqueueRender(body as Parameters<typeof enqueueRender>[0]),
+			);
+		if (body.action === "claim")
+			return NextResponse.json(await claimRender(body.attempt));
+		if (body.action === "report")
+			return NextResponse.json(await reportRender(body));
+		return NextResponse.json(
+			await changeRender({ ...body, type: body.action } as Parameters<
+				typeof changeRender
+			>[0]),
+		);
+	} catch (e) {
+		return NextResponse.json(
+			{ error: e instanceof Error ? e.message : String(e) },
+			{ status: 400 },
+		);
+	}
+}
+export const GET = withAccount(get);
+export const POST = withAccount(post);

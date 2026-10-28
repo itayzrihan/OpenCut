@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "683a29e4ff8cb7bf59526ca9a91e5ab6c7e81a3a4c49d447a0f8092b4b49aab0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:49:16.740Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run --cwd classic/apps/web test src/export/queue/server.test.ts > /tmp/render-queue-host-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-58af98c0-ebb3-4095-b78a-6a0e40426866"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:49:17.049Z",
+  "parents": [],
+  "branch": "main"
+}

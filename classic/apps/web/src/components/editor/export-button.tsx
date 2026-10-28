@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TransitionTopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -23,7 +23,14 @@ import {
 } from "@/export";
 import { downloadBlob } from "@/utils/browser";
 import { toast } from "sonner";
-import { Check, Copy, Download, RotateCcw } from "lucide-react";
+import {
+	Check,
+	Copy,
+	Download,
+	RotateCcw,
+	ListVideo,
+	ListPlus,
+} from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
 	EXPORT_QUALITY_VALUES,
@@ -39,6 +46,7 @@ import {
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { checkExportEncoder } from "@/export/video-encoding";
 import type { ExportPlan, ExportPreferences } from "@/export";
+import { enqueueCurrentRender, openRenderQueue } from "@/export/queue/client";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
 
 function isExportFormat(value: string): value is ExportFormat {
@@ -62,37 +70,53 @@ export function ExportButton() {
 	};
 
 	return (
-		<Popover
-			open={isExportPopoverOpen}
-			onOpenChange={(open) => handlePopoverOpenChange({ open })}
-		>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className={cn(
-						"flex items-center gap-1.5 rounded-md bg-[#38BDF8] px-[0.12rem] py-[0.12rem] text-white",
-						hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",
-					)}
-					onClick={hasProject ? () => setIsExportPopoverOpen(true) : undefined}
-					disabled={!hasProject}
-					onKeyDown={(event) => {
-						if (hasProject && (event.key === "Enter" || event.key === " ")) {
-							event.preventDefault();
-							setIsExportPopoverOpen(true);
+		<div className="flex items-center gap-1">
+			<Button
+				variant="ghost"
+				size="icon"
+				aria-label="Open Render Queue"
+				title="Render Queue"
+				onClick={openRenderQueue}
+			>
+				<ListVideo />
+			</Button>
+			<Popover
+				open={isExportPopoverOpen}
+				onOpenChange={(open) => handlePopoverOpenChange({ open })}
+			>
+				<PopoverTrigger asChild>
+					<button
+						type="button"
+						className={cn(
+							"flex items-center gap-1.5 rounded-md bg-[#38BDF8] px-[0.12rem] py-[0.12rem] text-white",
+							hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",
+						)}
+						onClick={
+							hasProject ? () => setIsExportPopoverOpen(true) : undefined
 						}
-					}}
-				>
-					<div className="relative flex items-center gap-1.5 rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7] px-4 py-1 shadow-[0_1px_3px_0px_rgba(0,0,0,0.65)]">
-						<HugeiconsIcon icon={TransitionTopIcon} className="z-50 size-3.5" />
-						<span className="z-50 text-[0.875rem]">Export</span>
-						<div className="absolute top-0 left-0 z-10 flex size-full items-center justify-center rounded-[0.6rem] bg-linear-to-t from-white/0 to-white/50">
-							<div className="absolute top-[0.08rem] z-50 h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7]"></div>
+						disabled={!hasProject}
+						onKeyDown={(event) => {
+							if (hasProject && (event.key === "Enter" || event.key === " ")) {
+								event.preventDefault();
+								setIsExportPopoverOpen(true);
+							}
+						}}
+					>
+						<div className="relative flex items-center gap-1.5 rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7] px-4 py-1 shadow-[0_1px_3px_0px_rgba(0,0,0,0.65)]">
+							<HugeiconsIcon
+								icon={TransitionTopIcon}
+								className="z-50 size-3.5"
+							/>
+							<span className="z-50 text-[0.875rem]">Export</span>
+							<div className="absolute top-0 left-0 z-10 flex size-full items-center justify-center rounded-[0.6rem] bg-linear-to-t from-white/0 to-white/50">
+								<div className="absolute top-[0.08rem] z-50 h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7]"></div>
+							</div>
 						</div>
-					</div>
-				</button>
-			</PopoverTrigger>
-			{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
-		</Popover>
+					</button>
+				</PopoverTrigger>
+				{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
+			</Popover>
+		</div>
 	);
 }
 
@@ -154,6 +178,38 @@ function ExportPopover({
 	const checkingEncoder = !!planKey && encoderState.key !== planKey;
 	const encoderError = encoderState.key === planKey ? encoderState.error : null;
 	const hasReadyExport = hasExportOutput(exportResult);
+	const [isQueueing, setIsQueueing] = useState(false);
+	const submissionId = useRef<string | null>(null);
+	const handleEnqueue = async () => {
+		if (!plan || isQueueing || checkingEncoder || encoderError || planError)
+			return;
+		openRenderQueue();
+		setIsQueueing(true);
+		try {
+			submissionId.current ??= crypto.randomUUID();
+			await enqueueCurrentRender({
+				editor,
+				id: submissionId.current,
+				options: {
+					preferences,
+					format,
+					quality,
+					fps: activeProject.settings.fps,
+					includeAudio: shouldIncludeAudio,
+				},
+			});
+			submissionId.current = null;
+			toast.success("Scene snapshot added to Render Queue");
+			onOpenChange(false);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Could not add render job",
+			);
+		} finally {
+			setIsQueueing(false);
+		}
+	};
+
 	const handleExport = async () => {
 		if (!activeProject || !plan || checkingEncoder || encoderError || planError)
 			return;
@@ -438,9 +494,28 @@ function ExportPopover({
 									</Section>
 								</div>
 
-								<div className="p-3 pt-0">
+								<div className="p-3 pt-0 space-y-2">
+									<Button
+										onClick={handleEnqueue}
+										disabled={
+											isQueueing ||
+											!plan ||
+											checkingEncoder ||
+											!!encoderError ||
+											!!planError
+										}
+										className="w-full gap-2"
+									>
+										<ListPlus className="size-4" />
+										{isQueueing ? "Adding snapshot…" : "Add to Render Queue"}
+									</Button>
+									<p className="text-xs text-muted-foreground">
+										Renders this scene as it is now. Continue editing while the
+										queue runs in its own window.
+									</p>
 									<Button
 										onClick={handleExport}
+										variant="outline"
 										disabled={
 											!plan || checkingEncoder || !!encoderError || !!planError
 										}

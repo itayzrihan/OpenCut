@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6cb5044f40c9262850c5426e9a314032116721f0c4bb7fd05371b8379aa7fdd9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:45:24.403Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/components/editor/export-button.tsx';s=open(p).read();a=s.index('\\t\\tconst queueWindow = openRenderQueue();');b=s.index('\\t\\tsetIsQueueing(true);',a);s=s[:a]+'\\t\\topenRenderQueue();\\n'+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.ts';s=open(p).read().replace('edit(r, s, input.id, input.projectId, { type: input.type });','edit(r, s, input.id, input.projectId, { type: input.type, ...(input.options ? {options:input.options} : {}) });');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.test.ts';s=open(p).read().replace('../../../../../../../crates/','../../../../../../crates/');open(p,'w').write(s)\nPY\nbun run --cwd classic/apps/web test src/export/queue/server.test.ts > /tmp/render-queue-host-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-258c28f9-0151-4316-a506-98c29d04973b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:45:24.452Z",
+  "parents": [],
+  "branch": "main"
+}

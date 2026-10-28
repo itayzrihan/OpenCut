@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34991733ab611baa008ec98e0aa009e01de930168250d401e5c4da7ae15ec342",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:47:03.350Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/render-queue-2026-10-28\ncat > analysis/render-queue-2026-10-28/architecture.md <<'EOF'\n# OpenCut Render Queue\n\nClassic-only feature, using the canonical OpenCutRuntime and existing Classic compositor. No rewrite parity or migration is asserted.\n\nThe selected editor invokes `project.classic.export.capture` synchronously at its current canonical revision. This freezes the complete project/scene dependency graph, HyperFrames source and media bindings before any asynchronous host IO. An authenticated, account-scoped host instantiates the same canonical OpenCutRuntime, restores its durable application bytes, invokes `render.queue.edit`, and atomically persists the result under an interprocess filesystem lock. The host does not implement a second queue state machine. Queue state is `EditorDocument.renderQueue`, validated by Rust and readable through `app.state.read`. Export options are typed; the snapshot and options have a SHA-256 integrity hash. Pending settings changes recompute this hash explicitly.\n\nAn independent, opener-free browser window claims one queued job at a time. It runs the production GPU compositor and existing disk-backed sound/effects pipeline in a fresh canonical editor realm, without acquiring a source project write lease or saving source project/history. Existing direct export remains available. Subsequent edits or navigation in the original editor have no access to the queued snapshot. Each finished job reloads its own renderer realm to release decoders/GPU resources before claiming the next job.\n\nHost file bindings are frozen at enqueue. Copied media is retained by a hard link; fonts are copied. External linked media remains linked at its original path and is checked for size/mtime changes before streaming. Relinking a source editor does not redirect a queued job. Removing a memory card or changing linked source bytes causes a visible failure, not silent use of replacement footage. Source media is never copied wholesale from exte",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fdfbbede-082b-4478-86a2-4eb6ab0aadf9"
+      },
+      {
+        "at": "2026-10-28T03:47:03.439Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/render-queue-2026-10-28\ncat > analysis/render-queue-2026-10-28/architecture.md <<'EOF'\n# OpenCut Render Queue\n\nClassic-only feature, using the canonical OpenCutRuntime and existing Classic compositor. No rewrite parity or migration is asserted.\n\nThe selected editor invokes `project.classic.export.capture` synchronously at its current canonical revision. This freezes the complete project/scene dependency graph, HyperFrames source and media bindings before any asynchronous host IO. An authenticated, account-scoped host instantiates the same canonical OpenCutRuntime, restores its durable application bytes, invokes `render.queue.edit`, and atomically persists the result under an interprocess filesystem lock. The host does not implement a second queue state machine. Queue state is `EditorDocument.renderQueue`, validated by Rust and readable through `app.state.read`. Export options are typed; the snapshot and options have a SHA-256 integrity hash. Pending settings changes recompute this hash explicitly.\n\nAn independent, opener-free browser window claims one queued job at a time. It runs the production GPU compositor and existing disk-backed sound/effects pipeline in a fresh canonical editor realm, without acquiring a source project write lease or saving source project/history. Existing direct export remains available. Subsequent edits or navigation in the original editor have no access to the queued snapshot. Each finished job reloads its own renderer realm to release decoders/GPU resources before claiming the next job.\n\nHost file bindings are frozen at enqueue. Copied media is retained by a hard link; fonts are copied. External linked media remains linked at its original path and is checked for size/mtime changes before streaming. Relinking a source editor does not redirect a queued job. Removing a memory card or changing linked source bytes causes a visible failure, not silent use of replacement footage. Source media is never copied wholesale from exte",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-fdfbbede-082b-4478-86a2-4eb6ab0aadf9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:47:03.535Z",
+  "parents": [],
+  "branch": "main"
+}

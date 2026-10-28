@@ -65,6 +65,7 @@ mod classic_duplicate;
 mod classic_effects;
 mod classic_element_controls;
 mod classic_export;
+mod render_queue;
 mod classic_image_inspection;
 mod classic_insert;
 mod classic_keyframes;
@@ -190,6 +191,7 @@ pub(crate) fn register_all(
     )?;
     classic_settings::register_classic_settings(registry, state.clone(), events.clone())?;
     classic_export::register_export(registry, state.clone())?;
+    render_queue::register_queue(registry, state.clone(), events.clone())?;
     classic_source_audio::register_classic_source_audio(registry, state.clone(), events.clone())?;
     classic_effects::register_classic_effects(
         registry,

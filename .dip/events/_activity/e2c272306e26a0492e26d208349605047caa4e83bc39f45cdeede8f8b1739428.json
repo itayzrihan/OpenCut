@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e2c272306e26a0492e26d208349605047caa4e83bc39f45cdeede8f8b1739428",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:45:23.440Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/export-button.tsx",
+          "classic/apps/web/src/export/queue/server.ts",
+          "classic/apps/web/src/export/queue/server.test.ts",
+          ".local/classic-web-tests/1793159123329"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "197926a5-a5b7-4bf4-a118-27fa3c996559"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:45:23.442Z",
+  "parents": [],
+  "branch": "main"
+}

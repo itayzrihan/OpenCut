@@ -325,6 +325,13 @@
         ".dip/tools/verify-compact-toolbar.mjs"
       ],
       "timeoutMs": 120000
+    },
+    "render-queue": {
+      "command": [
+        "node",
+        ".dip/tools/verify-render-queue.mjs"
+      ],
+      "timeoutMs": 240000
     }
   },
   "mode": "coordinate"

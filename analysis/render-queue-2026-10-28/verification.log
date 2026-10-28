@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.47s
+     Running tests/render_queue.rs (target/debug/deps/render_queue-cc6dfefac27bd4d5)
+
+running 5 tests
+test dry_run_revision_idempotency_validation_and_undo ... ok
+test serial_fifo_and_worker_attempt_fences ... ok
+test cancellation_acknowledgment_and_retry_keep_exact_snapshot ... ok
+test disconnect_is_a_failed_boundary_and_late_completion_is_rejected ... ok
+test frozen_scene_recipe_dependency_graph_survive_edits_and_serialization ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+$ node ../../scripts/test-web.mjs "--test-timeout=30000" src/export/queue/server.test.ts
+PASS src/export/queue/server.test.ts (2 passed, 0 skipped)
+1 suites: 0 failed; 2 tests passed, 0 failed, 0 skipped (6.8s)
+Report: /Users/itayzrihan/Documents/PoCut/.local/classic-web-tests/1793159942964/summary.json
+Canonical queue lifecycle, durable host concurrency, source binding isolation, frozen output durations, audio/video output and live editing/playback verified.

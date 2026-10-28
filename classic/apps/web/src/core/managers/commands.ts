@@ -1269,6 +1269,23 @@ export class CommandManager {
 		this.persistHistory();
 	}
 
+	/** Read the current canonical revision synchronously before enqueue IO. */
+	captureExportSnapshot(sceneId: string): {
+		snapshot: import("@/core/canonical-classic-session").CanonicalClassicSnapshot;
+		sourceRevision: number;
+	} {
+		if (!this.canonical)
+			throw new Error("Open the canonical editor before queueing a render");
+		this.synchronizeCanonicalViews();
+		return this.canonical.invokeControl({
+			capabilityId: "project.classic.export.capture",
+			input: { sceneId },
+		}) as {
+			snapshot: import("@/core/canonical-classic-session").CanonicalClassicSnapshot;
+			sourceRevision: number;
+		};
+	}
+
 	/** Shared entry for declarative UI controls. Registry validation and the
 	 * canonical transaction enforce schema, availability and atomic history. */
 	invokeCanonicalControl({
