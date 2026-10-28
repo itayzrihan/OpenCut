@@ -1107,6 +1107,21 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	trimStartEnd(input: {
+		sceneId: string;
+		edge: "start" | "end";
+		time: number;
+	}): void {
+		this.call({
+			capability: "timeline.classic.crop",
+			input: {
+				...input,
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+			},
+		});
+	}
+
 	removeTimelineContent({
 		sceneId,
 		removal,

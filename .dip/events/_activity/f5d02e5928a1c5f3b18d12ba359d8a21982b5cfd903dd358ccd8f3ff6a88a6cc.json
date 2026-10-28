@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5d02e5928a1c5f3b18d12ba359d8a21982b5cfd903dd358ccd8f3ff6a88a6cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:54:02.584Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_start_end.rs <<'RS'\n//! Scene-wide Start/End crop. Classic-only; all hosts share this transaction.\nuse super::*;\nuse serde_json::json;\n#[derive(Clone, Copy, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nenum Edge { Start, End }\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct Input {\n    project_id: String,\n    scene_id: String,\n    expected_revision: u64,\n    edge: Edge,\n    #[schemars(range(min = 0, max = 9007199254740991_i64))]\n    time: i64,\n}\nfn invalid(s: &str) -> CapabilityError { CapabilityError::InvalidInput(s.into()) }\nfn tick(v: &Value) -> Result<i64, CapabilityError> {\n    v.as_i64().filter(|n| (0..=9_007_199_254_740_991).contains(n)).ok_or_else(|| invalid(\"Invalid safe integer time\"))\n}\nfn all(t: &Value) -> impl Iterator<Item=&Value> {\n    std::iter::once(&t[\"main\"]).chain(t[\"overlay\"].as_array().into_iter().flatten()).chain(t[\"audio\"].as_array().into_iter().flatten())\n}\nfn crop(track: &mut Value, low: i64, high: i64, shift: i64) -> Result<(), CapabilityError> {\n    let before = track.clone();\n    let elements = track[\"elements\"].as_array_mut().ok_or_else(|| invalid(\"Missing track elements\"))?;\n    let mut kept = Vec::new();\n    for e in elements.iter() {\n        let start = tick(&e[\"startTime\"])?; let duration = tick(&e[\"duration\"])?;\n        let end = start.checked_add(duration).ok_or_else(|| invalid(\"Clip time overflow\"))?;\n        let a = start.max(low); let b = end.min(high);\n        if b <= a { continue; }\n        let mut next = e.clone();\n        if a != start || b != end {\n            let left = a-start; let right = end-b;\n            let rate = if matches!(e[\"type\"].as_str(), Some(\"video\"|\"audio\")) { classic_update::rate(e) } else { 1.0 };\n            let source_left = (left as f64 * rate).round() as i64;\n            let source_right = (duration as f64 * rate).round() as i64 - ((duration-right) as f64 * rate).round() as i64;\n          ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2b04d169-77d6-434c-b868-81be3d99b3d6"
+      },
+      {
+        "at": "2026-10-28T02:54:02.721Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_start_end.rs <<'RS'\n//! Scene-wide Start/End crop. Classic-only; all hosts share this transaction.\nuse super::*;\nuse serde_json::json;\n#[derive(Clone, Copy, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\nenum Edge { Start, End }\n#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct Input {\n    project_id: String,\n    scene_id: String,\n    expected_revision: u64,\n    edge: Edge,\n    #[schemars(range(min = 0, max = 9007199254740991_i64))]\n    time: i64,\n}\nfn invalid(s: &str) -> CapabilityError { CapabilityError::InvalidInput(s.into()) }\nfn tick(v: &Value) -> Result<i64, CapabilityError> {\n    v.as_i64().filter(|n| (0..=9_007_199_254_740_991).contains(n)).ok_or_else(|| invalid(\"Invalid safe integer time\"))\n}\nfn all(t: &Value) -> impl Iterator<Item=&Value> {\n    std::iter::once(&t[\"main\"]).chain(t[\"overlay\"].as_array().into_iter().flatten()).chain(t[\"audio\"].as_array().into_iter().flatten())\n}\nfn crop(track: &mut Value, low: i64, high: i64, shift: i64) -> Result<(), CapabilityError> {\n    let before = track.clone();\n    let elements = track[\"elements\"].as_array_mut().ok_or_else(|| invalid(\"Missing track elements\"))?;\n    let mut kept = Vec::new();\n    for e in elements.iter() {\n        let start = tick(&e[\"startTime\"])?; let duration = tick(&e[\"duration\"])?;\n        let end = start.checked_add(duration).ok_or_else(|| invalid(\"Clip time overflow\"))?;\n        let a = start.max(low); let b = end.min(high);\n        if b <= a { continue; }\n        let mut next = e.clone();\n        if a != start || b != end {\n            let left = a-start; let right = end-b;\n            let rate = if matches!(e[\"type\"].as_str(), Some(\"video\"|\"audio\")) { classic_update::rate(e) } else { 1.0 };\n            let source_left = (left as f64 * rate).round() as i64;\n            let source_right = (duration as f64 * rate).round() as i64 - ((duration-right) as f64 * rate).round() as i64;\n          ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2b04d169-77d6-434c-b868-81be3d99b3d6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:54:03.231Z",
+  "parents": [],
+  "branch": "main"
+}

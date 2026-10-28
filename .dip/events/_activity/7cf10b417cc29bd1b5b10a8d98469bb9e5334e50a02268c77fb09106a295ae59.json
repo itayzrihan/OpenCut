@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7cf10b417cc29bd1b5b10a8d98469bb9e5334e50a02268c77fb09106a295ae59",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T02:58:21.807Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs",
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs",
+          "classic/apps/web/src/actions/definitions.ts",
+          "classic/apps/web/src/actions/keybindings/__tests__/persistence.test.ts",
+          "classic/apps/web/src/actions/keybindings/__tests__/start-end.test.ts",
+          "classic/apps/web/src/actions/use-editor-actions.ts",
+          "classic/apps/web/src/actions/use-keybindings.ts",
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b69e73a0-3cbd-442c-bb19-6139e53d3c87"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:58:21.808Z",
+  "parents": [],
+  "branch": "main"
+}

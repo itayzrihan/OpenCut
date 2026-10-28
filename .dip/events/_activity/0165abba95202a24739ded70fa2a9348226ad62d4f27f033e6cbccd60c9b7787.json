@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0165abba95202a24739ded70fa2a9348226ad62d4f27f033e6cbccd60c9b7787",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T02:59:36.872Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/actions/keybindings/__tests__/persistence.test.ts",
+          "crates/editor-api/src/operations/classic_start_end.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8e5d0fb2-6a64-40d1-8cf2-ad480bf5f850"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:59:36.874Z",
+  "parents": [],
+  "branch": "main"
+}

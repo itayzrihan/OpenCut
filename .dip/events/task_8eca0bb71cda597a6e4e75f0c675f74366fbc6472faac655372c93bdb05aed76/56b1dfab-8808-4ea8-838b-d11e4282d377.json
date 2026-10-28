@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "56b1dfab-8808-4ea8-838b-d11e4282d377",
+  "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Durable DIP worktree saved at /Users/itayzrihan/Documents/dip-automatic on codex/automatic-workflow, commit c9bda1e (parent86c2da4). Candidate 0.3.13-automatic.0 package and private 0.3.12 package/settings rollback retained in .dip-local. Final full suite166 tests:164 passed,2 platform skips,0 failures; package/browser/legacy-read checks pass. Hard multilingual UTF-8 budgets covered. Latest paired frozen data: DIP10906→1798 bytes, PoCut17265→2681. Implementation report docs/benchmarks/automatic-workflow-report.md. DIP's own task_d44e07ea-2935-4e6b-a99f-b5deadc3f116 is paused with remaining work. Global install still0.3.12; no model turns started.",
+    "next": "Human must review isolated hooks using /private/tmp/dip-automatic-pilot-20261028/review-hooks.sh and /hooks. Then run prepared12-turn native experiment from durable checkout, validate one real native workflow, evaluate thresholds, and roll out only if gate passes. No hook trust bypass.",
+    "head": "7b1eeee0a08af87680b1961565392d1957a38b1e"
+  },
+  "actor": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4",
+  "createdAt": "2026-10-28T02:19:08.242Z",
+  "parents": [
+    "50ffc097-b78b-4aca-b03d-1343e96584fc"
+  ],
+  "branch": "main"
+}

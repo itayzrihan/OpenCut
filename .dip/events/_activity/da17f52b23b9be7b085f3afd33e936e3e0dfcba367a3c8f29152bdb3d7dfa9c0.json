@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "da17f52b23b9be7b085f3afd33e936e3e0dfcba367a3c8f29152bdb3d7dfa9c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:01:12.229Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/start-end-2026-10-28",
+          "analysis/start-end-2026-10-28",
+          ".local/start-end-2026-10-28/fixture.mp4"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0cdfa7d3-c35e-4e3c-a828-624e8fdfcd8d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:01:12.230Z",
+  "parents": [],
+  "branch": "main"
+}

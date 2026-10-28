@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "09850e7c7e6abd08f4e9a72f556d158b1bff72f670e4ab8f91e77f8e563cea74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:56:10.654Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfor p in ['crates/editor-api/src/operations/classic_start_end.rs','classic/apps/web/src/core/canonical-classic-session.ts']:\n s=open(p).read().replace('timeline.classic.startEnd','timeline.classic.crop');open(p,'w').write(s)\np='crates/editor-api/src/operations/classic_start_end.rs';s=open(p).read().replace('let time=time.min(end);let (low,high,shift)', 'let time=time.min(end);\\n    if matches!(edge,Edge::Start) && time==0 || matches!(edge,Edge::End) && time==end {return Ok(());}\\n    let (low,high,shift)');open(p,'w').write(s)\nPY\ncat > crates/editor-api/tests/classic_start_end.rs <<'RS'\nuse opencut_editor_api::{AccessLevel,DocumentSupport,InvocationContext,OpenCutRuntime};\nuse serde_json::{json,Value};\nconst ID:&str=\"timeline.classic.crop\";\nasync fn call(r:&OpenCutRuntime,id:&str,v:Value)->Value{r.registry().invoke(id,InvocationContext::default(),v).await.unwrap().result.data}\nasync fn read(r:&OpenCutRuntime)->Value{call(r,\"app.state.read\",json!({})).await[\"value\"].clone()}\nasync fn fixture(locked:bool)->OpenCutRuntime{\n let r=OpenCutRuntime::default();let mut c:Value=serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n let s=&mut c[\"document\"][\"scenes\"][0];\n s[\"bookmarks\"]=json!([{\"time\":120000,\"note\":\"before\"},{\"time\":720000,\"note\":\"after\"}]);\n s[\"tracks\"][\"main\"][\"locked\"]=json!(locked);\n s[\"tracks\"][\"main\"][\"elements\"][0][\"animations\"]=json!({\"opacity\":{\"keys\":[{\"id\":\"a\",\"time\":0,\"value\":0,\"segmentToNext\":\"linear\"},{\"id\":\"b\",\"time\":1200000,\"value\":1,\"segmentToNext\":\"linear\"}]}});\n let text=&mut s[\"tracks\"][\"overlay\"][0][\"elements\"][0];text[\"duration\"]=json!(1200000);text[\"params\"][\"content\"]=json!(\"first second\");text[\"wordRuns\"]=json!([{\"id\":\"w1\",\"text\":\"first\",\"startTime\":0,\"endTime\":480000,\"lineIndex\":0},{\"id\":\"w2\",\"text\":\"second\",\"startTime\":720000,\"endTime\":1080000,\"lineIndex\":0}]);\n s[\"tracks\"][\"overlay\"][0][\"captionSource\"][\"words\"]=json!([{\"text\":\"first\",\"start\":0,\"end\":4},{\"text\":\"second\",\"start\":6,\"end\":9}]);\n",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-131cbdd9-1065-47be-abb1-8567421959fc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:56:11.498Z",
+  "parents": [],
+  "branch": "main"
+}

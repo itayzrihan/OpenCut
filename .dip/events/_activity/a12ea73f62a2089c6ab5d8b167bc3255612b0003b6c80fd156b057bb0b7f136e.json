@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a12ea73f62a2089c6ab5d8b167bc3255612b0003b6c80fd156b057bb0b7f136e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:12:10.288Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit --only -m 'Complete four linked event podcast projects and source mapping' -- .dip/config.json .dip/events/task_e7ca769a61042d180da17dfd052bb3f322ee2542bad81977ca2ca06b4cd509f4 analysis/card-podcasts-2026-10-28",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-251ede1f-9f39-4271-bc23-fbe5333b7c3f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:12:11.234Z",
+  "parents": [],
+  "branch": "main"
+}

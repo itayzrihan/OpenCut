@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ddc8a0cb0c4360d6857edf508578fa4f3869fcb61a01afe2abbea398d39b0f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:13:02.184Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const b='/private/tmp/dip-automatic-pilot-20261028';const r=JSON.parse(fs.readFileSync(b+'/results.json'));for(const t of r.protocol.trials)for(const ph of ['seed','recovery']){const f=t.dir+'/'+ph+'.jsonl';if(!fs.existsSync(f))continue;const es=fs.readFileSync(f,'utf8').trim().split('\\n').flatMap(x=>{try{return[JSON.parse(x)]}catch{return[]}});for(const e of es){const i=e.item;if(e.type==='item.completed'&&i?.type==='command_execution'&&/\\bdip\\s+(task|context|reconcile|status)/.test(i.command||''))console.log(JSON.stringify({arm:t.arm,scenario:t.index,phase:ph,command:i.command.slice(0,300),exit:i.exit_code}));}}\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-0dd03d5a-77b1-43e9-aff9-220b5050d4ee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:13:03.104Z",
+  "parents": [],
+  "branch": "main"
+}

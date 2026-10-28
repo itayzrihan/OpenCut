@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95d7cff49ba79a9bc55dffdd2d51059e94450a792f9a99498ac01b31ec2afa20",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:16:32.493Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/automatic-benchmark.mjs /Users/itayzrihan/Documents/dip /Users/itayzrihan/Documents/PoCut > /tmp/dip-auto-measure-final-budget.txt 2>&1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-25529adb-0140-4401-bd84-e7d374d364c4"
+      },
+      {
+        "at": "2026-10-28T02:16:32.500Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,re\np=Path('docs/benchmarks/automatic-workflow-report.md');s=p.read_text().replace('Global rollout has not been authorized by the acceptance gate','Global rollout has not passed the acceptance gate').replace('165 tests, 163 passed','166 tests, 164 passed').replace('51.66 seconds','51.00 seconds').replace('Fifteen focused','Sixteen focused')\nr=json.loads(Path('docs/benchmarks/2026-10-28-automatic-runtime.json').read_text());b=r['arms']['reviewed'];a=r['arms']['automatic'];labels=[('warmHookMs','Post-tool hook, warm'),('warmPreWriteMs','Pre-write hook, 1,001-event task'),('coldHookMs','Post-tool hook, new process'),('runtimeOpenRegisterMs','Runtime open + register'),('taskReadMs','Read a task with deep history'),('contendedRuntimeMs','Runtime open/register with a 100 ms competing lock')]\nfor k,label in labels:\n row=f\"| {label} | {b[k]['median']:.2f} / {b[k]['p95']:.2f} | {a[k]['median']:.2f} / {a[k]['p95']:.2f} |\"\n s=re.sub(r'^\\| '+re.escape(label)+r' \\|.*$',lambda m:row,s,flags=re.M)\nfor name in ['dip','PoCut']:\n v=r['realContexts'][name];before=v['reviewed']['bytes'];after=v['automatic']['bytes'];percentage=100*(1-after/before)\n if name=='dip':s=re.sub(r'10,906→[\\d,]+ bytes \\([\\d.]+%\\)',f'{before:,}→{after:,} bytes ({percentage:.1f}%)',s)\n else:s=re.sub(r'19,127→[\\d,]+ bytes \\([\\d.]+%\\)',f'{before:,}→{after:,} bytes ({percentage:.1f}%)',s)\ns=s.replace('No product issue was hidden by that infrastructure retry.','No product issue was hidden by that infrastructure retry. A subsequent boundary check added explicit coverage for a single large multilingual task and oversized actor metadata; both budgets hold without trimming fencing tokens.')\np.write_text(s)\n# Preserve the immediately preceding engineering measurement as well.\np=Path('docs/benchmarks/2026-10-28-engineering-runs.json');o=json.loads(p.read_text());raw=Path('/tmp/dip-auto-measure-frozen.txt').read_text();i=raw.find('{');data,_=json.JSONDecoder().raw_decode",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-4e55d831-8397-4273-99cb-7c9f4f75cf4e"
+      },
+      {
+        "at": "2026-10-28T02:16:33.352Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,re\np=Path('docs/benchmarks/automatic-workflow-report.md');s=p.read_text().replace('Global rollout has not been authorized by the acceptance gate','Global rollout has not passed the acceptance gate').replace('165 tests, 163 passed','166 tests, 164 passed').replace('51.66 seconds','51.00 seconds').replace('Fifteen focused','Sixteen focused')\nr=json.loads(Path('docs/benchmarks/2026-10-28-automatic-runtime.json').read_text());b=r['arms']['reviewed'];a=r['arms']['automatic'];labels=[('warmHookMs','Post-tool hook, warm'),('warmPreWriteMs','Pre-write hook, 1,001-event task'),('coldHookMs','Post-tool hook, new process'),('runtimeOpenRegisterMs','Runtime open + register'),('taskReadMs','Read a task with deep history'),('contendedRuntimeMs','Runtime open/register with a 100 ms competing lock')]\nfor k,label in labels:\n row=f\"| {label} | {b[k]['median']:.2f} / {b[k]['p95']:.2f} | {a[k]['median']:.2f} / {a[k]['p95']:.2f} |\"\n s=re.sub(r'^\\| '+re.escape(label)+r' \\|.*$',lambda m:row,s,flags=re.M)\nfor name in ['dip','PoCut']:\n v=r['realContexts'][name];before=v['reviewed']['bytes'];after=v['automatic']['bytes'];percentage=100*(1-after/before)\n if name=='dip':s=re.sub(r'10,906→[\\d,]+ bytes \\([\\d.]+%\\)',f'{before:,}→{after:,} bytes ({percentage:.1f}%)',s)\n else:s=re.sub(r'19,127→[\\d,]+ bytes \\([\\d.]+%\\)',f'{before:,}→{after:,} bytes ({percentage:.1f}%)',s)\ns=s.replace('No product issue was hidden by that infrastructure retry.','No product issue was hidden by that infrastructure retry. A subsequent boundary check added explicit coverage for a single large multilingual task and oversized actor metadata; both budgets hold without trimming fencing tokens.')\np.write_text(s)\n# Preserve the immediately preceding engineering measurement as well.\np=Path('docs/benchmarks/2026-10-28-engineering-runs.json');o=json.loads(p.read_text());raw=Path('/tmp/dip-auto-measure-frozen.txt').read_text();i=raw.find('{');data,_=json.JSONDecoder().raw_decode",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-4e55d831-8397-4273-99cb-7c9f4f75cf4e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:16:33.451Z",
+  "parents": [],
+  "branch": "main"
+}

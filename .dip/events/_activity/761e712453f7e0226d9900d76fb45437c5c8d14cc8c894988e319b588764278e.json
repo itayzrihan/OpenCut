@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "761e712453f7e0226d9900d76fb45437c5c8d14cc8c894988e319b588764278e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:14:07.455Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/check.mjs; git diff --check; node --input-type=module - <<'JS'\nimport fs from 'node:fs';import {parse} from 'smol-toml';const c=parse(fs.readFileSync('/private/tmp/dip-automatic-pilot-20261028/user/.codex/config.toml','utf8'));console.log({trustedPilotHooks:Object.values(c.hooks?.state||{}).filter(s=>s.trusted_hash).length});\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-acc9ce28-c77f-4b59-a5b6-b5b1aeaf0cd2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:14:07.607Z",
+  "parents": [],
+  "branch": "main"
+}

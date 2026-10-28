@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "262865d7-25fa-4c1f-8a03-5ea663eaf2b8",
+  "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Implement canonical scene-wide Start End crop and regression tests",
+          "status": "in_progress"
+        },
+        {
+          "step": "Add toolbar buttons, S/E shortcuts and migrate Split to Shift+S",
+          "status": "in_progress"
+        },
+        {
+          "step": "Build and activate production; verify buttons, shortcuts and Undo in an isolated project",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T02:57:28.756Z",
+  "parents": [
+    "ff88b700-c9d7-47df-a318-f43472cede39"
+  ],
+  "branch": "main"
+}

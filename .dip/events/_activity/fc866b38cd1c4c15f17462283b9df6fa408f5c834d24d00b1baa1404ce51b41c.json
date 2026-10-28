@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc866b38cd1c4c15f17462283b9df6fa408f5c834d24d00b1baa1404ce51b41c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T02:56:25.508Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/actions/keybindings/__tests__/start-end.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "01288cec-addc-4b48-9ba8-46ac2ea42070"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:56:25.512Z",
+  "parents": [],
+  "branch": "main"
+}

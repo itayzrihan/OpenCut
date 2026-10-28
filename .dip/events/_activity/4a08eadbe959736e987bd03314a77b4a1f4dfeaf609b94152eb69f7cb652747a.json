@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a08eadbe959736e987bd03314a77b4a1f4dfeaf609b94152eb69f7cb652747a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:58:20.023Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\nfrom pathlib import Path\nfiles=subprocess.check_output(['git','diff','--name-only']).decode().splitlines();restored=[];retained=[]\nfor f in files:\n if not f.startswith('crates/editor-api/') or not f.endswith('.rs') or f=='crates/editor-api/src/operations.rs':continue\n original=subprocess.check_output(['git','show',f'HEAD:{f}']);formatted=subprocess.run(['rustfmt','--edition','2024','--config','skip_children=true','--emit','stdout'],input=original,capture_output=True)\n if formatted.returncode==0 and formatted.stdout==Path(f).read_bytes():Path(f).write_bytes(original);restored.append(f)\n else:retained.append(f)\nprint('Restored unrelated formatter-only files:',len(restored));print('Preserved non-formatter changes:',retained)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/actions/definitions.ts classic/apps/web/src/actions/keybindings/__tests__/persistence.test.ts classic/apps/web/src/actions/keybindings/__tests__/start-end.test.ts classic/apps/web/src/actions/keybindings/migrations/index.ts classic/apps/web/src/actions/keybindings/migrations/v8-to-v9.ts classic/apps/web/src/actions/use-editor-actions.ts classic/apps/web/src/actions/use-keybindings.ts classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/timeline/components/timeline-toolbar.tsx > /tmp/start-end-format.log 2>&1\nrg -n 'start.end|commands.ts|definitions.ts|start-end.test|use-editor-actions|timeline-toolbar' /tmp/start-end-types.log | head -12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7d895198-4fae-4084-8d95-bfb3c7034c31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:58:20.813Z",
+  "parents": [],
+  "branch": "main"
+}

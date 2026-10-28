@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11a436406b7eac19192f781274eb837ccae32d0ae0b5a2454dcde72724d377e4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:51:31.136Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_60a039c0d69ffcf9c0c3a64f9abb83caf99aec255eebfccdc774b7bd9db69200",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "osascript -e 'tell application \"Terminal\"' -e 'activate' -e 'do script \"/bin/sh /private/tmp/dip-automatic-pilot-20261028/review-hooks.sh\"' -e 'end tell'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-372490f8-c2a7-4cc2-9510-391484a6599b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:51:31.773Z",
+  "parents": [],
+  "branch": "main"
+}

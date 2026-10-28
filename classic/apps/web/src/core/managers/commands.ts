@@ -1350,6 +1350,35 @@ export class CommandManager {
 		});
 	}
 
+	trimStartEnd(edge: "start" | "end"): void {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the canonical editor before using Start End");
+		const time = this.editor.playback.getCurrentTime();
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.trimStartEnd({ sceneId, edge, time });
+				this.publishCanonical();
+				this.applySelectionOverride({
+					selection: {
+						selectedElements: [],
+						selectedKeyframes: [],
+						keyframeSelectionAnchor: null,
+						selectedMaskPoints: null,
+					},
+				});
+			},
+		});
+		this.editor.playback.pause();
+		this.editor.playback.seek({
+			time:
+				edge === "start"
+					? mediaTime({ ticks: 0 })
+					: this.editor.timeline.getTotalDuration(),
+		});
+	}
+
 	removeClassicTimelineContent(
 		removal: import("@/core/canonical-classic-session").ClassicRemoval,
 	): void {

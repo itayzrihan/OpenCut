@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4299014be731530e82f707a0332c2cdbbed99470b3051f413bc5f3a60054552f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:13:17.078Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='scripts/summarize-automatic-pilot.mjs'\ns=open(p).read().replace('for (const match of matches) calls.push(', 'for (const [index, match] of matches.entries()) calls.push(').replace('help:/--help\\\\b/.test(item.command)', 'help:/--help\\\\b/.test(item.command.slice(match.index, matches[index + 1]?.index))')\nopen(p,'w').write(s)\nPY\nnode scripts/summarize-automatic-pilot.mjs > /tmp/dip-pilot-summary-live.json\nnode --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/tmp/dip-pilot-summary-live.json'));console.log(JSON.stringify({started:r.turnsStarted,finished:r.finishedAt,arms:r.arms}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f3d5447a-897a-41cc-98ed-a893414b0755"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:13:17.112Z",
+  "parents": [],
+  "branch": "main"
+}

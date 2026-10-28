@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "55d3af68f0894a4fce56186257a61c6305edecdee92900c98d6f65c2526e5a30",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:11:24.478Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.dip/tools/verify-start-end.mjs');s=p.read_text().replace(\"import { readFileSync } from 'node:fs';\",\"import { readFileSync } from 'node:fs';\\nimport assert from 'node:assert/strict';\")\ns=s.replace(\" ['bun',['run','test'\", \" ['node',['node_modules/typescript/bin/tsc','--noEmit','--project','tsconfig.build.json'],process.cwd()+'/classic/apps/web'],\\n ['bun',['run','test'\")\ns+='''\nconst read = name => JSON.parse(readFileSync(`analysis/start-end-2026-10-28/${name}.json`,'utf8'));\nconst base = read('baseline');\nfor (const name of ['undo-start','restored','text-input-guard','reopened']) assert.deepEqual(read(name),base,name);\nassert.deepEqual(read('start-button'),read('start-shortcut'));\nassert.deepEqual(read('start-button'),read('redo-start'));\nassert.deepEqual(read('end-button'),read('end-shortcut'));\nfor(const [name,duration,startTrim,endTrim] of [['start-button',960000,480000,0],['end-button',840000,0,600000]]) {\n const doc=read(name);\n for(const type of ['video','audio','effect']) {\n  const track=doc.scene.tracks.find(t=>t.type===type);\n  assert.equal(track.elements.length,1);const e=track.elements[0];\n  assert.equal(e.startTime,0);assert.equal(e.duration,duration);assert.equal(e.trimStart,startTrim);assert.equal(e.trimEnd,endTrim);\n }\n assert.equal(doc.scene.bookmarks.length,1);\n}\nconst split=read('split-shortcut').scene.tracks.find(t=>t.area==='main').elements;\nassert.equal(split.length,2);assert.equal(split[0].duration,480000);assert.equal(split[1].startTime,480000);assert.equal(split[1].duration,960000);\nconsole.log('Independent live snapshots confirm all-track crop, source offsets, equivalent buttons/keys, exact Undo/Redo and saved reopen.');\n''';p.write_text(s)\nPY\ncat > analysis/start-end-2026-10-28/live-verification.json <<'JSON'\n{\n  \"projectId\": \"b54fef34-bf27-456c-8d4e-a27328a8117d\",\n  \"release\": \"2026-10-28T03-05-40-436Z-7b1eeee0\",\n  \"startButton\": true,\n  \"endButton\": true,\n  \"startShortcut\": true,\n  \"endSh",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8a89aaad-a962-4923-b8e5-ea44f93bb2b8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:11:25.016Z",
+  "parents": [],
+  "branch": "main"
+}

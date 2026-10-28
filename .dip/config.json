@@ -311,6 +311,13 @@
         "analysis/card-podcasts-2026-10-28/verify_delivery.py"
       ],
       "timeoutMs": 120000
+    },
+    "start-end": {
+      "command": [
+        "node",
+        ".dip/tools/verify-start-end.mjs"
+      ],
+      "timeoutMs": 240000
     }
   },
   "mode": "coordinate"

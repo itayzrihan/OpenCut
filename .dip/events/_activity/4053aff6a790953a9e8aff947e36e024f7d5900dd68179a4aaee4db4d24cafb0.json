@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4053aff6a790953a9e8aff947e36e024f7d5900dd68179a4aaee4db4d24cafb0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:01:11.553Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 /tmp/start-end-build.log; mkdir -p .local/start-end-2026-10-28 analysis/start-end-2026-10-28; ffmpeg -v error -f lavfi -i testsrc2=size=640x360:rate=25 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 12 -c:v libx264 -preset ultrafast -crf 32 -c:a aac -y .local/start-end-2026-10-28/fixture.mp4",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1a25f2c8-c28e-4bca-926d-01266dd31b17"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:01:12.230Z",
+  "parents": [],
+  "branch": "main"
+}

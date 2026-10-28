@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "eventId": "183a2acd617b610a0409a09a524bad2ba94d55e28c818659aa093a77711f8cca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T02:57:28.761Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/actions/keybindings/__tests__/start-end.test.ts",
+          ".local/classic-web-tests/1793156247829",
+          ".local/classic-web-tests/1793156247829/src__actions__keybindings____tests____start-end.test.ts.log",
+          ".local/classic-web-tests/1793156247829/src__actions__keybindings____tests____persistence.test.ts.log",
+          ".local/classic-web-tests/1793156247829/summary.json",
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/editor_ui.rs",
+          "crates/editor-api/src/editor_ui_control.rs",
+          "crates/editor-api/src/host_bridge.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/model.rs",
+          "crates/editor-api/src/operations/classic_background_removal.rs",
+          "crates/editor-api/src/operations/classic_duplicate.rs",
+          "crates/editor-api/src/operations/classic_masks.rs",
+          "crates/editor-api/src/operations/classic_media_register.rs",
+          "crates/editor-api/src/operations/classic_scenes.rs",
+          "crates/editor-api/src/operations/classic_session.rs",
+          "crates/editor-api/src/operations/classic_start_end.rs",
+          "crates/editor-api/src/operations/classic_track_layout.rs",
+          "crates/editor-api/src/operations/silence.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/registry.rs",
+          "crates/editor-api/src/render.rs",
+          "crates/editor-api/src/runtime.rs",
+          "crates/editor-api/tests/classic_background_removal.rs",
+          "crates/editor-api/tests/classic_clipboard.rs",
+          "crates/editor-api/tests/classic_scenes.rs",
+          "crates/editor-api/tests/classic_split.rs",
+          "crates/editor-api/tests/classic_start_end.rs",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/tests/classic_teaser_editorial.rs",
+          "crates/editor-api/tests/editor_ui.rs",
+          "crates/editor-api/tests/hyperframes_authoring.rs",
+          "crates/editor-api/tests/hyperframes_embedding.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "8bbc1f52-9a6e-4ad6-b577-efbb72867525"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:57:28.763Z",
+  "parents": [],
+  "branch": "main"
+}

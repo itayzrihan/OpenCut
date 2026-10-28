@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d70f8f1ee26789339e0604f35cd2584f598883b21c6785657c2d1cd33575f96d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:54:56.941Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/canonical-classic-session.ts';s=open(p).read();at=s.index('\\n\\tremoveTimelineContent(');s=s[:at]+'''\n\ttrimStartEnd(input: { sceneId: string; edge: \"start\" | \"end\"; time: number }): void {\n\t\tthis.call({ capability: \"timeline.classic.startEnd\", input: {\n\t\t\t...input, projectId: this.projectId, expectedRevision: this.status().revision,\n\t\t} });\n\t}\n'''+s[at:];open(p,'w').write(s)\np='classic/apps/web/src/core/managers/commands.ts';s=open(p).read();at=s.index('\\n\\tremoveClassicTimelineContent(');s=s[:at]+'''\n\ttrimStartEnd(edge: \"start\" | \"end\"): void {\n\t\tconst sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;\n\t\tif (!this.canonical || !sceneId) throw new Error(\"Open the canonical editor before using Start End\");\n\t\tconst time = this.editor.playback.getCurrentTime();\n\t\tthis.executeTransaction({ execute: () => {\n\t\t\tthis.synchronizeCanonicalViews();\n\t\t\tthis.canonical!.trimStartEnd({ sceneId, edge, time });\n\t\t\tthis.publishCanonical();\n\t\t\tthis.applySelectionOverride({ selection: { selectedElements: [], selectedKeyframes: [], keyframeSelectionAnchor: null, selectedMaskPoints: null } });\n\t\t} });\n\t\tthis.editor.playback.pause();\n\t\tthis.editor.playback.seek({ time: edge === \"start\" ? mediaTime({ ticks: 0 }) : this.editor.timeline.getTotalDuration() });\n\t}\n'''+s[at:];open(p,'w').write(s)\np='classic/apps/web/src/actions/definitions.ts';s=open(p).read().replace('\\tsplit: {','\\t\"trim-start\": { description: \"Start: remove everything before playhead\", category: \"editing\" },\\n\\t\"trim-end\": { description: \"End: remove everything after playhead\", category: \"editing\" },\\n\\tsplit: {',1).replace('[\"split\", [\"s\"]]','[\"split\", [\"shift+s\"]],\\n\\t[\"trim-start\", [\"s\"]],\\n\\t[\"trim-end\", [\"e\"]]');open(p,'w').write(s)\np='classic/apps/web/src/actions/use-editor-actions.ts';s=open(p).read().replace('import { useEffect, useState } from \"react\";','import { useEffect, useState } from \"react\";\\nimport { toast } from \"sonner\";');at=s.index('\\n\\tuseActionHandler",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-20474206-3764-496f-8f9a-2ebc4c5dcc20"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:54:57.291Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ff88b700-c9d7-47df-a318-f43472cede39",
+  "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+  "type": "task.update",
+  "payload": {
+    "title": "Add Start End timeline trimming buttons and S/E shortcuts",
+    "acceptance": [
+      "Start at playhead deletes earlier content across all scene tracks and rebases retained content to zero; End deletes later content.",
+      "Expose canonical typed capabilities with validation, revision/idempotency, dry run and undo; UI and keyboard use canonical transactions.",
+      "S and E trigger Start and End outside text inputs, resolving existing shortcuts; visible buttons show shortcuts.",
+      "Verify crossing clips, source trims, keyframes/captions/bookmarks and undo; deploy and inspect live UI without modifying user projects."
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/rust",
+      "classic/apps/web/src/timeline",
+      "classic/apps/web/src/core",
+      "classic/apps/web/src/shortcuts",
+      "classic/apps/web/src/keyboard",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T02:51:56.701Z",
+  "parents": [
+    "03552773-3099-467a-9934-028249cabeae"
+  ],
+  "branch": "main"
+}

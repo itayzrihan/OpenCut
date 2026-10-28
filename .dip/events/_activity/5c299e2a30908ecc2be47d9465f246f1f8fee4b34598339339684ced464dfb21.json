@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5c299e2a30908ecc2be47d9465f246f1f8fee4b34598339339684ced464dfb21",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:51:46.719Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_60a039c0d69ffcf9c0c3a64f9abb83caf99aec255eebfccdc774b7bd9db69200",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "osascript -e 'tell application \"Terminal\" to get contents of selected tab of window id 21497'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-b451cd08-8838-4997-83d3-23aea4e5b170"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:51:46.775Z",
+  "parents": [],
+  "branch": "main"
+}

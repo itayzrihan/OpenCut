@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "265ae116-6425-49c2-9088-49cc98296b4a",
+  "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Implemented Classic-only canonical timeline.classic.crop with revision/dry-run/idempotency/undo, scene-wide Start/End source-aware cropping, keyframes/wordRuns/caption source/bookmarks and locked-track rejection. UI manager invokes canonical transaction, toolbar buttons and S/E actions added; Split moved to Shift+S with v9 persisted shortcut migration.13 Rust regression tests and13 web tests pass. Broad tsc reports4 existing test-file errors, none in modified production files. Production staged build67578 running; WASM done and control plane compiling. Scratch project b54fef34-bf27-456c-8d4e-a27328a8117d created viaChrome with generated12s fixture; user projects untouched.",
+    "next": "Finish staged build, activate through production panel, create multi-track scratch fixture and verify both buttons/S/E/ShiftS/input guard/Undo/save-reopen; record live-verification.json then configuredcheck and finish.",
+    "head": "7b1eeee0a08af87680b1961565392d1957a38b1e"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:03:08.524Z",
+  "parents": [
+    "262865d7-25fa-4c1f-8a03-5ea663eaf2b8"
+  ],
+  "branch": "main"
+}

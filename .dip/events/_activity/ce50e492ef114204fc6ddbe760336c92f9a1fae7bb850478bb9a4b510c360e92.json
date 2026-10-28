@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce50e492ef114204fc6ddbe760336c92f9a1fae7bb850478bb9a4b510c360e92",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T02:13:19.091Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/automatic.js');s=p.read_text()\ns=s.replace('    branch: context.branch,','    branch: context.branch,')\ns=s.replace('  const brief = (t) => ({','''  const clip = (value, limit) => {\n    if (typeof value !== \"string\") return value;\n    if (value.length > limit) out.truncated = true;\n    return value.slice(0, limit);\n  };\n  const first = (values, limit) => {\n    if (values?.length > limit) out.truncated = true;\n    return values?.slice(0, limit);\n  };\n  out.branch = clip(context.branch, 120);\n  out.instructions = \"Capture is automatic. No management calls for questions/reads. Development: task_finish once (implemented or paused). Details on demand; Stop is not completion.\";\n  const brief = (t) => ({''')\ns=s.replace('title: t.title?.slice(0, 120),','title: clip(t.title, 120),')\ns=s.replace('current.acceptance?.slice(0, 3).map((s) => s.slice(0, 160))','first(current.acceptance, 3)?.map((s) => clip(s, 160))').replace('current.blockedBy?.slice(0, 3)','first(current.blockedBy, 3)').replace('current.checkpoint?.slice(0, 300)','clip(current.checkpoint, 300)').replace('current.remaining?.slice(0, 3).map','first(current.remaining, 3)?.map').replace('summary: r.summary.slice(0, 160)','summary: clip(r.summary, 160)')\ns=s.replace('  const add = (key, value) => {','''  // A single multilingual current task can exceed the budget before any lists\n  // are added. Remove optional detail, never slice identifiers or serialized JSON.\n  while (bytes(out) > budget && out.current) {\n    out.truncated = true;\n    if (out.current.checkpoint) { delete out.current.checkpoint; continue; }\n    const key = [\"acceptance\", \"remaining\", \"blockedBy\"].find(k => out.current[k]?.length);\n    if (key) { out.current[key].pop(); continue; }\n    break;\n  }\n  if (bytes(out) > budget) return {workflow:\"automatic\",truncated:true,identityOmitted:true,error:\"Hook identity exceeds context budget; persist intent explicitly and read details.\",details:\"task_get / ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-0c5f95c5-bb4f-4c69-9ec2-c9aaa30d3ceb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:13:19.323Z",
+  "parents": [],
+  "branch": "main"
+}

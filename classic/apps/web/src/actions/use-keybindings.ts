@@ -70,6 +70,11 @@ export function useKeybindingsListener() {
 			if (!boundAction) return;
 
 			if (isTextInput) return;
+			if (
+				ev.repeat &&
+				(boundAction === "trim-start" || boundAction === "trim-end")
+			)
+				return;
 			if (boundAction === "paste-copied") {
 				if (!editor.clipboard.hasEntry()) return;
 				ev.preventDefault();

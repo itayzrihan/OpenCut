@@ -55,6 +55,7 @@ mod brand_kits;
 mod classic;
 mod classic_advanced_podcast;
 mod classic_animation_catalog;
+pub(crate) mod classic_automation;
 mod classic_background_removal;
 mod classic_bookmarks;
 mod classic_caption_cues;
@@ -79,11 +80,11 @@ mod classic_remove;
 mod classic_ripple;
 mod classic_ripple_delete;
 mod classic_scenes;
-pub(crate) mod classic_automation;
 mod classic_session;
 pub(crate) mod classic_settings;
 mod classic_source_audio;
 mod classic_split;
+mod classic_start_end;
 pub(crate) mod classic_takes;
 mod classic_text;
 mod classic_text_graphics;
@@ -144,6 +145,7 @@ pub(crate) fn register_all(
     )?;
     classic_track_layout::register_classic_track_layout(registry, state.clone(), events.clone())?;
     classic_remove::register_classic_remove(registry, state.clone(), events.clone())?;
+    classic_start_end::register(registry, state.clone(), events.clone())?;
     classic_media::register_classic_media(registry, state.clone(), events.clone())?;
     classic_media_register::register(registry, state.clone(), events.clone())?;
     classic_image_inspection::register_image_inspection(

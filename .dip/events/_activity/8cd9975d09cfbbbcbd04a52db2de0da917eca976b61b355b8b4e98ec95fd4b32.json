@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8cd9975d09cfbbbcbd04a52db2de0da917eca976b61b355b8b4e98ec95fd4b32",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:00:56.570Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';\nimport {parse,stringify} from 'smol-toml';\nimport {pilotMcpEnvVars,installPilotShims,preflightPilot} from './scripts/pilot-support.mjs';\nconst base='/private/tmp/dip-automatic-pilot-20261028';\nconst configPath=base+'/user/.codex/config.toml';\nfs.copyFileSync(configPath,base+'/user/.codex/config.before-mcp-fix.toml');\nconst config=parse(fs.readFileSync(configPath,'utf8'));\nconfig.mcp_servers.dip.env_vars=pilotMcpEnvVars;\nfs.writeFileSync(configPath,stringify(config));\ninstallPilotShims(base);\nconst env={...process.env,DIP_USER_HOME:base+'/user',GIT_CONFIG_GLOBAL:base+'/gitconfig',GIT_CONFIG_NOSYSTEM:'1',GIT_TRACE2_EVENT:'0'};\nfor(const k of Object.keys(env))if(/^GIT_CONFIG_(COUNT|KEY_|VALUE_)/.test(k))delete env[k];\nconst receipt=await preflightPilot(base,config,env);\nfs.writeFileSync(base+'/preflight-after-fix.json',JSON.stringify(receipt,null,2)+'\\n');\nconsole.log(JSON.stringify(receipt));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-d5ad850e-bf0a-4f05-9095-ffbbc1bba09a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:00:57.202Z",
+  "parents": [],
+  "branch": "main"
+}

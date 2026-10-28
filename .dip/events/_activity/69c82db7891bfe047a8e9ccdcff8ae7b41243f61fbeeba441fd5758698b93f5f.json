@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "69c82db7891bfe047a8e9ccdcff8ae7b41243f61fbeeba441fd5758698b93f5f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:55:19.285Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 /tmp/start-end-rust.log; python3 - <<'PY'\nimport json\nj=json.load(open('crates/editor-api/tests/fixtures/classic-project.json'));print(j.keys());s=j['document']['scenes'][0];print(s['id']);print(json.dumps(s['tracks']['main']['elements'][0],indent=2)[:1700]);print(s['tracks'].keys())\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-65d4297e-94ad-467d-8236-ae59c22279c8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:55:19.316Z",
+  "parents": [],
+  "branch": "main"
+}

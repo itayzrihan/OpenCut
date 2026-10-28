@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "decc1b90ea346184dd85c5b8d62ff457b0af05bd3f7b47444b57ff063b809918",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:11:18.795Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'action === \"claim\"' -A18 src/actions.js; sed -n '45,90p' test/low-friction.test.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-8f6058ba-d1c9-4aa4-9091-439e2d70fea3"
+      },
+      {
+        "at": "2026-10-28T03:11:18.896Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'action === \"claim\"' -A18 src/actions.js; sed -n '45,90p' test/low-friction.test.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-8f6058ba-d1c9-4aa4-9091-439e2d70fea3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:11:18.990Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7aa482a01895e27c56c4247452581dbf55c10373630d9b9a772ff2254791508c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:01:05.771Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const base='/private/tmp/dip-automatic-pilot-20261028';const r=JSON.parse(fs.readFileSync(base+'/results.json'));const trial=base+'/trials/0-reviewed';for(const phase of ['seed','recovery']) {const file=trial+'/'+phase+'.jsonl';const es=fs.readFileSync(file,'utf8').trim().split('\\n').flatMap(x=>{try{return[JSON.parse(x)]}catch{return[]}});console.log(JSON.stringify({phase,events:es.length,completed:es.some(e=>e.type==='turn.completed'),lastType:es.at(-1)?.type}));}const hs=fs.readFileSync(trial+'/hooks.jsonl','utf8').trim().split('\\n').map(JSON.parse);console.log(JSON.stringify({hooks:hs.length,events:hs.reduce((a,h)=>(a[h.event]=(a[h.event]||0)+1,a),{}),failures:hs.filter(h=>h.exitCode!==0).length}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-9d18905c-83f4-46ca-adc9-bc61fc24cbc2"
+      },
+      {
+        "at": "2026-10-28T03:01:05.776Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';\nimport {parse,stringify} from 'smol-toml';\nimport {pilotMcpEnvVars,installPilotShims,preflightPilot} from './scripts/pilot-support.mjs';\nconst base='/private/tmp/dip-automatic-pilot-20261028';\nconst configPath=base+'/user/.codex/config.toml';\nfs.copyFileSync(configPath,base+'/user/.codex/config.before-mcp-fix.toml');\nconst config=parse(fs.readFileSync(configPath,'utf8'));\nconfig.mcp_servers.dip.env_vars=pilotMcpEnvVars;\nfs.writeFileSync(configPath,stringify(config));\ninstallPilotShims(base);\nconst env={...process.env,DIP_USER_HOME:base+'/user',GIT_CONFIG_GLOBAL:base+'/gitconfig',GIT_CONFIG_NOSYSTEM:'1',GIT_TRACE2_EVENT:'0'};\nfor(const k of Object.keys(env))if(/^GIT_CONFIG_(COUNT|KEY_|VALUE_)/.test(k))delete env[k];\nconst receipt=await preflightPilot(base,config,env);\nfs.writeFileSync(base+'/preflight-after-fix.json',JSON.stringify(receipt,null,2)+'\\n');\nconsole.log(JSON.stringify(receipt));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-d5ad850e-bf0a-4f05-9095-ffbbc1bba09a"
+      },
+      {
+        "at": "2026-10-28T03:01:05.940Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const base='/private/tmp/dip-automatic-pilot-20261028';const r=JSON.parse(fs.readFileSync(base+'/results.json'));const trial=base+'/trials/0-reviewed';for(const phase of ['seed','recovery']) {const file=trial+'/'+phase+'.jsonl';const es=fs.readFileSync(file,'utf8').trim().split('\\n').flatMap(x=>{try{return[JSON.parse(x)]}catch{return[]}});console.log(JSON.stringify({phase,events:es.length,completed:es.some(e=>e.type==='turn.completed'),lastType:es.at(-1)?.type}));}const hs=fs.readFileSync(trial+'/hooks.jsonl','utf8').trim().split('\\n').map(JSON.parse);console.log(JSON.stringify({hooks:hs.length,events:hs.reduce((a,h)=>(a[h.event]=(a[h.event]||0)+1,a),{}),failures:hs.filter(h=>h.exitCode!==0).length}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-9d18905c-83f4-46ca-adc9-bc61fc24cbc2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:01:06.216Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2b5dd745c0829bca3de21264be600c85ecde53097fdb10f0937b1905072d439d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T02:57:29.775Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/hyperframes_manifest.rs",
+          "crates/editor-api/tests/hyperframes_reference_source.rs",
+          "crates/editor-api/tests/image_generation.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f99b4152-cc93-4b59-aed8-95001c145f23"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:57:29.777Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useTimelineStore } from "@/timeline/timeline-store";
 import { useActionHandler } from "@/actions/use-action-handler";
 import { useEditor, useEditorSelection } from "@/editor/use-editor";
@@ -209,6 +210,29 @@ export function useEditorActions() {
 		"goto-end",
 		() => {
 			editor.playback.seek({ time: editor.timeline.getTotalDuration() });
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"trim-start",
+		() => {
+			try {
+				editor.command.trimStartEnd("start");
+			} catch (error) {
+				toast.error(error instanceof Error ? error.message : "Start failed");
+			}
+		},
+		undefined,
+	);
+	useActionHandler(
+		"trim-end",
+		() => {
+			try {
+				editor.command.trimStartEnd("end");
+			} catch (error) {
+				toast.error(error instanceof Error ? error.message : "End failed");
+			}
 		},
 		undefined,
 	);

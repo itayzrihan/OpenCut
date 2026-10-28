@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e231cb53-5562-490c-b0ce-dddff2ed4e4d",
+  "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Added and deployed Start End toolbar buttons with S/E shortcuts; Split moved to Shift+S with persisted v9 migration. Classic-only typed timeline.classic.crop is the shared canonical Rust operation for source-aware scene-wide cropping, captions, keyframes, bookmarks, locked tracks and Undo/Redo.13 Rust tests,13 shortcut tests, production TypeScript and optimized build pass. Live Chrome verifies buttons/S/E/ShiftS/input guard/exact Undo/Redo and reopen against independent Timeline Source snapshots in isolated project b54fef34. Activated release2026-10-28T03-05-40-436Z-7b1eeee0. User podcast projects unchanged.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Full development tsconfig has4 existing errors in unrelated test files (canonical-unified-audio.test.ts and project-session-lifecycle.test.ts); production tsconfig and focused regressions pass."
+        },
+        {
+          "disposition": "out_of_scope",
+          "summary": "Feature is Classic-only; no rewrite implementation added. Existing already-open editor tabs require refresh to load the updated toolbar/shortcut migration; saved user projects were not modified."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:12:46.617Z",
+  "parents": [
+    "6b66952c-cc1e-40d3-bb99-5f02b1f6b37e"
+  ],
+  "branch": "main"
+}

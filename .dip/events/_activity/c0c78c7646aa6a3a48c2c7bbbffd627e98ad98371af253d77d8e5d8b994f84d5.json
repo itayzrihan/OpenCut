@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c0c78c7646aa6a3a48c2c7bbbffd627e98ad98371af253d77d8e5d8b994f84d5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:08:50.892Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/start-end-2026-10-28/redo-start.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5a036ef8-7e3c-4da5-97af-00f35a321ccd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:08:50.893Z",
+  "parents": [],
+  "branch": "main"
+}

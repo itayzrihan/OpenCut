@@ -205,9 +205,32 @@ function ToolbarLeftSection() {
 				<div className="bg-border mx-1 h-6 w-px shrink-0" />
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
-					tooltip="Split element"
+					tooltip="Split element (Shift+S)"
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
+				<div
+					role="group"
+					aria-label="Start End"
+					className="flex shrink-0 items-center gap-0.5"
+				>
+					<Button
+						size="sm"
+						variant="ghost"
+						title="Remove everything before playhead and move remaining timeline to zero (S)"
+						onClick={(event) => handleAction({ action: "trim-start", event })}
+					>
+						Start <kbd className="ml-1 text-xs text-muted-foreground">S</kbd>
+					</Button>
+					<Button
+						size="sm"
+						variant="ghost"
+						title="Remove everything after playhead (E)"
+						onClick={(event) => handleAction({ action: "trim-end", event })}
+					>
+						End <kbd className="ml-1 text-xs text-muted-foreground">E</kbd>
+					</Button>
+				</div>
+
 				<CutSilenceToolbarControl
 					hasSelectedVideo={hasSelectedVideo}
 					removeAllSilence={(options) => timeline.removeAllSilence(options)}

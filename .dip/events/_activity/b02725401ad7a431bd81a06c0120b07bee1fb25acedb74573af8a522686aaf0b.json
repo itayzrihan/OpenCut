@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b02725401ad7a431bd81a06c0120b07bee1fb25acedb74573af8a522686aaf0b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T02:55:28.081Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nj=json.load(open('crates/editor-api/tests/fixtures/classic-project.json'));s=j['document']['scenes'][0];print('bookmarks',s['bookmarks']);\nfor t in [s['tracks']['main'],*s['tracks']['overlay'],*s['tracks']['audio']]:print(t['id'],[(e['id'],e['startTime'],e['duration']) for e in t['elements']],json.dumps(t.get('captionSource',{}))[:400])\nPY\nsed -n '54,100p' crates/editor-api/tests/classic_remove.rs\nrg -n 'undo|idempotency' crates/editor-api/tests/classic_remove.rs | head",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1cd5baff-12b4-4886-9496-76d22b9e8ad4"
+      },
+      {
+        "at": "2026-10-28T02:55:28.228Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_a804b90272bd1120a19c36cc14525e957663b2d3111cc43cb10da4d724582e41",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nj=json.load(open('crates/editor-api/tests/fixtures/classic-project.json'));s=j['document']['scenes'][0];print('bookmarks',s['bookmarks']);\nfor t in [s['tracks']['main'],*s['tracks']['overlay'],*s['tracks']['audio']]:print(t['id'],[(e['id'],e['startTime'],e['duration']) for e in t['elements']],json.dumps(t.get('captionSource',{}))[:400])\nPY\nsed -n '54,100p' crates/editor-api/tests/classic_remove.rs\nrg -n 'undo|idempotency' crates/editor-api/tests/classic_remove.rs | head",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1cd5baff-12b4-4886-9496-76d22b9e8ad4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T02:55:28.320Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -66,6 +66,14 @@ export const ACTIONS = {
 		description: "Go to timeline end",
 		category: "navigation",
 	},
+	"trim-start": {
+		description: "Start: remove everything before playhead",
+		category: "editing",
+	},
+	"trim-end": {
+		description: "End: remove everything after playhead",
+		category: "editing",
+	},
 	split: {
 		description: "Split elements at playhead",
 		category: "editing",
@@ -182,7 +190,9 @@ const ACTION_DEFAULT_SHORTCUTS = [
 	["jump-backward", ["shift+left"]],
 	["goto-start", ["home", "enter"]],
 	["goto-end", ["end"]],
-	["split", ["s"]],
+	["split", ["shift+s"]],
+	["trim-start", ["s"]],
+	["trim-end", ["e"]],
 	["split-left", ["q"]],
 	["split-right", ["w"]],
 	["delete-selected", ["backspace", "delete"]],
