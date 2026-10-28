@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0effbcc7098fd53bc666e5194646453f7c1c6d7d967f8637da6a65a6a0ad2484",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:35:39.456Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '60,170p' classic/apps/web/src/app/api/render-queue/route.ts; sed -n '305,355p' classic/apps/web/src/export/queue/server.ts; tail -8 /tmp/projects-export-build-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4a003f7f-a8af-48c3-96c0-ec71e5f6e8e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:35:39.609Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d3f7feb53b4c70667e3d783b8c1cd595c42e05df4b23fe7f60978000413c602",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:38:21.089Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 .local/projects-export-2026-10-28/collect.py",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b1ee199e-d1fc-490d-a4f8-e3d227ec72ae"
+      },
+      {
+        "at": "2026-10-28T05:38:21.135Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -eo pid,ppid,command | rg '3212|99447|99448'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e06059e7-ce02-4796-ba67-9e87b944bb3b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:38:21.887Z",
+  "parents": [],
+  "branch": "main"
+}

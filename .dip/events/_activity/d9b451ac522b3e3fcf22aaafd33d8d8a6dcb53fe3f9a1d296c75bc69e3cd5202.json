@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9b451ac522b3e3fcf22aaafd33d8d8a6dcb53fe3f9a1d296c75bc69e3cd5202",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:32:24.641Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/projects-export-dev-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f11d3b57-9923-4575-91d2-4e794b60c129"
+      },
+      {
+        "at": "2026-10-28T05:32:25.128Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/projects-export-dev-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f11d3b57-9923-4575-91d2-4e794b60c129"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:32:25.468Z",
+  "parents": [],
+  "branch": "main"
+}

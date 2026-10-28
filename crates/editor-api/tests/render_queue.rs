@@ -216,3 +216,82 @@ async fn dry_run_revision_idempotency_validation_and_undo() {
             .is_err()
     );
 }
+
+#[tokio::test]
+async fn direct_exports_require_a_destination_and_do_not_publish_downloads_or_block_queued_fifo() {
+    let r = setup().await;
+    let captured=call(&r,"project.classic.export.capture",json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":revision(&r)})).await;
+    let mut change = json!({"type":"enqueue","snapshot":captured["snapshot"],"sourceRevision":captured["sourceRevision"],"sceneId":"main-scene","options":options(),"delivery":"direct"});
+    let before = r.snapshot().unwrap();
+    assert!(
+        r.registry()
+            .invoke(
+                EDIT,
+                InvocationContext::default(),
+                request(&r, "direct", change.clone(), 1000)
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(r.snapshot().unwrap(), before);
+    change["destinationName"] = json!("Podcast.mp4");
+    call(&r, EDIT, request(&r, "direct", change, 1000)).await;
+    enqueue(&r, "queue").await;
+    // A waiting direct destination does not block the normal background lane.
+    call(
+        &r,
+        EDIT,
+        request(&r, "queue", json!({"type":"claim","attempt":"q"}), 2000),
+    )
+    .await;
+    call(&r,EDIT,request(&r,"queue",json!({"type":"report","attempt":"q","progress":1,"message":"Done","status":"completed"}),3000)).await;
+    call(
+        &r,
+        EDIT,
+        request(&r, "direct", json!({"type":"claim","attempt":"d"}), 4000),
+    )
+    .await;
+    let result=call(&r,EDIT,request(&r,"direct",json!({"type":"report","attempt":"d","progress":1,"message":"Saved Podcast.mp4","status":"completed"}),5000)).await;
+    assert_eq!(result["job"]["status"], "completed");
+    assert_eq!(result["job"]["destinationName"], "Podcast.mp4");
+    assert!(result["job"]["outputId"].is_null());
+    let state = call(&r, "app.state.read", json!({})).await["value"].clone();
+    assert_eq!(state["renderQueue"][0]["delivery"], "direct");
+    assert_eq!(
+        state["project"],
+        serde_json::to_value(before.project).unwrap()
+    );
+}
+
+#[tokio::test]
+async fn explicit_direct_claim_can_run_before_pending_background_jobs() {
+    let r = setup().await;
+    enqueue(&r, "background").await;
+    let snapshot = r.snapshot().unwrap().project.unwrap().classic.unwrap();
+    call(&r,EDIT,request(&r,"direct",json!({"type":"enqueue","snapshot":snapshot,"sourceRevision":1,"sceneId":"main-scene","options":options(),"delivery":"direct","destinationName":"Direct.webm"}),2000)).await;
+    call(
+        &r,
+        EDIT,
+        request(&r, "direct", json!({"type":"claim","attempt":"d"}), 3000),
+    )
+    .await;
+    assert!(
+        r.registry()
+            .invoke(
+                EDIT,
+                InvocationContext::default(),
+                request(
+                    &r,
+                    "background",
+                    json!({"type":"claim","attempt":"q"}),
+                    3001
+                )
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(
+        r.snapshot().unwrap().render_queue[0].status,
+        opencut_editor_api::QueueStatus::Queued
+    );
+}

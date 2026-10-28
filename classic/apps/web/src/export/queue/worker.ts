@@ -8,8 +8,9 @@ import type { RenderJob } from "./types";
 export async function executeQueuedRender(
 	job: RenderJob,
 	onProgress: (message: string) => void,
+	destination?: FileSystemFileHandle,
+	editor = EditorCore.getInstance(),
 ) {
-	const editor = EditorCore.getInstance();
 	editor.save.stop();
 	editor.save.pause();
 	const attempt = job.attempt!;
@@ -19,7 +20,7 @@ export async function executeQueuedRender(
 		reporting = Promise.resolve();
 	const uploadCancel = new AbortController();
 	const report = (
-		status: "rendering" | "failed" | "cancelled" = "rendering",
+		status: "rendering" | "failed" | "cancelled" | "completed" = "rendering",
 		detail = message,
 	) => {
 		const currentProgress = progress;
@@ -81,10 +82,24 @@ export async function executeQueuedRender(
 			assets,
 		});
 		if (cancelled) throw Error("Render cancelled");
-		const result = await editor.project.export({ options: job.options });
+		if (
+			job.delivery === "direct" &&
+			(!destination || destination.name !== job.destinationName)
+		)
+			throw Error("The selected direct export destination is unavailable");
+		const result = await editor.project.export({
+			options: job.options,
+			destination,
+		});
 		dispose = result.dispose;
 		if (result.cancelled || cancelled) {
 			await report("cancelled", "Cancelled");
+			return;
+		}
+		if (job.delivery === "direct" && result.success && result.savedFileName) {
+			progress = 1;
+			await report("completed", `Saved ${result.savedFileName}`);
+			onProgress(`Saved ${result.savedFileName}`);
 			return;
 		}
 		if (!result.success || !result.file)

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0872ee4d38443df9450d5dc91c95a2c2572bfea492ab1dbe4e1d43e6e1344531",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:49:48.491Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/projects-export-dialog.tsx';s=open(p).read();a=s.index('\\tuseEffect(() => {\\n\\t\\tif (!activeEntry) return;');b=s.index('\\n\\tconst ready =',a);s=s[:a]+'''\tuseEffect(() => {\n  if (!activeEntry) return;\n  const id = activeEntry.id;\n  const advance = () => setWorkerIndex(i => entries[i]?.id === id ? i + 1 : i);\n  const child = () => iframe.current?.contentWindow;\n  const probe = () => child()?.postMessage({type:\"opencut-direct-export-probe\"}, location.origin);\n  let started = false;\n  const deadline = setTimeout(() => {\n   if (started) return;\n   setError(\"The export worker could not start. Your saved projects were preserved. Reopen Export to try again.\");\n   void cancel().finally(advance);\n  }, 90000);\n  const handle = (event: MessageEvent) => {\n   if (event.origin !== location.origin || event.source !== child()) return;\n   if (event.data?.type === \"opencut-direct-export-ready\") {\n    started = true;\n    clearTimeout(deadline);\n    child()?.postMessage({type:\"opencut-direct-export-start\",entries:[activeEntry]},location.origin);\n   }\n   if (event.data?.type === \"opencut-direct-export-error\") {\n    setError(event.data.message);\n    void cancel();\n   }\n   if (event.data?.type === \"opencut-direct-export-finished\") advance();\n  };\n  window.addEventListener(\"message\",handle);\n  const timer = setInterval(probe,1000);\n  probe();\n  const preventClose = (event: BeforeUnloadEvent) => {event.preventDefault();event.returnValue=\"\";};\n  window.addEventListener(\"beforeunload\",preventClose);\n  return () => {\n   clearTimeout(deadline);clearInterval(timer);\n   window.removeEventListener(\"message\",handle);\n   window.removeEventListener(\"beforeunload\",preventClose);\n  };\n },[activeEntry?.id]);\n // Cancellation must also retire a frame which never finished booting.\n useEffect(() => {\n  if (!activeEntry) return;\n  const job = jobs.find(j => j.id === activeEntry.id);\n  if (job && terminal(job)) setWorkerIndex(i => entries[i]?.id === job.id ? i +",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-f39d4bbe-d6cf-41b1-9350-85069b8b73b6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:49:49.431Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e35341775fa634dc23d1a8f776240fa51a3f4e4d3edd80f819929c26cf204603",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:08:56.295Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/render_queue.rs';s=open(p).read().replace('target.delivery == j.delivery','target.delivery == RenderDelivery::Queue && j.delivery == RenderDelivery::Queue').replace('Queue and direct jobs have separate FIFO lanes; one renderer runs at a time.','Queued jobs use FIFO; direct jobs are claimed explicitly; one renderer runs at a time.');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/types.ts';s=open(p).read().replace('\\toptions: Required<ExportOptions>;','\\toptions: Required<ExportOptions>;\\n delivery: \"queue\" | \"direct\";\\n destinationName: string | null;');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.ts';s=open(p).read().replace('\\toptions: ExportOptions;\\n}) {','\\toptions: ExportOptions;\\n delivery?: \"queue\" | \"direct\";\\n destinationName?: string;\\n}) {',1).replace('\\t\\t\\toptions: input.options,','\\t\\t\\toptions: input.options,\\n delivery: input.delivery ?? \"queue\",\\n destinationName: input.destinationName ?? null,',1).replace('export async function claimRender(attempt: string): Promise<RenderJob | null> {','export async function claimRender(attempt: string, jobId?: string): Promise<RenderJob | null> {').replace('const next = s.renderQueue.find((j) => j.status === \"queued\");','''const next = jobId ? s.renderQueue.find(j=>j.id===valid(jobId) && j.delivery===\"direct\" && j.status===\"queued\") : s.renderQueue.find((j) => j.status === \"queued\" && j.delivery!==\"direct\");''');open(p,'w').write(s)\np='classic/apps/web/src/app/api/render-queue/route.ts';s=open(p).read().replace('z.object({ action: z.literal(\"claim\"), attempt: identity }).strict(),','z.object({ action: z.literal(\"claim\"), attempt: identity, jobId:identity.optional() }).strict(),').replace('z.enum([\"rendering\", \"failed\", \"cancelled\"])','z.enum([\"rendering\", \"failed\", \"cancelled\", \"completed\"])').replace('claimRender(body.attempt)','claimRender(body.attempt,body.jobId)').replace('if (body.action === \"report\")\\n\\t\\t\\treturn NextRespons",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-86f255f3-d808-4175-82d9-31482c07a9bc"
+      },
+      {
+        "at": "2026-10-28T04:08:56.412Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/render_queue.rs';s=open(p).read().replace('target.delivery == j.delivery','target.delivery == RenderDelivery::Queue && j.delivery == RenderDelivery::Queue').replace('Queue and direct jobs have separate FIFO lanes; one renderer runs at a time.','Queued jobs use FIFO; direct jobs are claimed explicitly; one renderer runs at a time.');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/types.ts';s=open(p).read().replace('\\toptions: Required<ExportOptions>;','\\toptions: Required<ExportOptions>;\\n delivery: \"queue\" | \"direct\";\\n destinationName: string | null;');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.ts';s=open(p).read().replace('\\toptions: ExportOptions;\\n}) {','\\toptions: ExportOptions;\\n delivery?: \"queue\" | \"direct\";\\n destinationName?: string;\\n}) {',1).replace('\\t\\t\\toptions: input.options,','\\t\\t\\toptions: input.options,\\n delivery: input.delivery ?? \"queue\",\\n destinationName: input.destinationName ?? null,',1).replace('export async function claimRender(attempt: string): Promise<RenderJob | null> {','export async function claimRender(attempt: string, jobId?: string): Promise<RenderJob | null> {').replace('const next = s.renderQueue.find((j) => j.status === \"queued\");','''const next = jobId ? s.renderQueue.find(j=>j.id===valid(jobId) && j.delivery===\"direct\" && j.status===\"queued\") : s.renderQueue.find((j) => j.status === \"queued\" && j.delivery!==\"direct\");''');open(p,'w').write(s)\np='classic/apps/web/src/app/api/render-queue/route.ts';s=open(p).read().replace('z.object({ action: z.literal(\"claim\"), attempt: identity }).strict(),','z.object({ action: z.literal(\"claim\"), attempt: identity, jobId:identity.optional() }).strict(),').replace('z.enum([\"rendering\", \"failed\", \"cancelled\"])','z.enum([\"rendering\", \"failed\", \"cancelled\", \"completed\"])').replace('claimRender(body.attempt)','claimRender(body.attempt,body.jobId)').replace('if (body.action === \"report\")\\n\\t\\t\\treturn NextRespons",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-86f255f3-d808-4175-82d9-31482c07a9bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:08:56.539Z",
+  "parents": [],
+  "branch": "main"
+}

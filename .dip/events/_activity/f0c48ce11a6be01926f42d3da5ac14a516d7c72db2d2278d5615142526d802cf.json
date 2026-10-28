@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0c48ce11a6be01926f42d3da5ac14a516d7c72db2d2278d5615142526d802cf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:29:48.639Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -30 /tmp/projects-export-dev-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e97045aa-c96b-4d9f-9cfe-fe8148ca0baa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:29:49.248Z",
+  "parents": [],
+  "branch": "main"
+}

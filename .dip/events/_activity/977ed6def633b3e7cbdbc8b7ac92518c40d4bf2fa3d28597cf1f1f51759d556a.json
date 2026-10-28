@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "977ed6def633b3e7cbdbc8b7ac92518c40d4bf2fa3d28597cf1f1f51759d556a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:53:28.243Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/projects-export-2026-10-28/queue-jobs.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d6e9f64c-3a29-4488-8444-f2850b5d8e53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:53:28.252Z",
+  "parents": [],
+  "branch": "main"
+}

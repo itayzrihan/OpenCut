@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "170c6558d967a6dd07f922ee9916e92fb4a44724a415818b4f0fe4849b481a83",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:24:50.185Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/projects-export-2026-10-28/architecture.md <<'EOF'\n# Library export\n\nClassic-only follow-up to Render Queue. Selected-project actions expose Export alongside Duplicate/Delete, including the compact action menu. Editor and library use one ExportSettingsFields/ExportPlanSummary projection for format, quality, smart/project resolution, MP4 encoding and audio. Library supports a saved scene per project and per-project recipe overrides.\n\nThe authenticated host reads each source through the canonical editor-session read policy, preferring saved.project over obsolete legacy/top-level data. It never acquires source write ownership. A temporary canonical OpenCutRuntime validates attachment, captures the immutable dependency graph and calculates the existing native export plan. Preview exposes only project/scene summaries and settings. Enqueue rechecks the saved storage revision before capturing and freezing media through the established queue host. Stale selections fail visibly and can refresh; another editor's unsaved changes are explicitly excluded.\n\nDirect delivery extends canonical QueuedRender with an additive, default-queue delivery enum and destination filename. Direct jobs require a selected destination, are claimed explicitly rather than consumed by background queue windows, retain the same attempt fencing and cancellation, and publish no server outputId. Normal queue jobs remain FIFO. One renderer runs at a time; a current render may finish before a direct job starts. Direct settings remain fixed after choosing a destination.\n\nDirect exports use user-gesture native File System Access pickers: one file for a single project; a directory for multiple projects. Existing directory filenames receive a distinct suffix instead of silent overwrite. File handles remain ephemeral host IO and are structured-cloned only to a same-origin, parent-bound worker iframe. Each job gets a fresh realm, the existing compositor/audio pipeline writes directly to its selected",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-578b0dbd-cebc-442e-8adf-a8ed681b1b48"
+      },
+      {
+        "at": "2026-10-28T04:24:50.599Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/projects-export-2026-10-28/architecture.md <<'EOF'\n# Library export\n\nClassic-only follow-up to Render Queue. Selected-project actions expose Export alongside Duplicate/Delete, including the compact action menu. Editor and library use one ExportSettingsFields/ExportPlanSummary projection for format, quality, smart/project resolution, MP4 encoding and audio. Library supports a saved scene per project and per-project recipe overrides.\n\nThe authenticated host reads each source through the canonical editor-session read policy, preferring saved.project over obsolete legacy/top-level data. It never acquires source write ownership. A temporary canonical OpenCutRuntime validates attachment, captures the immutable dependency graph and calculates the existing native export plan. Preview exposes only project/scene summaries and settings. Enqueue rechecks the saved storage revision before capturing and freezing media through the established queue host. Stale selections fail visibly and can refresh; another editor's unsaved changes are explicitly excluded.\n\nDirect delivery extends canonical QueuedRender with an additive, default-queue delivery enum and destination filename. Direct jobs require a selected destination, are claimed explicitly rather than consumed by background queue windows, retain the same attempt fencing and cancellation, and publish no server outputId. Normal queue jobs remain FIFO. One renderer runs at a time; a current render may finish before a direct job starts. Direct settings remain fixed after choosing a destination.\n\nDirect exports use user-gesture native File System Access pickers: one file for a single project; a directory for multiple projects. Existing directory filenames receive a distinct suffix instead of silent overwrite. File handles remain ephemeral host IO and are structured-cloned only to a same-origin, parent-bound worker iframe. Each job gets a fresh realm, the existing compositor/audio pipeline writes directly to its selected",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-578b0dbd-cebc-442e-8adf-a8ed681b1b48"
+      },
+      {
+        "at": "2026-10-28T04:24:50.606Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "mcp__dip__task_checkpoint",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-778341b1-838b-4066-8982-6b14fb3b0eb9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:24:50.796Z",
+  "parents": [],
+  "branch": "main"
+}

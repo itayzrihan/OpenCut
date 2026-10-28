@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ad0fd06da67302a46c7e426ce8b426fb9e3981ba3d8c87268c99d2dce5fe610",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:11:38.718Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/projects-export-dialog.tsx <<'EOF'\n\"use client\";\nimport { useEffect,useRef,useState } from \"react\";\nimport { Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogBody,DialogFooter } from \"@/components/ui/dialog\";\nimport { Button } from \"@/components/ui/button\";\nimport { Progress } from \"@/components/ui/progress\";\nimport { toast } from \"sonner\";\nimport { Download,ListPlus } from \"lucide-react\";\nimport { ExportSettingsFields,ExportPlanSummary,type ExportSettingsValue } from \"./settings-fields\";\nimport { projectExportRequest } from \"./library-client\";\nimport { checkExportEncoder } from \"./video-encoding\";\nimport { openRenderQueue,renderQueueRequest } from \"./queue/client\";\nimport { accountAssetUrl } from \"@/accounts/browser\";\nimport type { SavedExportInfo } from \"./library-server\";\nimport type { RenderJobView } from \"./queue/types\";\ntype Row={id:string;sceneId?:string;override?:ExportSettingsValue;info?:SavedExportInfo;error?:string;checking?:boolean};\ntype Entry={id:string;destination:FileSystemFileHandle};\nconst defaults:ExportSettingsValue={format:\"mp4\",quality:\"very_high\",preferences:{resolution:\"source\",encoding:\"compact\"},includeAudio:true};\nconst terminal=(job:RenderJobView)=>[\"completed\",\"failed\",\"cancelled\"].includes(job.status);\nexport function ProjectsExportDialog({projectIds,onClose}:{projectIds:string[];onClose:()=>void}) {\n const [common,setCommon]=useState(defaults);\n const [rows,setRows]=useState<Row[]>(()=>projectIds.map(id=>({id,checking:true})));\n const [submitting,setSubmitting]=useState(false);\n const [entries,setEntries]=useState<Entry[]>([]);\n const [workerIndex,setWorkerIndex]=useState(0);\n const [jobs,setJobs]=useState<RenderJobView[]>([]);\n const [error,setError]=useState<string>();\n const submissionIds=useRef(new Map<string,string>());\n const submitted=useRef(new Set<string>());\n const iframe=useRef<HTMLIFrameElement>(null);\n const activeEntry=entries[workerIndex];\n const busy=submitting||!!a",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a2bc3f8e-c408-4bd5-9ddb-2cf8d75f9491"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:11:39.076Z",
+  "parents": [],
+  "branch": "main"
+}

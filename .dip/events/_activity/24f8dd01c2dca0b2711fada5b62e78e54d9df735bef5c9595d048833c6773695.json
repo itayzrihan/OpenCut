@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24f8dd01c2dca0b2711fada5b62e78e54d9df735bef5c9595d048833c6773695",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:36:56.384Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {createHash} from 'node:crypto';const m=JSON.parse(fs.readFileSync('.dip-local/rollback-20261028/manifest.json'));console.log(JSON.stringify(m.settings.map(s=>({path:s.source,changedSinceBackup:!fs.existsSync(s.source)||createHash('sha256').update(fs.readFileSync(s.source)).digest('hex')!==s.sha256}))));\nconst b='/private/tmp/dip-automatic-pilot-20261028/rounds/02';let r=JSON.parse(fs.readFileSync(b+'/results.json'));console.log(JSON.stringify({started:r.turnsStarted,completed:r.trials.reduce((n,t)=>n+t.turns.length,0)}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-36a35cc7-5ec5-464b-a96b-92d11201d71e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:37:00.148Z",
+  "parents": [],
+  "branch": "main"
+}

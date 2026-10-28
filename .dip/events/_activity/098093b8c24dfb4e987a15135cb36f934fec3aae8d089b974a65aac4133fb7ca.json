@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "098093b8c24dfb4e987a15135cb36f934fec3aae8d089b974a65aac4133fb7ca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:22:03.720Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /tmp/projects-export-ts-6.log; rg -n 'iframe|createRenderInstance|useEffect' classic/apps/web/src/export/projects-export-dialog.tsx | head -10; git diff --stat | tail -5",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-23bbc356-ebac-4d72-bde2-08fa905c140c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:22:04.253Z",
+  "parents": [],
+  "branch": "main"
+}

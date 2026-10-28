@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "92d18f4891adce3fa7bb3683cd06ad90e5310cf8bb23e001e242e96ccc975f67",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:30:05.445Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/accounts/storage/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/accounts/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/projects/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/package.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d9954d3c-7cfa-40bd-b6ff-253db23b1f84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:30:05.454Z",
+  "parents": [],
+  "branch": "main"
+}

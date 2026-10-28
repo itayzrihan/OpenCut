@@ -39,7 +39,25 @@ const valid = (s: string) => {
 	return s;
 };
 export const renderJobDirectory = (id: string) => join(root(), valid(id));
-async function transaction<T>(
+// Registry construction is expensive. Reuse one canonical runtime per host
+// module, restoring the locked account bytes before every transaction. A local
+// gate prevents cross-account interleaving while the filesystem lock fences
+// other server processes. No account document is cached outside the runtime.
+let hostRuntime:
+	| Promise<{ runtime: CanonicalEditorRuntime; empty: Uint8Array }>
+	| undefined;
+let transactionTail = Promise.resolve();
+function transaction<T>(
+	run: (r: CanonicalEditorRuntime, s: State) => Promise<T> | T,
+): Promise<T> {
+	const next = transactionTail.then(() => lockedTransaction(run));
+	transactionTail = next.then(
+		() => {},
+		() => {},
+	);
+	return next;
+}
+async function lockedTransaction<T>(
 	run: (r: CanonicalEditorRuntime, s: State) => Promise<T> | T,
 ): Promise<T> {
 	const path = root();
@@ -54,15 +72,22 @@ async function transaction<T>(
 			lost = true;
 		},
 	});
-	const { CanonicalEditorRuntime } =
-		await import("opencut-editor-runtime-wasm");
-	const r = new CanonicalEditorRuntime();
 	try {
+		hostRuntime ??= import("opencut-editor-runtime-wasm")
+			.then(({ CanonicalEditorRuntime }) => {
+				const runtime = new CanonicalEditorRuntime();
+				return { runtime, empty: runtime.serialize() };
+			})
+			.catch((error) => {
+				hostRuntime = undefined;
+				throw error;
+			});
+		const { runtime: r, empty } = await hostRuntime;
 		const bytes = await readFile(join(path, "runtime.json")).catch((e) => {
 			if (e.code === "ENOENT") return null;
 			throw e;
 		});
-		if (bytes) r.restore(bytes);
+		r.restore(bytes ?? empty);
 		const before = r.serialize();
 		const result = await run(r, r.snapshot() as State);
 		if (lost) throw Error("Render queue storage lock was lost");
@@ -85,7 +110,6 @@ async function transaction<T>(
 		}
 		return result;
 	} finally {
-		r.free();
 		await release();
 	}
 }
@@ -134,7 +158,7 @@ async function captureSources(
 		const file = await getMediaFile(projectId, asset.id);
 		if (!file)
 			throw Error(`Link missing source before queueing: ${asset.name}`);
-		if (asset.sourcePath && asset.sourcePath !== file.record.sourcePath)
+		if (asset.sourcePath && asset.sourcePath !== file.path)
 			throw Error(`Media binding changed: ${asset.name}`);
 		let path = file.path;
 		if (file.record.storageKind === "copied") {
@@ -181,6 +205,8 @@ export async function enqueueRender(input: {
 	sourceRevision: number;
 	snapshot: CanonicalClassicSnapshot;
 	options: ExportOptions;
+	delivery?: "queue" | "direct";
+	destinationName?: string;
 }) {
 	valid(input.id);
 	valid(input.projectId);
@@ -198,6 +224,8 @@ export async function enqueueRender(input: {
 			sceneId: input.sceneId,
 			sourceRevision: input.sourceRevision,
 			options: input.options,
+			delivery: input.delivery ?? "queue",
+			destinationName: input.destinationName ?? null,
 		};
 		r.invokeSync(
 			"render.queue.edit",
@@ -232,7 +260,10 @@ export async function changeRender(input: {
 		return view(r.snapshot() as State);
 	});
 }
-export async function claimRender(attempt: string): Promise<RenderJob | null> {
+export async function claimRender(
+	attempt: string,
+	jobId?: string,
+): Promise<RenderJob | null> {
 	valid(attempt);
 	return transaction((r, s) => {
 		const active = s.renderQueue.find((j) => j.status === "rendering");
@@ -249,7 +280,16 @@ export async function claimRender(attempt: string): Promise<RenderJob | null> {
 		}
 		// If the renderer disappeared, claim the same job after an explicit failed
 		// boundary, never silently retry a potentially completed side effect.
-		const next = s.renderQueue.find((j) => j.status === "queued");
+		const next = jobId
+			? s.renderQueue.find(
+					(j) =>
+						j.id === valid(jobId) &&
+						j.delivery === "direct" &&
+						j.status === "queued",
+				)
+			: s.renderQueue.find(
+					(j) => j.status === "queued" && j.delivery !== "direct",
+				);
 		if (!next) return null;
 		return edit(r, s, next.id, next.projectId, { type: "claim", attempt });
 	});

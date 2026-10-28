@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fd069ab36d5e8c75c3178eaec8aeab362e5f6ba26fec832c53b853a79e4d87de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:24:01.935Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\np='classic/apps/web/src/core/index.ts';s=open(p).read();a=s.index(' /** A disposable');b=s.index('\\tstatic reset(): void {',a);insert=s[a:b].replace('\\n','\\r\\n').encode();orig=subprocess.check_output(['git','show','HEAD:'+p]);needle=b'\\tstatic reset(): void {';assert orig.count(needle)==1;open(p,'wb').write(orig.replace(needle,insert+needle))\nPY\ngit diff --numstat classic/apps/web/src/core/index.ts; cat /tmp/projects-export-ts-7.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-33e3fd9d-714a-47fa-a4a1-3fe2891c2f51"
+      },
+      {
+        "at": "2026-10-28T05:24:02.158Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess\np='classic/apps/web/src/core/index.ts';s=open(p).read();a=s.index(' /** A disposable');b=s.index('\\tstatic reset(): void {',a);insert=s[a:b].replace('\\n','\\r\\n').encode();orig=subprocess.check_output(['git','show','HEAD:'+p]);needle=b'\\tstatic reset(): void {';assert orig.count(needle)==1;open(p,'wb').write(orig.replace(needle,insert+needle))\nPY\ngit diff --numstat classic/apps/web/src/core/index.ts; cat /tmp/projects-export-ts-7.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-33e3fd9d-714a-47fa-a4a1-3fe2891c2f51"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:24:02.918Z",
+  "parents": [],
+  "branch": "main"
+}

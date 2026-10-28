@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f924c2ff14ab22bd4ac7bd6ec88fe51edb186c7070c0e331eb33bcf1838cd951",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:34:55.077Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {createHash} from 'node:crypto';const m=JSON.parse(fs.readFileSync('.dip-local/rollback-20261028/manifest.json'));console.log(JSON.stringify(m).slice(0,1800));\nNODE\nnode scripts/summarize-automatic-pilot.mjs /private/tmp/dip-automatic-pilot-20261028/rounds/02 > /tmp/dip-round2-live-summary.json\nnode --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/tmp/dip-round2-live-summary.json'));console.log(JSON.stringify({started:r.turnsStarted,turns:r.turns.map(t=>({scenario:t.scenario,arm:t.arm,phase:t.phase,wallMs:t.wallMs,completed:t.completed,score:t.functionalPassed+'/'+t.functionalTotal,calls:t.calls.length})),audit:r.ledgerAudit}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-8dd76c53-62d4-49cf-8892-81efbb09aa40"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:59.425Z",
+  "parents": [],
+  "branch": "main"
+}

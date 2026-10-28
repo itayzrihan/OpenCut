@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e90b8c78e0c2208b806be2939fdef3e214fe3b01085d842e760dfe7ed9f11f59",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:35:07.434Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/render-queue/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/render-queue/file/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/local-drive/project-thumbnail/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/project-export/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/projects/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a0377c1f-e3bf-48a0-829b-c36d091797d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:35:07.444Z",
+  "parents": [],
+  "branch": "main"
+}

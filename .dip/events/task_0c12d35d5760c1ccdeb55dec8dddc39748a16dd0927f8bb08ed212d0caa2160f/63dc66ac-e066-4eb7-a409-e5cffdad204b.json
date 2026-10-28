@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "63dc66ac-e066-4eb7-a409-e5cffdad204b",
+  "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Reuse canonical saved snapshots/export settings and add safe direct job delivery",
+          "status": "completed"
+        },
+        {
+          "step": "Add selected-project dialog with shared/per-project settings and isolated direct worker",
+          "status": "completed"
+        },
+        {
+          "step": "Test saved-version/ownership isolation and single/batch exports; deploy and verify UI",
+          "status": "in_progress"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T04:16:54.508Z",
+  "parents": [
+    "025be012-c97b-4e23-90c8-32d6c47232c7"
+  ],
+  "branch": "main"
+}

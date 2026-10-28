@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e65e4e54c3cf24a4fd055b8ffa03a1c2bca4c1fd37f0c2dc72e844d4b5fb08c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:52:29.162Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/cache/swc",
+          "classic/apps/web/.next-projects-export-dev/dev/cache/swc/plugins",
+          "classic/apps/web/.next-projects-export-dev/dev/cache/swc/plugins/macos_aarch64_24.0.0"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "26fdd9ce-e772-48ba-86c4-120614f759a8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:52:29.165Z",
+  "parents": [],
+  "branch": "main"
+}

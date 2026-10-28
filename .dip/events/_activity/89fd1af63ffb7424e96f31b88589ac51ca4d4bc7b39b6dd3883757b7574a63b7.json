@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89fd1af63ffb7424e96f31b88589ac51ca4d4bc7b39b6dd3883757b7574a63b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:33:31.710Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,command | rg 'test-web|wasm-opt|bun test|vitest|opencut-render-queue'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-912a4c68-fbde-4322-aa1b-22f322afa842"
+      },
+      {
+        "at": "2026-10-28T04:33:32.011Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,command | rg 'test-web|wasm-opt|bun test|vitest|opencut-render-queue'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-912a4c68-fbde-4322-aa1b-22f322afa842"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:33:32.512Z",
+  "parents": [],
+  "branch": "main"
+}

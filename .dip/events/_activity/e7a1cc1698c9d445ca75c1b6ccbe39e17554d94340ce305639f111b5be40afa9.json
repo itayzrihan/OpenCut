@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e7a1cc1698c9d445ca75c1b6ccbe39e17554d94340ce305639f111b5be40afa9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:35:17.170Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -6 /tmp/projects-export-dev-2.log; git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b928f0b0-c7aa-49f4-9325-6981a03d3c31"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:35:17.425Z",
+  "parents": [],
+  "branch": "main"
+}

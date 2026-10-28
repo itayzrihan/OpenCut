@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a2c1c2ebcd69323e0394175856d45b06c2e65a6a56c0f9e75b5aea4bfccdbb9d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:30:00.568Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/server/app/api/batch-edit/route.js",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/accounts/storage/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/accounts/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/projects/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b1a5d147-dce4-493d-bc4c-2c7bf83e252c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:30:00.571Z",
+  "parents": [],
+  "branch": "main"
+}

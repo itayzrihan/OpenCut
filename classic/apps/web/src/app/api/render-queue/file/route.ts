@@ -27,7 +27,8 @@ async function serve(request: Request, head = false) {
 			({ path, size, mimeType } = source);
 		} else {
 			const job = await readRenderJob(id);
-			if (job.status !== "completed") throw Error("Render is not complete");
+			if (job.status !== "completed" || !job.outputId)
+				throw Error("Render is not complete");
 			path = join(renderJobDirectory(id), `output.${job.options.format}`);
 			size = (await stat(path)).size;
 			mimeType = job.options.format === "mp4" ? "video/mp4" : "video/webm";
@@ -82,6 +83,7 @@ async function put(request: Request) {
 			attempt = q.get("attempt") ?? "";
 		const job = await readRenderJob(id);
 		if (
+			job.delivery === "direct" ||
 			job.status !== "rendering" ||
 			job.attempt !== attempt ||
 			job.cancelRequested

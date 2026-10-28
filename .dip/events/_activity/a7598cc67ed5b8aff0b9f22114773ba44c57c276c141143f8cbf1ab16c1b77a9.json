@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a7598cc67ed5b8aff0b9f22114773ba44c57c276c141143f8cbf1ab16c1b77a9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:34:00.142Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/server.ts'\ns=open(p).read().replace('asset.sourcePath !== file.record.sourcePath','asset.sourcePath !== file.path');open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.test.ts';s=open(p).read().replace('let currentSource = source;','let currentSource = source;\\nlet storageKind: \"linked\" | \"copied\" = \"linked\";').replace('storageKind: \"linked\",\\n\\t\\t\\tsourcePath: currentSource,','storageKind,\\n\\t\\t\\tsourcePath: storageKind === \"linked\" ? currentSource : undefined,');s+='''\n test(\"copied media uses resolved path binding and pins source bytes without a linked sourcePath\", async () => {\n storageKind = \"copied\";\n const snapshot = structuredClone(fixture);\n for (const asset of snapshot.mediaAssets) asset.sourcePath = currentSource;\n await enqueueRender({id:\"copied-export\",projectId:\"classic-project\",sceneId:\"main-scene\",sourceRevision:5,snapshot,options});\n const frozen = await renderSource(\"copied-export\",snapshot.mediaAssets[0].id,\"media\");\n expect(frozen.path).not.toBe(currentSource);\n expect(await readFile(frozen.path,\"utf8\")).toBe(await readFile(currentSource,\"utf8\"));\n expect((await stat(frozen.path)).ino).toBe((await stat(currentSource)).ino);\n const stale = structuredClone(snapshot);\n stale.mediaAssets[0].sourcePath = source;\n await expect(enqueueRender({id:\"copied-stale\",projectId:\"classic-project\",sceneId:\"main-scene\",sourceRevision:5,snapshot:stale,options})).rejects.toThrow(\"binding changed\");\n });\n''';open(p,'w').write(s)\nPY\nbun run --cwd classic/apps/web test --test-timeout=30000 src/export/library-server.test.ts src/export/queue/server.test.ts src/core/__tests__/canonical-export.test.ts > /tmp/projects-export-web-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-06a59c66-ddc8-4f1d-bd9d-255f9ca21dfa"
+      },
+      {
+        "at": "2026-10-28T04:34:00.146Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 /tmp/projects-export-build-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-42e8a9a5-3f7e-4b54-9be1-c209d8991e99"
+      },
+      {
+        "at": "2026-10-28T04:34:00.706Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -10 /tmp/projects-export-build-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-42e8a9a5-3f7e-4b54-9be1-c209d8991e99"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:34:01.040Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7acd38413e88d4fe6ae3abfc05b8689daa8c952b3b823c799a67adaa039e7183",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:19:35.704Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/projects-export-2026-10-28",
+          ".local/projects-export-2026-10-28",
+          ".local/projects-export-2026-10-28/outputs",
+          "analysis/projects-export-2026-10-28/rust-tests.log",
+          "analysis/projects-export-2026-10-28/web-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0da01a43-f3c5-4da6-bee3-f7706b2ae59c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:19:35.705Z",
+  "parents": [],
+  "branch": "main"
+}

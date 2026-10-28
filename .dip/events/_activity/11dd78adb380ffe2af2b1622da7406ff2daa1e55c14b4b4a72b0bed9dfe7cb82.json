@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11dd78adb380ffe2af2b1622da7406ff2daa1e55c14b4b4a72b0bed9dfe7cb82",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:41:40.327Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,70p' classic/apps/web/src/app/api/project-export/route.ts; git diff -- classic/apps/web/src/app/projects/page.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e3a2123d-62de-4f92-b252-3f5bd6a4a852"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:41:40.724Z",
+  "parents": [],
+  "branch": "main"
+}

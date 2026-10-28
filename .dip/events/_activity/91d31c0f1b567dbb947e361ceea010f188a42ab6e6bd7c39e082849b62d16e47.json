@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "91d31c0f1b567dbb947e361ceea010f188a42ab6e6bd7c39e082849b62d16e47",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:35:50.481Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/projects/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/project-export/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/page.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/local-drive/project-thumbnail/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/accounts/storage/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/api/batch-edit/route.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/package.json",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/batch-worker/layout.ts",
+          "classic/apps/web/.next-projects-export-dev/dev/types/app/layout.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "fbf30e1e-c6f5-4f8a-8524-1a56b887f62f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:35:50.495Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c3a14a8807ef3a67e8119671c4d5c20a7adab1e82ee4583f24770758bd530be3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:39:00.887Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/cache/webpack/client-development/7.pack.gz_",
+          "classic/apps/web/.next-projects-export-dev/dev/trace",
+          "classic/apps/web/.next-projects-export-dev/dev/lock",
+          "classic/apps/web/.next-projects-export-dev/dev/_events_99447.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bb3097fa-5a4e-49fb-88e2-470ded2c4d48"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:39:00.892Z",
+  "parents": [],
+  "branch": "main"
+}

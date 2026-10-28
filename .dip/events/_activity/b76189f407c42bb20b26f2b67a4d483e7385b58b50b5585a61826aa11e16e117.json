@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b76189f407c42bb20b26f2b67a4d483e7385b58b50b5585a61826aa11e16e117",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:14:07.980Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'export-worker|opencut-direct|POST /api/render-queue' /tmp/projects-export-dev-2.log | tail -10; date -u '+%H:%M:%S'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b702913d-fe23-4fad-8773-7203def7bad6"
+      },
+      {
+        "at": "2026-10-28T05:14:08.256Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'export-worker|opencut-direct|POST /api/render-queue' /tmp/projects-export-dev-2.log | tail -10; date -u '+%H:%M:%S'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-b702913d-fe23-4fad-8773-7203def7bad6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:14:08.500Z",
+  "parents": [],
+  "branch": "main"
+}

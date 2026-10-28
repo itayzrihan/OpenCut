@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "53f785420ddb41c7f65865b7391e37b1b1fbf5b5041ef6e4db91199f468e9775",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:22:53.916Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'registerDefaultEffects|registerDefaultMasks' classic/apps/web/src/effects classic/apps/web/src/masks | head; tail -3 /tmp/projects-export-dev-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e7b5c56a-6e72-469c-b8a1-4895cdbea431"
+      },
+      {
+        "at": "2026-10-28T05:22:55.022Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'registerDefaultEffects|registerDefaultMasks' classic/apps/web/src/effects classic/apps/web/src/masks | head; tail -3 /tmp/projects-export-dev-2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e7b5c56a-6e72-469c-b8a1-4895cdbea431"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:22:58.117Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a05cbca30d1c2439bb1623eb519b901a51249f43c5147f150c0271c7490d634e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:05:39.539Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/projects-export-dialog.tsx';s=open(p).read();a=s.index('\\t\\t\\t\\t\\t{activeEntry && (\\n\\t\\t\\t\\t\\t\\t<iframe');b=s.index('\\n\\t\\t\\t\\t</DialogBody>',a);block=s[a:b];s=s[:a]+s[b:];s=s.replace('\\treturn (\\n\\t\\t<Dialog','\\treturn (\\n    <>\\n'+block+'\\n\\t\\t<Dialog',1);s=s.replace('\\n\\t\\t</Dialog>\\n\\t);','\\n\\t\\t</Dialog>\\n    </>\\n\\t);',1);open(p,'w').write(s)\np='classic/apps/web/src/app/render-queue/page.tsx';s=open(p).read().replace('''{job.options.preferences.encoding === \"compact\"\n\t\t\t\t\t\t\t\t? \"HEVC\"\n\t\t\t\t\t\t\t\t: \"H.264\"}''','''{job.options.format === \"webm\" ? \"VP9\" : job.options.preferences.encoding === \"compact\"\n\t\t\t\t\t\t\t\t? \"HEVC\"\n\t\t\t\t\t\t\t\t: \"H.264\"}''');open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/export/projects-export-dialog.tsx classic/apps/web/src/app/render-queue/page.tsx\nnode --input-type=module <<'NODE' > /tmp/projects-export-dev-2.log 2>&1\nimport {spawn} from 'node:child_process';\nimport {configuration,runtimeEnvironment} from './classic/scripts/local-production/common.mjs';\nconst c=await configuration();const e=await runtimeEnvironment(c);\nconst child=spawn(c.node,['node_modules/next/dist/bin/next','dev','--webpack','--hostname','127.0.0.1','--port','3212'],{cwd:'classic/apps/web',env:{...e,NODE_ENV:'development',OPENCUT_RUNTIME_TARGET:'browser',OPENCUT_BUILD_DIR:'.next-projects-export-dev',NEXT_PUBLIC_SITE_URL:'http://localhost:3212'},stdio:'inherit'});\nprocess.on('SIGTERM',()=>child.kill('SIGTERM'));child.on('exit',code=>process.exit(code??1));\nNODE",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-4b63cbfd-6cef-4c62-ac03-873ca6eca168"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:05:40.288Z",
+  "parents": [],
+  "branch": "main"
+}

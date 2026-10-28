@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42abc2804a2662e2f4c45096189829528b942040d7f6a8e9373f9e5818e8b26d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:09:38.241Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/settings-fields.tsx <<'EOF'\n\"use client\";\nimport { useId } from \"react\";\nimport { Checkbox } from \"@/components/ui/checkbox\";\nimport { Label } from \"@/components/ui/label\";\nimport type { ExportOptions,ExportPlan } from \"@/export\";\nexport type ExportSettingsValue=Pick<Required<ExportOptions>,\"format\"|\"quality\"|\"preferences\"|\"includeAudio\">;\nexport function ExportSettingsFields({value,onChange,disabled=false}:{value:ExportSettingsValue;onChange:(next:ExportSettingsValue)=>void;disabled?:boolean}){\n const id=useId();const selectClass=\"bg-background border rounded p-2 text-sm min-w-0\";\n return <div className=\"space-y-3 text-sm\"><div className=\"grid grid-cols-2 gap-3\">\n <label className=\"grid gap-1\">Format<select aria-label=\"Export format\" disabled={disabled} className={selectClass} value={value.format} onChange={e=>onChange({...value,format:e.target.value as ExportSettingsValue[\"format\"]})}><option value=\"mp4\">MP4</option><option value=\"webm\">WebM (VP9)</option></select></label>\n <label className=\"grid gap-1\">Quality<select aria-label=\"Export quality\" disabled={disabled} className={selectClass} value={value.quality} onChange={e=>onChange({...value,quality:e.target.value as ExportSettingsValue[\"quality\"]})}><option value=\"low\">Low · Smallest file</option><option value=\"medium\">Medium · Balanced</option><option value=\"high\">High · Recommended</option><option value=\"very_high\">Very high · Largest file</option></select></label>\n <label className=\"grid gap-1\">Resolution<select aria-label=\"Export resolution\" disabled={disabled} className={selectClass} value={value.preferences.resolution} onChange={e=>onChange({...value,preferences:{...value.preferences,resolution:e.target.value as \"source\"|\"project\"}})}><option value=\"source\">Source · Smart resolution</option><option value=\"project\">Project resolution</option></select></label>\n {value.format===\"mp4\"&&<label className=\"grid gap-1\">Encoding<select aria-label=\"Export encoding\" disabled={disabled",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-364a0180-0b25-4f2c-a9f4-b21ccd11eed7"
+      },
+      {
+        "at": "2026-10-28T04:09:38.357Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/export/settings-fields.tsx <<'EOF'\n\"use client\";\nimport { useId } from \"react\";\nimport { Checkbox } from \"@/components/ui/checkbox\";\nimport { Label } from \"@/components/ui/label\";\nimport type { ExportOptions,ExportPlan } from \"@/export\";\nexport type ExportSettingsValue=Pick<Required<ExportOptions>,\"format\"|\"quality\"|\"preferences\"|\"includeAudio\">;\nexport function ExportSettingsFields({value,onChange,disabled=false}:{value:ExportSettingsValue;onChange:(next:ExportSettingsValue)=>void;disabled?:boolean}){\n const id=useId();const selectClass=\"bg-background border rounded p-2 text-sm min-w-0\";\n return <div className=\"space-y-3 text-sm\"><div className=\"grid grid-cols-2 gap-3\">\n <label className=\"grid gap-1\">Format<select aria-label=\"Export format\" disabled={disabled} className={selectClass} value={value.format} onChange={e=>onChange({...value,format:e.target.value as ExportSettingsValue[\"format\"]})}><option value=\"mp4\">MP4</option><option value=\"webm\">WebM (VP9)</option></select></label>\n <label className=\"grid gap-1\">Quality<select aria-label=\"Export quality\" disabled={disabled} className={selectClass} value={value.quality} onChange={e=>onChange({...value,quality:e.target.value as ExportSettingsValue[\"quality\"]})}><option value=\"low\">Low · Smallest file</option><option value=\"medium\">Medium · Balanced</option><option value=\"high\">High · Recommended</option><option value=\"very_high\">Very high · Largest file</option></select></label>\n <label className=\"grid gap-1\">Resolution<select aria-label=\"Export resolution\" disabled={disabled} className={selectClass} value={value.preferences.resolution} onChange={e=>onChange({...value,preferences:{...value.preferences,resolution:e.target.value as \"source\"|\"project\"}})}><option value=\"source\">Source · Smart resolution</option><option value=\"project\">Project resolution</option></select></label>\n {value.format===\"mp4\"&&<label className=\"grid gap-1\">Encoding<select aria-label=\"Export encoding\" disabled={disabled",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-364a0180-0b25-4f2c-a9f4-b21ccd11eed7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:09:38.614Z",
+  "parents": [],
+  "branch": "main"
+}

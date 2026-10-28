@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17cb6a284b7d03be82875666375d7f7bf213069d29ff89a4c6097a105c6ba827",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:51:14.974Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -7 /tmp/projects-export-build-4.log; cat >> analysis/projects-export-2026-10-28/architecture.md <<'MD'\n\nDirect worker startup uses the existing automation-host approach: an eager, two-pixel offscreen iframe, parent-bound readiness probes on load and periodically, and a 90-second startup deadline. Display-none frames can defer browser initialization. Canonical terminal status also retires an unresponsive frame, so cancellation can finish even when readiness never arrives. Worker error/timeout requests cancellation of remaining direct jobs; normal completion and terminal polling fence advancement by job identity to avoid skipping the next batch item.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5e25780c-e8eb-4342-9e7a-e24608c88112"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:51:15.748Z",
+  "parents": [],
+  "branch": "main"
+}

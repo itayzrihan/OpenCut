@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "da3e1555c4c23f1b4e8c79956762121d6614ffe456810aa3c2cda18df7183910",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:39:27.595Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "classic/apps/web/node_modules/.bin/biome format --write classic/apps/web/src/export/queue/server.ts classic/apps/web/src/export/queue/server.test.ts; tail -5 /tmp/projects-export-build-2.log; node classic/apps/web/node_modules/typescript/bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json > /tmp/projects-export-ts-3.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-99c40739-e4b0-425d-bdb2-35be8c4b5a46"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:39:27.850Z",
+  "parents": [],
+  "branch": "main"
+}

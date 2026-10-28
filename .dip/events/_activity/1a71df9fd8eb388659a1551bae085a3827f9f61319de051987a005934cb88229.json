@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1a71df9fd8eb388659a1551bae085a3827f9f61319de051987a005934cb88229",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:30:02.446Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_01be60be949a5f7494919b555546868163de9ca545284be17fbd3b99177df6b8",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip task adopt --id task_01be60be949a5f7494919b555546868163de9ca545284be17fbd3b99177df6b8 --targetId task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76 --session 01a12f05-0e65-7b01-b39e-565b96811fb4 --actor codex:01a12f05-0e65-7b01-b39e-565b96811fb4 --summary 'User authorized a separate second twelve-turn comparison of corrected .1, with global upgrade only if acceptance and real workflow pilot pass.' > /tmp/dip-round2-adopt.json",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-15e21156-f65a-4349-ba1a-4d2b15540965"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:30:03.484Z",
+  "parents": [],
+  "branch": "main"
+}

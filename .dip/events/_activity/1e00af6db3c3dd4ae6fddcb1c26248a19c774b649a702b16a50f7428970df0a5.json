@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1e00af6db3c3dd4ae6fddcb1c26248a19c774b649a702b16a50f7428970df0a5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:23:53.121Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '142,215p' classic/apps/web/src/export/projects-export-dialog.tsx; git diff --numstat classic/apps/web/src/core/index.ts classic/apps/web/src/core/managers/project-manager.ts; cat /tmp/projects-export-ts-7.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1a947b14-ffc5-46be-83e6-207e37189fa7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:23:53.187Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -13,10 +13,14 @@ mock.module("opencut-editor-runtime-wasm", () => ({
 	CanonicalEditorRuntime: Runtime,
 }));
 const root = await mkdtemp(join(tmpdir(), "opencut-render-queue-"));
+let accountRoot = root;
 const source = join(root, "original.mp4");
 await writeFile(source, "frozen media fixture");
-mock.module("@/accounts/server", () => ({ accountDataRoot: () => root }));
+mock.module("@/accounts/server", () => ({
+	accountDataRoot: () => accountRoot,
+}));
 let currentSource = source;
+let storageKind: "linked" | "copied" = "linked";
 mock.module("@/services/local-drive/server", () => ({
 	getProject: async () => ({ metadata: { id: "classic-project" } }),
 	getMediaFile: async (_project: string, id: string) => ({
@@ -24,8 +28,8 @@ mock.module("@/services/local-drive/server", () => ({
 		stat: await stat(currentSource),
 		record: {
 			id,
-			storageKind: "linked",
-			sourcePath: currentSource,
+			storageKind,
+			sourcePath: storageKind === "linked" ? currentSource : undefined,
 			mimeType: "video/mp4",
 		},
 	}),
@@ -158,4 +162,98 @@ test("per-job settings update only while queued and stale revisions cannot cance
 			expectedRevision: state.revision,
 		}),
 	).rejects.toThrow("changed");
+});
+
+test("direct destinations are claimed explicitly and never consumed by a background queue window", async () => {
+	for (const job of (await readRenderQueue()).jobs.filter(
+		(j) => j.status === "queued",
+	)) {
+		const state = await readRenderQueue();
+		await changeRender({
+			id: job.id,
+			projectId: job.projectId,
+			type: "cancel",
+			expectedRevision: state.revision,
+		});
+	}
+	const snapshot = structuredClone(fixture);
+	for (const asset of snapshot.mediaAssets) asset.sourcePath = currentSource;
+	await enqueueRender({
+		id: "direct-export",
+		projectId: "classic-project",
+		sceneId: "main-scene",
+		sourceRevision: 5,
+		snapshot,
+		options,
+		delivery: "direct",
+		destinationName: "Direct.mp4",
+	});
+	expect(await claimRender("background-worker")).toBeNull();
+	const job = await claimRender("direct-worker", "direct-export");
+	expect(job?.delivery).toBe("direct");
+	const receipt = await reportRender({
+		id: "direct-export",
+		projectId: "classic-project",
+		attempt: "direct-worker",
+		progress: 1,
+		status: "completed",
+		message: "Saved Direct.mp4",
+	});
+	expect(receipt.status).toBe("completed");
+	expect((await readRenderJob("direct-export")).outputId).toBeNull();
+});
+
+test("copied media uses resolved path binding and pins source bytes without a linked sourcePath", async () => {
+	storageKind = "copied";
+	const snapshot = structuredClone(fixture);
+	for (const asset of snapshot.mediaAssets) asset.sourcePath = currentSource;
+	await enqueueRender({
+		id: "copied-export",
+		projectId: "classic-project",
+		sceneId: "main-scene",
+		sourceRevision: 5,
+		snapshot,
+		options,
+	});
+	const frozen = await renderSource(
+		"copied-export",
+		snapshot.mediaAssets[0].id,
+		"media",
+	);
+	expect(frozen.path).not.toBe(currentSource);
+	expect(await readFile(frozen.path, "utf8")).toBe(
+		await readFile(currentSource, "utf8"),
+	);
+	expect((await stat(frozen.path)).ino).toBe((await stat(currentSource)).ino);
+	const stale = structuredClone(snapshot);
+	stale.mediaAssets[0].sourcePath = source;
+	await expect(
+		enqueueRender({
+			id: "copied-stale",
+			projectId: "classic-project",
+			sceneId: "main-scene",
+			sourceRevision: 5,
+			snapshot: stale,
+			options,
+		}),
+	).rejects.toThrow("binding changed");
+});
+
+test("reused canonical runtime restores each account independently, including a new empty account", async () => {
+	const original = await readRenderQueue();
+	accountRoot = join(root, "second-account");
+	expect((await readRenderQueue()).jobs).toHaveLength(0);
+	await enqueueRender({
+		id: "account-two",
+		projectId: "classic-project",
+		sceneId: "main-scene",
+		sourceRevision: 5,
+		snapshot: { ...structuredClone(fixture), mediaAssets: [] },
+		options,
+	});
+	expect((await readRenderQueue()).jobs.map((j) => j.id)).toEqual([
+		"account-two",
+	]);
+	accountRoot = root;
+	expect((await readRenderQueue()).jobs).toEqual(original.jobs);
 });

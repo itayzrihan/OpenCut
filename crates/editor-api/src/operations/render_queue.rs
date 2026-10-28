@@ -1,5 +1,7 @@
 use super::*;
-use crate::{ClassicProject, QueueExportOptions, QueueStatus, QueuedRender, snapshot_hash};
+use crate::{
+    ClassicProject, QueueExportOptions, QueueStatus, QueuedRender, RenderDelivery, snapshot_hash,
+};
 use serde_json::json;
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -24,6 +26,10 @@ enum Change {
         #[serde(rename = "sourceRevision")]
         source_revision: u64,
         options: QueueExportOptions,
+        #[serde(default)]
+        delivery: RenderDelivery,
+        #[serde(default, rename = "destinationName")]
+        destination_name: Option<String>,
     },
     Claim {
         attempt: String,
@@ -111,7 +117,7 @@ pub(super) fn register_queue(
         crate::CapabilityExecution::Immediate,
         "render.queue.edit",
         "Manage frozen background render jobs",
-        "Canonical durable queue transitions: enqueue a validated frozen Classic snapshot and export recipe; claim one serial worker with an attempt fence; report monotonic progress/completion/failure; cancel; retry the identical snapshot. Explicit project, queue revision and idempotency metadata. Cancellation requests are acknowledged by workers. A claim after 120 seconds without a heartbeat marks the old attempt failed; late reports cannot publish. Pure in-memory, atomic, dry-run and undo supported; host persists runtime bytes and owns external compositor/file IO separately. Queue is readable via app.state.read /renderQueue; outputId names a host export, never an arbitrary path. Classic-only render payloads, shared runtime queue.",
+        "Canonical durable queue transitions: enqueue a validated frozen Classic snapshot and export recipe; claim one serial worker with an attempt fence; report monotonic progress/completion/failure; cancel; retry the identical snapshot. Explicit project, queue revision and idempotency metadata. Cancellation requests are acknowledged by workers. A claim after 120 seconds without a heartbeat marks the old attempt failed; late reports cannot publish. Queued jobs use FIFO; direct jobs are claimed explicitly; one renderer runs at a time. Direct jobs require a user-selected destination filename and publish no host download. Pure in-memory, atomic, dry-run and undo supported; host persists runtime bytes and owns external compositor/file IO separately. Queue is readable via app.state.read /renderQueue; outputId names a host export, never an arbitrary path. Classic-only render payloads, shared runtime queue.",
         "export",
         AccessLevel::Write,
         false,
@@ -145,6 +151,8 @@ pub(super) fn register_queue(
                             scene_id,
                             source_revision,
                             options,
+                            delivery,
+                            destination_name,
                         } = input.change
                         {
                             if doc.render_queue.iter().any(|j| j.id == input.id) {
@@ -165,6 +173,8 @@ pub(super) fn register_queue(
                                 snapshot_hash: snapshot_hash(&snapshot, &options, &scene_id),
                                 snapshot,
                                 options,
+                                delivery,
+                                destination_name,
                                 status: QueueStatus::Queued,
                                 created_at_ms: input.now_ms,
                                 updated_at_ms: input.now_ms,
@@ -204,7 +214,17 @@ pub(super) fn register_queue(
                                 if doc
                                     .render_queue
                                     .iter()
-                                    .find(|j| j.status == QueueStatus::Queued)
+                                    .find(|j| {
+                                        j.status == QueueStatus::Queued
+                                            && doc
+                                                .render_queue
+                                                .iter()
+                                                .find(|target| target.id == input.id)
+                                                .is_some_and(|target| {
+                                                    target.delivery == RenderDelivery::Queue
+                                                        && j.delivery == RenderDelivery::Queue
+                                                })
+                                    })
                                     .is_some_and(|j| j.id != input.id)
                                 {
                                     return Err(CapabilityError::Conflict(
@@ -269,16 +289,22 @@ pub(super) fn register_queue(
                                     };
                                     if job.status == QueueStatus::Completed {
                                         job.progress = 1.0;
-                                        job.output_id = Some(job.id.clone());
+                                        job.output_id = if job.delivery == RenderDelivery::Queue {
+                                            Some(job.id.clone())
+                                        } else {
+                                            None
+                                        };
                                     }
                                     if job.status != QueueStatus::Rendering {
                                         job.attempt = None;
                                     }
                                 }
                                 Change::Configure { options } => {
-                                    if job.status != QueueStatus::Queued {
+                                    if job.status != QueueStatus::Queued
+                                        || job.delivery == RenderDelivery::Direct
+                                    {
                                         return Err(invalid(
-                                            "Change settings only before rendering starts",
+                                            "Direct export settings are fixed to the selected destination; change queued settings only before rendering",
                                         ));
                                     }
                                     job.options = options;

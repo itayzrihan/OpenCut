@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f3c8bae752927c018395338a95fb48830100fd651fee7ac6b0cb402b38bfedf3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:38:59.391Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ls -l analysis/projects-export-2026-10-28/direct-batch-complete.png; kill -TERM 99447",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b09f449e-9c26-4692-b54b-a66c811955b3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:38:59.913Z",
+  "parents": [],
+  "branch": "main"
+}

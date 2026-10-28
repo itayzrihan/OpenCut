@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24432b2d9734f80a4c1f79858439a7caa25d2a44ebc0da601acea11b4895749d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:12:57.090Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/projects-export-2026-10-28/outputs/single-direct-frame-test.mp4"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cd6d4d8d-0dc4-4ac8-a511-326555ca1c0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:12:57.102Z",
+  "parents": [],
+  "branch": "main"
+}

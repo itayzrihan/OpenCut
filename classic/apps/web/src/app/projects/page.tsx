@@ -51,6 +51,7 @@ import {
 	ArrowDown02Icon,
 	InformationCircleIcon,
 	FileImportIcon,
+	Download04Icon,
 } from "@hugeicons/core-free-icons";
 import { OcVideoIcon } from "@/components/icons";
 import { Label } from "@/components/ui/label";
@@ -68,6 +69,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ProjectsExportDialog } from "@/export/projects-export-dialog";
 import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
 import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
@@ -408,6 +410,12 @@ const PROJECT_ACTIONS = [
 		variant: "outline" as const,
 	},
 	{
+		id: "export",
+		label: "Export",
+		icon: Download04Icon,
+		variant: "outline" as const,
+	},
+	{
 		id: "delete",
 		label: "Delete",
 		icon: Delete02Icon,
@@ -451,6 +459,7 @@ function ProjectActions() {
 	const editor = useEditor();
 	const { selectedProjectIds, clearSelectedProjects } = useProjectsStore();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
 	const savedProjects = editor.project.getSavedProjects();
 	const selectedProjectNames = savedProjects
@@ -481,6 +490,7 @@ function ProjectActions() {
 
 	const actionHandlers: Record<string, () => void> = {
 		duplicate: handleDuplicate,
+		export: () => setIsExportDialogOpen(true),
 		delete: handleDeleteClick,
 	};
 
@@ -491,6 +501,8 @@ function ProjectActions() {
 					{PROJECT_ACTIONS.map((action) => (
 						<Button
 							key={action.id}
+							aria-label={action.label}
+							title={action.label}
 							size="icon"
 							variant={action.variant}
 							className="size-9"
@@ -522,6 +534,12 @@ function ProjectActions() {
 				</DropdownMenu>
 			</div>
 
+			{isExportDialogOpen && (
+				<ProjectsExportDialog
+					projectIds={[...selectedProjectIds]}
+					onClose={() => setIsExportDialogOpen(false)}
+				/>
+			)}
 			<DeleteProjectDialog
 				isOpen={isDeleteDialogOpen}
 				onOpenChange={setIsDeleteDialogOpen}

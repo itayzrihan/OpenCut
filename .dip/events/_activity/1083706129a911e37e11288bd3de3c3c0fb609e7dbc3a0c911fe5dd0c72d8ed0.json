@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1083706129a911e37e11288bd3de3c3c0fb609e7dbc3a0c911fe5dd0c72d8ed0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:08:56.538Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/render_queue.rs",
+          "classic/apps/web/src/export/queue/types.ts",
+          "classic/apps/web/src/export/queue/server.ts",
+          "classic/apps/web/src/app/api/render-queue/route.ts",
+          "classic/apps/web/src/export/queue/worker.ts",
+          "classic/apps/web/src/app/render-queue/page.tsx",
+          "classic/apps/web/src/app/api/render-queue/file/route.ts",
+          "classic/apps/web/src/app/api/project-export",
+          "classic/apps/web/src/app/export-worker",
+          "classic/apps/web/src/export/library-server.ts",
+          "classic/apps/web/src/app/api/project-export/route.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "99b0331b-1127-43fb-98b1-5ff0a6090678"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:08:56.541Z",
+  "parents": [],
+  "branch": "main"
+}

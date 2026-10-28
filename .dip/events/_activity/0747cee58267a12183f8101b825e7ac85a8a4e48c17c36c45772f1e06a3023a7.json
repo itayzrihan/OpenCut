@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0747cee58267a12183f8101b825e7ac85a8a4e48c17c36c45772f1e06a3023a7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:19:00.091Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -30 classic/apps/web/src/app/projects/store.ts; cat >> classic/apps/web/src/export/queue/server.test.ts <<'EOF'\n\ntest(\"direct destinations are claimed explicitly and never consumed by a background queue window\",async()=>{\n for(const job of (await readRenderQueue()).jobs.filter(j=>j.status===\"queued\")) {\n  const state=await readRenderQueue();await changeRender({id:job.id,projectId:job.projectId,type:\"cancel\",expectedRevision:state.revision});\n }\n const snapshot=structuredClone(fixture);for(const asset of snapshot.mediaAssets)asset.sourcePath=currentSource;\n await enqueueRender({id:\"direct-export\",projectId:\"classic-project\",sceneId:\"main-scene\",sourceRevision:5,snapshot,options,delivery:\"direct\",destinationName:\"Direct.mp4\"});\n expect(await claimRender(\"background-worker\")).toBeNull();\n const job=await claimRender(\"direct-worker\",\"direct-export\");expect(job?.delivery).toBe(\"direct\");\n const receipt=await reportRender({id:\"direct-export\",projectId:\"classic-project\",attempt:\"direct-worker\",progress:1,status:\"completed\",message:\"Saved Direct.mp4\"});\n expect(receipt.status).toBe(\"completed\");expect((await readRenderJob(\"direct-export\")).outputId).toBeNull();\n});\nEOF\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/export/queue/server.test.ts > /tmp/projects-export-format.log\nbun run --cwd classic/apps/web test --test-timeout=30000 src/export/library-server.test.ts src/export/queue/server.test.ts src/core/__tests__/canonical-export.test.ts > /tmp/projects-export-web-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8bf952f9-76db-48f6-acc1-0678778659e9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:19:00.668Z",
+  "parents": [],
+  "branch": "main"
+}

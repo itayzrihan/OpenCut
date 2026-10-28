@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d224169a6608e3ae456f391f787f054aac840359f91f9c512664a1948babba76",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:30:19.518Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));\nif(candidate.id!=='2026-10-28T04-26-12-312Z-7f86ffec') throw Error('Unexpected candidate');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));\nawait writeJson(join(deploymentRoot,'current.json'),candidate);\nconsole.log(candidate.id);\nNODE",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ca84fbef-5296-43f3-85e3-73c801099763"
+      },
+      {
+        "at": "2026-10-28T04:30:19.672Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));\nif(candidate.id!=='2026-10-28T04-26-12-312Z-7f86ffec') throw Error('Unexpected candidate');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));\nawait writeJson(join(deploymentRoot,'current.json'),candidate);\nconsole.log(candidate.id);\nNODE",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ca84fbef-5296-43f3-85e3-73c801099763"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:30:19.719Z",
+  "parents": [],
+  "branch": "main"
+}

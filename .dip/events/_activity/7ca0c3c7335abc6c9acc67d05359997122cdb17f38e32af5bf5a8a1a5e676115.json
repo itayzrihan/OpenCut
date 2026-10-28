@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ca0c3c7335abc6c9acc67d05359997122cdb17f38e32af5bf5a8a1a5e676115",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:22:25.043Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'function registerDefaultEffects|function registerDefaultMasks' classic/apps/web/src/effects/index.ts classic/apps/web/src/masks/index.ts -A10; cat /tmp/projects-export-ts-6.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1af14c3d-c621-4eac-b596-02113ade1f74"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:22:25.247Z",
+  "parents": [],
+  "branch": "main"
+}

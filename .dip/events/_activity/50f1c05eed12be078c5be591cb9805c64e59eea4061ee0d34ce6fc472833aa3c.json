@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50f1c05eed12be078c5be591cb9805c64e59eea4061ee0d34ce6fc472833aa3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:45:17.050Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/11.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/4.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/2.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/1.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/13.pack_",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack.old",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/4.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/2.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/1.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/13.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/11.pack",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/server/app-paths-manifest.json",
+          "classic/apps/web/.next-local-production/server/middleware-manifest.json",
+          "classic/apps/web/.next-local-production/server/interception-route-rewrite-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1be8c29b-89d6-4637-a6dd-a90cc58bdaf5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:45:17.051Z",
+  "parents": [],
+  "branch": "main"
+}

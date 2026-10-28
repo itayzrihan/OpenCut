@@ -1,0 +1,186 @@
+[production] Checking local source
+[production] Building canonical Rust / WASM
+$ wasm-pack build rust/wasm --target bundler --out-dir pkg --no-pack && wasm-pack build rust/editor-runtime-wasm --target bundler --out-dir pkg --no-pack && node scripts/write-wasm-manifests.mjs && node scripts/verify-wasm-exports.mjs
+[INFO]: 🎯  Checking for the Wasm target...
+[INFO]: 🌀  Compiling to Wasm...
+    Finished `release` profile [optimized] target(s) in 1.17s
+[INFO]: ⬇️  Installing wasm-bindgen...
+[INFO]: Optimizing wasm binaries with `wasm-opt`...
+[INFO]: ✨   Done in 1m 31s
+[INFO]: 📦   Your wasm pkg is ready to publish at rust/wasm/pkg.
+[WARN]: ⚠️   There's a newer version of wasm-pack available, the new version is: 0.15.0, you are using: 0.13.1. To update, navigate to: https://rustwasm.github.io/wasm-pack/installer/
+[INFO]: 🎯  Checking for the Wasm target...
+[INFO]: 🌀  Compiling to Wasm...
+    Finished `release` profile [optimized] target(s) in 1.24s
+[INFO]: ⬇️  Installing wasm-bindgen...
+[INFO]: Optimizing wasm binaries with `wasm-opt`...
+[INFO]: ✨   Done in 4m 50s
+[INFO]: 📦   Your wasm pkg is ready to publish at rust/editor-runtime-wasm/pkg.
+[WARN]: ⚠️   There's a newer version of wasm-pack available, the new version is: 0.15.0, you are using: 0.13.1. To update, navigate to: https://rustwasm.github.io/wasm-pack/installer/
+Wrote local opencut-wasm manifest
+Wrote local opencut-editor-runtime-wasm manifest
+Verified 50 required opencut-wasm exports
+Verified 50 required opencut-editor-runtime-wasm exports
+[production] Preparing local assets
+{
+  "upstreamCommit": "4c4b8574406cc566d28778a13f22c072d727a871",
+  "captured": 394,
+  "filesChecked": 1433,
+  "bytesChecked": 52760420,
+  "vendorFilesChecked": 32,
+  "originalPrompts": 4,
+  "preparedCandidates": 150,
+  "sourceIntegrity": "passed",
+  "incompleteDeclaredPackages": 28,
+  "verified": 150,
+  "acceptance": "preparedReferenceLibraryPassed"
+}
+{"catalogItems":454,"additions":60,"filesChecked":218,"officialCommit":"83b6419e975548f54cbe4a771f3ac00b04915757"}
+verified 8 background-removal assets for Xenova/modnet
+[production] Building local control plane
+    Finished `release` profile [optimized] target(s) in 1.30s
+[production] Building optimized production editor
+Starting content-collections content-collections.ts
+build started ...
+... finished build of 1 collection and 0 documents in 20ms
+▲ Next.js 16.2.4 (webpack)
+- Environments: .env.local
+- Experiments (use with caution):
+  · cpus
+  · optimizePackageImports
+
+  Creating an optimized production build ...
+  Using tsconfig file: tsconfig.build.json
+⚠ Compiled with warnings in 2.1min
+
+../../rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm
+The generated code contains 'async/await' because this module is using "asyncWebAssembly".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+Import trace for requested module:
+../../rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm
+../../rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm.js
+./src/core/load-canonical-runtime.ts
+./src/hyperframes/import-dialog.tsx
+./src/components/editor/panels/assets/views/assets.tsx
+./src/components/editor/panels/assets/index.tsx
+./src/app/editor/[project_id]/page.tsx
+
+../../rust/wasm/pkg/opencut_wasm_bg.wasm
+The generated code contains 'async/await' because this module is using "asyncWebAssembly".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+Import trace for requested module:
+../../rust/wasm/pkg/opencut_wasm_bg.wasm
+../../rust/wasm/pkg/opencut_wasm.js
+./src/app/editor/[project_id]/page.tsx
+
+  Running TypeScript ...
+  Finished TypeScript in 85s ...
+  Collecting page data using 9 workers ...
+Failed to fetch posts: 404 Not Found
+  Generating static pages using 9 workers (0/44) ...
+  Generating static pages using 9 workers (11/44) 
+  Generating static pages using 9 workers (22/44) 
+Failed to fetch posts: 404 Not Found
+  Generating static pages using 9 workers (33/44) 
+Failed to fetch posts: 404 Not Found
+✓ Generating static pages using 9 workers (44/44) in 4.5s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)                                        Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account
+├ ƒ /api/account-assets/[...path]
+├ ƒ /api/accounts
+├ ƒ /api/accounts/browser-archive
+├ ƒ /api/accounts/migration
+├ ƒ /api/accounts/storage
+├ ƒ /api/ai/chat
+├ ƒ /api/ai/models
+├ ƒ /api/ai/oauth/callback
+├ ƒ /api/ai/oauth/complete
+├ ƒ /api/ai/oauth/device
+├ ƒ /api/ai/oauth/logout
+├ ƒ /api/ai/oauth/start
+├ ƒ /api/ai/oauth/status
+├ ƒ /api/auth/[...all]
+├ ƒ /api/batch-edit
+├ ƒ /api/brand-kits
+├ ƒ /api/editor-agent/connection
+├ ƒ /api/editor-agent/hyperframes-catalog-preview
+├ ƒ /api/editor-agent/hyperframes-embedding
+├ ƒ /api/editor-agent/hyperframes-references
+├ ƒ /api/editor-agent/knowledge
+├ ƒ /api/editor-agent/owned-projects
+├ ƒ /api/editor-agent/respond
+├ ƒ /api/editor-agent/subscription-image
+├ ƒ /api/editor-session
+├ ƒ /api/feedback
+├ ƒ /api/global-assets/[...path]
+├ ƒ /api/health
+├ ƒ /api/hyperframes
+├ ƒ /api/local-drive
+├ ƒ /api/local-drive/font
+├ ƒ /api/local-drive/media
+├ ƒ /api/local-drive/preview-proxy
+├ ƒ /api/local-drive/project-thumbnail
+├ ƒ /api/local-drive/shared-file
+├ ƒ /api/local-subject-framing
+├ ƒ /api/mcp-bridge/[...path]
+├ ƒ /api/project-export
+├ ƒ /api/project-fonts
+├ ƒ /api/render-queue
+├ ƒ /api/render-queue/file
+├ ƒ /api/shared-library
+├ ƒ /api/sounds/search
+├ ƒ /api/transcription/external
+├ ƒ /api/transcription/settings
+├ ƒ /api/transcription/whisper-cpp
+├ ƒ /batch-worker
+├ ○ /blog
+├ ● /blog/[slug]
+├ ○ /brand
+├ ○ /brand-kits
+├ ○ /changelog
+├ ● /changelog/[version]
+├ ○ /contributors                                         10m      1y
+├ ƒ /editor/[project_id]
+├ ƒ /editor/[project_id]/examples
+├ ○ /privacy
+├ ○ /projects
+├ ƒ /render-queue
+├ ○ /roadmap
+├ ○ /robots.txt
+├ ƒ /rss.xml
+├ ƒ /shared-library/[...path]
+├ ○ /sitemap.xml
+├ ○ /sponsors
+├ ○ /terms
+└ ○ /transcription-check
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[production] Packaging standalone release
+[production] Verifying production release
+▲ Next.js 16.2.4
+- Local:         http://127.0.0.1:58653
+- Network:       http://127.0.0.1:58653
+✓ Ready in 0ms
+[production] Candidate ready (not activated)
+[production] Release retention {
+  removed: [ '2026-10-28T04-26-12-312Z-7f86ffec' ],
+  retained: [
+    '2026-10-28T05-50-56-465Z-7f86ffec',
+    '2026-10-28T05-01-29-249Z-7f86ffec',
+    '2026-10-28T04-46-21-393Z-7f86ffec'
+  ],
+  dryRun: false
+}

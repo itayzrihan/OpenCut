@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "707a66e562e315afa92c2ee7b36de041ec4281728c7a2b3ecc62f761fb9d1d42",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:31:06.281Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,200p' classic/apps/web/src/export/projects-export-dialog.tsx; git status --short | tail -30",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-58a41ae3-ffa5-4b17-b006-965ba4e5448e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:31:06.713Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0eb3b368bdfea6d2ec69f4a139e536b6797ea0730ce7a6e692c1f2b5810ae2f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:01:24.192Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/editor-agent/subscription-image/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/editor-session",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/editor-session/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/feedback",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/feedback/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets/[...path]",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/global-assets/[...path]/route_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/health",
+          "classic/apps/web/.next-local-production/standalone/apps/web/.next-local-production/server/app/api/health/route_client-reference-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "73330e64-d85e-438f-ab7f-a64622cb421d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:01:24.198Z",
+  "parents": [],
+  "branch": "main"
+}

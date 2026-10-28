@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f532fff9bbe79d7fedd9035c23acc299996426d3de6920cda86a9679a038ea4e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:21:53.782Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/core/index.ts';s=open(p).read();needle='\\tstatic reset(): void {';s=s.replace(needle,''' /** A disposable canonical snapshot renderer. Never replaces the visible editor. */\n static createRenderInstance(): EditorCore {\n  const editor = new EditorCore();\n  editor.save.stop();\n  editor.save.pause();\n  return editor;\n }\n\n disposeRenderInstance(): void {\n  if (this === EditorCore.instance) throw new Error(\"Cannot dispose the visible editor as a render instance\");\n  this.save.stop();\n  this.project.dispose();\n  this.renderer.dispose();\n  this.command.clearLoadedProject();\n  this.media.clearAllAssets();\n }\n\n'''+needle);open(p,'w').write(s)\np='classic/apps/web/src/export/queue/worker.ts';s=open(p).read().replace('''\tdestination?: FileSystemFileHandle,\n) {\n\tconst editor = EditorCore.getInstance();''','''\tdestination?: FileSystemFileHandle,\n editor = EditorCore.getInstance(),\n) {''');open(p,'w').write(s)\np='classic/apps/web/src/export/projects-export-dialog.tsx';s=open(p).read().replace('import { useEffect, useRef, useState } from \"react\";','import { useEffect, useRef, useState } from \"react\";');s=s.replace('import type { RenderJobView }','import type { RenderJob } from \"./queue/types\";\\nimport type { RenderJobView }');s=s.replace('\\n\\tconst iframe = useRef<HTMLIFrameElement>(null);','');a=s.index('\\tuseEffect(() => {\\n\\t\\tif (!activeEntry) return;');b=s.index('\\n\\tconst ready =',a);s=s[:a]+'''\tuseEffect(() => {\n  if (!activeEntry) return;\n  const id = activeEntry.id;\n  let stopped = false;\n  const preventClose = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = \"\"; };\n  window.addEventListener(\"beforeunload\", preventClose);\n  void (async () => {\n   let editor: import(\"@/core\").EditorCore | undefined;\n   try {\n    const [{ executeQueuedRender }, { EditorCore }] = await Promise.all([import(\"./queue/worker\"), import(\"@/core\")]);\n    for (;;) {\n     if (stopped) break;\n     const state = await renderQueueRequest(",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-43a6762b-f74d-48c3-a1cd-05b34d3c7ce1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:21:57.254Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e37636db31aec31a68e322c680adbd4422a0910253888f84a0907883eddd8f68",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:24:31.936Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/server/app/api/render-queue/route_client-reference-manifest.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/app/_not-found/page_client-reference-manifest.js",
+          "classic/apps/web/.next-projects-export-dev/dev/logs/next-development.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a8f5bc38-1802-4468-b198-389ed07dbaf9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:24:31.937Z",
+  "parents": [],
+  "branch": "main"
+}

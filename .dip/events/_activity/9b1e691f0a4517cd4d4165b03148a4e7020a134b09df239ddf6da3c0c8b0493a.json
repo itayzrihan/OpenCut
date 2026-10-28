@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b1e691f0a4517cd4d4165b03148a4e7020a134b09df239ddf6da3c0c8b0493a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:11:39.074Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/projects-export-dialog.tsx",
+          "classic/apps/web/src/app/projects/page.tsx",
+          "classic/apps/web/src/export/settings-fields.tsx",
+          "classic/apps/web/src/export/library-client.ts",
+          "classic/apps/web/src/export/library-server.ts",
+          "classic/apps/web/src/export/queue/server.ts",
+          "classic/apps/web/src/export/queue/types.ts",
+          "classic/apps/web/src/export/queue/worker.ts",
+          "classic/apps/web/src/components/editor/export-button.tsx",
+          "classic/apps/web/src/app/api/project-export/route.ts",
+          "classic/apps/web/src/app/api/render-queue/route.ts",
+          "classic/apps/web/src/app/api/render-queue/file/route.ts",
+          "classic/apps/web/src/app/export-worker/page.tsx",
+          "classic/apps/web/src/app/export-worker/layout.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "598d8c15-248a-4a2b-819d-c359e0c88c97"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:11:39.076Z",
+  "parents": [],
+  "branch": "main"
+}

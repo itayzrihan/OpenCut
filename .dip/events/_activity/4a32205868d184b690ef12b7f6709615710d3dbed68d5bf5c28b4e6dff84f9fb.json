@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a32205868d184b690ef12b7f6709615710d3dbed68d5bf5c28b4e6dff84f9fb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:08:09.056Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/static/chunks/app/export-worker",
+          "classic/apps/web/.next-projects-export-dev/dev/static/chunks/webpack.js",
+          "classic/apps/web/.next-projects-export-dev/dev/static/chunks/_app-pages-browser_src_media_noise-reduction_worker_ts.js",
+          "classic/apps/web/.next-projects-export-dev/dev/static/chunks/_app-pages-browser_src_services_background-removal_worker_ts.js",
+          "classic/apps/web/.next-projects-export-dev/dev/static/chunks/_app-pages-browser_src_services_waveform-cache_worker_ts-_2ecc0.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3782a419-096d-42b9-bc45-38d2fb718e78"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:08:09.066Z",
+  "parents": [],
+  "branch": "main"
+}

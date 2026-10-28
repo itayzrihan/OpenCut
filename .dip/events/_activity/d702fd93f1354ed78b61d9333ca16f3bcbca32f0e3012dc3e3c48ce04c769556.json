@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d702fd93f1354ed78b61d9333ca16f3bcbca32f0e3012dc3e3c48ce04c769556",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:32:28.561Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg 'project-export|render-queue|Error' /tmp/projects-export-dev-2.log | tail -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-0f73478a-72b5-421b-b68c-7a8f0024608b"
+      },
+      {
+        "at": "2026-10-28T05:32:29.273Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg 'project-export|render-queue|Error' /tmp/projects-export-dev-2.log | tail -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-0f73478a-72b5-421b-b68c-7a8f0024608b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:32:29.393Z",
+  "parents": [],
+  "branch": "main"
+}

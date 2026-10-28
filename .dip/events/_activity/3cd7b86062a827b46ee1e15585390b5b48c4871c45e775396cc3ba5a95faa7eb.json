@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3cd7b86062a827b46ee1e15585390b5b48c4871c45e775396cc3ba5a95faa7eb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:34:32.849Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';const p=path.join(process.env.HOME,'.dip','install.json');if(fs.existsSync(p)){const c=JSON.parse(fs.readFileSync(p));console.log(JSON.stringify({keys:Object.keys(c),version:c.version,workflow:c.workflow,roots:c.roots,installedAt:c.installedAt}));}const b='.dip-local/rollback-20261028';console.log(JSON.stringify({backupFiles:fs.readdirSync(b)}));\nNODE\nsed -n '1,140p' docs/automatic-workflow.md",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-6298c474-db52-444c-b236-0a50f6892b3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:33.087Z",
+  "parents": [],
+  "branch": "main"
+}

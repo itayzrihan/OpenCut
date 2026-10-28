@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7be1151d-7b83-4753-9892-ee3365ad0ee0",
+  "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "All projects Export dialog and canonical saved-version capture implemented. Real two-project queue export passed (VP9 without audio and HEVC with AAC). Replaced unresponsive iframe direct worker with disposable EditorCore bound to its own canonical runtime; real single direct export now completed and ffprobe verified H264/AAC 640x360 12.074s. Focused 9 web tests pass after redesign. Direct batch, final production build/deploy and configured verification remain open.",
+    "next": "Finish live direct batch/collision verification, build final source once, activate production and verify outputs, then configured projects-export check and finish.",
+    "head": "7f86ffec4c7dd7fb4af7e8544c3d5f999afa4b2b"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T05:35:35.161Z",
+  "parents": [
+    "ea708bab-1588-414a-a399-aafce43a1820"
+  ],
+  "branch": "main"
+}

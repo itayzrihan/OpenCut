@@ -332,6 +332,13 @@
         ".dip/tools/verify-render-queue.mjs"
       ],
       "timeoutMs": 240000
+    },
+    "projects-export": {
+      "command": [
+        "node",
+        ".dip/tools/verify-projects-export.mjs"
+      ],
+      "timeoutMs": 360000
     }
   },
   "mode": "coordinate"

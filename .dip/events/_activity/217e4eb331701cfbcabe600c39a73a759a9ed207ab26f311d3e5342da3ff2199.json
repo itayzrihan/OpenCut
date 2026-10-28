@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "217e4eb331701cfbcabe600c39a73a759a9ed207ab26f311d3e5342da3ff2199",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:59:41.304Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 /tmp/projects-export-build-4.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c1252908-3782-457c-b4e2-7361265f74db"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:59:42.001Z",
+  "parents": [],
+  "branch": "main"
+}

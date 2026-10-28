@@ -1516,7 +1516,7 @@ export class ProjectManager {
 		return this.migrationState;
 	}
 
-	/** Hydrate a validated, read-only render snapshot in an isolated browsing realm.
+	/** Hydrate a validated, read-only render snapshot in an isolated editor instance.
 	 * No editor ownership is acquired and no source project/history is written. */
 	async loadRenderSnapshot({
 		snapshot,

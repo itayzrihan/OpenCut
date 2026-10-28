@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24c68d3d179a838541104a83c13efff00826219114bdfbd70f9f67b0d9f0b822",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:34:40.099Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --stat -- classic crates; cat .dip/tools/verify-projects-export.mjs | tail -60",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5ee2924c-c373-48f6-9ff5-2949a6e6d416"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:41.565Z",
+  "parents": [],
+  "branch": "main"
+}

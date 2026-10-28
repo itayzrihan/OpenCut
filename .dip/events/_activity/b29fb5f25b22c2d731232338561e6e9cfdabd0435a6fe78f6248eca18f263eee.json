@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b29fb5f25b22c2d731232338561e6e9cfdabd0435a6fe78f6248eca18f263eee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:34:13.352Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration,size -of json .local/projects-export-2026-10-28/outputs/single-direct-final-success.mp4",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-dcf3c14b-1b5f-4c9d-9f6b-b15f59aa86c5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:14.053Z",
+  "parents": [],
+  "branch": "main"
+}

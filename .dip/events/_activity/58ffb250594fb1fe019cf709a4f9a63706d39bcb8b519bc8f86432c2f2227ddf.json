@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "58ffb250594fb1fe019cf709a4f9a63706d39bcb8b519bc8f86432c2f2227ddf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:23:45.415Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/projects-export-dialog.tsx';s=open(p).read().replace('import { accountAssetUrl } from \"@/accounts/browser\";\\n','');s=s.replace('let editor: import(\"@/core\").EditorCore | undefined;','let editor: import(\"@/core\").EditorCore | undefined;\\n            let claimed: RenderJob | undefined;');s=s.replace('if (job) {\\n\\t\\t\\t\\t\\t\\teditor =','if (job) {\\n                        claimed = job;\\n\\t\\t\\t\\t\\t\\teditor =');s=s.replace('''\t\t\t} catch (error) {\n\t\t\t\tsetError(error instanceof Error ? error.message : String(error));\n\t\t\t\tawait cancel();\n\t\t\t} finally {\n\t\t\t\teditor?.disposeRenderInstance();''','''\t\t\t} catch (error) {\n    const detail = error instanceof Error ? error.message : String(error);\n    setError(detail);\n    if (claimed) await renderQueueRequest({action:\"report\",id:claimed.id,projectId:claimed.projectId,attempt:claimed.attempt,progress:0,status:\"failed\",message:detail.slice(0,4000)}).catch(() => {});\n\t\t\t\tawait cancel();\n\t\t\t} finally {\n    try { editor?.disposeRenderInstance(); } catch(error) {setError(String(error));}''');s=s.replace('\\treturn (\\n\\t\\t<>\\n\\t\\t\\t<Dialog','\\treturn (\\n\\t\\t\\t<Dialog').replace('\\n\\t\\t\\t</Dialog>\\n\\t\\t</>\\n\\t);','\\n\\t\\t\\t</Dialog>\\n\\t);');open(p,'w').write(s)\np='classic/apps/web/src/core/managers/project-manager.ts';s=open(p).read().replace('Hydrate a validated, read-only render snapshot in an isolated browsing realm.','Hydrate a validated, read-only render snapshot in an isolated editor instance.');open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/export/projects-export-dialog.tsx\nnode classic/apps/web/node_modules/typescript/bin/tsc --noEmit --project classic/apps/web/tsconfig.build.json > /tmp/projects-export-ts-7.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1cccbbd9-9bd8-47bf-bce2-5388674e6916"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:23:46.168Z",
+  "parents": [],
+  "branch": "main"
+}

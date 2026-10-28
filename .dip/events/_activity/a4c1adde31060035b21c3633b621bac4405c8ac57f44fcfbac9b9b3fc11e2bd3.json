@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a4c1adde31060035b21c3633b621bac4405c8ac57f44fcfbac9b9b3fc11e2bd3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:50:47.161Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/api/editor-agent/hyperframes-catalog-preview/route.js.nft.json",
+          "classic/apps/web/.next-local-production/server/app/api/editor-agent/hyperframes-references/route.js.nft.json",
+          "classic/apps/web/.next-local-production/standalone",
+          "classic/apps/web/.next-local-production/standalone/apps",
+          "classic/apps/web/.next-local-production/standalone/apps/web",
+          "classic/apps/web/.next-local-production/standalone/apps/web/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "db1145a9-a759-4dfc-bb25-1ed6bbb86480"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:50:47.167Z",
+  "parents": [],
+  "branch": "main"
+}

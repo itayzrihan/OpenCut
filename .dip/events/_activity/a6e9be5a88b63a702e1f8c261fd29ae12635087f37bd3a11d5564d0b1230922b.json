@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a6e9be5a88b63a702e1f8c261fd29ae12635087f37bd3a11d5564d0b1230922b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:43:32.983Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -5 /tmp/projects-export-build-3.log; sed -n '1,80p' classic/apps/web/src/export/video-encoding.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3704678c-b754-4995-b325-91dbb49408b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:43:33.361Z",
+  "parents": [],
+  "branch": "main"
+}

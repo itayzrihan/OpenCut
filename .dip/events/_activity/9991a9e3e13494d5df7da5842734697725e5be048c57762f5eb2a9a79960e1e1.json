@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9991a9e3e13494d5df7da5842734697725e5be048c57762f5eb2a9a79960e1e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:16:20.338Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/batch/root.tsx';s=open(p).read().replace('import dynamic from \"next/dynamic\";','import dynamic from \"next/dynamic\";\\nimport { usePathname } from \"next/navigation\";');s=s.replace('\\treturn <BatchEditProvider>{children}</BatchEditProvider>;',''' const path = usePathname();\n // Worker routes already bypass the provider; avoid loading its editor/AI\n // bundles before mounting an isolated renderer's readiness handshake.\n if ([\"/batch-worker\", \"/render-queue\", \"/export-worker\"].includes(path)) return children;\n return <BatchEditProvider>{children}</BatchEditProvider>;''');open(p,'w').write(s)\nPY\nclassic/node_modules/.bin/prettier --write classic/apps/web/src/batch/root.tsx classic/apps/web/src/export/projects-export-dialog.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b94a24be-9fa9-4f35-b750-98741615c7f2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:16:20.498Z",
+  "parents": [],
+  "branch": "main"
+}

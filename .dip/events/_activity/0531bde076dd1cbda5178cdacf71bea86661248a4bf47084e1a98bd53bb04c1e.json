@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0531bde076dd1cbda5178cdacf71bea86661248a4bf47084e1a98bd53bb04c1e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T04:13:27.244Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/library-server.ts",
+          "classic/apps/web/src/export/projects-export-dialog.tsx",
+          "crates/editor-api/tests/render_queue.rs",
+          "crates/editor-api/src/operations/render_queue.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1be9efc5-4901-42bb-8c39-d4cec772b584"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:13:27.245Z",
+  "parents": [],
+  "branch": "main"
+}

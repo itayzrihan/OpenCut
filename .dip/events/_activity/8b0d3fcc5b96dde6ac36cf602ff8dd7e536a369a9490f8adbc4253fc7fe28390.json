@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b0d3fcc5b96dde6ac36cf602ff8dd7e536a369a9490f8adbc4253fc7fe28390",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:38:32.465Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess,pathlib\nfor o in json.load(open('analysis/projects-export-2026-10-28/live.json'))['outputs']:\n d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',o['path']]))\n v=next(x for x in d['streams'] if x['codec_type']=='video');a=any(x['codec_type']=='audio' for x in d['streams'])\n assert (v['codec_name'],v['width'],v['height'],a)==(o['codec'],o['width'],o['height'],o['audio'])\n assert abs(float(d['format']['duration'])-o['seconds'])<.15\n print(pathlib.Path(o['path']).name,v['codec_name'],v['width'],v['height'],d['format']['duration'],a)\nassert pathlib.Path('.local/projects-export-2026-10-28/outputs/Project export · בדיקה B.mp4').stat().st_size==0\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-6a77b09c-00da-415a-8f5e-74f0b68ac042"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:38:32.783Z",
+  "parents": [],
+  "branch": "main"
+}

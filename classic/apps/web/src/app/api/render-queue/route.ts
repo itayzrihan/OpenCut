@@ -13,13 +13,18 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const identity = z.string().uuid();
+const projectIdentity = z
+	.string()
+	.min(1)
+	.max(160)
+	.regex(/^[A-Za-z0-9_-]+$/);
 const requestSchema = z.discriminatedUnion("action", [
 	z
 		.object({
 			action: z.literal("enqueue"),
 			id: identity,
-			projectId: identity,
-			sceneId: identity,
+			projectId: projectIdentity,
+			sceneId: projectIdentity,
 			sourceRevision: z.number().int().nonnegative(),
 			snapshot: z.unknown(),
 			options: z.unknown(),
@@ -29,7 +34,7 @@ const requestSchema = z.discriminatedUnion("action", [
 		.object({
 			action: z.enum(["cancel", "retry"]),
 			id: identity,
-			projectId: identity,
+			projectId: projectIdentity,
 			expectedRevision: z.number().int().nonnegative(),
 		})
 		.strict(),
@@ -37,21 +42,27 @@ const requestSchema = z.discriminatedUnion("action", [
 		.object({
 			action: z.literal("configure"),
 			id: identity,
-			projectId: identity,
+			projectId: projectIdentity,
 			expectedRevision: z.number().int().nonnegative(),
 			options: z.unknown(),
 		})
 		.strict(),
-	z.object({ action: z.literal("claim"), attempt: identity }).strict(),
+	z
+		.object({
+			action: z.literal("claim"),
+			attempt: identity,
+			jobId: identity.optional(),
+		})
+		.strict(),
 	z
 		.object({
 			action: z.literal("report"),
 			id: identity,
-			projectId: identity,
+			projectId: projectIdentity,
 			attempt: identity,
 			progress: z.number().min(0).max(1),
 			message: z.string().max(4000),
-			status: z.enum(["rendering", "failed", "cancelled"]),
+			status: z.enum(["rendering", "failed", "cancelled", "completed"]),
 		})
 		.strict(),
 ]);
@@ -78,9 +89,18 @@ async function post(request: Request) {
 				await enqueueRender(body as Parameters<typeof enqueueRender>[0]),
 			);
 		if (body.action === "claim")
-			return NextResponse.json(await claimRender(body.attempt));
-		if (body.action === "report")
+			return NextResponse.json(await claimRender(body.attempt, body.jobId));
+		if (body.action === "report") {
+			if (body.status === "completed") {
+				const { readRenderJob } = await import("@/export/queue/server");
+				const job = await readRenderJob(body.id);
+				if (job.delivery !== "direct" || job.attempt !== body.attempt)
+					throw Error(
+						"Only the direct destination worker can acknowledge a saved export",
+					);
+			}
 			return NextResponse.json(await reportRender(body));
+		}
 		return NextResponse.json(
 			await changeRender({ ...body, type: body.action } as Parameters<
 				typeof changeRender

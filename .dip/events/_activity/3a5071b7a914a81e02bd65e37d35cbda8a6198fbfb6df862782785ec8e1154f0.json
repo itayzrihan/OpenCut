@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3a5071b7a914a81e02bd65e37d35cbda8a6198fbfb6df862782785ec8e1154f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:32:39.863Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/projects-export-web-tests.log; git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fac1dfb0-4a54-4e07-9b8d-1ab3b29eea99"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:32:40.511Z",
+  "parents": [],
+  "branch": "main"
+}

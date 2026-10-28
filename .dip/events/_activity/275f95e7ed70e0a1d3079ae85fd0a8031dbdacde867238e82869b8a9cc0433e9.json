@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "275f95e7ed70e0a1d3079ae85fd0a8031dbdacde867238e82869b8a9cc0433e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:37:00.142Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/react-loadable-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/build-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/middleware-react-loadable-manifest.js",
+          "classic/apps/web/.next-projects-export-dev/dev/static/development/_ssgManifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f3e0e5d3-50b3-4fa3-a69c-80aa47de1991"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:37:00.151Z",
+  "parents": [],
+  "branch": "main"
+}

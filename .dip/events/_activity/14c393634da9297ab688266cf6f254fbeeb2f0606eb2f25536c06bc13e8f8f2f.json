@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "14c393634da9297ab688266cf6f254fbeeb2f0606eb2f25536c06bc13e8f8f2f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:30:48.813Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import {execFileSync} from 'node:child_process';import {parse} from 'smol-toml';import {commonInstructions} from './scripts/model-benchmark-fixtures.mjs';\nconst base='/private/tmp/dip-automatic-pilot-20261028',round=base+'/rounds/02',source=process.cwd();\nif(fs.existsSync(round))throw Error('Round 02 already exists; preserve it.');\nconst hash=x=>createHash('sha256').update(x).digest('hex');\nconst fp=root=>hash(JSON.stringify(['package.json',...['src','bin','skills'].flatMap(d=>fs.readdirSync(path.join(root,d),{recursive:true}).filter(f=>fs.statSync(path.join(root,d,f)).isFile()).map(f=>d+'/'+f))].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))])));\nconst original=JSON.parse(fs.readFileSync(base+'/protocol.json'));\nconst expected=JSON.parse(fs.readFileSync('docs/benchmarks/2026-10-28-post-pilot-candidate.json'));\nif(fp(source)!==expected.productFingerprint||fp(base+'/automatic')!==original.sourceFingerprints.automatic||fp(base+'/reviewed')!==original.sourceFingerprints.reviewed)throw Error('Source identity differs from approved baseline/candidate');\nconst profile=base+'/user/.codex';const config=parse(fs.readFileSync(profile+'/config.toml','utf8'));\nif(config.model!==original.model||config.model_reasoning_effort!==original.effort)throw Error('Model settings changed');\nconst hooksHash=hash(fs.readFileSync(profile+'/hooks.json')),trustHash=hash(JSON.stringify(config.hooks.state));\nfs.mkdirSync(base+'/frozen',{recursive:true});fs.renameSync(base+'/automatic',base+'/frozen/automatic.0');fs.mkdirSync(base+'/automatic');\nfor(const f of ['src','bin','skills','public','package.json'])fs.cpSync(path.join(source,f),path.join(base,'automatic',f),{recursive:true});\nfs.symlinkSync(path.join(source,'node_modules'),base+'/automatic/node_modules','dir');fs.mkdirSync(round,{recursive:true});\nconst env={...process.env};for(const k of Object.keys(en",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-9c8a5155-6884-486b-9ee6-7451a949fd1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:30:49.674Z",
+  "parents": [],
+  "branch": "main"
+}

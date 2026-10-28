@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4749df10c6250e50fc0e645206821b7d537d0200ad5ca809363b775d86db58e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:09:52.596Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '210,235p' classic/apps/web/src/core/managers/project-manager.ts; cat /tmp/projects-export-ts.log; tail -8 /tmp/projects-export-rust.log; sed -n '250,330p' classic/apps/web/src/app/projects/page.tsx; cat classic/apps/web/src/core/managers/renderer-manager.ts | rg -A12 'dispose\\(' | head -16",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e68ba1cd-ba91-49c9-b523-41b900cfe1d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:09:52.627Z",
+  "parents": [],
+  "branch": "main"
+}

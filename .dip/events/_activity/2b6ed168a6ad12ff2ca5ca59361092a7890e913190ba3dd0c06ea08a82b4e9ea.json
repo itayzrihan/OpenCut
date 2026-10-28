@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2b6ed168a6ad12ff2ca5ca59361092a7890e913190ba3dd0c06ea08a82b4e9ea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:53:29.356Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess\nroot='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/render-queue';q=json.load(open(root+'/runtime.json'))['active']['document']['renderQueue'];jobs=[j for j in q if j['id'] in ['aab31a8f-02d9-47ab-bc32-693e6c7cbe1b','01aa847a-b27b-4518-8e3a-4fe7ad0b2820']]\njson.dump(jobs,open('analysis/projects-export-2026-10-28/queue-jobs.json','w'),ensure_ascii=False,indent=2)\nfor j in jobs:\n p=f\"{root}/{j['id']}/output.{j['options']['format']}\";d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',p]));print(j['id'],d['format']['duration'],[(s['codec_type'],s['codec_name'],s.get('width'),s.get('height')) for s in d['streams']])\nPY\ntail -5 /tmp/projects-export-dev.log; tail -5 /tmp/projects-export-build-4.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-3bdba945-61af-417b-bf04-a0c96860b53b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:53:29.459Z",
+  "parents": [],
+  "branch": "main"
+}

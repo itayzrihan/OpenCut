@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "594f6b2c0df7f621c0790eb4bf14c958dc3717ee758a58ce63d4a8176fb851c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:44:33.053Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-projects-export.mjs'\ns=open(p).read().replace(\"assert(evidence.outputs.length>=5);\", \"assert(evidence.outputs.length>=5);\\nconst collisionPath='.local/projects-export-2026-10-28/outputs/Project export · בדיקה B.mp4';\\nassert.equal(statSync(collisionPath).size,0,'Existing destination was overwritten');\\nassert(evidence.jobs.some(j=>j.delivery==='direct' && / \\\\(2\\\\)\\\\.mp4$/.test(j.destinationName)),'Collision-safe batch filename missing');\")\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-31641a63-cfc6-4842-aa94-3d07832efdea"
+      },
+      {
+        "at": "2026-10-28T05:44:33.648Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.dip/tools/verify-projects-export.mjs'\ns=open(p).read().replace(\"assert(evidence.outputs.length>=5);\", \"assert(evidence.outputs.length>=5);\\nconst collisionPath='.local/projects-export-2026-10-28/outputs/Project export · בדיקה B.mp4';\\nassert.equal(statSync(collisionPath).size,0,'Existing destination was overwritten');\\nassert(evidence.jobs.some(j=>j.delivery==='direct' && / \\\\(2\\\\)\\\\.mp4$/.test(j.destinationName)),'Collision-safe batch filename missing');\")\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-31641a63-cfc6-4842-aa94-3d07832efdea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:44:33.985Z",
+  "parents": [],
+  "branch": "main"
+}

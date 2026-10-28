@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f81ac606bb7de702e87e994ce6ee3a96c38d11f469a7e5ce8da4ff1975dc6c95",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:33:59.710Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,100p' classic/apps/web/src/fonts/custom-fonts.ts; rg -n 'loadRenderSnapshot' classic/apps/web/src/core/managers/project-manager.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-566ea550-9940-4199-bd2e-65e062c91f95"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:00.171Z",
+  "parents": [],
+  "branch": "main"
+}

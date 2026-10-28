@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bf526cbc7d1759230e940e38424599771412d9fcc318ed12a195e98d99e4e20",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:20:13.499Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'EditorCore.getInstance' classic/apps/web/src/export classic/apps/web/src/services/renderer classic/apps/web/src/core/managers/renderer-manager.ts classic/apps/web/src/lib/media | head -35; rg -n 'dispose' classic/apps/web/src/core/managers/{playback,save,scenes,media}-manager.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5c5cd839-a99d-47d2-a980-18c8fd0de341"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:20:14.012Z",
+  "parents": [],
+  "branch": "main"
+}

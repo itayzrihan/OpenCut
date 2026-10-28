@@ -146,9 +146,11 @@ export default function RenderQueue() {
 								? "Source resolution"
 								: "Project resolution"}{" "}
 							·{" "}
-							{job.options.preferences.encoding === "compact"
-								? "HEVC"
-								: "H.264"}{" "}
+							{job.options.format === "webm"
+								? "VP9"
+								: job.options.preferences.encoding === "compact"
+									? "HEVC"
+									: "H.264"}{" "}
 							· {job.options.quality.replaceAll("_", " ")} ·{" "}
 							{job.options.fps.numerator / job.options.fps.denominator} fps ·
 							Audio {job.options.includeAudio ? "on" : "off"}
@@ -176,16 +178,17 @@ export default function RenderQueue() {
 									{job.cancelRequested ? "Cancelling…" : "Cancel"}
 								</Button>
 							)}
-							{["failed", "cancelled"].includes(job.status) && (
-								<Button
-									size="sm"
-									variant="outline"
-									onClick={() => void change(job.id, job.projectId, "retry")}
-								>
-									Retry saved snapshot
-								</Button>
-							)}
-							{job.status === "completed" && (
+							{["failed", "cancelled"].includes(job.status) &&
+								job.delivery !== "direct" && (
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={() => void change(job.id, job.projectId, "retry")}
+									>
+										Retry saved snapshot
+									</Button>
+								)}
+							{job.status === "completed" && job.outputId && (
 								<a
 									className="text-sm text-primary underline"
 									href={accountAssetUrl(
@@ -197,7 +200,7 @@ export default function RenderQueue() {
 								</a>
 							)}
 						</div>
-						{job.status === "queued" && (
+						{job.status === "queued" && job.delivery !== "direct" && (
 							<JobSettings
 								job={job}
 								revision={state.revision}

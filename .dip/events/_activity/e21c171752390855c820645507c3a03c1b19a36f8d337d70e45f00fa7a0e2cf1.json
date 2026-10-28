@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e21c171752390855c820645507c3a03c1b19a36f8d337d70e45f00fa7a0e2cf1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:34:21.052Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/logs/next-development.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cb87ada2-8d7e-4dd0-80be-7f646cad225e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:34:21.056Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3cab16ce67da0253e61627baf6a4fb932422030c3b834749fac99d811f5b6246",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:34:41.595Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np='.dip/config.json';d=json.load(open(p));d['verification']['projects-export']={'command':['node','.dip/tools/verify-projects-export.mjs'],'timeoutMs':360000};open(p,'w').write(json.dumps(d,indent=2)+'\\n')\nPY\ncat > .dip/tools/verify-projects-export.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nimport {readFileSync,statSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nfor(const [cmd,args] of [\n ['cargo',['test','-p','opencut-editor-api','--test','render_queue']],\n ['bun',['run','--cwd','classic/apps/web','test','--timeout=180000','--test-timeout=90000','src/export/library-server.test.ts','src/export/queue/server.test.ts','src/core/__tests__/canonical-export.test.ts']],\n ['node',['classic/apps/web/node_modules/typescript/bin/tsc','--noEmit','--project','classic/apps/web/tsconfig.build.json']]\n]){const result=spawnSync(cmd,args,{stdio:'inherit'});assert.equal(result.status,0,`${cmd} failed`);}\nconst root='analysis/projects-export-2026-10-28/';\nconst evidence=JSON.parse(readFileSync(root+'live.json','utf8'));\nassert(evidence.singleDirect && evidence.batchDirect && evidence.batchQueue);\nassert(evidence.perProjectSettings && evidence.sceneSelection && evidence.selectionPreserved);\nassert(statSync(root+'batch-dialog.png').size>10000);\nassert(evidence.outputs.length>=5);\nfor(const output of evidence.outputs){\n assert(statSync(output.path).size>0);\n const probe=spawnSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',output.path],{encoding:'utf8'});\n assert.equal(probe.status,0);\n const d=JSON.parse(probe.stdout),v=d.streams.find(s=>s.codec_type==='video'),a=d.streams.find(s=>s.codec_type==='audio');\n assert(v);\n assert.equal(v.codec_name,output.codec);\n assert.equal(v.width,output.width);assert.equal(v.height,output.height);\n assert(Math.abs(Number(d.format.duration)-output.seconds)<0.15);\n assert.equal(!!a,output.audio);\n}\nconst before=JSON.parse(readFileSync(root+'source-before.json','utf8'));\nconst",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e5d914d7-6006-4d8e-90be-0ed9c3b649c3"
+      },
+      {
+        "at": "2026-10-28T04:34:42.096Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np='.dip/config.json';d=json.load(open(p));d['verification']['projects-export']={'command':['node','.dip/tools/verify-projects-export.mjs'],'timeoutMs':360000};open(p,'w').write(json.dumps(d,indent=2)+'\\n')\nPY\ncat > .dip/tools/verify-projects-export.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nimport {readFileSync,statSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nfor(const [cmd,args] of [\n ['cargo',['test','-p','opencut-editor-api','--test','render_queue']],\n ['bun',['run','--cwd','classic/apps/web','test','--timeout=180000','--test-timeout=90000','src/export/library-server.test.ts','src/export/queue/server.test.ts','src/core/__tests__/canonical-export.test.ts']],\n ['node',['classic/apps/web/node_modules/typescript/bin/tsc','--noEmit','--project','classic/apps/web/tsconfig.build.json']]\n]){const result=spawnSync(cmd,args,{stdio:'inherit'});assert.equal(result.status,0,`${cmd} failed`);}\nconst root='analysis/projects-export-2026-10-28/';\nconst evidence=JSON.parse(readFileSync(root+'live.json','utf8'));\nassert(evidence.singleDirect && evidence.batchDirect && evidence.batchQueue);\nassert(evidence.perProjectSettings && evidence.sceneSelection && evidence.selectionPreserved);\nassert(statSync(root+'batch-dialog.png').size>10000);\nassert(evidence.outputs.length>=5);\nfor(const output of evidence.outputs){\n assert(statSync(output.path).size>0);\n const probe=spawnSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',output.path],{encoding:'utf8'});\n assert.equal(probe.status,0);\n const d=JSON.parse(probe.stdout),v=d.streams.find(s=>s.codec_type==='video'),a=d.streams.find(s=>s.codec_type==='audio');\n assert(v);\n assert.equal(v.codec_name,output.codec);\n assert.equal(v.width,output.width);assert.equal(v.height,output.height);\n assert(Math.abs(Number(d.format.duration)-output.seconds)<0.15);\n assert.equal(!!a,output.audio);\n}\nconst before=JSON.parse(readFileSync(root+'source-before.json','utf8'));\nconst",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e5d914d7-6006-4d8e-90be-0ed9c3b649c3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:34:42.109Z",
+  "parents": [],
+  "branch": "main"
+}

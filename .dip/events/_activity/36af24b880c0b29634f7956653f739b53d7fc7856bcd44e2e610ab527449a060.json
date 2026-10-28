@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "36af24b880c0b29634f7956653f739b53d7fc7856bcd44e2e610ab527449a060",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T05:16:28.592Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-projects-export-dev/dev/server/webpack-runtime.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f170.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/node_fs_promises-_ssr_src_services_waveform-cache_worker_ts-_6c42-_0f171.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/node_fs_promises-_ssr_src_podcast-sync_sync_worker_ts.js",
+          "classic/apps/web/.next-projects-export-dev/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-projects-export-dev/dev/server/app-paths-manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2e449fd3-f151-4511-857e-dc111bf8d33f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:16:28.596Z",
+  "parents": [],
+  "branch": "main"
+}

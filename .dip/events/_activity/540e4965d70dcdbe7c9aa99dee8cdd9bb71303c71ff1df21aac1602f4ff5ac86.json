@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "540e4965d70dcdbe7c9aa99dee8cdd9bb71303c71ff1df21aac1602f4ff5ac86",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:37:29.884Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='.local/projects-export-2026-10-28/collect.py'\ns=open(p).read().replace(\"=='single-direct-final.mp4'\",\"=='single-direct-final-success.mp4'\")\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8e90bf81-df80-4b81-a486-fef63835008b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:37:30.013Z",
+  "parents": [],
+  "branch": "main"
+}

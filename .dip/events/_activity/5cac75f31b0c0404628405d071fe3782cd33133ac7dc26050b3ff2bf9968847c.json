@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5cac75f31b0c0404628405d071fe3782cd33133ac7dc26050b3ff2bf9968847c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:06:07.815Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -12 /tmp/projects-export-dev-2.log; ps -axo pid,ppid,%cpu,rss,command | rg 'next-server|wasm-opt'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-056e0edd-4798-40ed-a8b4-527e2ed99a65"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:06:08.098Z",
+  "parents": [],
+  "branch": "main"
+}

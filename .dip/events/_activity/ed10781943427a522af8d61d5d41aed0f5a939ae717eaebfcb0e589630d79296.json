@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ed10781943427a522af8d61d5d41aed0f5a939ae717eaebfcb0e589630d79296",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:33:07.351Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun run --cwd classic/apps/web test --test-timeout=30000 src/export/library-server.test.ts src/export/queue/server.test.ts src/core/__tests__/canonical-export.test.ts > /tmp/projects-export-web-tests-final.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-115d52d7-22f5-4368-b4cf-9ad51133cd5a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:33:08.237Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -75,6 +75,23 @@ export class EditorCore {
 		return EditorCore.instance;
 	}
 
+	/** A disposable canonical snapshot renderer; preserves the visible editor. */
+	static createRenderInstance(): EditorCore {
+		const editor = new EditorCore();
+		editor.save.stop();
+		editor.save.pause();
+		return editor;
+	}
+
+	disposeRenderInstance(): void {
+		if (this === EditorCore.instance) throw new Error("Cannot dispose the visible editor as a render instance");
+		this.save.stop();
+		this.project.dispose();
+		this.renderer.dispose();
+		this.command.clearLoadedProject();
+		this.media.clearAllAssets();
+	}
+
 	static reset(): void {
 		EditorCore.instance?.project.dispose();
 		EditorCore.instance?.renderer.dispose();

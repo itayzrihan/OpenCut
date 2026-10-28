@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "300e5ea6bf92b7aa4745ebb43ee42725d584b9806e89ba28d1f31e8016d9b180",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:16:05.399Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'ClientAiSetup|BackgroundSnapshots|return' classic/apps/web/src/accounts/gate.tsx | tail -12; sed -n '110,145p' classic/apps/web/src/accounts/gate.tsx; rg 'POST /api/project-export' /tmp/projects-export-dev-2.log | tail -6",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-95aa0b8d-9dad-4793-9eff-e3d1787c4063"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:16:05.480Z",
+  "parents": [],
+  "branch": "main"
+}

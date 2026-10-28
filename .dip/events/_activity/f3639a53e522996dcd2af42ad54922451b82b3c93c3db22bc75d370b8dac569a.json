@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f3639a53e522996dcd2af42ad54922451b82b3c93c3db22bc75d370b8dac569a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:32:43.525Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat analysis/projects-export-2026-10-28/architecture.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-21d6b86d-7c5f-4c55-bce5-1368c52fe96d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:32:44.432Z",
+  "parents": [],
+  "branch": "main"
+}

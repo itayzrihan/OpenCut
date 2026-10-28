@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddc9b6d00b43394e9e0a1d52a0cc8058bce0eb43249bdaeb5f5a0b4d4cdf32c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:17:50.597Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/app/projects/store.ts | head -90; tail -8 /tmp/projects-export-wasm.log; sed -n '65,120p' classic/apps/web/src/export/projects-export-dialog.tsx; sed -n '665,700p' classic/apps/web/src/app/projects/page.tsx; rg -n 'checkbox|aria-label' classic/apps/web/src/app/projects/page.tsx | tail -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-7e3b80f5-c5e2-4c7c-a286-4dfcd8d00bab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:17:50.601Z",
+  "parents": [],
+  "branch": "main"
+}

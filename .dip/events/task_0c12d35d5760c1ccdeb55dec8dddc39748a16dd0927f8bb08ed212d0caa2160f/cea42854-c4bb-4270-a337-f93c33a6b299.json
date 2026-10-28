@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cea42854-c4bb-4270-a337-f93c33a6b299",
+  "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+  "type": "task.update",
+  "payload": {
+    "title": "Add selected-project Export with full settings and Render Queue/direct modes",
+    "acceptance": [
+      "Selected one/multiple projects expose Export beside Copy in All projects.",
+      "Dialog offers the same format, resolution, encoding, quality and audio controls as editor export, plus selected scene per project.",
+      "Supports direct export and adding frozen saved project snapshots to Render Queue without acquiring source editor write ownership.",
+      "Reuses canonical export policy/capture and existing renderer; selection and projects remain intact.",
+      "Production build/deploy and live single/multiple-project exports verified on disposable projects."
+    ],
+    "scope": [
+      "classic/apps/web/src/app/projects",
+      "classic/apps/web/src/export",
+      "classic/apps/web/src/components/editor/export-button.tsx",
+      "crates/editor-api",
+      "analysis/projects-export-2026-10-28"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T04:03:22.915Z",
+  "parents": [
+    "bc3fa4a2-976e-4e7e-9ccc-d3c02a132a31"
+  ],
+  "branch": "main"
+}

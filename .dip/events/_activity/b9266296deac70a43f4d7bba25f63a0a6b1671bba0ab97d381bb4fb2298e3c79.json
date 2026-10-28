@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b9266296deac70a43f4d7bba25f63a0a6b1671bba0ab97d381bb4fb2298e3c79",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T05:48:59.493Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const s=JSON.parse(fs.readFileSync('/tmp/dip-round2-live-summary.json'));let b=s.arms.reviewed,a=s.arms.automatic;const pct=(x,y)=>100*(1-y/x);console.log(JSON.stringify({arms:s.arms,reductions:{routine:pct(b.routineMutations,a.routineMutations),all:pct(b.allCalls,a.allCalls),payload:pct(b.measuredPayloadBytes,a.measuredPayloadBytes),time:pct(b.medianRecordedWallMs,a.medianRecordedWallMs)},audit:s.ledgerAudit,checks:{functional:s.turns.reduce((n,t)=>n+t.functionalPassed,0),total:s.turns.reduce((n,t)=>n+t.functionalTotal,0),memory:s.turns.reduce((n,t)=>n+t.memoryPassed,0),memoryTotal:s.turns.reduce((n,t)=>n+t.memoryTotal,0),hooks:s.turns.reduce((n,t)=>n+t.hookCount,0)},rows:s.turns.map(t=>({s:t.scenario,a:t.arm,p:t.phase,ms:t.wallMs,hooks:t.hookContextBytes,mcp:t.mcpResultBytes,cli:t.cliResultBytes,instructions:t.instructionReadBytes,payload:t.measuredPayloadBytes}))}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-ff07a4c2-c1f8-4dd5-bbda-e30eb711be48"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:48:59.833Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0533dbad5c8bf1c1997bc2c7f49fe83ed8c5cf3e31885ec53579ce6bca093bee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:29:56.639Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,100p' classic/scripts/local-production/common.mjs; cat '/Users/itayzrihan/Library/Application Support/OpenCut Local/current.json'; cat '/Users/itayzrihan/Library/Application Support/OpenCut Local/candidate.json'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a587aa95-1a6b-4e65-9e1e-9643bbbbb969"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:29:56.687Z",
+  "parents": [],
+  "branch": "main"
+}

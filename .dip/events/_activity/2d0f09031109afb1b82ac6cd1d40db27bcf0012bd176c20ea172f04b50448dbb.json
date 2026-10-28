@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2d0f09031109afb1b82ac6cd1d40db27bcf0012bd176c20ea172f04b50448dbb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:39:22.750Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/queue/server.ts';s=open(p).read();needle='async function transaction<T>(\\n';s=s.replace(needle,'''// Registry construction is expensive. Reuse one canonical runtime per host\n// module, restoring the locked account bytes before every transaction. A local\n// gate prevents cross-account interleaving while the filesystem lock fences\n// other server processes. No account document is cached outside the runtime.\nlet hostRuntime: Promise<{ runtime: CanonicalEditorRuntime; empty: Uint8Array }> | undefined;\nlet transactionTail = Promise.resolve();\nfunction transaction<T>(\n run: (r: CanonicalEditorRuntime, s: State) => Promise<T> | T,\n): Promise<T> {\n const next = transactionTail.then(() => lockedTransaction(run));\n transactionTail = next.then(() => {}, () => {});\n return next;\n}\nasync function lockedTransaction<T>(\n''',1);s=s.replace('''\tconst { CanonicalEditorRuntime } =\n\t\tawait import(\"opencut-editor-runtime-wasm\");\n\tconst r = new CanonicalEditorRuntime();\n\ttry {''','''\ttry {\n  hostRuntime ??= import(\"opencut-editor-runtime-wasm\").then(({ CanonicalEditorRuntime }) => {\n   const runtime = new CanonicalEditorRuntime();\n   return { runtime, empty: runtime.serialize() };\n  }).catch(error => { hostRuntime = undefined; throw error; });\n  const { runtime: r, empty } = await hostRuntime;''',1);s=s.replace('if (bytes) r.restore(bytes);','r.restore(bytes ?? empty);',1).replace('''\t\tr.free();\n\t\tawait release();''','''\t\tawait release();''',1);open(p,'w').write(s)\np='classic/apps/web/src/export/queue/server.test.ts';s=open(p).read().replace('const source = join(root, \"original.mp4\");','let accountRoot = root;\\nconst source = join(root, \"original.mp4\");').replace('accountDataRoot: () => root','accountDataRoot: () => accountRoot');s+='''\ntest(\"reused canonical runtime restores each account independently, including a new empty account\", async () => {\n const original = await readRenderQueue();\n accountRoot = join(root, \"second-account\");\n expe",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9fa0c6b7-2903-4bdf-b9de-a7dfd36de172"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:39:22.828Z",
+  "parents": [],
+  "branch": "main"
+}

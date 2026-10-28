@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f5a94f3680099e852626d6ac6ceb61c6133135c7262966c61709210c8c2faa5f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:13:26.914Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/export/library-server.ts';s=open(p).read().replace('})) as {','})) as unknown as {',1);open(p,'w').write(s)\np='classic/apps/web/src/export/projects-export-dialog.tsx';s=open(p).read().replace('const [common, setCommon] = useState(defaults);','const [common, setCommon] = useState(defaults);\\n const [refreshToken,setRefreshToken]=useState(0);').replace('JSON.stringify({\\n\\t\\tcommon,','JSON.stringify({\\n refreshToken,\\n\\t\\tcommon,',1);# inspectafter formattingfind\ns=s.replace('{error && (','{rows.some(r=>r.error) && !busy && <Button variant=\"outline\" size=\"sm\" onClick={()=>setRefreshToken(t=>t+1)}>Refresh saved versions</Button>}\\n {error && (',1);open(p,'w').write(s)\nPY\ncat >> crates/editor-api/tests/render_queue.rs <<'EOF'\n\n#[tokio::test]\nasync fn direct_exports_require_a_destination_and_do_not_publish_downloads_or_block_queued_fifo() {\n    let r=setup().await;\n    let captured=call(&r,\"project.classic.export.capture\",json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"expectedRevision\":revision(&r)})).await;\n    let mut change=json!({\"type\":\"enqueue\",\"snapshot\":captured[\"snapshot\"],\"sourceRevision\":captured[\"sourceRevision\"],\"sceneId\":\"main-scene\",\"options\":options(),\"delivery\":\"direct\"});\n    let before=r.snapshot().unwrap();\n    assert!(r.registry().invoke(EDIT,InvocationContext::default(),request(&r,\"direct\",change.clone(),1000)).await.is_err());\n    assert_eq!(r.snapshot().unwrap(),before);\n    change[\"destinationName\"]=json!(\"Podcast.mp4\");\n    call(&r,EDIT,request(&r,\"direct\",change,1000)).await;\n    enqueue(&r,\"queue\").await;\n    // A waiting direct destination does not block the normal background lane.\n    call(&r,EDIT,request(&r,\"queue\",json!({\"type\":\"claim\",\"attempt\":\"q\"}),2000)).await;\n    call(&r,EDIT,request(&r,\"queue\",json!({\"type\":\"report\",\"attempt\":\"q\",\"progress\":1,\"message\":\"Done\",\"status\":\"completed\"}),3000)).await;\n    call(&r,EDIT,request(&r,\"direct\",json!({\"type\":\"claim\",\"attempt\":\"d\"}),4000)).aw",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fabad412-cf98-47ba-84fe-d492ae76d10a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:13:27.244Z",
+  "parents": [],
+  "branch": "main"
+}

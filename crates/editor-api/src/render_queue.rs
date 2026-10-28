@@ -54,6 +54,13 @@ pub enum QueueStatus {
     Failed,
     Cancelled,
 }
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum RenderDelivery {
+    #[default]
+    Queue,
+    Direct,
+}
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct QueuedRender {
@@ -64,6 +71,10 @@ pub struct QueuedRender {
     pub snapshot: ClassicProject,
     pub snapshot_hash: String,
     pub options: QueueExportOptions,
+    #[serde(default)]
+    pub delivery: RenderDelivery,
+    #[serde(default)]
+    pub destination_name: Option<String>,
     pub status: QueueStatus,
     pub created_at_ms: u64,
     pub updated_at_ms: u64,
@@ -102,8 +113,21 @@ impl QueuedRender {
         if self.snapshot_hash != snapshot_hash(&self.snapshot, &self.options, &self.scene_id) {
             return Err(bad("Render snapshot integrity mismatch"));
         }
-        if self.status == QueueStatus::Completed && self.output_id.as_deref() != Some(&self.id) {
+        if self.status == QueueStatus::Completed
+            && self.delivery == RenderDelivery::Queue
+            && self.output_id.as_deref() != Some(&self.id)
+        {
             return Err(bad("Completed render requires its output identity"));
+        }
+        if self.delivery == RenderDelivery::Direct
+            && (self.output_id.is_some()
+                || self.destination_name.as_ref().is_none_or(|s| {
+                    s.is_empty() || s.len() > 1024 || s.contains('/') || s.contains('\\')
+                }))
+        {
+            return Err(bad(
+                "Direct render requires a destination filename and cannot publish a server download",
+            ));
         }
         if self.status == QueueStatus::Rendering
             && self

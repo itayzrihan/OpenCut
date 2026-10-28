@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cee2d07a1e8c669a8c99120960591d11ef9e3241e3fa3935b24305e90490a943",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:55:26.335Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -p 97540 -o pid,ppid,command; ps -axo pid,ppid,rss,command | rg 'node --input-type=module|next-server'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8ba75492-f660-4e12-ad6b-45f047b6a4ad"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:55:26.451Z",
+  "parents": [],
+  "branch": "main"
+}

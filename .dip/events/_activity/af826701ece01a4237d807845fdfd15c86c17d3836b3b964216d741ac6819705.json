@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af826701ece01a4237d807845fdfd15c86c17d3836b3b964216d741ac6819705",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:35:11.851Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,rss,command | rg 'wasm-opt|next-server|next build'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-22b27223-007f-4a8f-a124-d84ae7ee0c8e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:35:12.540Z",
+  "parents": [],
+  "branch": "main"
+}

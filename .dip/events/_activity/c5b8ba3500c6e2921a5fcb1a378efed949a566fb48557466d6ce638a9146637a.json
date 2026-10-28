@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c5b8ba3500c6e2921a5fcb1a378efed949a566fb48557466d6ce638a9146637a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:51:47.632Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst candidate=await readJson(join(deploymentRoot,'candidate.json'));\nif(!candidate?.id?.startsWith('2026-10-28T05-')) throw Error('Unexpected candidate');\nconst current=await readJson(join(deploymentRoot,'current.json'));\nawait writeJson(join(deploymentRoot,'previous.json'),current);\nawait writeJson(join(deploymentRoot,'current.json'),candidate);\nawait writeJson('analysis/projects-export-2026-10-28/release.json',candidate);\nconsole.log({id:candidate.id,fingerprint:candidate.fingerprint});\nJS",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-699ab1b9-0da1-4d2e-81d3-7d58ff9acdb3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:51:48.467Z",
+  "parents": [],
+  "branch": "main"
+}

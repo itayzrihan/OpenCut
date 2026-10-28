@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f315680b653c234e88580f6ce4d849bf415b40755cf1d66b0ad23c9a9d51400e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:26:04.916Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '205,222p' classic/apps/web/src/core/managers/media-manager.ts; sed -n '23,36p' classic/apps/web/src/effects/definitions/index.ts; sed -n '38,52p' classic/apps/web/src/masks/builtin/definitions/index.ts; python3 - <<'PY'\np='classic/apps/web/src/core/index.ts';s=open(p,'rb').read();a=s.index(b'\\t/** A disposable');b=s.index(b'\\tstatic reset():',a);s=s[:a]+s[a:b].replace(b'\\r\\n',b'\\n')+s[b:];open(p,'wb').write(s)\nPY\ngit diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-22f1f105-7653-46d6-8616-aad79b6a2cb0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:26:05.063Z",
+  "parents": [],
+  "branch": "main"
+}

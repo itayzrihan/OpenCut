@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b682cab3b95edab1e3a0b94c09d97d872b0f9dbaf154b3907334246a29ba406",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T04:02:46.103Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add -- classic/apps/web/src/batch/provider.tsx classic/apps/web/src/components/editor/export-button.tsx classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/export/queue classic/apps/web/src/app/api/render-queue classic/apps/web/src/app/render-queue crates/editor-api/src/lib.rs crates/editor-api/src/model.rs crates/editor-api/src/operations.rs crates/editor-api/src/render_queue.rs crates/editor-api/src/operations/render_queue.rs crates/editor-api/tests/render_queue.rs analysis/render-queue-2026-10-28 .dip/config.json .dip/tools/verify-render-queue.mjs .dip/events/task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696\ngit commit --only -m 'Add frozen background render queue for Classic exports' -- classic/apps/web/src/batch/provider.tsx classic/apps/web/src/components/editor/export-button.tsx classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/core/managers/project-manager.ts classic/apps/web/src/export/queue classic/apps/web/src/app/api/render-queue classic/apps/web/src/app/render-queue crates/editor-api/src/lib.rs crates/editor-api/src/model.rs crates/editor-api/src/operations.rs crates/editor-api/src/render_queue.rs crates/editor-api/src/operations/render_queue.rs crates/editor-api/tests/render_queue.rs analysis/render-queue-2026-10-28 .dip/config.json .dip/tools/verify-render-queue.mjs .dip/events/task_59199d513a0a85d615220ffbf21c94b5886d21e039424d7d9cc2114e4e6ee696",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a3e4ebdc-5183-4e05-adc2-2df775da0ab3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T04:02:46.585Z",
+  "parents": [],
+  "branch": "main"
+}

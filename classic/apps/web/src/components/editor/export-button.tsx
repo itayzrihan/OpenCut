@@ -9,10 +9,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils/ui";
 import {
 	getExportMimeType,
@@ -31,31 +28,16 @@ import {
 	ListVideo,
 	ListPlus,
 } from "lucide-react";
+import type { ExportFormat, ExportQuality } from "@/export";
 import {
-	EXPORT_FORMAT_VALUES,
-	EXPORT_QUALITY_VALUES,
-	type ExportFormat,
-	type ExportQuality,
-} from "@/export";
-import {
-	Section,
-	SectionContent,
-	SectionHeader,
-	SectionTitle,
-} from "@/components/section";
+	ExportSettingsFields,
+	ExportPlanSummary,
+} from "@/export/settings-fields";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { checkExportEncoder } from "@/export/video-encoding";
 import type { ExportPlan, ExportPreferences } from "@/export";
 import { enqueueCurrentRender, openRenderQueue } from "@/export/queue/client";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
-
-function isExportFormat(value: string): value is ExportFormat {
-	return EXPORT_FORMAT_VALUES.some((formatValue) => formatValue === value);
-}
-
-function isExportQuality(value: string): value is ExportQuality {
-	return EXPORT_QUALITY_VALUES.some((qualityValue) => qualityValue === value);
-}
 
 export function ExportButton() {
 	const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
@@ -318,85 +300,27 @@ function ExportPopover({
 					<div className="flex flex-col gap-4">
 						{!isExporting && !hasReadyExport && (
 							<>
-								<div className="space-y-3 p-3 text-sm">
-									<label className="flex flex-col gap-1">
-										Resolution
-										<select
-											aria-label="Export resolution"
-											className="bg-background border rounded p-2"
-											value={preferences.resolution}
-											onChange={(e) =>
-												updatePreferences({
-													resolution: e.target
-														.value as ExportPreferences["resolution"],
-												})
-											}
-										>
-											<option value="source">Source · smart resolution</option>
-											<option value="project">Project resolution</option>
-										</select>
-									</label>
-									{format === "mp4" && (
-										<label className="flex flex-col gap-1">
-											Encoding
-											<select
-												aria-label="Export encoding"
-												className="bg-background border rounded p-2"
-												value={preferences.encoding}
-												onChange={(e) =>
-													updatePreferences({
-														encoding: e.target
-															.value as ExportPreferences["encoding"],
-													})
-												}
-											>
-												<option value="compact">Compact · HEVC (H.265)</option>
-												<option value="compatible">Compatible · H.264</option>
-											</select>
-										</label>
-									)}
-									{plan && (
-										<div
-											aria-label="Export output summary"
-											className="space-y-1 text-xs text-muted-foreground"
-										>
-											<p className="font-medium text-foreground">
-												{plan.width} × {plan.height} ·{" "}
-												{plan.codec.toUpperCase()} ·{" "}
-												{(plan.videoBitrate / 1000000).toFixed(1)} Mbps
-											</p>
-											<p>
-												Estimated size:{" "}
-												{(plan.estimatedBytes / 1000000000).toFixed(2)} GB ·
-												actual size varies.
-											</p>
-											<p>
-												Composition and aspect ratio stay the same. Main video
-												sources determine smart resolution; short inserts and
-												still images do not lower it.
-											</p>
-											{plan.warnings.map((warning) => (
-												<p key={warning}>{warning}</p>
-											))}
-											{plan.upscaledSources.length > 0 && (
-												<details>
-													<summary>
-														{plan.upscaledSources.length} sources may be
-														enlarged
-													</summary>
-													{plan.upscaledSources.map((name) => (
-														<p key={name}>{name}</p>
-													))}
-												</details>
-											)}
-											{plan.codec === "hevc" && (
-												<p>
-													HEVC makes smaller files; older players may need
-													H.264.
-												</p>
-											)}
-										</div>
-									)}
+								<div className="p-3 space-y-3">
+									<ExportSettingsFields
+										value={{
+											format,
+											quality,
+											preferences,
+											includeAudio: shouldIncludeAudio,
+										}}
+										onChange={(next) => {
+											setFormat(next.format);
+											setQuality(next.quality);
+											setShouldIncludeAudio(next.includeAudio);
+											if (
+												next.preferences.resolution !==
+													preferences.resolution ||
+												next.preferences.encoding !== preferences.encoding
+											)
+												updatePreferences(next.preferences);
+										}}
+									/>
+									{plan && <ExportPlanSummary plan={plan} />}
 									{checkingEncoder && (
 										<p className="text-xs">Checking encoder support…</p>
 									)}
@@ -406,94 +330,6 @@ function ExportPopover({
 										</p>
 									)}
 								</div>
-								<div className="flex flex-col">
-									<Section
-										collapsible
-										defaultOpen={false}
-										showTopBorder={false}
-									>
-										<SectionHeader>
-											<SectionTitle>Format</SectionTitle>
-										</SectionHeader>
-										<SectionContent>
-											<RadioGroup
-												value={format}
-												onValueChange={(value) => {
-													if (isExportFormat(value)) {
-														setFormat(value);
-													}
-												}}
-											>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="mp4" id="mp4" />
-													<Label htmlFor="mp4">MP4 - H.264 or HEVC</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="webm" id="webm" />
-													<Label htmlFor="webm">
-														WebM (VP9) - Smaller file size
-													</Label>
-												</div>
-											</RadioGroup>
-										</SectionContent>
-									</Section>
-
-									<Section collapsible defaultOpen={false}>
-										<SectionHeader>
-											<SectionTitle>Quality</SectionTitle>
-										</SectionHeader>
-										<SectionContent>
-											<RadioGroup
-												value={quality}
-												onValueChange={(value) => {
-													if (isExportQuality(value)) {
-														setQuality(value);
-													}
-												}}
-											>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="low" id="low" />
-													<Label htmlFor="low">Low - Smallest file size</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="medium" id="medium" />
-													<Label htmlFor="medium">Medium - Balanced</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="high" id="high" />
-													<Label htmlFor="high">High - Recommended</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="very_high" id="very_high" />
-													<Label htmlFor="very_high">
-														Very high - Largest file size
-													</Label>
-												</div>
-											</RadioGroup>
-										</SectionContent>
-									</Section>
-
-									<Section collapsible defaultOpen={false}>
-										<SectionHeader>
-											<SectionTitle>Audio</SectionTitle>
-										</SectionHeader>
-										<SectionContent>
-											<div className="flex items-center space-x-2">
-												<Checkbox
-													id="include-audio"
-													checked={shouldIncludeAudio}
-													onCheckedChange={(checked) =>
-														setShouldIncludeAudio(!!checked)
-													}
-												/>
-												<Label htmlFor="include-audio">
-													Include audio in export
-												</Label>
-											</div>
-										</SectionContent>
-									</Section>
-								</div>
-
 								<div className="p-3 pt-0 space-y-2">
 									<Button
 										onClick={handleEnqueue}

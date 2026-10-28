@@ -8,6 +8,8 @@ export type RenderJob = {
 	snapshot: CanonicalClassicSnapshot;
 	snapshotHash: string;
 	options: Required<ExportOptions>;
+	delivery: "queue" | "direct";
+	destinationName: string | null;
 	status: "queued" | "rendering" | "completed" | "failed" | "cancelled";
 	createdAtMs: number;
 	updatedAtMs: number;

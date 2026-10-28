@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "43857aa85c79e341ea931bd39d6bda90b29654bbf7ad56a7e0eae2d1a8c43b8e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T05:02:28.470Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst c=await readJson(join(deploymentRoot,'candidate.json'));\nif(c.id!=='2026-10-28T05-01-29-249Z-7f86ffec') throw Error('Unexpected candidate');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));\nawait writeJson(join(deploymentRoot,'current.json'),c);\nawait writeJson('analysis/projects-export-2026-10-28/release.json',c);\nconsole.log(c.id);\nNODE",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-eaaa1ad2-430b-4fa8-b1d1-f32c76bf0f0f"
+      },
+      {
+        "at": "2026-10-28T05:02:29.102Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'NODE'\nimport {readJson,writeJson,deploymentRoot} from './classic/scripts/local-production/common.mjs';\nimport {join} from 'node:path';\nconst c=await readJson(join(deploymentRoot,'candidate.json'));\nif(c.id!=='2026-10-28T05-01-29-249Z-7f86ffec') throw Error('Unexpected candidate');\nawait writeJson(join(deploymentRoot,'previous.json'),await readJson(join(deploymentRoot,'current.json')));\nawait writeJson(join(deploymentRoot,'current.json'),c);\nawait writeJson('analysis/projects-export-2026-10-28/release.json',c);\nconsole.log(c.id);\nNODE",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-eaaa1ad2-430b-4fa8-b1d1-f32c76bf0f0f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T05:02:29.242Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bcd80604-2e81-4780-9b5b-3707259b0583",
+  "taskId": "task_0c12d35d5760c1ccdeb55dec8dddc39748a16dd0927f8bb08ed212d0caa2160f",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Inspect All projects selection actions, existing export settings, canonical saved-project capture and queue contracts.",
+          "status": "completed"
+        },
+        {
+          "step": "Add shared settings dialog with per-project scene/settings overrides, direct single/batch export and canonical Render Queue submission.",
+          "status": "completed"
+        },
+        {
+          "step": "Run focused tests, verify real direct/queue outputs and preserved source state, build and activate production, and verify final UI.",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T05:53:10.847Z",
+  "parents": [
+    "43276705-f544-48f5-84b5-5c05c222975b"
+  ],
+  "branch": "main"
+}
