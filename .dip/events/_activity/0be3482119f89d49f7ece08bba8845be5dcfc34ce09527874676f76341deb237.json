@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0be3482119f89d49f7ece08bba8845be5dcfc34ce09527874676f76341deb237",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:13:58.248Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/private/tmp/dip-automatic-pilot-20261028/results.json'));console.log(JSON.stringify({started:r.turnsStarted,done:r.trials.reduce((n,t)=>n+t.turns.length,0),finished:r.finishedAt}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-c7732335-3635-4c29-b434-8052ef794025"
+      },
+      {
+        "at": "2026-10-28T03:13:58.250Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {createHash} from 'node:crypto';\nconst b='/private/tmp/dip-automatic-pilot-20261028';const h=p=>createHash('sha256').update(fs.readFileSync(p)).digest('hex');\nconst r=JSON.parse(fs.readFileSync(b+'/results.json'));fs.copyFileSync(b+'/results.json',b+'/results.before-infrastructure-resumption.json');\nr.trials[0].turns[0].infrastructureFailure='MCP initialization failed; CLI used unchanged installed baseline. Functional score retained; timing is not a valid paired MCP comparison.';\nconst p=b+'/trials/0-reviewed/recovery.jsonl';const es=fs.readFileSync(p,'utf8').trim().split('\\n').flatMap(x=>{try{return[JSON.parse(x)]}catch{return[]}});\nconst hs=fs.readFileSync(b+'/trials/0-reviewed/hooks.jsonl','utf8').trim().split('\\n').map(JSON.parse).slice(r.trials[0].turns[0].hookEvents.length);\nr.trials[0].turns.push({phase:'recovery',completed:false,interrupted:true,exitCode:null,timedOut:false,wallMs:null,infrastructureFailure:'Interrupted after detecting failed MCP startup; no retry. Raw output preserved.',hookEvents:hs.map(({event,tool,ms,exitCode,contextBytes})=>({event,tool,ms,exitCode,contextBytes})),injectedBytes:hs.reduce((n,x)=>n+x.contextBytes,0),management:[],cliManagement:es.filter(e=>e.type==='item.completed'&&e.item?.type==='command_execution'&&/\\bdip\\s+(task|context|reconcile)/.test(e.item.command||'')).length,score:{allPassed:false,notScored:true,reason:'Interrupted infrastructure failure'},usage:null});\nfs.writeFileSync(b+'/results.json',JSON.stringify(r,null,2)+'\\n');\nconst protocol=JSON.parse(fs.readFileSync(b+'/protocol.json'));\nprotocol.version=2;protocol.harnessHash=h('scripts/automatic-model-pilot.mjs');protocol.supportHash=h('scripts/pilot-support.mjs');\nprotocol.resumes={originalProtocol:b+'/protocol.json',recordedAt:new Date().toISOString(),startedTurnsRetained:2,unstartedTurns:10,reason:'MCP environment allowlist and frozen CLI shims repaired; zero-model handshake preflight added. Sour",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-e8f30600-103b-4863-97aa-841198cf0041"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:13:59.151Z",
+  "parents": [],
+  "branch": "main"
+}

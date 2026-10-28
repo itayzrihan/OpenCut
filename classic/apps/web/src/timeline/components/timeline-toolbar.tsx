@@ -22,17 +22,10 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-import {
-	SplitButton,
-	SplitButtonLeft,
-	SplitButtonRight,
-	SplitButtonSeparator,
-} from "@/components/ui/split-button";
 import { Slider } from "@/components/ui/slider";
 import { TIMELINE_ZOOM_BUTTON_FACTOR } from "./interaction";
 import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
 import { sliderToZoom, zoomToSlider } from "@/timeline/zoom-utils";
-import { ScenesView } from "@/components/editor/scenes-view";
 import { type TActionWithOptionalArgs, invokeAction } from "@/actions";
 import {
 	canToggleSourceAudio,
@@ -55,7 +48,6 @@ import {
 	AlignLeftIcon,
 	AlignRightIcon,
 	Link02Icon,
-	Layers01Icon,
 	Chart03Icon,
 	Unlink02Icon,
 	CursorRectangleSelection01Icon,
@@ -112,8 +104,6 @@ export function TimelineToolbar({
 		<ScrollArea className="scrollbar-hidden">
 			<div className="flex h-10 items-center justify-between border-b px-2 py-1">
 				<ToolbarLeftSection />
-
-				<SceneSelector />
 
 				<ToolbarRightSection
 					zoomLevel={zoomLevel}
@@ -208,28 +198,30 @@ function ToolbarLeftSection() {
 					tooltip="Split element (Shift+S)"
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
-				<div
-					role="group"
-					aria-label="Start End"
-					className="flex shrink-0 items-center gap-0.5"
-				>
-					<Button
-						size="sm"
-						variant="ghost"
-						title="Remove everything before playhead and move remaining timeline to zero (S)"
-						onClick={(event) => handleAction({ action: "trim-start", event })}
-					>
-						Start <kbd className="ml-1 text-xs text-muted-foreground">S</kbd>
-					</Button>
-					<Button
-						size="sm"
-						variant="ghost"
-						title="Remove everything after playhead (E)"
-						onClick={(event) => handleAction({ action: "trim-end", event })}
-					>
-						End <kbd className="ml-1 text-xs text-muted-foreground">E</kbd>
-					</Button>
-				</div>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-7 w-9 shrink-0 gap-0.5 px-1"
+							aria-label="Start End"
+							title="Start / End"
+							data-native-keyboard-activation
+							onClick={(event) => event.stopPropagation()}
+						>
+							<HugeiconsIcon icon={ScissorIcon} className="size-3.5!" />
+							<HugeiconsIcon icon={ArrowDown01Icon} className="size-2.5!" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="start">
+						<DropdownMenuItem onSelect={() => invokeAction("trim-start")}>
+							<HugeiconsIcon icon={AlignLeftIcon} /> Start
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => invokeAction("trim-end")}>
+							<HugeiconsIcon icon={AlignRightIcon} /> End
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 
 				<CutSilenceToolbarControl
 					hasSelectedVideo={hasSelectedVideo}
@@ -705,26 +697,6 @@ function BookmarkToolbarButton() {
 				invokeAction("toggle-bookmark");
 			}}
 		/>
-	);
-}
-
-function SceneSelector() {
-	const currentScene = useEditorTimelineScenes((editor) =>
-		editor.scenes.getActiveScene(),
-	);
-
-	return (
-		<div>
-			<SplitButton className="border-foreground/10 border">
-				<SplitButtonLeft>{currentScene?.name || "No Scene"}</SplitButtonLeft>
-				<SplitButtonSeparator />
-				<ScenesView>
-					<SplitButtonRight onClick={() => {}}>
-						<HugeiconsIcon icon={Layers01Icon} className="size-4" />
-					</SplitButtonRight>
-				</ScenesView>
-			</SplitButton>
-		</div>
 	);
 }
 

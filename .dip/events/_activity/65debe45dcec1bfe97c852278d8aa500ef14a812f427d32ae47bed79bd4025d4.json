@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "65debe45dcec1bfe97c852278d8aa500ef14a812f427d32ae47bed79bd4025d4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:19:59.705Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/local-production/build.mjs --stage > /tmp/compact-toolbar-build.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2a672170-3b2e-45d3-8a0d-38c362333f57"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:19:59.856Z",
+  "parents": [],
+  "branch": "main"
+}

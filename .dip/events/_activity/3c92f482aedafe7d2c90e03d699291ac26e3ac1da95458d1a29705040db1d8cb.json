@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3c92f482aedafe7d2c90e03d699291ac26e3ac1da95458d1a29705040db1d8cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:22:55.401Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/sitemap.xml.body",
+          "classic/apps/web/.next-local-production/server/app/sitemap.xml.meta",
+          "classic/apps/web/.next-local-production/export-detail.json",
+          "classic/apps/web/.next-local-production/server/pages",
+          "classic/apps/web/.next-local-production/server/pages/404.html",
+          "classic/apps/web/.next-local-production/server/pages/500.html",
+          "classic/apps/web/.next-local-production/export/_next/sqTVJ0G31u_mxxpPOk81s",
+          "classic/apps/web/.next-local-production/export/_next",
+          "classic/apps/web/.next-local-production/export",
+          "classic/apps/web/.next-local-production/server/pages-manifest.json",
+          "classic/apps/web/.next-local-production/routes-manifest.json",
+          "classic/apps/web/.next-local-production/prerender-manifest.json",
+          "classic/apps/web/.next-local-production/server/prefetch-hints.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5fe5d098-bb7f-4548-9551-2a2feb61b14d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:22:55.403Z",
+  "parents": [],
+  "branch": "main"
+}

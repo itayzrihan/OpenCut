@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b27c2b18-66d0-4a37-9882-eba55184e0ec",
+  "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+  "type": "task.update",
+  "payload": {
+    "title": "Compact Start End menu and center scene selector in editor header",
+    "acceptance": [
+      "Replace separate Start/S and End/E toolbar buttons with one compact dropdown trigger without shortcut badges; existing actions and keyboard shortcuts preserved.",
+      "Move existing ScenesView selector and active scene name out of timeline toolbar into header center, preserving scene controls.",
+      "Verify production typecheck/build and live desktop layout, dropdown actions and scene switching on isolated project; preserve user projects."
+    ],
+    "scope": [
+      "classic/apps/web/src/components/editor/editor-header.tsx",
+      "classic/apps/web/src/timeline/components/timeline-toolbar.tsx",
+      "analysis/compact-toolbar-2026-10-28",
+      ".dip"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:17:18.854Z",
+  "parents": [
+    "f7b7d840-c915-4353-9f48-974a074c5039"
+  ],
+  "branch": "main"
+}

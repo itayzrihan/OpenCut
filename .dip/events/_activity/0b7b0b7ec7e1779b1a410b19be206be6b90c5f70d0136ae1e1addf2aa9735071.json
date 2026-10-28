@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b7b0b7ec7e1779b1a410b19be206be6b90c5f70d0136ae1e1addf2aa9735071",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:18:29.568Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short; node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {createHash} from 'node:crypto';const f='.dip-local/releases/vxu-labs-dip-0.3.13-automatic.1.tgz';console.log(JSON.stringify({package:f,bytes:fs.statSync(f).size,sha256:createHash('sha256').update(fs.readFileSync(f)).digest('hex'),installedVersion:JSON.parse(fs.readFileSync('/opt/homebrew/lib/node_modules/@vxu-labs/dip/package.json')).version}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a82e3e22-08dc-43e5-bc42-7c4556682ba9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:18:30.404Z",
+  "parents": [],
+  "branch": "main"
+}

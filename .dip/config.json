@@ -318,6 +318,13 @@
         ".dip/tools/verify-start-end.mjs"
       ],
       "timeoutMs": 240000
+    },
+    "compact-toolbar": {
+      "command": [
+        "node",
+        ".dip/tools/verify-compact-toolbar.mjs"
+      ],
+      "timeoutMs": 120000
     }
   },
   "mode": "coordinate"

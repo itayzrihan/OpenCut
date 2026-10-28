@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0f4813b02c4c6bbb5542b3164e94c440d0d77d22c38847ab3f379bc60e41d93",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:22:55.421Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/compact-toolbar-2026-10-28; tail -6 /tmp/compact-toolbar-build.log; cat > .dip/tools/verify-compact-toolbar.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nimport {readFileSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nconst check=spawnSync('node',['node_modules/typescript/bin/tsc','--noEmit','--project','tsconfig.build.json'],{cwd:process.cwd()+'/classic/apps/web',stdio:'inherit'});\nif(check.status!==0)process.exit(check.status??1);\nconst p='analysis/compact-toolbar-2026-10-28/';\nconst m=JSON.parse(readFileSync(p+'layout.json','utf8'));\nassert(m.dropdown.width<=40 && m.dropdown.width<m.previousWidth*.4);\nassert.equal(m.visibleTriggerText,'');\nassert(m.scene.inHeader && Math.abs(m.scene.center-m.scene.headerCenter)<2);\nassert.equal(m.sceneSelectorInTimeline,false);\nassert.equal(m.longSceneSelected,true);assert.equal(m.mainSceneRestored,true);\nassert.equal(m.longScene.truncated,true);\nassert(m.longScene.rectRight<=m.longScene.navLeft);\nconst doc=name=>JSON.parse(readFileSync(p+name+'.json','utf8'));\nassert.deepEqual(doc('start-menu'),doc('start-key'));\nassert.deepEqual(doc('end-menu'),doc('end-key'));\nassert.deepEqual(doc('baseline'),doc('restored'));\nfor(const [name,duration] of [['start-menu',960000],['end-menu',840000]]) {\n for(const track of doc(name).scene.tracks.filter(t=>['video','audio','effect'].includes(t.type))){assert.equal(track.elements[0].duration,duration);}\n}\nconsole.log('Compact36px dropdown, centered header selector, long scene label/switching, original shortcuts and undo verified from live DOM and source snapshots.');\nJS\npython3 - <<'PY'\nimport json\np='.dip/config.json';j=json.load(open(p));j['verification']['compact-toolbar']={'command':['node','.dip/tools/verify-compact-toolbar.mjs'],'timeoutMs':120000};open(p,'w').write(json.dumps(j,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a550ecbe-a2f7-4fa5-a456-6311fc9b7ac8"
+      },
+      {
+        "at": "2026-10-28T03:22:55.850Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/compact-toolbar-2026-10-28; tail -6 /tmp/compact-toolbar-build.log; cat > .dip/tools/verify-compact-toolbar.mjs <<'JS'\nimport {spawnSync} from 'node:child_process';\nimport {readFileSync} from 'node:fs';\nimport assert from 'node:assert/strict';\nconst check=spawnSync('node',['node_modules/typescript/bin/tsc','--noEmit','--project','tsconfig.build.json'],{cwd:process.cwd()+'/classic/apps/web',stdio:'inherit'});\nif(check.status!==0)process.exit(check.status??1);\nconst p='analysis/compact-toolbar-2026-10-28/';\nconst m=JSON.parse(readFileSync(p+'layout.json','utf8'));\nassert(m.dropdown.width<=40 && m.dropdown.width<m.previousWidth*.4);\nassert.equal(m.visibleTriggerText,'');\nassert(m.scene.inHeader && Math.abs(m.scene.center-m.scene.headerCenter)<2);\nassert.equal(m.sceneSelectorInTimeline,false);\nassert.equal(m.longSceneSelected,true);assert.equal(m.mainSceneRestored,true);\nassert.equal(m.longScene.truncated,true);\nassert(m.longScene.rectRight<=m.longScene.navLeft);\nconst doc=name=>JSON.parse(readFileSync(p+name+'.json','utf8'));\nassert.deepEqual(doc('start-menu'),doc('start-key'));\nassert.deepEqual(doc('end-menu'),doc('end-key'));\nassert.deepEqual(doc('baseline'),doc('restored'));\nfor(const [name,duration] of [['start-menu',960000],['end-menu',840000]]) {\n for(const track of doc(name).scene.tracks.filter(t=>['video','audio','effect'].includes(t.type))){assert.equal(track.elements[0].duration,duration);}\n}\nconsole.log('Compact36px dropdown, centered header selector, long scene label/switching, original shortcuts and undo verified from live DOM and source snapshots.');\nJS\npython3 - <<'PY'\nimport json\np='.dip/config.json';j=json.load(open(p));j['verification']['compact-toolbar']={'command':['node','.dip/tools/verify-compact-toolbar.mjs'],'timeoutMs':120000};open(p,'w').write(json.dumps(j,indent=2)+'\\n')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a550ecbe-a2f7-4fa5-a456-6311fc9b7ac8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:22:56.408Z",
+  "parents": [],
+  "branch": "main"
+}

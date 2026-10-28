@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7892b76074cfe04d5d6dd0678488486b0240e9aeb5f7a31ae925e87e6e1f1f1b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:16:21.580Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "npm run test:package > /tmp/dip-after-native-package.txt 2>&1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-b01d1d8f-d547-4f36-b416-2a97b081155f"
+      },
+      {
+        "at": "2026-10-28T03:16:21.583Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 7 /tmp/dip-after-native-package.txt; git diff -- src/mcp.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f356c578-763f-4208-b1f9-c0aec04d2f77"
+      },
+      {
+        "at": "2026-10-28T03:16:21.718Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 7 /tmp/dip-after-native-package.txt; git diff -- src/mcp.js",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-f356c578-763f-4208-b1f9-c0aec04d2f77"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:16:22.291Z",
+  "parents": [],
+  "branch": "main"
+}

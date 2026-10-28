@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d3004883f9e952d660091375bc73935aa9dd76ec0f10b1524dfb0e07c87ea21",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-28T03:19:12.434Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/components/editor/editor-header.tsx",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4da75ec5-c9fd-45a8-99df-2a35965c9a44"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:19:12.435Z",
+  "parents": [],
+  "branch": "main"
+}

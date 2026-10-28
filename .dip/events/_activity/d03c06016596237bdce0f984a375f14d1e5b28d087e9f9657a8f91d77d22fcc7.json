@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d03c06016596237bdce0f984a375f14d1e5b28d087e9f9657a8f91d77d22fcc7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:14:29.891Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/tmp/dip-pilot-summary-final.json'));for(const t of r.recoveryLedger)console.log(JSON.stringify({scenario:t.scenario,arm:t.arm,tasks:t.tasks.map(x=>({id:x.id,status:x.status,scope:x.scope,title:x.title.slice(0,60)}))}));const pct=(a,b)=>+(100*(1-b/a)).toFixed(1);const sums=arm=>r.turns.filter(t=>t.arm===arm&&t.scenario>0);const a=sums('reviewed'),b=sums('automatic');const sum=(xs,f)=>xs.reduce((s,x)=>s+f(x),0);console.log(JSON.stringify({allCallReduction:pct(55,21),routineReduction:pct(30,14),payloadReduction:pct(121764,62691),pairedRoutineReduction:pct(sum(a,x=>x.calls.filter(c=>c.category==='routine-mutation').length),sum(b,x=>x.calls.filter(c=>c.category==='routine-mutation').length)),pairedPayloadReduction:pct(sum(a,x=>x.measuredPayloadBytes),sum(b,x=>x.measuredPayloadBytes)),pairedMedianReduction:pct((64381+76559)/2,(49625+57022)/2)}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f458a3b6-bd87-4664-89e9-b1aa135a6d29"
+      },
+      {
+        "at": "2026-10-28T03:14:30.011Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/tmp/dip-pilot-summary-final.json'));for(const t of r.recoveryLedger)console.log(JSON.stringify({scenario:t.scenario,arm:t.arm,tasks:t.tasks.map(x=>({id:x.id,status:x.status,scope:x.scope,title:x.title.slice(0,60)}))}));const pct=(a,b)=>+(100*(1-b/a)).toFixed(1);const sums=arm=>r.turns.filter(t=>t.arm===arm&&t.scenario>0);const a=sums('reviewed'),b=sums('automatic');const sum=(xs,f)=>xs.reduce((s,x)=>s+f(x),0);console.log(JSON.stringify({allCallReduction:pct(55,21),routineReduction:pct(30,14),payloadReduction:pct(121764,62691),pairedRoutineReduction:pct(sum(a,x=>x.calls.filter(c=>c.category==='routine-mutation').length),sum(b,x=>x.calls.filter(c=>c.category==='routine-mutation').length)),pairedPayloadReduction:pct(sum(a,x=>x.measuredPayloadBytes),sum(b,x=>x.measuredPayloadBytes)),pairedMedianReduction:pct((64381+76559)/2,(49625+57022)/2)}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-f458a3b6-bd87-4664-89e9-b1aa135a6d29"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:14:30.158Z",
+  "parents": [],
+  "branch": "main"
+}

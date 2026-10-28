@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ff1a0a82a75ea80c91a3c3758457f4bb58e51e96d2ab840412bf0d865eebd3e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:14:06.515Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/check.mjs; node scripts/summarize-automatic-pilot.mjs > /tmp/dip-pilot-summary-final.json; node --input-type=module - <<'NODE'\nimport fs from 'node:fs';const r=JSON.parse(fs.readFileSync('/tmp/dip-pilot-summary-final.json'));console.log(JSON.stringify({started:r.turnsStarted,finished:r.finishedAt,arms:r.arms,turns:r.turns.map(t=>({scenario:t.scenario,arm:t.arm,phase:t.phase,wallMs:t.wallMs,passed:t.functionalPassed,total:t.functionalTotal,memory:t.memoryPassed,callCount:t.calls.length,routine:t.calls.filter(c=>c.category==='routine-mutation').length,payload:t.measuredPayloadBytes}))}));\nNODE",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-822aac0c-1811-40c0-ab24-5468bef0d189"
+      },
+      {
+        "at": "2026-10-28T03:14:06.517Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "npm test > /tmp/dip-after-native-full.txt 2>&1",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-48849441-e4a0-40a1-a3b9-63ca28759c5e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:14:07.142Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a0b2529e5f4b08fb64be76f8faa3d9089073a0166be7c2143a51375b0dd39e1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:25:49.200Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/compact-toolbar-2026-10-28/delivery.md <<'MD'\n# Compact editor controls\n\nClassic UI-only layout refinement. Existing canonical Start/End actions, keybindings and scene switching remain unchanged. The timeline now has one36px icon dropdown with Start and End entries and no visible key badges. The existing ScenesView sheet opens from a single active-scene button centered in the desktop header; long names truncate with full title on hover. Below1024px the selector occupies a centered second header row to avoid collisions with project and export controls.\n\nValidated with the production TypeScript config and optimized build. Live UI checks use isolated project b54fef34-bf27-456c-8d4e-a27328a8117d, a generated12s fixture and a long-name test scene. The configuredcheck compares actual DOM bounds and Timeline Source snapshots for menu actions, keyboard equivalence and exact Undo restoration. User podcast projects were not edited.\n\nActivated local release:2026-10-28T03-23-16-249Z-8d720461.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a8b29b2f-c433-4928-87d4-fbc2a63d8cd1"
+      },
+      {
+        "at": "2026-10-28T03:25:49.292Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > analysis/compact-toolbar-2026-10-28/delivery.md <<'MD'\n# Compact editor controls\n\nClassic UI-only layout refinement. Existing canonical Start/End actions, keybindings and scene switching remain unchanged. The timeline now has one36px icon dropdown with Start and End entries and no visible key badges. The existing ScenesView sheet opens from a single active-scene button centered in the desktop header; long names truncate with full title on hover. Below1024px the selector occupies a centered second header row to avoid collisions with project and export controls.\n\nValidated with the production TypeScript config and optimized build. Live UI checks use isolated project b54fef34-bf27-456c-8d4e-a27328a8117d, a generated12s fixture and a long-name test scene. The configuredcheck compares actual DOM bounds and Timeline Source snapshots for menu actions, keyboard equivalence and exact Undo restoration. User podcast projects were not edited.\n\nActivated local release:2026-10-28T03-23-16-249Z-8d720461.\nMD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a8b29b2f-c433-4928-87d4-fbc2a63d8cd1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:25:49.892Z",
+  "parents": [],
+  "branch": "main"
+}

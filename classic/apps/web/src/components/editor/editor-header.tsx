@@ -20,7 +20,13 @@ import { ThemeToggle } from "../theme-toggle";
 import { DEFAULT_LOGO_URL } from "@/site/brand";
 import { SOCIAL_LINKS } from "@/site/social";
 import { toast } from "sonner";
-import { useEditor, useEditorProject } from "@/editor/use-editor";
+import {
+	useEditor,
+	useEditorProject,
+	useEditorTimelineScenes,
+} from "@/editor/use-editor";
+import { ScenesView } from "./scenes-view";
+import { Layers, ChevronDown } from "lucide-react";
 import {
 	CommandIcon,
 	FileImportIcon,
@@ -40,12 +46,15 @@ import { useAssetsPanelStore } from "./panels/assets/assets-panel-store";
 
 export function EditorHeader() {
 	return (
-		<header className="bg-background flex h-[3.4rem] items-center justify-between px-3 pt-0.5">
-			<div className="flex items-center gap-1">
+		<header className="bg-background grid min-h-[3.4rem] shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 px-3 py-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)_minmax(0,1fr)]">
+			<div className="flex min-w-0 items-center gap-1 overflow-hidden">
 				<ProjectDropdown />
 				<EditableProjectName />
 			</div>
-			<nav className="flex items-center gap-2">
+			<div className="col-span-2 row-start-2 w-full min-w-0 max-w-72 justify-self-center lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:max-w-none">
+				<HeaderSceneSelector />
+			</div>
+			<nav className="col-start-2 row-start-1 flex items-center gap-2 justify-self-end lg:col-start-3">
 				<Button
 					variant="ghost"
 					size="sm"
@@ -58,6 +67,28 @@ export function EditorHeader() {
 				<ThemeToggle />
 			</nav>
 		</header>
+	);
+}
+
+function HeaderSceneSelector() {
+	const currentScene = useEditorTimelineScenes((editor) =>
+		editor.scenes.getActiveScene(),
+	);
+	return (
+		<ScenesView>
+			<Button
+				variant="ghost"
+				size="sm"
+				className="w-full min-w-0 gap-2"
+				aria-label={`Sequences: ${currentScene?.name || "No Scene"}`}
+				title={currentScene?.name || "Sequences"}
+				data-native-keyboard-activation
+			>
+				<Layers className="size-4 shrink-0 text-muted-foreground" />
+				<span className="truncate">{currentScene?.name || "No Scene"}</span>
+				<ChevronDown className="size-3 shrink-0 text-muted-foreground" />
+			</Button>
+		</ScenesView>
 	);
 }
 
@@ -353,7 +384,7 @@ function EditableProjectName() {
 			onKeyDown={handleKeyDown}
 			style={{ fieldSizing: "content" }}
 			className={cn(
-				"text-[0.9rem] h-8 px-2 py-1 rounded-sm bg-transparent outline-none cursor-pointer hover:bg-accent hover:text-accent-foreground",
+				"text-[0.9rem] h-8 min-w-0 max-w-full truncate px-2 py-1 rounded-sm bg-transparent outline-none cursor-pointer hover:bg-accent hover:text-accent-foreground",
 				isEditing && "ring-1 ring-ring cursor-text hover:bg-transparent",
 			)}
 		/>

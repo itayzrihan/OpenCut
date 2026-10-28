@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6fb7d025797a09bcc99001a86e85003ea5dd070be07fe33de216f4f02027ae8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:19:50.635Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {execFileSync} from 'node:child_process';\nconst id='task_d44e07ea-2935-4e6b-a99f-b5deadc3f116', actor='codex:01a12f05-0e65-7b01-b39e-565b96811fb4';\nconst run=(args)=>JSON.parse(execFileSync(process.execPath,['bin/dip.js','task',...args],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));\nconst lease=run(['claim','--id',id,'--actor',actor,'--ttl','600000']);\nconst steps=[{step:'Pin exact local, installed and candidate sources',status:'completed'},{step:'Implement automatic lifecycle, bounded context and faster hooks',status:'completed'},{step:'Run regression, package, browser, legacy-read and runtime experiments',status:'completed'},{step:'Run twelve native model turns; retain infrastructure failures and evaluate failed gate',status:'completed'},{step:'Evaluate fixed .1 in a newly authorized bounded comparison, then a real native workflow if eligible',status:'pending'},{step:'Roll out globally only if acceptance passes; keep reviewed rollback',status:'pending'}];\nrun(['plan','--id',id,'--actor',actor,'--token',lease.token,'--steps',JSON.stringify(steps)]);\nfor(const p of ['docs/benchmarks/automatic-workflow-report.md','docs/benchmarks/2026-10-28-native-pilot-incident.md'])run(['document-link','--id',id,'--actor',actor,'--token',lease.token,'--path',p,'--role','reference']);\nconst summary='All 8 isolated hooks trusted; 297 native events, zero hook failures. Used all 12 authorized starts: 11 completed, one interrupted after MCP environment failure; no retries. All 66 evaluated functional and 30 memory checks pass. Measured .0 fails gate: routine calls30→14 (53.3% vs70%), payload proxy121764→62691 (48.5% vs60%), incomplete paired timing, all3 automatic recoveries leave originals open. Fixed harness MCP/CLI isolation and added no-model preflight. Working .1 clarifies adoption/finish arguments;170 tests168 pass2 skips; package smoke passes. Frozen source/raw results/report preserved. Global remains0.3.12 ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-a3c9a180-60c9-4889-a973-7bc100f42019"
+      },
+      {
+        "at": "2026-10-28T03:19:50.968Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'NODE'\nimport fs from 'node:fs';import {execFileSync} from 'node:child_process';\nconst id='task_d44e07ea-2935-4e6b-a99f-b5deadc3f116', actor='codex:01a12f05-0e65-7b01-b39e-565b96811fb4';\nconst run=(args)=>JSON.parse(execFileSync(process.execPath,['bin/dip.js','task',...args],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));\nconst lease=run(['claim','--id',id,'--actor',actor,'--ttl','600000']);\nconst steps=[{step:'Pin exact local, installed and candidate sources',status:'completed'},{step:'Implement automatic lifecycle, bounded context and faster hooks',status:'completed'},{step:'Run regression, package, browser, legacy-read and runtime experiments',status:'completed'},{step:'Run twelve native model turns; retain infrastructure failures and evaluate failed gate',status:'completed'},{step:'Evaluate fixed .1 in a newly authorized bounded comparison, then a real native workflow if eligible',status:'pending'},{step:'Roll out globally only if acceptance passes; keep reviewed rollback',status:'pending'}];\nrun(['plan','--id',id,'--actor',actor,'--token',lease.token,'--steps',JSON.stringify(steps)]);\nfor(const p of ['docs/benchmarks/automatic-workflow-report.md','docs/benchmarks/2026-10-28-native-pilot-incident.md'])run(['document-link','--id',id,'--actor',actor,'--token',lease.token,'--path',p,'--role','reference']);\nconst summary='All 8 isolated hooks trusted; 297 native events, zero hook failures. Used all 12 authorized starts: 11 completed, one interrupted after MCP environment failure; no retries. All 66 evaluated functional and 30 memory checks pass. Measured .0 fails gate: routine calls30→14 (53.3% vs70%), payload proxy121764→62691 (48.5% vs60%), incomplete paired timing, all3 automatic recoveries leave originals open. Fixed harness MCP/CLI isolation and added no-model preflight. Working .1 clarifies adoption/finish arguments;170 tests168 pass2 skips; package smoke passes. Frozen source/raw results/report preserved. Global remains0.3.12 ",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a3c9a180-60c9-4889-a973-7bc100f42019"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:19:51.478Z",
+  "parents": [],
+  "branch": "main"
+}

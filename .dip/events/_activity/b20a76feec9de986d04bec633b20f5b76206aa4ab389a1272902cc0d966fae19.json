@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b20a76feec9de986d04bec633b20f5b76206aa4ab389a1272902cc0d966fae19",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-28T03:18:19.647Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_8eca0bb71cda597a6e4e75f0c675f74366fbc6472faac655372c93bdb05aed76",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,tarfile,json,hashlib,shutil\nb=pathlib.Path('/private/tmp/dip-automatic-pilot-20261028');d=pathlib.Path('docs/benchmarks')\nfor source,target in [('scripts/automatic-model-pilot.mjs','harness.resumption.mjs'),('scripts/pilot-support.mjs','pilot-support.resumption.mjs'),('scripts/summarize-automatic-pilot.mjs','summarize-used.mjs')]:shutil.copyfile(source,b/target)\np=d/'2026-10-28-native-model-raw-manifest.json';m=json.load(open(p));files=[b/x['path'] for x in m['files']]+[b/'harness.resumption.mjs',b/'pilot-support.resumption.mjs',b/'summarize-used.mjs']\na=d/m['archive']\nwith tarfile.open(a,'w:gz') as tar:\n    for f in sorted(files):tar.add(f,arcname=str(f.relative_to(b)),recursive=False)\nm['sha256']=hashlib.sha256(a.read_bytes()).hexdigest();m['files']=[{'path':str(f.relative_to(b)),'bytes':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in sorted(files)]\np.write_text(json.dumps(m,indent=2)+'\\n');p=d/'2026-10-28-acceptance.json';s=json.load(open(p));s['rawArchiveSha256']=m['sha256'];p.write_text(json.dumps(s,indent=2)+'\\n')\nprint(json.dumps({'files':len(files),'archiveBytes':a.stat().st_size,'sha256':m['sha256']}))\nPY\nnpm pack --json --pack-destination .dip-local/releases > /tmp/dip-automatic1-pack.json",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-d40a94eb-2260-44df-a996-8972bd518f56"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:18:20.380Z",
+  "parents": [],
+  "branch": "main"
+}

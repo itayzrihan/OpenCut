@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "eventId": "72758873-02eb-401b-b254-b2d65bf15e19",
+  "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Replaced two Start/End text/key-badge buttons with36px icon dropdown using existing trim actions. Removed old scene selector from timeline and reused ScenesView with reactive active-scene label centered in header, bounded/truncated title and two-row fallback below1024px. Production TypeScript and optimized build pass. Activated candidate2026-10-28T03-23-16-249Z-8d720461; production restart inprogress. Isolated existing test project b54fef34 has baseline source saved and a new long-name test scene for switching. All user projects saved/unchanged. Note unrelated staged DIP activity deletions pre-existed this turn; left untouched.",
+    "next": "Reload scratch editor; capture live dropdown width and centered selector metrics, verify dropdown Start/End, S/E equivalence and Undo, switch long scene and back; screenshot, configuredcheck and finish.",
+    "head": "8d72046144473189c78b8380489485302eee67a3"
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-28T03:24:42.095Z",
+  "parents": [
+    "4932a31d-16d5-4b5f-b8b8-3cc61a3e898f"
+  ],
+  "branch": "main"
+}

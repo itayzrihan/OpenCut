@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "933073236395f4cf2f84c8e951cb4edf1b3e0fa05f6a356c427cfc8ea12e644f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T03:19:11.256Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_97bf85f5580f5a45489462cdee28472a93915ca43e6d64d8ce206f37d623373e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/timeline/components/timeline-toolbar.tsx';s=open(p).read();s=s.replace('import {\\n\\tSplitButton,\\n\\tSplitButtonLeft,\\n\\tSplitButtonRight,\\n\\tSplitButtonSeparator,\\n} from \"@/components/ui/split-button\";\\n','').replace('import { ScenesView } from \"@/components/editor/scenes-view\";\\n','').replace('\\n\\tLayers01Icon,','').replace('\\n\\t\\t\\t\\t<SceneSelector />\\n','');a=s.index('\\n\\t\\t\\t\\t<div\\n\\t\\t\\t\\t\\trole=\"group\"\\n\\t\\t\\t\\t\\taria-label=\"Start End\"');b=s.index('\\n\\n\\t\\t\\t\\t<CutSilenceToolbarControl',a);s=s[:a]+'''\n\t\t\t\t<DropdownMenu>\n\t\t\t\t\t<DropdownMenuTrigger asChild>\n\t\t\t\t\t\t<Button\n\t\t\t\t\t\t\tvariant=\"ghost\"\n\t\t\t\t\t\t\tsize=\"sm\"\n\t\t\t\t\t\t\tclassName=\"h-7 w-9 shrink-0 gap-0.5 px-1\"\n\t\t\t\t\t\t\taria-label=\"Start End\"\n\t\t\t\t\t\t\ttitle=\"Start / End\"\n\t\t\t\t\t\t\tdata-native-keyboard-activation\n\t\t\t\t\t\t\tonClick={(event) => event.stopPropagation()}\n\t\t\t\t\t\t>\n\t\t\t\t\t\t\t<HugeiconsIcon icon={ScissorIcon} className=\"size-3.5!\" />\n\t\t\t\t\t\t\t<HugeiconsIcon icon={ArrowDown01Icon} className=\"size-2.5!\" />\n\t\t\t\t\t\t</Button>\n\t\t\t\t\t</DropdownMenuTrigger>\n\t\t\t\t\t<DropdownMenuContent align=\"start\">\n\t\t\t\t\t\t<DropdownMenuItem onSelect={() => invokeAction(\"trim-start\")}>\n\t\t\t\t\t\t\t<HugeiconsIcon icon={AlignLeftIcon} /> Start\n\t\t\t\t\t\t</DropdownMenuItem>\n\t\t\t\t\t\t<DropdownMenuItem onSelect={() => invokeAction(\"trim-end\")}>\n\t\t\t\t\t\t\t<HugeiconsIcon icon={AlignRightIcon} /> End\n\t\t\t\t\t\t</DropdownMenuItem>\n\t\t\t\t\t</DropdownMenuContent>\n\t\t\t\t</DropdownMenu>\n'''+s[b:];a=s.index('\\nfunction SceneSelector()');b=s.index('\\nfunction ToolbarRightSection(',a);s=s[:a]+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/components/editor/editor-header.tsx';s=open(p).read().replace('import { useEditor, useEditorProject } from \"@/editor/use-editor\";','import { useEditor, useEditorProject, useEditorTimelineScenes } from \"@/editor/use-editor\";\\nimport { ScenesView } from \"./scenes-view\";\\nimport { Layers, ChevronDown } from \"lucide-react\";');s=s.replace('<header className=\"bg-background flex h-[3.4rem] items-center justify-between ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8259d5e6-9037-4cc0-b9df-9f7996f3bfd0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T03:19:11.432Z",
+  "parents": [],
+  "branch": "main"
+}
