@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c165339d6314d551a4991c6bccf56c8deb1ead134e27e9287d0f40d0192a943",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:37:54.599Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --numstat -- . ':!.dip' ':!AGENTS.md' ':!CLAUDE.md'; sed -n '1,220p' classic/apps/web/src/editor-agent/__tests__/earshot-preview-browser.test.ts; git diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-bc71df3c-33c4-458d-be4e-639c61e8f5ba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:37:54.606Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab13addaa7cb906d9a14f8260ca1140a773161276e0d84e2074ea99f90a73685",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:25:52.238Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/docs/deepseek-agent-permissions.md <<'EOF'\n# Electron agent permissions\n\nImplemented on `codex/deepseek-video-agent`, on top of the pinned DeepSeek Harness loop integration. Codex subscription sign-in and the existing provider transport remain unchanged.\n\nThe composer has a permission picker and, in Electron, an independent computer-access switch. Default: **Confirm destructive actions**, computer access **off**.\n\n| Mode | Editor projects | Computer access enabled in Electron |\n| --- | --- | --- |\n| Plan | Inspect and propose a plan; no mutations | List folders and read UTF-8 files; no writes or shell |\n| Confirm destructive actions | Reversible edits run; destructive capabilities pause for one-use approval | Read files; native confirmation for every file change and shell command |\n| Full access | Execute available read/write/destructive capabilities | Read/change/delete files and execute commands without individual approvals |\n\nFull access still follows OS permissions. It does not expose credentials, policy administration, or new generic machine endpoints through the desktop MCP server. Arbitrary shell is deliberately treated as destructive: reliable classification of a shell program is not possible. Turning computer access on always shows a native dialog describing the selected mode. A request in chat cannot change the mode.\n\n## Architecture and migration\n\n- **Bridged:** serializable `EditorDocument.agentPolicy`, typed `agent.policy.set`, Rust agent enforcement and approval tickets. Read policy through `app.state.read` at `/agentPolicy`. Policy mutation is host/Admin only; model runs have at most Destructive access.\n- **Classic Electron only:** typed `computer.files.inspect`, `computer.files.change`, `computer.terminal.execute` capabilities are installed with the desktop host bridge. The registry owns schemas and MCP projection; no separate MCP tool definitions or machine endpoints were added. Browser hosts cannot execute computer IO.\n- **Platform IO",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-12e86d74-0c54-4b50-a7ab-0ece7a340133"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:25:52.243Z",
+  "parents": [],
+  "branch": "main"
+}

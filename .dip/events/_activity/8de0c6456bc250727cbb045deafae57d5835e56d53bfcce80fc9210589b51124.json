@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8de0c6456bc250727cbb045deafae57d5835e56d53bfcce80fc9210589b51124",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:30:00.963Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -22 .dip/config.json; sed -n '1,60p' classic/apps/web/src/editor-agent/client.ts | head -25; git diff --name-only | wc -l",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-5fd45c5a-aa00-467a-9916-a6881f2405d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:30:00.971Z",
+  "parents": [],
+  "branch": "main"
+}

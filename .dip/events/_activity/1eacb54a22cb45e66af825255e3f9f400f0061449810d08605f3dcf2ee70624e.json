@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1eacb54a22cb45e66af825255e3f9f400f0061449810d08605f3dcf2ee70624e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:22.619Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module - <<'JS'\nimport {rm} from 'node:fs/promises';\nfor(const name of ['.next-catalog-check','.next-transcription-debug','.next-brand-kit-qa','.next-advanced-podcast']){\n await rm(`classic/apps/web/${name}`,{recursive:true});console.log(`Removed generated build: ${name}`);\n}\nJS\ndf -h /Users/itayzrihan\nnode classic/scripts/local-production/build.mjs --stage > .local/protect-speech-default-2026-10-29/production-build-retry.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-a9497dd6-8b32-4f21-9a20-353764e88ba1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:22.632Z",
+  "parents": [],
+  "branch": "main"
+}

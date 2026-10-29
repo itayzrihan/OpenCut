@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fe4c703f21d80dc88e1a737d19fce82a679be234fe21fc2ba72c80bf648891c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:27:45.152Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/protect-speech-default-2026-10-29/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-67a42cc0-8a55-4657-8686-25cbd149c424"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:27:45.160Z",
+  "parents": [],
+  "branch": "main"
+}

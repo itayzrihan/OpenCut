@@ -1421,3 +1421,167 @@ async fn silence_cleanup_after_manual_deletion_preserves_edit_and_all_speech() {
     let switched = read(&r).await;
     assert_other_takes_preserved(scene(&after), scene(&switched), 0);
 }
+
+#[tokio::test]
+async fn silence_cleanup_without_evidence_preserves_extended_edited_takes() {
+    let r = setup().await;
+    call(&r, EDIT, assemble(&read(&r).await)).await;
+    let state = read(&r).await;
+    let mut classic = state["project"]["classic"].clone();
+    let clip = &mut classic["document"]["scenes"][0]["tracks"]["main"]["elements"][0];
+    clip["duration"] = json!(clip["duration"].as_i64().unwrap() + 6000);
+    clip["trimEnd"] = json!(clip["trimEnd"].as_i64().unwrap() - 6000);
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    call(
+        &r,
+        EDIT,
+        input(&before, json!({"type":"cleanSilence","audioEvidence":[]})),
+    )
+    .await;
+    assert_eq!(scene(&before)["tracks"], scene(&read(&r).await)["tracks"]);
+}
+
+#[tokio::test]
+async fn private_current_project_silence_cleanup_does_not_reassemble_edits() {
+    let Ok(path) = std::env::var("OPENCUT_CURRENT_SILENCE_FIXTURE") else {
+        return;
+    };
+    let project: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let session: Value =
+        serde_json::from_str(project["__opencutEditorSession"].as_str().unwrap()).unwrap();
+    let classic = &session["saved"]["bundle"]["archive"]["classic"];
+    let r = OpenCutRuntime::default();
+    let id = &classic["document"]["metadata"]["id"];
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":id,"expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    call(&r, EDIT, json!({"projectId":id,"sceneId":classic["document"]["currentSceneId"],"expectedRevision":before["revision"],"change":{"type":"cleanSilence","audioEvidence":[]}})).await;
+    assert_eq!(scene(&before)["tracks"], scene(&read(&r).await)["tracks"]);
+    if let Ok(path) = std::env::var("OPENCUT_CURRENT_SILENCE_EVIDENCE") {
+        let evidence: Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        let before = read(&r).await;
+        call(&r, EDIT, json!({"projectId":id,"sceneId":classic["document"]["currentSceneId"],"expectedRevision":before["revision"],"change":{"type":"cleanSilence","audioEvidence":evidence}})).await;
+        let after = read(&r).await;
+        assert_eq!(transcript(scene(&before)), transcript(scene(&after)));
+        assert_eq!(
+            scene(&before)["takeAssembly"]["sourceTracks"],
+            scene(&after)["takeAssembly"]["sourceTracks"]
+        );
+        assert_eq!(
+            scene(&before)["takeAssembly"]["plan"],
+            scene(&after)["takeAssembly"]["plan"]
+        );
+        let duration = |s: &Value| {
+            s["tracks"]["main"]["elements"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| e["duration"].as_i64().unwrap())
+                .sum::<i64>()
+        };
+        if let Ok(path) = std::env::var("OPENCUT_CURRENT_SILENCE_RESULT") {
+            std::fs::write(path, serde_json::to_string_pretty(&after).unwrap()).unwrap();
+        }
+        assert!(
+            duration(scene(&after)) <= duration(scene(&before)),
+            "Cleanup must never restore or extend edited footage"
+        );
+        call(&r, "history.undo", json!({})).await;
+        assert_eq!(read(&r).await["project"], before["project"]);
+    }
+}
+
+#[tokio::test]
+async fn cleanup_cuts_live_extended_source_only_in_selected_occurrences_and_undoes() {
+    let r = setup_with_word_times(&[(1, 1.1, 1.4), (2, 3.1, 3.5)]).await;
+    call(&r, EDIT, assemble(&read(&r).await)).await;
+    let state = read(&r).await;
+    let mut classic = state["project"]["classic"].clone();
+    let s = &mut classic["document"]["scenes"][0];
+    let elements = s["tracks"]["main"]["elements"].as_array_mut().unwrap();
+    let id = elements[0]["id"].clone();
+    let mut duplicate = elements[0].clone();
+    duplicate["id"] = json!("unselected-same-group");
+    duplicate["startTime"] = json!(2400000);
+    elements.push(duplicate.clone());
+    elements[0]["duration"] = json!(elements[0]["duration"].as_i64().unwrap() + 6000);
+    elements[0]["trimEnd"] = json!(elements[0]["trimEnd"].as_i64().unwrap() - 6000);
+    elements[0]["params"]["transform.scaleX"] = json!(1.3);
+    let old_duration = elements[0]["duration"].as_i64().unwrap();
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    let frames: Vec<_> = (50..570).map(|i| { let t=i as f64/100.0;
+        let energy=if (1.0..1.55).contains(&t)||(3.0..3.65).contains(&t)||(4.0..5.7).contains(&t) {0.15} else {0.001};
+        json!({"start":t,"end":(i+1) as f64/100.0,"rms":energy,"peak":energy*1.4,"zeroCrossingRate":0.1}) }).collect();
+    let evidence = json!([{"clipId":"item-2","frames":frames}]);
+    call(&r, EDIT, input(&before,json!({"type":"cleanSilence","elementIds":[id],"groupIndexes":[0],"audioEvidence":evidence}))).await;
+    let after = read(&r).await;
+    let elements = scene(&after)["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap();
+    let duplicate_after = elements
+        .iter()
+        .find(|e| e["id"] == "unselected-same-group")
+        .unwrap();
+    let mut expected = duplicate;
+    expected["startTime"] = duplicate_after["startTime"].clone();
+    assert_eq!(
+        &expected, duplicate_after,
+        "Same-group unselected occurrence must only ripple"
+    );
+    let selected: Vec<_> = elements
+        .iter()
+        .filter(|e| e["takeGroup"]["groupIndex"] == 0 && e["id"] != "unselected-same-group")
+        .collect();
+    assert!(selected.len() >= 2);
+    assert!(
+        selected
+            .iter()
+            .all(|e| e["params"]["transform.scaleX"] == 1.3)
+    );
+    assert!(
+        selected
+            .iter()
+            .map(|e| e["duration"].as_i64().unwrap())
+            .sum::<i64>()
+            < old_duration
+    );
+    assert_eq!(transcript(scene(&before)), transcript(scene(&after)));
+    assert_eq!(
+        scene(&before)["takeAssembly"]["sourceTracks"],
+        scene(&after)["takeAssembly"]["sourceTracks"]
+    );
+    assert_eq!(
+        scene(&before)["takeAssembly"]["plan"],
+        scene(&after)["takeAssembly"]["plan"]
+    );
+    let selected_ids: Vec<_> = selected.iter().map(|e| e["id"].clone()).collect();
+    call(&r,EDIT,input(&after,json!({"type":"cleanSilence","elementIds":selected_ids,"groupIndexes":[0],"audioEvidence":evidence}))).await;
+    let repeated = read(&r).await;
+    assert_eq!(
+        scene(&after)["tracks"],
+        scene(&repeated)["tracks"],
+        "Repeated cleanup must not restore or erode retained speech"
+    );
+    call(&r, "history.undo", json!({})).await;
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+}

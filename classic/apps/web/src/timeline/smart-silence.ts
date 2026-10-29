@@ -37,8 +37,8 @@ export async function removeSmartSilence({
 	const project = editor.project.getActive();
 	const scene = editor.scenes.getActiveScene();
 	if (scene.takeAssembly) {
-		// Rebuild the archived performances through the same native assembly:
-		// source clocks and alternate takes survive pause removal and Undo.
+		// Native cleanup maps archived audio evidence onto the live clips;
+		// manual edits, source clocks and all alternatives survive.
 		return editor.command.cleanSmartTakeSilence({ signal, minSilenceSeconds });
 	}
 	const before = scene.tracks;

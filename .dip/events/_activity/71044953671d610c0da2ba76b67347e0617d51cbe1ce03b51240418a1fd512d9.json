@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71044953671d610c0da2ba76b67347e0617d51cbe1ce03b51240418a1fd512d9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:30:59.902Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text().replace('  this.invokeCanonicalControl({accountId:this.agentAccountId(),projectId,capabilityId:\"agent.policy.set\",input});','  this.invokeCanonicalControl({accountId:this.agentAccountId(),projectId,capabilityId:\"agent.policy.set\",input});\\n  if(snapshot && ![\"completed\",\"failed\"].includes(snapshot.phase)) this.executeEditingAgentCommand({type:\"steer\",text:\"The user changed agent permissions in the editor. Previous pending approvals are cancelled. Inspect the current policy before continuing.\"});');p.write_text(s)\n# Format only new TS methods.\nimport subprocess\nfor filename,start,end,wrapper in [('classic/apps/web/src/core/managers/commands.ts',' getEditingAgentPolicy():','\\n\\tgetEditingAgentSnapshot():','class PermissionControls {\\n'),('classic/apps/web/src/core/canonical-classic-session.ts','\\tagentPolicy():','\\n\\tinvokeControl(','class Session {\\n')]:\n p=Path(filename);s=p.read_text();a=s.index(start);b=s.index(end,a);chunk=wrapper+s[a:b]+'\\n}\\n'\n out=subprocess.run(['node','classic/node_modules/prettier/bin/prettier.cjs','--parser','typescript'],input=chunk,text=True,capture_output=True,check=True).stdout\n out=out[out.index('{')+1:out.rindex('}')].strip('\\n')+'\\n'\n p.write_text(s[:a]+out+s[b:])\nPY\nnode classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-5b3f926a-13cd-4a7c-8dec-69ebb85511ac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:30:59.910Z",
+  "parents": [],
+  "branch": "main"
+}

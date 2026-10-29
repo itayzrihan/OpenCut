@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9e525756d754ff558b93cd43159a358239b987711fe089211a9f9b775522bd54",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:24:54.661Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git apply --stat /tmp/earshot-ai-mcp-final.patch\nsed -n '1,210p' crates/editor-api/tests/classic_automation_host.rs\nsed -n '1,140p' classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts\nrg -n 'test\\(' classic/apps/web/src/batch/server.test.ts | tail -5",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d2dbf922-c5f0-49e1-9a02-4f3bb010dc4b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:24:54.669Z",
+  "parents": [],
+  "branch": "main"
+}

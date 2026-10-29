@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "697714469b39ff5a1e5644eab9eaa8e3c8237cf50ad693e7feee318e9338e41a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:35:09.595Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess\nnew=subprocess.check_output(['git','ls-files','--others','--exclude-standard','classic/apps/web/src'],text=True).splitlines()\nfiles=[x for x in new if x.endswith(('.ts','.tsx','.json'))]\nfiles+=['classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts']\nsubprocess.run(['node','classic/node_modules/.bin/prettier','--write',*files],check=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-47cb1c5e-898f-4fc2-af8e-dd941ec56e69"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:35:09.602Z",
+  "parents": [],
+  "branch": "main"
+}

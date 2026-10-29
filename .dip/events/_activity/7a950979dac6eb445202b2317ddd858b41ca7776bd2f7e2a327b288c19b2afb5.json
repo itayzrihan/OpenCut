@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a950979dac6eb445202b2317ddd858b41ca7776bd2f7e2a327b288c19b2afb5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:39:55.526Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\np=Path('/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/classic/apps/web/.next-earshot-turbo')\nassert p.is_dir() and not p.is_symlink()\nshutil.rmtree(p)\nprint('Removed stopped Earshot QA build cache')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ce7bac9a-53e1-4bc3-be04-8d4e013dbf48"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:39:55.550Z",
+  "parents": [],
+  "branch": "main"
+}

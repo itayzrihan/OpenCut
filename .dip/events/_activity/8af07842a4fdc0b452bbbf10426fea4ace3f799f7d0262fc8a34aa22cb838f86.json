@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8af07842a4fdc0b452bbbf10426fea4ace3f799f7d0262fc8a34aa22cb838f86",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:30:02.215Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/analysis/earshot-integration-2026-10-29/verify-mcp.mjs",
+          "/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.dip/config.json"
+        ],
+        "changeHash": "cd8cb9d5e6da6c869422c4bfa682d772fe7daadb7e5ba3528d6af50be2377645",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c4cff09d-3c59-4f6b-beb3-034b40ee2014"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:30:02.222Z",
+  "parents": [],
+  "branch": "main"
+}

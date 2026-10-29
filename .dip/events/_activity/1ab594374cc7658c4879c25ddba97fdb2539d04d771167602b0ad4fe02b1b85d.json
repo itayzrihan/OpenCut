@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ab594374cc7658c4879c25ddba97fdb2539d04d771167602b0ad4fe02b1b85d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:33:42.898Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_takes/cleanup.rs <<'RS'\n//! Silence cleanup edits the live timeline. Archived analysis supplies evidence,\n//! never replacement footage or an assembly snapshot to restore.\nuse super::*;\n\ntype Range = (i64, i64);\nfn bounds(e: &Value) -> Result<Range, CapabilityError> {\n    let s = tick(&e[\"startTime\"])?;\n    Ok((s, s + tick(&e[\"duration\"])?))\n}\nfn merge(mut ranges: Vec<Range>) -> Vec<Range> {\n    ranges.sort_unstable();\n    let mut joined: Vec<Range> = vec![];\n    for (a, b) in ranges {\n        if a >= b { continue; }\n        if let Some(last) = joined.last_mut().filter(|last| a <= last.1) {\n            last.1 = last.1.max(b);\n        } else { joined.push((a, b)); }\n    }\n    joined\n}\nfn retained(from: i64, to: i64, cuts: &[Range]) -> Vec<Range> {\n    let mut cursor = from;\n    let mut result = vec![];\n    for &(a, b) in cuts {\n        if b <= cursor || a >= to { continue; }\n        if a > cursor { result.push((cursor, a.min(to))); }\n        cursor = cursor.max(b).min(to);\n    }\n    if cursor < to { result.push((cursor, to)); }\n    result\n}\nfn mapped(time: i64, cuts: &[Range]) -> i64 {\n    time - cuts.iter().map(|&(a,b)| (time.min(b)-a).max(0)).sum::<i64>()\n}\n\npub(super) fn apply(\n    assembly: &Assembly,\n    scene: &Value,\n    groups: Option<&[usize]>,\n    ids: Option<&[String]>,\n    minimum: f64,\n    fresh: &mut dyn FnMut() -> String,\n    context: &InvocationContext,\n) -> Result<(Value, Value), CapabilityError> {\n    let before = &scene[\"tracks\"];\n    let selected = |e: &Value| {\n        e[\"takeGroup\"][\"assemblyId\"] == assembly.id\n            && e[\"takeGroup\"][\"groupIndex\"].as_u64().is_some_and(|i|\n                groups.is_none_or(|g| g.contains(&(i as usize))))\n            && ids.is_none_or(|ids| ids.iter().any(|id| e[\"id\"] == *id))\n    };\n    if let Some(ids) = ids {\n        if ids.is_empty() || ids.iter().collect::<HashSet<_>>().len() != ids.len()\n            || ids.iter().any(|id| !arr(&before[\"main\"][\"elements\"])",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d9535dda-3282-4812-9e6e-273c98b85c49"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:33:42.906Z",
+  "parents": [],
+  "branch": "main"
+}

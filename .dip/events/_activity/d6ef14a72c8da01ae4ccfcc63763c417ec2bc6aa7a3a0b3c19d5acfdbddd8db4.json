@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6ef14a72c8da01ae4ccfcc63763c417ec2bc6aa7a3a0b3c19d5acfdbddd8db4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:19:51.127Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node -p 'require.resolve(\"electron\")'; node -p 'require(\"electron\")'",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-0b831eaf-6d56-4b90-b490-d2c9848137f5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:19:51.131Z",
+  "parents": [],
+  "branch": "main"
+}

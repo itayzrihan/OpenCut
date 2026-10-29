@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7a4a7d89415bcd2474e8b88f0315ea859fc4c48e757623b27b7aff529a19c5a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:37:18.796Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -o pid,etime,rss,pcpu,command -p 26919; du -sh .local/earshot-cargo-target .local/classic-web-tests; git diff --check; rg -n 'completed|failed|pass' .local/classic-web-tests/1793255653925/summary.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-ea947664-655c-43c2-b4ed-4872dd7d196f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:37:18.800Z",
+  "parents": [],
+  "branch": "main"
+}

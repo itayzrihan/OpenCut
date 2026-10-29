@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "130d9d70a1fb120f8655e5d06f74b87775fc54737d6709875ce8f7a940395e89",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:27:27.973Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport difflib\npaths=['crates/mcp/src/classic_bridge.rs','classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/mcp/canonical-transport.ts']\nold={p:Path(p).read_text() for p in paths}\np=Path(paths[2]);s=p.read_text();a=s.index('export function advertiseCanonicalRegistry');b=s.index('export function encodeArtifactBytes',a)\ns=s[:a]+'''/** Host support is checked both during discovery and immediately before execution. */\nexport function canonicalMcpDescriptor(source: CanonicalDescriptor): CanonicalDescriptor {\n  const shellOnly = [\"project.create\", \"project.open\", \"project.activate\", \"project.close\"].includes(source.id);\n  const agentArtifactHost = [\"editor.preview.render\", \"editor.export.render\", \"hyperframes.examples.import\", \"hyperframes.composition.remix\", \"editor.ui.screenshot\", \"imagegen.generate\"].includes(source.id);\n  if (shellOnly) return {...source, available: false, unavailableReason: \"Use the editor shell to switch or create browser projects\"};\n  if (agentArtifactHost) return {...source, available: false, unavailableReason: \"This adapter requires the internal editing agent artifact host. Use the existing Classic export-plan/start_export_task workflow for live exports.\"};\n  return source;\n}\nexport function advertiseCanonicalRegistry(value: unknown) {\n  return canonicalRegistrySchema.parse(value).capabilities.map(canonicalMcpDescriptor).map((canonical) => ({\n    name: `canonical.${canonical.id}`, description: canonical.description,\n    parameters: canonical.inputSchema, category: canonical.category, keywords: canonical.tags,\n    readOnly: canonical.access === \"read\", idempotent: canonical.idempotent,\n    openWorld: canonical.openWorld, risk: canonical.access, canonical,\n  }));\n}\n'''+s[b:];p.write_text(s)\np=Path(paths[1]);s=p.read_text().replace('import { canonicalRegistrySchema,','import { canonicalMcpDescriptor, canonicalRegistrySchema,',1).replace('canonicalRegistrySchema.parse(session.readCapabilit",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-f76dc146-3ef9-451d-8e1c-20ee2a1146a6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:27:27.983Z",
+  "parents": [],
+  "branch": "main"
+}

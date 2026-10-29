@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d4369cffa876ab762eb449d6637a69870593a3e505a6e1b1ca37584f9cc459b9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:11.211Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\npaths=['crates/mcp/src/classic_bridge.rs','classic/apps/web/src/core/managers/commands.ts','classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts','classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts']\nfor i,p in enumerate(paths): Path(f'/tmp/earshot-transport-before-retry-{i}').write_bytes(Path(p).read_bytes())\np=Path(paths[0]);s=p.read_text();s=s.replace('            && Some(expected_revision) != actual_revision','            && !(canonical && context.metadata.get(\"opencut/idempotencyKey\").and_then(Value::as_str).is_some())\\n            && Some(expected_revision) != actual_revision',1)\ns=s.replace('incoming.iter().map(|a| a.metadata.byte_size).sum::<u64>()','incoming.iter().fold(0_u64, |sum, a| sum.saturating_add(a.metadata.byte_size))',1)\ns=s.replace('let mut stale=input; stale[\"expectedRevision\"]=json!(999); stale[\"idempotencyKey\"]=json!(\"stale-call\");','let mut stale=input; stale[\"expectedRevision\"]=json!(999); stale.as_object_mut().unwrap().remove(\"idempotencyKey\");',1)\nmark='    #[tokio::test]\\n    async fn cancelled_live_commands_are_signalled_to_the_owning_browser()'\ntest='''    #[tokio::test]\n    async fn lost_browser_reply_retries_the_original_revision_without_repeating_the_write() {\n        let (native,browser,host,bridge)=setup().await;\n        let mut context=InvocationContext::default();\n        context.metadata.insert(\"opencut/idempotencyKey\".into(),json!(\"lost-reply\"));\n        let input=json!({\"projectId\":\"classic-project\",\"expectedRevision\":1,\"settings\":{\"canvasSize\":{\"width\":720,\"height\":1280}}});\n        let cancel=context.cancellation.clone();\n        let pending=native.registry().invoke(\"classic.canonical.project.classic.settings.update\",context.clone(),input.clone());\n        tokio::pin!(pending);\n        let command=tokio::select! { _=&mut pending=>panic!(\"must await browser\"), c=next(&bridge)=>c };\n        // The browser commits and caches its canonical receipt; the reply is lost.\n  ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-243c1e30-6b09-4703-ac14-f41a0d3ab6c7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:11.221Z",
+  "parents": [],
+  "branch": "main"
+}

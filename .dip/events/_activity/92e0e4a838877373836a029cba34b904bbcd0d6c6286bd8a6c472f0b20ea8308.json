@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "92e0e4a838877373836a029cba34b904bbcd0d6c6286bd8a6c472f0b20ea8308",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:19:10.466Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/protect-speech-default-2026-10-29/commit-index.lock",
+          ".local/protect-speech-default-2026-10-29/commit-index",
+          ".local/protect-speech-default-2026-10-29/commit.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f7ce951d-05f0-4b4f-b191-e83a8056217e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:19:10.468Z",
+  "parents": [],
+  "branch": "main"
+}

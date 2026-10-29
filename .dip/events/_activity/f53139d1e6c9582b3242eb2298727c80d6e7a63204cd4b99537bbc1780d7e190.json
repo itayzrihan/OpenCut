@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f53139d1e6c9582b3242eb2298727c80d6e7a63204cd4b99537bbc1780d7e190",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:41:25.706Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/electron/test/agent-computer.test.js <<'EOF'\n\ntest(\"a revocation while the enable dialog is open cannot revive computer access\",async t=>{\n let resolve,opened;\n const shown=new Promise(r=>{opened=r;});\n const f=await fixture(t,{confirm:()=>{opened();return new Promise(r=>{resolve=r;});}});\n const pending=f.service.setAccess({...scope,enabled:true});await shown;f.service.revoke();resolve(true);\n assert.deepEqual(await pending,{enabled:false});await assert.rejects(f.execute({type:\"list\",path:f.dir}),/off/);\n});\n\ntest(\"UTF-8 chunk boundaries and old receipts survive cancellation without redoing writes\",async t=>{\n const f=await fixture(t);await f.service.setAccess({...scope,enabled:true});\n const file=path.join(f.dir,\"unicode.txt\"),text=\"א\".repeat(3000)+\"end\";\n const op={type:\"write\",path:file,content:text,expectedSha256:null};\n const receipt=await f.execute(op,\"unicode\");\n const first=JSON.parse((await f.execute({type:\"read\",path:file,offset:0},\"chunk1\")).text);\n const second=JSON.parse((await f.execute({type:\"read\",path:file,offset:first.nextOffset},\"chunk2\")).text);\n assert.equal(first.text+second.text,text);assert.equal(first.sha256,second.sha256);\n f.service.revoke();assert.deepEqual(await f.execute(op,\"unicode\"),receipt);assert.equal(f.prompts.length,2);\n});\nEOF\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/electron/test/agent-computer.test.js\nnode --test classic/apps/electron/test/agent-computer.test.js\npython3 - <<'PY'\np='/tmp/opencut-agent-ui.cjs';s=open(p).read().replace(\"await page.waitForTimeout(2000);\",\"await page.waitForFunction(()=>document.querySelector('[aria-label=\\\"Agent permission mode\\\"]')?.value==='plan');\").replace(\"{name:'Computer access off',exact:true}).check()\",\"{name:'Computer access off',exact:true}).click()\").replace(\"{name:'Computer access on',exact:true}).uncheck()\",\"{name:'Computer access on',exact:true}).click()\")\n# use existing isolated project directly, avoiding unrelated onboarding dial",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-b3ce49e8-94ed-4b30-8e57-bd44beea0a7d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:41:25.738Z",
+  "parents": [],
+  "branch": "main"
+}

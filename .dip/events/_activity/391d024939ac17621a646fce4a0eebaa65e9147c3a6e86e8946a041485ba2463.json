@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "391d024939ac17621a646fce4a0eebaa65e9147c3a6e86e8946a041485ba2463",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:24:40.587Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/editor-agent/scene-automation-effects.ts src/editor-agent/__tests__/scene-automation-effects.test.ts src/ai/__tests__/automatic-word-animation-earshot.test.ts src/project/types.ts src/batch/scene-jobs.ts src/batch/server.ts src/batch/server.test.ts src/app/api/batch-edit/route.ts --format json --output-file /tmp/earshot-ai-mcp-eslint-final.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-a0cb5214-e6de-44e2-a338-ca9acd05d36e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:24:40.594Z",
+  "parents": [],
+  "branch": "main"
+}

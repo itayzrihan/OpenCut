@@ -134,7 +134,7 @@ fn timeline_time(edits: &[Edit], time: i64) -> i64 {
     }
     time + shift
 }
-fn crop(
+pub(super) fn crop(
     e: &Value,
     from: i64,
     to: i64,

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "012337111a65eb658e1da240d446d352c137547c3782b9b1cb36848e18c62af9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:42:50.132Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n '^\\s*\".*(host|agent|cancel|canonical|MCP).*\",$' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts | tail -35; sed -n '25,90p' analysis/earshot-integration-2026-10-29/verify-mcp.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-dfc66380-ef49-43d7-9323-0fd07962ff42"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:42:50.166Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -390,6 +390,20 @@
         "--report=.local/protect-speech-default-2026-10-29/configured-web"
       ],
       "timeoutMs": 120000
+    },
+    "agent-computer-permissions": {
+      "command": [
+        "node",
+        ".dip/tools/verify-agent-computer.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "take-silence-current": {
+      "command": [
+        "node",
+        ".dip/tools/verify-take-silence-current.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

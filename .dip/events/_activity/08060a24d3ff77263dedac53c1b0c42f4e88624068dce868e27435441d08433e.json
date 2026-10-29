@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08060a24d3ff77263dedac53c1b0c42f4e88624068dce868e27435441d08433e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:20:41.646Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rm -rf /tmp/opencut-earshot-research-venv /tmp/opencut-earshot-synthesis/classic/apps/web/public/earshot/runtime",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-8882910e-247f-45be-afe7-a803a128e5ef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:20:41.662Z",
+  "parents": [],
+  "branch": "main"
+}

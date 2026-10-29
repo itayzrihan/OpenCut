@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "109282aec45a858b1137860e09f912f5aa709952dc373f5846ab60b6b7821995",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:35:37.795Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .local/take-silence-current-2026-10-29/evidence.py <<'PY'\nimport json,subprocess,array,math\nfrom pathlib import Path\nfolder=Path('.local/take-silence-current-2026-10-29')\np=json.loads((folder/'project-before.json').read_text());c=json.loads(p['__opencutEditorSession'])['saved']['bundle']['archive']['classic'];a=c['document']['scenes'][0]['takeAssembly'];clip=a['sourceTracks']['main']['elements'][0]\nasset=next(m for m in c['mediaAssets'] if m['type']=='audio')\npcm=array.array('f',subprocess.check_output(['ffmpeg','-v','error','-i',asset['sourcePath'],'-ac','1','-ar','16000','-f','f32le','-']))\noffset=-clip['params']['sourceAudioOffsetSeconds'];frames=[]\nfor i in range(0,len(pcm),160):\n x=pcm[i:i+160]\n frames.append(dict(start=offset+i/16000,end=offset+(i+len(x))/16000,rms=math.sqrt(sum(v*v for v in x)/len(x)),peak=max(abs(v) for v in x),zeroCrossingRate=sum((x[j]>=0)!=(x[j-1]>=0) for j in range(1,len(x)))/len(x)))\n(folder/'audio-evidence.json').write_text(json.dumps([dict(clipId=clip['id'],frames=frames)]))\nprint('Prepared real microphone evidence',len(frames),'frames')\nPY\npython3 .local/take-silence-current-2026-10-29/evidence.py",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-52f57bda-f8f3-4436-83a3-ea671b111236"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:35:37.803Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3a8c145ca1c5f27a61b223813103e6b6b3e3f4ad96287d6811260a4ffd498d45",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:40:26.973Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -o etime,rss,pcpu -p 26919; df -h .; sed -n '1,120p' classic/apps/web/test-support/real-wasm.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-125afade-b62c-4c97-90a5-fe5f1e33b591"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:40:26.980Z",
+  "parents": [],
+  "branch": "main"
+}

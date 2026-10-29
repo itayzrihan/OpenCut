@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "159f26dfd1558d5ae850a5a473f51a6bbd3df80ddd2b670ba3bba3ba3ed9ca22",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:34:51.347Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -25 .local/take-silence-current-2026-10-29/native.log\ngit diff --stat -- crates | tail -10\nsed -n '1200,1315p' crates/editor-api/tests/classic_takes.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-1ec6c2ef-1838-4a5b-869c-100df052e529"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:34:51.354Z",
+  "parents": [],
+  "branch": "main"
+}

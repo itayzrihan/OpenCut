@@ -116,6 +116,7 @@ export type TakeChange =
 	  }
 	| {
 			type: "cleanSilence";
+			elementIds?: string[];
 			audioEvidence: TakeAudioEvidence[];
 			groupIndexes?: number[];
 			minSilenceSeconds?: number;

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6b561ffb13f84764f9006b72fa5d3af15a619438b9f7c133aeced84b42029fc2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:27:36.441Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test apps/web/src/accounts/bridge-protocol.test.ts apps/web/src/accounts/bridge-scope.test.ts apps/web/src/accounts/bridge-snapshot-cache.test.ts apps/web/src/accounts/bridge-transport.test.ts apps/web/src/mcp/__tests__/bridge-publication.test.ts apps/web/src/mcp/__tests__/bridge-publication-payload.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-629972f7-3041-4e0a-9246-79f75f47f78e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:27:36.450Z",
+  "parents": [],
+  "branch": "main"
+}

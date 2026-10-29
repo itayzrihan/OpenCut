@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "076c922d971cd4ae84ff3e7e33dcaf415aa6e8ca32ec38957f0936206db76cca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:34:02.453Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts')\ns=p.read_text().replace('mock.module(\"@/services/storage/service\", () => ({\\n', 'mock.module(\"@/services/storage/service\", () => ({\\n\\tdeserializeProject: () => { throw new Error(\"Scene automation storage is outside this manager fixture\"); },\\n',1).replace('\\t\\t\\tgetActive: () => project,\\n', '\\t\\t\\tgetActive: () => project,\\n\\t\\t\\tgetActiveForScene: () => project,\\n\\t\\t\\tgetSessionReadOnlyReason: () => null,\\n',1)\np.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-17d1629c-066b-4656-a5a5-aa4c5d3631b8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:34:02.466Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8be2a61f5dbe80db0757be8876d0b22454d6e26c2e591314490f92b04ff5e64d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:38:06.910Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/node_modules/typescript/bin/tsc --noEmit -p classic/apps/web/tsconfig.build.json\nnode classic/scripts/test-web.mjs src/timeline/__tests__/smart-silence.test.ts src/timeline/smart-takes/__tests__/audio-evidence.test.ts --report=.local/take-silence-current-2026-10-29/web",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-36d4a61d-3e48-4b91-a5b9-525b6b1ec537"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:38:06.918Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fc3a8a00e1fc0a03976a5cd86da2ae14ade58fce3f9729b3d70219044857a145",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:31:03.190Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat crates/editor-api/src/operations/classic_ripple_delete.rs\nsed -n '190,320p' crates/editor-api/src/operations/classic_takes/quality.rs\nsed -n '520,650p' crates/editor-api/src/operations/classic_takes/quality.rs\nsed -n '940,1020p' crates/editor-api/src/operations/classic_takes.rs\nsed -n '1,120p' crates/editor-api/src/operations/classic_trim.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-504dbf5b-2f29-4a2d-a756-0d18a7ba6475"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:31:03.199Z",
+  "parents": [],
+  "branch": "main"
+}

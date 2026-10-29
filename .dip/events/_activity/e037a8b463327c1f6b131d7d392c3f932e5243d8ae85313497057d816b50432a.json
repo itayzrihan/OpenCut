@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e037a8b463327c1f6b131d7d392c3f932e5243d8ae85313497057d816b50432a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:25:57.573Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/overlay.tsx');s=p.read_text().replace('\\t\\t\\t\\t\\t\\t\\t\\t<details>\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t<summary>Input</summary>','\\t\\t\\t\\t\\t\\t\\t\\t<ComputerOperationView input={activity.input} output={activity.output} />\\n\\t\\t\\t\\t\\t\\t\\t\\t<details>\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t<summary>Input</summary>',1)\npos=s.index('function EntryView(')\ns=s[:pos]+'''/** Presentation of the live capability payload; no tool execution or policy here. */\nfunction ComputerOperationView({input,output}:{input:unknown;output:unknown}) {\n const action=z.object({action:z.literal(\"invoke\"),id:z.string().startsWith(\"computer.\"),input:z.object({operation:z.object({type:z.string(),path:z.string().optional(),command:z.string().optional(),cwd:z.string().optional(),content:z.string().optional()}).passthrough()}).passthrough()}).safeParse(input);\n if(!action.success) return null;\n const operation=action.data.input.operation;\n const data=z.object({result:z.object({result:z.object({data:z.object({text:z.string()})})})}).safeParse(output);\n let display=\"\";\n if(data.success) {\n  try {const result:unknown=JSON.parse(data.data.result.result.data.text);const text=z.object({output:z.string().optional(),text:z.string().optional()}).safeParse(result);display=text.success?(text.data.output??text.data.text??JSON.stringify(result,null,2)):JSON.stringify(result,null,2);}catch{display=data.data.result.result.data.text;}\n }\n return <section className={styles.computerOperation} aria-label=\"Computer operation\">\n  <strong>{operation.type === \"shell\" ? \"Terminal\" : `Files · ${operation.type}`}</strong>\n  <code dir=\"ltr\">{operation.command??operation.path}</code>\n  {operation.cwd && <p dir=\"ltr\">{operation.cwd}</p>}\n  {operation.content && <details><summary>File content</summary><pre dir=\"auto\">{operation.content}</pre></details>}\n  {display && <pre dir=\"auto\">{display}</pre>}\n </section>;\n}\n\n'''+s[pos:];p.write_text(s)\np=Path('classic/apps/web/src/editor-agent/over",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-9dae2056-6b64-4651-8dc0-636966ff951f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:25:57.582Z",
+  "parents": [],
+  "branch": "main"
+}

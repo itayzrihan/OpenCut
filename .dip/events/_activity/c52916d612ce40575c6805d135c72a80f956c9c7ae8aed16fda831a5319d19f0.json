@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c52916d612ce40575c6805d135c72a80f956c9c7ae8aed16fda831a5319d19f0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:29:13.560Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs apps/web/src/editor-agent/__tests__/deepseek-harness.test.ts apps/web/src/editor-agent/__tests__/deepseek-canonical.test.ts apps/web/src/editor-agent/__tests__/connection.test.ts apps/web/src/editor-agent/__tests__/stream.test.ts apps/web/src/editor-agent/__tests__/transport.test.ts apps/web/src/editor-agent/__tests__/host-effects.test.ts apps/web/src/editor-agent/__tests__/checkpoint.test.ts --test-timeout=60000 --timeout=240000 --jobs=1 --report=.local/agent-computer-regression",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-87f8f090-3412-4b9d-bcaf-dcd1a5197d69"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:29:13.562Z",
+  "parents": [],
+  "branch": "main"
+}

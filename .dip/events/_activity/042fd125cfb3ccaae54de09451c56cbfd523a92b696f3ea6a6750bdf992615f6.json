@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "042fd125cfb3ccaae54de09451c56cbfd523a92b696f3ea6a6750bdf992615f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:39:31.918Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "pgrep -fl 'next-server|next dev|next start'; ls -l classic/apps/web/.next-earshot-turbo/dev/lock classic/apps/web/.next-earshot-turbo/lock",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-68e9fb6a-560d-45ba-9cb3-32721b1a07e8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:39:31.924Z",
+  "parents": [],
+  "branch": "main"
+}

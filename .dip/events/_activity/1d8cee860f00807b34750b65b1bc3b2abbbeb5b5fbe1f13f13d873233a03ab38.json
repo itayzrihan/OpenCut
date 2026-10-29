@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d8cee860f00807b34750b65b1bc3b2abbbeb5b5fbe1f13f13d873233a03ab38",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:30:49.038Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/editor-runtime-wasm/src/lib.rs');s=p.read_text();start=s.index('    pub async fn invoke_with_host');s=s[:start]+s[start:].replace('use std::{future::Future, task::{Context, Poll, Waker}};','use std::task::{Context, Poll, Waker};',1);p.write_text(s)\nPY\ngit add -- classic/apps/web/src/accounts/bridge-protocol.ts classic/apps/web/src/accounts/bridge-protocol.test.ts classic/apps/web/src/mcp/canonical-transport.ts classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts\ngit commit --only -m 'feat: bridge live canonical capabilities and artifacts through MCP' -- crates/mcp/Cargo.toml crates/mcp/src/classic_bridge.rs classic/rust/editor-runtime-wasm/src/lib.rs classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/mcp/classic-mcp-bridge.tsx classic/apps/web/src/mcp/canonical-transport.ts classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts classic/apps/web/src/accounts/bridge-snapshot-cache.ts classic/apps/web/src/accounts/bridge-protocol.ts classic/apps/web/src/accounts/bridge-protocol.test.ts 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-8739f5f4-d4a9-4408-bc88-35a1dc0a52ff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:30:49.064Z",
+  "parents": [],
+  "branch": "main"
+}

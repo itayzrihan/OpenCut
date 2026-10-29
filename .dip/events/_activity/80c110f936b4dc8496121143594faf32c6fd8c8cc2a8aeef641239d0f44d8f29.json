@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "80c110f936b4dc8496121143594faf32c6fd8c8cc2a8aeef641239d0f44d8f29",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:28:40.331Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git apply /tmp/earshot-mcp-negotiation.patch\ngit apply /tmp/earshot-mcp-availability.patch\ncp /tmp/opencut-earshot-mcp-transport/classic/apps/web/src/accounts/bridge-protocol.ts classic/apps/web/src/accounts/bridge-protocol.ts\ncp /tmp/opencut-earshot-mcp-transport/classic/apps/web/src/accounts/bridge-protocol.test.ts classic/apps/web/src/accounts/bridge-protocol.test.ts\ncp /tmp/opencut-earshot-mcp-transport/classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts\nrg -n 'filter|test-name|process.argv|--' classic/scripts/test-web.mjs | head -50\nrg -n 'getSessionReadOnlyReason' classic/apps/web/src/core/managers/project-manager.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-05d17f97-103d-4fa6-abcc-8cc30518b635"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:28:40.336Z",
+  "parents": [],
+  "branch": "main"
+}

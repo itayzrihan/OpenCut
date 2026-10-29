@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b5d63a8a2d759263570fc3d5e0689f980b5d7746b933769938ded7e93b75cd41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:19:49.284Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp /tmp/opencut-earshot-mcp-transport/classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts\nrg -n 'sound_effects.edit' crates/editor-api/src\nsed -n '1060,1085p' classic/apps/web/src/core/canonical-classic-session.ts\nsed -n '385,410p' classic/rust/editor-runtime-wasm/src/lib.rs\ngit diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-2eec52aa-00db-4fab-af37-0836392792d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:19:49.299Z",
+  "parents": [],
+  "branch": "main"
+}

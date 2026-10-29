@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cb6a130c3857cabd6b4b75ec8c1d1e229fbd9991cd0a580f7ee10ffc63b6fe2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:40:41.976Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --cached --name-only | wc -l; sed -n '1,180p' docs/architecture/earshot-library-capabilities.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-eb370544-cdaf-4d1f-8328-50c0fb7427e6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:40:41.986Z",
+  "parents": [],
+  "branch": "main"
+}

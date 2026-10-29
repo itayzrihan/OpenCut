@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2ffbd0c4961b39694a0f9215b12b9363dc2dfde70f8e6a2cfbeb7940d459b906",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:28:36.748Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport difflib\np=Path('classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts');old=p.read_bytes().decode();s=old.replace('const negotiated = await Promise.all(sorted.map(async (config): Promise<BridgeConfig> => {','const negotiations = await settleBridgeRequests({ configs: sorted, concurrency: 4, run: async (config): Promise<BridgeConfig> => {',1).replace('\\t\\treturn {...config, supportsCanonicalInvocation};\\n\\t}));','\\t\\treturn {...config, supportsCanonicalInvocation};\\n\\t}});\\n\\tconst negotiated = negotiations.map((result, index) => result.status === \"fulfilled\" ? result.value : sorted[index]!);',1);assert s!=old;p.write_bytes(s.encode());Path('/tmp/earshot-mcp-negotiation-fanout.patch').write_text(''.join(difflib.unified_diff(old.splitlines(True),s.splitlines(True),fromfile='a/'+str(p),tofile='b/'+str(p))))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-5432a678-1b50-4372-94d3-f006e2c043f2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:28:36.757Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e0d1e95e18e0eb94b12c05eca1184e5d9b9765da4431c3eca6fd12262e42f216",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:29:28.171Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport os,signal\nfor pid in [24283,24270]:\n try:os.kill(pid,signal.SIGTERM)\n except ProcessLookupError:pass\nPY\ncat > /tmp/opencut-offline-font.cjs <<'EOF'\nmodule.exports = new Proxy({}, {get: () => \"@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;src:local('Arial')}\"});\nEOF\nOPENCUT_ACCOUNTS_DIR=/tmp/opencut-agent-ui-accounts NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/opencut-offline-font.cjs node ../../node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port 3337",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-8f2cdf36-f559-4806-874e-902b558d3d4c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:29:28.177Z",
+  "parents": [],
+  "branch": "main"
+}

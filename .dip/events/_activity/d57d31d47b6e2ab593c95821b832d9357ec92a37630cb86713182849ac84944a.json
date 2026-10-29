@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d57d31d47b6e2ab593c95821b832d9357ec92a37630cb86713182849ac84944a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:34:29.752Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node node_modules/prettier/bin/prettier.cjs --write src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9a1e679a-011e-4a1e-8e9a-b6e3883a7ac0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:34:29.760Z",
+  "parents": [],
+  "branch": "main"
+}
