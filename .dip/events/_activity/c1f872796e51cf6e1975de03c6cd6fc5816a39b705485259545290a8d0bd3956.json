@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c1f872796e51cf6e1975de03c6cd6fc5816a39b705485259545290a8d0bd3956",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:32.278Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/earshot/render.ts\nsed -n '1,165p' classic/apps/web/src/earshot/runtime.ts\ncat classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-86b85252-04aa-4a3a-a066-38f0e9517cbd"
+      },
+      {
+        "at": "2026-10-29T06:09:32.571Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/earshot/render.ts\nsed -n '1,165p' classic/apps/web/src/earshot/runtime.ts\ncat classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-86b85252-04aa-4a3a-a066-38f0e9517cbd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:33.074Z",
+  "parents": [],
+  "branch": "main"
+}

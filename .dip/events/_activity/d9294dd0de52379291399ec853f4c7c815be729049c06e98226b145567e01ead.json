@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9294dd0de52379291399ec853f4c7c815be729049c06e98226b145567e01ead",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:48.219Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'earshot_preview' crates/editor-api/src/lib.rs crates/editor-api/src/editor_host.rs\nsed -n '1,140p' crates/editor-api/src/earshot_preview.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-f9d49b56-aee3-4a61-8bfe-4222d78e3b14"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:48.272Z",
+  "parents": [],
+  "branch": "main"
+}

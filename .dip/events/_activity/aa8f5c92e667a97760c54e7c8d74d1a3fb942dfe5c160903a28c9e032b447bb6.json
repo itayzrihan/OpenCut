@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa8f5c92e667a97760c54e7c8d74d1a3fb942dfe5c160903a28c9e032b447bb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:11:55.025Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/electron/app/agent-computer.cjs');s=p.read_text().replace(' let grant=null, queue=Promise.resolve();',' let grant=null, queue=Promise.resolve(), cancellation=0;').replace(' function cancel() { for',' function cancel() { cancellation+=1; for').replace('  revoke();\\n  if (!scope.enabled)', '  revoke();\\n  const token=[REDACTED];\\n  if (!scope.enabled)').replace('  if (!allowed) return {enabled:false};','  if (!allowed || token!==cancellation) return {enabled:false};').replace('  const authority=grant;','  const authority=grant, token=[REDACTED];').replace('if (grant!==authority)', 'if (grant!==authority || token!==cancellation)');p.write_text(s)\np=Path('classic/apps/web/src/editor-agent/overlay.tsx');s=p.read_text().replace('\\tconst [draft, setDraft]', ''' const [policy,setPolicy]=useState(()=>editor.command.getEditingAgentPolicy());\n const [computerGranted,setComputerGranted]=useState(false);\n const [changingPolicy,setChangingPolicy]=useState(false);\n const desktop=typeof window!==\"undefined\" && !!window.opencutElectron?.setComputerAccess;\n const policyScope={accountId:typeof window!==\"undefined\"?(window.__opencutAccountId??\"local\"):\"local\",projectId:editor.project.getActiveOrNull()?.metadata.id??\"\"};\n useEffect(()=>{\n  setComputerGranted(false);\n  setPolicy(editor.command.getEditingAgentPolicy());\n  return ()=>{void window.opencutElectron?.revokeComputerAccess().catch(()=>{});};\n },[editor,policyScope.accountId,policyScope.projectId]);\n\\tconst [draft, setDraft]''',1)\ns=s.replace('\\t\\t\\t\\tsetSnapshot(event.snapshot);','\\t\\t\\t\\tsetSnapshot(event.snapshot);\\n                setPolicy(editor.command.getEditingAgentPolicy());',1)\ns=s.replace('\\t\\tclient.current?.pause();\\n\\t\\tsetBusy(false);', '\\t\\tclient.current?.pause();\\n        void window.opencutElectron?.cancelComputerOperations().catch(()=>{});\\n\\t\\tsetBusy(false);',1)\npos=s.index('\\tconst moveStart =')\ns=s[:pos]+''' const changePolicy=async(mode:typeo",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-0a2fe0a3-024f-40bf-b24e-fe5f3fbd07e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:11:55.896Z",
+  "parents": [],
+  "branch": "main"
+}

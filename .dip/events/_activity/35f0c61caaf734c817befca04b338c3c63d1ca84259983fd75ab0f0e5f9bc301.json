@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "35f0c61caaf734c817befca04b338c3c63d1ca84259983fd75ab0f0e5f9bc301",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:12:29.871Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "CARGO_TARGET_DIR=/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo test -p opencut-mcp --lib --no-run",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-ffae591b-765f-4b7f-99d6-a2c9349cd2cf"
+      },
+      {
+        "at": "2026-10-29T06:12:29.876Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/canonical-transport.ts');s=p.read_text();s=s.replace('return canonicalRegistrySchema.parse(value).capabilities.map((canonical) => ({','''return canonicalRegistrySchema.parse(value).capabilities.map((source) => {\n    // These operations replace the runtime itself; the editor shell owns its\n    // project/account lifecycle. In-project capabilities remain fully generic.\n    const canonical = [\"project.create\", \"project.open\", \"project.activate\", \"project.close\"].includes(source.id)\n      ? {...source, available: false, unavailableReason: \"Use the editor shell to switch or create browser projects\"}\n      : source;\n    return ({''').replace('  }));\\n}', '  });\\n  });\\n}',1);p.write_text(s)\np=Path('crates/mcp/Cargo.toml');s=p.read_text().replace('[dev-dependencies]\\n','[dev-dependencies]\\nrmcp = { workspace = true, features = [\"client\"] }\\n');p.write_text(s)\nPY\nCARGO_TARGET_DIR=/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo test -p opencut-mcp --lib --no-run",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-253c1137-6439-4d58-af94-32364df84882"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:12:30.285Z",
+  "parents": [],
+  "branch": "main"
+}

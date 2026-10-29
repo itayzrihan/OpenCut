@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "983a295d668d64a1f82f931c6286276b3bfc7a62db469b38a997ef08dc47ceab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:26.245Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json && git add -f docs/architecture/earshot-library-capabilities.md && git diff --cached --stat && git diff --cached --check && git commit --only crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json docs/architecture/earshot-library-capabilities.md -m 'feat: expose complete pinned Earshot library through canonical MCP registry'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-7790800a-cdcd-497b-8d1a-2cffcc378ce3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:27.067Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cf86cb2b4d4402d58d6fce310799fd1f70cedc75ceb614c1a9bf2db2e0a33956",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:07:37.982Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git restore --source=HEAD --staged -- crates/editor-api/src/operations/classic_takes.rs crates/editor-api/src/operations/classic_takes/replacement.rs crates/editor-api/tests/classic_takes.rs classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts classic/scripts/local-production/build.mjs analysis/take-replacement-2026-10-29/README.md analysis/take-replacement-2026-10-29/verification.json .dip/tools/verify-take-replacement.mjs .dip/config.json\n git diff -- .dip/config.json\n git push origin main > .local/take-replacement-2026-10-29/push.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8d87bde4-3637-4cb0-9197-a4032471680a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:07:38.783Z",
+  "parents": [],
+  "branch": "main"
+}

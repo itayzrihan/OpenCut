@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "daec430bbb526403466dcdd65dad3b99cbc3dbdbb380105ef21eee61cf4e658c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:04.801Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add '/resources/hyperframes/catalog.json' '/resources/hyperframes/catalog-supplement.json' '/resources/hyperframes/upstream/4c4b8574406cc566d28778a13f22c072d727a871/registry/catalog-artifact/'\nln -s /Users/itayzrihan/Documents/PoCut/classic/node_modules classic/node_modules",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-a6be969e-6b72-4c81-99ac-094b09d27f84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:05.149Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8a4c794b4bc1bf37ebfb87881681dea88af75477bc5c47a6f9977fb8fd272b2d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:51.175Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport time,subprocess\np=Path('.git/index.lock');a=p.stat()\nassert time.time()-a.st_mtime>120 and a.st_size==0\nfor i in range(60):\n active=[line for line in subprocess.check_output(['ps','-axo','pid,comm'],text=True).splitlines() if line.strip().endswith('/git')]\n if not active:\n  b=p.stat();assert(a.st_ino,a.st_mtime_ns,a.st_size)==(b.st_ino,b.st_mtime_ns,b.st_size)\n  if not subprocess.run(['lsof',str(p)],capture_output=True).stdout:\n   p.unlink();print('Removed abandoned empty lock from the earlier interrupted Git status.');break\n time.sleep(.25)\nelse:raise RuntimeError('No quiet Git interval')\npaths=['crates/editor-api/src/operations/classic_takes.rs','crates/editor-api/src/operations/classic_takes/replacement.rs','crates/editor-api/tests/classic_takes.rs','classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts','classic/scripts/local-production/build.mjs','analysis/take-replacement-2026-10-29/README.md','analysis/take-replacement-2026-10-29/verification.json','.dip/tools/verify-take-replacement.mjs','.dip/config.json']\nsubprocess.run(['git','restore','--source=HEAD','--staged','--',*paths],check=True)\nprint(subprocess.check_output(['git','status','--short','--',*paths],text=True))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-8595d8ba-52cd-4d1a-919f-5be48b69415e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:52.139Z",
+  "parents": [],
+  "branch": "main"
+}

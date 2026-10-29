@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84ef33563575bc71a6e9e295ba20cc6a888d8bb9f05744247022c7fd218a9bfa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:11:27.809Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files crates/editor-api/tests | rg 'earshot|settings'\nsed -n '1,100p' crates/editor-api/tests/earshot_preview.rs\nsed -n '1,90p' crates/editor-api/tests/classic_settings.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-268b40e0-6bb1-41ba-87e1-78528e21b8d9"
+      },
+      {
+        "at": "2026-10-29T06:11:28.400Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files crates/editor-api/tests | rg 'earshot|settings'\nsed -n '1,100p' crates/editor-api/tests/earshot_preview.rs\nsed -n '1,90p' crates/editor-api/tests/classic_settings.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-268b40e0-6bb1-41ba-87e1-78528e21b8d9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:11:28.833Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "40b0d4ee5819e88499711c1c186bbfd09a3b9b16ba3fdabf0fe6f47f4415b414",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:14:02.215Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "CARGO_TARGET_DIR=.local/earshot-cargo-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo test -p opencut-editor-api --test earshot_preview --test hyperframes_reference_source --test editor_ui",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fc3f69bd-e566-431f-9ff9-8f4a767c688a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:14:02.602Z",
+  "parents": [],
+  "branch": "main"
+}

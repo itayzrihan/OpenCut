@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a0b99e919c52050655f44169d3704f2efa08f4d81e59080cc0ea936abf2a594b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:03.146Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add .dip && git commit --only crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json docs/architecture/earshot-library-capabilities.md -m 'feat: expose complete pinned Earshot library through canonical MCP registry'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-021c803c-34cc-4457-8f2d-6468031f80a5"
+      },
+      {
+        "at": "2026-10-29T06:10:03.152Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s' && git status --short -- crates classic/apps/web/src/earshot docs/architecture/earshot-library-capabilities.md && git diff HEAD^ HEAD --numstat -- crates classic/apps/web/src/earshot docs/architecture/earshot-library-capabilities.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-04d55449-ee1d-4084-8ab0-f102112f9533"
+      },
+      {
+        "at": "2026-10-29T06:10:03.503Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s' && git status --short -- crates classic/apps/web/src/earshot docs/architecture/earshot-library-capabilities.md && git diff HEAD^ HEAD --numstat -- crates classic/apps/web/src/earshot docs/architecture/earshot-library-capabilities.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-04d55449-ee1d-4084-8ab0-f102112f9533"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:04.125Z",
+  "parents": [],
+  "branch": "main"
+}

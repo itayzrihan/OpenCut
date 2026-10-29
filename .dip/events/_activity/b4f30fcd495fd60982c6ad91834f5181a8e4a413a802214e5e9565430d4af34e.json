@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b4f30fcd495fd60982c6ad91834f5181a8e4a413a802214e5e9565430d4af34e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:15:40.656Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'export|render' classic/apps/web/src/ai classic/apps/web/src/mcp --glob '*tools*.ts' --glob '!**/__tests__/**' | head -100\nrg -n 'export.*video|render.*project|export_scene|export_project' classic/apps/web/src --glob '!**/vendor/**' --glob '*tool*' | head -60\nsed -n '1,230p' classic/apps/web/src/editor-agent/scene-automation-effects.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3ed5b5bd-55ee-4461-902c-7f588dbd36fa"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:15:40.804Z",
+  "parents": [],
+  "branch": "main"
+}

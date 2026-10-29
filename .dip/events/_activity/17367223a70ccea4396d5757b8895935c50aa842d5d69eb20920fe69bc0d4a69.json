@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17367223a70ccea4396d5757b8895935c50aa842d5d69eb20920fe69bc0d4a69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:08:11.839Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/earshot-automation-mcp.py <<'PY'\nfrom pathlib import Path\nroot=Path('/tmp/opencut-earshot-ai-mcp')\np=root/'crates/editor-api/src/operations/classic_automation.rs';s=p.read_text()\ns=s.replace('''    options: Recipe,\n}''','''    options: Recipe,\n    #[serde(default, skip_serializing_if = \"Option::is_none\")]\n    #[schemars(length(min = 64, max = 64))]\n    source_fingerprint: Option<String>,\n}''',1)\na=s.index('''                                    let mut scene = classic.document[\"scenes\"]''')\nb=s.index('''                                    let mut value = serde_json::to_value(job)''',a)\ns=s[:a]+'''                                    let (worker, fingerprint) = worker_snapshot(classic, &input.project_id, &job)?;\n                                    let mut job = job;\n                                    job.source_fingerprint = Some(fingerprint);\n                                    workers.push(json!({\"jobId\":job.id,\"project\":worker}));\n''' + s[b:]\n# Add helper before validate, same source constructor powers enqueue and guarded MCP start.\npos=s.index('pub(crate) fn validate(')\nhelper='''/// Rebuilds the queued source without mutating the document. The fingerprint\n/// excludes display-only project metadata but binds every scene, setting and\n/// media binding. A changed source can never become a different queued version.\nfn worker_snapshot(\n    classic: &crate::ClassicProject,\n    project_id: &str,\n    job: &Job,\n) -> Result<(Value, String), CapabilityError> {\n    let scene = classic.document[\"scenes\"].as_array().unwrap().iter()\n        .find(|s| s[\"id\"] == job.scene_id)\n        .ok_or_else(|| CapabilityError::InvalidInput(\"Scene not found\".into()))?;\n    let mut worker = classic.document.clone();\n    worker.remove(\"automationEdits\");\n    worker.remove(\"transcriptionJobs\");\n    worker.remove(\"aiEditHistory\");\n    worker.insert(\"automationCheckpoint\".into(), json!(0));\n    worker.insert(\"automationSource\".into(), json!({\"projectId\":project_id,\"jobId\":job.id,\"scen",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-8673eae3-a832-4fe9-8044-a2812a548887"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:08:12.765Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c08daa6b6c583de8f50eee7a1905bf947cd0eecc23c0b8f97c58c91ec46962f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:08:30.703Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/classic-mcp-bridge.tsx');s=p.read_text();s=s.replace('import { bridgePublication } from \"./bridge-publication\";','''import { bridgePublication } from \"./bridge-publication\";\nimport { advertiseCanonicalRegistry, invocationOptionsSchema, type CanonicalInvocationOptions } from \"./canonical-transport\";\nimport { performHostEffect } from \"@/editor-agent/host-effects\";\nimport { performEarshotPreviewEffect } from \"@/editor-agent/earshot-preview-effect\";\nimport { performSceneAutomationEffect } from \"@/editor-agent/scene-automation-effects\";''')\ns=s.replace('\\tautoApply: boolean;\\n};','\\tautoApply: boolean;\\n\\tcontext?: CanonicalInvocationOptions;\\n};',1)\ns=s.replace('\\tcommands: BridgeCommand[];','\\tcommands: BridgeCommand[];\\n\\tcancelledCommandIds: string[];',1)\ns=s.replace('\\t\\t\\tautoApply: z.boolean(),','\\t\\t\\tautoApply: z.boolean(),\\n\\t\\t\\tcontext: invocationOptionsSchema.optional(),',1)\ns=s.replace('\\t),\\n});','\\t),\\n\\tcancelledCommandIds: z.array(z.string()).default([]),\\n});',1)\ns=s.replace('\\t\\tlet tools: ReturnType<typeof advertisedTool>[] = [];','\\t\\tlet tools: Array<ReturnType<typeof advertisedTool> | ReturnType<typeof advertiseCanonicalRegistry>[number]> = [];\\n\\t\\tconst activeCommands = new Map<string, AbortController>();\\n\\t\\tlet commandChain = Promise.resolve();',1)\ns=s.replace('\\t\\t\\t\\t\\trevision,\\n\\t\\t\\t\\t\\tdirty:', '\\t\\t\\t\\t\\trevision,\\n\\t\\t\\t\\t\\tcanonicalRevision: editor.commands.getCanonicalRevision(),\\n\\t\\t\\t\\t\\tdirty:',1)\ns=s.replace('\\t\\t\\t\\t\\t\\ttools,','\\t\\t\\t\\t\\t\\ttools: [...tools, ...advertiseCanonicalRegistry(editor.commands.getCanonicalCapabilityRegistry())],',1)\ns=s.replace('\\t\\tconst executeCommand = async (command: BridgeCommand) => {','\\t\\tconst executeCommand = async (command: BridgeCommand, signal: AbortSignal) => {',1)\ns=s.replace('\\t\\t\\tlet error: string | undefined;','\\t\\t\\tlet error: string | undefined;\\n\\t\\t\\tlet artifacts: unknown[] = [];\\n\\t\\t\\tlet resultRevisi",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-67c96d50-c47c-4240-8b8b-fa3881e29213"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:08:30.783Z",
+  "parents": [],
+  "branch": "main"
+}

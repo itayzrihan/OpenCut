@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3e37d3549f966ff1f81927ba6aab8a1b5705b6fe128d5462da6e967264022f29",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:32.422Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/timeline/components/cut-silence-toolbar-options.ts')\ns=p.read_text().replace('DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = \"audio\"','DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = \"smart\"')\na=s.index('\\t{\\n\\t\\tmode: \"audio\"');b=s.index('\\t{\\n\\t\\tmode: \"smart\"');c=s.index('\\t{\\n\\t\\tmode: \"fast\"')\ns=s[:a]+s[b:c].replace('protect speech\"','protect speech (default)\"')+s[a:b].replace('tight cut (default)','tight cut')+s[c:]\np.write_text(s)\np=Path('classic/apps/web/src/timeline/components/timeline-toolbar.tsx');s=p.read_text().replace(': \"Cut audio pauses from 0.3 seconds and synchronize captions\";',': activeMode === \"smart\"\\n\\t\\t\\t\\t\\t\\t? \"Analyzing pauses with speech margins and captioned words protected\"\\n\\t\\t\\t\\t\\t\\t: `Cut silences · protect speech (default) · pauses from ${formattedSmartMinSilenceSeconds}s`;').replace('Cut silence modes: Audio-based, Smart, Fast, or Deep','Cut silence modes: Protect Speech (default), Audio-based, Fast, or Deep');p.write_text(s)\np=Path('classic/apps/web/src/core/managers/timeline-manager.ts');s=p.read_text().replace('async removeAllSilence({\\n\\t\\tmode = \"audio\"','async removeAllSilence({\\n\\t\\tmode = \"smart\"');p.write_text(s)\np=Path('classic/apps/web/src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts');s=p.read_text().replace('uses synchronized 0.3-second audio cutting as the one-click default','uses Protect Speech as the one-click default').replace('expect(DEFAULT_CUT_SILENCE_MODE).toBe(\"audio\")','expect(DEFAULT_CUT_SILENCE_MODE).toBe(\"smart\")').replace('mode: \"audio\",\\n\\t\\t\\tlabel: \"Audio-based tight cut (default)\"','mode: \"smart\",\\n\\t\\t\\tlabel: \"Smart audio cut · protect speech (default)\"').replace('toContain(\"0.3 seconds\")','toContain(\"speech margins\")').replace('toContain(\"captions\")','toContain(\"captioned words\")').replace('smart cut stays separate and forwards its duration and cancellation','default smart cut forwards its duration and cancellatio",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-cf3c6e7d-f0ee-4a7f-84c6-6d9af30c347a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:32.551Z",
+  "parents": [],
+  "branch": "main"
+}

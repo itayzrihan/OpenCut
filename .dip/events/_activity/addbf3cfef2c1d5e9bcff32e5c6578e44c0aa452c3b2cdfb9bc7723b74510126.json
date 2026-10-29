@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "addbf3cfef2c1d5e9bcff32e5c6578e44c0aa452c3b2cdfb9bc7723b74510126",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:33.448Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json && git add -f docs/architecture/earshot-library-capabilities.md && git diff --cached --stat && git diff --cached --check && git commit --only crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json docs/architecture/earshot-library-capabilities.md -m 'feat: expose complete pinned Earshot library through canonical MCP registry'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-7790800a-cdcd-497b-8d1a-2cffcc378ce3"
+      },
+      {
+        "at": "2026-10-29T06:09:33.451Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s' && git show --stat --oneline HEAD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-f92f1f46-d251-4387-9a00-671c020001e7"
+      },
+      {
+        "at": "2026-10-29T06:09:33.904Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s' && git show --stat --oneline HEAD",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-f92f1f46-d251-4387-9a00-671c020001e7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:34.111Z",
+  "parents": [],
+  "branch": "main"
+}

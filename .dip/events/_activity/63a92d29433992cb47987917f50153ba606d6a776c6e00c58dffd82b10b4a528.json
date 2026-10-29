@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "63a92d29433992cb47987917f50153ba606d6a776c6e00c58dffd82b10b4a528",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:18:30.182Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,130p' classic/apps/web/src/project/types.ts && sed -n '1,150p' classic/apps/web/src/app/api/batch-edit/route.ts && sed -n '1,230p' crates/editor-api/tests/classic_automation_host.rs && rg -n 'worker|fingerprint|revision|changed' crates/editor-api/tests/classic_scenes.rs | tail -35 && sed -n '1,140p' classic/apps/web/src/batch/provider.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-77f56328-4595-49f1-8646-76b47309618d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:18:30.206Z",
+  "parents": [],
+  "branch": "main"
+}

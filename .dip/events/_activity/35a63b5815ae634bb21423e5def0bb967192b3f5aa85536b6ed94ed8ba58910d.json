@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "35a63b5815ae634bb21423e5def0bb967192b3f5aa85536b6ed94ed8ba58910d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:15:56.853Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/classic-mcp-bridge.tsx');s=p.read_text().replace('editor.commands.','editor.command.');p.write_text(s)\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace('        descriptor.idempotent = tool.idempotent;\\n        descriptor.open_world = tool.open_world;','        descriptor.idempotent = tool.canonical.as_ref().map_or(tool.idempotent, |d| d.idempotent);\\n        descriptor.open_world = tool.canonical.as_ref().map_or(tool.open_world, |d| d.open_world);',1).replace('        let mut context: InvocationContext = serde_json::from_value(command.context).unwrap();\\n        context.source = \"mcp.browser-fixture\".into();','''        let context = InvocationContext {\n            source: \"mcp.browser-fixture\".into(), dry_run:command.context[\"dryRun\"].as_bool().unwrap(),\n            request_id:command.context[\"requestId\"].as_str().map(str::to_owned),\n            metadata: command.context[\"metadata\"].as_object().unwrap().clone(), ..Default::default()\n        };''',1);p.write_text(s)\nPY\nrg -n '\".*\\..*\"' crates/editor-api/src/editor_screenshot.rs crates/editor-api/src/operations/image_generation.rs | head -20",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-b31e81b8-f7b8-42c3-ac1c-3a0ec32c9d3d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:15:57.828Z",
+  "parents": [],
+  "branch": "main"
+}

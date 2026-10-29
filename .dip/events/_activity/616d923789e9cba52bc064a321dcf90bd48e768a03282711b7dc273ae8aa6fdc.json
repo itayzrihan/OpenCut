@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "616d923789e9cba52bc064a321dcf90bd48e768a03282711b7dc273ae8aa6fdc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:00.926Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport time,subprocess,datetime\np=Path('.git/index.lock');a=p.stat();print('lock age seconds',round(time.time()-a.st_mtime),'created/modified',datetime.datetime.fromtimestamp(a.st_mtime,datetime.timezone.utc).isoformat())\nprint('active git executables', [line for line in subprocess.check_output(['ps','-axo','pid,comm'],text=True).splitlines() if line.strip().endswith('/git')])\ntime.sleep(2)\nb=p.stat()\nif (a.st_ino,a.st_mtime_ns,a.st_size)!=(b.st_ino,b.st_mtime_ns,b.st_size):raise RuntimeError('Lock changed; not removing')\nif time.time()-b.st_mtime<120:raise RuntimeError('Recent lock; not removing')\nif any(line.strip().endswith('/git') for line in subprocess.check_output(['ps','-axo','pid,comm'],text=True).splitlines()):raise RuntimeError('Active Git process; not removing')\nif subprocess.run(['lsof',str(p)],capture_output=True).stdout:raise RuntimeError('Open lock; not removing')\np.unlink();print('Removed unchanged abandoned empty Git lock; no active Git writer or open holder.')\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-81f6ed9d-cdf5-4d7b-b0b6-6e8afa0b6b68"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:01.890Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -6,14 +6,14 @@ import {
 } from "@/timeline/components/cut-silence-toolbar-options";
 
 describe("cut silence toolbar options", () => {
-	test("uses synchronized 0.3-second audio cutting as the one-click default", () => {
-		expect(DEFAULT_CUT_SILENCE_MODE).toBe("audio");
+	test("uses Protect Speech as the one-click default", () => {
+		expect(DEFAULT_CUT_SILENCE_MODE).toBe("smart");
 		expect(CUT_SILENCE_ACTIONS[0]).toMatchObject({
-			mode: "audio",
-			label: "Audio-based tight cut (default)",
+			mode: "smart",
+			label: "Smart audio cut · protect speech (default)",
 		});
-		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("0.3 seconds");
-		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("captions");
+		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("speech margins");
+		expect(CUT_SILENCE_ACTIONS[0]?.description).toContain("captioned words");
 	});
 
 	test("exposes a speech-aware deep analysis option", () => {
@@ -43,16 +43,16 @@ describe("cut silence toolbar options", () => {
 		expect(calls).toEqual([{ mode: "audio", minSilenceSeconds: 0.25 }]);
 	});
 
-	test("smart cut stays separate and forwards its duration and cancellation", async () => {
+	test("default smart cut forwards its duration and cancellation", async () => {
 		const controller = new AbortController();
 		const calls: unknown[] = [];
-		expect(DEFAULT_CUT_SILENCE_MODE).toBe("audio");
+		expect(DEFAULT_CUT_SILENCE_MODE).toBe("smart");
 		expect(
 			CUT_SILENCE_ACTIONS.find((action) => action.mode === "smart")
 				?.description,
 		).toContain("average");
 		await executeCutSilenceAction({
-			mode: "smart",
+			mode: DEFAULT_CUT_SILENCE_MODE,
 			minSilenceSeconds: 0.8,
 			signal: controller.signal,
 			removeAllSilence: async (options) => {

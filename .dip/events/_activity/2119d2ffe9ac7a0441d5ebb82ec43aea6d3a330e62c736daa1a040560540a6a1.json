@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2119d2ffe9ac7a0441d5ebb82ec43aea6d3a330e62c736daa1a040560540a6a1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:38.539Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/canonical-transport.ts');s=p.read_text();s=s.replace('return canonicalRegistrySchema.parse(value).capabilities.map((canonical) => ({','''return canonicalRegistrySchema.parse(value).capabilities.map((source) => {\n    // These operations replace the runtime itself; the editor shell owns its\n    // project/account lifecycle. In-project capabilities remain fully generic.\n    const canonical = [\"project.create\", \"project.open\", \"project.activate\", \"project.close\"].includes(source.id)\n      ? {...source, available: false, unavailableReason: \"Use the editor shell to switch or create browser projects\"}\n      : source;\n    return ({''').replace('  }));\\n}', '  });\\n  });\\n}',1);p.write_text(s)\np=Path('crates/mcp/Cargo.toml');s=p.read_text().replace('[dev-dependencies]\\n','[dev-dependencies]\\nrmcp = { workspace = true, features = [\"client\"] }\\n');p.write_text(s)\nPY\nCARGO_TARGET_DIR=/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo test -p opencut-mcp --lib --no-run",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-253c1137-6439-4d58-af94-32364df84882"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:39.175Z",
+  "parents": [],
+  "branch": "main"
+}

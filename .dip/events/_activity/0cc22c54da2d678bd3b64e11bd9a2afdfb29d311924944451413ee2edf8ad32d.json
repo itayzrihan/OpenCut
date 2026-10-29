@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0cc22c54da2d678bd3b64e11bd9a2afdfb29d311924944451413ee2edf8ad32d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:26.440Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/scene-automation-effects.ts');s=p.read_text();s=s.replace('''\t\tconst saved = await storageService.loadProject({id: job.workerProjectId});''','''\t\tif (!request.worker || !job.sourceFingerprint) throw new Error(\"Source changed before initial startup completed. Enqueue a fresh scene job; this intent was not started.\");\n\t\tconst saved = await storageService.loadProject({id: job.workerProjectId});''');s=s.replace('''\t\t\tif (!request.worker || !job.sourceFingerprint) throw new Error(\"Source changed before the worker was saved. Enqueue a fresh scene job; this intent was not started.\");\n''','');p.write_text(s)\np=Path('classic/apps/web/src/batch/server.ts');s=p.read_text().replace('''\t\t\t\t\tsceneId: string;\n\t\t\t\t};''','''\t\t\t\t\tsceneId: string;\n\t\t\t\t\tsourceFingerprint?: string;\n\t\t\t\t};''',1).replace('''\t\t\t\tworker.automationSource?.sceneId !== job.sceneId\n''','''\t\t\t\tworker.automationSource?.sceneId !== job.sceneId ||\n\t\t\t\t(job.sourceFingerprint !== undefined && worker.automationSource?.sourceFingerprint !== job.sourceFingerprint)\n''');p.write_text(s)\nPY\ncat > classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts <<'TS'\nimport { afterEach, beforeEach, expect, mock, test } from \"bun:test\";\nimport type { EditorCore } from \"@/core\";\nimport type { EditingAgentHostEffect } from \"@/core/agent-protocol\";\nconst fingerprint = \"a\".repeat(64);\nconst job = {id: \"job\", sceneId: \"scene\", workerProjectId: \"worker\", outputSceneId: \"output\", action: \"sound-effects\", status: \"queued\", sourceFingerprint: fingerprint};\nconst origin = {projectId: \"project\", jobId: \"job\", sceneId: \"scene\", sourceFingerprint: fingerprint};\nlet saved: {project: {automationSource: typeof origin}} | null = null;\nlet revision = 3;\nlet abortOnSave = false;\nlet controller: AbortController;\nlet runs: Array<{id: string; jobs: Array<{projectId: string; sourceProjectId: string; automationJobId: string; status: string; completedSta",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-27de96c8-d5df-4aee-8da9-08eecc5b10c5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:26.540Z",
+  "parents": [],
+  "branch": "main"
+}

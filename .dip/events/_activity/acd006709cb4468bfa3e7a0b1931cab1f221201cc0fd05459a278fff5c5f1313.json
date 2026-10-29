@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "acd006709cb4468bfa3e7a0b1931cab1f221201cc0fd05459a278fff5c5f1313",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:08:48.569Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "stat -f 'inode=%i modified=%m bytes=%z' .git/index.lock; lsof .git/index.lock; ps -axo pid,ppid,etime,comm | rg '(/git$|git-index|git-update|git-add)'; tail -4 .local/take-replacement-2026-10-29/commit.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-92ecf15f-347b-45b1-a1b1-7e0661d9a837"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:08:48.815Z",
+  "parents": [],
+  "branch": "main"
+}

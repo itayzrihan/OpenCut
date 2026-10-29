@@ -1241,7 +1241,7 @@ export class TimelineManager {
 	}
 
 	async removeAllSilence({
-		mode = "audio",
+		mode = "smart",
 		minSilenceSeconds,
 		signal,
 	}: {

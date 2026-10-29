@@ -460,7 +460,9 @@ function CutSilenceToolbarControl({
 				? "Deeply analyzing speech, noise, and caption timing"
 				: activeMode === "fast"
 					? "Cutting clear silences"
-					: "Cut audio pauses from 0.3 seconds and synchronize captions";
+					: activeMode === "smart"
+						? "Analyzing pauses with speech margins and captioned words protected"
+						: `Cut silences · protect speech (default) · pauses from ${formattedSmartMinSilenceSeconds}s`;
 
 	return (
 		<div
@@ -489,7 +491,7 @@ function CutSilenceToolbarControl({
 			<DropdownMenu>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />}
-					tooltip="Cut silence modes: Audio-based, Smart, Fast, or Deep"
+					tooltip="Cut silence modes: Protect Speech (default), Audio-based, Fast, or Deep"
 					disabled={disabled}
 					className="h-7 w-4 rounded-l-none px-0"
 					buttonWrapper={(button) => (

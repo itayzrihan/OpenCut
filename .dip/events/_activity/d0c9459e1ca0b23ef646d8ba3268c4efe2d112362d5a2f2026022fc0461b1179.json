@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d0c9459e1ca0b23ef646d8ba3268c4efe2d112362d5a2f2026022fc0461b1179",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:44.858Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/electron/test/agent-computer.test.js <<'EOF'\nconst {test}=require(\"node:test\");\nconst assert=require(\"node:assert/strict\");\nconst fs=require(\"node:fs/promises\");\nconst os=require(\"node:os\");\nconst path=require(\"node:path\");\nconst {createComputerService}=require(\"../app/agent-computer.cjs\");\nconst scope={accountId:\"alice\",projectId:\"film\",generation:1,mode:\"askDestructive\"};\nasync function fixture(t,options={}) {\n const dir=await fs.mkdtemp(path.join(os.tmpdir(),\"opencut-computer-\"));t.after(()=>fs.rm(dir,{recursive:true,force:true}));\n const prompts=[];let allowed=true,valid=true;\n const service=createComputerService({confirm:async info=>{prompts.push(info);return allowed;},assertScope:async()=>{if(!valid)throw Error(\"Scope changed\");},...options});\n t.after(()=>service.revoke());\n const execute=(operation,id=\"op-1\",extra={})=>service.execute({...scope,operationId:id,operation,...extra});\n return {dir,service,prompts,execute,deny:()=>{allowed=false;},invalidate:()=>{valid=false;}};\n}\ntest(\"computer is disabled by default, grants are scoped and revocation fences IO\",async t=>{\n const f=await fixture(t);\n await assert.rejects(f.execute({type:\"list\",path:f.dir}),/off/);\n await f.service.setAccess({...scope,enabled:true});\n await assert.rejects(f.execute({type:\"list\",path:f.dir},\"other\",{projectId:\"other\"}),/off/);\n f.service.revoke();await assert.rejects(f.execute({type:\"list\",path:f.dir}),/off/);\n});\ntest(\"inspection and optimistic writes ask exact native approval; replay is idempotent\",async t=>{\n const f=await fixture(t);await f.service.setAccess({...scope,enabled:true});\n const file=path.join(f.dir,\"notes.txt\"),op={type:\"write\",path:file,content:\"hello\",expectedSha256:null};\n const result=await f.execute(op);\n assert.equal(await fs.readFile(file,\"utf8\"),\"hello\");assert.equal(f.prompts.length,2);assert.match(f.prompts[1].detail,/hello/);\n assert.deepEqual(await f.execute(op),result);assert.equal(f.prompts.length,2);\n await assert.rejects(f.execute",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-0e5b5aed-508e-483c-8229-01c52477b0af"
+      },
+      {
+        "at": "2026-10-29T06:13:45.519Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/electron/test/agent-computer.test.js <<'EOF'\nconst {test}=require(\"node:test\");\nconst assert=require(\"node:assert/strict\");\nconst fs=require(\"node:fs/promises\");\nconst os=require(\"node:os\");\nconst path=require(\"node:path\");\nconst {createComputerService}=require(\"../app/agent-computer.cjs\");\nconst scope={accountId:\"alice\",projectId:\"film\",generation:1,mode:\"askDestructive\"};\nasync function fixture(t,options={}) {\n const dir=await fs.mkdtemp(path.join(os.tmpdir(),\"opencut-computer-\"));t.after(()=>fs.rm(dir,{recursive:true,force:true}));\n const prompts=[];let allowed=true,valid=true;\n const service=createComputerService({confirm:async info=>{prompts.push(info);return allowed;},assertScope:async()=>{if(!valid)throw Error(\"Scope changed\");},...options});\n t.after(()=>service.revoke());\n const execute=(operation,id=\"op-1\",extra={})=>service.execute({...scope,operationId:id,operation,...extra});\n return {dir,service,prompts,execute,deny:()=>{allowed=false;},invalidate:()=>{valid=false;}};\n}\ntest(\"computer is disabled by default, grants are scoped and revocation fences IO\",async t=>{\n const f=await fixture(t);\n await assert.rejects(f.execute({type:\"list\",path:f.dir}),/off/);\n await f.service.setAccess({...scope,enabled:true});\n await assert.rejects(f.execute({type:\"list\",path:f.dir},\"other\",{projectId:\"other\"}),/off/);\n f.service.revoke();await assert.rejects(f.execute({type:\"list\",path:f.dir}),/off/);\n});\ntest(\"inspection and optimistic writes ask exact native approval; replay is idempotent\",async t=>{\n const f=await fixture(t);await f.service.setAccess({...scope,enabled:true});\n const file=path.join(f.dir,\"notes.txt\"),op={type:\"write\",path:file,content:\"hello\",expectedSha256:null};\n const result=await f.execute(op);\n assert.equal(await fs.readFile(file,\"utf8\"),\"hello\");assert.equal(f.prompts.length,2);assert.match(f.prompts[1].detail,/hello/);\n assert.deepEqual(await f.execute(op),result);assert.equal(f.prompts.length,2);\n await assert.rejects(f.execute",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-0e5b5aed-508e-483c-8229-01c52477b0af"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:45.581Z",
+  "parents": [],
+  "branch": "main"
+}

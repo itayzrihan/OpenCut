@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dac44c48fd9c74fb4edbce5b1b280cd4f1509cbb13c698a60f15958597194ecc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:08:46.071Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/earshot_library.rs'); s=p.read_text().replace('assert_eq!(entry[\"sound\"], sound);','assert_eq!(numeric_values(&entry[\"sound\"]), numeric_values(&sound));').replace('\"limit\":2}', '\"limit\":37}').replace('len() <= 2);','len() <= 37);').replace('assert_eq!(literal[\"totalMatchingLines\"], 0);','let expected = include_str!(\"../../../classic/vendor/earshot/upstream/README.md\").lines().filter(|line| line.contains(\".*\")).count();\\n    assert_eq!(literal[\"totalMatchingLines\"], expected);');\ns=s.replace('fn manifest() -> Vec<Value> {', '''fn numeric_values(value: &Value) -> Value {\n    match value {\n        Value::Number(number) => json!(number.as_f64().unwrap()),\n        Value::Array(array) => Value::Array(array.iter().map(numeric_values).collect()),\n        Value::Object(object) => Value::Object(object.iter().map(|(key, value)| (key.clone(), numeric_values(value))).collect()),\n        value => value.clone(),\n    }\n}\nfn manifest() -> Vec<Value> {''')\np.write_text(s)\nimport json\ncatalog=json.loads(Path('classic/apps/web/src/earshot/catalog-data.json').read_text()); print('Missing recipes',[s['id'] for s in catalog if not (Path('classic/vendor/earshot/upstream')/s['sourcePath']).exists()]);\nPY\nrustfmt --edition 2024 crates/editor-api/build.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs\n\ngit diff --check",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-d221fca6-23e5-48bd-9688-0a29bc82f8bc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:08:46.864Z",
+  "parents": [],
+  "branch": "main"
+}

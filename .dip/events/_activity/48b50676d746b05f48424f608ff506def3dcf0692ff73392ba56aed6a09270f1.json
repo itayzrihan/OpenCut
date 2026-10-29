@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48b50676d746b05f48424f608ff506def3dcf0692ff73392ba56aed6a09270f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:14:02.576Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/editor-runtime-wasm/src/lib.rs');s=p.read_text();s=s.replace('struct ExternalInvocation {\\n    key: String,','struct ExternalInvocation {\\n    key: String,\\n    context: InvocationContext,');s=s.replace('    external: RefCell<Option<ExternalInvocation>>,','    external: RefCell<Option<ExternalInvocation>>,\\n    external_active: RefCell<Option<(String, InvocationContext)>>,');s=s.replace('            external: RefCell::new(None),','            external: RefCell::new(None),\\n            external_active: RefCell::new(None),');s=s.replace('        let key = serde_json::to_string(&(&capability_id, &input, context.dry_run, &context.metadata)).map_err(js_error)?;','        let key = serde_json::to_string(&(&capability_id, &input, context.dry_run, &context.metadata)).map_err(js_error)?;\\n        let request_id = context.request_id.clone().unwrap_or_default();',1);s=s.replace('ExternalInvocation { key, future: Box::pin(async move { registry.invoke(&capability_id, context, input).await }) }','ExternalInvocation { key, context:context.clone(), future: Box::pin(async move { registry.invoke(&capability_id, context, input).await }) }',1);s=s.replace('        loop {\\n            if let Poll::Ready(result) = invocation.future', '        self.external_active.replace(Some((request_id, invocation.context.clone())));\\n        loop {\\n            if let Poll::Ready(result) = invocation.future',1);s=s.replace('                return to_json_js(&result.map_err(js_error)?);\\n            }\\n            let Some(effect)', '                self.external_active.replace(None);\\n                return to_json_js(&result.map_err(js_error)?);\\n            }\\n            let Some(effect)',1);s=s.replace('                return to_json_js(&invocation.future.await.map_err(js_error)?);','                let result = invocation.future.await;\\n                self.external_active.replace(None);\\n                return to_json_js(&result.map_",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-f204b5e6-96ae-4645-9774-f11fb4189126"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:14:02.604Z",
+  "parents": [],
+  "branch": "main"
+}

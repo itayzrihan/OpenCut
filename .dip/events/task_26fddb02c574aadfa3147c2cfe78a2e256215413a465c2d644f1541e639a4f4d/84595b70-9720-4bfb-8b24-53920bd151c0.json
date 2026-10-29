@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84595b70-9720-4bfb-8b24-53920bd151c0",
+  "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Audit canonical registry and live MCP transport coverage",
+          "status": "completed"
+        },
+        {
+          "step": "Expose catalog, full pinned source/docs, sound preview and automation through canonical capabilities/host bridge",
+          "status": "in_progress"
+        },
+        {
+          "step": "Verify registry-to-MCP behavior, validation and state invariants; commit on feature branch",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-29T06:08:55.919Z",
+  "parents": [
+    "70d18395-494c-46e8-8098-f91a28fee98b"
+  ],
+  "branch": "main"
+}
