@@ -10,6 +10,8 @@ import { z } from "zod";
 import { knowledgeRequest } from "./knowledge-client";
 import { performHostEffect } from "./host-effects";
 import { performRenderEffect } from "./render-effects";
+import { performEarshotPreviewEffect } from "./earshot-preview-effect";
+import { performSceneAutomationEffect } from "./scene-automation-effects";
 
 export interface AgentConnection {
 	connected: boolean;
@@ -405,29 +407,48 @@ export class EditorAgentClient {
 		const exports: Array<{ blob: Blob; filename: string; artifactId: string }> =
 			[];
 		const result =
-			effect.adapter === "hyperframesAuthoring" ||
-			effect.adapter === "editorRender"
-				? await performRenderEffect({
+			effect.adapter === "sceneAutomation"
+				? await performSceneAutomationEffect({
 						effect,
 						editor: this.editor,
 						accountId: this.account,
 						signal,
-						onExport: (value) => exports.push(value),
 					})
-				: await performHostEffect({
-						effect,
-						accountId: this.account,
-						signal,
-						activeProjectId: () =>
-							this.editor.project.getActiveOrNull()?.metadata.id,
-						currentRevision: () => this.editor.command.getCanonicalRevision(),
-						storeScreenshot: (capture) =>
-							this.editor.command.storeEditingAgentScreenshot(capture),
-						storeImage: (image) =>
-							this.editor.command.storeEditingAgentImage(image),
-					});
-		signal.throwIfAborted();
-		this.assertScope();
+				: effect.adapter === "earshotPreview"
+					? await performEarshotPreviewEffect({
+							effect,
+							editor: this.editor,
+							accountId: this.account,
+							signal,
+						})
+					: effect.adapter === "hyperframesAuthoring" ||
+						  effect.adapter === "editorRender"
+						? await performRenderEffect({
+								effect,
+								editor: this.editor,
+								accountId: this.account,
+								signal,
+								onExport: (value) => exports.push(value),
+							})
+						: await performHostEffect({
+								effect,
+								accountId: this.account,
+								signal,
+								activeProjectId: () =>
+									this.editor.project.getActiveOrNull()?.metadata.id,
+								currentRevision: () =>
+									this.editor.command.getCanonicalRevision(),
+								storeScreenshot: (capture) =>
+									this.editor.command.storeEditingAgentScreenshot(capture),
+								storeImage: (image) =>
+									this.editor.command.storeEditingAgentImage(image),
+							});
+		// Preview cannot commit: settle its definitive rejection even when the
+		// request was stopped, so the shared host slot can accept another tool.
+		if (!(effect.adapter === "earshotPreview" && result.type === "rejected")) {
+			signal.throwIfAborted();
+			this.assertScope();
+		}
 		const round = this.editor.command.settleEditingAgentHostEffect({
 			effectId: effect.id,
 			result,

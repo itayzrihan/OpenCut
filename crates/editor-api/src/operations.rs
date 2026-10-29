@@ -56,6 +56,8 @@ mod classic;
 mod classic_advanced_podcast;
 mod classic_animation_catalog;
 pub(crate) mod classic_automation;
+mod classic_automation_host;
+pub use classic_automation_host::register_classic_automation_host;
 mod classic_background_removal;
 mod classic_bookmarks;
 mod classic_caption_cues;
@@ -99,6 +101,7 @@ pub(crate) mod classic_unified;
 mod classic_update;
 mod hyperframes;
 mod hyperframes_examples;
+mod earshot_library;
 mod image_generation;
 mod owned_projects;
 pub use hyperframes_examples::{
@@ -128,6 +131,7 @@ pub(crate) fn register_all(
     classic_transcription::register_transcription(registry, state.clone(), events.clone())?;
     classic_podcast_finish::register_podcast_finish(registry, state.clone(), events.clone())?;
     register_manifest(registry)?;
+    earshot_library::register(registry, artifacts.clone())?;
     register_state_read(registry, state.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;
     studio::register_studio(registry, state.clone(), events.clone())?;

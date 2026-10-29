@@ -36,11 +36,13 @@ const options = z
 const schema = z.discriminatedUnion("action", [
 	z.object({
 		action: z.literal("retry"),
+		executor: z.enum(["iframe", "window"]).optional(),
 		id: z.string().uuid(),
 		ownerId: z.string().uuid(),
 	}),
 	z.object({
 		action: z.literal("scenes"),
+		executor: z.enum(["iframe", "window"]).optional(),
 		projectId: z.string().uuid(),
 		jobIds: z.array(z.string().uuid()).min(1).max(100),
 		ownerId: z.string().uuid(),

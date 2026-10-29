@@ -1,4 +1,5 @@
 import catalog from "./catalog-data.json";
+import starterSource from "./starter-source.json";
 import { EARSHOT_REVISION, type EarshotSound, type EarshotSpec } from "./types";
 export const EARSHOT_BANK_REVISION = EARSHOT_REVISION;
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Generated pinned bank rows are checked by catalog and all-preset WASM tests.
@@ -14,19 +15,5 @@ export function createEarshotSpec(id: string): EarshotSpec {
 /** A short editable module that faithfully starts with the selected bank entry. */
 export function createEarshotSourceCode(id: string): string {
   if (!getEarshotSound(id)) throw new Error(`Unknown Earshot sound: ${id}`);
-  return `from earshot.forge import bank, dsp, fx
-import numpy as np
-
-def render(params, r):
-    # params contains this clip's duration, seed and editable recipe parameters.
-    entry = bank.get(${JSON.stringify(id)})
-    if entry.get("type", "forge") == "forge":
-        entry["params"].update({key: value for key, value in params.items() if key in entry["params"]})
-    # source_spec is an immutable copy of this clip's canonical recipe.
-    sound, _ = bank.render(entry, seed=source_spec["seed"],
-        dur=source_spec["duration"], apex=source_spec.get("apex"),
-        pitch=source_spec.get("pitch"), checks=False)
-    # Add synthesis, layering, envelopes or fx here; return 48 kHz mono/stereo PCM.
-    return sound
-`;
+  return starterSource.replace("__EARSHOT_PRESET_ID__", JSON.stringify(id));
 }

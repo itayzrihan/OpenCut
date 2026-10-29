@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "548f13b019b9d2c4a16f5757df4256e8fa90fd967dc4c1ebe33ec504cf805af4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:18:36.377Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/accounts/bridge-snapshot-cache.ts",
+          "classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts",
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/mcp/classic-mcp-bridge.tsx",
+          "classic/rust/editor-runtime-wasm/src/lib.rs",
+          "crates/mcp/Cargo.toml",
+          "crates/mcp/src/classic_bridge.rs",
+          "classic/apps/web/src/mcp/canonical-transport.ts",
+          "classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "52278f23-a1ab-48a4-a70e-0cf4a5f1dde5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:18:36.398Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

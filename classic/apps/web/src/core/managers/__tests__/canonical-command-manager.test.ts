@@ -115,6 +115,9 @@ let saveImportedMedia = async (_input: {
 	mediaAsset: MediaAsset;
 }) => {};
 mock.module("@/services/storage/service", () => ({
+	deserializeProject: () => {
+		throw new Error("Scene automation storage is outside this manager fixture");
+	},
 	storageService: {
 		saveMediaAsset: (input: { projectId: string; mediaAsset: MediaAsset }) =>
 			saveImportedMedia(input),
@@ -218,6 +221,8 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			checkpointSceneView: () => {},
 			getActiveOrNull: () => project,
 			getActive: () => project,
+			getActiveForScene: () => project,
+			getSessionReadOnlyReason: () => null,
 			setActiveProject: ({ project: next }: { project: TProject }) => {
 				manager.synchronizeProject(next);
 				project = next;
@@ -277,6 +282,128 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 		},
 	};
 }
+
+test(
+	"live canonical MCP publishes Earshot edits and returns artifacts without an editing-agent session",
+	async () => {
+		const host = createHost();
+		host.editor.project.getSessionReadOnlyReason = () => null;
+		await host.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+		});
+		const accountId =
+			typeof window === "undefined"
+				? "local"
+				: (window.__opencutAccountId ?? "local");
+		const signal = new AbortController().signal;
+		const common = { projectId: "classic-project", accountId, signal };
+		const context = {
+			dryRun: false,
+			metadata: {
+				"opencut/projectId": "classic-project",
+				"opencut/idempotencyKey": "mcp-sound-insert",
+			},
+		};
+		const procedural = {
+			version: 1,
+			engine: "earshot",
+			bankRevision: "591fa3e028032e6dce56620a20e932e35667e8d8",
+			presetId: "ui_pop/soft",
+			seed: 42,
+			duration: 0.02,
+		};
+		const input = {
+			projectId: "classic-project",
+			sceneId: "main-scene",
+			expectedRevision: host.manager.getCanonicalRevision()!,
+			clips: [
+				{
+					placement: { mode: "auto", trackType: "audio" },
+					element: {
+						type: "audio",
+						sourceType: "procedural",
+						procedural,
+						name: "MCP sound",
+						startTime: 0,
+						trimStart: 0,
+						trimEnd: 0,
+						params: { volume: -18, muted: false },
+					},
+				},
+			],
+		};
+		const noHost = async () => {
+			throw new Error("In-memory edit must not request host IO");
+		};
+		try {
+			const before = host.manager.captureProjectSnapshot();
+			await expect(
+				host.manager.invokeCanonicalMcp({
+					...common,
+					capabilityId: "project.close",
+					input: { projectId: "classic-project" },
+					context: { dryRun: false, metadata: {} },
+					host: noHost,
+				}),
+			).rejects.toThrow();
+			const added = await host.manager.invokeCanonicalMcp({
+				...common,
+				capabilityId: "timeline.classic.elements.insert",
+				input,
+				context,
+				host: noHost,
+			});
+			expect(added.applied).toBe(true);
+			expect(
+				host.manager
+					.captureProjectSnapshot()!
+					.scenes[0].tracks.audio.some((track) =>
+						track.elements.some((element) => element.name === "MCP sound"),
+					),
+			).toBe(true);
+			const after = host.manager.captureProjectSnapshot();
+			const retry = await host.manager.invokeCanonicalMcp({
+				...common,
+				capabilityId: "timeline.classic.elements.insert",
+				input,
+				context,
+				host: noHost,
+			});
+			expect(retry.applied).toBe(false);
+			expect(host.manager.captureProjectSnapshot()).toEqual(after);
+			const preview = await host.manager.invokeCanonicalMcp({
+				...common,
+				capabilityId: "audio.earshot.preview",
+				input: {
+					projectId: "classic-project",
+					expectedRevision: host.manager.getCanonicalRevision()!,
+					procedural,
+				},
+				context: { dryRun: false, metadata: {} },
+				host: async () => ({
+					type: "success",
+					data: {
+						channels: 1,
+						pcm16Base64: Buffer.alloc(1920).toString("base64"),
+					},
+				}),
+			});
+			expect(preview.artifacts).toHaveLength(1);
+			expect(preview.artifacts[0].metadata.mimeType).toBe("audio/wav");
+			expect(
+				Buffer.from(preview.artifacts[0].dataBase64, "base64")
+					.subarray(0, 4)
+					.toString(),
+			).toBe("RIFF");
+			expect(host.manager.getEditingAgentSnapshot()).toBeNull();
+			host.manager.undo();
+			expect(host.manager.captureProjectSnapshot()).toEqual(before);
+		} finally {
+			host.manager.detachCanonical();
+		}
+	},
+	INTEGRATION_TIMEOUT,
+);
 
 test(
 	"media import publishes only after saved bytes and keeps canonical FPS/resources through history",

@@ -1,3 +1,10 @@
+import {
+	canonicalMcpDescriptor,
+	canonicalRegistrySchema,
+	canonicalReceiptSchema,
+	encodeArtifactBytes,
+	type CanonicalInvocationOptions,
+} from "@/mcp/canonical-transport";
 import { collectTakeAudioEvidence } from "@/timeline/smart-takes/audio-evidence";
 import { assertBatchEditable } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
@@ -1739,6 +1746,125 @@ export class CommandManager {
 				return right;
 			},
 		});
+	}
+
+	getCanonicalCapabilityRegistry(): unknown {
+		return (
+			this.canonical?.readCapabilityRegistry() ?? {
+				revision: 0,
+				capabilities: [],
+			}
+		);
+	}
+
+	/** Authenticated transports invoke the same registry/session as UI and agents. */
+	async invokeCanonicalMcp({
+		capabilityId,
+		input,
+		context,
+		projectId,
+		accountId,
+		host,
+		signal,
+	}: {
+		capabilityId: string;
+		input: Record<string, unknown>;
+		context: CanonicalInvocationOptions;
+		projectId: string;
+		accountId: string;
+		signal: AbortSignal;
+		host: (
+			effect: import("@/core/agent-protocol").EditingAgentHostEffect,
+		) => Promise<import("@/core/agent-protocol").EditingAgentHostResult>;
+	}) {
+		const session = this.canonical;
+		const current = () =>
+			this.canonical === session &&
+			this.agentAccountId() === accountId &&
+			this.editor.project.getActiveOrNull()?.metadata.id === projectId;
+		if (
+			!session ||
+			session.projectId !== projectId ||
+			!current() ||
+			this.transactionDepth !== 0
+		)
+			throw new Error("The canonical MCP account or project is unavailable");
+		const descriptor = canonicalRegistrySchema
+			.parse(session.readCapabilityRegistry())
+			.capabilities.map(canonicalMcpDescriptor)
+			.find((item) => item.id === capabilityId);
+		if (!descriptor?.available)
+			throw new Error(
+				descriptor?.unavailableReason ?? "Canonical capability unavailable",
+			);
+		if (
+			(input.projectId !== undefined && input.projectId !== projectId) ||
+			(context.metadata["opencut/projectId"] !== undefined &&
+				context.metadata["opencut/projectId"] !== projectId)
+		)
+			throw new Error("MCP project scope mismatch");
+		if (descriptor.access !== "read") {
+			if (this.editor.project.getSessionReadOnlyReason())
+				throw new Error("The project is read only");
+			assertBatchEditable(projectId);
+		}
+		const revision = session.status().revision;
+		const expected =
+			input.expectedRevision ?? context.metadata["opencut/expectedRevision"];
+		if (
+			expected !== undefined &&
+			expected !== revision &&
+			typeof context.metadata["opencut/idempotencyKey"] !== "string"
+		)
+			throw new Error(
+				`Expected canonical revision ${expected}; current revision is ${revision}`,
+			);
+		try {
+			const receipt = canonicalReceiptSchema.parse(
+				await session.invokeMcp({
+					capabilityId,
+					input,
+					context,
+					signal,
+					host: async (effect) => {
+						if (!current() || effect.projectId !== projectId)
+							return {
+								type: "rejected",
+								message: "The canonical MCP scope changed",
+							};
+						return host(effect);
+					},
+				}),
+			);
+			if (!current()) throw new Error("The canonical MCP scope changed");
+			let bytes = 0;
+			const artifacts = receipt.result.artifacts.map((metadata) => {
+				const artifact = session.readConversationArtifact(metadata.id);
+				bytes += artifact.bytes.byteLength;
+				if (
+					bytes > 16 * 1024 * 1024 ||
+					artifact.bytes.byteLength !== metadata.byteSize ||
+					artifact.mimeType !== metadata.mimeType
+				)
+					throw new Error(
+						"Canonical artifacts exceed the bounded MCP transfer",
+					);
+				return { metadata, dataBase64: encodeArtifactBytes(artifact.bytes) };
+			});
+			return {
+				output: receipt.result.data,
+				artifacts,
+				applied: session.status().revision !== revision,
+				revision: session.status().revision,
+			};
+		} finally {
+			if (current() && session.status().revision !== revision) {
+				this.publishCanonical();
+				this.stateRevision += 1;
+				this.editor.save.markDirty();
+				this.persistHistory();
+			}
+		}
 	}
 
 	getCanonicalRevision(): number | undefined {

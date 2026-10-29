@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54e1a3730de3d26b39d3399f29958e6b1f0be7a77acd422c4144f12a60109c82",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:45:34.358Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm.js",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.js",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm.d.ts",
+          "classic/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm_bg.wasm.d.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "af0e1159-93fc-400c-a522-a15e8e8302cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:45:34.362Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

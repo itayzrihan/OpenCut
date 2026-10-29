@@ -37,6 +37,9 @@ struct Job {
     output_scene_id: String,
     action: Action,
     options: Recipe,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 64, max = 64))]
+    source_fingerprint: Option<String>,
 }
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
@@ -175,6 +178,93 @@ struct Output {
     workers: Vec<Value>,
 }
 
+/// Rebuilds the queued source without mutating the document. The fingerprint
+/// excludes display-only project metadata but binds every scene, setting and
+/// media binding. A changed source can never become a different queued version.
+fn worker_snapshot(
+    classic: &crate::ClassicProject,
+    project_id: &str,
+    job: &Job,
+) -> Result<(Value, String), CapabilityError> {
+    let scene = classic.document["scenes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["id"] == job.scene_id)
+        .ok_or_else(|| CapabilityError::InvalidInput("Scene not found".into()))?;
+    let mut worker = classic.document.clone();
+    worker.remove("automationEdits");
+    worker.remove("transcriptionJobs");
+    worker.remove("aiEditHistory");
+    worker.insert("automationCheckpoint".into(), json!(0));
+    worker.insert(
+        "automationSource".into(),
+        json!({"projectId":project_id,"jobId":job.id,"sceneId":job.scene_id,
+            "mediaAssetIds":classic.media_assets.iter().filter_map(|m| m.get("id").and_then(Value::as_str)).collect::<Vec<_>>(),
+            "fontIds":classic.document.get("customFonts").and_then(Value::as_array).into_iter().flatten().filter_map(|f|f.get("id").and_then(Value::as_str)).collect::<Vec<_>>() }),
+    );
+    worker.get_mut("metadata").unwrap()["automationWorkingCopy"] = json!(true);
+    worker.get_mut("metadata").unwrap()["id"] = json!(job.worker_project_id);
+    worker.get_mut("metadata").unwrap()["name"] = json!(format!(
+        "{} · AI working copy",
+        scene["name"].as_str().unwrap_or("Scene")
+    ));
+    if let Some(settings) = scene.get("settings").cloned() {
+        worker.insert("settings".into(), settings);
+    }
+    worker.insert("currentSceneId".into(), json!(job.scene_id));
+    let mut scenes = classic.document["scenes"].as_array().unwrap().clone();
+    for item in &mut scenes {
+        item["isMain"] = json!(item["id"] == job.scene_id);
+        if item["id"] == job.scene_id {
+            item.as_object_mut().unwrap().remove("settings");
+        }
+    }
+    worker.insert("scenes".into(), json!(scenes));
+    let mut fingerprint_document = worker.clone();
+    fingerprint_document.remove("metadata");
+    let fingerprint = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(
+                &json!({"document":fingerprint_document,"mediaAssets":classic.media_assets})
+            )
+            .unwrap()
+        )
+    );
+    worker.get_mut("automationSource").unwrap()["sourceFingerprint"] = json!(fingerprint);
+    Ok((json!(worker), fingerprint))
+}
+
+pub(super) fn queued_job_snapshot(
+    classic: &crate::ClassicProject,
+    project_id: &str,
+    job_id: &str,
+) -> Result<(Value, Option<Value>), CapabilityError> {
+    let value = classic
+        .document
+        .get("automationEdits")
+        .and_then(Value::as_array)
+        .and_then(|jobs| jobs.iter().find(|j| j["id"] == job_id))
+        .cloned()
+        .ok_or_else(|| {
+            CapabilityError::InvalidInput(
+                "Enqueue this scene job with project.classic.automation.edit first".into(),
+            )
+        })?;
+    let mut stripped = value.clone();
+    stripped.as_object_mut().unwrap().remove("status");
+    let job: Job = serde_json::from_value(stripped)
+        .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+    let candidate =
+        worker_snapshot(classic, project_id, &job)
+            .ok()
+            .and_then(|(worker, fingerprint)| {
+                (job.source_fingerprint.as_deref() == Some(&fingerprint)).then_some(worker)
+            });
+    Ok((value, candidate))
+}
+
 pub(crate) fn validate(value: Option<&Value>) -> Result<(), String> {
     let Some(value) = value else { return Ok(()) };
     let jobs = value.as_array().ok_or("automationEdits must be an array")?;
@@ -188,8 +278,16 @@ pub(crate) fn validate(value: Option<&Value>) -> Result<(), String> {
             .as_object_mut()
             .ok_or("Invalid automation job")?
             .remove("status");
-        serde_json::from_value::<Job>(stored)
+        let recipe = serde_json::from_value::<Job>(stored)
             .map_err(|e| format!("Invalid scene edit recipe: {e}"))?;
+        if recipe.source_fingerprint.as_ref().is_some_and(|s| {
+            s.len() != 64
+                || !s
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        }) {
+            return Err("Invalid scene job source fingerprint".into());
+        }
         let id = job["id"]
             .as_str()
             .filter(|s| !s.is_empty())
@@ -316,44 +414,10 @@ pub(super) fn register_classic_automation(
                                             "Job already queued".into(),
                                         ));
                                     }
-                                    let mut scene = classic.document["scenes"]
-                                        .as_array()
-                                        .unwrap()
-                                        .iter()
-                                        .find(|s| s["id"] == job.scene_id)
-                                        .cloned()
-                                        .ok_or_else(|| {
-                                            CapabilityError::InvalidInput("Scene not found".into())
-                                        })?;
-                                    let mut worker = classic.document.clone();
-                                    worker.remove("automationEdits");
-                                    worker.remove("transcriptionJobs");
-                                    worker.remove("aiEditHistory");
-                                    worker.insert("automationCheckpoint".into(), json!(0));
-                                    worker.insert("automationSource".into(),json!({"projectId":input.project_id,"jobId":job.id,"sceneId":job.scene_id}));
-                                    worker.get_mut("metadata").unwrap()["automationWorkingCopy"] =
-                                        json!(true);
-                                    worker.get_mut("metadata").unwrap()["id"] =
-                                        json!(job.worker_project_id);
-                                    worker.get_mut("metadata").unwrap()["name"] = json!(format!(
-                                        "{} · AI working copy",
-                                        scene["name"].as_str().unwrap_or("Scene")
-                                    ));
-                                    if let Some(settings) = scene.get("settings").cloned() {
-                                        worker.insert("settings".into(), settings);
-                                    }
-                                    scene["isMain"] = json!(true);
-                                    worker.insert("currentSceneId".into(), json!(job.scene_id));
-                                    let mut scenes =
-                                        classic.document["scenes"].as_array().unwrap().clone();
-                                    for item in &mut scenes {
-                                        item["isMain"] = json!(item["id"] == job.scene_id);
-                                        if item["id"] == job.scene_id {
-                                            item.as_object_mut().unwrap().remove("settings");
-                                        }
-                                    }
-                                    // Keep nested sequence/B-roll references available in the isolated document.
-                                    worker.insert("scenes".into(), json!(scenes));
+                                    let (worker, fingerprint) =
+                                        worker_snapshot(classic, &input.project_id, &job)?;
+                                    let mut job = job;
+                                    job.source_fingerprint = Some(fingerprint);
                                     workers.push(json!({"jobId":job.id,"project":worker}));
                                     let mut value = serde_json::to_value(job).map_err(|e| {
                                         CapabilityError::InvalidInput(e.to_string())
@@ -404,6 +468,22 @@ pub(super) fn register_classic_automation(
                                     return Err(CapabilityError::Conflict(
                                         "Worker does not own this job".into(),
                                     ));
+                                }
+                                if let Some(fingerprint) = job.get("sourceFingerprint") {
+                                    let origin = worker
+                                        .document
+                                        .get("automationSource")
+                                        .unwrap_or(&Value::Null);
+                                    if origin["projectId"] != input.project_id
+                                        || origin["jobId"] != job_id
+                                        || origin["sceneId"] != job["sceneId"]
+                                        || origin["sourceFingerprint"] != *fingerprint
+                                    {
+                                        return Err(CapabilityError::Conflict(
+                                            "Worker origin differs from the immutable scene intent"
+                                                .into(),
+                                        ));
+                                    }
                                 }
                                 let mut scene = worker.document["scenes"]
                                     .as_array()

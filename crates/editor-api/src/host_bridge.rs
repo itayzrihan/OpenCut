@@ -72,7 +72,8 @@ impl HostBridge {
         project_id: &str,
         request: Value,
     ) -> Result<CapabilityResult, CapabilityError> {
-        self.execute_preflight(capability_id, adapter, project_id, request, None).await
+        self.execute_preflight(capability_id, adapter, project_id, request, None)
+            .await
     }
     /// Internal preflight reply contracts may differ from the public final
     /// capability output. This schema comes from Rust, never model input.
@@ -84,15 +85,61 @@ impl HostBridge {
         request: Value,
         reply_schema: Option<Value>,
     ) -> Result<CapabilityResult, CapabilityError> {
+        self.execute_inner(
+            capability_id,
+            adapter,
+            project_id,
+            request,
+            reply_schema,
+            None,
+        )
+        .await
+    }
+
+    /// Only for adapters that cannot commit an external write. Cancellation
+    /// abandons this exact pending effect; a late host reply must be ignored.
+    pub async fn execute_cancellable_preflight(
+        &self,
+        capability_id: &str,
+        adapter: &str,
+        project_id: &str,
+        request: Value,
+        reply_schema: Option<Value>,
+        cancellation: tokio_util::sync::CancellationToken,
+    ) -> Result<CapabilityResult, CapabilityError> {
+        self.execute_inner(
+            capability_id,
+            adapter,
+            project_id,
+            request,
+            reply_schema,
+            Some(cancellation),
+        )
+        .await
+    }
+
+    async fn execute_inner(
+        &self,
+        capability_id: &str,
+        adapter: &str,
+        project_id: &str,
+        request: Value,
+        reply_schema: Option<Value>,
+        cancellation: Option<tokio_util::sync::CancellationToken>,
+    ) -> Result<CapabilityResult, CapabilityError> {
         // Prepared offline source includes pinned JS/fonts. It never enters
         // model context and remains bounded like the corresponding host reply.
-        let max_request = match adapter { "hyperframesAuthoring" => 4_000_000, "subscriptionImage" => 12_000_000, _ => 400_000 };
+        let max_request = match adapter {
+            "hyperframesAuthoring" => 4_000_000,
+            "subscriptionImage" | "sceneAutomation" => 12_000_000,
+            _ => 400_000,
+        };
         if request.to_string().len() > max_request {
             return Err(CapabilityError::InvalidInput(
                 "host request exceeds its bound".into(),
             ));
         }
-        let receiver = {
+        let (effect_id, receiver) = {
             let mut state = self.0.lock().map_err(lock_error)?;
             let public_schema = state
                 .adapters
@@ -126,10 +173,21 @@ impl HostBridge {
                     output_schema,
                 ),
             );
-            receiver
+            (id, receiver)
         };
-        match receiver
-            .await
+        let reply = if let Some(token) = cancellation {
+            tokio::select! {
+                biased;
+                _ = token.cancelled() => {
+                    self.0.lock().map_err(lock_error)?.pending.remove(&effect_id);
+                    return Err(CapabilityError::Failed("Host preflight cancelled".into()));
+                }
+                result = receiver => result,
+            }
+        } else {
+            receiver.await
+        };
+        match reply
             .map_err(|_| CapabilityError::Unavailable("host response channel closed".into()))?
         {
             HostEffectResult::Success { data } => Ok(CapabilityResult::data(data)),

@@ -13,6 +13,7 @@ mod editor_ui_control;
 mod editor_screenshot;
 mod hyperframes_authoring;
 mod editor_render;
+mod earshot_preview;
 mod classic;
 mod classic_procedural;
 mod classic_effects;
@@ -61,6 +62,8 @@ pub use operations::{owned_project_read, owned_media_transfer_plan, register_own
 pub use editor_screenshot::register_editor_screenshot_capability;
 pub use hyperframes_authoring::register_hyperframes_authoring;
 pub use editor_render::register_editor_render_capabilities;
+pub use operations::register_classic_automation_host;
+pub use earshot_preview::register_earshot_preview;
 pub use classic::{CLASSIC_TICKS_PER_SECOND, ClassicComposition, ClassicDocument, ClassicProject};
 pub use classic_procedural::{ProceduralAudioSource, ProceduralAudioEngine, ProceduralAudioPitch, ProceduralAudioEcho};
 pub use classic_effects::ClassicEffectCatalog;

@@ -10,6 +10,7 @@ export interface BridgeHeartbeat {
 	projectName: string;
 	expectedRevision: number;
 	revision: number;
+	canonicalRevision?: number;
 	dirty: boolean;
 	playback: unknown;
 	selection: unknown;
@@ -56,6 +57,7 @@ export class BridgeSnapshotCache {
 			...cached.value,
 			projectName: value.projectName,
 			revision: value.revision,
+			canonicalRevision: value.canonicalRevision,
 			dirty: value.dirty,
 			playback: value.playback,
 			selection: value.selection,

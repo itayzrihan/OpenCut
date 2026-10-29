@@ -17,5 +17,7 @@ pub fn register_editor_host_capabilities(
     crate::register_editor_image_generation(runtime, bridge)?;
     crate::register_owned_project_capabilities(runtime, bridge)?;
     crate::register_hyperframes_authoring(runtime, bridge)?;
+    crate::register_earshot_preview(runtime, bridge)?;
+    crate::register_classic_automation_host(runtime, bridge)?;
     crate::register_editor_render_capabilities(runtime, bridge)
 }

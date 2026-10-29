@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be554e7cc9b7ad73437ea2adf5db1e364fc3f0976928cc88ced3418c7445e047",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:56:36.909Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/public/earshot/runtime/source-files.json",
+          "classic/apps/web/public/earshot/runtime/worker.js",
+          "classic/apps/web/public/earshot/runtime/renderer.py",
+          "classic/apps/web/public/earshot/runtime/kernels.js",
+          "classic/apps/web/public/earshot/runtime/manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "d80d2ff6-4a32-4205-9d66-66cfad978065"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:56:36.911Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

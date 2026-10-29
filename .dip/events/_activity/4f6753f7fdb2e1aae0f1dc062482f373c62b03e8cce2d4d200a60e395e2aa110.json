@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4f6753f7fdb2e1aae0f1dc062482f373c62b03e8cce2d4d200a60e395e2aa110",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:17:01.467Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/debug/deps/opencut_mcp-60e05bb3e6cf98b7.opencut_mcp.1adea99e15f9ae74-cgu.12.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/opencut_mcp-60e05bb3e6cf98b7.opencut_mcp.1adea99e15f9ae74-cgu.14.rcgu.o"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "da8792b9-3b19-4413-b121-da5b5fc221d4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:17:01.469Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

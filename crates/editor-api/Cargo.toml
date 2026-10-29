@@ -39,3 +39,7 @@ js-sys = "0.3.93"
 
 [dev-dependencies]
 tokio = { version = "1.49.0", features = ["sync", "rt", "macros", "time"] }
+
+[build-dependencies]
+serde_json = { workspace = true }
+sha2 = { workspace = true }

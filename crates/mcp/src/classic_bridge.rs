@@ -53,6 +53,9 @@ pub struct ClassicToolDescriptor {
     pub open_world: bool,
     #[serde(default)]
     pub risk: Option<String>,
+    /// Exact canonical descriptor published by the browser runtime, not a handwritten tool.
+    #[serde(default)]
+    pub canonical: Option<CapabilityDescriptor>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,6 +65,8 @@ pub struct ClassicSessionSnapshot {
     pub project_id: String,
     pub project_name: String,
     pub revision: u64,
+    #[serde(default)]
+    pub canonical_revision: Option<u64>,
     pub dirty: bool,
     pub playback: Value,
     pub timeline: Value,
@@ -81,6 +86,8 @@ struct ClassicHeartbeat {
     project_name: String,
     expected_revision: u64,
     revision: u64,
+    #[serde(default)]
+    canonical_revision: Option<u64>,
     dirty: bool,
     playback: Value,
     selection: Value,
@@ -96,7 +103,13 @@ struct ClassicCommand {
     tool_name: String,
     arguments: Value,
     auto_apply: bool,
+    #[serde(default)]
+    context: Value,
 }
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct BridgeArtifact { metadata: ArtifactRef, data_base64: String }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -111,18 +124,22 @@ struct ClassicCommandCompletion {
     applied: bool,
     #[serde(default)]
     revision: Option<u64>,
+    #[serde(default)]
+    artifacts: Vec<BridgeArtifact>,
 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CommandBatch {
     commands: Vec<ClassicCommand>,
+    cancelled_command_ids: Vec<String>,
 }
 
 #[derive(Default)]
 struct CommandState {
     queue: VecDeque<ClassicCommand>,
-    waiters: HashMap<String, (String, oneshot::Sender<ClassicCommandCompletion>)>,
+    cancellations: HashMap<String, Vec<String>>,
+    waiters: HashMap<String, (String, bool, oneshot::Sender<ClassicCommandCompletion>)>,
 }
 
 struct ClassicBridgeInner {
@@ -286,6 +303,7 @@ impl ClassicBridge {
                             "projectId": snapshot.project_id,
                             "projectName": snapshot.project_name,
                             "revision": snapshot.revision,
+                            "canonicalRevision": snapshot.canonical_revision,
                             "dirty": snapshot.dirty,
                             "connected": !is_session_stale(snapshot),
                             "active": active_session_id == Some(snapshot.session_id.as_str()),
@@ -409,6 +427,7 @@ impl ClassicBridge {
             }
             snapshot.project_name = heartbeat.project_name;
             snapshot.revision = heartbeat.revision;
+            snapshot.canonical_revision = heartbeat.canonical_revision;
             snapshot.dirty = heartbeat.dirty;
             snapshot.playback = heartbeat.playback;
             snapshot.selection = heartbeat.selection;
@@ -451,17 +470,18 @@ impl ClassicBridge {
             });
         }
         if let Ok(mut commands) = self.inner.command_state.lock() {
+            commands.cancellations.remove(session_id);
             commands
                 .queue
                 .retain(|command| command.session_id != session_id);
             let waiter_ids: Vec<_> = commands
                 .waiters
                 .iter()
-                .filter(|(_, (owner, _))| owner == session_id)
+                .filter(|(_, (owner, _, _))| owner == session_id)
                 .map(|(id, _)| id.clone())
                 .collect();
             for command_id in waiter_ids {
-                if let Some((_, waiter)) = commands.waiters.remove(&command_id) {
+                if let Some((_, _, waiter)) = commands.waiters.remove(&command_id) {
                     let _ = waiter.send(ClassicCommandCompletion {
                         command_id,
                         ok: false,
@@ -469,6 +489,7 @@ impl ClassicBridge {
                         error: Some("OpenCut browser session disconnected".into()),
                         applied: false,
                         revision: None,
+                        artifacts: Vec::new(),
                     });
                 }
             }
@@ -626,7 +647,7 @@ impl ClassicBridge {
         id: String,
         tool: ClassicToolDescriptor,
     ) -> Result<(), String> {
-        let access = tool_access(&tool);
+        let access = tool.canonical.as_ref().map_or_else(|| tool_access(&tool), |d| d.access);
         let mut input_schema = tool.parameters.clone();
         if input_schema.get("type").and_then(Value::as_str) != Some("object") {
             input_schema = json!({
@@ -663,10 +684,27 @@ impl ClassicBridge {
             input_schema,
             command_output_schema(),
         );
+        if let Some(canonical) = &tool.canonical {
+            if tool.name != format!("canonical.{}", canonical.id) || tool.parameters != canonical.input_schema {
+                return Err("Canonical browser tool must match its registry descriptor".into());
+            }
+            descriptor.title = canonical.title.clone();
+            descriptor.version = canonical.version.clone();
+            descriptor.available = canonical.available;
+            descriptor.unavailable_reason = canonical.unavailable_reason.clone();
+            descriptor.supports_dry_run = canonical.supports_dry_run;
+            descriptor.document_support = opencut_editor_api::DocumentSupport::Both;
+            descriptor.output_schema["properties"]["output"] = canonical.output_schema.clone();
+            // Local JSON Schema references still resolve from the wrapper root.
+            if let Some(definitions) = canonical.output_schema.get("$defs") {
+                descriptor.output_schema["$defs"] = definitions.clone();
+            }
+        }
         descriptor.access = access;
-        descriptor.idempotent = tool.idempotent;
-        descriptor.open_world = tool.open_world;
-        descriptor.cancellable = true;
+        descriptor.idempotent = tool.canonical.as_ref().map_or(tool.idempotent, |d| d.idempotent);
+        descriptor.open_world = tool.canonical.as_ref().map_or(tool.open_world, |d| d.open_world);
+        descriptor.cancellable = tool.canonical.as_ref().map_or(true, |d| d.cancellable);
+        // Cross-process invocation cannot participate in a native transaction.
         descriptor.transactional = false;
         descriptor.tags = {
             let mut tags = vec!["classic".into(), "browser".into(), "live".into()];
@@ -714,10 +752,8 @@ impl ClassicBridge {
         auto_apply: bool,
         browser_session_id: Option<String>,
     ) -> Result<CapabilityResult, CapabilityError> {
-        let targeted_project_id = context
-            .metadata
-            .get("opencut/projectId")
-            .and_then(Value::as_str);
+        let targeted_project_id = arguments.get("projectId").and_then(Value::as_str).or_else(|| context
+            .metadata.get("opencut/projectId").and_then(Value::as_str));
         let snapshot = self
             .select_session(targeted_project_id, browser_session_id.as_deref())
             .ok_or_else(|| {
@@ -728,21 +764,28 @@ impl ClassicBridge {
                 "the OpenCut browser session stopped sending heartbeats".into(),
             ));
         }
-        if let Some(expected_revision) = context
+        let canonical = tool_name.starts_with("canonical.");
+        let actual_revision = if canonical { snapshot.canonical_revision } else { Some(snapshot.revision) };
+        if let Some(expected_revision) = arguments.get("expectedRevision").and_then(Value::as_u64).or_else(|| context
             .metadata
             .get("opencut/expectedRevision")
-            .and_then(Value::as_u64)
-            && expected_revision != snapshot.revision
+            .and_then(Value::as_u64))
+            && !(canonical && context.metadata.get("opencut/idempotencyKey").and_then(Value::as_str).is_some())
+            && Some(expected_revision) != actual_revision
         {
             return Err(CapabilityError::Conflict(format!(
-                "expected browser revision {expected_revision}, current revision is {}",
-                snapshot.revision
+                "expected browser revision {expected_revision}, current revision is {actual_revision:?}"
             )));
         }
-        if !snapshot.tools.iter().any(|tool| tool.name == tool_name) {
+        let advertised = snapshot.tools.iter().find(|tool| tool.name == tool_name);
+        if advertised.is_none() {
             return Err(CapabilityError::Unavailable(format!(
                 "the connected browser does not advertise `{tool_name}`"
             )));
+        }
+
+        if advertised.and_then(|tool| tool.canonical.as_ref()).is_some_and(|descriptor| !descriptor.available) {
+            return Err(CapabilityError::Unavailable("The browser host cannot execute this canonical capability".into()));
         }
 
         let command_id = format!(
@@ -757,6 +800,7 @@ impl ClassicBridge {
             tool_name,
             arguments,
             auto_apply,
+            context: json!({"dryRun":context.dry_run,"requestId":context.request_id.as_deref().unwrap_or(&command_id),"metadata":context.metadata}),
         };
         let (sender, receiver) = oneshot::channel();
         {
@@ -766,7 +810,7 @@ impl ClassicBridge {
                 })?;
             state
                 .waiters
-                .insert(command_id.clone(), (snapshot.session_id.clone(), sender));
+                .insert(command_id.clone(), (snapshot.session_id.clone(), canonical, sender));
             state.queue.push_back(command);
         }
 
@@ -778,10 +822,10 @@ impl ClassicBridge {
                 self.abandon_command(&command_id);
                 return Err(CapabilityError::Failed("browser command was cancelled".into()));
             },
-            _ = tokio::time::sleep(COMMAND_TIMEOUT) => {
+            _ = tokio::time::sleep(if canonical { Duration::from_secs(240) } else { COMMAND_TIMEOUT }) => {
                 self.abandon_command(&command_id);
                 return Err(CapabilityError::Unavailable(
-                    "the OpenCut browser did not answer the command within 45 seconds".into(),
+                    "the OpenCut browser did not answer before the command deadline; reconcile an uncertain write using its original idempotency key".into(),
                 ));
             }
         };
@@ -794,7 +838,7 @@ impl ClassicBridge {
         }
 
         let mut output = completion.output;
-        let mut artifacts = Vec::new();
+        let mut artifacts = import_browser_artifacts(&mut output, completion.artifacts, &self.inner.artifacts)?;
         collect_data_url_artifacts(&mut output, &self.inner.artifacts, &mut artifacts);
         Ok(CapabilityResult {
             data: json!({
@@ -818,7 +862,9 @@ impl ClassicBridge {
     fn abandon_command(&self, command_id: &str) {
         if let Ok(mut state) = self.inner.command_state.lock() {
             state.queue.retain(|command| command.id != command_id);
-            state.waiters.remove(command_id);
+            if let Some((session, _, _)) = state.waiters.remove(command_id) {
+                state.cancellations.entry(session).or_default().push(command_id.to_owned());
+            }
         }
     }
 
@@ -857,14 +903,23 @@ impl ClassicBridge {
                 if state
                     .waiters
                     .get(&completion.command_id)
-                    .is_some_and(|(owner, _)| owner == session_id)
+                    .is_some_and(|(owner, _, _)| owner == session_id)
                 {
                     state.waiters.remove(&completion.command_id)
                 } else {
                     None
                 }
             })
-            .is_some_and(|(_, waiter)| waiter.send(completion).is_ok())
+            .is_some_and(|(_, canonical, waiter)| {
+                if canonical && completion.ok {
+                    if let Ok(mut sessions) = self.inner.sessions.write() {
+                        if let Some(snapshot) = sessions.get_mut(session_id) {
+                            snapshot.canonical_revision = completion.revision;
+                        }
+                    }
+                }
+                waiter.send(completion).is_ok()
+            })
     }
 }
 
@@ -878,6 +933,7 @@ struct BridgeHttpState {
 #[serde(rename_all = "camelCase")]
 struct BridgeStatus {
     healthy: bool,
+    supports_canonical_invocation: bool,
     connected: bool,
     session_id: Option<String>,
     project_id: Option<String>,
@@ -1037,6 +1093,7 @@ async fn bridge_status(State(state): State<BridgeHttpState>) -> Json<BridgeStatu
         .is_some_and(|snapshot| !is_session_stale(snapshot));
     Json(BridgeStatus {
         healthy: true,
+        supports_canonical_invocation: true,
         connected,
         session_id: session.as_ref().map(|session| session.session_id.clone()),
         project_id: session.as_ref().map(|session| session.project_id.clone()),
@@ -1080,6 +1137,7 @@ async fn poll_bridge_commands(
 ) -> Json<CommandBatch> {
     Json(CommandBatch {
         commands: state.bridge.take_commands(&session_id),
+        cancelled_command_ids: state.bridge.inner.command_state.lock().ok().and_then(|mut s| s.cancellations.remove(&session_id)).unwrap_or_default(),
     })
 }
 
@@ -1155,6 +1213,38 @@ fn command_output_schema() -> Value {
         "required": ["output", "applied", "revision"],
         "additionalProperties": false
     })
+}
+
+/// Copy only bounded, checksummed artifacts; browser-local IDs are never handed
+/// to an MCP client as though they belonged to this runtime's ArtifactStore.
+fn import_browser_artifacts(output: &mut Value, incoming: Vec<BridgeArtifact>, store: &ArtifactStore) -> Result<Vec<ArtifactRef>, CapabilityError> {
+    if incoming.len() > 16 || incoming.iter().fold(0_u64, |sum, a| sum.saturating_add(a.metadata.byte_size)) > 16 * 1024 * 1024 {
+        return Err(CapabilityError::InvalidInput("Browser artifacts exceed the transfer bound".into()));
+    }
+    let mut refs = Vec::new();
+    for item in incoming {
+        if item.data_base64.len() > 24 * 1024 * 1024 { return Err(CapabilityError::InvalidInput("Browser artifact encoding exceeds its bound".into())); }
+        let bytes = BASE64.decode(&item.data_base64).map_err(|_| CapabilityError::InvalidInput("Invalid browser artifact encoding".into()))?;
+        if bytes.len() as u64 != item.metadata.byte_size { return Err(CapabilityError::InvalidInput("Browser artifact size mismatch".into())); }
+        let artifact = store.put(bytes, &item.metadata.mime_type, item.metadata.width, item.metadata.height, item.metadata.duration_ms).map_err(|e| CapabilityError::Failed(e.to_string()))?;
+        if artifact.sha256 != item.metadata.sha256 {
+            let _ = store.remove(&artifact.id);
+            return Err(CapabilityError::InvalidInput("Browser artifact checksum mismatch".into()));
+        }
+        fn remap(value: &mut Value, old: &ArtifactRef, new: &ArtifactRef) {
+            match value {
+                Value::String(s) if s == &old.uri => *s = new.uri.clone(),
+                Value::String(s) if s == &old.id => *s = new.id.clone(),
+                Value::Array(items) => items.iter_mut().for_each(|v| remap(v, old, new)),
+                Value::Object(object) if object.get("uri").and_then(Value::as_str) == Some(&old.uri) => *value = serde_json::to_value(new).expect("artifact metadata"),
+                Value::Object(object) => object.values_mut().for_each(|v| remap(v, old, new)),
+                _ => {}
+            }
+        }
+        remap(output, &item.metadata, &artifact);
+        refs.push(artifact);
+    }
+    Ok(refs)
 }
 
 fn collect_data_url_artifacts(
@@ -1264,6 +1354,7 @@ mod tests {
             project_id: "classic-project".into(),
             project_name: "Classic Project".into(),
             revision: 7,
+            canonical_revision: None,
             dirty: false,
             playback: json!({}),
             timeline: json!({}),
@@ -1368,6 +1459,7 @@ mod tests {
                 idempotent: true,
                 open_world: false,
                 risk: Some("read".into()),
+                canonical: None,
             }]))
             .unwrap();
         assert!(runtime.snapshot().unwrap().project.is_none());
@@ -1404,6 +1496,7 @@ mod tests {
                 error: None,
                 applied: true,
                 revision: Some(999),
+                artifacts: Vec::new(),
             },
         ));
         assert!(bridge.complete_command(
@@ -1415,6 +1508,7 @@ mod tests {
                 error: None,
                 applied: false,
                 revision: Some(7),
+                artifacts: Vec::new(),
             },
         ));
 
@@ -1595,5 +1689,183 @@ mod heartbeat_tests {
         bridge
             .update_heartbeat("account_tab", heartbeat("p", 2, 2))
             .unwrap();
+    }
+}
+
+#[cfg(test)]
+mod canonical_transport_tests {
+    use super::*;
+    use crate::OpenCutMcp;
+    use opencut_editor_api::{HostBridge, HostEffectResult, register_earshot_preview};
+    use rmcp::{ServiceExt, model::{CallToolRequestParams, ReadResourceRequestParams}};
+
+    fn tool(descriptor: CapabilityDescriptor) -> ClassicToolDescriptor {
+        ClassicToolDescriptor {
+            name: format!("canonical.{}", descriptor.id), description: descriptor.description.clone(),
+            parameters: descriptor.input_schema.clone(), category: Some(descriptor.category.clone()),
+            keywords: descriptor.tags.clone(), read_only: descriptor.access == AccessLevel::Read,
+            idempotent: descriptor.idempotent, open_world: descriptor.open_world, risk: None,
+            canonical: Some(descriptor),
+        }
+    }
+    async fn setup() -> (OpenCutRuntime, OpenCutRuntime, HostBridge, ClassicBridge) {
+        let native = OpenCutRuntime::full_access().unwrap();
+        let browser = OpenCutRuntime::full_access().unwrap();
+        let host = HostBridge::default();
+        register_earshot_preview(&browser, &host).unwrap();
+        browser.registry().invoke("project.classic.session.attach", InvocationContext::default(), json!({
+            "projectId":"classic-project", "expectedRevision":0,
+            "classic":serde_json::from_str::<Value>(include_str!("../../editor-api/tests/fixtures/classic-project.json")).unwrap()
+        })).await.unwrap();
+        let bridge = ClassicBridge::register(&native).unwrap();
+        let tools = ["audio.earshot.preview", "project.classic.settings.update", "app.state.read"].into_iter()
+            .map(|id| tool(browser.registry().descriptor(id).unwrap().unwrap())).collect();
+        bridge.update_session(ClassicSessionSnapshot {
+            session_id:"live-tab".into(), project_id:"classic-project".into(), project_name:"Live".into(),
+            revision:999, canonical_revision:Some(browser.snapshot().unwrap().revision), dirty:false,
+            playback:json!({}),timeline:json!({}),selection:json!({}),ui:json!({}),tools,updated_at_ms:0,
+        }).unwrap();
+        (native, browser, host, bridge)
+    }
+    async fn next(bridge: &ClassicBridge) -> ClassicCommand {
+        tokio::time::timeout(Duration::from_secs(10), async {
+            loop {
+                if let Some(command) = bridge.take_commands("live-tab").pop() { return command; }
+                tokio::task::yield_now().await;
+            }
+        }).await.unwrap()
+    }
+    async fn execute(browser: &OpenCutRuntime, host: &HostBridge, bridge: &ClassicBridge, command: ClassicCommand) {
+        let before = browser.snapshot().unwrap().revision;
+        let context = InvocationContext {
+            source: "mcp.browser-fixture".into(), dry_run:command.context["dryRun"].as_bool().unwrap(),
+            request_id:command.context["requestId"].as_str().map(str::to_owned),
+            metadata: command.context["metadata"].as_object().unwrap().clone(), ..Default::default()
+        };
+        let id = command.tool_name.strip_prefix("canonical.").unwrap();
+        let registry = browser.registry().clone();
+        let pending = registry.invoke(id, context, command.arguments);
+        tokio::pin!(pending);
+        let receipt = loop {
+            tokio::select! {
+                result = &mut pending => break result.unwrap(),
+                _ = tokio::task::yield_now() => {
+                    if let Some(effect) = host.pending().unwrap().pop() {
+                        assert_eq!(effect.adapter, "earshotPreview");
+                        let frames = effect.request["frames"].as_u64().unwrap();
+                        let bytes: Vec<u8> = (0..frames).flat_map(|_| 16384_i16.to_le_bytes()).collect();
+                        host.settle(effect.id, HostEffectResult::Success {data:json!({"channels":1,"pcm16Base64":BASE64.encode(bytes)})}).unwrap();
+                    }
+                }
+            }
+        };
+        let artifacts = receipt.result.artifacts.iter().map(|metadata| BridgeArtifact {
+            metadata:metadata.clone(), data_base64:BASE64.encode(&browser.artifacts().get(&metadata.uri).unwrap().bytes)
+        }).collect();
+        assert!(bridge.complete_command("live-tab", ClassicCommandCompletion {
+            command_id:command.id,ok:true,output:receipt.result.data,error:None,
+            applied:browser.snapshot().unwrap().revision != before,revision:Some(browser.snapshot().unwrap().revision),artifacts,
+        }));
+    }
+
+    #[tokio::test]
+    async fn actual_mcp_wire_discovers_and_previews_in_browser_with_readable_audio_artifact() {
+        let (native, browser, host, bridge) = setup().await;
+        let (server_transport, client_transport) = tokio::io::duplex(4 * 1024 * 1024);
+        let server = OpenCutMcp::from_runtime(&native);
+        let task = tokio::spawn(async move { server.serve(server_transport).await.unwrap().waiting().await.unwrap(); });
+        let client = ().serve(client_transport).await.unwrap();
+        let inventory = client.list_all_tools().await.unwrap();
+        let preview = inventory.iter().find(|t| t.name == "opencut.classic.canonical.audio.earshot.preview").unwrap();
+        assert_eq!(preview.annotations.as_ref().unwrap().read_only_hint, Some(false));
+        assert_eq!(preview.annotations.as_ref().unwrap().open_world_hint, Some(true));
+        let input = json!({"browserSessionId":"live-tab", "projectId":"classic-project", "expectedRevision":browser.snapshot().unwrap().revision,
+            "procedural":{"version":1,"engine":"earshot","bankRevision":"591fa3e028032e6dce56620a20e932e35667e8d8","presetId":"whoosh_fast/whip","seed":42,"duration":0.1},"durationSeconds":0.02});
+        let dispatch = client.call_tool(CallToolRequestParams::new(preview.name.clone()).with_arguments(input.as_object().unwrap().clone()));
+        let work = async { execute(&browser, &host, &bridge, next(&bridge).await).await; };
+        let (reply, ()) = tokio::join!(dispatch, work);
+        let reply = reply.unwrap();
+        assert_ne!(reply.is_error, Some(true), "{reply:?}");
+        let encoded = serde_json::to_value(&reply).unwrap();
+        assert!(encoded["content"].as_array().unwrap().iter().any(|v| v["type"] == "audio" && v["mimeType"] == "audio/wav"));
+        let result = &encoded["structuredContent"]["result"]["data"]["output"];
+        assert_eq!(result["peak"], 0.5);
+        let uri = result["artifact"]["uri"].as_str().unwrap();
+        assert_eq!(&native.artifacts().get(uri).unwrap().bytes[..4], b"RIFF");
+        let resource = client.read_resource(ReadResourceRequestParams::new(uri)).await.unwrap();
+        assert_eq!(serde_json::to_value(resource).unwrap()["contents"][0]["mimeType"], "audio/wav");
+        assert!(native.snapshot().unwrap().project.is_none());
+        assert_eq!(browser.snapshot().unwrap().revision, 1);
+        client.cancel().await.unwrap(); task.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn live_registry_writes_keep_canonical_revisions_scope_dry_run_and_idempotency() {
+        let (native, browser, host, bridge) = setup().await;
+        let server = OpenCutMcp::from_runtime(&native);
+        let id = "classic.canonical.project.classic.settings.update";
+        let input = json!({"projectId":"classic-project","browserSessionId":"live-tab","expectedRevision":1,"idempotencyKey":"one-live-edit","settings":{"canvasSize":{"width":720,"height":1280}}});
+        let mut dry = InvocationContext::default(); dry.dry_run = true;
+        let call = server.call_generated_capability(id, input.as_object().unwrap().clone(), dry);
+        let (result, ()) = tokio::join!(call, async { let c=next(&bridge).await; assert_eq!(c.context["dryRun"],true); execute(&browser,&host,&bridge,c).await; });
+        assert_ne!(result.is_error, Some(true)); assert_eq!(browser.snapshot().unwrap().revision,1);
+        let call = server.call_generated_capability(id, input.as_object().unwrap().clone(), InvocationContext::default());
+        let (result, ()) = tokio::join!(call, async { execute(&browser,&host,&bridge,next(&bridge).await).await; });
+        assert_ne!(result.is_error, Some(true)); assert_eq!(browser.snapshot().unwrap().revision,2);
+        assert_eq!(browser.snapshot().unwrap().project.unwrap().settings.width,720);
+        let replay = server.call_generated_capability(id,input.as_object().unwrap().clone(),InvocationContext::default()).await;
+        assert_eq!(replay.structured_content,result.structured_content); assert!(bridge.take_commands("live-tab").is_empty());
+        let mut wrong=input.clone(); wrong["browserSessionId"]=json!("wrong-tab"); wrong["idempotencyKey"]=json!("other-call");
+        assert_eq!(server.call_generated_capability(id,wrong.as_object().unwrap().clone(),InvocationContext::default()).await.is_error,Some(true));
+        let mut stale=input; stale["expectedRevision"]=json!(999); stale.as_object_mut().unwrap().remove("idempotencyKey");
+        assert_eq!(server.call_generated_capability(id,stale.as_object().unwrap().clone(),InvocationContext::default()).await.is_error,Some(true));
+        assert!(native.snapshot().unwrap().project.is_none());
+    }
+
+    #[tokio::test]
+    async fn lost_browser_reply_retries_the_original_revision_without_repeating_the_write() {
+        let (native,browser,host,bridge)=setup().await;
+        let mut context=InvocationContext::default();
+        context.metadata.insert("opencut/idempotencyKey".into(),json!("lost-reply"));
+        let input=json!({"projectId":"classic-project","expectedRevision":1,"settings":{"canvasSize":{"width":720,"height":1280}}});
+        let cancel=context.cancellation.clone();
+        let pending=native.registry().invoke("classic.canonical.project.classic.settings.update",context.clone(),input.clone());
+        tokio::pin!(pending);
+        let command=tokio::select! { _=&mut pending=>panic!("must await browser"), c=next(&bridge)=>c };
+        // The browser commits and caches its canonical receipt; the reply is lost.
+        browser.registry().invoke("project.classic.settings.update",context.clone(),command.arguments).await.unwrap();
+        assert_eq!(browser.snapshot().unwrap().revision,2);
+        cancel.cancel(); assert!(pending.await.is_err());
+        bridge.inner.sessions.write().unwrap().get_mut("live-tab").unwrap().canonical_revision=Some(2);
+        context.cancellation=Default::default();
+        let retry=native.registry().invoke("classic.canonical.project.classic.settings.update",context,input);
+        let (receipt,())=tokio::join!(retry,async {execute(&browser,&host,&bridge,next(&bridge).await).await;});
+        assert!(receipt.is_ok()); assert_eq!(browser.snapshot().unwrap().revision,2);
+    }
+
+    #[tokio::test]
+    async fn late_bound_invocation_cannot_bypass_canonical_host_availability() {
+        let (native,_browser,_host,bridge)=setup().await;
+        let mut snapshot=bridge.select_session(None,Some("live-tab")).unwrap();
+        let descriptor=snapshot.tools.iter_mut().find(|tool|tool.name=="canonical.audio.earshot.preview").unwrap().canonical.as_mut().unwrap();
+        descriptor.available=false;
+        descriptor.unavailable_reason=Some("Host unavailable".into());
+        bridge.update_session(snapshot).unwrap();
+        let result=native.registry().invoke("classic.tool.invoke",InvocationContext::default(),json!({"toolName":"canonical.audio.earshot.preview","browserSessionId":"live-tab","arguments":{}})).await;
+        assert!(result.is_err()); assert!(bridge.take_commands("live-tab").is_empty());
+        let status=bridge_status(State(BridgeHttpState {bridge,expected_token:Arc::from("test-token")})).await.0;
+        assert_eq!(serde_json::to_value(status).unwrap()["supportsCanonicalInvocation"],true);
+    }
+
+    #[tokio::test]
+    async fn cancelled_live_commands_are_signalled_to_the_owning_browser() {
+        let (native, _browser, _host, bridge)=setup().await;
+        let context=InvocationContext::default(); let cancel=context.cancellation.clone();
+        let pending=native.registry().invoke("classic.canonical.app.state.read",context,json!({"browserSessionId":"live-tab"}));
+        tokio::pin!(pending);
+        let command=tokio::select! { _=&mut pending=>panic!("must wait for browser"), c=next(&bridge)=>c };
+        cancel.cancel(); assert!(pending.await.is_err());
+        let signals=bridge.inner.command_state.lock().unwrap().cancellations.remove("live-tab").unwrap();
+        assert_eq!(signals,vec![command.id]);
     }
 }

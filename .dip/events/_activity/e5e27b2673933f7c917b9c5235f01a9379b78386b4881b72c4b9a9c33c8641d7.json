@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e5e27b2673933f7c917b9c5235f01a9379b78386b4881b72c4b9a9c33c8641d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:04:36.849Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/debug/deps/opencut_editor_api-2db8595fec1d6c69.d"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "ce39d1cc-d845-46d6-b5a4-8306fd150747"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:04:36.851Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

@@ -86,6 +86,14 @@ export interface AiEditPlanRecord {
 }
 
 export interface TProject {
+	automationSource?: {
+		projectId: string;
+		jobId: string;
+		sceneId: string;
+		sourceFingerprint?: string;
+		mediaAssetIds?: string[];
+		fontIds?: string[];
+	};
 	automationEdits?: import("@/batch/scene-jobs").SceneJob[];
 	automationCheckpoint?: number;
 	transcriptionEngine?: import("@/transcription/job").TranscriptionEngine;

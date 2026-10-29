@@ -20,6 +20,14 @@ struct InvocationOptions {
     metadata: Map<String, Value>,
 }
 
+// A transport failure must not discard a possibly committed host operation.
+// Retain its actual registry future; only an identical invocation may resume it.
+struct ExternalInvocation {
+    key: String,
+    context: InvocationContext,
+    future: std::pin::Pin<Box<dyn std::future::Future<Output = Result<opencut_editor_api::InvocationReceipt, opencut_editor_api::RegistryError>>>>,
+}
+
 /// One instance belongs to the editor host, never to a composition iframe.
 #[wasm_bindgen]
 pub struct CanonicalEditorRuntime {
@@ -28,6 +36,8 @@ pub struct CanonicalEditorRuntime {
     agent: RefCell<Option<opencut_editor_agent::RuntimeAgent>>,
     host: opencut_editor_api::HostBridge,
     conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,
+    external: RefCell<Option<ExternalInvocation>>,
+    external_active: RefCell<Option<(String, InvocationContext)>>,
 }
 
 #[wasm_bindgen]
@@ -45,6 +55,8 @@ impl CanonicalEditorRuntime {
             agent: RefCell::new(None),
             host,
             conversation: RefCell::new(None),
+            external: RefCell::new(None),
+            external_active: RefCell::new(None),
         })
     }
 
@@ -116,6 +128,70 @@ impl CanonicalEditorRuntime {
             Err(_) => self.host.settle(effect.id, opencut_editor_api::HostEffectResult::Rejected { message: "Reference host read failed or was cancelled".into() }).map_err(js_error)?,
         }
         to_js(&pending.await.map_err(js_error)?)
+    }
+
+    /// Trusted transport adapter for the live registry. No capability table or
+    /// editor state is owned by MCP. Uncertain writes retain their registry future.
+    #[wasm_bindgen(js_name = invokeWithHost)]
+    pub async fn invoke_with_host(&self, capability_id: String, input: JsValue, context: JsValue, callback: js_sys::Function) -> Result<JsValue, JsValue> {
+        use std::task::{Context, Poll, Waker};
+        if self.transaction.borrow().is_some() { return Err(js_error("Finish the current transaction first")); }
+        let input: Value = from_json_input(input)?;
+        let context = invocation_context(context)?;
+        let descriptor = self.runtime.registry().descriptor(&capability_id).map_err(js_error)?.ok_or_else(|| js_error("Unknown capability"))?;
+        let key = serde_json::to_string(&(&capability_id, &input, context.dry_run, &context.metadata)).map_err(js_error)?;
+        let request_id = context.request_id.clone().unwrap_or_default();
+        let stored = self.external.borrow_mut().take();
+        let mut invocation = if let Some(pending) = stored {
+            if pending.key != key {
+                self.external.replace(Some(pending));
+                return Err(js_error("Reconcile the same pending host invocation before starting another"));
+            }
+            pending
+        } else {
+            if !self.host.pending().map_err(js_error)?.is_empty() { return Err(js_error("Reconcile the pending host operation first")); }
+            let registry = self.runtime.registry().clone();
+            ExternalInvocation { key, context:context.clone(), future: Box::pin(async move { registry.invoke(&capability_id, context, input).await }) }
+        };
+        self.external_active.replace(Some((request_id, invocation.context.clone())));
+        loop {
+            if let Poll::Ready(result) = invocation.future.as_mut().poll(&mut Context::from_waker(Waker::noop())) {
+                self.external_active.replace(None);
+                return to_json_js(&result.map_err(js_error)?);
+            }
+            let Some(effect) = self.host.pending().map_err(js_error)?.into_iter().next() else {
+                // Native async operations which do not use a host effect still
+                // own their cancellation semantics in the canonical registry.
+                let result = invocation.future.await;
+                self.external_active.replace(None);
+                return to_json_js(&result.map_err(js_error)?);
+            };
+            let reply = match callback.call1(&JsValue::UNDEFINED, &to_js(&effect)?) {
+                Ok(value) => wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&value)).await,
+                Err(error) => Err(error),
+            }.and_then(from_json_input::<opencut_editor_api::HostEffectResult>);
+            if !self.host.pending().map_err(js_error)?.iter().any(|item| item.id == effect.id) {
+                continue;
+            }
+            let settled = reply.map_err(|_| "Host response unavailable; reconcile the same invocation".to_string())
+                .and_then(|reply| self.host.settle(effect.id, reply).map_err(|e| e.to_string()));
+            if let Err(error) = settled {
+                if descriptor.access == opencut_editor_api::AccessLevel::Read {
+                    self.host.settle(effect.id, opencut_editor_api::HostEffectResult::Rejected { message: error }).map_err(js_error)?;
+                } else {
+                    self.external.replace(Some(invocation));
+                    self.external_active.replace(None);
+                    return Err(js_error(error));
+                }
+            }
+        }
+    }
+
+    #[wasm_bindgen(js_name = cancelExternalInvocation)]
+    pub fn cancel_external_invocation(&self, request_id: &str) {
+        if let Some((active, context)) = self.external_active.borrow().as_ref() {
+            if active == request_id { context.cancellation.cancel(); }
+        }
     }
 
     /// Classic's command stack is synchronous. These built-in handlers perform

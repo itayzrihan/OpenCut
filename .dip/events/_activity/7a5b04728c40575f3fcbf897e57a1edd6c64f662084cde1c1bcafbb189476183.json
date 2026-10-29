@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7a5b04728c40575f3fcbf897e57a1edd6c64f662084cde1c1bcafbb189476183",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:56:40.919Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/opencut_editor_runtime_wasm.wasm",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/opencut_editor_runtime_wasm.wasm",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/libopencut_editor_runtime_wasm.rlib",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/libopencut_editor_runtime_wasm.rlib",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/opencut_editor_runtime_wasm.d",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/libopencut_editor_runtime_wasm.d",
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/.gitignore"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "3db0e1fe-eefd-449d-b76e-529a0e898b1c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:56:40.920Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

@@ -718,6 +718,41 @@ export class CanonicalClassicSession {
 		this.runtime.beginTransaction(this.projectId, this.status().revision);
 	}
 
+	readCapabilityRegistry(): unknown {
+		return this.runtime.capabilities();
+	}
+
+	async invokeMcp({
+		capabilityId,
+		input,
+		context,
+		host,
+		signal,
+	}: {
+		capabilityId: string;
+		input: Record<string, unknown>;
+		context: import("@/mcp/canonical-transport").CanonicalInvocationOptions;
+		signal: AbortSignal;
+		host: (
+			effect: import("./agent-protocol").EditingAgentHostEffect,
+		) => Promise<import("./agent-protocol").EditingAgentHostResult>;
+	}): Promise<unknown> {
+		signal.throwIfAborted();
+		const abort = () =>
+			this.runtime.cancelExternalInvocation(context.requestId ?? "");
+		signal.addEventListener("abort", abort, { once: true });
+		try {
+			return await this.runtime.invokeWithHost(
+				capabilityId,
+				input,
+				context,
+				host,
+			);
+		} finally {
+			signal.removeEventListener("abort", abort);
+		}
+	}
+
 	invokeControl(
 		action: import("./canonical-control").CanonicalControlAction,
 	): unknown {

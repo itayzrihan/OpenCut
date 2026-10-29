@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eff70e30-8de3-40c0-a97a-a85bc55fd77a",
+  "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Complete Earshot catalog, repository, editable audio preview and AI automation access through the authenticated canonical MCP bridge; verified on isolated feature branch.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Full 80-case manager suite exceeded its 480-second budget after 31 passing cases. The five affected manager and agent-host scenarios are included in the configured check with all Earshot registry, transport, synthesis and automation suites."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-29T06:56:29.789Z",
+  "parents": [
+    "9a2f4321-25a9-48f0-8768-a3e7cf21246b"
+  ],
+  "branch": "codex/earshot-sound-effects"
+}

@@ -86,3 +86,62 @@ models and their heavyweight dependencies are not loaded into the browser.
 
 Evidence: `evidence/all-252-wasm.log`, `evidence/sandbox.png`,
 `evidence/editor-code-sound.png` and `evidence/verification.log`.
+
+## MCP follow-up
+
+The immutable Earshot catalog and all pinned upstream files are now canonical
+registry data, compiled from the same checked-in sources for native and WASM.
+`audio.earshot.catalog.search/read` supplies all 252 entries, exact starter
+recipes and editable Python. `audio.earshot.repository.list/read/search/artifact`
+covers all 282 files with pagination, hashes and bounded binary artifacts. See
+`docs/architecture/earshot-library-capabilities.md` for the reference contracts.
+
+`audio.earshot.preview` preflights the full recipe in the existing opaque browser
+sandbox and returns up to eight seconds of PCM as an ephemeral WAV artifact,
+with measured peak/RMS. A caller can select successive windows of a longer
+recipe. This listening artifact never becomes the timeline source or a media
+asset. Cancellation releases the noncommitting host slot even if no reply
+arrives. Insert/edit still use `timeline.classic.elements.insert` and
+`timeline.classic.audio.procedural.set`, followed by `app.state.read`.
+
+Automation has an explicit durable workflow: enqueue a job through
+`project.classic.automation.edit`, then launch that same job with `.start`.
+`.status` and `.cancel` address the same identity. Actions include
+`sound-effects`, `word-animation`, and `full-auto` with `options.soundEffects`.
+Initial startup verifies the queued source fingerprint, saves the isolated
+worker and uses the existing batch executor. Retries reuse the same job; a
+running worker never recaptures later source edits. Completion publishes a new
+scene through the existing canonical automation transaction.
+
+Live browser tools are derived from that browser's canonical registry and
+project revision and projected through the authenticated Classic MCP bridge.
+They are discoverable as `classic.canonical.<capability-id>`; native headless
+capabilities keep their original IDs. This distinction prevents a caller from
+editing the headless document while intending to edit the visible project.
+No independent project state or Earshot-specific MCP transport tool is added.
+Binary previews and reference files transfer into the MCP ArtifactStore.
+Existing project export remains available through the Classic standalone
+`start_export_task` plan and export status tools, including procedural sound.
+Host operations that require an internal editing-agent session are advertised
+unavailable on the external bridge instead of claiming unsupported execution.
+
+This follow-up is tested using disposable browser/runtime fixtures, including
+real preset and custom-code synthesis. Production port 3211 and the user's
+projects remain untouched; activation still requires running the feature branch.
+
+### MCP verification
+
+The configured `earshot-mcp` command passed 35 editor-api tests, six native MCP
+registry/wire tests, 49 browser/host/automation tests and five focused real-WASM
+command-manager/agent-host tests. The browser test performs actual preset and
+custom-source synthesis with the pinned Pyodide runtime. Application TypeScript
+compilation and whitespace checks passed. One pre-existing environment-dependent
+bridge-publication test is skipped by its own guard; actual MCP wire discovery,
+preview artifacts, cancellation and retry behavior are covered separately.
+
+An exploratory run of the entire 80-case command-manager suite reached its
+480-second budget after 31 passing cases without a test failure. The configured
+check selects the five affected MCP/internal-agent cases; it does not claim the
+unrelated full manager suite completed. No paid provider call or user project
+was used. Activation requires the feature branch's matching browser runtime and
+MCP backend; older backends continue receiving the legacy tool set.

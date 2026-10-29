@@ -1,6 +1,14 @@
 "use client";
 
 import { bridgePublication } from "./bridge-publication";
+import {
+	advertiseCanonicalRegistry,
+	invocationOptionsSchema,
+	type CanonicalInvocationOptions,
+} from "./canonical-transport";
+import { performHostEffect } from "@/editor-agent/host-effects";
+import { performEarshotPreviewEffect } from "@/editor-agent/earshot-preview-effect";
+import { performSceneAutomationEffect } from "@/editor-agent/scene-automation-effects";
 
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -26,10 +34,12 @@ type BridgeCommand = {
 	toolName: string;
 	arguments: Record<string, unknown>;
 	autoApply: boolean;
+	context?: CanonicalInvocationOptions;
 };
 
 type BridgeCommandBatch = {
 	commands: BridgeCommand[];
+	cancelledCommandIds: string[];
 };
 
 const bridgeCommandBatchSchema = z.object({
@@ -41,8 +51,10 @@ const bridgeCommandBatchSchema = z.object({
 			toolName: z.string(),
 			arguments: z.record(z.string(), z.unknown()),
 			autoApply: z.boolean(),
+			context: invocationOptionsSchema.optional(),
 		}),
 	),
+	cancelledCommandIds: z.array(z.string()).default([]),
 });
 
 const STATE_PUBLISH_INTERVAL_MS = 150;
@@ -145,7 +157,12 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 		let cachedTimeline: unknown = null;
 		let lastPublishedRevision: number | undefined;
 		let lastPublishedProjectId: string | undefined;
-		let tools: ReturnType<typeof advertisedTool>[] = [];
+		let tools: Array<
+			| ReturnType<typeof advertisedTool>
+			| ReturnType<typeof advertiseCanonicalRegistry>[number]
+		> = [];
+		const activeCommands = new Map<string, AbortController>();
+		let commandChain = Promise.resolve();
 		let publishTimer: number | null = null;
 		let publishing = false;
 		let publishAgain = false;
@@ -190,6 +207,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 					projectId: project.metadata.id,
 					projectName: project.metadata.name,
 					revision,
+					canonicalRevision: editor.command.getCanonicalRevision(),
 					dirty: editor.save.getIsDirty(),
 					playback: {
 						playing: editor.playback.getIsPlaying(),
@@ -221,7 +239,12 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 							: undefined,
 					readDocument: () => ({
 						timeline: readTimeline(),
-						tools,
+						tools: [
+							...tools,
+							...advertiseCanonicalRegistry(
+								editor.command.getCanonicalCapabilityRegistry(),
+							),
+						],
 						backgroundRemoval: backgroundRemovalService.getStatus(),
 					}),
 				});
@@ -306,48 +329,92 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 			schedulePublish();
 		};
 
-		const executeCommand = async (command: BridgeCommand) => {
+		const executeCommand = async ({
+			command,
+			signal,
+		}: {
+			command: BridgeCommand;
+			signal: AbortSignal;
+		}) => {
 			let output: unknown = null;
 			let applied = false;
 			let error: string | undefined;
+			let artifacts: unknown[] = [];
+			let resultRevision: number | undefined;
+			let canonicalCommand = false;
 			try {
+				signal.throwIfAborted();
+				if (command.sessionId !== sessionId)
+					throw new Error("MCP browser session mismatch");
 				const project = editor.project.getActiveOrNull();
 				if (!project || project.metadata.id !== command.projectId) {
 					throw new Error(
 						`Project ${command.projectId} is not active in this browser`,
 					);
 				}
-				const runtime = await createBridgeToolRuntime({
-					editor,
-					toolName: command.toolName,
-					sessionState: toolSessionState,
-				});
-				const tool = runtime.tools.find(
-					(candidate) => candidate.name === command.toolName,
-				);
-				if (!tool) {
-					throw new Error(
-						`Capability ${command.toolName} is unavailable in the browser`,
+				if (command.toolName.startsWith("canonical.")) {
+					canonicalCommand = true;
+					const accountId = window.__opencutAccountId ?? "local";
+					const result = await editor.command.invokeCanonicalMcp({
+						capabilityId: command.toolName.slice("canonical.".length),
+						input: command.arguments,
+						context: command.context ?? { dryRun: false, metadata: {} },
+						accountId,
+						projectId: command.projectId,
+						signal,
+						host: async (effect) => {
+							const scope = { effect, editor, accountId, signal };
+							if (effect.adapter === "earshotPreview")
+								return performEarshotPreviewEffect(scope);
+							if (effect.adapter === "sceneAutomation")
+								return performSceneAutomationEffect(scope);
+							return performHostEffect({
+								effect,
+								accountId,
+								signal,
+								activeProjectId: () =>
+									editor.project.getActiveOrNull()?.metadata.id,
+								currentRevision: () => editor.command.getCanonicalRevision(),
+							});
+						},
+					});
+					output = result.output;
+					artifacts = result.artifacts;
+					applied = result.applied;
+					resultRevision = result.revision;
+				} else {
+					const runtime = await createBridgeToolRuntime({
+						editor,
+						toolName: command.toolName,
+						sessionState: toolSessionState,
+					});
+					const tool = runtime.tools.find(
+						(candidate) => candidate.name === command.toolName,
 					);
-				}
-				output = await runtime.executeTool({
-					id: command.id,
-					name: command.toolName,
-					arguments: command.arguments ?? {},
-				});
-				const plan = runtime.getSourceEditPlan();
-				if (plan && command.autoApply) {
-					applyAiEditPlan({ editor, plan });
-					applied = true;
-				} else if (
-					!tool.readOnly &&
-					!plan &&
-					!(
-						command.toolName === "timeline.restore_silence" &&
-						command.arguments?.dryRun === true
-					)
-				) {
-					applied = true;
+					if (!tool) {
+						throw new Error(
+							`Capability ${command.toolName} is unavailable in the browser`,
+						);
+					}
+					output = await runtime.executeTool({
+						id: command.id,
+						name: command.toolName,
+						arguments: command.arguments ?? {},
+					});
+					const plan = runtime.getSourceEditPlan();
+					if (plan && command.autoApply) {
+						applyAiEditPlan({ editor, plan });
+						applied = true;
+					} else if (
+						!tool.readOnly &&
+						!plan &&
+						!(
+							command.toolName === "timeline.restore_silence" &&
+							command.arguments?.dryRun === true
+						)
+					) {
+						applied = true;
+					}
 				}
 				if (applied) {
 					revision += 1;
@@ -368,7 +435,10 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 					output: output ?? null,
 					error,
 					applied,
-					revision,
+					revision: canonicalCommand
+						? (resultRevision ?? editor.command.getCanonicalRevision())
+						: revision,
+					artifacts,
 				}),
 			});
 			schedulePublish();
@@ -387,9 +457,18 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 					const batch: BridgeCommandBatch = bridgeCommandBatchSchema.parse(
 						await response.json(),
 					);
+					for (const id of batch.cancelledCommandIds)
+						activeCommands.get(id)?.abort();
 					for (const command of batch.commands ?? []) {
 						if (disposed) return;
-						await executeCommand(command);
+						const controller = new AbortController();
+						activeCommands.set(command.id, controller);
+						commandChain = commandChain
+							.catch(() => {})
+							.then(() =>
+								executeCommand({ command, signal: controller.signal }),
+							)
+							.finally(() => activeCommands.delete(command.id));
 					}
 				} catch {
 					if (!disposed) setStatus("unavailable");
@@ -429,6 +508,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 
 		return () => {
 			disposed = true;
+			for (const controller of activeCommands.values()) controller.abort();
 			for (const unsubscribe of unsubscribers) unsubscribe();
 			window.removeEventListener("focus", markTabActivityChanged);
 			window.removeEventListener("blur", markTabActivityChanged);

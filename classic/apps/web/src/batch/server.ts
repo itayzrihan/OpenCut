@@ -447,10 +447,12 @@ export async function createSceneEdits({
 	projectId,
 	jobIds,
 	ownerId,
+	executor = "window",
 }: {
 	projectId: string;
 	jobIds: string[];
 	ownerId: string;
+	executor?: "iframe" | "window";
 }) {
 	return transaction(async (s) => {
 		const source = (await getProject(projectId)) as {
@@ -467,13 +469,16 @@ export async function createSceneEdits({
 					projectId: string;
 					jobId: string;
 					sceneId: string;
+					sourceFingerprint?: string;
 				};
 			} | null;
 			if (
 				!worker ||
 				worker.automationSource?.projectId !== projectId ||
 				worker.automationSource?.jobId !== job.id ||
-				worker.automationSource?.sceneId !== job.sceneId
+				worker.automationSource?.sceneId !== job.sceneId ||
+				(job.sourceFingerprint !== undefined &&
+					worker.automationSource?.sourceFingerprint !== job.sourceFingerprint)
 			)
 				throw new Error(
 					"The isolated working copy does not belong to this scene job",
@@ -488,7 +493,7 @@ export async function createSceneEdits({
 				id,
 				ownerId,
 				kind: "single",
-				executor: "window",
+				executor,
 				token: randomUUID(),
 				heartbeat: Date.now(),
 				createdAt: Date.now(),
@@ -599,9 +604,11 @@ export async function recoverSceneWorker({
 export async function retrySceneEdit({
 	id,
 	ownerId,
+	executor = "window",
 }: {
 	id: string;
 	ownerId: string;
+	executor?: "iframe" | "window";
 }) {
 	return transaction(async (s) => {
 		const run = s.runs.find(
@@ -627,7 +634,7 @@ export async function retrySceneEdit({
 			job.message = `Waiting to resume stage ${job.completedStages + 1}`;
 		}
 		run.ownerId = ownerId;
-		run.executor = "window";
+		run.executor = executor;
 		run.workerId = undefined;
 		run.workerHeartbeatAt = undefined;
 		run.heartbeat = Date.now();

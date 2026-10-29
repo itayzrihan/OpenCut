@@ -368,6 +368,10 @@
       ],
       "timeoutMs": 600000
     },
+    "earshot-mcp": {
+      "command": ["node", "analysis/earshot-integration-2026-10-29/verify-mcp.mjs"],
+      "timeoutMs": 1200000
+    },
     "earshot-code-audio": {
       "command": [
         "node",

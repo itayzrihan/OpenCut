@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c4b06473-d15a-4197-9748-fd1291242a4a",
+  "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+  "type": "task.plan",
+  "payload": {
+    "tool": "task_plan",
+    "input": {
+      "plan": [
+        {
+          "step": "Audit Earshot coverage and canonical MCP boundaries",
+          "status": "completed"
+        },
+        {
+          "step": "Implement catalog/source, preview, automation and live canonical bridge coverage",
+          "status": "completed"
+        },
+        {
+          "step": "Verify integrated registry/browser transport and prepare feature-branch changes",
+          "status": "in_progress"
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-29T06:36:50.650Z",
+  "parents": [
+    "931c1df5-b485-48c4-b16e-55302a6ae4bc"
+  ],
+  "branch": "codex/earshot-sound-effects"
+}

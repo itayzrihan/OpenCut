@@ -28,6 +28,7 @@ export interface SceneJob {
 	action: SceneAction;
 	options: FullAutoOptions;
 	status?: "queued" | "published";
+	sourceFingerprint?: string;
 }
 export function automationControl({
 	editor,

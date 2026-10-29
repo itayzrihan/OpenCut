@@ -875,3 +875,68 @@ test("waiting scene jobs never expire while a long edit is executing", async () 
 	await cancelBatch({ id: "first" });
 	await cancelBatch({ id: "second" });
 });
+
+test("MCP scene jobs launch and resume through the existing iframe executor", async () => {
+	await writeFile(join(root, "batch/queue.json"), JSON.stringify({ runs: [] }));
+	const id = "mcp-earshot";
+	projects.set("mcp-source", {
+		metadata: { name: "MCP source", updatedAt: "now" },
+		automationEdits: [
+			{
+				id,
+				sceneId: "mcp-scene",
+				workerProjectId: "mcp-worker",
+				outputSceneId: "mcp-output",
+				action: "sound-effects",
+				options: { ...options, soundEffects: true },
+				status: "queued",
+			},
+		],
+		scenes: [{ id: "mcp-scene", name: "Earshot" }],
+	});
+	projects.set("mcp-worker", {
+		metadata: { name: "Worker", updatedAt: "now" },
+		automationSource: {
+			projectId: "mcp-source",
+			jobId: id,
+			sceneId: "mcp-scene",
+		},
+		automationCheckpoint: 0,
+	});
+	await createSceneEdits({
+		projectId: "mcp-source",
+		jobIds: [id],
+		ownerId: "mcp-tab",
+		executor: "iframe",
+	});
+	await createSceneEdits({
+		projectId: "mcp-source",
+		jobIds: [id],
+		ownerId: "mcp-tab",
+		executor: "iframe",
+	});
+	expect((await getBatchState()).runs).toHaveLength(1);
+	expect(
+		await recoverSceneWorker({ ownerId: "mcp-tab", executor: "window" }),
+	).toBeNull();
+	const worker = await recoverSceneWorker({
+		ownerId: "mcp-tab",
+		executor: "iframe",
+	});
+	if (!worker) throw new Error("Missing iframe worker");
+	expect(worker.run.options.soundEffects).toBe(true);
+	expect(worker.run.jobs[0].action).toBe("sound-effects");
+	projects.get("mcp-worker")!.automationCheckpoint = 1;
+	await updateBatch({
+		id,
+		token: worker.token,
+		projectId: "mcp-worker",
+		event: "fail",
+	});
+	await retrySceneEdit({ id, ownerId: "mcp-tab", executor: "iframe" });
+	expect(
+		(await recoverSceneWorker({ ownerId: "mcp-tab", executor: "iframe" }))?.run
+			.jobs[0].resumeFromStage,
+	).toBe(1);
+	await cancelBatch({ id });
+});

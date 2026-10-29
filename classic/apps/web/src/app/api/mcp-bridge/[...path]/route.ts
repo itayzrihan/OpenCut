@@ -1,3 +1,4 @@
+import { legacyBridgeBody } from "@/accounts/bridge-protocol";
 import { withAccount, requireAccount } from "@/accounts/server";
 import {
 	scopedBridgeSession,
@@ -34,7 +35,7 @@ const bridgeConfigSchema = z
 	})
 	.strict();
 const commandBatchSchema = z
-	.object({ commands: z.array(z.unknown()).optional() })
+	.object({ commands: z.array(z.unknown()).optional(), cancelledCommandIds: z.array(z.string()).optional() })
 	.passthrough();
 const commandCompletionSchema = z
 	.object({ accepted: z.boolean().optional() })
@@ -42,6 +43,7 @@ const commandCompletionSchema = z
 const bridgeStatusSchema = z
 	.object({
 		healthy: z.boolean().optional(),
+		supportsCanonicalInvocation: z.boolean().optional(),
 		connected: z.boolean().optional(),
 	})
 	.passthrough();
@@ -52,6 +54,7 @@ const heartbeatSchema = z
 		projectName: z.string().min(1),
 		expectedRevision: z.number().int().nonnegative(),
 		revision: z.number().int().nonnegative(),
+		canonicalRevision: z.number().int().nonnegative().optional(),
 		dirty: z.boolean(),
 		playback: z.unknown(),
 		selection: z.unknown(),
@@ -64,7 +67,8 @@ type RouteContext = {
 	params: Promise<{ path: string[] }>;
 };
 
-type BridgeConfig = z.infer<typeof bridgeConfigSchema>;
+type BridgeConfig = z.infer<typeof bridgeConfigSchema> & { supportsCanonicalInvocation?: boolean };
+const peerProtocols = new Map<string, boolean>();
 
 const BRIDGE_CONFIG_CACHE_MS = 5_000;
 let bridgeConfigCache:
@@ -166,11 +170,26 @@ async function loadBridgeConfigs(): Promise<BridgeConfig[]> {
 	if (sorted.length === 0) {
 		throw new Error("The OpenCut MCP bridge config was not found");
 	}
+	const negotiations = await settleBridgeRequests({ configs: sorted, concurrency: 4, run: async (config): Promise<BridgeConfig> => {
+		const key = `${config.pid}:${config.token}`;
+		let supportsCanonicalInvocation = peerProtocols.get(key);
+		if (supportsCanonicalInvocation === undefined) {
+			try {
+				const response = await fetchBridge({config, path:["status"], method:"GET", contentType:null, timeoutMs:1500});
+				if (!response.ok) { await response.body?.cancel(); return config; }
+				supportsCanonicalInvocation = bridgeStatusSchema.parse(await response.json()).supportsCanonicalInvocation === true;
+				peerProtocols.set(key, supportsCanonicalInvocation);
+				if (peerProtocols.size > 64) peerProtocols.delete(peerProtocols.keys().next().value!);
+			} catch { return config; }
+		}
+		return {...config, supportsCanonicalInvocation};
+	}});
+	const negotiated = negotiations.map((result, index) => result.status === "fulfilled" ? result.value : sorted[index]!);
 	bridgeConfigCache = {
 		expiresAtMs: now + BRIDGE_CONFIG_CACHE_MS,
-		configs: sorted,
+		configs: negotiated,
 	};
-	return sorted;
+	return negotiated;
 }
 
 async function fetchBridge({
@@ -179,12 +198,14 @@ async function fetchBridge({
 	method,
 	contentType,
 	body,
+	timeoutMs = 50_000,
 }: {
 	config: BridgeConfig;
 	path: string[];
 	method: string;
 	contentType: string | null;
 	body?: ArrayBuffer;
+	timeoutMs?: number;
 }) {
 	const target = new URL(`/bridge/${path.join("/")}`, config.baseUrl);
 	return fetch(target, {
@@ -195,7 +216,7 @@ async function fetchBridge({
 		},
 		body,
 		cache: "no-store",
-		signal: AbortSignal.timeout(50_000),
+		signal: AbortSignal.timeout(timeoutMs),
 	});
 }
 
@@ -251,6 +272,7 @@ async function proxyBridgeRequest({
 	const accountId = requireAccount().id;
 	let body: ArrayBuffer | undefined;
 	let legacyHeartbeatBody: ArrayBuffer | undefined;
+	let legacyBody: ArrayBuffer | undefined;
 	try {
 		body =
 			request.method === "GET"
@@ -267,19 +289,21 @@ async function proxyBridgeRequest({
 				sessionId: snapshot.sessionId,
 			});
 			body = new TextEncoder().encode(JSON.stringify(snapshot)).buffer;
+			legacyBody = legacyBridgeBody({body,operation:"state"});
 			legacySnapshots.remember({
-				snapshot: snapshot as BridgeSnapshot,
-				bytes: body.byteLength,
+				snapshot: JSON.parse(new TextDecoder().decode(legacyBody)) as BridgeSnapshot,
+				bytes: legacyBody.byteLength,
 			});
 		} else if (path.length === 2) {
 			path[1] = scopedBridgeSession({ accountId, sessionId: path[1] });
 			if (path[0] === "heartbeat" && body) {
+				legacyBody = legacyBridgeBody({body,operation:"heartbeat"});
 				const value = heartbeatSchema.parse(
 					JSON.parse(new TextDecoder().decode(body)),
 				);
 				const snapshot = legacySnapshots.heartbeat({
 					sessionId: path[1],
-					value,
+					value: {...value, canonicalRevision: undefined},
 				});
 				if (snapshot) {
 					const encoded = new TextEncoder().encode(JSON.stringify(snapshot));
@@ -321,7 +345,7 @@ async function proxyBridgeRequest({
 					path,
 					method: request.method,
 					contentType,
-					body,
+					body: !config.supportsCanonicalInvocation && legacyBody ? legacyBody : body,
 				});
 			},
 		})
@@ -379,6 +403,7 @@ async function proxyBridgeRequest({
 			}),
 		);
 		return NextResponse.json({
+			cancelledCommandIds: batches.flatMap((batch) => batch.cancelledCommandIds ?? []),
 			commands: batches
 				.flatMap((batch) => batch.commands ?? [])
 				.map((command) =>
@@ -422,6 +447,7 @@ async function proxyBridgeRequest({
 		);
 		return NextResponse.json({
 			healthy: statuses.some((status) => status.healthy),
+			supportsCanonicalInvocation: statuses.some((status) => status.supportsCanonicalInvocation),
 			connected: statuses.some((status) => status.connected),
 			bridgeCount: successful.length,
 		});
