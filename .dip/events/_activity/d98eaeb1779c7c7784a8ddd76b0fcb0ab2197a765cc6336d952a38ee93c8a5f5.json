@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d98eaeb1779c7c7784a8ddd76b0fcb0ab2197a765cc6336d952a38ee93c8a5f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:41.743Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node node_modules/typescript/bin/tsc --noEmit -p apps/web/tsconfig.build.json",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-9bee7a44-78a3-48b2-919e-2bc8d35597a7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:41.750Z",
+  "parents": [],
+  "branch": "main"
+}

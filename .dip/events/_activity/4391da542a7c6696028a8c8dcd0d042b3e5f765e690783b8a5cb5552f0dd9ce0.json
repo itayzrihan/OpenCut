@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4391da542a7c6696028a8c8dcd0d042b3e5f765e690783b8a5cb5552f0dd9ce0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:37:44.159Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/replay-after.json",
+          ".local/take-replacement-2026-10-29/rust-final.log",
+          "analysis/take-replacement-2026-10-29",
+          "analysis/take-replacement-2026-10-29/README.md",
+          ".local/take-replacement-2026-10-29/activate.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ae2cbde0-f831-48ae-9f11-095b8b81a143"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:37:44.165Z",
+  "parents": [],
+  "branch": "main"
+}

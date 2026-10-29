@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c70e1bef6c2f5b20addb38f980f8ef65f145f1f4428d29c38987641809b19532",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:09:19.848Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/prepare-earshot-runtime.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b953e235-3052-4a27-9340-c532613ccb06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:09:20.924Z",
+  "parents": [],
+  "branch": "main"
+}

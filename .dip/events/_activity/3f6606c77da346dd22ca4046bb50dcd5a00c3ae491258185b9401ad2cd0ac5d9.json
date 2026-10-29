@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f6606c77da346dd22ca4046bb50dcd5a00c3ae491258185b9401ad2cd0ac5d9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:06:56.085Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/mcp/canonical-transport.ts <<'EOF'\nimport { z } from \"zod\";\n\n/** These shapes describe the generic Rust protocol, never a feature/tool table. */\nexport const canonicalDescriptorSchema = z.object({\n  id: z.string(), title: z.string(), description: z.string(), version: z.string(),\n  inputSchema: z.record(z.string(), z.unknown()), outputSchema: z.record(z.string(), z.unknown()),\n  access: z.enum([\"read\", \"write\", \"destructive\", \"admin\"]), idempotent: z.boolean(),\n  openWorld: z.boolean(), transactional: z.boolean(), supportsDryRun: z.boolean(),\n  cancellable: z.boolean(), available: z.boolean(), unavailableReason: z.string().nullable(),\n  category: z.string(), tags: z.array(z.string()), documentSupport: z.string(), execution: z.string(),\n});\nexport type CanonicalDescriptor = z.infer<typeof canonicalDescriptorSchema>;\nexport const canonicalRegistrySchema = z.object({ revision: z.number(), capabilities: z.array(canonicalDescriptorSchema) });\nexport const invocationOptionsSchema = z.object({\n  dryRun: z.boolean().default(false), requestId: z.string().optional(),\n  metadata: z.record(z.string(), z.unknown()).default({}),\n}).strict();\nexport type CanonicalInvocationOptions = z.infer<typeof invocationOptionsSchema>;\nexport const artifactMetadataSchema = z.object({\n  id: z.string(), uri: z.string().startsWith(\"opencut://artifacts/\"), mimeType: z.string(),\n  byteSize: z.number().int().nonnegative().max(16 * 1024 * 1024), sha256: z.string().regex(/^[a-f0-9]{64}$/),\n  createdAtMs: z.number(), expiresAtMs: z.number(), width: z.number().nullable(),\n  height: z.number().nullable(), durationMs: z.number().nullable(),\n});\nexport const canonicalReceiptSchema = z.object({\n  capabilityId: z.string(), capabilityVersion: z.string(), registryRevision: z.number(),\n  result: z.object({data: z.unknown(), summary: z.string().nullable(), changedResources: z.array(z.string()), artifacts: z.array(artifactMetadataSchema).max(16)}),\n});\nexport function advertiseCanonicalR",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-7838baff-b981-42eb-91ab-41c754590c3e"
+      },
+      {
+        "at": "2026-10-29T06:06:56.444Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/mcp/canonical-transport.ts <<'EOF'\nimport { z } from \"zod\";\n\n/** These shapes describe the generic Rust protocol, never a feature/tool table. */\nexport const canonicalDescriptorSchema = z.object({\n  id: z.string(), title: z.string(), description: z.string(), version: z.string(),\n  inputSchema: z.record(z.string(), z.unknown()), outputSchema: z.record(z.string(), z.unknown()),\n  access: z.enum([\"read\", \"write\", \"destructive\", \"admin\"]), idempotent: z.boolean(),\n  openWorld: z.boolean(), transactional: z.boolean(), supportsDryRun: z.boolean(),\n  cancellable: z.boolean(), available: z.boolean(), unavailableReason: z.string().nullable(),\n  category: z.string(), tags: z.array(z.string()), documentSupport: z.string(), execution: z.string(),\n});\nexport type CanonicalDescriptor = z.infer<typeof canonicalDescriptorSchema>;\nexport const canonicalRegistrySchema = z.object({ revision: z.number(), capabilities: z.array(canonicalDescriptorSchema) });\nexport const invocationOptionsSchema = z.object({\n  dryRun: z.boolean().default(false), requestId: z.string().optional(),\n  metadata: z.record(z.string(), z.unknown()).default({}),\n}).strict();\nexport type CanonicalInvocationOptions = z.infer<typeof invocationOptionsSchema>;\nexport const artifactMetadataSchema = z.object({\n  id: z.string(), uri: z.string().startsWith(\"opencut://artifacts/\"), mimeType: z.string(),\n  byteSize: z.number().int().nonnegative().max(16 * 1024 * 1024), sha256: z.string().regex(/^[a-f0-9]{64}$/),\n  createdAtMs: z.number(), expiresAtMs: z.number(), width: z.number().nullable(),\n  height: z.number().nullable(), durationMs: z.number().nullable(),\n});\nexport const canonicalReceiptSchema = z.object({\n  capabilityId: z.string(), capabilityVersion: z.string(), registryRevision: z.number(),\n  result: z.object({data: z.unknown(), summary: z.string().nullable(), changedResources: z.array(z.string()), artifacts: z.array(artifactMetadataSchema).max(16)}),\n});\nexport function advertiseCanonicalR",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-7838baff-b981-42eb-91ab-41c754590c3e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:06:57.048Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7de3389ea2ce6111beb1602fc2d0b169b68f82e1433948f9470a1432055f2e98",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:29:39.613Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -25 /tmp/earshot-final-verify.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-b3c66723-c7c7-4633-9569-ee725be5f0cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:29:39.968Z",
+  "parents": [],
+  "branch": "main"
+}

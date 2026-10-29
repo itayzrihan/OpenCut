@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f2f42ae0-816e-4917-82e1-75548461aa59",
+  "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Protect Speech is now the one-click and manager default; menu order/default label and progress tooltip updated. Four toolbar tests, TypeScript, lint passed. Committed and pushed 6bfe32e4. Production 2026-10-29T06-27-01-710Z-6bfe32e4 activated, HTTP200 and live selected-clip toolbar/menu verified. Initial deployment ran out of disk; only obsolete generated builds and an unprotected old release were pruned before successful retry. No project/media edits.",
+      "replacedBy": [],
+      "remaining": []
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-29T06:29:15.816Z",
+  "parents": [
+    "974cfed7-5a08-4d7e-ad03-fdb2095d7d0e"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c7cbd43fadaecdbc5be13e50af15de2c6e4065f9f269b2376cd33f94d3b504cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:25:13.347Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add classic/eslint",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-3dcf2613-409e-45d1-b08d-f1247f2fd809"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:25:14.109Z",
+  "parents": [],
+  "branch": "main"
+}

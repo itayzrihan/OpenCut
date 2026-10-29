@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d4e80fcce4ac58214f42c485b90a54c5a5e52b6edd0a6c8f04d2ce4223ddbc7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:39.893Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "./node_modules/.bin/eslint apps/web/src/mcp/canonical-transport.ts apps/web/src/mcp/classic-mcp-bridge.tsx apps/web/src/core/canonical-classic-session.ts apps/web/src/core/managers/commands.ts apps/web/src/accounts/bridge-snapshot-cache.ts 'apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-662c44db-251c-41be-a764-a6b30276a565"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:40.183Z",
+  "parents": [],
+  "branch": "main"
+}

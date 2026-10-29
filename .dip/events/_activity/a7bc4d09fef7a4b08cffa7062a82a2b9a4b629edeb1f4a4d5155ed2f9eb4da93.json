@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a7bc4d09fef7a4b08cffa7062a82a2b9a4b629edeb1f4a4d5155ed2f9eb4da93",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:44.548Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'encoder.*delay|padding|2112|priming|codecDelay' classic/node_modules/.bun/mediabunny@1.61.4/node_modules/mediabunny/dist/modules/src/isobmff classic/node_modules/.bun/mediabunny@1.61.4/node_modules/mediabunny/dist/modules/src/media-source.js | head -60",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-4ca5be7e-f449-4ded-a542-63b5a3edaf93"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:45.050Z",
+  "parents": [],
+  "branch": "main"
+}

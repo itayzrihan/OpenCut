@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ecea6e78ffd516fdd0142533ce8386d1482a116cfd52a949926631f760c204cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:12:03.256Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/computer.rs <<'EOF'\n//! Electron-only, explicitly enabled host IO. No host adapter is installed in web/MCP servers.\nuse crate::{AccessLevel, AgentMode, CapabilityDescriptor, CapabilityError, CapabilityResult, DocumentSupport, FnCapability, HostBridge, OpenCutRuntime, RegistryError};\nuse schemars::{JsonSchema, schema_for};\nuse serde::{Deserialize, Serialize};\nuse std::sync::Arc;\n\n#[derive(Debug, Deserialize, Serialize, JsonSchema)]\n#[serde(tag=\"type\", rename_all=\"camelCase\", rename_all_fields=\"camelCase\", deny_unknown_fields)]\nenum ComputerOperation {\n    List { path: String },\n    Read { path: String, #[serde(default)] offset: u64 },\n    Write { path: String, content: String, expected_sha256: Option<String> },\n    Mkdir { path: String },\n    Copy { path: String, destination: String },\n    Move { path: String, destination: String },\n    Remove { path: String },\n    Shell { command: String, cwd: String, timeout_ms: u32 },\n}\n#[derive(Deserialize, Serialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\", deny_unknown_fields)]\nstruct ComputerInput { project_id: String, expected_revision: u64, operation: ComputerOperation }\n#[derive(Deserialize, Serialize, JsonSchema)]\n#[serde(rename_all=\"camelCase\", deny_unknown_fields)]\nstruct ComputerOutput { text: String }\n\npub fn register_computer_capabilities(runtime: &OpenCutRuntime, bridge: &HostBridge) -> Result<(), RegistryError> {\n    for (id, title, read) in [\n        (\"computer.files.inspect\", \"Inspect computer files\", true),\n        (\"computer.files.change\", \"Change computer files\", false),\n        (\"computer.terminal.execute\", \"Run a terminal command\", false),\n    ] {\n        let mut descriptor = CapabilityDescriptor::read(id, title,\n            \"Electron-only computer access, disabled by default. inspect accepts list/read; change accepts write/mkdir/copy/move/remove; terminal accepts shell. Absolute paths required. Read returns a bounded UTF-8 chunk (offset in bytes); binary files require another ",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-5dcbe426-d95a-4943-946c-ff804c00109d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:12:03.914Z",
+  "parents": [],
+  "branch": "main"
+}

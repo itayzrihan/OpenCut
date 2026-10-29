@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cfb435a849591be0dfac2f7571b3ed2ae3ecc6b6fc0ffa60d1cdf6cf55348ba5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:00:02.683Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat crates/editor-api/Cargo.toml && sed -n '1,250p' crates/editor-api/src/operations/hyperframes_examples.rs && cat crates/editor-api/build.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-aff0d6aa-1d14-4105-aa6b-531c44dfe7fe"
+      },
+      {
+        "at": "2026-10-29T06:00:02.695Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic/vendor/earshot | head -35 && sed -n '1,180p' classic/apps/web/src/earshot/catalog.ts && head -35 classic/apps/web/src/earshot/catalog-data.json && rg --files -g '*earshot*manifest*' -g '*manifest*' classic/vendor/earshot classic/apps/web/src/earshot",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-ce09d61c-a168-466d-ae98-e9088d666987"
+      },
+      {
+        "at": "2026-10-29T06:00:02.707Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short && git log -5 --oneline && cat AGENTS.md",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-ad20e9e7-d6ae-4c57-9967-d6f61dd80761"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:00:03.548Z",
+  "parents": [],
+  "branch": "main"
+}

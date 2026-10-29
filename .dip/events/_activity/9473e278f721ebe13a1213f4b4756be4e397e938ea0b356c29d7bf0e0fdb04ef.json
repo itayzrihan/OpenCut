@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9473e278f721ebe13a1213f4b4756be4e397e938ea0b356c29d7bf0e0fdb04ef",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:13:42.084Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "./node_modules/.bin/prettier --write src/earshot/__tests__/export-browser.test.ts src/earshot/__tests__/export-pcm-fixture.ts src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-a20702e9-bd8d-456d-ad15-c19e4cf62b34"
+      },
+      {
+        "at": "2026-10-29T05:13:42.052Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-af51a801-bde0-4f00-9b59-5bdc98022146"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:13:46.849Z",
+  "parents": [],
+  "branch": "main"
+}

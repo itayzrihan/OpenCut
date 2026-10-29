@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "43778fc74d785806b3e7d36e9b9ea730cb3b53c34fabf5aa7f8127af4c86762a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:17:25.675Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,190p' classic/apps/web/src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1ce12c5d-b473-453f-b773-dfeeb5ab1354"
+      },
+      {
+        "at": "2026-10-29T05:17:25.710Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 10 --silent --output /tmp/earshot-account-status.json --write-out '%{http_code}' http://127.0.0.1:3221/api/accounts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9f6dd57b-1a8c-4f8c-ba87-efcb8748d382"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:17:26.305Z",
+  "parents": [],
+  "branch": "main"
+}

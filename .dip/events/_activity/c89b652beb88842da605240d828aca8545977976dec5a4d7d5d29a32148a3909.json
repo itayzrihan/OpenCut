@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c89b652beb88842da605240d828aca8545977976dec5a4d7d5d29a32148a3909",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:20:51.178Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 -c 'from pathlib import Path; import shutil; p=Path(\"/tmp/opencut-earshot-research-venv\"); assert p.is_dir() and not p.is_symlink() and (p/\"pyvenv.cfg\").is_file(); shutil.rmtree(p)'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-680b13d0-288f-49b9-b09e-1c5b5ba12dc1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:20:51.188Z",
+  "parents": [],
+  "branch": "main"
+}

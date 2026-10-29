@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "266d521f6070445bcdc68d2bc6160eea7942ed9f1a688eaed873ef29be36768d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:34:49.936Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,os,signal,subprocess\np=os.path.expanduser('~/Library/Application Support/OpenCut Local/build.lock'); lock=json.load(open(p));pid=lock['pid'];cmd=subprocess.check_output(['ps','-p',str(pid),'-o','command='],text=True).strip();print(pid,cmd)\nif 'local-production/build.mjs' not in cmd: raise RuntimeError('Unexpected build owner')\nos.kill(pid,signal.SIGTERM)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7c845e46-1d70-4743-9a03-4fb26ca5534d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:34:50.862Z",
+  "parents": [],
+  "branch": "main"
+}

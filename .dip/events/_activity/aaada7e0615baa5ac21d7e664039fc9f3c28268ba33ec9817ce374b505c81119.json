@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aaada7e0615baa5ac21d7e664039fc9f3c28268ba33ec9817ce374b505c81119",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T04:51:14.254Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> /tmp/write-earshot-ai.py <<'PY'\nwrite('classic/apps/web/src/ai/earshot-repository.ts',r'''/** Host IO adapter: bounded, immutable, allowlisted upstream context. No user paths or execution. */\nimport { createHash } from \"node:crypto\";\nimport { readFile } from \"node:fs/promises\";\nimport { resolve, join } from \"node:path\";\nconst REVISION = \"591fa3e028032e6dce56620a20e932e35667e8d8\";\ninterface Entry { path: string; size: number; sha256: string }\nlet loaded: Promise<{root: string; files: Entry[]}> | undefined;\nasync function repository() {\n return loaded ??= (async () => {\n  const root = resolve(process.cwd(), \"../../vendor/earshot\");\n  const raw: unknown = JSON.parse(await readFile(join(root, \"manifest.json\"), \"utf8\"));\n  const files = (Array.isArray(raw) ? raw : (raw as {files: unknown}).files) as Entry[];\n  if (!Array.isArray(files) || files.length > 2000 || files.some(f => !f.path || f.path.startsWith(\"/\") || f.path.split(\"/\").includes(\"..\") || !/^[a-f0-9]{64}$/.test(f.sha256))) throw new Error(\"Invalid pinned Earshot manifest\");\n  return {root, files};\n })();\n}\nasync function content(path: string) {\n const {root, files} = await repository();\n const entry = files.find(f => f.path === path);\n if (!entry) throw new Error(\"Choose an exact path from the pinned repository index\");\n const data = await readFile(join(root, \"upstream\", entry.path));\n if (data.length !== entry.size || createHash(\"sha256\").update(data).digest(\"hex\") !== entry.sha256) throw new Error(\"Earshot source integrity check failed\");\n return {entry, data};\n}\nexport async function handleEarshotRepository(request: Request): Promise<Response> {\n try {\n  const url = new URL(request.url);\n  const operation = url.searchParams.get(\"operation\") ?? \"list\";\n  const path = url.searchParams.get(\"path\") ?? \"\";\n  const offset = Number(url.searchParams.get(\"offset\") ?? 0);\n  if (!Number.isSafeInteger(offset) || offset < 0) throw new Error(\"Invalid byte offset\");\n  const {files} = await repository();\n  if (operat",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-36ddc102-f80e-4822-b4e5-afeb63257268"
+      },
+      {
+        "at": "2026-10-29T04:51:14.406Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> /tmp/write-earshot-ai.py <<'PY'\nwrite('classic/apps/web/src/ai/earshot-repository.ts',r'''/** Host IO adapter: bounded, immutable, allowlisted upstream context. No user paths or execution. */\nimport { createHash } from \"node:crypto\";\nimport { readFile } from \"node:fs/promises\";\nimport { resolve, join } from \"node:path\";\nconst REVISION = \"591fa3e028032e6dce56620a20e932e35667e8d8\";\ninterface Entry { path: string; size: number; sha256: string }\nlet loaded: Promise<{root: string; files: Entry[]}> | undefined;\nasync function repository() {\n return loaded ??= (async () => {\n  const root = resolve(process.cwd(), \"../../vendor/earshot\");\n  const raw: unknown = JSON.parse(await readFile(join(root, \"manifest.json\"), \"utf8\"));\n  const files = (Array.isArray(raw) ? raw : (raw as {files: unknown}).files) as Entry[];\n  if (!Array.isArray(files) || files.length > 2000 || files.some(f => !f.path || f.path.startsWith(\"/\") || f.path.split(\"/\").includes(\"..\") || !/^[a-f0-9]{64}$/.test(f.sha256))) throw new Error(\"Invalid pinned Earshot manifest\");\n  return {root, files};\n })();\n}\nasync function content(path: string) {\n const {root, files} = await repository();\n const entry = files.find(f => f.path === path);\n if (!entry) throw new Error(\"Choose an exact path from the pinned repository index\");\n const data = await readFile(join(root, \"upstream\", entry.path));\n if (data.length !== entry.size || createHash(\"sha256\").update(data).digest(\"hex\") !== entry.sha256) throw new Error(\"Earshot source integrity check failed\");\n return {entry, data};\n}\nexport async function handleEarshotRepository(request: Request): Promise<Response> {\n try {\n  const url = new URL(request.url);\n  const operation = url.searchParams.get(\"operation\") ?? \"list\";\n  const path = url.searchParams.get(\"path\") ?? \"\";\n  const offset = Number(url.searchParams.get(\"offset\") ?? 0);\n  if (!Number.isSafeInteger(offset) || offset < 0) throw new Error(\"Invalid byte offset\");\n  const {files} = await repository();\n  if (operat",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-36ddc102-f80e-4822-b4e5-afeb63257268"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:51:15.242Z",
+  "parents": [],
+  "branch": "main"
+}

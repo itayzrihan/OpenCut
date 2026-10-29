@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1c2bfbd90ef5f860be8f4204f66b7e3f0244ea340712968443e3095d2bc4b096",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:02.906Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,95p' classic/AGENTS.md && cat classic/vendor/earshot/provenance.json && sed -n '740,825p' crates/editor-api/src/operations/hyperframes_examples.rs && rg -n 'pub fn tools|fn tools|pub async fn invoke|direct' crates/mcp/src/lib.rs && rg --files crates/mcp/tests",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-f79f747f-4c1b-409a-b6ee-1f842af3dab1"
+      },
+      {
+        "at": "2026-10-29T06:01:03.240Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,hashlib,collections\np=pathlib.Path('classic/apps/web/src/earshot/catalog-data.json'); c=json.loads(p.read_text()); print('keys',collections.Counter(k for x in c for k in x)); print('sha catalog',hashlib.sha256(p.read_bytes()).hexdigest()); print('sha manifest',hashlib.sha256(pathlib.Path('classic/vendor/earshot/manifest.json').read_bytes()).hexdigest())\nPY\nsed -n '150,220p' crates/mcp/src/lib.rs\nrg -n 'pub fn register|FnCapability|CapabilityDescriptor::' crates/editor-api/src/operations/hyperframes_examples.rs | tail -12\nrg -n 'pub fn artifacts|artifact_store|pub fn registry' crates/editor-api/src/runtime.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-f1d9f26f-4be0-440d-9cb1-a20b3c83fcef"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:03.399Z",
+  "parents": [],
+  "branch": "main"
+}

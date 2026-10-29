@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f07a5ad319c00f2bfa942a9ca90afdcdd51f55730a88d88fb636995993920e96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:07.098Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 6000 /tmp/earshot-wasm-test.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e2e113f5-941d-49df-b93d-11620a08c855"
+      },
+      {
+        "at": "2026-10-29T04:57:07.286Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 6000 /tmp/earshot-wasm-test.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-e2e113f5-941d-49df-b93d-11620a08c855"
+      },
+      {
+        "at": "2026-10-29T04:57:07.300Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/earshot/types.ts'\ns=open(p).read().replace('const s = value as EarshotSpec;', '''const s = value as EarshotSpec;\n  const allowed = new Set([\"version\", \"engine\", \"bankRevision\", \"presetId\", \"seed\", \"duration\", \"apex\", \"pitch\", \"parameters\", \"sourceCode\", \"echo\"]);\n  if (Object.keys(s).some(key => !allowed.has(key))) throw new Error(\"Unknown Earshot recipe field.\");''').replace('typeof s.presetId !== \"string\" || !','typeof s.presetId !== \"string\" || s.presetId.length > 128 || !')\ns=s.replace('  if (s.parameters !== undefined) {', '''  if (typeof s.pitch === \"string\") {\n    const note = /^([A-Ga-g])([#bs]?)([0-9])$/.exec(s.pitch);\n    const pitchHz = note ? 440 * 2 ** (((Number(note[3]) + 1) * 12 + ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note[1].toUpperCase()] ?? 0) + (note[2] === \"b\" ? -1 : note[2] ? 1 : 0) - 69) / 12) : Number(s.pitch.replace(/hz$/, \"\"));\n    if (!number(pitchHz, 20, 20000)) throw new Error(\"Sound pitch must be between 20 and 20,000 Hz.\");\n  }\n  if (s.parameters !== undefined) {''')\ns=s.replace('typeof s.sourceCode !== \"string\" || new TextEncoder()', 'typeof s.sourceCode !== \"string\" || !s.sourceCode.trim() || s.sourceCode.includes(\"\\\\0\") || new TextEncoder()')\ns=s.replace('Array.isArray(s.echo) || !number(s.echo.delay', 'Array.isArray(s.echo) || Object.keys(s.echo).some(key => ![\"delay\", \"feedback\", \"mix\"].includes(key)) || !number(s.echo.delay')\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-b2da76d1-153e-4fd3-b30a-eea43b90024a"
+      },
+      {
+        "at": "2026-10-29T04:57:07.543Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/earshot/types.ts'\ns=open(p).read().replace('const s = value as EarshotSpec;', '''const s = value as EarshotSpec;\n  const allowed = new Set([\"version\", \"engine\", \"bankRevision\", \"presetId\", \"seed\", \"duration\", \"apex\", \"pitch\", \"parameters\", \"sourceCode\", \"echo\"]);\n  if (Object.keys(s).some(key => !allowed.has(key))) throw new Error(\"Unknown Earshot recipe field.\");''').replace('typeof s.presetId !== \"string\" || !','typeof s.presetId !== \"string\" || s.presetId.length > 128 || !')\ns=s.replace('  if (s.parameters !== undefined) {', '''  if (typeof s.pitch === \"string\") {\n    const note = /^([A-Ga-g])([#bs]?)([0-9])$/.exec(s.pitch);\n    const pitchHz = note ? 440 * 2 ** (((Number(note[3]) + 1) * 12 + ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note[1].toUpperCase()] ?? 0) + (note[2] === \"b\" ? -1 : note[2] ? 1 : 0) - 69) / 12) : Number(s.pitch.replace(/hz$/, \"\"));\n    if (!number(pitchHz, 20, 20000)) throw new Error(\"Sound pitch must be between 20 and 20,000 Hz.\");\n  }\n  if (s.parameters !== undefined) {''')\ns=s.replace('typeof s.sourceCode !== \"string\" || new TextEncoder()', 'typeof s.sourceCode !== \"string\" || !s.sourceCode.trim() || s.sourceCode.includes(\"\\\\0\") || new TextEncoder()')\ns=s.replace('Array.isArray(s.echo) || !number(s.echo.delay', 'Array.isArray(s.echo) || Object.keys(s.echo).some(key => ![\"delay\", \"feedback\", \"mix\"].includes(key)) || !number(s.echo.delay')\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-b2da76d1-153e-4fd3-b30a-eea43b90024a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:07.971Z",
+  "parents": [],
+  "branch": "main"
+}

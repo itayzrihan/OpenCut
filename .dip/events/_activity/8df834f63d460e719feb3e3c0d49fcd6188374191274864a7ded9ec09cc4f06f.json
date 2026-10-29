@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8df834f63d460e719feb3e3c0d49fcd6188374191274864a7ded9ec09cc4f06f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:19:10.740Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test src/ai/__tests__/automatic-word-animation-earshot.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-55d1f5ba-9f5e-4adf-89f6-6cc547877f7a"
+      },
+      {
+        "at": "2026-10-29T06:19:10.749Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test src/editor-agent/__tests__/scene-automation-effects.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-231ad7a8-9a99-45b2-a5e2-3c5119c1c639"
+      },
+      {
+        "at": "2026-10-29T06:19:10.783Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test src/batch/server.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-bbcd327b-f81f-41fb-8c08-5cdd8180e340"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:19:11.531Z",
+  "parents": [],
+  "branch": "main"
+}

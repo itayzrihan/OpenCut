@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "216e32f9fd29185054ce2c3a04e416648ae98a79b6554e9365547cccc29988b3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:30.366Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 /tmp/earshot-editor-wasm.log\nsed -n '1,50p' .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-5922a582-b004-4a0b-a513-97d09edc4438"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:31.199Z",
+  "parents": [],
+  "branch": "main"
+}

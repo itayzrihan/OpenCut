@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2cf8c6c37e37854994cc030015d23268a33e944424b84fe6788c1a6b440a8674",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:38.375Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts\ngit diff --stat -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts\ngit add --sparse classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts\ngit commit --only -m 'test: verify procedural audio survives MP4 encoding and decode' -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-aa1459eb-16f3-48fc-a089-c6e382d44f1b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:38.829Z",
+  "parents": [],
+  "branch": "main"
+}

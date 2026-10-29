@@ -5,20 +5,20 @@ export type CutSilenceOptions = {
 	signal?: AbortSignal;
 };
 
-export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "audio";
+export const DEFAULT_CUT_SILENCE_MODE: CutSilenceMode = "smart";
 
 export const CUT_SILENCE_ACTIONS = [
 	{
-		mode: "audio",
-		label: "Audio-based tight cut (default)",
-		description:
-			"Removes audio pauses from 0.3 seconds and keeps existing captions synchronized.",
-	},
-	{
 		mode: "smart",
-		label: "Smart audio cut · protect speech",
+		label: "Smart audio cut · protect speech (default)",
 		description:
 			"Uses the whole clip’s average sound level, keeps speech margins and protects captioned words. Leaves uncertain pauses intact.",
+	},
+	{
+		mode: "audio",
+		label: "Audio-based tight cut",
+		description:
+			"Removes audio pauses from 0.3 seconds and keeps existing captions synchronized.",
 	},
 	{
 		mode: "fast",

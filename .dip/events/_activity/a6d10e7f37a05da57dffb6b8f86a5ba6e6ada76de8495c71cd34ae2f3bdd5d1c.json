@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a6d10e7f37a05da57dffb6b8f86a5ba6e6ada76de8495c71cd34ae2f3bdd5d1c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:19:34.640Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff-tree --no-commit-id --name-only -r 600c0f6e -- classic/apps/web/src",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-cb5d3d3f-b943-45ca-8444-3a5617463376"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:19:34.887Z",
+  "parents": [],
+  "branch": "main"
+}

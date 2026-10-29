@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c1871a7baf8b6881b0dbc94e2bd81b9d95e5d9d59573643224a96b1c5d1bbcd7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:53.286Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check -- crates/mcp/Cargo.toml crates/mcp/src/classic_bridge.rs classic/rust/editor-runtime-wasm/src/lib.rs classic/apps/web/src/core/canonical-classic-session.ts classic/apps/web/src/core/managers/commands.ts classic/apps/web/src/mcp/classic-mcp-bridge.tsx classic/apps/web/src/accounts/bridge-snapshot-cache.ts 'classic/apps/web/src/app/api/mcp-bridge/[...path]/route.ts'\ndf -h /tmp",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-4296505d-6631-4f66-9101-4f2661d0a44f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:53.290Z",
+  "parents": [],
+  "branch": "main"
+}

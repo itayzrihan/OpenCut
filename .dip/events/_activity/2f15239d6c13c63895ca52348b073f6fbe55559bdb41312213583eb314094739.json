@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2f15239d6c13c63895ca52348b073f6fbe55559bdb41312213583eb314094739",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:05:20.410Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js.LICENSE.txt -o /tmp/earshot-pyodide-license.txt\nhead -12 /tmp/earshot-pyodide-license.txt",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-e26605bf-5abe-416e-ac64-e3925f32c76c"
+      },
+      {
+        "at": "2026-10-29T05:05:20.431Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/vendor/earshot/README.opencut.md <<'EOF'\n# Earshot integration\n\nThe `upstream/` directory contains every tracked file from Leonxlnx/earshot at\n`591fa3e028032e6dce56620a20e932e35667e8d8` (0.4.0), unchanged. `manifest.json`\nrecords all 282 source files by path, length and SHA-256; `provenance.json` names\nthe repository, release and licenses. Keep upstream/LICENSE and the CC0 credits\nin upstream/docs/CREDITS_FIT.md when redistributing. The upstream documentation\nand skills are reference material for the application's agent, not host commands.\n\nMigration status: **bridged**. The recipe state and editing capabilities belong\nto OpenCutRuntime. The classic application adapts that state to browser audio and\nexport through `src/earshot/render.ts`; it does not persist a second project model.\n\nThe bank includes all 252 sounds. `bank.render` computes raw float PCM from the\npinned Python recipes, NumPy and SciPy. No WAV/MP3 asset is generated on insertion,\nediting or preview. The same PCM enters playback and the export mix. The timeline\nstores source, seed and controls, so queued snapshots keep the chosen recipe.\n\n`node classic/scripts/prepare-earshot-runtime.mjs` prepares a self-hosted Pyodide\n0.28.3 runtime. Every build download is pinned by SHA-256. NumPy 2.2.5, SciPy 1.14.1\nand libopenblas 0.3.26 are the only additional runtime packages. Torch, model\nweights, microphones and recording dependencies are not installed or loaded.\nGenerated runtime resources are excluded from Git and must be included in the\napplication's packaged public assets. There is no CDN fallback during playback.\n\nCode executes in a dedicated blob Worker created inside a sandboxed iframe with\nan opaque origin. Its CSP only permits blob resources; external/same-origin\nnetwork requests, parent DOM access and OS filesystem access are unavailable.\nThe parent verifies and transfers local runtime bytes before starting the worker.\nCustom code receives a separate interpreter, a seeded NumPy generator ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-54734d83-8485-4c11-82fd-24910f70a644"
+      },
+      {
+        "at": "2026-10-29T05:05:20.746Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/vendor/earshot/README.opencut.md <<'EOF'\n# Earshot integration\n\nThe `upstream/` directory contains every tracked file from Leonxlnx/earshot at\n`591fa3e028032e6dce56620a20e932e35667e8d8` (0.4.0), unchanged. `manifest.json`\nrecords all 282 source files by path, length and SHA-256; `provenance.json` names\nthe repository, release and licenses. Keep upstream/LICENSE and the CC0 credits\nin upstream/docs/CREDITS_FIT.md when redistributing. The upstream documentation\nand skills are reference material for the application's agent, not host commands.\n\nMigration status: **bridged**. The recipe state and editing capabilities belong\nto OpenCutRuntime. The classic application adapts that state to browser audio and\nexport through `src/earshot/render.ts`; it does not persist a second project model.\n\nThe bank includes all 252 sounds. `bank.render` computes raw float PCM from the\npinned Python recipes, NumPy and SciPy. No WAV/MP3 asset is generated on insertion,\nediting or preview. The same PCM enters playback and the export mix. The timeline\nstores source, seed and controls, so queued snapshots keep the chosen recipe.\n\n`node classic/scripts/prepare-earshot-runtime.mjs` prepares a self-hosted Pyodide\n0.28.3 runtime. Every build download is pinned by SHA-256. NumPy 2.2.5, SciPy 1.14.1\nand libopenblas 0.3.26 are the only additional runtime packages. Torch, model\nweights, microphones and recording dependencies are not installed or loaded.\nGenerated runtime resources are excluded from Git and must be included in the\napplication's packaged public assets. There is no CDN fallback during playback.\n\nCode executes in a dedicated blob Worker created inside a sandboxed iframe with\nan opaque origin. Its CSP only permits blob resources; external/same-origin\nnetwork requests, parent DOM access and OS filesystem access are unavailable.\nThe parent verifies and transfers local runtime bytes before starting the worker.\nCustom code receives a separate interpreter, a seeded NumPy generator ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-54734d83-8485-4c11-82fd-24910f70a644"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:05:21.282Z",
+  "parents": [],
+  "branch": "main"
+}

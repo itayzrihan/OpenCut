@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3a25aa8c038595177e256199a05e1757953e418e722ed37bd2cfa7d9681ff97b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:00:23.380Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' classic/apps/web/src/earshot/catalog.ts && sed -n '1,200p' crates/editor-api/src/operations.rs && sed -n '1,180p' crates/editor-api/src/artifact.rs && head -35 classic/vendor/earshot/manifest.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-736aa445-6436-49b4-ba96-c37c2e058396"
+      },
+      {
+        "at": "2026-10-29T06:00:25.542Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' classic/apps/web/src/earshot/catalog.ts && sed -n '1,200p' crates/editor-api/src/operations.rs && sed -n '1,180p' crates/editor-api/src/artifact.rs && head -35 classic/vendor/earshot/manifest.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-736aa445-6436-49b4-ba96-c37c2e058396"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:00:27.305Z",
+  "parents": [],
+  "branch": "main"
+}

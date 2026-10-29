@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b3f1c915161a5950d1f04da39e0688edb3a1a1d1ba9849463a1ab0457449b621",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:49:22.550Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide-lock.json -o /tmp/earshot-pyodide-lock.json\npython3 - <<'PY'\nimport json\nx=json.load(open('/tmp/earshot-pyodide-lock.json'));print(x['info'])\nfor p in ['numpy','scipy','libopenblas']:print(p,x['packages'].get(p))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-6ecad7d7-5bd0-4497-b5a6-da7471b6c02e"
+      },
+      {
+        "at": "2026-10-29T04:49:23.145Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide-lock.json -o /tmp/earshot-pyodide-lock.json\npython3 - <<'PY'\nimport json\nx=json.load(open('/tmp/earshot-pyodide-lock.json'));print(x['info'])\nfor p in ['numpy','scipy','libopenblas']:print(p,x['packages'].get(p))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-6ecad7d7-5bd0-4497-b5a6-da7471b6c02e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:49:23.467Z",
+  "parents": [],
+  "branch": "main"
+}

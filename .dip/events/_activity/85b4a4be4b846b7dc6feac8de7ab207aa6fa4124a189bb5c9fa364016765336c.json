@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "85b4a4be4b846b7dc6feac8de7ab207aa6fa4124a189bb5c9fa364016765336c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T04:50:23.021Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/write-earshot-ai.py <<'PY'\nfrom pathlib import Path\nR=Path('/tmp/opencut-earshot-ai')\ndef write(p,s):\n q=R/p;q.parent.mkdir(parents=True,exist_ok=True);q.write_text(s)\nwrite('classic/rust/crates/timeline/src/automatic_sound_effects.rs',r'''//! Bridged procedural sound direction: immutable synthesis recipes in the canonical timeline.\nuse crate::{CanonicalizeTimelineSourceDocumentOptions, canonicalize_timeline_source_document, validate_procedural_audio_source};\nuse bridge::export;\nuse serde::{Deserialize, Serialize};\nuse serde_json::{Value, json};\nuse std::collections::HashSet;\nconst OWNER: &str = \"automatic-earshot-v1\";\n#[cfg_attr(feature=\"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"wasm\", tsify(from_wasm_abi))]\n#[derive(Deserialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct CompileAutomaticSoundEffectsOptions {\n    pub source_json:String, pub plan_json:String, pub catalog_ids_json:String,\n    #[serde(default)] pub word_reveals:bool,\n}\n#[cfg_attr(feature=\"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature=\"wasm\", tsify(into_wasm_abi))]\n#[derive(Serialize)]\n#[serde(rename_all=\"camelCase\")]\npub struct AutomaticSoundEffectsResult {pub valid:bool,pub source_json:String,pub error:String,pub sound_count:usize,pub summary:String}\n#[derive(Deserialize)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\nstruct Plan {events:Vec<Event>,summary:String}\n#[derive(Deserialize)]\n#[serde(rename_all=\"camelCase\",deny_unknown_fields)]\nstruct Event {name:String,start_time:f64,volume:f64,reason:String,procedural:Value,#[serde(default)] text_element_id:Option<String>,#[serde(default)] word_id:Option<String>}\n#[export]\npub fn compile_automatic_sound_effects(o:CompileAutomaticSoundEffectsOptions)->AutomaticSoundEffectsResult {\n    compile(o).unwrap_or_else(|error|AutomaticSoundEffectsResult{valid:false,source_json:String::new(),error,sound_count:0,summary:String::new()})\n}\nfn compile(o:CompileAutomaticSoundEffectsOptions)->Result<AutomaticSoundEffectsResult,Str",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-d89cd4a3-51b2-4e12-8065-74ca3303f729"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:50:23.484Z",
+  "parents": [],
+  "branch": "main"
+}

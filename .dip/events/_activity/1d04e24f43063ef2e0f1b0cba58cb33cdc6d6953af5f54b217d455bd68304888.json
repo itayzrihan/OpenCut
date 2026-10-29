@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1d04e24f43063ef2e0f1b0cba58cb33cdc6d6953af5f54b217d455bd68304888",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:06:41.542Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,170p' classic/apps/web/src/earshot/__tests__/export-browser.test.ts\nsed -n '1,200p' classic/apps/web/src/earshot/__tests__/export-browser-entry.ts\nrg -n 'scope|audio|Host' crates/editor-agent/src/verification* crates/editor-agent/src/receipt* 2>/dev/null | head -30\nrg --files .dip/events | rg '26fddb02'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-82d47d25-c98e-4581-8d12-94f89cf97e41"
+      },
+      {
+        "at": "2026-10-29T06:06:42.000Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,170p' classic/apps/web/src/earshot/__tests__/export-browser.test.ts\nsed -n '1,200p' classic/apps/web/src/earshot/__tests__/export-browser-entry.ts\nrg -n 'scope|audio|Host' crates/editor-agent/src/verification* crates/editor-agent/src/receipt* 2>/dev/null | head -30\nrg --files .dip/events | rg '26fddb02'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-82d47d25-c98e-4581-8d12-94f89cf97e41"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:06:42.033Z",
+  "parents": [],
+  "branch": "main"
+}

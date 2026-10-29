@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f03817b148362c8a561ca3130d4e7a74d65c6b8a3980def9cb5fc042fee22732",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:48:27.714Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('/tmp/opencut-dsh-audit.json'));print(json.dumps({k:{'via':v['via'],'range':v['range'],'fix':v['fixAvailable']} for k,v in x.get('vulnerabilities',{}).items()},indent=2)[:4000])\nPY",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-ba7e97c9-812d-4307-b691-1fae7b60ac8d"
+      },
+      {
+        "at": "2026-10-29T04:48:28.024Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nx=json.load(open('/tmp/opencut-dsh-audit.json'));print(json.dumps({k:{'via':v['via'],'range':v['range'],'fix':v['fixAvailable']} for k,v in x.get('vulnerabilities',{}).items()},indent=2)[:4000])\nPY",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-ba7e97c9-812d-4307-b691-1fae7b60ac8d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:48:28.333Z",
+  "parents": [],
+  "branch": "main"
+}

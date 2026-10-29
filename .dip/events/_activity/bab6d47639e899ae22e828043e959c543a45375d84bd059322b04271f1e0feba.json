@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bab6d47639e899ae22e828043e959c543a45375d84bd059322b04271f1e0feba",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:28:00.400Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "./node_modules/.bin/eslint apps/web/src/mcp/canonical-transport.ts apps/web/src/mcp/classic-mcp-bridge.tsx apps/web/src/mcp/__tests__/canonical-transport.test.ts apps/web/src/accounts/bridge-protocol.ts apps/web/src/accounts/bridge-protocol.test.ts 'apps/web/src/app/api/mcp-bridge/[...path]/route.ts'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-4068e24c-c2e0-4dbb-9d33-fb9150cac2be"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:28:00.408Z",
+  "parents": [],
+  "branch": "main"
+}

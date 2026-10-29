@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eaf166cdcc9ad0c573793e269eafd60d48d3db9cf1960a3770e88178f76fde57",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:16:58.027Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -35 Cargo.toml\nrg --files classic | rg 'Cargo.toml$' | head -20\ncat classic/Cargo.toml",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-4b4d73bf-eec6-4e0c-a556-21367c2dc117"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:16:58.900Z",
+  "parents": [],
+  "branch": "main"
+}

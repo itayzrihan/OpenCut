@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20e4c087c3909c475169f8d1fc3cd5d4d6469e283c87c796720fd36de5f803ff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:03:07.984Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'pub fn register|fn register_catalog|register_typed|FnCapability' crates/editor-api/src/operations/hyperframes_examples.rs | tail -15 && sed -n '960,1110p' crates/editor-api/src/operations/hyperframes_examples.rs && sed -n '130,200p' crates/editor-api/src/capability.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-04d11b12-1922-4eec-96ab-a4497ebcc3c6"
+      },
+      {
+        "at": "2026-10-29T06:03:08.787Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'pub fn register|fn register_catalog|register_typed|FnCapability' crates/editor-api/src/operations/hyperframes_examples.rs | tail -15 && sed -n '960,1110p' crates/editor-api/src/operations/hyperframes_examples.rs && sed -n '130,200p' crates/editor-api/src/capability.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-04d11b12-1922-4eec-96ab-a4497ebcc3c6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:03:08.978Z",
+  "parents": [],
+  "branch": "main"
+}

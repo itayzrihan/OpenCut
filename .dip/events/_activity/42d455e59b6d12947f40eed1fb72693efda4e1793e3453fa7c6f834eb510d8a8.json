@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42d455e59b6d12947f40eed1fb72693efda4e1793e3453fa7c6f834eb510d8a8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:30.230Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/vendor/earshot/README.opencut.md';s=open(p).read().replace('Torch, model\\nweights, microphones and recording dependencies are not installed or loaded.', 'Torch, external pretrained model\\nweights, microphones and recording dependencies are not installed or loaded.');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-dc6cbf1f-00d4-4d87-b126-c148c6cce549"
+      },
+      {
+        "at": "2026-10-29T05:08:30.714Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/vendor/earshot/README.opencut.md';s=open(p).read().replace('Torch, model\\nweights, microphones and recording dependencies are not installed or loaded.', 'Torch, external pretrained model\\nweights, microphones and recording dependencies are not installed or loaded.');open(p,'w').write(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-dc6cbf1f-00d4-4d87-b126-c148c6cce549"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:31.195Z",
+  "parents": [],
+  "branch": "main"
+}

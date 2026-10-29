@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4bdb60e4a0cdba8ec2edb6da18f258dfc780fa376aca6e7f986a78954cfdce10",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:09:07.851Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,shutil\nsrc=Path('/tmp/opencut-earshot-synthesis');dst=Path('.')\npaths=json.loads(Path('/tmp/earshot-own-paths.json').read_text())\nfor x in paths:\n p=dst/x\n if x=='classic/.gitignore':\n  text=p.read_text();addition='\\n# Self-hosted reproducible Earshot runtime (prepared at build time)\\n/apps/web/public/earshot/runtime/\\n'\n  if '/apps/web/public/earshot/runtime/' not in text:p.write_text(text+addition)\n else:\n  p.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src/x,p)\nshutil.copytree(src/'classic/apps/web/public/earshot/runtime',dst/'classic/apps/web/public/earshot/runtime',dirs_exist_ok=True)\nprint(f'Integrated {len(paths)} Earshot files')\nPY\nbun test src/earshot/__tests__/timeline-audio.test.ts src/earshot/catalog.test.ts > /tmp/earshot-root-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-67fcbc5f-95e3-4290-a12e-6a0e86f1bf88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:09:08.548Z",
+  "parents": [],
+  "branch": "main"
+}

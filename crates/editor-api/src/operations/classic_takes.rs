@@ -6,9 +6,11 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
 mod auto_edit;
+mod cleanup;
 mod podcast;
 mod presentation;
 mod quality;
+mod replacement;
 mod review;
 pub(super) use podcast::reference::Region as PodcastReferenceRegion;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
@@ -149,6 +151,8 @@ enum Change {
         audio_evidence: Vec<AudioEvidence>,
     },
     CleanSilence {
+        #[serde(default, rename = "elementIds")]
+        element_ids: Option<Vec<String>>,
         #[serde(default, rename = "groupIndexes")]
         group_indexes: Option<Vec<usize>>,
         #[serde(default = "default_pause", rename = "minSilenceSeconds")]
@@ -675,7 +679,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.edit",
         "Assemble or select smart takes",
-        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection preserves uniform framing and caption-position edits, rejecting structural timeline/bookmark changes. cleanSilence analyzes archived source audio, trims only verified pauses in scoped take groups and retains every alternative. New assemblies clean verified internal pauses automatically; legacy assemblies retain their timing until explicit cleanup. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
+        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection replaces surviving group clips locally after structural edits, maps retained source ranges to the alternative by word alignment, and preserves deleted material, unrelated edits and bookmarks. cleanSilence projects verified archived source pauses onto surviving live clips, protects current words, preserves manual trims and extended footage, and retains every alternative. Optional elementIds limits cleanup to the exact selected occurrences within groupIndexes; unknown source coverage is retained. It never rebuilds the scene from the assembly. New assemblies clean verified internal pauses automatically; legacy assemblies retain their timing until explicit cleanup. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -699,11 +703,40 @@ pub(super) fn register_classic_takes(
                             .ok_or_else(|| invalid("Scene not found"))?
                             .clone();
                         let canvas = classic.document["settings"]["canvasSize"].clone();
-                        let presentation = if scene["takeAssembly"].is_object() {
+                        let mut local_selection = None;
+                        let cleanup_scope = match &input.change {
+                            Change::CleanSilence {
+                                group_indexes,
+                                element_ids,
+                                min_silence_seconds,
+                                ..
+                            } => Some((
+                                group_indexes.clone(),
+                                element_ids.clone(),
+                                *min_silence_seconds,
+                            )),
+                            _ => None,
+                        };
+                        let presentation = if cleanup_scope.is_none()
+                            && scene["takeAssembly"].is_object()
+                        {
                             let old: Assembly =
                                 serde_json::from_value(scene["takeAssembly"].clone())
                                     .map_err(|_| invalid("Invalid take assembly"))?;
-                            Some(presentation::capture(&old, &scene, &canvas, &context)?)
+                            match presentation::capture(&old, &scene, &canvas, &context) {
+                                Ok(patches) => Some(patches),
+                                Err(CapabilityError::Conflict(_))
+                                    if matches!(input.change, Change::Select { .. }) =>
+                                {
+                                    let groups = match &input.change {
+                                        Change::Select { group_index, .. } => vec![*group_index],
+                                        _ => unreachable!(),
+                                    };
+                                    local_selection = Some((old, groups));
+                                    None
+                                }
+                                Err(error) => return Err(error),
+                            }
                         } else {
                             None
                         };
@@ -754,6 +787,7 @@ pub(super) fn register_classic_takes(
                                 }
                             }
                             Change::CleanSilence {
+                                element_ids: _,
                                 audio_evidence,
                                 group_indexes,
                                 min_silence_seconds,
@@ -848,10 +882,28 @@ pub(super) fn register_classic_takes(
                         );
                         let mut fresh =
                             || classic_duplicate::fresh(document, &mut occupied, "take");
-                        let (mut tracks, bookmarks) =
-                            render(&assembly, &words, start, end, &canvas, &mut fresh, &context)?;
+                        let (mut tracks, mut bookmarks) = if let Some((groups, ids, minimum)) =
+                            cleanup_scope
+                        {
+                            cleanup::apply(
+                                &assembly,
+                                &scene,
+                                groups.as_deref(),
+                                ids.as_deref(),
+                                minimum,
+                                &mut fresh,
+                                &context,
+                            )?
+                        } else {
+                            render(&assembly, &words, start, end, &canvas, &mut fresh, &context)?
+                        };
                         if let Some(patches) = presentation {
                             presentation::apply(&mut tracks, patches);
+                        }
+                        if let Some((old, groups)) = local_selection {
+                            (tracks, bookmarks) = replacement::apply(
+                                &old, &groups, &scene, &tracks, &canvas, &mut fresh, &context,
+                            )?;
                         }
                         assembly.applied_digest = digest(&tracks, &bookmarks);
                         let classic = classic_scenes::classic_target(document, &input.project_id)?;

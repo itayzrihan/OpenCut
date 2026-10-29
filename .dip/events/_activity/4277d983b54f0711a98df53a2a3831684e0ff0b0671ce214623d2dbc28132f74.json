@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4277d983b54f0711a98df53a2a3831684e0ff0b0671ce214623d2dbc28132f74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T04:55:31.595Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nr=Path('/tmp/opencut-earshot-ai')\np=r/'classic/apps/web/src/app/api/batch-edit/route.ts';s=p.read_text().replace('music: z.boolean(),','music: z.boolean(),\\n\\t\\tsoundEffects: z.boolean().default(false),');p.write_text(s)\np=r/'classic/apps/web/src/ai/components/automatic-word-animation-button.tsx';s=p.read_text().replace('Rare semantic word accents, up to 10%; exceptional typing reveals with\\n\\t\\t\\t\\tsound.','Directed word animation, text placement and reveals with matched, editable Earshot sounds.');p.write_text(s)\nfor name in ['full-auto-edit-takes.test.ts','full-auto-edit-resume.test.ts','full-auto-edit-routed.test.ts']:\n p=r/'classic/apps/web/src/ai/__tests__'/name;s=p.read_text();idx=s.index('mock.module(\"@/ai/automatic-word-animation\"');s=s[:idx]+'mock.module(\"@/ai/automatic-sound-effects\", () => ({ runAutomaticSoundEffects: async () => ({ soundCount: 0, summary: \"No accents\" }) }));\\n'+s[idx:];p.write_text(s)\np=r/'classic/rust/crates/timeline/src/automatic_word_animation.rs';s=p.read_text();idx=s.index('    #[test]\\n    fn cap_counts_whole_caption')\ns=s[:idx]+'''    #[test]\n    fn creative_reveal_moves_only_caption_and_defers_sound_to_earshot() {\n        let before=source();\n        let mut chosen=event(5,true);\n        chosen[\"position\"]=json!({\"x\":100,\"y\":400});\n        chosen[\"revealMode\"]=json!(\"letter-by-letter\");\n        let r=compile_automatic_word_animation(CompileAutomaticWordAnimationOptions {source_json:before.to_string(),plan_json:json!({\"densityReason\":\"Directed reveal\",\"events\":[chosen]}).to_string(),preset_ids_json:json!(CLASSICS).to_string(),procedural_sounds:true,creative_reveals:true});\n        let d=doc(&r);\n        assert_eq!(r.sound_count,0);\n        assert_eq!(d[\"scene\"][\"tracks\"][0][\"elements\"][5][\"params\"][\"transform.positionY\"],400);\n        assert_eq!(d[\"scene\"][\"tracks\"][0][\"elements\"][5][\"wordRuns\"][0][\"text\"],\"key\");\n        assert_eq!(d[\"scene\"][\"tracks\"][0][\"elements\"][5][\"wordRuns\"][0][\"",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-5d17d6c6-3882-4fb6-b18e-de81c936d31a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:55:31.910Z",
+  "parents": [],
+  "branch": "main"
+}

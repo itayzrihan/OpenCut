@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ce0701fa66464c90da2dd5d8902a25532e88edd0daf89d14161098630f15819d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:04:01.803Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nr=Path('.')\np=r/'crates/editor-api/src/model.rs';s=p.read_text();idx=s.index('#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\")]\\npub struct EditorDocument');s=s[:idx]+'''#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\")]\npub enum AgentMode { Plan, #[default] AskDestructive, FullAccess }\n\n#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\npub struct AgentPolicy {\n    pub mode: AgentMode,\n    pub computer_access: bool,\n    pub generation: u64,\n}\n\n'''+s[idx:];s=s.replace('pub struct EditorDocument {','pub struct EditorDocument {\\n    #[serde(default)]\\n    pub agent_policy: AgentPolicy,',1).replace('impl Default for EditorDocument {\\n    fn default() -> Self {\\n        Self {','impl Default for EditorDocument {\\n    fn default() -> Self {\\n        Self {\\n            agent_policy: AgentPolicy::default(),',1)\ns=s.replace('pub fn validate(&self) -> Result<(), ModelError> {\\n', 'pub fn validate(&self) -> Result<(), ModelError> {\\n',1);# generation safe bound in document validation\nidx=s.index('impl EditorDocument {');v=s.index('    pub fn validate(',idx);b=s.index('\\n',s.index('{',v));s=s[:b]+'''\\n        if self.agent_policy.generation > 9_007_199_254_740_990 { return Err(ModelError::Invalid(\"Agent policy generation exceeds its bound\".into())); }'''+s[b:];p.write_text(s)\np=r/'crates/editor-api/src/operations.rs';s=p.read_text().replace('    register_manifest(registry)?;','    register_agent_policy(registry, state.clone(), events.clone())?;\\n    register_manifest(registry)?;',1)\nidx=s.index('#[derive(Debug, Default, Deserialize, JsonSchema)]\\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\\nstruct StateReadInput');s=s[:idx]+'''#[derive(Deserialize, JsonSchema)]\n#[serde(rename_all = \"camelCase\", deny_unknown",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-2715645b-81bb-4592-b6fd-2ca994a2b8eb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:04:02.072Z",
+  "parents": [],
+  "branch": "main"
+}

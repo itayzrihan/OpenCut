@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fd6571f088857828586167472ce4fc687722b65bead5825e24caf5a163ffa8f8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:35:37.639Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git check-ignore -v docs/architecture/earshot-library-capabilities.md; ls -l docs/architecture/earshot-library-capabilities.md; ps -Ao pid,etime,pcpu,command | rg 'canonical-command-manager|test-web.mjs|bun test'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d56eec89-393d-473c-85a7-1d0b6af5bbea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:35:37.648Z",
+  "parents": [],
+  "branch": "main"
+}

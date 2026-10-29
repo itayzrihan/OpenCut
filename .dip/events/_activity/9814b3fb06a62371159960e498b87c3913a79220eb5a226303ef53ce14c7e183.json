@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9814b3fb06a62371159960e498b87c3913a79220eb5a226303ef53ce14c7e183",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:22:00.883Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-ea6f6bac-96cd-4d3e-abd2-4eb194298181"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:22:01.057Z",
+  "parents": [],
+  "branch": "main"
+}

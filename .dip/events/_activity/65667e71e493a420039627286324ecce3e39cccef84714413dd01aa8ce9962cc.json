@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "65667e71e493a420039627286324ecce3e39cccef84714413dd01aa8ce9962cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:18:37.043Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts');s=p.read_text().replace('../../../../../../../crates/','../../../../../../crates/');p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-3958cfbc-4df0-44ac-b5e2-d2fbbb09bd74"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:18:37.465Z",
+  "parents": [],
+  "branch": "main"
+}

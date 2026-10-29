@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ea8ffc0494bcb2d0189b8d1907d066d8d40682cebdb6767b327f0ec69e0e7652",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:27:59.960Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts');s=p.read_text().replace('\\n});','\\n}, 60_000);');p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-183aa1e5-4a37-4c69-8678-22c851a5fed4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:27:59.966Z",
+  "parents": [],
+  "branch": "main"
+}

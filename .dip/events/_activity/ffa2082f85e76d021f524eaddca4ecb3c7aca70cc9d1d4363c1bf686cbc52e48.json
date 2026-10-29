@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ffa2082f85e76d021f524eaddca4ecb3c7aca70cc9d1d4363c1bf686cbc52e48",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:16.027Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-agent/tests/permissions.rs <<'EOF'\nuse opencut_editor_agent::{AgentCommand, AgentScope, ModelAction, PlanStatus, PlanStep, RuntimeAgent};\nuse opencut_editor_api::{AccessLevel, CapabilityDescriptor, CapabilityExecution, CapabilityResult, DocumentSupport, FnCapability, HostBridge, InvocationContext, OpenCutRuntime, register_computer_capabilities};\nuse serde_json::{Value,json};\nuse std::sync::{Arc,atomic::{AtomicUsize,Ordering}};\n\nasync fn setup(mode:&str, computer:bool)->(OpenCutRuntime,RuntimeAgent,Arc<AtomicUsize>){\n let runtime=OpenCutRuntime::default();\n let classic:Value=serde_json::from_str(include_str!(\"../../editor-api/tests/fixtures/classic-project.json\")).unwrap();\n runtime.registry().invoke(\"project.classic.session.attach\",InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await.unwrap();\n let revision=runtime.snapshot().unwrap().revision;\n runtime.registry().invoke(\"agent.policy.set\",InvocationContext::default(),json!({\"projectId\":\"classic-project\",\"expectedRevision\":revision,\"mode\":mode,\"computerAccess\":computer})).await.unwrap();\n let count=Arc::new(AtomicUsize::new(0));let hit=count.clone();\n let mut descriptor=CapabilityDescriptor::read(\"test.destructive\",\"Delete test data\",\"A destructive action\",\"test\",json!({\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}},\"required\":[\"value\"],\"additionalProperties\":false}),json!({\"type\":\"object\"}));\n descriptor.access=AccessLevel::Destructive;descriptor.execution=CapabilityExecution::Immediate;descriptor.transactional=true;descriptor.document_support=DocumentSupport::Both;\n runtime.registry().register(Arc::new(FnCapability::new(descriptor,move|_,_|{let hit=hit.clone();Box::pin(async move{hit.fetch_add(1,Ordering::SeqCst);Ok(CapabilityResult::data(json!({})))})}))).unwrap();\n let agent=RuntimeAgent::new(runtime.clone(),AgentScope{account_id:\"alice\".into(),project_id:\"classic-project\".into(),run_id:\"policy-run\".into()},\"Test permissi",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-1bdda3dc-28ff-464f-94cf-44a7eb5bd053"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:16.410Z",
+  "parents": [],
+  "branch": "main"
+}

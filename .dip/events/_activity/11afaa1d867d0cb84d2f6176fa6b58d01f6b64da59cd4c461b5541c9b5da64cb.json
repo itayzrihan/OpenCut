@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11afaa1d867d0cb84d2f6176fa6b58d01f6b64da59cd4c461b5541c9b5da64cb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:40:40.273Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node node_modules/eslint/bin/eslint.js apps/web/src/core/managers/commands.ts apps/web/src/timeline/smart-takes/types.ts apps/web/src/timeline/smart-silence.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ebb9f051-177c-4312-bc42-231b44565217"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:40:40.289Z",
+  "parents": [],
+  "branch": "main"
+}

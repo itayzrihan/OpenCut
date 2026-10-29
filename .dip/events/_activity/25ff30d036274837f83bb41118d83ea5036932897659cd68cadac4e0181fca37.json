@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25ff30d036274837f83bb41118d83ea5036932897659cd68cadac4e0181fca37",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:40:40.817Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/editor-agent/__tests__/permissions.test.ts <<'EOF'\n// @opencut-test-wasm: real\nimport {expect,test} from \"bun:test\";\nimport {readFile} from \"node:fs/promises\";\nimport {createCanonicalTestRuntime} from \"@/core/__tests__/canonical-runtime-fixture\";\n\ntest(\"the composer changes permissions in a canonical transaction and Plan finishes without executing edits\",async()=>{\n const runtime=await createCanonicalTestRuntime();\n try {\n  runtime.installDesktopUi();\n  const classic=JSON.parse(await readFile(new URL(\"../../../../../../crates/editor-api/tests/fixtures/classic-project.json\",import.meta.url),\"utf8\"));\n  runtime.invokeSync(\"project.classic.session.attach\",{projectId:\"classic-project\",expectedRevision:0,classic},null);\n  const revision=runtime.snapshot().revision;\n  runtime.beginTransaction(\"classic-project\",revision);\n  runtime.invokeSync(\"agent.policy.set\",{projectId:\"classic-project\",expectedRevision:revision,mode:\"plan\",computerAccess:false},null);\n  const read=runtime.invokeSync(\"app.state.read\",{projectId:\"classic-project\",pointer:\"/agentPolicy\"},null);\n  expect(read.result.data.value.mode).toBe(\"plan\");\n  runtime.commitTransaction(\"Change agent permissions\",null);\n  const snapshot=runtime.agentStart(\"alice\",\"plan-test\",\"Propose an edit without changing the project\");\n  expect(()=>runtime.agentModelAction(snapshot.epoch,\"blocked-write\",{action:\"invoke\",id:\"project.classic.commit\",input:{classic}})).toThrow(\"Plan mode\");\n  runtime.agentModelAction(snapshot.epoch,\"propose\",{action:\"plan\",steps:[{title:\"Proposed rename\",status:\"pending\"}]});\n  runtime.agentModelAction(snapshot.epoch,\"finish-plan\",{action:\"complete\",text:\"Proposed rename; no edits executed\"});\n  expect(runtime.agentSnapshot().phase).toBe(\"completed\");\n  expect(runtime.snapshot().project.classic).toEqual(classic);\n } finally {runtime.free();}\n});\nEOF\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/editor-agent/__tests__/permissions.test.ts\npyt",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-6cbf32f1-27b0-4545-b66e-0a5d79b45c32"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:40:40.824Z",
+  "parents": [],
+  "branch": "main"
+}

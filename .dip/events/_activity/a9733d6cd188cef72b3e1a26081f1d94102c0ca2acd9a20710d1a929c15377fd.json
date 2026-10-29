@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a9733d6cd188cef72b3e1a26081f1d94102c0ca2acd9a20710d1a929c15377fd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:53:09.593Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/earshot/runtime.ts <<'EOF'\n/** Browser adapter only. Project recipes live in the canonical EditorDocument. */\nexport interface EarshotRuntimeAsset { file: string; bytes: ArrayBuffer }\nlet assetsPromise: Promise<EarshotRuntimeAsset[]> | undefined;\nconst MAX_RUNTIME_BYTES = 64 * 1024 * 1024;\nexport function loadEarshotRuntimeAssets(): Promise<EarshotRuntimeAsset[]> {\n  if (!assetsPromise) assetsPromise = (async () => {\n    const base = new URL('/earshot/runtime/', window.location.origin);\n    const response = await fetch(new URL('manifest.json', base), { credentials: 'omit' });\n    if (!response.ok) throw new Error('Earshot synthesis runtime is not installed. Run the application asset preparation step.');\n    const manifest = await response.json() as { version: number; pyodide: string; assets: { file: string; size: number; sha256: string }[] };\n    if (manifest.version !== 1 || manifest.pyodide !== '0.28.3' || !Array.isArray(manifest.assets) || manifest.assets.length > 20 || manifest.assets.reduce((n, a) => n + a.size, 0) > MAX_RUNTIME_BYTES) throw new Error('Invalid Earshot runtime manifest.');\n    return Promise.all(manifest.assets.map(async (asset) => {\n      if (!/^[A-Za-z0-9_.-]+$/.test(asset.file) || !/^[a-f0-9]{64}$/.test(asset.sha256) || !Number.isSafeInteger(asset.size) || asset.size < 1 || asset.size > MAX_RUNTIME_BYTES) throw new Error('Invalid Earshot runtime resource.');\n      const r = await fetch(new URL(asset.file, base), { credentials: 'omit' });\n      if (!r.ok) throw new Error(`Earshot runtime resource is missing: ${asset.file}`);\n      const bytes = await r.arrayBuffer();\n      if (bytes.byteLength !== asset.size) throw new Error(`Earshot runtime resource has the wrong size: ${asset.file}`);\n      const digest = await crypto.subtle.digest('SHA-256', bytes);\n      const hash = Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, '0')).join('');\n      if (hash !== asset.sha256) throw new Error(`Earshot runti",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-017e0ce4-8d94-4768-9432-6ec8d51e37c2"
+      },
+      {
+        "at": "2026-10-29T04:53:09.874Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/earshot/runtime.ts <<'EOF'\n/** Browser adapter only. Project recipes live in the canonical EditorDocument. */\nexport interface EarshotRuntimeAsset { file: string; bytes: ArrayBuffer }\nlet assetsPromise: Promise<EarshotRuntimeAsset[]> | undefined;\nconst MAX_RUNTIME_BYTES = 64 * 1024 * 1024;\nexport function loadEarshotRuntimeAssets(): Promise<EarshotRuntimeAsset[]> {\n  if (!assetsPromise) assetsPromise = (async () => {\n    const base = new URL('/earshot/runtime/', window.location.origin);\n    const response = await fetch(new URL('manifest.json', base), { credentials: 'omit' });\n    if (!response.ok) throw new Error('Earshot synthesis runtime is not installed. Run the application asset preparation step.');\n    const manifest = await response.json() as { version: number; pyodide: string; assets: { file: string; size: number; sha256: string }[] };\n    if (manifest.version !== 1 || manifest.pyodide !== '0.28.3' || !Array.isArray(manifest.assets) || manifest.assets.length > 20 || manifest.assets.reduce((n, a) => n + a.size, 0) > MAX_RUNTIME_BYTES) throw new Error('Invalid Earshot runtime manifest.');\n    return Promise.all(manifest.assets.map(async (asset) => {\n      if (!/^[A-Za-z0-9_.-]+$/.test(asset.file) || !/^[a-f0-9]{64}$/.test(asset.sha256) || !Number.isSafeInteger(asset.size) || asset.size < 1 || asset.size > MAX_RUNTIME_BYTES) throw new Error('Invalid Earshot runtime resource.');\n      const r = await fetch(new URL(asset.file, base), { credentials: 'omit' });\n      if (!r.ok) throw new Error(`Earshot runtime resource is missing: ${asset.file}`);\n      const bytes = await r.arrayBuffer();\n      if (bytes.byteLength !== asset.size) throw new Error(`Earshot runtime resource has the wrong size: ${asset.file}`);\n      const digest = await crypto.subtle.digest('SHA-256', bytes);\n      const hash = Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, '0')).join('');\n      if (hash !== asset.sha256) throw new Error(`Earshot runti",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-017e0ce4-8d94-4768-9432-6ec8d51e37c2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:53:10.256Z",
+  "parents": [],
+  "branch": "main"
+}

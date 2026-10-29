@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9e0dd7f7542e39fe4d52ffb95732efc5a255e2b4fa3d32c4b6973d12dc259e8b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:27:48.768Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ln -s /Users/itayzrihan/Documents/PoCut/classic/apps/web/node_modules classic/apps/web/node_modules\nbun test classic/apps/web/src/accounts/bridge-protocol.test.ts classic/apps/web/src/accounts/bridge-scope.test.ts classic/apps/web/src/accounts/bridge-snapshot-cache.test.ts classic/apps/web/src/accounts/bridge-transport.test.ts classic/apps/web/src/mcp/__tests__/bridge-publication-payload.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-24ffc094-197e-47fa-9a2e-b9ff7b101e7e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:27:48.773Z",
+  "parents": [],
+  "branch": "main"
+}

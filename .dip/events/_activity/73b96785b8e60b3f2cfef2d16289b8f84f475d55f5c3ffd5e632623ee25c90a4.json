@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "73b96785b8e60b3f2cfef2d16289b8f84f475d55f5c3ffd5e632623ee25c90a4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:03:17.945Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'register_catalog|hyperframes.examples.search|catalog::' crates/editor-api/src/operations* -g '*.rs' | head -25 && wc -l crates/editor-api/src/operations/hyperframes_examples.rs && sed -n '840,960p' crates/editor-api/src/operations/hyperframes_examples.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-278ec7ab-26e8-46cd-9c7d-11592ff5a98e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:03:17.985Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7ee35513f1661010e4861d202006aab2f29f478363d2b710442e503805bfc097",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:06:54.175Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,pathlib,subprocess\nroot=pathlib.Path('classic/vendor/earshot')\nfiles=['classic/.gitignore','classic/scripts/prepare-earshot-runtime.mjs','classic/scripts/test-earshot-runtime.mjs']\nfiles += [str(p) for p in pathlib.Path('classic/apps/web/src/earshot').glob('*') if p.is_file()]\nfiles += [str(p) for p in pathlib.Path('classic/apps/web/public/earshot').glob('*') if p.is_file()]\nfiles += [str(p) for p in root.glob('*') if p.is_file()]\nfiles += [str(root/'upstream'/r['path']) for r in json.loads((root/'manifest.json').read_text())]\nsubprocess.run(['git','add','--sparse','-f','--',*files],check=True)\npathlib.Path('/tmp/earshot-own-paths.json').write_text(json.dumps(files))\nprint('staged own paths',len(files))\nsubprocess.run(['git','commit','--only','-m','feat: vendor Earshot and synthesize all sounds in isolated WASM','--',*files],check=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-2ed77cc9-fc68-4ca8-af92-8aed3e9f275b"
+      },
+      {
+        "at": "2026-10-29T05:06:54.179Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s'; git diff --cached --stat | tail -5",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-7f7b1376-d6cb-4695-8b60-2d8b198cf235"
+      },
+      {
+        "at": "2026-10-29T05:06:55.120Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --format='%h %s'; git diff --cached --stat | tail -5",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-7f7b1376-d6cb-4695-8b60-2d8b198cf235"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:06:56.618Z",
+  "parents": [],
+  "branch": "main"
+}

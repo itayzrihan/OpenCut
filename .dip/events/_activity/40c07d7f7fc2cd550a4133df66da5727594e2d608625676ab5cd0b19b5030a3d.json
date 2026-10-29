@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "40c07d7f7fc2cd550a4133df66da5727594e2d608625676ab5cd0b19b5030a3d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:29.065Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/export/audio-stream.ts');s=p.read_text();a=s.index('\\t\\t\\t\\tif (clip.procedural) {');b=s.index('\\n\\t\\t\\t\\tconst input = new Input',a)\ns=s[:a]+'''\\t\\t\\t\\tif (clip.procedural) {\n\\t\\t\\t\\t\\tconst buffer = await resolveEarshotBuffer({spec: clip.procedural, context, signal});\n\\t\\t\\t\\t\\tconst intervals: Array<{pcm: PcmFile; origin: number; end: number}> = [];\n\\t\\t\\t\\t\\tfor (const [rangeIndex, range] of windows.get(clip.sourceKey)!.entries()) {\n\\t\\t\\t\\t\\t\\tsignal.throwIfAborted();\n\\t\\t\\t\\t\\t\\tconst name = `source-${index}-${rangeIndex}-code.pcm`;\n\\t\\t\\t\\t\\t\\ttemporary.add(name);\n\\t\\t\\t\\t\\t\\tconst origin = Math.floor(range.start * buffer.sampleRate);\n\\t\\t\\t\\t\\t\\tconst end = Math.min(buffer.length, Math.ceil(range.end * buffer.sampleRate));\n\\t\\t\\t\\t\\t\\tconst pcm = new PcmFile(await scratch.file(name), buffer.sampleRate, buffer.numberOfChannels);\n\\t\\t\\t\\t\\t\\ttry {\n\\t\\t\\t\\t\\t\\t\\tawait pcm.open();\n\\t\\t\\t\\t\\t\\t\\tif (end > origin) await pcm.write(buffer, 0, origin, end - origin);\n\\t\\t\\t\\t\\t\\t\\tawait pcm.seal();\n\\t\\t\\t\\t\\t\\t} catch (error) { await pcm.abort(); throw error; }\n\\t\\t\\t\\t\\t\\tintervals.push({pcm, origin, end: range.end});\n\\t\\t\\t\\t\\t}\n\\t\\t\\t\\t\\tsourcePcm.set(clip.sourceKey, intervals);\n\\t\\t\\t\\t\\tsourceReport(index, 1, true);\n\\t\\t\\t\\t\\treturn;\n\\t\\t\\t\\t}'''+s[b:];p.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/web/src/earshot/audio.ts classic/apps/web/src/earshot/element.ts classic/apps/web/src/earshot/use-buffer.ts classic/apps/web/src/earshot/components classic/apps/web/src/earshot/__tests__/timeline-audio.test.ts classic/apps/web/src/media/audio.ts classic/apps/web/src/core/managers/audio-manager.ts classic/apps/web/src/export/audio-stream.ts classic/apps/web/src/timeline/types.ts classic/apps/web/src/components/editor/panels/properties/registry.tsx classic/apps/web/src/sounds/components/assets-view.tsx classic/apps/web/src/core/managers/commands.ts classic/",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e9191a55-13bb-4536-b903-167a77f37016"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:29.164Z",
+  "parents": [],
+  "branch": "main"
+}

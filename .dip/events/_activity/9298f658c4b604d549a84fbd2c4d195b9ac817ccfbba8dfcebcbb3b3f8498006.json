@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9298f658c4b604d549a84fbd2c4d195b9ac817ccfbba8dfcebcbb3b3f8498006",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:34:13.557Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-web.mjs --jobs=1 --timeout=480000 src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1cfb4289-7511-4863-9538-d292a2d7d300"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:34:13.566Z",
+  "parents": [],
+  "branch": "main"
+}

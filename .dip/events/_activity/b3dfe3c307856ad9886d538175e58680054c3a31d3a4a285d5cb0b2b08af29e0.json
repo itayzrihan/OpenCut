@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b3dfe3c307856ad9886d538175e58680054c3a31d3a4a285d5cb0b2b08af29e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:17:52.952Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts <<'EOF'\n/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Real WASM validates the generic JSON registry protocol. */\nimport { expect, test } from \"bun:test\";\nimport { readFileSync } from \"node:fs\";\nimport { createCanonicalTestRuntime } from \"@/core/__tests__/canonical-runtime-fixture\";\nimport { advertiseCanonicalRegistry, canonicalReceiptSchema, encodeArtifactBytes } from \"../canonical-transport\";\n\nasync function setup() {\n  const runtime = await createCanonicalTestRuntime();\n  runtime.invokeSync(\"project.classic.session.attach\", {\n    projectId: \"classic-project\", expectedRevision: 0,\n    classic: JSON.parse(readFileSync(new URL(\"../../../../../../../crates/editor-api/tests/fixtures/classic-project.json\", import.meta.url), \"utf8\")),\n  }, {});\n  const input = { projectId: \"classic-project\", expectedRevision: 1,\n    procedural: {version: 1, engine: \"earshot\", bankRevision: \"591fa3e028032e6dce56620a20e932e35667e8d8\", presetId: \"whoosh_fast/whip\", seed: 42, duration: 0.02},\n  };\n  return {runtime, input};\n}\nconst context = {requestId: \"mcp-test\", dryRun: false, metadata: {\"opencut/projectId\": \"classic-project\", \"opencut/idempotencyKey\": \"preview-test\"}};\nconst pcm = () => ({type: \"success\", data: {channels: 1, pcm16Base64: encodeArtifactBytes(new Uint8Array(1920))}});\n\ntest(\"browser publishes canonical schemas and host availability without a feature tool registry\", async () => {\n  const {runtime} = await setup();\n  try {\n    const tools = advertiseCanonicalRegistry(runtime.capabilities());\n    const sound = tools.find((tool) => tool.name === \"canonical.audio.earshot.preview\");\n    expect(sound?.canonical.access).toBe(\"write\"); expect(sound?.openWorld).toBe(true);\n    expect(sound?.canonical.available).toBe(true);\n    expect(tools.find((tool) => tool.name === \"canonical.timeline.classic.sound_effects.edit\")?.canonical.available).toBe(true);\n    expect(tools.find((tool) => tool.name === \"",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-0a15fb68-df78-4884-b0c9-66db58c708f0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:17:53.646Z",
+  "parents": [],
+  "branch": "main"
+}

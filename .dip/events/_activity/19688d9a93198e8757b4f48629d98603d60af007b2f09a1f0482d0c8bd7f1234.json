@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19688d9a93198e8757b4f48629d98603d60af007b2f09a1f0482d0c8bd7f1234",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:26:21.302Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/accounts/bridge-protocol.ts <<'EOF'\nimport { z } from \"zod\";\n\n/** Older version-2 peers know only legacy tools and transport revisions. */\nexport function legacyBridgeBody({ body, operation }: { body: ArrayBuffer; operation: \"state\" | \"heartbeat\" }): ArrayBuffer {\n  const value = z.record(z.string(), z.unknown()).parse(JSON.parse(new TextDecoder().decode(body)));\n  delete value.canonicalRevision;\n  if (operation === \"state\" && Array.isArray(value.tools)) {\n    value.tools = value.tools.filter((tool: unknown) => {\n      if (!tool || typeof tool !== \"object\") return false;\n      if (\"canonical\" in tool) return false;\n      return !(\"name\" in tool && typeof tool.name === \"string\" && tool.name.startsWith(\"canonical.\"));\n    });\n  }\n  return new TextEncoder().encode(JSON.stringify(value)).buffer;\n}\nEOF\ncat > classic/apps/web/src/accounts/bridge-protocol.test.ts <<'EOF'\nimport { expect, test } from \"bun:test\";\nimport { legacyBridgeBody } from \"./bridge-protocol\";\n\ntest(\"old bridge peers receive no unsupported canonical tools or revisions\", () => {\n  const state = {sessionId:\"account_tab\",projectId:\"project\",revision:99,canonicalRevision:4,timeline:{elements:[1]},tools:[\n    {name:\"legacy.read\",parameters:{}}, {name:\"canonical.audio.earshot.preview\",canonical:{id:\"audio.earshot.preview\"}}, {name:\"canonical.app.state.read\"},\n  ]};\n  const body = new TextEncoder().encode(JSON.stringify(state)).buffer;\n  const result = JSON.parse(new TextDecoder().decode(legacyBridgeBody({body,operation:\"state\"})));\n  expect(result.tools).toEqual([{name:\"legacy.read\",parameters:{}}]);\n  expect(result.canonicalRevision).toBeUndefined(); expect(result.revision).toBe(99);\n  expect(result.timeline).toEqual(state.timeline); expect(state.tools.length).toBe(3);\n});\n\ntest(\"heartbeat downgrade preserves its optimistic transport revision\", () => {\n  const body = new TextEncoder().encode(JSON.stringify({projectId:\"project\",expectedRevision:98,revision:99,canonicalRevision:4}))",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-9d0b9ced-2f9e-43f0-8714-bd8662569774"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:26:21.309Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2782698d8e3708c418cc7bced3853ececccb8370b8fbe5a2c9de855343604556",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:07:13.715Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '275,333p' crates/editor-agent/src/runtime.rs; sed -n '420,452p' crates/editor-agent/src/runtime.rs; sed -n '710,750p' classic/apps/web/src/core/canonical-classic-session.ts; sed -n '45,65p' classic/rust/editor-runtime-wasm/src/lib.rs; sed -n '450,490p' classic/apps/web/src/editor-agent/overlay.tsx; sed -n '140,205p' classic/apps/web/src/core/agent-protocol.ts; rg -n 'agent.policy|runtime.snapshot|instructions|developer' crates/editor-agent/src/provider.rs; cat crates/editor-api/src/descriptor.rs | head -160; cat classic/apps/electron/package.json",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-6f811678-c8d3-471f-9b51-2517f75340f0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:07:14.057Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "198d20252608b769a42094ce0a76e4ef41bd3eda957fe794c8e0526c228f0db8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:00.281Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 240 --silent --output /tmp/earshot-projects.html --write-out '%{http_code}' http://127.0.0.1:3221/projects",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8de348c8-efa3-4b05-9caa-6edfdc68ea66"
+      },
+      {
+        "at": "2026-10-29T05:24:00.664Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bunx prettier --write src/earshot/audio.ts src/earshot/components/properties.tsx src/earshot/__tests__/timeline-audio.test.ts src/ai/timeline-source.ts > /tmp/earshot-format2.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-24183b02-dcf9-47b1-9cda-9f48f9c919e9"
+      },
+      {
+        "at": "2026-10-29T05:24:00.664Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 240 --silent --output /tmp/earshot-projects.html --write-out '%{http_code}' http://127.0.0.1:3221/projects",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-8de348c8-efa3-4b05-9caa-6edfdc68ea66"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:01.246Z",
+  "parents": [],
+  "branch": "main"
+}

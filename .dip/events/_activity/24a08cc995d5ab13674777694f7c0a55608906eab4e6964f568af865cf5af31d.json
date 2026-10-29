@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24a08cc995d5ab13674777694f7c0a55608906eab4e6964f568af865cf5af31d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:55:10.546Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/src/operations/classic_insert.rs')\ns=p.read_text().replace('omitted duration defaults to five seconds and trims to zero.', 'omitted duration defaults to five seconds (procedural audio derives the remaining source span after trims and rate) and trims to zero.').replace('Video/image/upload audio reference existing project media; library audio and stickers keep their own identifiers.', 'Video/image/upload audio reference existing project media; library audio and stickers keep their own identifiers. Procedural audio stores its bounded Earshot source directly without a media asset.').replace('Media clips must reference existing compatible project media, including offline records; no media is uploaded/decoded/copied.', 'Media clips must reference existing compatible project media, including offline records; procedural audio uses sourceType procedural and a validated Earshot source; no media is uploaded/decoded/copied.')\np.write_text(s)\nPY\n",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-103d835b-81a7-449d-b8b0-618e2b0b2d83"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:55:10.873Z",
+  "parents": [],
+  "branch": "main"
+}

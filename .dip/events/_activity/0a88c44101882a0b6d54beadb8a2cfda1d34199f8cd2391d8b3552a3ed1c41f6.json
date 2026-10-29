@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0a88c44101882a0b6d54beadb8a2cfda1d34199f8cd2391d8b3552a3ed1c41f6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:46:35.403Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ls /opt/homebrew/bin/python*; rg -n '^import|^from' earshot/forge/{polish,tone}.py earshot/forge/fit/quality.py earshot/config.py; rg -n 'numba|njit' earshot/forge/dsp.py | head -30; sed -n '410,440p' earshot/forge/bank.py; git ls-files | wc -l",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-a7e4e8c1-ac55-49c2-a296-be371605ec89"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:46:35.438Z",
+  "parents": [],
+  "branch": "main"
+}

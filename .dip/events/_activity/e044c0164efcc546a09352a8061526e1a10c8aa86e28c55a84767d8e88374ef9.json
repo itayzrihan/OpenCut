@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e044c0164efcc546a09352a8061526e1a10c8aa86e28c55a84767d8e88374ef9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:20:59.242Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ls -ld target classic/target\nrg --files --hidden -g '*next*' classic/apps/web | head -12\nnode --input-type=module - <<'JS'\nimport {pruneReleases} from './classic/scripts/local-production/prune-releases.mjs';\nimport {deploymentRoot} from './classic/scripts/local-production/common.mjs';\nconsole.log(await pruneReleases({deploymentRoot,keepRecent:1}));\nJS\ndu -sh classic/apps/web/.next* /Users/itayzrihan/Library/Caches/OpenCut*",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-7da779b2-5008-4202-af6e-f230f4452513"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:20:59.252Z",
+  "parents": [],
+  "branch": "main"
+}

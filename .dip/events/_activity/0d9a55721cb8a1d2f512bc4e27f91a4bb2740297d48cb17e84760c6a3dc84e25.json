@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0d9a55721cb8a1d2f512bc4e27f91a4bb2740297d48cb17e84760c6a3dc84e25",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:14:26.564Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,100p' classic/scripts/test-earshot-runtime.mjs\nrg --files classic/apps/web/src | rg '(audio-stream|audio.*test|canonical.*test|timeline-source.*test)' | head -40",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f3605439-8456-4837-b558-a8b95ae3dc0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:14:26.604Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "73e6c069582964db2c7a7c357daae3403280f9cbffe567c835a30bec14e181c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:45:28.363Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "pwd && rg --files -g AGENTS.md -g '*audio*' crates/editor-api classic/apps/web/src | head -80",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-2c45971b-f478-49b3-8cf8-183baea03069"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:45:28.521Z",
+  "parents": [],
+  "branch": "main"
+}

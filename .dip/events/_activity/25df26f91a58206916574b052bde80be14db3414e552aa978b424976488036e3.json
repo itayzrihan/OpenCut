@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25df26f91a58206916574b052bde80be14db3414e552aa978b424976488036e3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:02:00.778Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,ast,pathlib\nr=pathlib.Path('/tmp/opencut-earshot-synthesis/classic')\na=json.loads((r/'apps/web/src/earshot/catalog-data.json').read_text())\nmissing=[];large=[]\nfor path in sorted(set(e['sourcePath'] for e in a)):\n p=r/'vendor/earshot/upstream'/path\n if p.stat().st_size>32768:large.append((path,p.stat().st_size))\n try: names=[n.name for n in ast.parse(p.read_text()).body if isinstance(n,ast.FunctionDef)]\n except Exception as e:print(e);continue\n if 'render' not in names:missing.append(path)\nprint(json.dumps({'presets':len(a),'paths':len(set(e['sourcePath'] for e in a)),'no_render':missing,'too_large':large},indent=2))\nPY\nrg -n 'pub struct Input|struct Update|procedural_audio|updates' crates/editor-api/src/operations/classic_procedural_audio.rs /tmp/opencut-earshot-canonical/crates/editor-api/src/operations/classic_procedural_audio.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-8b54ea08-1f7c-42b9-b82b-3574f5a61c12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:02:00.881Z",
+  "parents": [],
+  "branch": "main"
+}

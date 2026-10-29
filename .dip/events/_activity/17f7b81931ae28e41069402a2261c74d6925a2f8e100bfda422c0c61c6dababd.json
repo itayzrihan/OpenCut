@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17f7b81931ae28e41069402a2261c74d6925a2f8e100bfda422c0c61c6dababd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:26:08.636Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'valid_host_id|mediaAssetIds|requires UUID|status_cancels|publication_rejects' /tmp/earshot-ai-mcp-delta.patch\nwc -l /tmp/earshot-ai-mcp-delta.patch",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-3f46ab12-db55-4796-b1fd-0e281dc2643c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:26:08.642Z",
+  "parents": [],
+  "branch": "main"
+}

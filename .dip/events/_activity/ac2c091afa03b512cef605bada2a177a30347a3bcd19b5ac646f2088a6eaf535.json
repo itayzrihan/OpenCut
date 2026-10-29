@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ac2c091afa03b512cef605bada2a177a30347a3bcd19b5ac646f2088a6eaf535",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:28:07.913Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '170,280p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts\nsed -n '330,400p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts\nsed -n '7141,7225p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9eda4713-e722-4ab2-9443-b5210a5b4f88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:28:07.920Z",
+  "parents": [],
+  "branch": "main"
+}

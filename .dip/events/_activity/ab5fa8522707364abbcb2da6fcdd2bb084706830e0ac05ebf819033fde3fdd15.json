@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab5fa8522707364abbcb2da6fcdd2bb084706830e0ac05ebf819033fde3fdd15",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:05:12.134Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat crates/editor-api/src/artifact.rs | head -155\nsed -n '2430,2467p' classic/apps/web/src/core/managers/commands.ts\nsed -n '3200,3268p' classic/apps/web/src/core/managers/commands.ts\nsed -n '280,320p' crates/editor-api/src/registry.rs\nsed -n '1,90p' Cargo.toml",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e6d2b1cc-b639-4ece-a6f0-a80e2d6de963"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:05:12.310Z",
+  "parents": [],
+  "branch": "main"
+}

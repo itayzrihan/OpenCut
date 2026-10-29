@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d3c92b72cd01618dc93e61217eceb7feafc1f3a5091765ee9675f4382f8453cd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:16:57.954Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check\nnode classic/scripts/test-web.mjs --jobs=1 --timeout=180000 src/editor-agent/__tests__/scene-automation-effects.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-887e13ce-d085-4750-aa39-47cbe7e843a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:16:58.896Z",
+  "parents": [],
+  "branch": "main"
+}

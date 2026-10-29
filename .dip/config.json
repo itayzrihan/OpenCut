@@ -395,6 +395,29 @@
         ".dip/tools/verify-agent-computer.mjs"
       ],
       "timeoutMs": 480000
+    },
+    "take-replacement": {
+      "command": [
+        "node",
+        ".dip/tools/verify-take-replacement.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "protect-speech-default": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts",
+        "--report=.local/protect-speech-default-2026-10-29/configured-web"
+      ],
+      "timeoutMs": 120000
+    },
+    "take-silence-current": {
+      "command": [
+        "node",
+        ".dip/tools/verify-take-silence-current.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

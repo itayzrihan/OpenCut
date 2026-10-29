@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46259501-c66c-4f65-93e5-bee8f30d9dbd",
+  "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Completed the integration on isolated branch codex/deepseek-video-agent, through dc66b929 (core integration ae59f61a). Classic chat uses the actual pinned DeepSeek Harness agent loop and native executor through canonical Rust video-project dispatch. Existing Codex subscription authentication, provider streaming/retry, registry discovery, host effects, artifacts, undo, visual review, checkpoint recovery and owned-project boundaries are preserved. Added authenticated bounded callback transport, replay/cancellation guards, Node/Next module configuration and migration documentation. Verification runs serially and checkpoint deadlines now match the existing 60-second real-WASM integration budget without changing assertions; the current-source WASM artifact was optimized with Binaryen after the debug artifact caused resource-related timeouts.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Provider responses are scripted; no live authenticated Codex subscription request was issued, and the installed editor was not deployed or replaced."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "The repository-wide architecture audit reports four pre-existing violations in unchanged move-elements.ts, brand-kits/apply.ts and subtitles/auto-texts.ts. The configured integration check covers new DSH behavior and existing client, connection, stream, retry, host-effect and checkpoint regressions, plus TypeScript."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304",
+  "createdAt": "2026-10-29T05:20:50.351Z",
+  "parents": [
+    "92019a1e-1bc8-400e-ae42-c1f78432e130"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "370a0c6d50600d59cd35a53463c627335ace58d9ce2dab3ad61afcb5ca99df42",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:35:17.003Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/electron/app/agent-computer.cjs');s=p.read_text().replace('const sha = (bytes) =>','const noEffect = (error) => Object.assign(error, { definitive: true });\\nconst sha = (bytes) =>').replace('error.computerEffectStarted = !INSPECT.has(request.operation.type);','error.computerEffectStarted = !INSPECT.has(request.operation.type) && !error.definitive;')\ns=s.replace('op.expectedSha256 === null ? \"wx\" : \"r+\",\\n\\t\\t\\t\\t);','op.expectedSha256 === null ? \"wx\" : \"r+\",\\n\\t\\t\\t\\t).catch(error=>{throw noEffect(error);});')\ns=s.replace('throw Error(\"File changed; read it again before writing\");','throw noEffect(Error(\"File changed; read it again before writing\"));').replace('sha(await file.readFile({ position: 0 }))','sha(await file.readFile())')\ns=s.replace('reject(error);\\n\\t\\t\\t});','reject(noEffect(error));\\n\\t\\t\\t});',1)\np.write_text(s)\nPY\nnode classic/node_modules/prettier/bin/prettier.cjs --write classic/apps/electron/app/agent-computer.cjs\nnode --test classic/apps/electron/test/agent-computer.test.js",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-cd8b68f3-1d46-48b1-acda-cb432d17fe7a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:35:17.010Z",
+  "parents": [],
+  "branch": "main"
+}

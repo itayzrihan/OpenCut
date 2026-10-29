@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f9a1e95177b2aeac005f2105f8d65f953d55c4a6db03ce1ae691705ca7ed4142",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:22:55.928Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nrows=json.load(open('/tmp/earshot-ai-eslint.json'))\nprint('files',len(rows),'errors',sum(x['errorCount'] for x in rows),'warnings',sum(x['warningCount'] for x in rows))\nfor x in rows:\n if x['messages']:\n  print(x['filePath'].split('/classic/apps/web/')[1])\n  for m in x['messages']:\n   print(f\"  {m.get('line')}:{m.get('column')} severity{m['severity']} {m.get('ruleId')}: {m['message']}\")\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-2440f3c3-5586-4568-8e6d-4c64a54ebf06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:22:56.051Z",
+  "parents": [],
+  "branch": "main"
+}

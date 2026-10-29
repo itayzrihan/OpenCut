@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8093ecc7cf52df9bf6c579107be5ec672cb5e56ee87021dfbc01bb2dae0bd9f3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:34:08.422Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,150p' analysis/earshot-integration-2026-10-29/verify-mcp.mjs; sed -n '1,100p' classic/scripts/test-web.mjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e2524a8e-43a6-4d1c-b536-96c865234e0e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:34:08.431Z",
+  "parents": [],
+  "branch": "main"
+}

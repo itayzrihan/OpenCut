@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1468c5faed2436e56d519d319ea7fc7333a6075d0a011c5a9a37d93677eff5b7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:05:45.262Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/editor-runtime-wasm/src/lib.rs')\ns=p.read_text().replace('    conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,','    conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,\\n    external: RefCell<Option<ExternalInvocation>>,')\ns=s.replace('            conversation: RefCell::new(None),','            conversation: RefCell::new(None),\\n            external: RefCell::new(None),')\nmarker='/// One instance belongs to the editor host, never to a composition iframe.'\ns=s.replace(marker,'''// A transport failure must not discard a possibly committed host operation.\n// Retain its actual registry future; only an identical invocation may resume it.\nstruct ExternalInvocation {\n    key: String,\n    future: std::pin::Pin<Box<dyn std::future::Future<Output = Result<opencut_editor_api::InvocationReceipt, opencut_editor_api::RegistryError>>>>,\n}\n\n'''+marker)\nmarker='    /// Classic\\'s command stack is synchronous. These built-in handlers perform\\n    /// only in-memory work'\nmethod='''    /// Trusted transport adapter for the live registry. No capability table or\n    /// editor state is owned by MCP. Uncertain writes retain their registry future.\n    #[wasm_bindgen(js_name = invokeWithHost)]\n    pub async fn invoke_with_host(&self, capability_id: String, input: JsValue, context: JsValue, callback: js_sys::Function) -> Result<JsValue, JsValue> {\n        use std::{future::Future, task::{Context, Poll, Waker}};\n        if self.transaction.borrow().is_some() { return Err(js_error(\"Finish the current transaction first\")); }\n        let input: Value = from_json_input(input)?;\n        let context = invocation_context(context)?;\n        let descriptor = self.runtime.registry().descriptor(&capability_id).map_err(js_error)?.ok_or_else(|| js_error(\"Unknown capability\"))?;\n        let key = serde_json::to_string(&(&capability_id, &input, context.dry_run, &context.metadata)).map_err(js_error)",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e6d0732d-4894-4d57-9538-a83ccc8a9188"
+      },
+      {
+        "at": "2026-10-29T06:05:45.551Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/rust/editor-runtime-wasm/src/lib.rs')\ns=p.read_text().replace('    conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,','    conversation: RefCell<Option<opencut_editor_agent::ConversationArchive>>,\\n    external: RefCell<Option<ExternalInvocation>>,')\ns=s.replace('            conversation: RefCell::new(None),','            conversation: RefCell::new(None),\\n            external: RefCell::new(None),')\nmarker='/// One instance belongs to the editor host, never to a composition iframe.'\ns=s.replace(marker,'''// A transport failure must not discard a possibly committed host operation.\n// Retain its actual registry future; only an identical invocation may resume it.\nstruct ExternalInvocation {\n    key: String,\n    future: std::pin::Pin<Box<dyn std::future::Future<Output = Result<opencut_editor_api::InvocationReceipt, opencut_editor_api::RegistryError>>>>,\n}\n\n'''+marker)\nmarker='    /// Classic\\'s command stack is synchronous. These built-in handlers perform\\n    /// only in-memory work'\nmethod='''    /// Trusted transport adapter for the live registry. No capability table or\n    /// editor state is owned by MCP. Uncertain writes retain their registry future.\n    #[wasm_bindgen(js_name = invokeWithHost)]\n    pub async fn invoke_with_host(&self, capability_id: String, input: JsValue, context: JsValue, callback: js_sys::Function) -> Result<JsValue, JsValue> {\n        use std::{future::Future, task::{Context, Poll, Waker}};\n        if self.transaction.borrow().is_some() { return Err(js_error(\"Finish the current transaction first\")); }\n        let input: Value = from_json_input(input)?;\n        let context = invocation_context(context)?;\n        let descriptor = self.runtime.registry().descriptor(&capability_id).map_err(js_error)?.ok_or_else(|| js_error(\"Unknown capability\"))?;\n        let key = serde_json::to_string(&(&capability_id, &input, context.dry_run, &context.metadata)).map_err(js_error)",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-e6d0732d-4894-4d57-9538-a83ccc8a9188"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:05:46.063Z",
+  "parents": [],
+  "branch": "main"
+}

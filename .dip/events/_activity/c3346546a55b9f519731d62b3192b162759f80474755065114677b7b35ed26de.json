@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c3346546a55b9f519731d62b3192b162759f80474755065114677b7b35ed26de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:17:07.165Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,95p' /tmp/earshot-ai-mcp-initial.patch && cat classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts && sed -n '120,220p' classic/apps/web/src/batch/scene-jobs.ts && rg -n 'executor|cancel|retry' classic/apps/web/src/batch/server.ts | tail -35",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-608b94e5-3241-4673-bec3-45a9fac01133"
+      },
+      {
+        "at": "2026-10-29T06:17:07.185Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,105p' crates/editor-api/src/operations/classic_automation.rs && sed -n '170,265p' crates/editor-api/src/operations/classic_automation.rs && sed -n '335,495p' crates/editor-api/src/operations/classic_automation.rs && sed -n '425,560p' classic/apps/web/src/batch/server.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-f13a3bd8-8f4f-4b00-bb97-756480f89324"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:17:07.473Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "130e6cdf9e2b8da06a1f7c9e23b41d8f8fb77a65f6a0abfd42330da845e0798d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:05:19.611Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js.LICENSE.txt -o /tmp/earshot-pyodide-license.txt\nhead -12 /tmp/earshot-pyodide-license.txt",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e26605bf-5abe-416e-ac64-e3925f32c76c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:05:20.246Z",
+  "parents": [],
+  "branch": "main"
+}

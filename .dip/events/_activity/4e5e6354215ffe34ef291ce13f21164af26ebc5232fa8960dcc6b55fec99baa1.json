@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4e5e6354215ffe34ef291ce13f21164af26ebc5232fa8960dcc6b55fec99baa1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:03.633Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='/tmp/opencut-agent-ui.cjs'\ns=open(p).read().replace('/Users/itayzrihan/.codex/worktrees/deepseek-video-agent/PoCut/classic/apps/electron/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron','/Users/itayzrihan/Documents/PoCut/classic/node_modules/.bun/electron@43.4.0/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron')\nopen(p,'w').write(s)\nPY\nnode /tmp/opencut-agent-ui.cjs",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-05f114bb-cc62-4978-a782-c40927026a12"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:03.644Z",
+  "parents": [],
+  "branch": "main"
+}

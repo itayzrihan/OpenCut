@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f47005dbb9972485850b88655d350576fdeef00201f81c3b9211c6a92ce4a11a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:17:42.589Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/standalone/package.json",
+          "classic/apps/web/.next-local-production/standalone/rust/editor-runtime-wasm/pkg/opencut_editor_runtime_wasm.js",
+          "classic/apps/web/.next-local-production/standalone/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/apps/web/.next-local-production/standalone/rust/wasm/pkg/opencut_wasm_bg.wasm",
+          "classic/apps/web/.next-local-production/standalone/rust/wasm/pkg/package.json",
+          "classic/apps/web/.next-local-production/standalone/scripts/local-subject-framing/detect.py",
+          "classic/apps/web/.next-local-production/static/chunks/02592813.a71f28d006ddafd0.js",
+          "classic/apps/web/.next-local-production/static/chunks/051efee2.f9d9bf4734e7938c.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ec0edc4f-58bd-4011-99d7-964a2bb8e2e3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:17:42.591Z",
+  "parents": [],
+  "branch": "main"
+}

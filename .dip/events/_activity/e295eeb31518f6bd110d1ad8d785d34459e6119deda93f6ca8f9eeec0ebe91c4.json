@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e295eeb31518f6bd110d1ad8d785d34459e6119deda93f6ca8f9eeec0ebe91c4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:14:51.135Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "./node_modules/.bin/eslint apps/web/src/earshot/__tests__/export-browser.test.ts apps/web/src/earshot/__tests__/export-pcm-fixture.ts apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-04cdf704-1e95-4625-990c-19bf454cc676"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:14:51.514Z",
+  "parents": [],
+  "branch": "main"
+}

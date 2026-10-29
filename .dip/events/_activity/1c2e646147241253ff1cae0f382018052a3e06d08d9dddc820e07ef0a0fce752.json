@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1c2e646147241253ff1cae0f382018052a3e06d08d9dddc820e07ef0a0fce752",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:22:55.997Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add '/classic/eslint.config.mjs' '/classic/eslint/' '/classic/tsconfig.json' '/classic/apps/web/next-env.d.ts'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e30162f4-4a21-4d3b-b17e-ad033f08d267"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:22:56.053Z",
+  "parents": [],
+  "branch": "main"
+}

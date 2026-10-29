@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "251e9669af8d06e750c07d08a52db546da5a74b61c8dfeda8536ed02aeaa9a12",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:21:38.295Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/mcp-requests/session.json",
+          ".local/take-replacement-2026-10-29/mcp-responses/session.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cbf9765c-51f9-4960-92e6-12f528e6acae"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:21:38.470Z",
+  "parents": [],
+  "branch": "main"
+}

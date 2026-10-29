@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4ebfa52abb33fab70b22634a18008b56f3d66ff0998e34c86218ce94f08b047b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:27:19.351Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '660,910p' crates/editor-api/src/operations/classic_takes.rs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-bb3e4a5c-4835-4785-9def-f07f16f78cc5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:27:19.484Z",
+  "parents": [],
+  "branch": "main"
+}

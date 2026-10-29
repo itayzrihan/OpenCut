@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b0a6d6ae1b7fc0af0c59fe95847c407bd96b000c898c335f861c9f768fb2a8de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:07:35.827Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text()\ns=s.replace('    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime,','    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime, ArchivedArtifact,')\ns=s.replace('    pub risk: Option<String>,','    pub risk: Option<String>,\\n    /// Exact canonical descriptor published by the browser runtime, not a handwritten tool.\\n    #[serde(default)]\\n    pub canonical: Option<CapabilityDescriptor>,')\ns=s.replace('    pub revision: u64,\\n    pub dirty:', '    pub revision: u64,\\n    #[serde(default)]\\n    pub canonical_revision: Option<u64>,\\n    pub dirty:')\ns=s.replace('    revision: u64,\\n    dirty: bool,','    revision: u64,\\n    #[serde(default)]\\n    canonical_revision: Option<u64>,\\n    dirty: bool,')\ns=s.replace('    auto_apply: bool,\\n}', '    auto_apply: bool,\\n    #[serde(default)]\\n    context: Value,\\n}',1)\ns=s.replace('    revision: Option<u64>,\\n}', '    revision: Option<u64>,\\n    #[serde(default)]\\n    artifacts: Vec<ArchivedArtifact>,\\n}',1)\ns=s.replace('    commands: Vec<ClassicCommand>,\\n}', '    commands: Vec<ClassicCommand>,\\n    cancelled_command_ids: Vec<String>,\\n}',1)\ns=s.replace('    queue: VecDeque<ClassicCommand>,','    queue: VecDeque<ClassicCommand>,\\n    cancellations: HashMap<String, Vec<String>>,',1)\ns=s.replace('\"revision\": snapshot.revision,','\"revision\": snapshot.revision,\\n                            \"canonicalRevision\": snapshot.canonical_revision,',1)\ns=s.replace('            snapshot.revision = heartbeat.revision;','            snapshot.revision = heartbeat.revision;\\n            snapshot.canonical_revision = heartbeat.canonical_revision;',1)\ns=s.replace('                        revision: None,','                        revision: None,\\n                        artifacts: Vec::new(),',1)\n# derive all authority metadata directly from canonical descriptor\ns=s.replace('        let access = tool_access(&tool);','   ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-a5215455-d956-40a5-8247-420adb874d95"
+      },
+      {
+        "at": "2026-10-29T06:07:36.202Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text()\ns=s.replace('    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime,','    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime, ArchivedArtifact,')\ns=s.replace('    pub risk: Option<String>,','    pub risk: Option<String>,\\n    /// Exact canonical descriptor published by the browser runtime, not a handwritten tool.\\n    #[serde(default)]\\n    pub canonical: Option<CapabilityDescriptor>,')\ns=s.replace('    pub revision: u64,\\n    pub dirty:', '    pub revision: u64,\\n    #[serde(default)]\\n    pub canonical_revision: Option<u64>,\\n    pub dirty:')\ns=s.replace('    revision: u64,\\n    dirty: bool,','    revision: u64,\\n    #[serde(default)]\\n    canonical_revision: Option<u64>,\\n    dirty: bool,')\ns=s.replace('    auto_apply: bool,\\n}', '    auto_apply: bool,\\n    #[serde(default)]\\n    context: Value,\\n}',1)\ns=s.replace('    revision: Option<u64>,\\n}', '    revision: Option<u64>,\\n    #[serde(default)]\\n    artifacts: Vec<ArchivedArtifact>,\\n}',1)\ns=s.replace('    commands: Vec<ClassicCommand>,\\n}', '    commands: Vec<ClassicCommand>,\\n    cancelled_command_ids: Vec<String>,\\n}',1)\ns=s.replace('    queue: VecDeque<ClassicCommand>,','    queue: VecDeque<ClassicCommand>,\\n    cancellations: HashMap<String, Vec<String>>,',1)\ns=s.replace('\"revision\": snapshot.revision,','\"revision\": snapshot.revision,\\n                            \"canonicalRevision\": snapshot.canonical_revision,',1)\ns=s.replace('            snapshot.revision = heartbeat.revision;','            snapshot.revision = heartbeat.revision;\\n            snapshot.canonical_revision = heartbeat.canonical_revision;',1)\ns=s.replace('                        revision: None,','                        revision: None,\\n                        artifacts: Vec::new(),',1)\n# derive all authority metadata directly from canonical descriptor\ns=s.replace('        let access = tool_access(&tool);','   ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-a5215455-d956-40a5-8247-420adb874d95"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:07:36.747Z",
+  "parents": [],
+  "branch": "main"
+}

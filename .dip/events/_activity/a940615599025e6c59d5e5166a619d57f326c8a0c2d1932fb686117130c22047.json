@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a940615599025e6c59d5e5166a619d57f326c8a0c2d1932fb686117130c22047",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:58.162Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff 4dd517c3^ 4dd517c3 -- classic/apps/web/src/earshot/__tests__ | git apply\nrg -n 'test result:' /tmp/earshot-verify.log\nmkdir -p analysis/earshot-integration-2026-10-29/evidence\ncp /tmp/earshot-wasm-test.log analysis/earshot-integration-2026-10-29/evidence/all-252-wasm.log\ncp /tmp/opencut-earshot-synthesis/.local/earshot-verification/browser-sandbox.png analysis/earshot-integration-2026-10-29/evidence/sandbox.png",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7837bb2c-63be-4733-a457-f3609d12f483"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:58.888Z",
+  "parents": [],
+  "branch": "main"
+}

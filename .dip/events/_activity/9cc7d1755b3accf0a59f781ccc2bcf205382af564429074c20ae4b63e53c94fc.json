@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9cc7d1755b3accf0a59f781ccc2bcf205382af564429074c20ae4b63e53c94fc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:50:59.115Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '40,160p' crates/editor-api/src/capability.rs; sed -n '285,450p' crates/editor-agent/src/runtime.rs; cat crates/editor-api/src/editor_screenshot.rs | head -52; rg -n '\"[a-z][a-z0-9_.-]+\",' crates/editor-api/src/operations.rs | head -80; cat classic/apps/web/src/editor-agent/server/deepseek-harness.ts | tail -75; rg --files classic/apps/web/test-support; cat classic/apps/web/src/core/__tests__/canonical-runtime-fixture.ts | head -115",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-d1d91e08-a226-4d89-9cf3-a997f63f15cb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:50:59.234Z",
+  "parents": [],
+  "branch": "main"
+}

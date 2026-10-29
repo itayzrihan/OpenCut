@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "75834eb6501bc0c1bd5e6a67f945b06074c83abb7d86e440e8db7427565a0ff7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:32.368Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/earshot-lint-fix.py <<'PY'\nfrom pathlib import Path\nroot=Path('/tmp/opencut-earshot-ai/classic/apps/web/src/ai')\np=root/'automatic-sound-effects.ts'\ns=p.read_text()\nstart=s.index('function tool(')\nend=s.index('\\nasync function imageData',start)\ns=s[:start]+'''function tool({\n\tname,\n\tdescription,\n\tproperties,\n\trequired = [],\n\treadOnly = true,\n}: {\n\tname: string;\n\tdescription: string;\n\tproperties: Record<string, unknown>;\n\trequired?: string[];\n\treadOnly?: boolean;\n}): AiToolDefinition {\n\treturn {\n\t\ttype: \"function\",\n\t\tname,\n\t\tdescription,\n\t\tparameters: { type: \"object\", properties, required, additionalProperties: false },\n\t\treadOnly,\n\t\tidempotent: readOnly,\n\t\trisk: readOnly ? \"read\" : \"edit\",\n\t\texecutionPolicy: \"immediate\",\n\t};\n}\nfunction isRecord(value: unknown): value is Record<string, unknown> {\n\treturn typeof value === \"object\" && value !== null && !Array.isArray(value);\n}\nconst string = { type: \"string\" };\nexport const EARSHOT_AGENT_TOOLS: AiToolDefinition[] = [\n\ttool({\n\t\tname: \"repository.list\",\n\t\tdescription: \"List every tracked file in the pinned Earshot repository in pages; continue nextOffset.\",\n\t\tproperties: { offset: { type: \"integer\", minimum: 0 } },\n\t}),\n\ttool({\n\t\tname: \"repository.read\",\n\t\tdescription: \"Read exact repository file path in bounded byte pages. Continue nextOffset to read long files.\",\n\t\tproperties: { path: string, offset: { type: \"integer\", minimum: 0 } },\n\t\trequired: [\"path\"],\n\t}),\n\ttool({\n\t\tname: \"repository.search\",\n\t\tdescription: \"Literal text search across all pinned source, README, documentation and skills; optional path prefix.\",\n\t\tproperties: { query: string, path: string },\n\t\trequired: [\"query\"],\n\t}),\n\ttool({\n\t\tname: \"catalog.search\",\n\t\tdescription: \"Find actual Earshot sound IDs, duration, knobs and recipe sourcePath; empty query lists all categories in pages.\",\n\t\tproperties: { query: string, offset: { type: \"integer\", minimum: 0 } },\n\t\trequired: [\"query\"],\n\t}),\n\ttool({\n\t\tname: \"catalog.source\",\n\t\tdescription: \"Read a ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-1f5374b4-dc90-4e89-8b91-711ab7703c24"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:33.436Z",
+  "parents": [],
+  "branch": "main"
+}

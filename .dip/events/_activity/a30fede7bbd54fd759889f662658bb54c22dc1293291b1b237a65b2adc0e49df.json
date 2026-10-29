@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a30fede7bbd54fd759889f662658bb54c22dc1293291b1b237a65b2adc0e49df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:17.455Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-387ffb60-992f-4459-ab3a-7dc9a311558a"
+      },
+      {
+        "at": "2026-10-29T06:21:17.456Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "df -h .\ndu -sh .local/earshot-cargo-target classic/apps/web/.next-earshot-qa classic/rust/editor-runtime-wasm/pkg .local/classic-web-tests\npython3 -c 'import shutil; shutil.rmtree(\"classic/apps/web/.next-earshot-qa\")'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-a28b1288-34d1-4ec1-810f-9318897235ee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:17.469Z",
+  "parents": [],
+  "branch": "main"
+}

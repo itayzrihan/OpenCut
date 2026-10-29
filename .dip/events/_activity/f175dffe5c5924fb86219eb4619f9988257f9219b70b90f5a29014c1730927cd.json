@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f175dffe5c5924fb86219eb4619f9988257f9219b70b90f5a29014c1730927cd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:11:22.261Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git apply /tmp/earshot-ai-refinement.patch",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e7a00bd7-f7d3-4ba5-bf4f-1920a684d67d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:11:22.685Z",
+  "parents": [],
+  "branch": "main"
+}

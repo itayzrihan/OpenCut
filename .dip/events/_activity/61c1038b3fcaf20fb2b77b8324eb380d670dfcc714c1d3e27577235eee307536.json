@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "61c1038b3fcaf20fb2b77b8324eb380d670dfcc714c1d3e27577235eee307536",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:07:16.539Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,220p' classic/apps/web/src/export/__tests__/audio-scratch.test.ts\nsed -n '1,200p' classic/apps/web/src/export/__tests__/pcm-file.test.ts\nsed -n '1,220p' classic/apps/web/src/export/audio-scratch.ts\ncat classic/apps/web/package.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-aae22f8c-9062-4211-8e5d-fc36ab4cd5c6"
+      },
+      {
+        "at": "2026-10-29T05:07:16.645Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat classic/apps/web/src/export/__tests__/streaming-browser.test.ts\nsed -n '1,250p' classic/apps/web/src/export/__tests__/streaming-fixture.ts\nsed -n '1,220p' classic/apps/web/src/export/__tests__/audio-quality.test.ts\ncat classic/apps/web/tsconfig.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-e23b229f-81b9-4369-a0ec-5fdb9a2231fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:07:17.293Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9c7e41a4c0dd67cd9432d987b23f8a17d3fb484ac6cd3f05154efc3cc73f6321",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:24:43.238Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git apply /tmp/earshot-ai-mcp-delta.patch\ngit diff --check\nrg -n 'execute_cancellable_preflight|AccessLevel|sourceMedia|sourceFont' crates/editor-api/src/operations/classic_automation_host.rs | head -25\nrg --files classic/apps/web/src | rg '(scene-automation|queue.*test|word.*test)' | tail -20",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-012cd281-b8c1-4962-94f1-a48853d63dfd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:24:43.246Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48a2f95eb2057cb4ae1f1b88a4f74cf3f7271fc2439abb23b0334d4ac47904dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:31:01.233Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,etime,pcpu,command | rg '(opencut-agent-ui|Electron.app/Contents/MacOS/Electron)' | cut -c 1-220; curl --max-time 3 -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3337/projects",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-8b6bd662-be33-4ebc-85f3-9d78e2ca7581"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:31:01.240Z",
+  "parents": [],
+  "branch": "main"
+}

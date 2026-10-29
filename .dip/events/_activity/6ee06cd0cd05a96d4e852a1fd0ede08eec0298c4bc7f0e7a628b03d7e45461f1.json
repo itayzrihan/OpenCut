@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6ee06cd0cd05a96d4e852a1fd0ede08eec0298c4bc7f0e7a628b03d7e45461f1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:03:51.393Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -22 classic/scripts/test-earshot-runtime.mjs; git status --short --untracked-files=normal | head -45",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-f145858c-9f39-41b9-be74-acac414c0471"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:03:51.573Z",
+  "parents": [],
+  "branch": "main"
+}

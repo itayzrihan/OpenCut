@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4743495f22872b6ce22830bc8a050ee3f11ff819ae139ccbdf0ce88079fc99f3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:18:50.997Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1445,1490p' classic/apps/web/src/core/managers/project-manager.ts && sed -n '175,225p' classic/apps/web/src/batch/provider.tsx && rg -n 'source_fingerprint|sourceFingerprint|queued_job_snapshot' crates/editor-api/tests/*",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-6b68c0f4-ab0c-4918-9fa0-d28e961f8947"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:18:51.561Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9471581e9b49f0e073dc832d85bf7c83413cdf1bf5b91b92ccfbd5c700a1715e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:39.687Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/earshot-browser-harness/index.html <<'EOF'\n<!doctype html><meta charset=\"utf-8\"><title>Earshot isolated runtime verification</title><button id=\"run\">Run synthesis checks</button><pre id=\"result\">Ready</pre><script type=\"module\">\nimport {renderEarshotSound,disposeEarshotRenderer} from './render.js';\nconst result=document.querySelector('#result');\nconst spec={version:1,engine:'earshot',bankRevision:'591fa3e028032e6dce56620a20e932e35667e8d8',presetId:'ui_pop/soft',seed:5,duration:.2};\ndocument.querySelector('#run').onclick=async()=>{result.textContent='Initializing sandbox…';try{\nconst start=performance.now();const y=await renderEarshotSound({spec});result.textContent=`PASS built-in: ${y.channels.length} channels, ${y.channels[0].length} samples, ${Math.round(performance.now()-start)}ms.\\nChecking custom code…`;\nconst z=await renderEarshotSound({spec:{...spec,sourceCode:'def render(params, r):\\n t=np.arange(round(params[\"duration\"]*48000))/48000\\n return np.sin(2*np.pi*440*t)*0.2'}});result.textContent+=`\\nPASS custom code: ${z.channels.length} channels, ${z.channels[0].length} samples.\\nChecking isolation…`;\nconst isolated=await renderEarshotSound({spec:{...spec,sourceCode:'def render(params, r):\\n import os\\n assert not os.path.exists(\"/Users\")\\n from js import Object\\n return np.zeros(9600)'}}).then(()=>false,()=>true);if(!isolated)throw Error('JS bridge isolation failed');\nresult.textContent+='\\nPASS: direct JS global access unavailable.\\nALL CHECKS PASSED';disposeEarshotRenderer();\n}catch(e){result.textContent+='\\nFAILED: '+e.stack;disposeEarshotRenderer();}};\n</script>\nEOF\ncat > /tmp/earshot-browser-harness/server.cjs <<'EOF'\nconst http=require('node:http'),fs=require('node:fs'),path=require('node:path');http.createServer((req,res)=>{let file=req.url.startsWith('/earshot/runtime/')?'/tmp/opencut-earshot-synthesis/classic/apps/web/public'+req.url:'/tmp/earshot-browser-harness/'+(req.url==='/'?'index.html':req.url);if(file.includes('..')){res.writeHead(4",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-64be6c2a-002e-4d7d-b3a7-177da28dc1e4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:40.009Z",
+  "parents": [],
+  "branch": "main"
+}

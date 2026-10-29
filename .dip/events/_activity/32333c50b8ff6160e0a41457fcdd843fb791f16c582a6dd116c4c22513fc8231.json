@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "32333c50b8ff6160e0a41457fcdd843fb791f16c582a6dd116c4c22513fc8231",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:15.296Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "stat -f '%Sm %N' -t '%Y-%m-%d %H:%M' classic/apps/web/.next-catalog-check classic/apps/web/.next-transcription-debug classic/apps/web/.next-brand-kit-qa classic/apps/web/.next-advanced-podcast\nlsof -p 21292 -Fn | rg '/\\.next|^n.*PoCut' | head -15\ngit ls-files -- classic/apps/web/.next-catalog-check classic/apps/web/.next-transcription-debug classic/apps/web/.next-brand-kit-qa classic/apps/web/.next-advanced-podcast",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3184ac15-eb74-4ec7-9371-bd8190cf1e84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:15.303Z",
+  "parents": [],
+  "branch": "main"
+}

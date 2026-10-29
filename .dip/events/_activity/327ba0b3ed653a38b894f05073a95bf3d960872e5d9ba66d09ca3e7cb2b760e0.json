@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "327ba0b3ed653a38b894f05073a95bf3d960872e5d9ba66d09ca3e7cb2b760e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:06:17.912Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,270p' classic/apps/web/src/transcription/timeline-stream.ts\nrg -n 'fn|sourcePath|recipe' classic/scripts/prepare-earshot* classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/catalog.generated.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-e3ca6a80-5b2e-417f-8a00-eecb9167d5e5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:06:17.968Z",
+  "parents": [],
+  "branch": "main"
+}

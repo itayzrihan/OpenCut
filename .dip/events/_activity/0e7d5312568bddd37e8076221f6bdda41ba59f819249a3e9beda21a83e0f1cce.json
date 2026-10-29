@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0e7d5312568bddd37e8076221f6bdda41ba59f819249a3e9beda21a83e0f1cce",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T04:58:45.396Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short | head -65; ls /tmp/opencut-earshot-synthesis/classic/apps/web/src/earshot",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-ce4fd17b-b22e-4c23-9124-4069caad4456"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:58:45.841Z",
+  "parents": [],
+  "branch": "main"
+}

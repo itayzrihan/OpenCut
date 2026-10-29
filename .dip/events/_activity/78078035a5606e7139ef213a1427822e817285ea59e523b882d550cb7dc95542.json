@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78078035a5606e7139ef213a1427822e817285ea59e523b882d550cb7dc95542",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:12:44.943Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace(', ArchivedArtifact,',',').replace('ArchivedArtifact','BridgeArtifact');mark='#[derive(Debug, Clone, Deserialize)]\\n#[serde(rename_all = \"camelCase\")]\\nstruct ClassicCommandCompletion';s=s.replace(mark,'''#[derive(Debug, Clone, Deserialize)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct BridgeArtifact { metadata: ArtifactRef, data_base64: String }\n\n'''+mark);p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-2409dd23-dcc0-4202-b280-ef34b22870ff"
+      },
+      {
+        "at": "2026-10-29T06:12:45.241Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace(', ArchivedArtifact,',',').replace('ArchivedArtifact','BridgeArtifact');mark='#[derive(Debug, Clone, Deserialize)]\\n#[serde(rename_all = \"camelCase\")]\\nstruct ClassicCommandCompletion';s=s.replace(mark,'''#[derive(Debug, Clone, Deserialize)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct BridgeArtifact { metadata: ArtifactRef, data_base64: String }\n\n'''+mark);p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-2409dd23-dcc0-4202-b280-ef34b22870ff"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:12:45.318Z",
+  "parents": [],
+  "branch": "main"
+}

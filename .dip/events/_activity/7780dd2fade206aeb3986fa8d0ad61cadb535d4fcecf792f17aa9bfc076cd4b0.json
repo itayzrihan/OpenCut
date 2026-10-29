@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7780dd2fade206aeb3986fa8d0ad61cadb535d4fcecf792f17aa9bfc076cd4b0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:42.007Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git check-ignore -v docs/earshot-integration.md\nsed -n '75,135p' classic/apps/web/src/ai/timeline-context.ts\nrg -n 'getAudioSink\\(' classic/apps/web/src/core/managers/audio-manager.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-72c6adbf-5b01-4763-828a-587e24a0b2bf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:42.217Z",
+  "parents": [],
+  "branch": "main"
+}

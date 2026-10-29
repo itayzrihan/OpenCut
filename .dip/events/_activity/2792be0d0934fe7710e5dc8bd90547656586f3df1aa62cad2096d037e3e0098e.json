@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2792be0d0934fe7710e5dc8bd90547656586f3df1aa62cad2096d037e3e0098e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:25:49.737Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nr=json.load(open('/tmp/earshot-ai-mcp-eslint-final.json'))\nprint('files',len(r),'errors',sum(x['errorCount'] for x in r),'warnings',sum(x['warningCount'] for x in r))\nfor f in r:\n if f['messages']: print(f['filePath'].split('/src/')[-1], len(f['messages']))\nPY\ngit commit --only -m 'feat(ai): launch canonical Earshot scene jobs through host queue' -- crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs crates/editor-api/tests/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts classic/apps/web/src/ai/__tests__/automatic-word-animation-earshot.test.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/server.test.ts classic/apps/web/src/app/api/batch-edit/route.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-f2b752c7-aaea-43b9-8f0d-b6fe8b046f38"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:25:49.751Z",
+  "parents": [],
+  "branch": "main"
+}

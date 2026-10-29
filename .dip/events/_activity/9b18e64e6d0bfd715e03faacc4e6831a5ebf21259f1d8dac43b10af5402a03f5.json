@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9b18e64e6d0bfd715e03faacc4e6831a5ebf21259f1d8dac43b10af5402a03f5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:38.819Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/earshot/components/properties.tsx');s=p.read_text().replace('type=\"number\" min=\"0.01\" max=\"30\"','type=\"number\" min=\"0.02\" max=\"30\"')\ns=s.replace('''\\tconst run = async (apply: boolean) => {''','''\\tconst loadRecipe = async () => {\n\\t\\tif (!sound) return;\n\\t\\tactive.current?.abort();\n\\t\\tconst controller = new AbortController(); active.current = controller;\n\\t\\tsetBusy(true);\n\\t\\ttry {\n\\t\\t\\tlet code = \"\", offset: number | null = 0;\n\\t\\t\\twhile (offset !== null) {\n\\t\\t\\t\\tconst response = await fetch(`/api/earshot/repository?operation=read&path=${encodeURIComponent(sound.sourcePath)}&offset=${offset}`, {signal: controller.signal});\n\\t\\t\\t\\tconst result = await response.json();\n\\t\\t\\t\\tif (!response.ok || result.encoding !== \"utf8\") throw new Error(result.error ?? \"Could not read this recipe\");\n\\t\\t\\t\\tif (result.totalBytes > 32768) throw new Error(\"This shared module is larger than a clip recipe. Use a render(params, r) wrapper to import and customize it.\");\n\\t\\t\\t\\tcode += result.content; offset = result.nextOffset;\n\\t\\t\\t}\n\\t\\t\\tcontroller.signal.throwIfAborted();\n\\t\\t\\tupdate({sourceCode: code}); setStatus(\"Original recipe loaded for editing. Preview before applying.\");\n\\t\\t} catch (error) {if (!controller.signal.aborted) setStatus(error instanceof Error ? error.message : \"Recipe read failed\");}\n\\t\\tfinally {if (active.current === controller) setBusy(false);}\n\\t};\n\\tconst run = async (apply: boolean) => {''')\ns=s.replace('''min=\"0\" max={max}''','''min={key === \"delay\" ? \"0.005\" : \"0\"} max={max}''')\ns=s.replace('''<details><summary className=\"cursor-pointer text-xs font-medium\">Recipe parameters</summary>''','''<details><summary className=\"cursor-pointer text-xs font-medium\">Recipe parameters</summary><details className=\"mt-2\"><summary className=\"text-muted-foreground text-xs\">Original parameter values</summary><pre className=\"max-h-48 overflow-auto text-[10px]\">{JSON.stringify(sound?.parameters",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-9d04dfc2-41f9-4993-9990-ec03ccb34691"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:39.000Z",
+  "parents": [],
+  "branch": "main"
+}

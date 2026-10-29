@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f828766e11ba7763e4ccf86aad5559d4c279d1782f64033ea6237339dea4f38d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:03:36.047Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/public/earshot/renderer.py';s=open(p).read().replace('import json\\n','import json\\nimport copy\\n');s=s.replace(\"module.__dict__.update(np=np, dsp=dsp)\",\"module.__dict__.update(np=np, dsp=dsp, source_spec=types.MappingProxyType(copy.deepcopy(spec)))\")\na=s.index('        def custom_run(edit=None, fit_knobs=None):');b=s.index('        # Custom recipes own structure;',a)\ns=s[:a]+'''        params = dict(entry.get('params') or {})\n        params['duration'] = duration\n        params['seed'] = seed\n        if spec.get('pitch') is not None:\n            params['pitch_hz'] = knobs.hz(spec['pitch'])\n        if spec.get('apex') is not None:\n            params['apex'] = spec['apex']\n        y = np.asarray(render(params, dsp.rng(seed)), dtype=np.float32)\n'''+s[b:];open(p,'w').write(s)\np='classic/apps/web/src/earshot/catalog.ts';s=open(p).read().replace('''    sound = bank.renderer(entry, seed=int(params[\"seed\"]))()\n    # Add synthesis, layering, envelopes or fx here; return 48 kHz mono/stereo PCM.\n    return sound''','''    # source_spec is an immutable copy of this clip's canonical recipe.\n    sound, _ = bank.render(entry, seed=source_spec[\"seed\"],\n        dur=source_spec[\"duration\"], apex=source_spec.get(\"apex\"),\n        pitch=source_spec.get(\"pitch\"), checks=False)\n    # Add synthesis, layering, envelopes or fx here; return 48 kHz mono/stereo PCM.\n    return sound''');open(p,'w').write(s)\np='classic/scripts/test-earshot-runtime.mjs';s=open(p).read().replace('const failures = [];','const failures = [];\\nconst selectedIds = process.argv.includes(\"--smoke\") ? [\"ui_pop/soft\", \"fit/click/floss_lid\", \"whoosh_fast/crisp\"] : ids;').replace('for (let i=0; i<ids.length; i++) {','for (let i=0; i<selectedIds.length; i++) {').replace(\"p.globals.set('_sid', ids[i]);\", \"p.globals.set('_sid', selectedIds[i]);\").replace('id: ids[i]','id: selectedIds[i]')\ns=s.replace(\"console.log('PASS: all 252 sounds, deterministic custom code, echo, bounded PCM, no ML/mod",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-3e3f2d8f-e453-4560-a7c0-dd766f1641a0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:03:36.485Z",
+  "parents": [],
+  "branch": "main"
+}

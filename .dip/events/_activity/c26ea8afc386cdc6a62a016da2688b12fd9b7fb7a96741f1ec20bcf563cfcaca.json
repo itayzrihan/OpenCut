@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c26ea8afc386cdc6a62a016da2688b12fd9b7fb7a96741f1ec20bcf563cfcaca",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:07:00.101Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/commit-index.lock",
+          ".local/take-replacement-2026-10-29/commit-index"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "66443c14-6b71-41c0-8770-46f3c5fa94e3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:07:00.104Z",
+  "parents": [],
+  "branch": "main"
+}

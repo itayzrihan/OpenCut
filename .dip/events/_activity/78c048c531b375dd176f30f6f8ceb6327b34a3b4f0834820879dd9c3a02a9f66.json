@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78c048c531b375dd176f30f6f8ceb6327b34a3b4f0834820879dd9c3a02a9f66",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:14:29.664Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/app/api/batch-edit/route.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts\ngit diff --cached --binary -- crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/app/api/batch-edit/route.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts > /tmp/earshot-ai-mcp-initial.patch\nshasum -a 256 /tmp/earshot-ai-mcp-initial.patch",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-1163cadf-491b-472a-9258-f579afb68d17"
+      },
+      {
+        "at": "2026-10-29T06:14:30.338Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/app/api/batch-edit/route.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts\ngit diff --cached --binary -- crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/app/api/batch-edit/route.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts > /tmp/earshot-ai-mcp-initial.patch\nshasum -a 256 /tmp/earshot-ai-mcp-initial.patch",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-1163cadf-491b-472a-9258-f579afb68d17"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:14:30.571Z",
+  "parents": [],
+  "branch": "main"
+}

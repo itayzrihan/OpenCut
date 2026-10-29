@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50761d8fb2aba288db731137e3c89e8c7e06a69915377bf7e2b77bde06dfc91e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:23:01.479Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts <<'TS'\n\ntest(\"saved complete immutable worker can start after a later source edit without recapture\", async () => {\n\tawait perform(effect());\n\truns = [];\n\trequests.length = 0;\n\tconst value = effect();\n\tvalue.request.worker = null;\n\texpect(await perform(value)).toMatchObject({type: \"success\", data: {status: \"ready\"}});\n\texpect(saveProject).toHaveBeenCalledTimes(1);\n\texpect(saveMediaAsset).not.toHaveBeenCalled();\n});\ntest(\"incomplete saved media preparation never fills from a changed source\", async () => {\n\tawait perform(effect());\n\truns = [];\n\trequests.length = 0;\n\tif (!saved) throw new Error(\"Missing saved worker\");\n\tsaved.project.automationSource = {...origin, mediaAssetIds: [\"missing-original-asset\"]};\n\tconst value = effect();\n\tvalue.request.worker = null;\n\texpect(await perform(value)).toMatchObject({type: \"rejected\", message: expect.stringContaining(\"media preparation is incomplete\")});\n\texpect(saveMediaAsset).not.toHaveBeenCalled();\n\texpect(requests).toHaveLength(0);\n});\ntest(\"backend-incompatible identities are rejected before saving a worker\", async () => {\n\tconst value = effect();\n\tvalue.request.input = {projectId: \"not-a-uuid\", expectedRevision: 3, jobId: \"job\", resume: false};\n\texpect(await perform(value)).toMatchObject({type: \"rejected\", message: expect.stringContaining(\"UUID\")});\n\texpect(globalThis.fetch).not.toHaveBeenCalled();\n\texpect(saveProject).not.toHaveBeenCalled();\n});\nTS\ncat >> crates/editor-api/tests/classic_automation_host.rs <<'RS'\n\n#[tokio::test]\nasync fn publication_rejects_wrong_worker_origin_and_preserves_source() {\n    let (rt, host) = setup(\"sound-effects\").await;\n    let before = rt.snapshot().unwrap();\n    let mut invocation = std::pin::pin!(rt.registry().invoke(\"project.classic.automation.start\", InvocationContext::default(), input(&rt)));\n    assert!(invocation.as_mut().poll(&mut Context::from_waker(Waker::noop())).is_pending());\n    let effect = host",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-8cf5da7a-8588-4601-9c1a-d8e4ab831954"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:23:01.484Z",
+  "parents": [],
+  "branch": "main"
+}

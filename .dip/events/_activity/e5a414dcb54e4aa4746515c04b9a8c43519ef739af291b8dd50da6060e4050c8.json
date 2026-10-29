@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e5a414dcb54e4aa4746515c04b9a8c43519ef739af291b8dd50da6060e4050c8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:04:17.531Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 1800 /tmp/earshot-wasm-smoke.log\nclassic/node_modules/.bin/tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --resolveJsonModule --esModuleInterop classic/apps/web/src/earshot/{types,catalog,runtime,render}.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e9bb8a3f-37ad-4005-a698-13886a37409b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:04:18.271Z",
+  "parents": [],
+  "branch": "main"
+}

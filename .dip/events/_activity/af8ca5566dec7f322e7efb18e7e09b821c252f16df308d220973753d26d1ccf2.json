@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "af8ca5566dec7f322e7efb18e7e09b821c252f16df308d220973753d26d1ccf2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:16:40.542Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/canonical-transport.ts');s=p.read_text().replace('    const canonical = [\"project.create\", \"project.open\", \"project.activate\", \"project.close\"].includes(source.id)', '''    const shellOnly = [\"project.create\", \"project.open\", \"project.activate\", \"project.close\"].includes(source.id);\n    const agentArtifactHost = [\"editor.preview.render\", \"editor.export.render\", \"hyperframes.examples.import\", \"hyperframes.composition.remix\", \"editor.ui.screenshot\", \"imagegen.generate\"].includes(source.id);\n    const canonical = shellOnly''').replace('      : source;','      : agentArtifactHost ? {...source, available: false, unavailableReason: \"This adapter requires the internal editing agent artifact host\"} : source;',1);p.write_text(s)\np=Path('classic/apps/web/src/core/managers/commands.ts');s=p.read_text().replace('if (input.projectId !== undefined && input.projectId !== projectId) throw new Error(\"MCP project scope mismatch\");','if ((input.projectId !== undefined && input.projectId !== projectId) || (context.metadata[\"opencut/projectId\"] !== undefined && context.metadata[\"opencut/projectId\"] !== projectId)) throw new Error(\"MCP project scope mismatch\");',1);p.write_text(s)\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace('waiters: HashMap<String, (String, oneshot::Sender<ClassicCommandCompletion>)>','waiters: HashMap<String, (String, bool, oneshot::Sender<ClassicCommandCompletion>)>');s=s.replace('.filter(|(_, (owner, _))| owner == session_id)','.filter(|(_, (owner, _, _))| owner == session_id)').replace('Some((_, waiter)) = commands.waiters.remove','Some((_, _, waiter)) = commands.waiters.remove');s=s.replace('(snapshot.session_id.clone(), sender)', '(snapshot.session_id.clone(), canonical, sender)');s=s.replace('Some((session, _)) = state.waiters.remove', 'Some((session, _, _)) = state.waiters.remove');s=s.replace('.is_some_and(|(owner, _)| owner == session_id)','.is_some_and(|(owner, _",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-2b548ae4-f36f-4884-98ab-5172c69bbb16"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:16:41.387Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "29d0de4c9e477605f0ebbb79cc371e8da633afa52301dbc3deebbf2835887581",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:02:18.114Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git checkout codex/earshot-ai-mcp\nln -s /Users/itayzrihan/Documents/PoCut/classic/node_modules classic/node_modules\nln -s /Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/classic/apps/web/node_modules classic/apps/web/node_modules",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-00e6cb8c-6c3a-4656-8f5f-355df52bbfbb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:02:20.076Z",
+  "parents": [],
+  "branch": "main"
+}

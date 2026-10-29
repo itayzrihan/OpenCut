@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccbcce9fbdbd2ac017298264acbd522a436bf18e9ed21445459bcbb263fa5af5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:18:24.886Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '230,370p' classic/apps/web/src/export/__tests__/streaming-fixture.ts\nsed -n '1,230p' classic/apps/web/src/services/renderer/scene-exporter.ts\nsed -n '1,240p' classic/apps/web/src/earshot/__tests__/export-browser.test.ts\nsed -n '1,240p' classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-0a8356b1-07de-4a42-899c-f4db99837aac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:18:24.935Z",
+  "parents": [],
+  "branch": "main"
+}

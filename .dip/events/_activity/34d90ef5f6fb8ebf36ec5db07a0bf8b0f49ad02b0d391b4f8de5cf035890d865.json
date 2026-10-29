@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34d90ef5f6fb8ebf36ec5db07a0bf8b0f49ad02b0d391b4f8de5cf035890d865",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:12:38.388Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/mcp/src/classic_bridge.rs');s=p.read_text().replace(', ArchivedArtifact,',',').replace('ArchivedArtifact','BridgeArtifact');mark='#[derive(Debug, Clone, Deserialize)]\\n#[serde(rename_all = \"camelCase\")]\\nstruct ClassicCommandCompletion';s=s.replace(mark,'''#[derive(Debug, Clone, Deserialize)]\n#[serde(rename_all = \"camelCase\", deny_unknown_fields)]\nstruct BridgeArtifact { metadata: ArtifactRef, data_base64: String }\n\n'''+mark);p.write_text(s)\nPY\n./node_modules/.bin/eslint apps/web/src/mcp/canonical-transport.ts apps/web/src/mcp/classic-mcp-bridge.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e326d2f8-6af3-49a1-b2e2-4171ee7c5147"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:12:39.305Z",
+  "parents": [],
+  "branch": "main"
+}

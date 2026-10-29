@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c74f19cc4dc134374b66498da1afa07c9843eecb29bf6276e44c86a20834a372",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:30:14.310Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "CARGO_TARGET_DIR=.local/earshot-cargo-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo test -p opencut-mcp canonical_transport_tests",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a5524ef0-e469-41d1-8a7a-f4cb6b45c6d0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:30:14.320Z",
+  "parents": [],
+  "branch": "main"
+}

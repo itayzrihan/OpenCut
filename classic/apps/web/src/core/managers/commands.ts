@@ -1244,6 +1244,7 @@ export class CommandManager {
 			throw new Error(
 				"The timeline changed during silence analysis. No cuts applied.",
 			);
+		const beforeTracks = JSON.stringify(scene.tracks);
 		this.executeTransaction({
 			execute: () => {
 				session.editTakes({
@@ -1251,6 +1252,13 @@ export class CommandManager {
 					expectedRevision: revision,
 					change: {
 						type: "cleanSilence",
+						elementIds: scene.tracks.main.elements
+							.filter(
+								(e) =>
+									selectedIds.has(e.id) &&
+									e.takeGroup?.assemblyId === assembly.id,
+							)
+							.map((e) => e.id),
 						audioEvidence,
 						groupIndexes,
 						minSilenceSeconds,
@@ -1259,6 +1267,16 @@ export class CommandManager {
 				this.publishCanonical();
 			},
 		});
+		if (
+			JSON.stringify(this.editor.scenes.getActiveScene().tracks) ===
+			beforeTracks
+		) {
+			const noCuts = new Error(
+				"No clear pauses met this duration after protecting the current speech and word boundaries. No cuts applied.",
+			);
+			noCuts.name = "NoClearSilence";
+			throw noCuts;
+		}
 	}
 
 	selectSmartTake({

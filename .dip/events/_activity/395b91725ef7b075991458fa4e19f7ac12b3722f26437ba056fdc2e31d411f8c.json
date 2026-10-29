@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "395b91725ef7b075991458fa4e19f7ac12b3722f26437ba056fdc2e31d411f8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:19.341Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/public/earshot/renderer.py';s=open(p).read().replace('    entry = bank.get(spec[\\'presetId\\'])','    entry = bank.get(spec[\\'presetId\\'])').replace('    duration = float(spec[\\'duration\\'])','    duration = float(spec[\\'duration\\'])\\n    np.random.seed(seed)');open(p,'w').write(s)\np='/tmp/earshot-browser-harness/index.html'\ns=open(p).read();s=s.replace(\"result.textContent+='\\\\nPASS: direct JS global access unavailable.\\\\nALL CHECKS PASSED';disposeEarshotRenderer();\", '''result.textContent+='\\\\nPASS: direct JS global access unavailable.\\\\nChecking opaque-origin network restriction…';\nconst networkCode='def render(params, r):\\\\n from __main__ import _earshot_kernels\\\\n g=_earshot_kernels.svf.constructor(\"return globalThis\")()\\\\n assert g.location.origin==\"null\"\\\\n request=g.XMLHttpRequest.new()\\\\n request.open(\"GET\",\"http://127.0.0.1:3228/forbidden\",False)\\\\n denied=False\\\\n try: request.send()\\\\n except Exception: denied=True\\\\n assert denied, \"Sandbox network request escaped\"\\\\n return np.zeros(9600)';\nawait renderEarshotSound({spec:{...spec,sourceCode:networkCode}});\nresult.textContent+='\\\\nPASS: escaped JS still has opaque origin; direct XHR blocked by CSP.\\\\nChecking cancellation…';\nconst abort=new AbortController(); const timer=setTimeout(()=>abort.abort(),20000);\nconst cancelled=await renderEarshotSound({spec:{...spec,sourceCode:'def render(params,r):\\\\n while True: pass'},signal:abort.signal}).then(()=>false,e=>e.name==='AbortError');clearTimeout(timer);if(!cancelled)throw Error('Cancellation failed');\nresult.textContent+='\\\\nPASS: infinite custom code terminated by cancellation.\\\\nALL CHECKS PASSED';disposeEarshotRenderer();''')\nopen(p,'w').write(s)\nPY\nnode classic/scripts/prepare-earshot-runtime.mjs\nbun build classic/apps/web/src/earshot/render.ts --outdir /tmp/earshot-browser-harness --target browser\nmkdir -p .local/earshot-verification",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-e8fcbad8-6d75-44d2-9eeb-c34fe7be73a5"
+      },
+      {
+        "at": "2026-10-29T05:00:19.822Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/public/earshot/renderer.py';s=open(p).read().replace('    entry = bank.get(spec[\\'presetId\\'])','    entry = bank.get(spec[\\'presetId\\'])').replace('    duration = float(spec[\\'duration\\'])','    duration = float(spec[\\'duration\\'])\\n    np.random.seed(seed)');open(p,'w').write(s)\np='/tmp/earshot-browser-harness/index.html'\ns=open(p).read();s=s.replace(\"result.textContent+='\\\\nPASS: direct JS global access unavailable.\\\\nALL CHECKS PASSED';disposeEarshotRenderer();\", '''result.textContent+='\\\\nPASS: direct JS global access unavailable.\\\\nChecking opaque-origin network restriction…';\nconst networkCode='def render(params, r):\\\\n from __main__ import _earshot_kernels\\\\n g=_earshot_kernels.svf.constructor(\"return globalThis\")()\\\\n assert g.location.origin==\"null\"\\\\n request=g.XMLHttpRequest.new()\\\\n request.open(\"GET\",\"http://127.0.0.1:3228/forbidden\",False)\\\\n denied=False\\\\n try: request.send()\\\\n except Exception: denied=True\\\\n assert denied, \"Sandbox network request escaped\"\\\\n return np.zeros(9600)';\nawait renderEarshotSound({spec:{...spec,sourceCode:networkCode}});\nresult.textContent+='\\\\nPASS: escaped JS still has opaque origin; direct XHR blocked by CSP.\\\\nChecking cancellation…';\nconst abort=new AbortController(); const timer=setTimeout(()=>abort.abort(),20000);\nconst cancelled=await renderEarshotSound({spec:{...spec,sourceCode:'def render(params,r):\\\\n while True: pass'},signal:abort.signal}).then(()=>false,e=>e.name==='AbortError');clearTimeout(timer);if(!cancelled)throw Error('Cancellation failed');\nresult.textContent+='\\\\nPASS: infinite custom code terminated by cancellation.\\\\nALL CHECKS PASSED';disposeEarshotRenderer();''')\nopen(p,'w').write(s)\nPY\nnode classic/scripts/prepare-earshot-runtime.mjs\nbun build classic/apps/web/src/earshot/render.ts --outdir /tmp/earshot-browser-harness --target browser\nmkdir -p .local/earshot-verification",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-e8fcbad8-6d75-44d2-9eeb-c34fe7be73a5"
+      },
+      {
+        "at": "2026-10-29T05:00:19.823Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 3000 /tmp/earshot-wasm-test.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-ac0429b6-9938-4b8c-8cba-48654803cebc"
+      },
+      {
+        "at": "2026-10-29T05:00:20.003Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -c 3000 /tmp/earshot-wasm-test.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-ac0429b6-9938-4b8c-8cba-48654803cebc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:20.132Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4514d4e11a71316c8f235dc3c3457294b62f67408491449b675f0f9f7f113588",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:29:52.926Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'ComputerOperationView' classic/apps/web/src/editor-agent/overlay.tsx; cat > classic/scripts/verify-agent-computer.mjs <<'EOF'\nimport assert from \"node:assert/strict\";\nimport {spawnSync} from \"node:child_process\";\nimport {fileURLToPath} from \"node:url\";\nimport {join} from \"node:path\";\nconst root=fileURLToPath(new URL(\"../../\",import.meta.url));\nconst classic=join(root,\"classic\");\nfunction run(command,args,cwd=root,env={}) {\n const result=spawnSync(command,args,{cwd,stdio:\"inherit\",env:{...process.env,...env},timeout:240000});\n if(result.error)throw result.error;\n assert.equal(result.status,0,`${command} ${args.join(\" \")} failed`);\n}\nrun(\"cargo\",[\"test\",\"-p\",\"opencut-editor-agent\",\"--test\",\"permissions\",\"--test\",\"runtime\",\"--quiet\"],root,{CARGO_INCREMENTAL:\"0\",CARGO_BUILD_JOBS:\"2\"});\nrun(process.execPath,[\"--test\",\"classic/apps/electron/test/agent-computer.test.js\"]);\nrun(process.execPath,[\"scripts/test-web.mjs\",\"apps/web/src/editor-agent/__tests__/deepseek-harness.test.ts\",\"apps/web/src/editor-agent/__tests__/deepseek-canonical.test.ts\",\"apps/web/src/editor-agent/__tests__/connection.test.ts\",\"apps/web/src/editor-agent/__tests__/stream.test.ts\",\"apps/web/src/editor-agent/__tests__/transport.test.ts\",\"apps/web/src/editor-agent/__tests__/host-effects.test.ts\",\"apps/web/src/editor-agent/__tests__/checkpoint.test.ts\",\"--test-timeout=60000\",\"--timeout=240000\",\"--jobs=1\",\"--report=.local/agent-computer-verification\"],classic);\nrun(process.execPath,[\"node_modules/typescript/bin/tsc\",\"--noEmit\",\"-p\",\"apps/web/tsconfig.build.json\"],classic);\nrun(process.execPath,[\"../../node_modules/eslint/bin/eslint.js\",\"src/editor-agent/overlay.tsx\",\"src/editor-agent/host-effects.ts\",\"src/core/agent-protocol.ts\",\"src/types/electron-bridge.d.ts\"],join(classic,\"apps/web\"));\nrun(\"git\",[\"-c\",\"core.whitespace=cr-at-eol\",\"diff\",\"--check\",\"--\",\"classic\",\"crates\"]);\nconsole.log(\"Verified canonical modes and approvals, Electron file/shell permissions, cancellation and replay, Harness/Codex co",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-db0d4ecb-453f-432d-9e52-d72c79b5df26"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:29:52.934Z",
+  "parents": [],
+  "branch": "main"
+}

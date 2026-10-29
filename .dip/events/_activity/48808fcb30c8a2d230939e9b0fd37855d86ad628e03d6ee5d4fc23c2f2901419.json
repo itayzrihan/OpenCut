@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48808fcb30c8a2d230939e9b0fd37855d86ad628e03d6ee5d4fc23c2f2901419",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:02:32.780Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '185,280p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '1,70p' classic/apps/web/src/editor-agent/server/deepseek-harness.ts; git diff --check -- classic",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-08fcd08b-38f0-4cd1-9e0c-dff542524e15"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:02:32.956Z",
+  "parents": [],
+  "branch": "main"
+}

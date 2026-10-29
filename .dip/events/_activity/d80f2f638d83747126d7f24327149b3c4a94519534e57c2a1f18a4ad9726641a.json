@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d80f2f638d83747126d7f24327149b3c4a94519534e57c2a1f18a4ad9726641a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:31:34.078Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '45,132p' classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx\nsed -n '125,176p' classic/apps/web/src/hyperframes/library.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-90e9168d-d04d-411e-bb8d-259abca658f0"
+      },
+      {
+        "at": "2026-10-29T05:31:34.533Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '45,132p' classic/apps/web/src/components/editor/panels/assets/draggable-item.tsx\nsed -n '125,176p' classic/apps/web/src/hyperframes/library.tsx",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-90e9168d-d04d-411e-bb8d-259abca658f0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:31:34.961Z",
+  "parents": [],
+  "branch": "main"
+}

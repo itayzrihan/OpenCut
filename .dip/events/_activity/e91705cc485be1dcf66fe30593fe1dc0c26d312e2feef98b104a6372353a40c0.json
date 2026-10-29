@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e91705cc485be1dcf66fe30593fe1dc0c26d312e2feef98b104a6372353a40c0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:16:13.769Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts"
+        ],
+        "changeHash": "c320ea96891ed1635863180ce221866ee392e363652307ac5ebc56c572468438",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-2e37dda7-fabd-41f3-9514-373243cb2a4f"
+      },
+      {
+        "at": "2026-10-29T05:16:14.206Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts"
+        ],
+        "changeHash": "c320ea96891ed1635863180ce221866ee392e363652307ac5ebc56c572468438",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-2e37dda7-fabd-41f3-9514-373243cb2a4f"
+      },
+      {
+        "at": "2026-10-29T05:16:14.262Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add --sparse classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts\ngit diff --cached --check -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-2f55ca1c-0248-41a0-b1d0-3177eafcbc5d"
+      },
+      {
+        "at": "2026-10-29T05:16:14.966Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add --sparse classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts\ngit diff --cached --check -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-2f55ca1c-0248-41a0-b1d0-3177eafcbc5d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:16:16.842Z",
+  "parents": [],
+  "branch": "main"
+}

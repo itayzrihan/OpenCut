@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "24b5448c1ec7e2ceefd9bb9b0fb7d6f8a770c673fb4224fc2f7b4830db0107ed",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:11:03.021Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,%cpu,%mem,etime,command | rg '(tsc|rustc|wasm-pack)' | head -20",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-bdfe7ac5-9562-4e6f-a1f4-81078c2a28a2"
+      },
+      {
+        "at": "2026-10-29T05:11:05.859Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport urllib.request,json\nurl='http://127.0.0.1:3221/api/accounts'\nbody={'action':'register','login':'earshot-feature-qa','displayName':'Earshot Feature QA','password':'local-earshot-qa-only-2026'}\nreq=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Content-Type':'application/json','Origin':'http://127.0.0.1:3221'})\ntry:\n with urllib.request.urlopen(req,timeout=120) as r: print(r.status)\nexcept urllib.error.HTTPError as e:print(e.code,e.read().decode())\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-fb3cf62d-d26a-4001-a318-3e688e865695"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:11:16.079Z",
+  "parents": [],
+  "branch": "main"
+}

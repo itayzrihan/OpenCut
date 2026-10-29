@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9d3d2df2a9e438a1ee3380629438eff8bfafd1dfbab3649b48e92066a4b476b5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:42:39.860Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > .local/take-replacement-2026-10-29/commit.mjs <<'EOF'\nimport {execFileSync} from 'node:child_process';\nimport {readFileSync,writeFileSync,openSync,closeSync} from 'node:fs';\nimport {resolve} from 'node:path';\nconst folder=resolve('.local/take-replacement-2026-10-29');\nconst paths=['crates/editor-api/src/operations/classic_takes.rs','crates/editor-api/src/operations/classic_takes/replacement.rs','crates/editor-api/tests/classic_takes.rs','classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts','classic/scripts/local-production/build.mjs','analysis/take-replacement-2026-10-29/README.md','analysis/take-replacement-2026-10-29/verification.json','.dip/tools/verify-take-replacement.mjs'];\nconst staged=execFileSync('git',['diff','--cached','--name-only','--',...paths,'.dip/config.json'],{encoding:'utf8'}).trim();\nif(staged) throw Error('Task paths acquired staged changes; inspect before committing');\nconst base=JSON.parse(execFileSync('git',['show','HEAD:.dip/config.json'],{encoding:'utf8'}));\nconst working=JSON.parse(readFileSync('.dip/config.json','utf8'));\nbase.verification['take-replacement']=working.verification['take-replacement'];\nconst configPath=resolve(folder,'commit-config.json');writeFileSync(configPath,JSON.stringify(base,null,2)+'\\n');\nconst env={...process.env,GIT_INDEX_FILE:resolve(folder,'commit-index')};\nexecFileSync('git',['read-tree','HEAD'],{env});\nexecFileSync('git',['add','--',...paths],{env});\nconst blob=execFileSync('git',['hash-object','-w',configPath],{encoding:'utf8'}).trim();\nexecFileSync('git',['update-index','--add','--cacheinfo','100644',blob,'.dip/config.json'],{env});\nconst log=openSync(resolve(folder,'commit.log'),'w');\ntry {execFileSync('git',['commit','-m','fix: replace smart takes within edited timelines'],{env,stdio:['ignore',log,log]});} finally {closeSync(log);}\n// These paths had no staged changes before this task. Keep the shared index and\n// new HEAD consistent without touching unrelated staged audit/work files.\n",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-4c9094cc-a808-4e3f-b7f9-f825462fd31e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:42:40.002Z",
+  "parents": [],
+  "branch": "main"
+}

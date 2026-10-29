@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e36ad0755a190e48ec90d14b26c9b2cbef07855bdf7cf6c6172e08275d4be13",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:30.700Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\nsrc=Path('/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut')\ndst=Path('/tmp/opencut-earshot-canonical')\nfor rel in ['classic/apps/web/src','classic/apps/web/test-support']:\n shutil.copytree(src/rel,dst/rel,dirs_exist_ok=True)\nfor rel in ['classic/apps/web/package.json','classic/apps/web/tsconfig.json']:\n shutil.copy2(src/rel,dst/rel)\nfor rel in ['classic/node_modules','classic/apps/web/node_modules','classic/rust/wasm/pkg','classic/rust/editor-runtime-wasm/pkg']:\n p=dst/rel\n if not p.exists():p.symlink_to(src/rel,target_is_directory=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-928876a0-7fe1-415c-b2fc-a98dcdd759a2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:31.200Z",
+  "parents": [],
+  "branch": "main"
+}

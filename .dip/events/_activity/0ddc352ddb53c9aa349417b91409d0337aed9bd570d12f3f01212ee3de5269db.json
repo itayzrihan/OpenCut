@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ddc352ddb53c9aa349417b91409d0337aed9bd570d12f3f01212ee3de5269db",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:24:00.380Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rustfmt --edition 2024 crates/editor-api/src/operations/classic_automation_host.rs\ngit add crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs crates/editor-api/tests/classic_automation_host.rs classic/apps/web/src/editor-agent/scene-automation-effects.ts classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts classic/apps/web/src/ai/__tests__/automatic-word-animation-earshot.test.ts classic/apps/web/src/project/types.ts classic/apps/web/src/batch/scene-jobs.ts classic/apps/web/src/batch/server.ts classic/apps/web/src/batch/server.test.ts classic/apps/web/src/app/api/batch-edit/route.ts\npython3 - <<'PY'\nfrom pathlib import Path\nimport subprocess\nbase=Path('/tmp/earshot-ai-mcp-initial.tree').read_text().strip()\npaths=['crates/editor-api/src/operations/classic_automation.rs','crates/editor-api/src/operations/classic_automation_host.rs','crates/editor-api/tests/classic_automation_host.rs','classic/apps/web/src/editor-agent/scene-automation-effects.ts','classic/apps/web/src/editor-agent/__tests__/scene-automation-effects.test.ts','classic/apps/web/src/ai/__tests__/automatic-word-animation-earshot.test.ts','classic/apps/web/src/project/types.ts','classic/apps/web/src/batch/scene-jobs.ts','classic/apps/web/src/batch/server.ts','classic/apps/web/src/batch/server.test.ts','classic/apps/web/src/app/api/batch-edit/route.ts']\nPath('/tmp/earshot-ai-mcp-delta.patch').write_bytes(subprocess.check_output(['git','diff','--cached','--binary',base,'--',*paths]))\nPath('/tmp/earshot-ai-mcp-final.patch').write_bytes(subprocess.check_output(['git','diff','--cached','--binary','a212f186','--',*paths]))\nPY\nshasum -a 256 /tmp/earshot-ai-mcp-delta.patch /tmp/earshot-ai-mcp-final.patch\ngit diff --cached --check -- crates/editor-api/src/operations/classic_automation.rs crates/editor-api/src/operations/classic_automation_host.rs crates/editor-api/tests/classic_automation_host.rs classic/apps/web/src/editor-agent",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-f6a660a7-c7fe-40c2-a36d-cf6831075ff8"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:24:00.384Z",
+  "parents": [],
+  "branch": "main"
+}

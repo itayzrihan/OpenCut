@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5b31462c914c071de7e52c7eb161a99b380b9d87511ce29d5ada69d5fb187403",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:55:39.904Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/scripts/test-earshot-runtime.mjs <<'EOF'\n#!/usr/bin/env node\n// Real WASM integration: no Python installed on the machine is used.\nimport assert from 'node:assert/strict';\nimport fs from 'node:fs/promises';\nimport path from 'node:path';\nimport { createRequire } from 'node:module';\nimport { fileURLToPath } from 'node:url';\nconst classic = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');\nconst root = path.join(classic, 'apps/web/public/earshot/runtime');\nconst require = createRequire(import.meta.url);\nconst { loadPyodide } = require(path.join(root, 'pyodide.js'));\nconst p = await loadPyodide({ indexURL: root + '/', stdout:()=>{}, stderr:()=>{} });\nawait p.loadPackage(['numpy', 'scipy']);\nconst sources = JSON.parse(await fs.readFile(path.join(root, 'source-files.json'), 'utf8'));\nfor (const [f, s] of Object.entries(sources)) {\n  const dest = '/earshot-project/' + f;\n  p.FS.mkdirTree(path.dirname(dest)); p.FS.writeFile(dest, s);\n}\np.runPython(\"import sys; sys.path.insert(0, '/earshot-project')\");\np.runPython(`from earshot.forge import dsp, fx\n_original = {name: getattr(dsp if name in ('_svf','_osc') else fx, name) for name in ('_svf','_osc','_allpass','_fdn','_follow','_rise','_release')}\n`);\nrequire(path.join(root, 'kernels.js'));\np.globals.set('_earshot_kernels', globalThis.earshotKernels);\np.runPython(await fs.readFile(path.join(root, 'renderer.py'), 'utf8'));\np.runPython(`\nr = np.random.default_rng(5)\nx = r.normal(size=2048)\nfor name, args in [('_svf',(x,np.linspace(200,4000,len(x)),np.ones(len(x))*.71,1)),('_osc',(np.linspace(200,4000,2048),2,.3)),('_allpass',(x,13,.4)),('_follow',(x,.1,.8)),('_rise',(x,.4)),('_release',(x,.9))]:\n    actual = getattr(dsp if name in ('_svf','_osc') else fx,name)(*args)\n    expected = _original[name](*args)\n    assert np.allclose(actual,expected,rtol=1e-10,atol=1e-10),name\nN=4\nargs=(x[:,None],np.ones((1,N)),r.normal(size=(N,2)),np.array([41.,59.,79.,101.]),np.ones(N)*.2,np.ones(N)*.3,np.zeros(N),np.ones",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-7c1dfad5-f65e-466b-b087-bea8d98b2593"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:55:39.975Z",
+  "parents": [],
+  "branch": "main"
+}

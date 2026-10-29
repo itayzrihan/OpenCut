@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8aee93cc4e782a7ebf9a4046526f67eebb2b6abe1501b011d5bc0c2ce5ffbb96",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:38:21.440Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np=json.load(open('.local/take-silence-current-2026-10-29/project-before.json'));s=json.loads(p['__opencutEditorSession'])['saved']['bundle']['archive']['classic']['document']['scenes'][0]\nprint('offsets',set((e['params'].get('sourceAudioOffsetSeconds'),e['params'].get('audioSyncOffset')) for e in s['tracks']['main']['elements']))\nPY\nnode classic/scripts/test-web.mjs src/timeline/__tests__/smart-silence.test.ts src/timeline/smart-takes/audio-evidence.test.ts --report=.local/take-silence-current-2026-10-29/web",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-87a220f4-aa2e-4061-baf2-0479af5b3a6a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:38:21.447Z",
+  "parents": [],
+  "branch": "main"
+}

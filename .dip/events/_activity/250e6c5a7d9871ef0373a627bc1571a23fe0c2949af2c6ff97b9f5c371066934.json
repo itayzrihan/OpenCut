@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "250e6c5a7d9871ef0373a627bc1571a23fe0c2949af2c6ff97b9f5c371066934",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:14:28.682Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/take-replacement-2026-10-29/commit.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-69539d2e-ed79-46ce-9f88-50929d194ed6"
+      },
+      {
+        "at": "2026-10-29T06:14:28.917Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/take-replacement-2026-10-29/commit.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-69539d2e-ed79-46ce-9f88-50929d194ed6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:14:29.568Z",
+  "parents": [],
+  "branch": "main"
+}

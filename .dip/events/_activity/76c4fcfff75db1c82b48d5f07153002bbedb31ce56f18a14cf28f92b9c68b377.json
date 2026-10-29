@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "eventId": "76c4fcfff75db1c82b48d5f07153002bbedb31ce56f18a14cf28f92b9c68b377",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:14:26.936Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-4afa308b-25cb-4571-ae56-511da8f1e378"
+      },
+      {
+        "at": "2026-10-29T05:14:27.004Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts"
+        ],
+        "changeHash": "5af0edcc45b42df3337097a3512a3a0bc79c41ec265508b71db6c36e4f734f95",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-cb8ec494-96b3-47d3-897b-647d0e905d23"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:14:27.559Z",
+  "parents": [],
+  "branch": "main"
+}

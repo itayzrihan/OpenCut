@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9f309001ab145bea05b891c495ada9edce364f30b9caa1b2075424aa0e29543",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:23:08.129Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-browser.test.ts"
+        ],
+        "changeHash": "10295e69a4ac501d42e25f7cb191368ffd4e9004d41fee0f75baa0755a487ef6",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-6a25e47c-0b89-48ae-b884-7609c081a3ea"
+      },
+      {
+        "at": "2026-10-29T05:23:08.398Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-ce8c0916-50f2-4897-8fc3-a076d11e50b0"
+      },
+      {
+        "at": "2026-10-29T05:23:08.482Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-browser.test.ts"
+        ],
+        "changeHash": "10295e69a4ac501d42e25f7cb191368ffd4e9004d41fee0f75baa0755a487ef6",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-6a25e47c-0b89-48ae-b884-7609c081a3ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:23:09.107Z",
+  "parents": [],
+  "branch": "main"
+}

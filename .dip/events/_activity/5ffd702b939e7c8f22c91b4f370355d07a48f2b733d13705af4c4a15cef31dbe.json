@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5ffd702b939e7c8f22c91b4f370355d07a48f2b733d13705af4c4a15cef31dbe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:55.620Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/electron/app/agent-computer.cjs <<'EOF'\n\"use strict\";\nconst fs = require(\"node:fs/promises\");\nconst path = require(\"node:path\");\nconst crypto = require(\"node:crypto\");\nconst { spawn } = require(\"node:child_process\");\nconst LIMIT = 128 * 1024;\nconst MODES = new Set([\"plan\", \"askDestructive\", \"fullAccess\"]);\nconst INSPECT = new Set([\"list\", \"read\"]);\nfunction validateScope(s) {\n if (!s || ![s.accountId,s.projectId].every(v=>typeof v===\"string\"&&v.length>0&&v.length<=256) || !Number.isSafeInteger(s.generation) || s.generation<0 || !MODES.has(s.mode)) throw Error(\"Invalid computer permission scope\");\n}\nfunction absolute(value) {\n if (typeof value!==\"string\" || value.length>4096 || value.includes(\"\\0\") || !path.isAbsolute(value)) throw Error(\"An absolute file path is required\");\n return value;\n}\nconst sha = bytes => crypto.createHash(\"sha256\").update(bytes).digest(\"hex\");\nfunction validateOperation(op) {\n if (!op || typeof op!==\"object\") throw Error(\"Invalid computer operation\");\n if (op.type===\"shell\") {\n  if (typeof op.command!==\"string\" || !op.command.trim() || op.command.length>16000 || !Number.isInteger(op.timeoutMs) || op.timeoutMs<1 || op.timeoutMs>120000) throw Error(\"Invalid command or timeout\");\n  absolute(op.cwd);\n } else {\n  if (![\"list\",\"read\",\"write\",\"mkdir\",\"copy\",\"move\",\"remove\"].includes(op.type)) throw Error(\"Unknown computer operation\");\n  absolute(op.path);\n  if (op.type===\"read\" && (!Number.isSafeInteger(op.offset) || op.offset<0)) throw Error(\"Invalid byte offset\");\n  if ([\"copy\",\"move\"].includes(op.type)) absolute(op.destination);\n  if (op.type===\"write\" && (typeof op.content!==\"string\" || Buffer.byteLength(op.content)>LIMIT || !(op.expectedSha256===null || /^[a-f0-9]{64}$/.test(op.expectedSha256)))) throw Error(\"Write requires bounded text and an expected SHA256 or null for a new file\");\n }\n}\n\n/** Platform IO only. Canonical policy is selected in Rust; native grants are\n * ephemeral and fenced by generation, window and exact act",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-8a365c41-c8c9-4e3b-807d-c67101484766"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:56.140Z",
+  "parents": [],
+  "branch": "main"
+}

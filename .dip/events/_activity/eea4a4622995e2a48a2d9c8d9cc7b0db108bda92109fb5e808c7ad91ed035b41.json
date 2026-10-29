@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "eea4a4622995e2a48a2d9c8d9cc7b0db108bda92109fb5e808c7ad91ed035b41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:14:44.835Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "./node_modules/.bin/prettier --write apps/web/src/earshot/__tests__/export-browser.test.ts apps/web/src/earshot/__tests__/export-pcm-fixture.ts apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-8e3483d0-591d-47db-a852-5464af2a3869"
+      },
+      {
+        "at": "2026-10-29T05:14:44.922Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-83f34663-3577-4784-b790-70cdd80db427"
+      },
+      {
+        "at": "2026-10-29T05:14:45.042Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-4afa308b-25cb-4571-ae56-511da8f1e378"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:14:45.670Z",
+  "parents": [],
+  "branch": "main"
+}

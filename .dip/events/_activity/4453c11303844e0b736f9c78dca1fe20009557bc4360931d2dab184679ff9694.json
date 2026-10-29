@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4453c11303844e0b736f9c78dca1fe20009557bc4360931d2dab184679ff9694",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:39:43.783Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "lsof -a -p 25268,25801,25827 -d cwd -Fn",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-9a5a8d6b-5f07-45bd-bebf-5b7130042a78"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:39:43.799Z",
+  "parents": [],
+  "branch": "main"
+}

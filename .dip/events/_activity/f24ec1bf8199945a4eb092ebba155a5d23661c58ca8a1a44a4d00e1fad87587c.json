@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f24ec1bf8199945a4eb092ebba155a5d23661c58ca8a1a44a4d00e1fad87587c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:29:34.947Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes.rs'\ns=open(p).read().replace('mod review;','mod review;\\nmod replacement;')\ns=s.replace('Selection preserves uniform framing and caption-position edits, rejecting structural timeline/bookmark changes.', 'Selection replaces surviving group clips locally after structural edits, maps retained source ranges to the alternative by word alignment, and preserves deleted material, unrelated edits and bookmarks.')\ns=s.replace('let presentation = if scene[\"takeAssembly\"].is_object() {','let mut local_selection = None;\\n                        let presentation = if scene[\"takeAssembly\"].is_object() {',1)\ns=s.replace('Some(presentation::capture(&old, &scene, &canvas, &context)?)','''match presentation::capture(&old, &scene, &canvas, &context) {\n                                Ok(patches) => Some(patches),\n                                Err(CapabilityError::Conflict(_)) if matches!(input.change, Change::Select { .. }) => {\n                                    if let Change::Select { group_index, .. } = &input.change {\n                                        local_selection = Some((old, *group_index));\n                                    }\n                                    None\n                                }\n                                Err(error) => return Err(error),\n                            }''',1)\ns=s.replace('let (mut tracks, bookmarks) =\\n                            render', 'let (mut tracks, mut bookmarks) =\\n                            render',1)\ns=s.replace('assembly.applied_digest = digest(&tracks, &bookmarks);','''if let Some((old, group)) = local_selection {\n                            (tracks, bookmarks) = replacement::apply(\n                                &old, group, &scene, &tracks, &canvas, &mut fresh, &context,\n                            )?;\n                        }\n                        assembly.applied_digest = digest(&tracks, &bookmarks);''',1)\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-dde72d7a-1f2b-418b-8548-de49459053a9"
+      },
+      {
+        "at": "2026-10-29T05:29:35.497Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/src/operations/classic_takes.rs'\ns=open(p).read().replace('mod review;','mod review;\\nmod replacement;')\ns=s.replace('Selection preserves uniform framing and caption-position edits, rejecting structural timeline/bookmark changes.', 'Selection replaces surviving group clips locally after structural edits, maps retained source ranges to the alternative by word alignment, and preserves deleted material, unrelated edits and bookmarks.')\ns=s.replace('let presentation = if scene[\"takeAssembly\"].is_object() {','let mut local_selection = None;\\n                        let presentation = if scene[\"takeAssembly\"].is_object() {',1)\ns=s.replace('Some(presentation::capture(&old, &scene, &canvas, &context)?)','''match presentation::capture(&old, &scene, &canvas, &context) {\n                                Ok(patches) => Some(patches),\n                                Err(CapabilityError::Conflict(_)) if matches!(input.change, Change::Select { .. }) => {\n                                    if let Change::Select { group_index, .. } = &input.change {\n                                        local_selection = Some((old, *group_index));\n                                    }\n                                    None\n                                }\n                                Err(error) => return Err(error),\n                            }''',1)\ns=s.replace('let (mut tracks, bookmarks) =\\n                            render', 'let (mut tracks, mut bookmarks) =\\n                            render',1)\ns=s.replace('assembly.applied_digest = digest(&tracks, &bookmarks);','''if let Some((old, group)) = local_selection {\n                            (tracks, bookmarks) = replacement::apply(\n                                &old, group, &scene, &tracks, &canvas, &mut fresh, &context,\n                            )?;\n                        }\n                        assembly.applied_digest = digest(&tracks, &bookmarks);''',1)\nopen(p,'w').write(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-dde72d7a-1f2b-418b-8548-de49459053a9"
+      },
+      {
+        "at": "2026-10-29T05:29:35.532Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_takes/replacement.rs <<'EOF'\n//! Replace only surviving occurrences. The archive is a source library, never a snapshot\n//! to restore over an editor's later cuts, deletions, captions or reordered clips.\nuse super::*;\n\n#[derive(Clone)]\nstruct Edit {\n    from: i64,\n    to: i64,\n    old_from: i64,\n    new_from: i64,\n    new_to: i64,\n    dest: i64,\n    speed: f64,\n}\nimpl Edit {\n    fn duration(&self) -> i64 {\n        ((self.new_to - self.new_from) as f64 / self.speed).round() as i64\n    }\n    fn new_time(&self, time: i64) -> i64 {\n        self.dest + ((time - self.new_from) as f64 / self.speed).round() as i64\n    }\n}\nfn bounds(e: &Value) -> Result<(i64, i64), CapabilityError> {\n    let s = tick(&e[\"startTime\"])?;\n    Ok((s, s + tick(&e[\"duration\"])?))\n}\nfn belongs(e: &Value, assembly: &Assembly, group: usize) -> bool {\n    e[\"takeGroup\"][\"assemblyId\"] == assembly.id\n        && e[\"takeGroup\"][\"groupIndex\"].as_u64() == Some(group as u64)\n}\nfn group_bounds(tracks: &Value, a: &Assembly, group: usize) -> Result<(i64, i64), CapabilityError> {\n    let mut spans = arr(&tracks[\"main\"][\"elements\"])\n        .iter().filter(|e| belongs(e, a, group)).map(bounds);\n    let (mut start, mut end) = spans.next().ok_or_else(|| invalid(\"The selected take has no surviving video\"))??;\n    for span in spans { let (s, e) = span?; start = start.min(s); end = end.max(e); }\n    Ok((start, end))\n}\nfn words(tracks: &Value, range: (i64, i64)) -> Vec<(String, i64, i64)> {\n    let source = all(tracks).into_iter().find(|t| t[\"captionSource\"].is_object());\n    source.into_iter().flat_map(|t| arr(&t[\"captionSource\"][\"words\"])).filter_map(|w| {\n        let (s, e) = word_times(w).ok()?;\n        let mid = s + (e - s) / 2;\n        (mid >= range.0 && mid < range.1).then(|| (\n            w[\"text\"].as_str().unwrap_or(\"\").chars().filter(|c| c.is_alphanumeric()).flat_map(char::to_lowercase).collect(), s, e,\n        ))\n    }).collect()\n}\n// Monotone word alignment prese",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-9ee9bfde-2564-4b08-bfec-1dedf14ca3dd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:29:36.211Z",
+  "parents": [],
+  "branch": "main"
+}

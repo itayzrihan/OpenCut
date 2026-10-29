@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d8406c8dd45baf2e376d1345a4caab69b0687a2c36e3453ae14b3ea41be75ccd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:09:45.381Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add .dip && git commit --only crates/editor-api/Cargo.toml crates/editor-api/build.rs crates/editor-api/src/operations.rs crates/editor-api/src/operations/earshot_library.rs crates/editor-api/tests/earshot_library.rs crates/mcp/tests/earshot_discovery.rs classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/starter-source.json docs/architecture/earshot-library-capabilities.md -m 'feat: expose complete pinned Earshot library through canonical MCP registry'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-021c803c-34cc-4457-8f2d-6468031f80a5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:09:46.115Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e72bcd1aae81eeb2fc1a0b017dca4ed5bbc99c087bb212a6391e0d0ec559e14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:41:31.714Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -6 .local/take-silence-current-2026-10-29/production-build.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-1cd9faf1-b0ef-4bec-824d-58a10cada918"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:41:31.720Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cfc5600345ac0142de012ecb185b6335e4de8185abd68dc596fd67ecb9568afe",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:56.227Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git worktree add --no-checkout -b codex/earshot-mcp-transport /tmp/opencut-earshot-mcp-transport a212f186",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-a8af0d19-a5dc-4dcb-ba64-e1d441a6f36c"
+      },
+      {
+        "at": "2026-10-29T06:01:57.147Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git worktree add --no-checkout -b codex/earshot-mcp-transport /tmp/opencut-earshot-mcp-transport a212f186",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-a8af0d19-a5dc-4dcb-ba64-e1d441a6f36c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:57.195Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fb635b5314487876fb9ed1587cea7508e70e965210d04980f53c06f3afc3d657",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:07:18.237Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/earshot/components/properties.tsx')\ns=p.read_text().replace('import { getEarshotSound } from \"../catalog\";','import { createEarshotSourceCode, getEarshotSound } from \"../catalog\";')\ns=s.replace('const [status, setStatus] = useState(\"\");','const [status, setStatus] = useState(\"\");\\n\\tconst [reference, setReference] = useState(\"\");')\ns=s.replace('const loadRecipe = async () => {','const loadReference = async () => {')\ns=s.replace('''\t\t\t\tif (result.totalBytes > 32768)\n\t\t\t\t\tthrow new Error(\n\t\t\t\t\t\t\"This shared module is larger than a clip recipe. Use a render(params, r) wrapper to import and customize it.\",\n\t\t\t\t\t);\n''','')\ns=s.replace('update({ sourceCode: code });\\n\\t\\t\\tsetStatus(\"Original recipe loaded for editing. Preview before applying.\");','setReference(code);\\n\\t\\t\\tsetStatus(\"Original source loaded below for reference.\");')\ns=s.replace('onClick={() => void loadRecipe()}','onClick={() => {\\n\\t\\t\\t\\t\\t\\tupdate({ sourceCode: createEarshotSourceCode(draft.presetId) });\\n\\t\\t\\t\\t\\t\\tsetStatus(\"Editable recipe loaded. Preview before applying.\");\\n\\t\\t\\t\\t\\t}}')\ns=s.replace('Load original recipe','Customize this sound')\ns=s.replace('''\t\t\t</details>\n\t\t\t<div className=\"flex gap-2\">''','''\t\t\t\t<details className=\"mt-2\">\n\t\t\t\t\t<summary className=\"cursor-pointer text-xs\">Upstream source reference</summary>\n\t\t\t\t\t<Button size=\"sm\" variant=\"ghost\" disabled={busy} onClick={() => void loadReference()}>Read {sound?.sourcePath}</Button>\n\t\t\t\t\t{reference && <pre className=\"max-h-80 overflow-auto whitespace-pre text-[10px]\">{reference}</pre>}\n\t\t\t\t</details>\n\t\t\t</details>\n\t\t\t<div className=\"flex gap-2\">''')\np.write_text(s)\np=Path('classic/apps/web/src/transcription/timeline-stream.ts');s=p.read_text().replace('clips.length === 1 &&','clips.length === 1 &&\\n\\t\\t!clip.procedural &&');p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-ad2ee15b-2479-437e-8975-362db4e9b688"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:07:18.697Z",
+  "parents": [],
+  "branch": "main"
+}

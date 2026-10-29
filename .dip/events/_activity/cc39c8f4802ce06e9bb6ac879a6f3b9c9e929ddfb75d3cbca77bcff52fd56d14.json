@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cc39c8f4802ce06e9bb6ac879a6f3b9c9e929ddfb75d3cbca77bcff52fd56d14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:33:38.235Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/lint.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "88f63fb9-dddd-452f-a63e-9a79022fe0cd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:33:38.239Z",
+  "parents": [],
+  "branch": "main"
+}

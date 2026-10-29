@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d580dc0623fcf4b0700ae7d08c6b1d55e1d1b6cf5b144494c18d88c20c5de3b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:30:53.156Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='crates/editor-api/tests/classic_takes.rs';s=open(p).read();start=s.index('    assert!(\\n        r.registry()',s.index('async fn timeline_edits_are_not_overwritten')) ;end=s.index('\\n}',start)\ns=s[:start]+'''    call(&r, EDIT, input(&changed, json!({\"type\":\"select\",\"groupIndex\":0,\"alternativeIndex\":1}))).await;\n    let after = read(&r).await;\n    assert_eq!(scene(&after)[\"bookmarks\"], json!([]));\n    assert_eq!(scene(&after)[\"takeAssembly\"][\"plan\"][\"groups\"][0][\"selected\"], 1);\n    call(&r, \"history.undo\", json!({})).await;\n    assert_eq!(read(&r).await[\"project\"], changed[\"project\"]);'''+s[end:];open(p,'w').write(s)\np=json=None\nPY\ncat >> crates/editor-api/tests/classic_takes.rs <<'EOF'\n\nfn without_start(mut clip: Value) -> Value {\n    clip.as_object_mut().unwrap().remove(\"startTime\");\n    clip\n}\nfn assert_other_takes_preserved(before: &Value, after: &Value, group: usize) {\n    let before = before[\"tracks\"][\"main\"][\"elements\"].as_array().unwrap();\n    let after = after[\"tracks\"][\"main\"][\"elements\"].as_array().unwrap();\n    let retained = |items: &Vec<Value>| items.iter()\n        .filter(|c| c[\"takeGroup\"][\"groupIndex\"].as_u64() != Some(group as u64))\n        .map(|c| without_start(c.clone())).collect::<Vec<_>>();\n    assert_eq!(retained(before), retained(after), \"Unrelated clips, cuts, trims, IDs and order must survive\");\n}\n\n#[tokio::test]\nasync fn edited_timeline_can_switch_trimmed_split_takes_without_restoring_deleted_groups() {\n    let r = setup().await;\n    call(&r, EDIT, assemble(&read(&r).await)).await;\n    let assembled = read(&r).await;\n    // Use the public split capability to trim the active take, just as the editor does.\n    let clip = &scene(&assembled)[\"tracks\"][\"main\"][\"elements\"][0];\n    let from = clip[\"startTime\"].as_i64().unwrap();\n    let duration = clip[\"duration\"].as_i64().unwrap();\n    call(&r, \"timeline.classic.elements.split\", json!({\"projectId\":\"classic-project\",\"sceneId\":\"main-scene\",\"expectedRevision\":assembled[\"revision",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-fc786dbf-4e23-42ed-ba9c-74343e11ed70"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:30:53.892Z",
+  "parents": [],
+  "branch": "main"
+}

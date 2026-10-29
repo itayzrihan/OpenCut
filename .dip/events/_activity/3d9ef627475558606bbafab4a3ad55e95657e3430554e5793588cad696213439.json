@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3d9ef627475558606bbafab4a3ad55e95657e3430554e5793588cad696213439",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:19:43.343Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts');s=p.read_text();needle='import { createCanonicalTestRuntime } from \"@/core/__tests__/canonical-runtime-fixture\";';s=s.replace(needle,needle+'\\n\\n// Match the real-WASM manager integration budget. These cases create multiple\\n// runtimes; the deadline bounds a stalled suite, not application performance.\\nconst INTEGRATION_TIMEOUT = 60_000;');s=s.replace('}, 30_000);','}, INTEGRATION_TIMEOUT);');p.write_text(s)\np=Path('classic/scripts/verify-deepseek-harness.mjs');s=p.read_text().replace('\"--timeout=120000\",','\"--timeout=240000\",');p.write_text(s)\nPY\ngit diff --check -- classic; git add classic/scripts/verify-deepseek-harness.mjs classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts; git commit -m \"Align checkpoint test deadlines with real WASM integration budgets\"",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-728bffdf-95fd-4d7f-bc87-f59c77e36b8c"
+      },
+      {
+        "at": "2026-10-29T05:19:43.618Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --oneline; git diff --name-only -- classic; rg -n '30_000|INTEGRATION_TIMEOUT' classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts; rg -n 'jobs=|timeout=' classic/scripts/verify-deepseek-harness.mjs",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-d2574120-a481-45a0-ba2a-c04da2229bd0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:19:43.824Z",
+  "parents": [],
+  "branch": "main"
+}

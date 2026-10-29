@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4d5035b6203ecb009fe8dc678bcd3c3e622e7a79a0ceffeed9d02da6660342b5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:05:38.696Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://raw.githubusercontent.com/pyodide/pyodide/0.28.3/LICENSE -o classic/vendor/earshot/PYODIDE_LICENSE\nhead -10 classic/vendor/earshot/PYODIDE_LICENSE\npython3 - <<'PY'\nimport json,pathlib,subprocess\nroot=pathlib.Path('classic/vendor/earshot')\nfiles=['classic/.gitignore','classic/scripts/prepare-earshot-runtime.mjs','classic/scripts/test-earshot-runtime.mjs']\nfiles += [str(p) for p in pathlib.Path('classic/apps/web/src/earshot').glob('*') if p.is_file()]\nfiles += [str(p) for p in pathlib.Path('classic/apps/web/public/earshot').glob('*') if p.is_file()]\nfiles += [str(p) for p in root.glob('*') if p.is_file()]\nfiles += [str(root/'upstream'/r['path']) for r in json.loads((root/'manifest.json').read_text())]\nsubprocess.run(['git','add','-f','--',*files],check=True)\npathlib.Path('/tmp/earshot-own-paths.json').write_text(json.dumps(files))\nprint('staged own paths',len(files))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-56a95861-b79c-4e44-a2f4-9fe78f4513c4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:05:39.332Z",
+  "parents": [],
+  "branch": "main"
+}

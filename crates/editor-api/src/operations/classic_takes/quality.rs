@@ -21,7 +21,7 @@ pub(super) struct AudioEvidence {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct AudioGaps {
     pub(super) clip_id: String,
-    ranges: Vec<(i64, i64)>,
+    pub(super) ranges: Vec<(i64, i64)>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     diagnostics: Option<AudioDiagnostics>,
 }

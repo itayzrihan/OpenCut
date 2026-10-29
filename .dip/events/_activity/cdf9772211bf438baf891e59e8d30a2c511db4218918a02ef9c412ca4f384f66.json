@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cdf9772211bf438baf891e59e8d30a2c511db4218918a02ef9c412ca4f384f66",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:31:01.225Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node /tmp/opencut-agent-ui.cjs",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-314b3ff4-098b-410b-ba70-2542e6c4ec06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:31:01.235Z",
+  "parents": [],
+  "branch": "main"
+}

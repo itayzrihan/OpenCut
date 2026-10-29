@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3c04236c-72ff-4fe0-a1b4-2b770bd029fe",
+  "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented and committed ae59f61a on isolated branch codex/deepseek-video-agent. Classic chat now runs the real pinned DeepSeek Harness agent loop/native executor through project-scoped canonical Rust dispatch, preserving existing Codex subscription authentication, streaming, registry discovery, host effects, undo, verification, checkpoint recovery and owned-project boundaries. Added authenticated bounded callback transport, replay/cancellation guards, Node/Next module configuration, migration documentation and integration/regression checks.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "Provider responses were scripted; no live authenticated Codex subscription request was issued and the running installed editor was not deployed or replaced."
+        },
+        {
+          "disposition": "verification_limit",
+          "summary": "Repository-wide architecture audit reports four pre-existing violations in move-elements.ts, brand-kits/apply.ts and subtitles/auto-texts.ts. Those source files are unchanged from HEAD; targeted integration, type and lint checks cover this branch."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304",
+  "createdAt": "2026-10-29T05:05:09.497Z",
+  "parents": [
+    "08d5bd58-4e4e-4e3b-8538-7f2a6f9d90cb"
+  ],
+  "branch": "main"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d3f40eac59d5c29bc4cf71cb000ecbc66af34ff82815379c550b37f8830e01d7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:33.550Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/components/cut-silence-toolbar-options.ts",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx",
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "classic/apps/web/src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts",
+          ".local/protect-speech-default-2026-10-29",
+          ".local/protect-speech-default-2026-10-29/web",
+          ".local/protect-speech-default-2026-10-29/web/src__timeline__components____tests____cut-silence-toolbar-options.test.ts.log",
+          ".local/protect-speech-default-2026-10-29/web/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "0478e996-25b8-47b0-a7ea-4c80dad197b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:33.553Z",
+  "parents": [],
+  "branch": "main"
+}

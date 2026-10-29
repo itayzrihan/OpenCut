@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5119b8ae495b5ca29194fbcf248dbab148650e354c523901445f26d2a19affb6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:15:50.070Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/protect-speech-default-2026-10-29/commit.mjs')\ns=Path('.local/take-replacement-2026-10-29/commit.mjs').read_text().replace('take-replacement-2026-10-29','protect-speech-default-2026-10-29').replace(\"['take-replacement']\",\"['protect-speech-default']\").replace('fix: replace smart takes within edited timelines','fix: make Protect Speech the default silence cut')\na=s.index('const paths=');b=s.index('\\nconst staged=',a)\ns=s[:a]+\"const paths=['classic/apps/web/src/core/managers/timeline-manager.ts','classic/apps/web/src/timeline/components/timeline-toolbar.tsx','classic/apps/web/src/timeline/components/cut-silence-toolbar-options.ts','classic/apps/web/src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts'];\"+s[b:]\np.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-411c9b52-20b3-443b-836b-3fbf936b12af"
+      },
+      {
+        "at": "2026-10-29T06:15:50.346Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_0da1bf5388b449a3aa35a6d493dfb2607dbade3116c7bd77943ea9d502fe630e",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/protect-speech-default-2026-10-29/commit.mjs')\ns=Path('.local/take-replacement-2026-10-29/commit.mjs').read_text().replace('take-replacement-2026-10-29','protect-speech-default-2026-10-29').replace(\"['take-replacement']\",\"['protect-speech-default']\").replace('fix: replace smart takes within edited timelines','fix: make Protect Speech the default silence cut')\na=s.index('const paths=');b=s.index('\\nconst staged=',a)\ns=s[:a]+\"const paths=['classic/apps/web/src/core/managers/timeline-manager.ts','classic/apps/web/src/timeline/components/timeline-toolbar.tsx','classic/apps/web/src/timeline/components/cut-silence-toolbar-options.ts','classic/apps/web/src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts'];\"+s[b:]\np.write_text(s)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-411c9b52-20b3-443b-836b-3fbf936b12af"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:15:50.810Z",
+  "parents": [],
+  "branch": "main"
+}

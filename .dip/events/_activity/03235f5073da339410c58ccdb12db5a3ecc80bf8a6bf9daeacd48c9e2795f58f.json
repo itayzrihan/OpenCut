@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "03235f5073da339410c58ccdb12db5a3ecc80bf8a6bf9daeacd48c9e2795f58f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:28:48.909Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('classic/vendor/earshot');entries=json.loads((root/'manifest.json').read_text())\nfor e in entries:\n p=root/'upstream'/e['path'];b=p.read_bytes()\n assert len(b)==e['size'] and hashlib.sha256(b).hexdigest()==e['sha256'],e['path']\nprint(f'All {len(entries)} upstream files match the pinned manifest.')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-5c630140-d18d-4347-aeb1-3fbdba356596"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:28:49.383Z",
+  "parents": [],
+  "branch": "main"
+}

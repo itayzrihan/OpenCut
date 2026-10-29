@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "583425781223cba3dc774d59ee90a9c1985aaa70925a03d7bcd966b2891f914f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:53:32.842Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/server/deepseek-harness.ts');s=p.read_text().replace('import { Context }','import { isDeepStrictEqual } from \"node:util\";\\nimport { Context }',1)\na=s.index('/** The ONLY DSH tool');b=s.index('export async function',a)\ns=s[:a]+'''/** DSH owns model/tool scheduling. The provider adapter receives completed\n * Responses envelopes through the existing Codex transport; its native\n * opencut_editor calls dispatch back to Rust. Rust remains the context source,\n * live feature registry, project authority and sole completion gate. */\n'''+s[b:]\ns=s.replace('let pending: number | undefined;', 'let pending: { round: number; tool: string; args: unknown } | undefined;')\ns=s.replace('canonicalProviderResult.parse(await bridge.call(\"provider\", round));\\n\\t\\t\\tsignal.throwIfAborted();\\n\\t\\t\\tpending = round;\\n\\t\\t\\tconst callId = ToolCallId(`canonical-${round}`);\\n\\t\\t\\tconst args = JSON.stringify({ round });', '''const { response } = canonicalProviderResult.parse(await bridge.call(\"provider\", round));\n\\t\\t\\tsignal.throwIfAborted();\n\\t\\t\\t// Preserve the actual model tool name, call identity and arguments.\n\\t\\t\\t// A malformed, text-only or multi-call envelope still needs Rust's\n\\t\\t\\t// canonical feedback/rejection path, dispatched once as a whole.\n\\t\\t\\tconst calls = Array.isArray(response.output)\n\\t\\t\\t\\t? response.output.filter((item): item is Record<string, unknown> =>\n\\t\\t\\t\\t\\t!!item && typeof item === \"object\" && item.type === \"function_call\") : [];\n\\t\\t\\tlet tool = \"opencut_dispatch\", argumentsValue: unknown = { round }, identity = `canonical-${round}`;\n\\t\\t\\tif (calls.length === 1 && calls[0].name === \"opencut_editor\" &&\n\\t\\t\\t\\ttypeof calls[0].call_id === \"string\" && typeof calls[0].arguments === \"string\") {\n\\t\\t\\t\\ttry {\n\\t\\t\\t\\t\\tconst parsed: unknown = JSON.parse(calls[0].arguments);\n\\t\\t\\t\\t\\tif (parsed && typeof parsed === \"object\" && !Array.isArray(parsed)) {\n\\t\\t\\t\\t\\t\\ttool = \"openc",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-26889ca3-fcb7-4b1d-a01a-8c04fe675253"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:53:33.340Z",
+  "parents": [],
+  "branch": "main"
+}

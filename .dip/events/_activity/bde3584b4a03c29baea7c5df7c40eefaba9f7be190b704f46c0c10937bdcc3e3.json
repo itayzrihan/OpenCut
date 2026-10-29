@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bde3584b4a03c29baea7c5df7c40eefaba9f7be190b704f46c0c10937bdcc3e3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:21:16.299Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "df -h .\ndu -sh .local/earshot-cargo-target classic/apps/web/.next-earshot-qa classic/rust/editor-runtime-wasm/pkg .local/classic-web-tests\npython3 -c 'import shutil; shutil.rmtree(\"classic/apps/web/.next-earshot-qa\")'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-a28b1288-34d1-4ec1-810f-9318897235ee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:21:16.308Z",
+  "parents": [],
+  "branch": "main"
+}

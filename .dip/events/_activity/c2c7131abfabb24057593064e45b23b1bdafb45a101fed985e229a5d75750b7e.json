@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c2c7131abfabb24057593064e45b23b1bdafb45a101fed985e229a5d75750b7e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:22:58.696Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/mcp/__tests__/canonical-transport.test.ts');s=p.read_text().replace('{...context,requestId:\"cancel-me\"}', '{...context,requestId:\"cancel-me\",metadata:{...context.metadata,\"opencut/idempotencyKey\":\"cancel-preview\"}}');p.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-9a383fca-9ad8-492a-ae38-516fe5254e60"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:22:58.702Z",
+  "parents": [],
+  "branch": "main"
+}

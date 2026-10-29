@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b1492e0e518fcaeb3718124b7417f1386ae528d3aad99ef7467a333e2dc4ea88",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:09:04.602Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -8 /tmp/earshot-commit.log; git log -1 --format='%H %s'; git diff --name-only -- classic/apps/web/src/earshot classic/apps/web/public/earshot classic/vendor/earshot classic/scripts/prepare-earshot-runtime.mjs classic/scripts/test-earshot-runtime.mjs classic/.gitignore",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-0739163d-c831-4fad-a526-4e8dc67d8d8b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:09:05.177Z",
+  "parents": [],
+  "branch": "main"
+}

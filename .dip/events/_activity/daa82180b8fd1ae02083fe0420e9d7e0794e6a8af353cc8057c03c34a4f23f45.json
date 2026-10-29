@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "daa82180b8fd1ae02083fe0420e9d7e0794e6a8af353cc8057c03c34a4f23f45",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:43:44.658Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /tmp/opencut-deepseek-harness-inspect/packages/test-support/agent-loop-testkit/src/index.ts | head -180; cat /tmp/opencut-deepseek-harness-inspect/packages/test-support/agent-loop-testkit/src/model.ts | head -180; sed -n '1,150p' /tmp/opencut-deepseek-harness-inspect/packages/core/agent-loop/tests/agent-loop.spec.ts; cat /tmp/opencut-deepseek-harness-inspect/packages/core/llm/src/index.ts | head -100; rg -n '^import .*node:|from .node:' /tmp/opencut-deepseek-harness-inspect/packages/{core/{agent-loop,agent,llm,scope,session,system-prompt,tools},session/session-projection}/src | head -60; command -v bun; command -v node; git -C /tmp/opencut-deepseek-harness-inspect rev-parse HEAD",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-ba1f9c5b-c286-4ace-b20d-9abf79d309ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:43:45.115Z",
+  "parents": [],
+  "branch": "main"
+}

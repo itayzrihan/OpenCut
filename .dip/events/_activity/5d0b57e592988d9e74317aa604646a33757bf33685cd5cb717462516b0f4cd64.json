@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d0b57e592988d9e74317aa604646a33757bf33685cd5cb717462516b0f4cd64",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T06:15:35.317Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/tests/classic_automation_host.rs <<'RS'\nuse opencut_editor_api::{AccessLevel, HostBridge, HostEffectResult, InvocationContext, OpenCutRuntime, register_classic_automation_host};\nuse serde_json::{Value, json};\nuse std::{future::Future, task::{Context, Waker}};\n\nasync fn setup(action: &str) -> (OpenCutRuntime, HostBridge) {\n    let rt = OpenCutRuntime::full_access().unwrap();\n    let host = HostBridge::default();\n    register_classic_automation_host(&rt, &host).unwrap();\n    let classic: Value = serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n    rt.registry().invoke(\"project.classic.session.attach\", InvocationContext::default(), json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await.unwrap();\n    rt.registry().invoke(\"project.classic.automation.edit\", InvocationContext::default(), json!({\"projectId\":\"classic-project\",\"expectedRevision\":rt.snapshot().unwrap().revision,\"change\":{\"type\":\"enqueue\",\"jobs\":[{\"id\":\"job\",\"sceneId\":\"main-scene\",\"workerProjectId\":\"worker\",\"outputSceneId\":\"output\",\"action\":action,\"options\":{\"zoom\":false,\"transitions\":false,\"wordAnimation\":true,\"music\":false,\"soundEffects\":true}}]}})).await.unwrap();\n    (rt, host)\n}\nfn input(rt: &OpenCutRuntime) -> Value {\n    json!({\"projectId\":\"classic-project\",\"expectedRevision\":rt.snapshot().unwrap().revision,\"jobId\":\"job\"})\n}\nasync fn inspect_effect(rt: &OpenCutRuntime, host: &HostBridge, operation: &str, candidate: bool, tamper: bool) -> bool {\n    let id = format!(\"project.classic.automation.{operation}\");\n    let args = input(rt);\n    let mut invocation = std::pin::pin!(rt.registry().invoke(&id, InvocationContext::default(), args.clone()));\n    assert!(invocation.as_mut().poll(&mut Context::from_waker(Waker::noop())).is_pending());\n    let effect = host.pending().unwrap().pop().unwrap();\n    assert_eq!(effect.adapter, \"sceneAutomation\");\n    assert_eq!(effect.request[\"operation\"], operation);\n    assert_eq!(!effect.reque",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-6b7ce575-3725-4ef3-8ea6-e6c2819e1008"
+      },
+      {
+        "at": "2026-10-29T06:15:35.567Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/tests/classic_automation_host.rs <<'RS'\nuse opencut_editor_api::{AccessLevel, HostBridge, HostEffectResult, InvocationContext, OpenCutRuntime, register_classic_automation_host};\nuse serde_json::{Value, json};\nuse std::{future::Future, task::{Context, Waker}};\n\nasync fn setup(action: &str) -> (OpenCutRuntime, HostBridge) {\n    let rt = OpenCutRuntime::full_access().unwrap();\n    let host = HostBridge::default();\n    register_classic_automation_host(&rt, &host).unwrap();\n    let classic: Value = serde_json::from_str(include_str!(\"fixtures/classic-project.json\")).unwrap();\n    rt.registry().invoke(\"project.classic.session.attach\", InvocationContext::default(), json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await.unwrap();\n    rt.registry().invoke(\"project.classic.automation.edit\", InvocationContext::default(), json!({\"projectId\":\"classic-project\",\"expectedRevision\":rt.snapshot().unwrap().revision,\"change\":{\"type\":\"enqueue\",\"jobs\":[{\"id\":\"job\",\"sceneId\":\"main-scene\",\"workerProjectId\":\"worker\",\"outputSceneId\":\"output\",\"action\":action,\"options\":{\"zoom\":false,\"transitions\":false,\"wordAnimation\":true,\"music\":false,\"soundEffects\":true}}]}})).await.unwrap();\n    (rt, host)\n}\nfn input(rt: &OpenCutRuntime) -> Value {\n    json!({\"projectId\":\"classic-project\",\"expectedRevision\":rt.snapshot().unwrap().revision,\"jobId\":\"job\"})\n}\nasync fn inspect_effect(rt: &OpenCutRuntime, host: &HostBridge, operation: &str, candidate: bool, tamper: bool) -> bool {\n    let id = format!(\"project.classic.automation.{operation}\");\n    let args = input(rt);\n    let mut invocation = std::pin::pin!(rt.registry().invoke(&id, InvocationContext::default(), args.clone()));\n    assert!(invocation.as_mut().poll(&mut Context::from_waker(Waker::noop())).is_pending());\n    let effect = host.pending().unwrap().pop().unwrap();\n    assert_eq!(effect.adapter, \"sceneAutomation\");\n    assert_eq!(effect.request[\"operation\"], operation);\n    assert_eq!(!effect.reque",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-6b7ce575-3725-4ef3-8ea6-e6c2819e1008"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:15:35.802Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a3c52580ef9f17f540e68ecacc1d4fc58f2d95ebd0d8a2abf45497c727f3f0ae",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:01:45.498Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '4070,4305p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '6870,7010p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '7080,7205p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; head -90 classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-03ad0d9a-7908-4377-9db6-01ffcecdd501"
+      },
+      {
+        "at": "2026-10-29T05:01:45.714Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '4070,4305p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '6870,7010p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; sed -n '7080,7205p' classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts; head -90 classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-03ad0d9a-7908-4377-9db6-01ffcecdd501"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:01:46.356Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3b7fb5e65a03234e8b816840ca028ca4710cb3c656216f6a450ffc2fb938e345",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:04:03.578Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test --preload ./test-support/real-wasm.ts --test-name-pattern 'streamed provider loop|rapid steering|uncertain host write|failed edit retains|disposing an idle agent' src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-00579d0c-f4ba-4b47-9a5e-208843e82b54"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:04:04.250Z",
+  "parents": [],
+  "branch": "main"
+}

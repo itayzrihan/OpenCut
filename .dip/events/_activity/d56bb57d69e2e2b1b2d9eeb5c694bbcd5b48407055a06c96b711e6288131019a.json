@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d56bb57d69e2e2b1b2d9eeb5c694bbcd5b48407055a06c96b711e6288131019a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:10:37.381Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/wire-opencut-computer.py <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/electron/app/main.cjs');s=p.read_text();pos=s.index('ipcMain.handle(\"opencut:editor-screenshot\"')\ns=s[:pos]+'''const { createComputerService } = require(\"./agent-computer.cjs\");\nconst computerService = createComputerService({\n confirm: async ({title,message,detail}) => {\n  const result=await dialog.showMessageBox(mainWindow,{type:\"warning\",title,message,detail:detail.slice(0,200000),buttons:[\"Cancel\",\"Allow once\"],defaultId:0,cancelId:0,noLink:true});\n  return result.response===1;\n },\n assertScope: async (scope) => {\n  if(!mainWindow || mainWindow.isDestroyed()) throw Error(\"Editor window closed\");\n  const current=await mainWindow.webContents.executeJavaScript(`({accountId:window.__opencutAccountId??\"local\",projectId:document.querySelector(\"[data-opencut-editor-project]\")?.getAttribute(\"data-opencut-editor-project\"),route:decodeURIComponent(location.pathname.split(\"/\")[2]??\"\")})`);\n  if(current.accountId!==scope.accountId || current.projectId!==scope.projectId || current.route!==scope.projectId) {computerService.revoke();throw Error(\"Computer operation account or project changed\");}\n },\n});\nfunction authorizeComputer(event) {\n require(\"./editor-screenshot.cjs\").authorizeEditorScreenshot(event,mainWindow,mainAppUrl);\n}\nipcMain.handle(\"opencut:agent-computer-permissions\",async(event,scope)=>{authorizeComputer(event);return computerService.setAccess(scope);});\nipcMain.handle(\"opencut:agent-computer-execute\",async(event,request)=>{authorizeComputer(event);return computerService.execute(request);});\nipcMain.handle(\"opencut:agent-computer-cancel\",async(event)=>{authorizeComputer(event);computerService.cancel();});\nipcMain.handle(\"opencut:agent-computer-revoke\",async(event)=>{authorizeComputer(event);computerService.revoke();});\n\n'''+s[pos:]\nidx=s.index('window.on(\"closed\"')\ns=s[:idx]+'''window.webContents.on(\"did-start-navigation\",(_event,_url,_inPlace,isMainFrame)=>{if(isMainFrame) c",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-29b0b37c-5702-4fd0-9e36-8bd846462632"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:10:38.184Z",
+  "parents": [],
+  "branch": "main"
+}

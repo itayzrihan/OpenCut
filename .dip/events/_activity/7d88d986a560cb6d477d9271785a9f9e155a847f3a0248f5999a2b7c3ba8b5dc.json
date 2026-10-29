@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7d88d986a560cb6d477d9271785a9f9e155a847f3a0248f5999a2b7c3ba8b5dc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:44:44.193Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/take-replacement-2026-10-29",
+          "analysis/take-replacement-2026-10-29/README.md",
+          "analysis/take-replacement-2026-10-29/verification.json",
+          "classic/apps/web/src/core/__tests__/canonical-smart-takes.test.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "classic/apps/web/src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts",
+          "classic/apps/web/src/timeline/components/cut-silence-toolbar-options.ts",
+          "classic/apps/web/src/timeline/components/timeline-toolbar.tsx",
+          "classic/apps/web/src/timeline/smart-silence.ts",
+          "classic/apps/web/src/timeline/smart-takes/types.ts",
+          "classic/scripts/local-production/build.mjs",
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/cleanup.rs",
+          "crates/editor-api/src/operations/classic_takes/quality.rs",
+          "crates/editor-api/src/operations/classic_takes/replacement.rs",
+          "crates/editor-api/tests/classic_takes.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "unavailable",
+        "recordId": "e56ce53f-a81f-46ff-ab54-e4b4bba3dae5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:45:09.525Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

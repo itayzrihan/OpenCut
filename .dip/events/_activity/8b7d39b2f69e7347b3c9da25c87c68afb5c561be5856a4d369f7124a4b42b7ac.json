@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8b7d39b2f69e7347b3c9da25c87c68afb5c561be5856a4d369f7124a4b42b7ac",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:34:43.856Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/replay-after.json",
+          ".local/take-replacement-2026-10-29/rust-final.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "ce1f51ca-56f2-4bff-9bb8-20b5b8c9af46"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:34:43.858Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "283149957dd2593cf5eebf2814c297968e3329668f08dd5f594457d9f3b16be9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:44.711Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -60 /tmp/earshot-lint.log\ntail -18 /tmp/earshot-verify.log\ntail -16 /tmp/earshot-next-turbo.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-f8c698c5-e52c-4bfa-b267-477dbd1a3305"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:45.059Z",
+  "parents": [],
+  "branch": "main"
+}

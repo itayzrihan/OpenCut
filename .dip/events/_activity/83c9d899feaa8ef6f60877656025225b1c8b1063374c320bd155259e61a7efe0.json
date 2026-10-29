@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "83c9d899feaa8ef6f60877656025225b1c8b1063374c320bd155259e61a7efe0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:06:10.114Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/configured-web/src__core____tests____canonical-smart-takes.test.ts.log",
+          ".local/take-replacement-2026-10-29/configured-web/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4676701e-1b4e-4c94-8546-88c82da0bf58"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:06:10.116Z",
+  "parents": [],
+  "branch": "main"
+}

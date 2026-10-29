@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16d4cf6dfc69f8a233c2d8edd6cd52914f8e7cbbbf62606f1dcb15dfb4113b57",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:53:33.228Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/check-earshot-wasm.cjs <<'EOF'\nconst fs=require('node:fs'); const path=require('node:path');\nconst root='/tmp/opencut-earshot-synthesis/classic/apps/web/public/earshot/runtime';\nconst {loadPyodide}=require(root+'/pyodide.js');\n(async()=>{\nconst t=Date.now();const p=await loadPyodide({indexURL:root+'/'});await p.loadPackage(['numpy','scipy']);\nconst sources=JSON.parse(fs.readFileSync(root+'/source-files.json','utf8'));\nfor(const [f,s] of Object.entries(sources)){const dest='/earshot-project/'+f;p.FS.mkdirTree(path.dirname(dest));p.FS.writeFile(dest,s);}\np.runPython(\"import sys; sys.path.insert(0, '/earshot-project')\");p.runPython(fs.readFileSync(root+'/renderer.py','utf8'));\nconsole.log('ready',Date.now()-t);\nfor(const id of ['ui_pop/soft','fit/click/floss_lid','whoosh_fast/crisp']){const start=Date.now();p.globals.set('_clip_spec_json',JSON.stringify({presetId:id,seed:1,duration:0.3}));const y=p.runPython('render_clip(json.loads(_clip_spec_json))');const b=y.getBuffer('f32');console.log(id,b.shape,Date.now()-start);b.release();y.destroy();}\n})().catch(e=>{console.error(e);process.exit(1)});\nEOF\nnode /tmp/check-earshot-wasm.cjs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-95921457-ca03-40bb-b35e-1aa5437b486a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:53:33.344Z",
+  "parents": [],
+  "branch": "main"
+}

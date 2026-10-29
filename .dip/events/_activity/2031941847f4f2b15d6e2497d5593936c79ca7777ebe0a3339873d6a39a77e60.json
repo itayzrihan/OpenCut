@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2031941847f4f2b15d6e2497d5593936c79ca7777ebe0a3339873d6a39a77e60",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:16:07.249Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff c004c5cf^ c004c5cf -- classic/apps/web/public/earshot/renderer.py classic/scripts/test-earshot-runtime.mjs | git apply",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-18ab2c75-2681-49de-b1db-d5fec2d3f3f4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:16:08.148Z",
+  "parents": [],
+  "branch": "main"
+}
