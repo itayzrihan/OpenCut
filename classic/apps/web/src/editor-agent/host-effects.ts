@@ -42,6 +42,48 @@ export async function performHostEffect({
 	}) => unknown;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
+	if (effect.adapter === "computer") {
+		const bridge = window.opencutElectron;
+		if (
+			!bridge?.executeComputerOperation ||
+			activeProjectId?.() !== effect.projectId ||
+			(window.__opencutAccountId ?? "local") !== accountId
+		)
+			return {
+				type: "rejected",
+				message: "The Electron computer scope is unavailable",
+			};
+		const cancel = () => {
+			void bridge.cancelComputerOperations().catch(() => {});
+		};
+		signal.addEventListener("abort", cancel, { once: true });
+		try {
+			const request = z
+				.object({
+					projectId: z.string(),
+					operationId: z.string(),
+					generation: z.number().int(),
+					mode: z.enum(["plan", "askDestructive", "fullAccess"]),
+					operation: z.record(z.string(), z.unknown()),
+				})
+				.strict()
+				.parse(effect.request);
+			const result = await bridge.executeComputerOperation({
+				...request,
+				accountId,
+			});
+			if (result.type === "uncertain")
+				throw new Error(
+					`Computer operation result is uncertain: ${result.message}. Reconcile the same operation identity.`,
+				);
+			if (result.type === "success")
+				return { type: "success", data: result.data };
+			return { type: "rejected", message: result.message };
+		} finally {
+			signal.removeEventListener("abort", cancel);
+		}
+	}
+
 	if (effect.adapter === "subscriptionImage") {
 		const scopeIsCurrent = () =>
 			typeof window !== "undefined" &&

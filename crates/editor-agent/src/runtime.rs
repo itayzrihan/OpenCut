@@ -42,6 +42,10 @@ pub struct RuntimeAgent {
     deny_unknown_fields
 )]
 pub enum AgentCommand {
+    Approve {
+        approval_id: String,
+        allow: bool,
+    },
     Observe,
     Discover {
         query: String,
@@ -178,6 +182,26 @@ impl RuntimeAgent {
 
     pub fn command(&mut self, command: AgentCommand) -> Result<Value, AgentError> {
         match command {
+            AgentCommand::Approve { approval_id, allow } => {
+                let pending = self
+                    .run
+                    .pending_approval
+                    .as_ref()
+                    .ok_or_else(|| AgentError::Conflict("No pending approval".into()))?;
+                let state = self.runtime.snapshot().map_err(runtime_error)?;
+                if pending.approval_id != approval_id
+                    || pending.revision != state.revision
+                    || pending.generation != state.agent_policy.generation
+                {
+                    return Err(AgentError::Conflict(
+                        "Approval expired; inspect and request again".into(),
+                    ));
+                }
+                let pending = self.run.pending_approval.take().expect("checked");
+                self.run.approved = allow.then_some(pending);
+                self.run.steer(if allow { "The user approved the exact pending operation once. Reissue it with the same arguments after observation." } else { "The user denied the pending operation. Do not retry it; choose another approach or report the limitation." }.into())?;
+                Ok(Value::Null)
+            }
             AgentCommand::Observe => self.observe(),
             AgentCommand::Discover { query, limit } => {
                 serde_json::to_value(self.discover(&query, limit)?).map_err(runtime_error)
@@ -234,9 +258,101 @@ impl RuntimeAgent {
         }
     }
 
+    fn authorize_action(
+        &mut self,
+        epoch: u64,
+        call_id: &str,
+        id: &str,
+        input: &Value,
+    ) -> Result<(), AgentError> {
+        let state = self.runtime.snapshot().map_err(runtime_error)?;
+        let descriptor = self
+            .runtime
+            .registry()
+            .descriptor(id)
+            .map_err(runtime_error)?
+            .ok_or_else(|| AgentError::Denied("Unknown capability".into()))?;
+        if epoch != self.run.epoch()
+            || !matches!(
+                self.run.phase(),
+                RunPhase::Ready | RunPhase::NeedsVerification
+            )
+        {
+            return Err(AgentError::Conflict("Run was superseded".into()));
+        }
+        if self.run.revision() != Some(state.revision) {
+            return Err(AgentError::Conflict(
+                "Editor changed; observe before invoking".into(),
+            ));
+        }
+        if descriptor.access > self.run.max_access() {
+            return Err(AgentError::Denied(
+                "Capability exceeds run authority".into(),
+            ));
+        }
+        if descriptor.access == AccessLevel::Admin {
+            return Err(AgentError::Denied(
+                "Only the editor host can change permissions".into(),
+            ));
+        }
+        let policy = state.agent_policy;
+        if policy.mode == opencut_editor_api::AgentMode::Plan
+            && descriptor.access != AccessLevel::Read
+        {
+            return Err(AgentError::Denied(
+                "Plan mode permits inspection only; propose the edits without executing them"
+                    .into(),
+            ));
+        }
+        if id.starts_with("computer.") {
+            if !policy.computer_access {
+                return Err(AgentError::Denied("Computer access is off".into()));
+            }
+            // Electron owns the native, exact-operation approval for host IO.
+            return Ok(());
+        }
+        if policy.mode == opencut_editor_api::AgentMode::AskDestructive
+            && descriptor.access == AccessLevel::Destructive
+        {
+            let ticket = crate::harness::PendingApproval {
+                approval_id: format!("{}:{}:{}", self.run.epoch(), policy.generation, call_id),
+                capability_id: id.into(),
+                input: input.clone(),
+                revision: state.revision,
+                generation: policy.generation,
+            };
+            if self.run.approved.as_ref().is_some_and(|a| {
+                a.capability_id == ticket.capability_id
+                    && a.input == ticket.input
+                    && a.revision == ticket.revision
+                    && a.generation == ticket.generation
+            }) {
+                self.run.approved = None;
+                return Ok(());
+            }
+            self.run.approved = None;
+            self.run.pending_approval = Some(ticket);
+            self.run.pause();
+            return Err(AgentError::Denied(
+                "User approval required; run paused before execution".into(),
+            ));
+        }
+        Ok(())
+    }
+
     pub fn catalog(&self) -> Result<RegistrySnapshot, AgentError> {
         let mut catalog = self.runtime.registry().snapshot().map_err(runtime_error)?;
+        let policy = self.runtime.snapshot().map_err(runtime_error)?.agent_policy;
         for descriptor in &mut catalog.capabilities {
+            if (descriptor.id.starts_with("computer.") && !policy.computer_access)
+                || (policy.mode == opencut_editor_api::AgentMode::Plan
+                    && descriptor.access != AccessLevel::Read)
+            {
+                descriptor.available = false;
+                descriptor.unavailable_reason = Some("Disabled by the current agent permission mode".into());
+                continue;
+            }
+
             if descriptor.access > self.run.max_access() {
                 descriptor.available = false;
                 descriptor.unavailable_reason =
@@ -281,6 +397,7 @@ impl RuntimeAgent {
         id: &str,
         input: Value,
     ) -> Result<Value, AgentError> {
+        self.authorize_action(epoch, call_id, id, &input)?;
         self.kind()?;
         if self.run.revision() != Some(self.runtime.snapshot().map_err(runtime_error)?.revision) {
             return Err(AgentError::Conflict(
@@ -406,6 +523,8 @@ impl RuntimeAgent {
         self.run.set_plan(epoch, steps)
     }
     pub fn steer(&mut self, text: String) -> Result<(), AgentError> {
+        self.run.approved = None;
+        self.run.pending_approval = None;
         self.run.steer(text)?;
         self.provider.reset_turn_window();
         Ok(())
@@ -430,6 +549,7 @@ impl RuntimeAgent {
         id: &str,
         input: Value,
     ) -> Result<InvocationReceipt, AgentError> {
+        self.authorize_action(epoch, call_id, id, &input)?;
         let kind = self.kind()?;
         let catalog = self.catalog()?;
         if catalog
@@ -573,7 +693,11 @@ impl RuntimeAgent {
                 "editor changed; inspect and verify again".into(),
             ));
         }
-        self.run.finish(epoch, text)
+        if self.runtime.snapshot().map_err(runtime_error)?.agent_policy.mode == opencut_editor_api::AgentMode::Plan {
+            self.run.finish_plan(epoch, text)
+        } else {
+            self.run.finish(epoch, text)
+        }
     }
 
     pub fn is_closed(&self) -> bool {

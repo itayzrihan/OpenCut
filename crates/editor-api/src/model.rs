@@ -74,9 +74,28 @@ impl MediaTime {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum AgentMode {
+    Plan,
+    #[default]
+    AskDestructive,
+    FullAccess,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AgentPolicy {
+    pub mode: AgentMode,
+    pub computer_access: bool,
+    pub generation: u64,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct EditorDocument {
+    #[serde(default)]
+    pub agent_policy: AgentPolicy,
     #[serde(default)]
     pub account: Option<opencut_account_core::AccountState>,
     pub schema_version: u32,
@@ -96,6 +115,7 @@ pub struct EditorDocument {
 impl Default for EditorDocument {
     fn default() -> Self {
         Self {
+            agent_policy: AgentPolicy::default(),
             account: None,
             schema_version: CURRENT_SCHEMA_VERSION,
             revision: 0,
@@ -139,6 +159,9 @@ impl EditorDocument {
     }
 
     pub fn validate(&self) -> Result<(), ModelError> {
+        if self.agent_policy.generation > 9_007_199_254_740_990 {
+            return Err(ModelError::Invalid("Agent policy generation exceeds its bound".into()));
+        }
         if let Some(account) = &self.account {
             account.validate().map_err(ModelError::Invalid)?;
         }

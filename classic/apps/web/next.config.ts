@@ -66,7 +66,21 @@ const nextConfig: NextConfig = {
 			"./.hyperframes-references/**/*",
 		],
 	},
-	serverExternalPackages: ["@hyperframes/engine", "@huggingface/transformers"],
+	// DSH reads package metadata relative to its installed modules. Preserve
+	// those boundaries in the Node/standalone server instead of bundling them.
+	serverExternalPackages: [
+		"@hyperframes/engine",
+		"@huggingface/transformers",
+		"@deepseek-ai/cordis",
+		"@deepseek-ai/dsh-agent",
+		"@deepseek-ai/dsh-agent-loop",
+		"@deepseek-ai/dsh-llm",
+		"@deepseek-ai/dsh-session",
+		"@deepseek-ai/dsh-session-projection",
+		"@deepseek-ai/dsh-system-prompt",
+		"@deepseek-ai/dsh-tools",
+		"@deepseek-ai/dsh-tool-executor-native",
+	],
 	// Runtime transcription caches are local, mutable user data. They must not
 	// be copied into a production standalone bundle (the Whisper cache alone
 	// can be several gigabytes and may exhaust the build disk).

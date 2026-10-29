@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d5e82548bff4fa6ebc7761e384f830454efb5d532a805e7a93183bba4b6eb9d6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:03:36.479Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/editor-agent/__tests__/harness-fetch-fixture.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "5be790db-8224-4c5e-87f9-f9801556ee17"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:03:36.486Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

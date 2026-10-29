@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9a33660fe07df3cc5538fe632fab99b520fcc35504a2239bb5e2b20bd70399f9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:42:28.934Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/canonical-classic-session.ts",
+          "classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts",
+          "classic/apps/web/src/editor-agent/client.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "0ca5f998-1f02-42dc-97e5-2e2e57ae806a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:42:28.937Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

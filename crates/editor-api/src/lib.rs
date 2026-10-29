@@ -11,6 +11,8 @@ mod editor_ui;
 mod editor_host;
 mod editor_ui_control;
 mod editor_screenshot;
+mod computer;
+pub use computer::register_computer_capabilities;
 mod hyperframes_authoring;
 mod editor_render;
 mod earshot_preview;

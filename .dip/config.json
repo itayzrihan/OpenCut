@@ -369,7 +369,10 @@
       "timeoutMs": 600000
     },
     "earshot-mcp": {
-      "command": ["node", "analysis/earshot-integration-2026-10-29/verify-mcp.mjs"],
+      "command": [
+        "node",
+        "analysis/earshot-integration-2026-10-29/verify-mcp.mjs"
+      ],
       "timeoutMs": 1200000
     },
     "earshot-code-audio": {
@@ -378,6 +381,20 @@
         "analysis/earshot-integration-2026-10-29/verify.mjs"
       ],
       "timeoutMs": 900000
+    },
+    "deepseek-editor-harness": {
+      "command": [
+        "node",
+        ".dip/tools/verify-deepseek-harness.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "agent-computer-permissions": {
+      "command": [
+        "node",
+        ".dip/tools/verify-agent-computer.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

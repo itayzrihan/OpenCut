@@ -580,6 +580,7 @@ impl OpenCutRuntime {
             session.document.validate()?;
         }
         for session in std::iter::once(&mut persisted.active).chain(persisted.inactive.iter_mut()) {
+            session.document.agent_policy.computer_access = false;
             if session.undo.len() + session.redo.len() > 1000 {
                 return Err(crate::ModelError::Invalid("Too many persisted history entries".into()).into());
             }

@@ -117,6 +117,7 @@ export interface EditingAgentPlanStep {
 }
 
 export type EditingAgentCommand =
+ | { type: "approve"; approvalId: string; allow: boolean }
 	| { type: "observe" }
 	| { type: "discover"; query: string; limit: number }
 	| { type: "describe"; epoch: number; id: string }
@@ -135,6 +136,8 @@ export type EditingAgentCommand =
 	| { type: "fail"; epoch: number; text: string };
 
 export interface EditingAgentSnapshot {
+ pendingApproval?: {approvalId:string;capabilityId:string;input:unknown;revision:number;generation:number}|null;
+
 	scope: EditingAgentScope;
 	request: string;
 	steering: string[];
@@ -157,4 +160,10 @@ export interface EditingAgentSnapshot {
 		artifactIds: string[];
 	}>;
 	finalMessage: string | null;
+}
+
+export interface EditingAgentPolicy {
+ mode: "plan" | "askDestructive" | "fullAccess";
+ computerAccess: boolean;
+ generation: number;
 }

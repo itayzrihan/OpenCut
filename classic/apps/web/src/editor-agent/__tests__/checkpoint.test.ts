@@ -2,6 +2,10 @@ import { expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { createCanonicalTestRuntime } from "@/core/__tests__/canonical-runtime-fixture";
 
+// Match the real-WASM manager integration budget. These cases create multiple
+// runtimes; the deadline bounds a stalled suite, not application performance.
+const INTEGRATION_TIMEOUT = 60_000;
+
 test("a completed task and reloaded follow-up retain scoped public history without replay", async () => {
 	const source = await createCanonicalTestRuntime();
 	const reopened = await createCanonicalTestRuntime();
@@ -83,7 +87,7 @@ test("a completed task and reloaded follow-up retain scoped public history witho
 		source.free();
 		reopened.free();
 	}
-}, 30_000);
+}, INTEGRATION_TIMEOUT);
 
 test("HyperFrames checkpoint survives the browser JSON numeric round trip", async () => {
 	const source = await createCanonicalTestRuntime();
@@ -144,7 +148,7 @@ test("HyperFrames checkpoint survives the browser JSON numeric round trip", asyn
 		source.free();
 		reopened.free();
 	}
-}, 20_000);
+}, INTEGRATION_TIMEOUT);
 
 test("real WASM restores a paused agent only beside its matching canonical archive", async () => {
 	const source = await createCanonicalTestRuntime();
@@ -228,4 +232,4 @@ test("real WASM restores a paused agent only beside its matching canonical archi
 		reopened.free();
 		wrongAccount.free();
 	}
-}, 20_000);
+}, INTEGRATION_TIMEOUT);

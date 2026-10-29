@@ -12,6 +12,7 @@ import { performHostEffect } from "./host-effects";
 import { performRenderEffect } from "./render-effects";
 import { performEarshotPreviewEffect } from "./earshot-preview-effect";
 import { performSceneAutomationEffect } from "./scene-automation-effects";
+import { driveEditorHarness } from "./harness-client";
 
 export interface AgentConnection {
 	connected: boolean;
@@ -115,8 +116,8 @@ export async function connectionRequest<T>({
 	return schema.parse(value);
 }
 
-/** Host IO only. Planning, capability dispatch, context and completion gates
- * remain in the Rust harness. One controller owns the active editor request. */
+/** Host IO only. DeepSeek Harness schedules rounds; planning, capability
+ * dispatch, context and completion gates remain in Rust. */
 export class EditorAgentClient {
 	private readonly editor: EditorCore;
 	private readonly emit: (event: AgentClientEvent) => void;
@@ -309,62 +310,97 @@ export class EditorAgentClient {
 					});
 			}
 			this.snapshot();
-			for (;;) {
-				if (attachments) {
-					this.editor.command.setEditingInputAttachments(attachments);
-					attachments = undefined;
-				}
-				controller.signal.throwIfAborted();
-				this.assertScope();
-				const knowledgeSnapshot = this.editor.command.getEditingAgentSnapshot();
-				const knowledge = await knowledgeRequest({
-					projectId: this.project,
-					request: {
-						type: "context",
-						query: [
-							knowledgeSnapshot?.request,
-							...(knowledgeSnapshot?.steering ?? []),
-						]
-							.join("\n")
-							.slice(-4000),
-						maxBytes: 24_000,
-					},
-					signal: controller.signal,
-				});
-				controller.signal.throwIfAborted();
-				this.assertScope();
-				this.editor.command.loadEditingAgentKnowledge(knowledge.data);
-				const request = this.editor.command.prepareEditingAgentRequest(model);
-				this.emit({ type: "round", review: false });
-				const response = await this.respond({
-					body: request.body,
-					signal: controller.signal,
-				});
-				controller.signal.throwIfAborted();
-				this.assertScope();
-				let round = this.editor.command.applyEditingAgentResponse({
-					epoch: request.epoch,
-					response,
-				});
-				this.emit({ type: "activities", activities: round.activities });
-				await this.persist();
-				if (round.pendingHost && round.phase !== "paused") {
-					const settled = await this.reconcileHost(controller.signal);
-					if (settled) round = settled;
-				}
-				this.snapshot();
-				if (round.message) this.emit({ type: "status", text: round.message });
-				if (
-					round.phase === "completed" ||
-					round.phase === "failed" ||
-					round.phase === "paused"
-				) {
+			let pending:
+				| { round: number; epoch: number; response: unknown }
+				| undefined;
+			const phase = await driveEditorHarness({
+				accountId: this.account,
+				projectId: this.project,
+				model,
+				signal: controller.signal,
+				assertScope: () => this.assertScope(),
+				call: async (operation, roundNumber) => {
+					if (operation === "provider") {
+						if (pending)
+							throw new Error(
+								"Reconcile the completed provider response first",
+							);
+						if (attachments) {
+							this.editor.command.setEditingInputAttachments(attachments);
+							attachments = undefined;
+						}
+						controller.signal.throwIfAborted();
+						this.assertScope();
+						const knowledgeSnapshot =
+							this.editor.command.getEditingAgentSnapshot();
+						const knowledge = await knowledgeRequest({
+							projectId: this.project,
+							request: {
+								type: "context",
+								query: [
+									knowledgeSnapshot?.request,
+									...(knowledgeSnapshot?.steering ?? []),
+								]
+									.join("\n")
+									.slice(-4000),
+								maxBytes: 24_000,
+							},
+							signal: controller.signal,
+						});
+						controller.signal.throwIfAborted();
+						this.assertScope();
+						this.editor.command.loadEditingAgentKnowledge(knowledge.data);
+						const request =
+							this.editor.command.prepareEditingAgentRequest(model);
+						this.emit({ type: "round", review: false });
+						const response = await this.respond({
+							body: request.body,
+							signal: controller.signal,
+						});
+						controller.signal.throwIfAborted();
+						this.assertScope();
+						pending = { round: roundNumber, epoch: request.epoch, response };
+						return { epoch: request.epoch, response };
+					}
+					controller.signal.throwIfAborted();
+					this.assertScope();
+					if (!pending || pending.round !== roundNumber)
+						throw new Error(
+							"Canonical provider response is stale or already applied",
+						);
+					const current = pending;
+					pending = undefined;
+					let round = this.editor.command.applyEditingAgentResponse({
+						epoch: current.epoch,
+						response: current.response,
+					});
+					this.emit({ type: "activities", activities: round.activities });
 					await this.persist();
-					break;
-				}
-				if (round.needsVerification)
-					await this.review({ model, signal: controller.signal });
-			}
+					if (round.pendingHost && round.phase !== "paused") {
+						const settled = await this.reconcileHost(controller.signal);
+						if (settled) round = settled;
+					}
+					this.snapshot();
+					if (round.message) this.emit({ type: "status", text: round.message });
+					if (
+						round.phase === "completed" ||
+						round.phase === "failed" ||
+						round.phase === "paused"
+					) {
+						await this.persist();
+						return { phase: round.phase };
+					}
+					if (round.needsVerification)
+						await this.review({ model, signal: controller.signal });
+					return {
+						phase: this.editor.command.getEditingAgentSnapshot()?.phase,
+					};
+				},
+			});
+			if (phase !== this.editor.command.getEditingAgentSnapshot()?.phase)
+				throw new Error(
+					"Harness completion differs from the canonical editor run",
+				);
 		};
 		const operation = execute();
 		this.operation = operation;
