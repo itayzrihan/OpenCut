@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c45d07bb9e57778dcd6034d07e23dadbcc4fac5c46bfaf3ade11602e6ef26683",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:44.015Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.local",
+          "classic/apps/web/.local/dsh-smoke.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "a2f5730a-e8de-4de6-ab43-5f2c5172c3cf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:44.022Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

@@ -1,4 +1,5 @@
 import { mockFetch } from "@/test-support/mock-fetch";
+import { harnessFixtureResponse } from "@/editor-agent/__tests__/harness-fetch-fixture";
 // @opencut-test-wasm: real
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- host views are minimal test doubles; all document and history operations run through the generated Rust WASM. */
 import { beforeAll, beforeEach, expect, mock, spyOn, test } from "bun:test";
@@ -218,6 +219,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			checkpointSceneView: () => {},
 			getActiveOrNull: () => project,
 			getActive: () => project,
+			getActiveForScene: () => project,
 			setActiveProject: ({ project: next }: { project: TProject }) => {
 				manager.synchronizeProject(next);
 				project = next;
@@ -4146,6 +4148,8 @@ test(
 			reviews = 0;
 		const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 			mockFetch(async (url, init) => {
+				if (String(url).endsWith("/harness"))
+					return harnessFixtureResponse({ init });
 				if (String(url).endsWith("/knowledge"))
 					return knowledgeFixtureResponse();
 				const request = JSON.parse(String(init?.body));
@@ -4242,6 +4246,8 @@ test(
 		});
 		const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 			mockFetch(async (url, init) => {
+				if (String(url).endsWith("/harness"))
+					return harnessFixtureResponse({ init });
 				if (String(url).endsWith("/knowledge"))
 					return knowledgeFixtureResponse();
 				calls += 1;
@@ -4346,6 +4352,8 @@ test(
 			firstRequest = "";
 		const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 			mockFetch(async (url, init) => {
+				if (String(url).endsWith("/harness"))
+					return harnessFixtureResponse({ init });
 				const request = JSON.parse(String(init?.body));
 				if (String(url).endsWith("/knowledge")) {
 					if (request.request.type === "context") {
@@ -6947,6 +6955,8 @@ test(
 		let calls = 0;
 		const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
 			mockFetch(async (url, init) => {
+				if (String(url).endsWith("/harness"))
+					return harnessFixtureResponse({ init });
 				if (String(url).endsWith("/knowledge"))
 					return knowledgeFixtureResponse();
 				calls += 1;

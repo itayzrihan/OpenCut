@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b0f5f8d89a87b499340f467e3684588ded8410798da11ecf1245f96b0bbc97de",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:04:06.404Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.build.tsbuildinfo"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "a11e995f-4883-43ac-b7f7-7383bb144d13"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:04:06.410Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6251818e17c9ac4ce6cce61f998adc5f4560641def5843526111d5934720c2c5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:17.129Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/scripts/verify-deepseek-harness.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "8cbf00ae-21b5-41ee-9386-3500f517bfc4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:17.132Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

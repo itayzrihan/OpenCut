@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0b5e69e67337f615fa550170a2bbf380b36dfdc478cef6dcdc922b96e8d25cea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:37.195Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/next.config.ts",
+          "classic/.local",
+          "classic/.local/dsh-smoke.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "664222dd-dc58-45fd-b563-c8135b5c5d33"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:37.200Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}
