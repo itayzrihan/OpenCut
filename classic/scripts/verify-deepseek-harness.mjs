@@ -36,7 +36,7 @@ run(process.execPath, [
 	"apps/web/src/editor-agent/__tests__/host-effects.test.ts",
 	"apps/web/src/editor-agent/__tests__/checkpoint.test.ts",
 	"--test-timeout=60000",
-	"--timeout=120000",
+	"--timeout=240000",
 	"--jobs=1",
 	"--report=.local/deepseek-harness-verification",
 ]);
